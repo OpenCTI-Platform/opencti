@@ -12,10 +12,16 @@ import { DefenseThreatsFieldAccessQuery$data } from './__generated__/DefenseThre
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_SIZE = 25;
 const NO_CONFIRMED_IDS: ReadonlySet<string> = new Set();
+const NO_OPTIONS: DefenseThreatOption[] = [];
 
 interface Confirmations {
   userId: string;
   ids: ReadonlySet<string>;
+}
+
+interface SearchResults {
+  userId: string;
+  options: DefenseThreatOption[];
 }
 
 const withConfirmed = (current: Confirmations, userId: string, ids: Iterable<string>): Confirmations => ({
@@ -62,14 +68,16 @@ interface DefenseThreatsFieldProps {
 
 const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
   const { t_i18n } = useFormatter();
-  const [options, setOptions] = useState<DefenseThreatOption[]>([]);
+  const { me } = useAuth();
+  // The search results belong to the account that searched: another account never sees them
+  const [results, setResults] = useState<SearchResults>(() => ({ userId: me.id, options: NO_OPTIONS }));
+  const options = results.userId === me.id ? results.options : NO_OPTIONS;
   const [loading, setLoading] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestId = useRef(0);
   // A threat of the stored scope is shown only once the reader is known to access it: the threats picked from the search
   // are, the others are confirmed by one query, which also drops the threats no longer accessible and refreshes the names.
   // The confirmations belong to the account: another account confirms its own stored threats.
-  const { me } = useAuth();
   const [confirmed, setConfirmed] = useState<Confirmations>(() => ({ userId: me.id, ids: NO_CONFIRMED_IDS }));
   const confirmedIds = confirmed.userId === me.id ? confirmed.ids : NO_CONFIRMED_IDS;
   const latest = useRef({ value, onChange });
@@ -112,6 +120,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
     // New input makes the request in flight stale at once, not only when the debounce fires
     requestId.current += 1;
     const current = requestId.current;
+    const userId = me.id;
     timer.current = setTimeout(() => {
       setLoading(true);
       fetchQuery(defenseThreatsFieldSearchQuery, { types: DEFENSE_THREAT_TYPES, search: input, first: SEARCH_SIZE })
@@ -119,17 +128,24 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
         .then((data) => {
           if (current !== requestId.current) return;
           const edges = (data as DefenseThreatsFieldSearchQuery$data | undefined)?.stixDomainObjects?.edges ?? [];
-          setOptions(edges.map(({ node }) => ({ value: node.id, label: node.representative.main, type: node.entity_type })));
+          setResults({ userId, options: edges.map(({ node }) => ({ value: node.id, label: node.representative.main, type: node.entity_type })) });
         })
         .catch(() => {
           // Options of an earlier input are never shown as the results of a failed search
-          if (current === requestId.current) setOptions([]);
+          if (current === requestId.current) setResults({ userId, options: NO_OPTIONS });
         })
         .finally(() => {
           if (current === requestId.current) setLoading(false);
         });
     }, SEARCH_DEBOUNCE_MS);
   };
+
+  // Another account makes the pending and in-flight searches stale: their answers are for the previous account
+  useEffect(() => {
+    if (timer.current) clearTimeout(timer.current);
+    requestId.current += 1;
+    setLoading(false);
+  }, [me.id]);
 
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);

@@ -90,4 +90,39 @@ describe('Defense threats field', () => {
     await waitFor(() => expect(onChange).toHaveBeenCalledWith([]));
     expect(mockFetchQuery).toHaveBeenCalledTimes(2);
   });
+
+  it('should never show the search results of another account', async () => {
+    mockAccount.id = 'reader-1';
+    mockFetchQuery.mockReset();
+    mockFetchQuery.mockReturnValue(accessAnswer([{ node: { id: 'threat-1', entity_type: 'Intrusion-Set', representative: { main: 'Threat of reader 1' } } }]));
+    const { user, rerender } = testRender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
+    await user.type(screen.getByTestId('defense-threats-input'), 'a');
+    expect(await screen.findByText('Threat of reader 1')).toBeInTheDocument();
+    mockFetchQuery.mockReturnValue(accessAnswer([]));
+    mockAccount.id = 'reader-2';
+    rerender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
+    expect(screen.queryByText('Threat of reader 1')).not.toBeInTheDocument();
+  });
+
+  it('should drop a search answer arriving after a change of account', async () => {
+    mockAccount.id = 'reader-1';
+    mockFetchQuery.mockReset();
+    let answerFirstReader: (data: unknown) => void = () => {};
+    mockFetchQuery.mockReturnValueOnce({
+      toPromise: () => new Promise((resolve) => {
+        answerFirstReader = resolve;
+      }),
+    });
+    mockFetchQuery.mockReturnValue(accessAnswer([]));
+    const { user, rerender } = testRender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
+    await user.type(screen.getByTestId('defense-threats-input'), 'a');
+    await waitFor(() => expect(mockFetchQuery).toHaveBeenCalledTimes(1));
+    mockAccount.id = 'reader-2';
+    rerender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
+    answerFirstReader({ stixDomainObjects: { edges: [{ node: { id: 'threat-1', entity_type: 'Intrusion-Set', representative: { main: 'Threat of reader 1' } } }] } });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(screen.queryByText('Threat of reader 1')).not.toBeInTheDocument();
+  });
 });
