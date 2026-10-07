@@ -14001,8 +14001,13 @@ type IndicatorRuleLogsource {
 }
 
 input IndicatorRuleLogsourceInput {
+  "*Constraints:*\n* Maximal length: `256`\n"
   category: String
+
+  "*Constraints:*\n* Maximal length: `256`\n"
   product: String
+
+  "*Constraints:*\n* Maximal length: `256`\n"
   service: String
 }
 

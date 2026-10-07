@@ -29,9 +29,9 @@ type IndicatorRuleLogsource {
   service: String
 }
 input IndicatorRuleLogsourceInput {
-  category: String
-  product: String
-  service: String
+  category: String @constraint(maxLength: 256)
+  product: String @constraint(maxLength: 256)
+  service: String @constraint(maxLength: 256)
 }
 type IndicatorConnection {
   pageInfo: PageInfo!

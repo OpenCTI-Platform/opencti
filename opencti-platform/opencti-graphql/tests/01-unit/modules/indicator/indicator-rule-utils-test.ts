@@ -23,6 +23,12 @@ describe('Indicator detection rule metadata', () => {
     });
     expect(normalizeIndicatorRuleLogsource(null)).toBeUndefined();
   });
+  it('should refuse a log source value longer than 256 characters, on creation and on field patches', () => {
+    expect(normalizeIndicatorRuleLogsource({ product: ` ${'w'.repeat(256)} ` })).toEqual({ product: 'w'.repeat(256) });
+    expect(() => normalizeIndicatorRuleLogsource({ service: 's'.repeat(257) })).toThrow('A rule log source value cannot be longer than 256 characters');
+    expect(() => normalizeIndicatorRuleEditInputs([{ key: 'x_opencti_rule_logsource', value: [{ category: 'c'.repeat(257) }] }]))
+      .toThrow('A rule log source value cannot be longer than 256 characters');
+  });
   it('should remove the raw metadata from an input', () => {
     expect(withoutIndicatorRuleMetadata({ name: 'rule', x_opencti_rule_status: 'test', x_opencti_rule_level: 'low', x_opencti_rule_logsource: { product: 'linux' } }))
       .toEqual({ name: 'rule' });

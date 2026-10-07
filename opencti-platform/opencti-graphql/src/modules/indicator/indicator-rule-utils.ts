@@ -1,4 +1,8 @@
+import { FunctionalError } from '../../config/errors';
 import type { IndicatorRuleLogsource } from './indicator-types';
+
+// Same bound as the log source values of the telemetry mappings
+const MAX_LOGSOURCE_VALUE_LENGTH = 256;
 
 interface IndicatorRuleMetadataInput {
   x_opencti_rule_status?: string | null;
@@ -28,6 +32,11 @@ const normalizeRuleValue = (value: string | null | undefined): string | undefine
 export const normalizeIndicatorRuleLogsource = (logsource: IndicatorRuleMetadataInput['x_opencti_rule_logsource']): IndicatorRuleLogsource | undefined => {
   if (!logsource) {
     return undefined;
+  }
+  // A field patch does not go through the constraints of the GraphQL input
+  const tooLong = [logsource.category, logsource.product, logsource.service].find((value) => (value?.trim().length ?? 0) > MAX_LOGSOURCE_VALUE_LENGTH);
+  if (tooLong) {
+    throw FunctionalError(`A rule log source value cannot be longer than ${MAX_LOGSOURCE_VALUE_LENGTH} characters`, { length: tooLong.trim().length });
   }
   const category = normalizeRuleValue(logsource.category);
   const product = normalizeRuleValue(logsource.product);
