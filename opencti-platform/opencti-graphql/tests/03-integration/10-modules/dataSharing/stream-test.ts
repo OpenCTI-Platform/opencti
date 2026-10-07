@@ -524,11 +524,15 @@ describe('Stream object refs filtering', () => {
       ...ADMIN_USER,
       origin: { socket: 'query', ip: 'value', user_id: ADMIN_USER.id, user_metadata: { key: 'value' }, referer: 'value' },
     };
-    await queryAsAuthUser(userWithOrigin, {
+    const description = 'Stream-Refs-Report origin';
+    const result = await queryAsAuthUser(userWithOrigin, {
       query: EDIT_DOMAIN_QUERY,
-      variables: { id: reportId, input: [{ key: 'description', value: ['Stream-Refs-Report origin'] }] },
+      variables: { id: reportId, input: [{ key: 'description', value: [description] }] },
     });
-    const messages = await readStreamUntil(`${getBaseUrl()}/stream/${unrestrictedStreamId}?from=${fromEventId}`, isReportUpdate);
+    expect(result.errors).toBeUndefined();
+    // The replay window also contains the previous report updates, wait for this one
+    const isOriginUpdate = (message: SseMessage) => isReportUpdate(message) && message.data.data.description === description;
+    const messages = await readStreamUntil(`${getBaseUrl()}/stream/${unrestrictedStreamId}?from=${fromEventId}`, isOriginUpdate);
 
     const { origin } = messages[messages.length - 1].data;
     expect(origin).toEqual({ socket: 'query', user_id: ADMIN_USER.id });
