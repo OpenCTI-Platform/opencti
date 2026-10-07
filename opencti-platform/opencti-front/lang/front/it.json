@@ -90,6 +90,7 @@
   "{decided}/{total} decided": "{decided}/{total} decisi",
   "{eligible, plural, one {# proposal would be applied} other {# proposals would be applied}}, {excluded, plural, one {# excluded} other {# excluded}}": "{eligible, plural, one {# proposta verrebbe applicata} other {# proposte verrebbero applicate}}, {excluded, plural, one {# esclusa} other {# escluse}}",
   "{enabled} of {total} enabled": "{enabled} di {total} abilitati",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "Verranno rimosse {entitiesCount} entità e {relationshipsCount} relazioni, comprese le relazioni collegate alle entità selezionate.",
   "{entity_type} successfully deleted": "{entity_type} eliminato con successo",
   "{entity_type} successfully duplicated": "{entity_type} duplicato con successo",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName} aggiunto a `{pirName}`",

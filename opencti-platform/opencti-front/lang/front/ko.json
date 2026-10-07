@@ -90,6 +90,7 @@
   "{decided}/{total} decided": "{decided}/{total} 결정됨",
   "{eligible, plural, one {# proposal would be applied} other {# proposals would be applied}}, {excluded, plural, one {# excluded} other {# excluded}}": "{eligible, plural, other {제안 #개가 적용됩니다}}, {excluded, plural, other {#개 제외}}",
   "{enabled} of {total} enabled": "{total}개 중 {enabled}개 활성화됨",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "선택한 엔티티에 연결된 관계를 포함하여 {entitiesCount}개의 엔티티와 {relationshipsCount}개의 관계가 제거됩니다.",
   "{entity_type} successfully deleted": "{entity_type} 성공적으로 삭제되었습니다",
   "{entity_type} successfully duplicated": "{entity_type} 복제에 성공했습니다",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}`이 `{pirName}`에 추가되었습니다",

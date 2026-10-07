@@ -90,6 +90,7 @@
   "{decided}/{total} decided": "{decided}/{total} 件が決定済み",
   "{eligible, plural, one {# proposal would be applied} other {# proposals would be applied}}, {excluded, plural, one {# excluded} other {# excluded}}": "{eligible, plural, other {# 件の提案が適用されます}}、{excluded, plural, other {# 件が除外されます}}",
   "{enabled} of {total} enabled": "{total} 件中 {enabled} 件が有効",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "{entitiesCount} 件のエンティティと {relationshipsCount} 件のリレーションシップが削除されます（選択したエンティティに関連付けられたリレーションシップを含む）。",
   "{entity_type} successfully deleted": "{entity_type} 正常に削除されました",
   "{entity_type} successfully duplicated": "{entity_type}の複製に成功",
   "{entityType} `{entityName}` added to `{pirName}`": "`{pirName}`に`{entityName}`（{entityType}）が追加されました。",
