@@ -1,6 +1,6 @@
 # Knowledge curation
 
-Knowledge curation keeps the knowledge graph clean after ingestion. Detectors continuously look for duplicates across vendor naming, contradictions, stale knowledge and conflicting relationships, and turn each finding into a proposal that explains its confidence with evidence. Analysts work these proposals in a curation inbox, policies can apply the safest ones automatically, every merge stays reversible for the retention period of its merge record, and a Knowledge health score tracks the quality of the graph over time.
+Knowledge curation keeps the knowledge graph clean after ingestion. Detectors continuously look for duplicates across vendor naming, contradictions, stale knowledge and conflicting relationships, and turn each finding into a proposal that explains its confidence with evidence. Analysts work these proposals in a curation inbox, policies can apply the safest ones automatically, merges stay reversible for the retention period of their merge record (except the ones [recorded as not reversible](#reversible-merges-and-unmerge)), and a Knowledge health score tracks the quality of the graph over time.
 
 This page explains what the detectors find, how a proposal is scored, how to review and apply proposals, how merges are reverted, how policies and adjudication by the OpenCTI Curator (an XTM One agent) work, and how to read the Knowledge health score.
 
@@ -18,7 +18,7 @@ Knowledge curation lives in three places: **Data > Curation**, the data-quality 
 | Evidence         | One signal that supports (or contradicts) a proposal, with a score, a weight and a plain-language description.                                                                    |
 | Confidence       | A value between 0 and 1 computed from the evidence. It decides whether a proposal is ambiguous, and whether a policy may apply it.                                                |
 | Ambiguous band   | The confidence range in which a proposal can be sent to an XTM One agent for adjudication (Enterprise Edition).                                                                    |
-| Merge record     | A snapshot taken around every merge, which makes the merge reversible (unmerge) during a retention window.                                                                        |
+| Merge record     | A snapshot taken around every merge, which makes the merge reversible (unmerge) during a retention window, unless the merge is recorded as not reversible.                         |
 | Curation policy  | A rule that applies eligible proposals automatically, through background tasks (Enterprise Edition).                                                                              |
 | Knowledge health | A daily snapshot of the quality of the graph, summarized as a score from 0 to 100.                                                                                                |
 
@@ -29,7 +29,7 @@ Every source names threats its own way. When one connector imports the malware `
 Knowledge curation addresses these problems on the stored graph:
 
 - **Analysts work an inbox instead of hunting duplicates.** Each proposal explains why it exists, with the evidence that produced its confidence.
-- **Merges are no longer final.** Every merge is recorded and can be reverted, entirely or for some of the merged entities, during a retention window.
+- **Merges are no longer final.** Every merge is recorded and, unless it is recorded as not reversible (very large merges, files with the same name), can be reverted, entirely or for some of the merged entities, during a retention window.
 - **Automation stays safe.** Policies only apply proposals above their thresholds, never merge or add aliases across markings or organizations, and every automatic action is reversible.
 - **Managers get a measure.** The Knowledge health score and its trend show whether the graph gets cleaner.
 - **Agents get a graph they can reason over.** XTM One agents and importers bind names to existing entities instead of creating new duplicates.
@@ -281,7 +281,7 @@ Each of these changes is published in the stream like any other change, so platf
     - **A merged entity that no longer exists.** If the entity produced by the merge was deleted or merged again, revert its most recent merge first.
     - **Deleted elements.** References to elements deleted since the merge are dropped, and relationships that cannot be moved back or recreated are skipped and reported in the logs.
     - **Inferred relationships** are not part of the snapshot: the rules engine recomputes them.
-    - **Merges without a merge record**, such as merges done before this feature was installed, cannot be reverted.
+    - **Merges without a merge record**, such as merges done before this feature was installed or while merge records are disabled (`curation:merge_records_enabled`), cannot be reverted.
 
 ### Curation policies and auto-apply
 
