@@ -56,7 +56,12 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  findCatalogContractsByImageName,
+  findLatestCompatibleCatalogContractByImageName,
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract,
+} from '../modules/catalog/catalog-api';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -69,7 +74,6 @@ import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
-import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker

@@ -3,6 +3,7 @@ import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { autoUpgradeManagedConnectors } from '../connector/connector-domain';
 import { synchronizeCatalogs } from './sync/catalog-sync-domain';
 import { registerManager, type ManagerDefinition } from '../../manager/managerModule';
+import { APP_MODULE } from '../../config/error-origin';
 
 const CATALOG_MANAGER_ID = 'CATALOG_MANAGER';
 const CATALOG_MANAGER_LABEL = 'Catalog Manager';
@@ -47,6 +48,7 @@ const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig && !!CATALOG_MANAGER_LOCK_KEY;
   },
   enterpriseEditionOnly: false,
+  module: APP_MODULE.CATALOG,
   cronSchedulerHandler: {
     handler: catalogManagerHandler,
     runOnStart: true,

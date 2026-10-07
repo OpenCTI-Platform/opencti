@@ -1,9 +1,7 @@
 import { logApp, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-repository';
-import { mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-domain';
-import { compareContractVersions } from '../catalog/catalog-version-utils';
+import { compareContractVersions, findLatestCompatibleCatalogContractBySlug, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../catalog/catalog-api';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { patchAttribute } from '../../database/middleware';

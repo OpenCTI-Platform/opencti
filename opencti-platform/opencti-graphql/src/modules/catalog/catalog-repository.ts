@@ -1,4 +1,5 @@
-import { logApp, PLATFORM_VERSION } from '../../config/conf';
+import { PLATFORM_VERSION } from '../../config/conf';
+import { logCatalog } from './catalog-logger';
 import { FunctionalError, UnknownError } from '../../config/errors';
 import { elDeleteInstances, elIndex, elIndexElements, elLoadBy } from '../../database/engine';
 import { fullEntitiesList, internalFindByIdsMapped, type FilterGroupWithNested } from '../../database/middleware-loader';
@@ -295,14 +296,12 @@ export const findLatestCompatibleCatalogContractByImageName = async (
   const contracts = await findCatalogContractsByImageName(context, user, imageName);
   const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
-    logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
       imageName,
       platformVersion: PLATFORM_VERSION,
     });
   } else {
-    logApp.debug('[OPENCTI-MODULE] Selected compatible catalog contract by image', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] Selected compatible catalog contract by image', {
       imageName,
       contractId: selectedContract.contract_id,
       contractVersion: selectedContract.contract_version,
@@ -323,8 +322,7 @@ export const insertCatalogContracts = async (
     entity_type: ENTITY_TYPE_CATALOG_CONTRACT,
   }));
   if (contracts.length > 0) {
-    logApp.debug('[OPENCTI-MODULE] Inserting catalog contracts', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] Inserting catalog contracts', {
       count: contracts.length,
       catalogIds: [...new Set(contracts.map((contract) => contract.catalog_id))],
     });
@@ -350,14 +348,12 @@ export const updateCatalogContracts = async (
   }));
   if (updates.length > 0) {
     if (updates.length > 100) {
-      logApp.warn('[OPENCTI-MODULE] High volume of catalog contracts updates', {
-        module: 'catalog',
+      logCatalog.warn('[OPENCTI-MODULE] High volume of catalog contracts updates', {
         count: updates.length,
         catalogIds: [...new Set(updates.map((update) => update.catalog_id))],
       });
     } else {
-      logApp.debug('[OPENCTI-MODULE] Updating catalog contracts', {
-        module: 'catalog',
+      logCatalog.debug('[OPENCTI-MODULE] Updating catalog contracts', {
         count: updates.length,
         catalogIds: [...new Set(updates.map((update) => update.catalog_id))],
       });
@@ -377,8 +373,7 @@ export const deleteCatalogContracts = async (
     deletions.map((deletion) => deletion.idToDelete),
   );
   if (deletions.length > 0) {
-    logApp.debug('[OPENCTI-MODULE] Deleting catalog contracts', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] Deleting catalog contracts', {
       count: deletions.length,
     });
   }

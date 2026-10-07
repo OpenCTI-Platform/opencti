@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { logApp } from '../../../config/conf';
+import { logCatalog } from '../catalog-logger';
 import { isEmptyField } from '../../../database/utils';
 import { UnsupportedError } from '../../../config/errors';
 import { getOrCompileValidator } from '../catalog-domain';
@@ -151,7 +151,7 @@ const validateSyncSource = (syncSource: CatalogSyncSource) => {
     const contract = syncSource.contracts[contractIndex];
     if (contract.manager_supported) {
       if (!contract.config_schema) {
-        logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
+        logCatalog.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
       } else {
         if (isEmptyField(contract.container_image)) {
           throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
@@ -329,8 +329,7 @@ export const fetchSourceCatalog = async (
   const raw = await adapter.fetch();
   const syncSource = mapCatalogDtoToCatalogSyncSource(raw);
   validateSyncSource(syncSource);
-  logApp.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
     sourceKind: sourceConfig.kind,
     sourceUri: sourceConfig.uri,
     catalogId: syncSource.id,
@@ -350,15 +349,13 @@ export const fetchSourceCatalogRevisionHint = async (
   const revisionHint = await adapter.fetchRevisionHint?.();
   if (sourceConfig.kind === 'remote') {
     if (revisionHint) {
-      logApp.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
-        module: 'catalog',
+      logCatalog.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
         sourceKind: sourceConfig.kind,
         sourceUri: sourceConfig.uri,
         revisionHint,
       });
     } else {
-      logApp.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
-        module: 'catalog',
+      logCatalog.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
         sourceKind: sourceConfig.kind,
         sourceUri: sourceConfig.uri,
       });

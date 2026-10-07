@@ -1,7 +1,9 @@
 import type { RequestHandler } from 'express';
 import { createAuthenticatedContext } from '../../http/httpAuthenticatedContext';
 import { downloadFile } from '../../database/raw-file-storage';
-import { logApp } from '../../config/conf';
+import { logCatalog } from './catalog-logger';
+import { logBoundaryError } from '../../config/module-logger';
+import { APP_MODULE } from '../../config/error-origin';
 import { setCookieError } from '../../http/httpUtils';
 import { CATALOG_CONTRACT_LOGOS_DIR, getMimeTypeFromImageExtension } from './catalog-logo-storage';
 import { ResourceNotFoundError, UnsupportedError, UnknownError } from '../../config/errors';
@@ -19,7 +21,7 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     }
     const fileParam = req.params.file;
     const file = Array.isArray(fileParam) ? fileParam[0] : fileParam;
-    logApp.debug('Catalog logo view handler', { file });
+    logCatalog.debug('Catalog logo view handler', { file });
     if (typeof file !== 'string' || file.includes('..') || file.includes('/') || file.includes('\\')) {
       throw UnsupportedError('Invalid URL format');
     }
@@ -27,7 +29,7 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     const stream = await downloadFile(s3Key);
     if (!stream) {
       const error = ResourceNotFoundError('Catalog logo not found');
-      logApp.error('Failed to download catalog logo', { cause: error });
+      logBoundaryError('Failed to download catalog logo', error, { entryModule: APP_MODULE.CATALOG, file });
       res.status(404).send({ status: 'error', error: error.message });
       return;
     }
@@ -39,13 +41,13 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     if (mimeType) {
       res.set('Content-type', mimeType);
     } else {
-      logApp.warn('Catalog logo: unable to deduce mimeType from extension', { file, extension });
+      logCatalog.warn('Catalog logo: unable to deduce mimeType from extension', { file, extension });
     }
     stream.pipe(res);
   } catch (exception) {
     const error = exception instanceof Error ? exception : UnknownError('Unknown error');
     setCookieError(res, error.message);
-    logApp.error('Error viewing catalog logo', { cause: error });
+    logBoundaryError('Error viewing catalog logo', error, { entryModule: APP_MODULE.CATALOG });
     res.status(503).send({ status: 'error', error: error.message });
   }
 };
