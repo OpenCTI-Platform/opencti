@@ -12,6 +12,7 @@ interface WidgetVerticalBarsProps {
   interval?: string | null;
   isStacked?: boolean;
   hasLegend?: boolean;
+  isAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -20,6 +21,7 @@ const WidgetVerticalBars = ({
   interval,
   isStacked = false,
   hasLegend = false,
+  isAnimated = true,
   onMounted,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
@@ -40,7 +42,7 @@ const WidgetVerticalBars = ({
     // dropped the label of the most recent bar. A category axis labels every bar, including the
     // most recent one, and the time-series buckets are already gap-filled and evenly spaced by
     // the backend, so discrete categories render correctly.
-    return verticalBarsChartOptions(
+    const chartOptions = verticalBarsChartOptions(
       theme,
       formatter,
       simpleNumberFormat,
@@ -50,7 +52,11 @@ const WidgetVerticalBars = ({
       hasLegend,
       'dataPoints',
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend]);
+    if (isAnimated) {
+      return chartOptions;
+    }
+    return { ...chartOptions, chart: { ...chartOptions.chart, animations: { enabled: false } } };
+  }, [theme, interval, isStacked, hasLegend, isAnimated]);
 
   return (
     <Chart

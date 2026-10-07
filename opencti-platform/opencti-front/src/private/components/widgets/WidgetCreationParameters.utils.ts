@@ -1,6 +1,23 @@
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { getEntityTypeThreeFirstLevelsFilterValues } from 'src/utils/filters/filtersUtils';
-import type { WidgetColumn, WidgetHost, WidgetPerspective } from 'src/utils/widget/widget';
+import type { Widget, WidgetColumn, WidgetHost, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
+import { isWidgetBreakdownEligible } from 'src/utils/widget/widgetBreakdown';
+
+type ConfiguredWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'> & { parameters?: WidgetParameters | null };
+
+/**
+ * Drops the breakdown once the widget can no longer be broken down (another visualization,
+ * perspective or several datasets), instead of keeping a setting that would be silently ignored.
+ */
+export const applyBreakdownCompatibility = <T extends ConfiguredWidget>(widget: T, host?: WidgetHost): T => {
+  if (!widget.parameters?.breakdownBy || isWidgetBreakdownEligible(widget, host)) {
+    return widget;
+  }
+  return {
+    ...widget,
+    parameters: { ...widget.parameters, breakdownBy: null, breakdownLimit: null },
+  };
+};
 
 export const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
   if (!filterGroup) return undefined;

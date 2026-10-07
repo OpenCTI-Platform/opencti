@@ -12,6 +12,8 @@ import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelation
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 import { Icon, IconButton as FdsIconButton, Input, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { isBreakdownField } from '../../../utils/widget/widgetBreakdown';
+import WidgetBreakdownSelection from './WidgetBreakdownSelection';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -49,7 +51,7 @@ const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
   const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
-  const { type, dataSelection, perspective } = config.widget;
+  const { type, dataSelection, perspective, parameters } = config.widget;
 
   const [itemIds, setItemIds] = useState<string[]>(() => dataSelection.map(() => uuidv4()));
 
@@ -102,6 +104,8 @@ const WidgetCreationDataSelection = () => {
   // the "add" buttons at all, as they would be permanently disabled and
   // never clickable (e.g. the Number widget). See issue #16360.
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
+  // A breakdown generates its series from a single dataset
+  const isBreakdownActive = isBreakdownField(parameters?.breakdownBy);
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -159,22 +163,44 @@ const WidgetCreationDataSelection = () => {
         })
       }
 
+      <WidgetBreakdownSelection />
+
       {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
-          <IconButton
-            aria-label={t_i18n('Add')}
-            disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
-            color="secondary"
-            // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
-            size="default"
-            onClick={() => handleAddDataSelection('entities')}
-            style={{
-              width: '100%',
-              flex: 1,
-            }}
-          >
-            <AddOutlined fontSize="small" />
-          </IconButton>
+          {isBreakdownActive ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled button gets no pointer events: the wrapper carries the tooltip */}
+                <span style={{ display: 'flex', flex: 1 }} tabIndex={0}>
+                  <IconButton
+                    aria-label={t_i18n('Add')}
+                    disabled
+                    color="secondary"
+                    size="default"
+                    style={{ width: '100%', flex: 1 }}
+                  >
+                    <AddOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('A breakdown uses a single dataset.')}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <IconButton
+              aria-label={t_i18n('Add')}
+              disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
+              color="secondary"
+              // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
+              size="default"
+              onClick={() => handleAddDataSelection('entities')}
+              style={{
+                width: '100%',
+                flex: 1,
+              }}
+            >
+              <AddOutlined fontSize="small" />
+            </IconButton>
+          )}
         </div>
       )}
 

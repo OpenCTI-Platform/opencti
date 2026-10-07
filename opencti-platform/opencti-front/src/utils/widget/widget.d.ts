@@ -91,6 +91,8 @@ interface WidgetParameters {
   legend?: boolean | null;
   distributed?: boolean | null;
   content?: string | null;
+  breakdownBy?: string | null; // filter key of the field the series are broken down by
+  breakdownLimit?: number | null;
 }
 
 interface WidgetLayout {

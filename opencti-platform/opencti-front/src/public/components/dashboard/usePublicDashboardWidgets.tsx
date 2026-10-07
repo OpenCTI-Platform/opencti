@@ -35,6 +35,7 @@ import type { Widget } from '../../../utils/widget/widget';
 import PublicStixCoreObjectsWordCloud from './stix_core_objects/PublicStixCoreObjectsWordCloud';
 import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRelationshipsWordCloud';
 import Card from '../../../components/common/card/Card';
+import { hasWidgetBreakdown } from '../../../utils/widget/widgetBreakdown';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => {
   const { t_i18n } = useFormatter();
@@ -53,6 +54,15 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   );
 
   const entityWidget = (widget: Widget) => {
+    // Rendering the widget without its breakdown would silently show a single total series
+    if (hasWidgetBreakdown(widget)) {
+      return (
+        <Card>
+          {t_i18n('Breakdowns are not supported in public dashboards')}
+        </Card>
+      );
+    }
+
     switch (widget.type) {
       case 'bookmark':
         return (

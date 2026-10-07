@@ -229,7 +229,7 @@ const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
 export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
 const ES_MAX_MAPPINGS = 3000;
-const MAX_AGGREGATION_SIZE = 100;
+export const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -3285,6 +3285,22 @@ export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;
 };
+const getHistogramDateFormat = (interval: string | undefined) => {
+  switch (interval) {
+    case 'year':
+      return 'yyyy';
+    case 'quarter':
+    case 'month':
+      return 'yyyy-MM';
+    case 'week':
+    case 'day':
+      return 'yyyy-MM-dd';
+    case 'hour':
+      return 'yyyy-MM-dd hh:mm:ss';
+    default:
+      throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+  }
+};
 export const elHistogramCount = async (
   context: AuthContext,
   user: AuthUser,
@@ -3296,25 +3312,7 @@ export const elHistogramCount = async (
   const { interval, field, types = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
   body.size = 0; // we only need aggregations
-  let dateFormat;
-  switch (interval) {
-    case 'year':
-      dateFormat = 'yyyy';
-      break;
-    case 'quarter':
-    case 'month':
-      dateFormat = 'yyyy-MM';
-      break;
-    case 'week':
-    case 'day':
-      dateFormat = 'yyyy-MM-dd';
-      break;
-    case 'hour':
-      dateFormat = 'yyyy-MM-dd hh:mm:ss';
-      break;
-    default:
-      throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
-  }
+  const dateFormat = getHistogramDateFormat(interval);
   const uniqueAggregation = {
     unique: {
       cardinality: {
@@ -3365,7 +3363,7 @@ export const elAggregationCount = async (
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
-): Promise<{ label: string; value: any; count: number }[]> => {
+): Promise<{ key: string; label: string; value: any; count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
   const queryField = buildFieldForQuery(field);
@@ -3410,11 +3408,75 @@ export const elAggregationCount = async (
         } else if (!isIdFields && normalizeLabel) {
           label = pascalize(b.key);
         }
-        return { label, value: b.weight.value, count: b.doc_count };
+        // key is the raw term as indexed, usable to target the same bucket in a later aggregation
+        return { key: String(b.key), label, value: b.weight.value, count: b.doc_count };
       });
     })
     .catch((err) => {
       throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+    });
+};
+export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
+  field: string;
+  interval: string;
+  keys: string[];
+};
+// One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
+export const elHistogramBreakdownCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: HistogramBreakdownCountOpts,
+): Promise<Map<string, { date: string; value: number }[]>> => {
+  const { field, interval, keys, types = null } = options;
+  const dateAttribute = options.dateAttribute || 'created_at';
+  const dateFormat = getHistogramDateFormat(interval);
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute, noSize: true, noSort: true, intervalInclude: true });
+  body.size = 0;
+  body.aggs = {
+    breakdown: {
+      terms: {
+        field: buildFieldForQuery(field),
+        include: keys,
+        size: keys.length,
+      },
+      aggs: {
+        count_over_time: {
+          date_histogram: {
+            field: dateAttribute,
+            calendar_interval: interval,
+            format: dateFormat,
+            keyed: true,
+          },
+          aggs: {
+            weight: {
+              sum: {
+                field: 'i_inference_weight',
+                missing: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    _source_excludes: '*',
+    body,
+  };
+  logApp.debug('[SEARCH] histogramBreakdownCount', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const histograms = new Map<string, { date: string; value: number }[]>();
+      data.aggregations.breakdown.buckets.forEach((bucket: any) => {
+        const dateBuckets = R.toPairs(bucket.count_over_time.buckets) as [string, any][];
+        histograms.set(String(bucket.key), dateBuckets.map(([date, dateBucket]) => ({ date, value: dateBucket.weight.value })));
+      });
+      return histograms;
+    })
+    .catch((err) => {
+      throw DatabaseError('Histogram breakdown computation fail', { cause: err, query });
     });
 };
 

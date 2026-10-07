@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
+import { countTimeSeriesIntervals, extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -178,5 +178,37 @@ describe('Function extractObjectsPirsFromInputs()', () => {
   it('should return empty array if not a container', () => {
     const { pir_ids } = extractObjectsPirsFromInputs(pirInputs, ENTITY_TYPE_MALWARE);
     expect(pir_ids).toEqual([]);
+  });
+});
+
+describe('fillTimeSeries', () => {
+  // Noon UTC keeps the same calendar day in any timezone the tests may run in
+  const startDate = new Date('2026-01-01T12:00:00.000Z');
+  const endDate = new Date('2026-01-05T12:00:00.000Z');
+
+  it('should count every interval including both bounds', () => {
+    expect(countTimeSeriesIntervals(startDate, endDate, 'day')).toEqual(5);
+    expect(fillTimeSeries(startDate, endDate, 'day', [])).toHaveLength(5);
+  });
+
+  it('should keep known values and fill missing dates with zero', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [
+      { date: '2026-01-02', value: 3 },
+      { date: '2026-01-05', value: 7 },
+    ]);
+    expect(series.map((point) => point.value)).toEqual([0, 3, 0, 0, 7]);
+  });
+
+  it('should ignore values outside of the period', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [{ date: '2025-12-31', value: 9 }]);
+    expect(series.map((point) => point.value)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('should keep the last value when a date is duplicated', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [
+      { date: '2026-01-03', value: 1 },
+      { date: '2026-01-03', value: 4 },
+    ]);
+    expect(series[2].value).toEqual(4);
   });
 });

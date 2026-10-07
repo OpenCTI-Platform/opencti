@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
-import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import type { WidgetColumn, WidgetDataSelection, WidgetHost } from 'src/utils/widget/widget';
+import { applyBreakdownCompatibility, getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 
 describe('WidgetCreationParameters.utils', () => {
   it('returns undefined when filterGroup is undefined', () => {
@@ -137,5 +137,39 @@ describe('WidgetCreationParameters.utils', () => {
       fintelEditorValue: '',
     };
     expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBeUndefined();
+  });
+});
+
+describe('applyBreakdownCompatibility', () => {
+  const workspace = { kind: 'workspace' } as const;
+  const selection = { filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
+  const brokenDownLine = {
+    type: 'line',
+    perspective: 'entities' as const,
+    dataSelection: [selection],
+    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20 },
+  };
+
+  it('keeps the breakdown of every entities time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace).parameters.breakdownBy).toEqual('entity_type');
+    });
+  });
+
+  it('drops the breakdown and its limit for a non time series visualization', () => {
+    const widget = applyBreakdownCompatibility({ ...brokenDownLine, type: 'donut' }, workspace);
+    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null });
+  });
+
+  it('drops the breakdown for the relationships perspective, several datasets or another host', () => {
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'relationships' as const }, workspace).parameters.breakdownBy).toBeNull();
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters.breakdownBy).toBeNull();
+  });
+
+  it('returns the widget untouched without breakdown', () => {
+    const widget = { ...brokenDownLine, type: 'donut', parameters: { title: 'Donut' } };
+    expect(applyBreakdownCompatibility(widget, workspace)).toBe(widget);
   });
 });

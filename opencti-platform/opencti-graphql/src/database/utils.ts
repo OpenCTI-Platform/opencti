@@ -175,7 +175,7 @@ const getMonday = (d: Date): Date => {
   return new Date(d.setDate(diff));
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string) => {
   let startDateParsed = moment.parseZone(startDate);
   let endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
@@ -204,16 +204,23 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
   const endFormatDate = new Date(startDateParsed.format(dateFormat));
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
   const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), duration);
+  return { startDateParsed, dateFormat, duration, elementsOfInterval };
+};
+
+export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
+  return computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+};
+
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+  const { startDateParsed, dateFormat, duration, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
+  // Last value wins on duplicated dates, as the former linear lookup did
+  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
     const workDate = moment(startDateParsed).add(i, duration);
     // Looking for the value
-    let dataValue = 0;
-    for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === workDate.format(dateFormat)) {
-        dataValue = data[j].value;
-      }
-    }
+    const formattedDate = workDate.format(dateFormat);
+    const dataValue = valuesByDate.has(formattedDate) ? valuesByDate.get(formattedDate) : 0;
     const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
     newData[i] = {
       date: intervalDate,

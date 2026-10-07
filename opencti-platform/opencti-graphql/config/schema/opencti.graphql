@@ -367,6 +367,16 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
+type TimeSeriesBreakdownSerie {
+  label: String!
+  entity: StixObjectOrStixRelationshipOrCreator
+  value: Int
+  data: [TimeSeries]
+}
+type TimeSeriesBreakdown {
+  truncated: Boolean!
+  series: [TimeSeriesBreakdownSerie!]!
+}
 input AuditsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -14361,6 +14371,17 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  auditsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14609,6 +14630,18 @@ type Query {
     onlyInferred: Boolean
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreObjectsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    onlyInferred: Boolean
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -15194,6 +15227,20 @@ type Query {
     timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
     relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsTimeSeriesBreakdown(
+    field: String!
+    dateAttribute: String
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    limit: Int
+    onlyInferred: Boolean
+    relationship_type: [String!]
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+    dynamicTo: FilterGroup
+    search: String
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!
