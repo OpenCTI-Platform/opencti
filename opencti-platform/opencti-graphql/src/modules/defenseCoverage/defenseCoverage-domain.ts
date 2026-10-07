@@ -432,7 +432,8 @@ export const findDefenseTechnique = async (
   args: { platformIds?: ReadonlyArray<string> | null; threatScope?: DefenseThreatScope | null },
 ): Promise<DefenseTechniqueView | null> => {
   const attackPattern = await storeLoadById<BasicStoreEntity>(context, user, id, ENTITY_TYPE_ATTACK_PATTERN);
-  if (!attackPattern) {
+  // A revoked technique has left the matrix: it is answered as a missing one, not rebuilt without its coverage
+  if (!attackPattern || attackPattern.revoked) {
     return null;
   }
   const evaluation = await prepareEvaluation(context, user, args.platformIds, args.threatScope);
@@ -892,11 +893,13 @@ const RECEIVED_WORK_STATUSES = ['progress', 'complete'];
 
 const loadValidationStatuses = async (context: AuthContext, user: AuthUser, coverageIds: readonly string[]) => {
   const coverages = await loadValidationCoverages(context, user, coverageIds);
+  const accessibleIds = new Set(coverages.filter((coverage) => !!coverage).map((coverage) => coverage?.internal_id));
   const withResults = new Set(coverages
     .filter((coverage) => !!(coverage as unknown as { coverage_last_result?: string } | null)?.coverage_last_result)
     .map((coverage) => coverage?.internal_id));
-  const awaitingIds = uniq(coverageIds.filter((id) => !withResults.has(id)));
-  // Works are platform records: only whether a connector received the enrichment of the security coverage is used
+  const awaitingIds = uniq(coverageIds.filter((id) => accessibleIds.has(id) && !withResults.has(id)));
+  // Works are platform records: only whether a connector received the enrichment of a security coverage the reader can
+  // access is used, a security coverage the reader cannot access is answered as waiting
   const receivedWorks = awaitingIds.length === 0 ? [] : await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_WORK], {
     indices: [READ_INDEX_HISTORY],
     baseData: true,
@@ -910,7 +913,7 @@ const loadValidationStatuses = async (context: AuthContext, user: AuthUser, cove
   const receivedIds = new Set(receivedWorks.map((work) => (work as unknown as { event_source_id?: string }).event_source_id));
   return coverageIds.map((id) => {
     if (withResults.has(id)) return DefenseValidationRequestStatus.Results;
-    return receivedIds.has(id) ? DefenseValidationRequestStatus.Running : DefenseValidationRequestStatus.Waiting;
+    return accessibleIds.has(id) && receivedIds.has(id) ? DefenseValidationRequestStatus.Running : DefenseValidationRequestStatus.Waiting;
   });
 };
 
