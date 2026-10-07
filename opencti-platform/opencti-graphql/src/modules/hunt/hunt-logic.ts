@@ -78,22 +78,41 @@ export interface HuntTranslation {
   run: BasicStoreEntityHuntRun;
 }
 
-const TRANSLATION_RUNS_READ = 20;
+export interface HuntTranslationSummary extends HuntTranslation {
+  // The platforms the logic failed to translate to for good, the most recent first
+  failedOn: HuntTranslation[];
+}
+
+const TRANSLATION_RUNS_READ = 50;
+
+const translationState = (run: BasicStoreEntityHuntRun): HuntTranslationState | null => {
+  if (run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
+    return 'translated';
+  }
+  if (isTerminalHuntRunFailure(run)) {
+    return 'failed';
+  }
+  if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW && HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status)) {
+    return 'checking';
+  }
+  return null;
+};
 
 /**
- * What the runs of the current logic of a hunt tell of its translation, the most recent first: translated by a completed
- * run (a preview or an execution), failed for good, or being checked by a translation preview. Retryable failures and
- * executions still running tell nothing. Null when no run of this logic says, or for logic no connector translates
- * (indicator lookups). `securityPlatformIds` narrows to the runs of these platforms, each translating to its language.
+ * What the runs of the current logic of a hunt tell of its translation on each security platform, each translating to
+ * the language of its platform: the most recent run of each platform that says, the most recent platform first.
+ * Translated by a completed run (a preview or an execution), failed for good, or being checked by a translation preview;
+ * retryable failures and executions still running tell nothing. Empty when no run of this logic says, or for logic no
+ * connector translates (indicator lookups). `securityPlatformIds` narrows to the runs of these platforms.
  */
-export const findHuntTranslation = async (
+export const findHuntTranslations = async (
   context: AuthContext,
   user: AuthUser,
   hunt: BasicStoreEntityHunt,
   securityPlatformIds: string[] = [],
-): Promise<HuntTranslation | null> => {
+): Promise<HuntTranslation[]> => {
   if (!hunt.internal_id || hunt.hunt_type === HUNT_TYPE_INDICATORS) {
-    return null;
+    return [];
   }
   const runs = await topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], {
     first: TRANSLATION_RUNS_READ,
@@ -110,19 +129,32 @@ export const findHuntTranslation = async (
     },
     noFiltersChecking: true,
   });
-  for (let index = 0; index < runs.length; index += 1) {
-    const run = runs[index];
-    if (run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
-      return { state: 'translated', run };
+  const byPlatform = new Map<string, HuntTranslation>();
+  runs.forEach((run) => {
+    const platform = run.security_platform_id ?? '';
+    const state = translationState(run);
+    if (state && !byPlatform.has(platform)) {
+      byPlatform.set(platform, { state, run });
     }
-    if (isTerminalHuntRunFailure(run)) {
-      return { state: 'failed', run };
-    }
-    if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW && HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status)) {
-      return { state: 'checking', run };
-    }
-  }
-  return null;
+  });
+  return Array.from(byPlatform.values());
+};
+
+/**
+ * The translation of the current logic of a hunt over its platforms: failed when it failed for good on every platform
+ * that says, else translated when a platform translated it, else being checked. Null when no platform says.
+ */
+export const findHuntTranslation = async (
+  context: AuthContext,
+  user: AuthUser,
+  hunt: BasicStoreEntityHunt,
+  securityPlatformIds: string[] = [],
+): Promise<HuntTranslationSummary | null> => {
+  const translations = await findHuntTranslations(context, user, hunt, securityPlatformIds);
+  const failedOn = translations.filter((translation) => translation.state === 'failed');
+  const others = translations.filter((translation) => translation.state !== 'failed');
+  const summary = others.find((translation) => translation.state === 'translated') ?? others[0] ?? failedOn[0];
+  return summary ? { ...summary, failedOn } : null;
 };
 
 /** The sentence of a translation state: the checklist item, and the refusal of a run whose logic fails for good. */

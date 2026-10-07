@@ -82,7 +82,9 @@ import { huntLogicError } from '../hunt-validators';
 import { HUNT_MESSAGES, renderHuntMessage } from '../hunt-messages';
 import {
   findHuntTranslation,
+  findHuntTranslations,
   findUnresolvedHuntTechniques,
+  type HuntTranslation,
   huntLogicFingerprint,
   huntTranslationMessage,
   isDeterministicHuntFailure,
@@ -309,6 +311,8 @@ export interface HuntRunRequest {
   trigger: string;
   mode?: string;
   securityPlatformIds?: string[];
+  // Platforms left out of the targets: the logic failed to translate to their language for good
+  excludedSecurityPlatformIds?: string[];
   connectorIds?: string[];
   timeWindowHours?: number | null;
   windowStart?: string | null;
@@ -471,6 +475,9 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
   if (request.connectorIds && request.connectorIds.length > 0) {
     targets = targets.filter((target) => request.connectorIds?.includes(target.connector.internal_id));
   }
+  if (request.excludedSecurityPlatformIds && request.excludedSecurityPlatformIds.length > 0) {
+    targets = targets.filter((target) => !target.securityPlatform || !request.excludedSecurityPlatformIds?.includes(target.securityPlatform.internal_id));
+  }
   if (mode === HUNT_RUN_MODE_PREVIEW) {
     targets = targets.filter((target) => target.connector.hunt_supports_preview !== false).slice(0, 1);
   }
@@ -628,21 +635,31 @@ export const startHuntRuns = async (
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
   await checkHuntEditAccess(context, user, hunt);
-  // A logic its translation preview or a run already failed to translate for good fails again: refused before any
-  // connector slot or daily run is spent on it
-  const translation = await findHuntTranslation(context, user, hunt, input?.security_platform_ids ?? []);
-  if (translation?.state === 'failed') {
+  // A logic its translation preview or a run already failed to translate for good on a platform fails again there: the
+  // platform is left out before any connector slot or daily run is spent on it, and the start is refused when no other
+  // platform is left (the internet being the only target of the hunts that run on it)
+  const failedOn = (await findHuntTranslations(context, user, hunt, input?.security_platform_ids ?? []))
+    .filter((translation) => translation.state === 'failed');
+  const translationRefusal = (translation: HuntTranslation) => {
     const { template, values } = huntTranslationMessage(translation);
-    throw FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
+    return FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
+  };
+  const failedOnInternet = failedOn.find((translation) => !translation.run.security_platform_id);
+  if (failedOnInternet) {
+    throw translationRefusal(failedOnInternet);
   }
   const creation = await createHuntRunsOnTargets(context, hunt, {
     trigger: 'manual',
     securityPlatformIds: input?.security_platform_ids ?? [],
+    excludedSecurityPlatformIds: failedOn.map((translation) => translation.run.security_platform_id as string),
     timeWindowHours: input?.time_window_hours,
     triggeredBy: user.id,
     requester: user,
   });
   if (creation.runs.length === 0) {
+    if (failedOn.length > 0) {
+      throw translationRefusal(failedOn[0]);
+    }
     throw FunctionalError('No live hunt connector serves a security platform of this hunt you can access', { huntId });
   }
   await publishUserAction({

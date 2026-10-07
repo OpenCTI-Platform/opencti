@@ -3,7 +3,9 @@ import { internalLoadById, storeLoadById, topEntitiesList } from '../../../../sr
 import { patchAttribute } from '../../../../src/database/middleware';
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
-import { findHuntTranslation, huntLogicFingerprint, huntRunFailureReason, isDeterministicHuntFailure } from '../../../../src/modules/hunt/hunt-logic';
+import { findHuntTranslation, findHuntTranslations, huntLogicFingerprint, huntRunFailureReason, isDeterministicHuntFailure } from '../../../../src/modules/hunt/hunt-logic';
+import { translationItem } from '../../../../src/modules/hunt/hunt-readiness';
+import { HuntReadinessStatus } from '../../../../src/generated/graphql';
 import { computeHuntPlaybookOutcome } from '../../../../src/modules/hunt/hunt-playbook';
 import { reportHuntRun, startHuntRuns } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
@@ -156,6 +158,24 @@ describe('Translation of the current logic of a hunt', () => {
     vi.mocked(topEntitiesList).mockResolvedValue([failedPreview] as never);
     await expect(startHuntRuns(testContext, ADMIN_USER, 'hunt-1', {}))
       .rejects.toThrow('The hunt cannot run: Google SecOps Hunt cannot translate the hunt logic: HuntTranslationError: Sigma conversion failed: Invalid UDM field');
+  });
+
+  it('should tell the translation of each security platform, and block the activation only when every platform failed', async () => {
+    const failedOnSecOps = { ...failedPreview, internal_id: 'run-secops', security_platform_id: 'platform-secops' };
+    const translatedOnSplunk = { ...running, internal_id: 'run-splunk', hunt_run_status: 'completed', connector_name: 'Splunk Hunt', security_platform_id: 'platform-splunk' };
+    const olderOnSecOps = { ...running, internal_id: 'run-secops-old', hunt_run_status: 'completed', security_platform_id: 'platform-secops' };
+    vi.mocked(topEntitiesList).mockResolvedValue([failedOnSecOps, translatedOnSplunk, olderOnSecOps] as never);
+    expect((await findHuntTranslations(testContext, ADMIN_USER, hunt)).map(({ state, run }) => [state, run.internal_id]))
+      .toEqual([['failed', 'run-secops'], ['translated', 'run-splunk']]);
+    const partial = await findHuntTranslation(testContext, ADMIN_USER, hunt);
+    expect(partial).toMatchObject({ state: 'translated', run: { internal_id: 'run-splunk' } });
+    expect(partial?.failedOn.map(({ run }) => run.internal_id)).toEqual(['run-secops']);
+    // A failure on some platforms only warns: the hunt runs on the others
+    expect(translationItem(partial)).toEqual([expect.objectContaining({ status: HuntReadinessStatus.Warning, message: expect.stringContaining('Google SecOps Hunt cannot translate') })]);
+    vi.mocked(topEntitiesList).mockResolvedValue([failedOnSecOps] as never);
+    const failed = await findHuntTranslation(testContext, ADMIN_USER, hunt);
+    expect(failed?.state).toEqual('failed');
+    expect(translationItem(failed)).toEqual([expect.objectContaining({ status: HuntReadinessStatus.Unmet })]);
   });
 
   it('should leave a run that failed for good out of the verdicts a playbook matches', () => {

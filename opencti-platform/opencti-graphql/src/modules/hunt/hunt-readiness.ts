@@ -8,7 +8,7 @@ import { huntLogicError, sigmaRuleErrors } from './hunt-validators';
 import { HUNT_MESSAGES, type HuntMessageValues, listNames, renderHuntMessage } from './hunt-messages';
 import { type HuntIocSet, resolveHuntIocSet } from './hunt-iocs';
 import { huntConnectorPlatform, listHuntConnectors, resolveHuntScopePlatforms } from './hunt-dispatch';
-import { findHuntTranslation, type HuntTranslation, huntTranslationMessage } from './hunt-logic';
+import { findHuntTranslation, type HuntTranslation, type HuntTranslationSummary, huntTranslationMessage } from './hunt-logic';
 import { HuntReadinessKey, HuntReadinessStatus } from '../../generated/graphql';
 
 type ReadinessKey = `${HuntReadinessKey}`;
@@ -128,11 +128,16 @@ const connectorItem = (hunt: BasicStoreEntityHunt, connectors: BasicStoreEntityC
   return item('connector', 'met', HUNT_MESSAGES.connectorReady, { connectors: listNames(alive.map((connector) => connector.name)) });
 };
 
-// The translation of the current logic, as its last translation preview or execution found it: a logic that fails to
-// translate for good blocks the activation, one being checked or translated informs. Unknown until a run of it reports.
-const translationItem = (translation: HuntTranslation | null): HuntReadinessItem[] => {
+// The translation of the current logic, as the last translation preview or execution of each platform found it: a logic
+// that fails to translate for good on every platform that reported blocks the activation, one that fails on some only
+// warns with that failure (it runs on the others), one being checked or translated informs. Unknown until a run reports.
+export const translationItem = (translation: HuntTranslationSummary | null): HuntReadinessItem[] => {
   if (!translation) {
     return [];
+  }
+  if (translation.state !== 'failed' && translation.failedOn.length > 0) {
+    const { template, values } = huntTranslationMessage(translation.failedOn[0]);
+    return [item('translation', 'warning', template, values)];
   }
   const { template, values } = huntTranslationMessage(translation);
   const statuses: Record<HuntTranslation['state'], ReadinessStatus> = { translated: 'met', checking: 'warning', failed: 'unmet' };

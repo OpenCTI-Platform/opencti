@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { createEntity } from '../../../../src/database/middleware';
 import { resolveHuntConnectorTargets } from '../../../../src/modules/hunt/hunt-dispatch';
+import { findHuntTranslations } from '../../../../src/modules/hunt/hunt-logic';
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
 import { createHuntRuns, startHuntRuns } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
@@ -38,6 +39,7 @@ vi.mock('../../../../src/modules/hunt/hunt-access', async (importOriginal) => ({
 vi.mock('../../../../src/modules/hunt/hunt-logic', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-logic')>(),
   findHuntTranslation: vi.fn(async () => null),
+  findHuntTranslations: vi.fn(async () => []),
 }));
 
 vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
@@ -97,6 +99,23 @@ describe('Hunt runs created in part', () => {
     await expect(startHuntRuns(testContext, ADMIN_USER, 'hunt-1', {})).rejects.toThrow(PARTIAL_START);
     expect(publishUserAction).toHaveBeenCalledTimes(1);
     expect(vi.mocked(publishUserAction).mock.calls[0][0]).toMatchObject({ message: 'runs hunt `Encoded PowerShell` on 1 platform(s)' });
+  });
+
+  it('should leave out of Run now the platforms the logic failed to translate to for good, and refuse it when none is left', async () => {
+    const failedOn = (index: number) => ({
+      state: 'failed',
+      run: { internal_id: `run-failed-${index}`, security_platform_id: `platform-${index}`, connector_name: `Splunk Hunt ${index}`, error_message: 'HuntTranslationError: unsupported field' },
+    });
+    vi.mocked(createEntity).mockImplementation(async (_context, _user, input) => ({ ...input, internal_id: `run-${(input as { connector_id: string }).connector_id}` }) as never);
+    vi.mocked(storeLoadById).mockResolvedValueOnce(hunt as never);
+    vi.mocked(findHuntTranslations).mockResolvedValueOnce([failedOn(2)] as never);
+    const runs = await startHuntRuns(testContext, ADMIN_USER, 'hunt-1', {});
+    expect(runs.map((run) => run.security_platform_id)).toEqual(['platform-1', 'platform-3']);
+    vi.mocked(createEntity).mockClear();
+    vi.mocked(storeLoadById).mockResolvedValueOnce(hunt as never);
+    vi.mocked(findHuntTranslations).mockResolvedValueOnce([failedOn(1), failedOn(2), failedOn(3)] as never);
+    await expect(startHuntRuns(testContext, ADMIN_USER, 'hunt-1', {})).rejects.toThrow('The hunt cannot run: Splunk Hunt 1 cannot translate the hunt logic');
+    expect(createEntity).not.toHaveBeenCalled();
   });
 
   it('should fail when no run could be created, so that the trigger is tried again', async () => {
