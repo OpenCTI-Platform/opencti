@@ -23,7 +23,7 @@ Supported types: IPv4 and IPv6 addresses, domain names, host names, URLs, email 
 |---|---|
 | An indicator or observable more restricted than the hunt: one of its markings is not covered by a marking of the hunt of the same type and level, or it is not shared with every organization the hunt is shared with (with a platform organization, an object shared with no organization is readable by the platform organization only) | "3 indicators or observables are more restricted than the hunt and are left out: raise the markings of the hunt" |
 | An indicator without a value a lookup can search: a pattern in another language (Sigma, YARA...) or without an equality comparison | "2 indicators have no value a lookup can search: a pattern in another language or without an equality comparison" |
-| More than 1,000 values (`hunt_manager:max_iocs_per_run`) | "Only the first 1000 values are looked for: narrow the list" |
+| More than 1,000 values (`hunt_manager:max_iocs_per_run`). The sources taken from and the filter are read in turn, 1,001 indicators and observables at most for all of them together, so a hunt with many sources reads the first ones only | "Only the first 1000 values are looked for: narrow the list" |
 
 The first rule guarantees that a run never discloses an indicator to the readers of the hunt who could not read it: such an indicator is not sent to the hunt connector either, so it is neither looked for nor sighted, whatever the type of the hunt. A hunt whose values all disappear (indicators revoked, removed or more restricted) does not run: "None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators".
 

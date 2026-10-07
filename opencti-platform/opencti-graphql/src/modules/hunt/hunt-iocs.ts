@@ -301,29 +301,34 @@ export const iocElementName = (element: IocElement) => String(element.name ?? el
 /**
  * The values an indicator hunt looks up: its indicators and observables, the indicators and observables contained in
  * its reports, groupings and incident responses or linked to its threats and incidents, those matching its filter, and
- * its pasted values. Read again at every run, so that a hunt follows the intelligence it is based on.
+ * its pasted values. Read again at every run, so that a hunt follows the intelligence it is based on. The expansions
+ * and the filter share one budget of elements read, one more than a run looks up, a query that reads nothing taking
+ * one: however many sources a hunt has, resolving its values reads and queries a bounded number of elements, and the
+ * values left unread make the set truncated.
  */
 export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEntityHunt): Promise<HuntIocSet> => {
   const max = HUNT_CONFIG.maxIocsPerRun;
   const sources = await findByIds<IocElement>(context, SYSTEM_USER, hunt[RELATION_HUNT_SOURCES] ?? []);
   const elements: IocElement[] = sources.filter((source) => IOC_ELEMENT_TYPES.includes(source.entity_type));
-  let truncated = false;
+  let budget = max + 1;
   const expansions = sources.filter((source) => HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type) || HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type));
-  for (let index = 0; index < expansions.length; index += 1) {
+  for (let index = 0; index < expansions.length && budget > 0; index += 1) {
     const source = expansions[index];
     // Expanded elements of revoked indicators are not hunted, an explicitly chosen one is
     const expanded = HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type)
-      ? await listContainedIocElements(context, SYSTEM_USER, source.internal_id, max + 1)
-      : await listSubjectIocElements(context, SYSTEM_USER, source.internal_id, max + 1);
-    truncated = truncated || expanded.length > max;
+      ? await listContainedIocElements(context, SYSTEM_USER, source.internal_id, budget)
+      : (await listSubjectIocElements(context, SYSTEM_USER, source.internal_id, budget)).slice(0, budget);
+    budget -= Math.max(1, expanded.length);
     elements.push(...expanded.filter((element) => element.revoked !== true));
   }
   const filters = parseHuntFilterGroup(hunt.hunt_ioc_filters, 'hunt_ioc_filters');
-  if (filters) {
-    const matching = await pageEntitiesConnection<IocElement>(context, SYSTEM_USER, IOC_ELEMENT_TYPES, { filters, first: max + 1 });
-    truncated = truncated || matching.edges.length > max;
+  if (filters && budget > 0) {
+    const matching = await pageEntitiesConnection<IocElement>(context, SYSTEM_USER, IOC_ELEMENT_TYPES, { filters, first: budget });
+    budget -= Math.max(1, matching.edges.length);
     elements.push(...matching.edges.map((edge) => edge.node));
   }
+  // A spent budget read more elements than a run looks up, or left sources and the filter unread
+  const truncated = budget <= 0;
   const markings = await getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const byKey = new Map<string, HuntIoc>();
   const seen = new Set<string>();
