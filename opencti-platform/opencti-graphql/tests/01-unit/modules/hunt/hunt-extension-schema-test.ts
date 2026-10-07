@@ -71,5 +71,12 @@ describe('JSON Schema of the hunt extension', () => {
     expect(validate({ ...hunt, extensions: otherExtensions })).toBe(false);
     expect(validate({ ...hunt, hunt_type: 'unknown' })).toBe(false);
     expect(validate({ ...hunt, native_queries: [{ platform: 'splunk' }] })).toBe(false);
+    // Like the platform: guardrails are whole numbers from 1, and the id names the type
+    ['time_window_hours', 'escalation_threshold', 'hunt_max_results'].forEach((field) => {
+      expect(validate({ ...hunt, [field]: 0 }), field).toBe(false);
+      expect(validate({ ...hunt, [field]: 1.5 }), field).toBe(false);
+    });
+    expect(validate({ ...hunt, id: hunt.id.replace('hunt--', 'x-opencti-hunt--') })).toBe(false);
+    expect(validate({ ...hunt, type: 'x-opencti-hunt', id: hunt.id.replace('hunt--', 'x-opencti-hunt--') })).toBe(true);
   });
 });
