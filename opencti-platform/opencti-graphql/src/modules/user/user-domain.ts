@@ -721,41 +721,59 @@ const PASSWORD_NUMBER_CHARS = '0123456789';
 const PASSWORD_SYMBOL_CHARS = '!@#$%^&*()+=.?';
 const PASSWORD_WORD_SEPARATOR = '-';
 const GENERATED_PASSWORD_DEFAULT_LENGTH = 32;
+const GENERATED_PASSWORD_MAX_LENGTH = 1024;
 
 const randomCharsFrom = (chars: string, count: number) => {
   return Array.from({ length: count }, () => chars[crypto.randomInt(chars.length)]);
 };
 
+// Fisher-Yates shuffle
+const shuffleInPlace = <T>(elements: T[]) => {
+  for (let i = elements.length - 1; i > 0; i -= 1) {
+    const j = crypto.randomInt(i + 1);
+    [elements[i], elements[j]] = [elements[j], elements[i]];
+  }
+  return elements;
+};
+
 // Generate a random password that satisfies the given password policy
 export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
-  const minUppercase = Math.max(policy.password_policy_min_uppercase ?? 0, 0);
-  const minLowercase = Math.max(policy.password_policy_min_lowercase ?? 0, 0);
-  const minNumbers = Math.max(policy.password_policy_min_numbers ?? 0, 0);
+  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+  const minUppercase = positive(policy.password_policy_min_uppercase);
+  const minLowercase = positive(policy.password_policy_min_lowercase);
+  const minNumbers = positive(policy.password_policy_min_numbers);
+  const wordsCount = Math.max(positive(policy.password_policy_min_words), 1);
+  const separatorsCount = wordsCount - 1;
   // Word separators are also symbols, use them to satisfy both constraints
-  const wordSeparatorsCount = Math.max((policy.password_policy_min_words ?? 0) - 1, 0);
-  const extraSymbolsCount = Math.max((policy.password_policy_min_symbols ?? 0) - wordSeparatorsCount, 0);
-  const requiredChars = [
+  const extraSymbolsCount = Math.max(positive(policy.password_policy_min_symbols) - separatorsCount, 0);
+  const requiredCharsCount = minUppercase + minLowercase + minNumbers + extraSymbolsCount;
+  // Each word must contain at least one random char
+  const minBodyLength = Math.max(requiredCharsCount, wordsCount);
+  const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
+  const maxLength = positive(policy.password_policy_max_length);
+  // Check policy feasibility before allocating anything
+  if (maxLength > 0 && maxLength < minLength) {
+    throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
+  }
+  if (minLength > GENERATED_PASSWORD_MAX_LENGTH) {
+    throw FunctionalError('Unable to generate a password: password policy requires a too long password', { minLength, limit: GENERATED_PASSWORD_MAX_LENGTH });
+  }
+  let length = Math.max(minLength, GENERATED_PASSWORD_DEFAULT_LENGTH);
+  if (maxLength > 0) {
+    length = Math.min(length, maxLength);
+  }
+  const bodyLength = length - separatorsCount;
+  const bodyChars = shuffleInPlace([
     ...randomCharsFrom(PASSWORD_UPPERCASE_CHARS, minUppercase),
     ...randomCharsFrom(PASSWORD_LOWERCASE_CHARS, minLowercase),
     ...randomCharsFrom(PASSWORD_NUMBER_CHARS, minNumbers),
     ...randomCharsFrom(PASSWORD_SYMBOL_CHARS, extraSymbolsCount),
-    ...Array(wordSeparatorsCount).fill(PASSWORD_WORD_SEPARATOR),
-  ];
-  let targetLength = Math.max(policy.password_policy_min_length ?? 0, GENERATED_PASSWORD_DEFAULT_LENGTH);
-  if (policy.password_policy_max_length && policy.password_policy_max_length > 0) {
-    targetLength = Math.min(targetLength, policy.password_policy_max_length);
-  }
-  const fillerCount = Math.max(targetLength - requiredChars.length, 0);
-  const passwordChars = [
-    ...requiredChars,
-    ...randomCharsFrom(PASSWORD_UPPERCASE_CHARS + PASSWORD_LOWERCASE_CHARS + PASSWORD_NUMBER_CHARS, fillerCount),
-  ];
-  // Fisher-Yates shuffle
-  for (let i = passwordChars.length - 1; i > 0; i -= 1) {
-    const j = crypto.randomInt(i + 1);
-    [passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]];
-  }
-  return passwordChars.join('');
+    ...randomCharsFrom(PASSWORD_UPPERCASE_CHARS + PASSWORD_LOWERCASE_CHARS + PASSWORD_NUMBER_CHARS, bodyLength - requiredCharsCount),
+  ]);
+  // Split the body into non-empty words, by inserting separators at distinct random positions
+  const bodyPositions = Array.from({ length: bodyLength - 1 }, (_, index) => index + 1);
+  const separatorPositions = new Set(shuffleInPlace(bodyPositions).slice(0, separatorsCount));
+  return bodyChars.map((char, index) => (separatorPositions.has(index) ? `${PASSWORD_WORD_SEPARATOR}${char}` : char)).join('');
 };
 
 export const generatePasswordMatchingPolicy = async (context: AuthContext) => {
@@ -1226,7 +1244,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
-  const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'api_tokens') {
@@ -1314,6 +1332,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       // Password policy may have changed since the service account creation, generate a compliant random password
       const userPassword = await generatePasswordMatchingPolicy(context);
       inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
 

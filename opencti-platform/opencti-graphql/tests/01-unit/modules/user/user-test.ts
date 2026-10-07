@@ -170,6 +170,36 @@ describe('password generator', () => {
   it('should generate different passwords', async () => {
     expect(generatePasswordFromPolicy({})).not.toBe(generatePasswordFromPolicy({}));
   });
+  it('should generate non-empty random words', async () => {
+    const policy = { password_policy_min_words: 33 };
+    const password = generatePasswordFromPolicy(policy);
+    expect(checkPasswordInlinePolicy(testContext, policy, password)).toEqual([]);
+    const words = password.split('-');
+    expect(words.length).toBe(33);
+    expect(words.every((word) => word.length > 0)).toBeTruthy();
+    expect(words.join('').length).toBe(33);
+    const shortPolicy = { password_policy_max_length: 5, password_policy_min_words: 3 };
+    for (let i = 0; i < 20; i += 1) {
+      const shortPassword = generatePasswordFromPolicy(shortPolicy);
+      expect(checkPasswordInlinePolicy(testContext, shortPolicy, shortPassword)).toEqual([]);
+      expect(shortPassword.split('-').every((word) => word.length > 0)).toBeTruthy();
+    }
+  });
+  it('should reject unsatisfiable policy', async () => {
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: 9 }))
+      .toThrowError('password policy cannot be satisfied');
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 4, password_policy_min_words: 3 }))
+      .toThrowError('password policy cannot be satisfied');
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
+      .toThrowError('password policy cannot be satisfied');
+  });
+  it('should reject policy requiring a too long password', async () => {
+    expect(() => generatePasswordFromPolicy({ password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
+      .toThrowError('password policy requires a too long password');
+    expect(() => generatePasswordFromPolicy({ password_policy_min_length: 2000 }))
+      .toThrowError('password policy requires a too long password');
+    expect(generatePasswordFromPolicy({ password_policy_min_length: 1024 }).length).toBe(1024);
+  });
 });
 
 describe('isSensitiveChangesAllowed use case coverage', () => {
