@@ -125,6 +125,12 @@ export const recordedSourcesOfUpdate = (element: BasicStoreCommon, attribute: st
   return [{ source_type: entry.source_type as FieldAuthoritySource['source_type'], source_id: entry.source_id }];
 };
 
+/** The attributes an upsert writes: the keys of its patch, and those of its upsert operations. */
+export const upsertedAttributes = (patch: Record<string, unknown>) => {
+  const operations = Array.isArray(patch.upsertOperations) ? patch.upsertOperations as Array<{ key?: unknown }> : [];
+  return new Set([...Object.keys(patch), ...operations.map((operation) => operation?.key).filter((key): key is string => typeof key === 'string')]);
+};
+
 const rulesFor = async (context: AuthContext, type: string) => {
   const settings = await getCurationSettings(context);
   if (!settings.field_authority_enabled) return [];
@@ -145,14 +151,16 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
   governs: async (context, type, patch) => {
     if (context.synchronizedUpsert) return false;
     const rules = await rulesFor(context, type);
-    return rules.some((rule) => rule.attribute in patch);
+    const written = upsertedAttributes(patch);
+    return rules.some((rule) => written.has(rule.attribute));
   },
   resolve: async (context, user, element, type, patch) => {
     const decisions = new Map<string, FieldAuthorityDecision>();
     if (context.synchronizedUpsert) return decisions;
     const rules = await rulesFor(context, type);
     if (rules.length === 0) return decisions;
-    const ruled = rules.filter((rule) => rule.attribute in patch);
+    const written = upsertedAttributes(patch);
+    const ruled = rules.filter((rule) => written.has(rule.attribute));
     if (ruled.length === 0) return decisions;
     const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const incoming = incomingSources(user, patch, connectors);

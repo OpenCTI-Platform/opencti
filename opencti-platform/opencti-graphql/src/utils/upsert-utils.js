@@ -609,5 +609,7 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
   }
-  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
+  // A field authority denial stands against the upsert operations of the attribute as well
+  const upsertOperations = updatePatch.upsertOperations?.filter((operation) => authorityDecisions?.get(operation.key) !== 'deny');
+  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, upsertOperations);
 };

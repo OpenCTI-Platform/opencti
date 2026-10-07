@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { hashMergeValidation } from '../../../src/database/middleware';
-import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import {
+  buildUpdatePatchForUpsert,
+  generateAttributesInputsForUpsert,
+  generateInputsForUpsert,
+  generateRefsInputsForUpsert,
+  mergeUpsertInput,
+  mergeUpsertInputs,
+} from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 
@@ -681,6 +688,16 @@ describe('middleware upsertElement test', () => {
       // Without a rule deciding, the attribute is still replaced in full, whatever the confidence.
       const replaced = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: false });
       expect(replaced.find((i) => i.key === 'coverage_information')).toBeDefined();
+    });
+
+    it('should drop the upsert operations of an attribute a field authority rule denies', async () => {
+      const indicator = { id: 'indicator-id', internal_id: 'indicator-id', entity_type: 'Indicator', description: 'Kept' };
+      const patch = { upsertOperations: [{ key: 'description', value: ['Rewritten'], operation: 'replace' }] };
+      const confidence = { isConfidenceMatch: true, isConfidenceUpper: true };
+      const denied = await generateInputsForUpsert(testContext, ADMIN_USER, indicator, 'Indicator', patch, confidence, true, new Map([['description', 'deny']]));
+      expect(denied.find((i) => i.key === 'description')).toBeUndefined();
+      const allowed = await generateInputsForUpsert(testContext, ADMIN_USER, indicator, 'Indicator', patch, confidence, true, new Map([['description', 'allow']]));
+      expect(allowed.find((i) => i.key === 'description')).toEqual(expect.objectContaining({ key: 'description', value: ['Rewritten'] }));
     });
   });
 });

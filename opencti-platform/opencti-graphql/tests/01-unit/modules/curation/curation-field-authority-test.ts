@@ -148,4 +148,28 @@ describe('curation field authority', () => {
       expect(elUpdate).not.toHaveBeenCalled();
     });
   });
+
+  describe('an upsert writing a ruled attribute through its upsert operations', () => {
+    const context = {} as AuthContext;
+    const writer = { id: 'user-writer' } as AuthUser;
+    const element = { internal_id: 'element-id', createdBy: MITRE.source_id } as unknown as StoreObject;
+    const operations = { createdBy: FEED.source_id, upsertOperations: [{ key: 'description', value: ['Rewritten'], operation: 'replace' }] };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(getCurationSettings).mockResolvedValue({ field_authority_enabled: true, field_authority_rules: [RULE] } as never);
+    });
+
+    it('is governed and decided like a patch key', async () => {
+      expect(await curationFieldAuthorityResolver.governs(context, 'Intrusion-Set', operations)).toBe(true);
+      const decisions = await curationFieldAuthorityResolver.resolve(context, writer, element, 'Intrusion-Set', operations);
+      // An author the rule ranks below MITRE, the author of the current value.
+      expect(decisions.get('description')).toBe('deny');
+    });
+
+    it('is not governed for an attribute without a rule', async () => {
+      const other = { upsertOperations: [{ key: 'name', value: ['Other'], operation: 'replace' }] };
+      expect(await curationFieldAuthorityResolver.governs(context, 'Intrusion-Set', other)).toBe(false);
+    });
+  });
 });
