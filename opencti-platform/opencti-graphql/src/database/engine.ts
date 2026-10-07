@@ -1010,6 +1010,14 @@ export const elIndexExists = async (indexName: string): Promise<boolean> => {
   const existOpenSearchResult = await engine.indices.exists(indexExistsArg);
   return oebp(existOpenSearchResult) === true || existOpenSearchResult.body === true;
 };
+export const elRefreshIndices = async (indices: string[]): Promise<void> => {
+  const args = { index: indices };
+  if (engine instanceof ElkClient) {
+    await engine.indices.refresh(args);
+    return;
+  }
+  await engine.indices.refresh(args);
+};
 export const elIndexGetAlias = async (indexName: string): Promise<any> => {
   const args = { index: indexName };
   if (engine instanceof ElkClient) {

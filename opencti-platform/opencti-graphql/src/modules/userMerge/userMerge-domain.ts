@@ -8,7 +8,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { INTERNAL_USERS, isBypassUser, REDACTED_USER } from '../../utils/access';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { executeUserMerge, readUserMergeJournal } from './userMerge-engine';
-import { computeUserMergeSourceDeletionReadiness, type UserMergeSourceDeletionReadiness } from './userMerge-sourceDeletion';
+import { computeUserMergeSourceDeletionReadiness, deleteUserMergeSource, type UserMergeSourceDeletionReadiness } from './userMerge-sourceDeletion';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeRightsStrategy, UserMergeStatus } from './userMerge-types';
 
 /**
@@ -78,6 +78,23 @@ const loadMergeableUser = async (context: AuthContext, user: AuthUser, userId: s
 };
 
 /**
+ * Both accounts, resolved once: from here on only their internal ids are handed down.
+ *
+ * The lookup accepts any id of an account — internal, standard, STIX — while every handler searches
+ * the id it is given as is, in fields that only ever hold internal ids. Handing the input down
+ * would let a standard id disable the source and move none of its references, report it as a
+ * success, and open the deletion gate on a merge that did nothing. The guards run again on the
+ * resolved ids, so the same account named twice under two forms cannot be merged into itself.
+ */
+const resolveMergePair = async (context: AuthContext, user: AuthUser, sourceId: string, targetId: string) => {
+  assertValidUserMergeIds(sourceId, targetId);
+  const source = await loadMergeableUser(context, user, sourceId, 'source');
+  const target = await loadMergeableUser(context, user, targetId, 'target');
+  assertValidUserMergeIds(source.internal_id, target.internal_id);
+  return { source, target };
+};
+
+/**
  * The merge trace asked for by the product: "user xxxx has been merged into user xxxx".
  *
  * Published here and not from the engine, which deliberately takes no calling user: the trace
@@ -130,11 +147,9 @@ export const userMerge = async (
   options?: UserMergeOptionsInput | null,
 ): Promise<UserMergeResult> => {
   assertUserMergeAllowed(user);
-  assertValidUserMergeIds(sourceId, targetId);
-  const source = await loadMergeableUser(context, user, sourceId, 'source');
-  const target = await loadMergeableUser(context, user, targetId, 'target');
+  const { source, target } = await resolveMergePair(context, user, sourceId, targetId);
   const resolvedOptions = resolveUserMergeOptions(options);
-  const result = await executeUserMerge(context, sourceId, targetId, resolvedOptions);
+  const result = await executeUserMerge(context, source.internal_id, target.internal_id, resolvedOptions);
   if (!resolvedOptions.dryRun && result.status === UserMergeStatus.Success) {
     await publishMergeTrace(user, source, target, result);
   }
@@ -170,10 +185,24 @@ export const userMergeSourceDeletionReadiness = async (
   targetId: string,
 ): Promise<UserMergeSourceDeletionReadiness> => {
   assertUserMergeAllowed(user);
-  assertValidUserMergeIds(sourceId, targetId);
-  await loadMergeableUser(context, user, sourceId, 'source');
-  await loadMergeableUser(context, user, targetId, 'target');
-  return computeUserMergeSourceDeletionReadiness(context, sourceId, targetId);
+  const { source, target } = await resolveMergePair(context, user, sourceId, targetId);
+  return computeUserMergeSourceDeletionReadiness(context, source.internal_id, target.internal_id);
+};
+
+/**
+ * Deletes the source once the gate opens. A mutation rather than a step of the merge: the
+ * operator decides when, and re-checking readiness here rather than trusting a readiness read
+ * earlier means the answer cannot have gone stale between the two calls.
+ */
+export const userMergeDeleteSource = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceId: string,
+  targetId: string,
+): Promise<string> => {
+  assertUserMergeAllowed(user);
+  const { source, target } = await resolveMergePair(context, user, sourceId, targetId);
+  return deleteUserMergeSource(context, user, source.internal_id, target.internal_id);
 };
 
 // Bounds enforced here so that a future, real journal implementation cannot be abused

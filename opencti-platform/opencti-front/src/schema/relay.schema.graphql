@@ -10452,6 +10452,7 @@ type Mutation {
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
+  userMergeDeleteSource(sourceId: ID!, targetId: ID!): ID!
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
