@@ -308,7 +308,7 @@ const MergeRecordDrawer = ({ recordId, onClose, onUnmerged }: MergeRecordDrawerP
     <Drawer title={t_i18n('Merge record')} open={!!recordId} onClose={onClose} size="large">
       {recordId ? (
         <Suspense fallback={<CurationSkeleton blocks={[40, 160, 200]} />}>
-          <MergeRecordDetails recordId={recordId} onUnmerged={onUnmerged} />
+          <MergeRecordDetails key={recordId} recordId={recordId} onUnmerged={onUnmerged} />
         </Suspense>
       ) : null}
     </Drawer>
