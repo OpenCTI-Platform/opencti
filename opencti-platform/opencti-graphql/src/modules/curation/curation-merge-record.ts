@@ -402,8 +402,13 @@ export const completePendingMergeRecords = async (context: AuthContext) => {
   const pending = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], { filters: filters as any, first: 100 });
   const result = { completed: 0, discarded: 0, irreversible: 0 };
   for (let index = 0; index < pending.edges.length; index += 1) {
-    const outcome = await settlePendingMergeRecord(context, pending.edges[index].node);
-    result[outcome] += 1;
+    try {
+      const outcome = await settlePendingMergeRecord(context, pending.edges[index].node);
+      if (outcome !== 'settled') result[outcome] += 1;
+    } catch (error: any) {
+      // Its merge still runs and holds the participants: the record is settled at a later cycle.
+      if (error.name !== TYPE_LOCK_ERROR) throw error;
+    }
   }
   return result;
 };
@@ -411,26 +416,40 @@ export const completePendingMergeRecords = async (context: AuthContext) => {
 /**
  * Settle one pending record from the live graph (see completePendingMergeRecords). Also used by a retried acceptance,
  * which holds the proposal lock: a pending record is written before the merge starts, so it is no proof that it ran.
+ * Settled under the locks its merge holds on the participants, from the record read again: a merge still running keeps
+ * them, and a record its merge settled in the meantime is left as it is ('settled').
  */
-export const settlePendingMergeRecord = async (context: AuthContext, record: BasicStoreEntityMergeRecord): Promise<'completed' | 'discarded' | 'irreversible'> => {
-  const existing = await internalFindByIds(context, SYSTEM_USER, record.merge_source_ids, { baseData: true, toMap: true }) as unknown as Record<string, BasicStoreObject>;
-  const remainingSourceIds = record.merge_source_ids.filter((id) => existing[id]);
-  if (remainingSourceIds.length === record.merge_source_ids.length && !record.merge_started_at) {
-    await deleteElementById(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD);
-    return 'discarded';
+export const settlePendingMergeRecord = async (
+  context: AuthContext,
+  pendingRecord: BasicStoreEntityMergeRecord,
+): Promise<'completed' | 'discarded' | 'irreversible' | 'settled'> => {
+  let lock;
+  try {
+    // The sources of a merge that just ended are among the latest deletions, which a lock refuses: they are only read here.
+    lock = await lockResources([pendingRecord.merge_target_id, ...pendingRecord.merge_source_ids], { restoredIds: pendingRecord.merge_source_ids });
+    const record = await storeLoadById<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, pendingRecord.internal_id, ENTITY_TYPE_MERGE_RECORD);
+    if (!record || record.merge_status !== MERGE_STATUS_PENDING) return 'settled';
+    const existing = await internalFindByIds(context, SYSTEM_USER, record.merge_source_ids, { baseData: true, toMap: true }) as unknown as Record<string, BasicStoreObject>;
+    const remainingSourceIds = record.merge_source_ids.filter((id) => existing[id]);
+    if (remainingSourceIds.length === record.merge_source_ids.length && !record.merge_started_at) {
+      await deleteElementById(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD);
+      return 'discarded';
+    }
+    const target = await storeLoadByIdWithRefs<StoreObject>(context, SYSTEM_USER, record.merge_target_id);
+    if (!target || remainingSourceIds.length > 0) {
+      await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
+        merge_status: MERGE_STATUS_IRREVERSIBLE,
+        irreversible_reason: target ? IRREVERSIBLE_MERGE_INTERRUPTED : IRREVERSIBLE_MERGED_ENTITY_DELETED,
+      });
+      return 'irreversible';
+    }
+    const liveFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
+    const sources = record.merge_snapshot.sources.map((source) => ({ ...source, moved_file_ids: source.moved_file_ids.filter((id) => liveFileIds.has(id)) }));
+    await completeMergeRecord(context, record.internal_id, record.merge_snapshot.target, sources, target, record.irreversible_reason ?? null);
+    return 'completed';
+  } finally {
+    if (lock) await lock.unlock();
   }
-  const target = await storeLoadByIdWithRefs<StoreObject>(context, SYSTEM_USER, record.merge_target_id);
-  if (!target || remainingSourceIds.length > 0) {
-    await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
-      merge_status: MERGE_STATUS_IRREVERSIBLE,
-      irreversible_reason: target ? IRREVERSIBLE_MERGE_INTERRUPTED : IRREVERSIBLE_MERGED_ENTITY_DELETED,
-    });
-    return 'irreversible';
-  }
-  const liveFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
-  const sources = record.merge_snapshot.sources.map((source) => ({ ...source, moved_file_ids: source.moved_file_ids.filter((id) => liveFileIds.has(id)) }));
-  await completeMergeRecord(context, record.internal_id, record.merge_snapshot.target, sources, target, record.irreversible_reason ?? null);
-  return 'completed';
 };
 // endregion
 
@@ -858,6 +877,40 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
 };
 
 /**
+ * Close one merge record past its retention window, under the lock an unmerge holds on the record and from the record
+ * read again: an unmerge that ended in the meantime may have reverted it. Returns false when it stays open.
+ */
+const expireMergeRecord = async (context: AuthContext, recordId: string) => {
+  let lock;
+  try {
+    lock = await lockResources([recordId]);
+    const record = await storeLoadById<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, recordId, ENTITY_TYPE_MERGE_RECORD);
+    const isOpen = record?.merge_status === MERGE_STATUS_ACTIVE || record?.merge_status === MERGE_STATUS_PARTIALLY_REVERTED;
+    // A record with an interrupted unmerge keeps its snapshot until the unmerge is completed.
+    if (!record || !isOpen || hasInterruptedUnmerge(record)) return false;
+    // The markings and organization sharing of each participant stay: the record keeps the restrictions of the merge
+    // when it is refreshed after its retention window, and never widens to the survivor's alone.
+    const accessRefs = (refs: MergeSnapshotRef | undefined): MergeSnapshotRef => R.pick([INPUT_MARKINGS, INPUT_GRANTED_REFS], refs ?? {});
+    const lightSnapshot: MergeSnapshot = {
+      target: { ...record.merge_snapshot.target, attributes: {}, post_attributes: {}, refs: accessRefs(record.merge_snapshot.target.refs), post_refs: {} },
+      sources: record.merge_snapshot.sources.map((source) => ({ ...source, attributes: {}, refs: accessRefs(source.refs), redirected: [], recreatable: [] })),
+    };
+    await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
+      merge_status: MERGE_STATUS_IRREVERSIBLE,
+      irreversible_reason: IRREVERSIBLE_RETENTION_OVER,
+      merge_snapshot: lightSnapshot,
+    }, { locks: [record.internal_id] });
+    return true;
+  } catch (error: any) {
+    // An unmerge still running holds the record: it is closed at a later run.
+    if (error.name === TYPE_LOCK_ERROR) return false;
+    throw error;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
+/**
  * Close the merge records whose retention window is over: they become irreversible and their heavy snapshot part
  * (relationships) is dropped to free storage, the participants and alias provenance stay for the history.
  */
@@ -881,24 +934,10 @@ export const expireMergeRecords = async (context: AuthContext) => {
       orderBy: 'reversible_until',
       orderMode: 'asc',
     } as any);
-    // A record with an interrupted unmerge keeps its snapshot until the unmerge is completed.
-    const expired = page.edges.map((edge) => edge.node).filter((record) => !hasInterruptedUnmerge(record));
-    for (let index = 0; index < expired.length; index += 1) {
-      const record = expired[index];
-      // The markings and organization sharing of each participant stay: the record keeps the restrictions of the merge
-      // when it is refreshed after its retention window, and never widens to the survivor's alone.
-      const accessRefs = (refs: MergeSnapshotRef | undefined): MergeSnapshotRef => R.pick([INPUT_MARKINGS, INPUT_GRANTED_REFS], refs ?? {});
-      const lightSnapshot: MergeSnapshot = {
-        target: { ...record.merge_snapshot.target, attributes: {}, post_attributes: {}, refs: accessRefs(record.merge_snapshot.target.refs), post_refs: {} },
-        sources: record.merge_snapshot.sources.map((source) => ({ ...source, attributes: {}, refs: accessRefs(source.refs), redirected: [], recreatable: [] })),
-      };
-      await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
-        merge_status: MERGE_STATUS_IRREVERSIBLE,
-        irreversible_reason: IRREVERSIBLE_RETENTION_OVER,
-        merge_snapshot: lightSnapshot,
-      });
+    const records = page.edges.map((edge) => edge.node).filter((record) => !hasInterruptedUnmerge(record));
+    for (let index = 0; index < records.length; index += 1) {
+      if (await expireMergeRecord(context, records[index].internal_id)) expiredCount += 1;
     }
-    expiredCount += expired.length;
     after = page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? undefined) : undefined;
   } while (after);
   return expiredCount;
