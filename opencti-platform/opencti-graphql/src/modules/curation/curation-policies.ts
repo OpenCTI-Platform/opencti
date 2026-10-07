@@ -456,9 +456,11 @@ export const applyCurationPolicy = async (context: AuthContext, user: AuthUser, 
   });
 };
 
+/** Apply now, refused for a disabled policy: the workers skip every proposal of a policy that is not enabled. */
 export const applyCurationPolicyById = async (context: AuthContext, user: AuthUser, id: string) => {
   const policy = await findPolicyById(context, user, id);
   if (!policy) throw FunctionalError('Curation policy not found', { id });
+  if (!policy.policy_enabled) throw FunctionalError('Enable the curation policy to apply it now', { id });
   return applyCurationPolicy(context, user, policy);
 };
 // endregion

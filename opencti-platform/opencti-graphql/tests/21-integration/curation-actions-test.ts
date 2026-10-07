@@ -1661,6 +1661,8 @@ describe('Knowledge curation actions', () => {
       await queryAsAdminWithSuccess({ query: POLICY_PATCH_MUTATION, variables: { id: policyId, input: [{ key: 'policy_enabled', value: [false] }] } });
       const policy = await queryAsAdminWithSuccess({ query: POLICY_QUERY, variables: { id: policyId } });
       expect(policy.data?.curationPolicy.policy_enabled).toBe(false);
+      const refusedRun = await queryAsAdmin({ query: POLICY_APPLY_MUTATION, variables: { id: policyId } });
+      expect(refusedRun.errors?.[0]?.message).toContain('Enable the curation policy to apply it now');
       const disabled = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: lowId, policyId } });
       expect(disabled.data?.curationProposalApply.proposal_status).toBe('open');
       expect((await loadIntrusionSet(target.id)).aliases ?? []).toEqual([]);

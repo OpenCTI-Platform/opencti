@@ -154,6 +154,11 @@ const CurationPoliciesComponent = () => {
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<CurationPoliciesListQuery>(policiesListQuery, queryPaginationOptions);
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
+  const applyTitle = (policy: CurationPolicies_policy$data) => {
+    if (!policy.policy_enabled) return t_i18n('Enable the policy to apply it now');
+    return canApplyProposals ? t_i18n('Apply now') : t_i18n('Applying proposals also requires the Update knowledge capability');
+  };
+
   const apply = (policy: CurationPolicies_policy$data) => {
     commitApply({
       variables: { id: policy.id },
@@ -286,8 +291,8 @@ const CurationPoliciesComponent = () => {
               <IconButton size="small" aria-label={t_i18n('Dry run')} title={t_i18n('Dry run')} onClick={() => setDryRun({ id: policy.id, name: policy.name })}>
                 <ScienceOutlined fontSize="small" />
               </IconButton>
-              <span title={canApplyProposals ? t_i18n('Apply now') : t_i18n('Applying proposals also requires the Update knowledge capability')}>
-                <IconButton size="small" aria-label={t_i18n('Apply now')} disabled={applying || !canApplyProposals} onClick={() => apply(policy)}>
+              <span title={applyTitle(policy)}>
+                <IconButton size="small" aria-label={t_i18n('Apply now')} disabled={applying || !canApplyProposals || !policy.policy_enabled} onClick={() => apply(policy)}>
                   <PlayArrowOutlined fontSize="small" />
                 </IconButton>
               </span>
