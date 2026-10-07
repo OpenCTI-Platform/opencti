@@ -105,7 +105,8 @@ const xtmOneClient = {
       const response = await httpClient.get('/api/v1/intents/catalog?vertical=cti&intent=' + encodeURIComponent(intent), { timeout: 15000 });
       return response.data.flatMap((entry: IntentCatalogEntry) => entry.agents);
     } catch (error: any) {
-      logApp.error('[XTM One] listAgentsForIntent failed', { error: error.message });
+      // Handled: the lookup gives no agent and the caller tells the user why
+      logApp.warn('[XTM One] listAgentsForIntent failed', { cause: error, intent });
       onFailure?.(toXtmCallFailure(error));
       return [];
     }
