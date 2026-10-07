@@ -4,7 +4,9 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
+import { AUTH_ERRORS, FORBIDDEN_ACCESS, isMutedError, ValidationError } from '../config/errors';
+import { logBoundaryError } from '../config/module-logger';
+import { resolveEntryModule } from './rootFieldModules';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
@@ -112,12 +114,10 @@ export default {
                 },
               });
             }
-          } else if (FUNCTIONAL_ERRORS.includes(errorCode)) {
-            // If functional error, log in warning
-            logApp.warn(errorMessage, callMetaData);
           } else {
-            // Every other uses cases are logged with error level
-            logApp.error(errorMessage, callMetaData);
+            // Level, origin and module derived from the error (RFC 0006)
+            const entryModule = resolveEntryModule(context.operation, callError.path);
+            logBoundaryError(errorMessage, callError, { ...callMetaData, entryModule });
           }
         } else if (perfLog) {
           logApp.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });
