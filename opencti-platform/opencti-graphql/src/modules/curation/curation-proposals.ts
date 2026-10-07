@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
-import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, transformPatchToInput, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -239,7 +239,8 @@ export const refreshedContentChanges = (
  * subject that gained a marking or an organization restriction since is never exposed through an older proposal, and
  * what accepting it executes follows the detection, so neither an analyst nor a policy applies an outdated survivor. A
  * refreshed finding or recommendation drops its adjudication, which judged the previous one: the proposal is
- * adjudicated again before a policy requiring the Curator's agreement can apply it.
+ * adjudicated again before a policy requiring the Curator's agreement can apply it. The restrictions and the content
+ * they protect are written in one update, so a widened restriction never exposes the previous content.
  */
 const refreshProposal = async (
   context: AuthContext,
@@ -266,14 +267,12 @@ const refreshProposal = async (
   if (!restrictionsChanged && !namesChanged && !findingChanged && !executableChanged && !bandChanged) {
     return { proposal: existing, created: false, suppressed: false };
   }
-  if (restrictionsChanged) {
-    await updateAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, [
-      { key: INPUT_MARKINGS, value: markingIds, operation: EditOperation.Replace },
-      { key: INPUT_GRANTED_REFS, value: organizationIds, operation: EditOperation.Replace },
-    ]);
-  }
+  const restrictionInputs: EditInput[] = restrictionsChanged ? [
+    { key: INPUT_MARKINGS, value: markingIds, operation: EditOperation.Replace },
+    { key: INPUT_GRANTED_REFS, value: organizationIds, operation: EditOperation.Replace },
+  ] : [];
   const joinedNames = subjectNames.join(' / ');
-  const { element: updated } = await patchAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, {
+  const refreshedInputs = transformPatchToInput({
     name: joinedNames.length > 250 ? `${joinedNames.slice(0, 247)}...` : joinedNames,
     subject_names: subjectNames,
     confidence_score: draft.confidence,
@@ -287,6 +286,10 @@ const refreshProposal = async (
       ? { curation_adjudication: null, adjudication_requested_at: null }
       : {}),
   });
+  const { element: updated } = await updateAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, [
+    ...restrictionInputs,
+    ...refreshedInputs,
+  ]);
   return { proposal: updated as unknown as BasicStoreEntityCurationProposal, created: false, suppressed: false };
 };
 

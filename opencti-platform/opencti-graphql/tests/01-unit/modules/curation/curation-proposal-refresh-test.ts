@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { persistProposalDraft } from '../../../../src/modules/curation/curation-proposals';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
-import { patchAttribute } from '../../../../src/database/middleware';
+import { patchAttribute, updateAttribute } from '../../../../src/database/middleware';
 import { withProposalTransitionLock } from '../../../../src/modules/curation/curation-locks';
 import { TYPE_LOCK_ERROR } from '../../../../src/config/errors';
+import { INPUT_MARKINGS } from '../../../../src/schema/general';
+import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { ACTION_MERGE, DETECTOR_SIMILARITY, PROPOSAL_KIND_MERGE } from '../../../../src/modules/curation/curation-types';
 import type { CurationSettings, ProposalDraft } from '../../../../src/modules/curation/curation-types';
 import type { AuthContext } from '../../../../src/types/user';
@@ -17,7 +19,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
   patchAttribute: vi.fn(async (_context: unknown, _user: unknown, id: string, _type: string, patch: Record<string, unknown>) => ({ element: { internal_id: id, ...patch } })),
-  updateAttribute: vi.fn(async () => ({ element: {} })),
+  updateAttribute: vi.fn(async (_context: unknown, _user: unknown, id: string) => ({ element: { internal_id: id } })),
 }));
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/cache')>()),
@@ -75,28 +77,41 @@ describe('curation refresh of a proposal found again', () => {
     vi.mocked(storeLoadById).mockResolvedValue(proposal() as never);
     const result = await persistProposalDraft(context, settings, draft);
     expect(withProposalTransitionLock).toHaveBeenCalledWith('proposal-id', expect.any(Function), { retryCount: 0 });
-    expect(patchAttribute).toHaveBeenCalledWith(context, expect.anything(), 'proposal-id', expect.any(String), expect.objectContaining({ confidence_score: 0.9 }));
-    expect(result).toMatchObject({ created: false, suppressed: false });
+    expect(updateAttribute).toHaveBeenCalledWith(context, expect.anything(), 'proposal-id', expect.any(String), expect.arrayContaining([
+      expect.objectContaining({ key: 'confidence_score', value: [0.9] }),
+    ]));
+    expect(result).toMatchObject({ proposal: { internal_id: 'proposal-id' }, created: false, suppressed: false });
+  });
+
+  it('writes widened restrictions in the same update as the content they protect', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(proposal({ [RELATION_OBJECT_MARKING]: ['marking-red'] }) as never);
+    await persistProposalDraft(context, settings, draft);
+    expect(updateAttribute).toHaveBeenCalledTimes(1);
+    expect(updateAttribute).toHaveBeenCalledWith(context, expect.anything(), 'proposal-id', expect.any(String), expect.arrayContaining([
+      expect.objectContaining({ key: INPUT_MARKINGS, value: [] }),
+      expect.objectContaining({ key: 'confidence_score', value: [0.9] }),
+    ]));
+    expect(patchAttribute).not.toHaveBeenCalled();
   });
 
   it('leaves a proposal decided since it was found as the decision left it', async () => {
     vi.mocked(storeLoadById).mockResolvedValue(proposal({ proposal_status: 'accepted' }) as never);
     const result = await persistProposalDraft(context, settings, draft);
-    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
     expect(result).toMatchObject({ created: false, suppressed: false });
   });
 
   it('leaves a proposal whose application started since it was found with the content that application read', async () => {
     vi.mocked(storeLoadById).mockResolvedValue(proposal({ application_started_at: '2026-10-07T07:00:00.000Z' }) as never);
     await persistProposalDraft(context, settings, draft);
-    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it('leaves a proposal a decision holds as it is, so the next detection refreshes it if it stays open', async () => {
     vi.mocked(withProposalTransitionLock).mockRejectedValueOnce(Object.assign(new Error('Lock held'), { name: TYPE_LOCK_ERROR }));
     const result = await persistProposalDraft(context, settings, draft);
     expect(storeLoadById).not.toHaveBeenCalled();
-    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
     expect(result).toMatchObject({ proposal: { internal_id: 'proposal-id' }, created: false, suppressed: false });
   });
 
