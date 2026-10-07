@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
+import { connectorsForEnrichment } from '../../../../src/database/repository';
+import { deleteElementById } from '../../../../src/database/middleware';
+import { addGrouping } from '../../../../src/modules/grouping/grouping-domain';
+import { addSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import { validateDefenseGaps } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
 import type { DefenseValidationInput } from '../../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -10,6 +14,24 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalFindByIds: vi.fn(async () => []),
   fullEntitiesList: vi.fn(async () => []),
   fullRelationsList: vi.fn(async () => []),
+}));
+vi.mock('../../../../src/database/repository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/repository')>()),
+  connectorsForEnrichment: vi.fn(async () => []),
+}));
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
+  deleteElementById: vi.fn(async () => undefined),
+}));
+vi.mock('../../../../src/modules/grouping/grouping-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/grouping/grouping-domain')>()),
+  addGrouping: vi.fn(async () => ({ id: 'grouping-1' })),
+}));
+vi.mock('../../../../src/modules/securityCoverage/securityCoverage-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/securityCoverage/securityCoverage-domain')>()),
+  addSecurityCoverage: vi.fn(async () => {
+    throw new Error('Security coverage not created');
+  }),
 }));
 
 const context = {} as AuthContext;
@@ -52,5 +74,20 @@ describe('Defense validation request', () => {
     vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'intrusion-set-1', revoked: true } as never);
     await expect(validateDefenseGaps(context, user, { attackPatternIds: ['attack-pattern-1'], threatId: 'intrusion-set-1' }))
       .rejects.toThrow('The threat of the validation request is revoked');
+  });
+
+  it('should mark the grouping and the security coverage with the markings of the threat and the techniques', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([
+      { ...technique, revoked: false, 'object-marking': ['marking-amber'] },
+      { internal_id: 'attack-pattern-2', standard_id: 'attack-pattern--2', revoked: false, 'object-marking': ['marking-amber', 'marking-red'] },
+    ] as never);
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'intrusion-set-1', name: 'Restricted threat', revoked: false, 'object-marking': ['marking-clear'] } as never);
+    vi.mocked(connectorsForEnrichment).mockResolvedValueOnce([{ id: 'connector-1' }] as never);
+    await expect(validateDefenseGaps(context, user, { attackPatternIds: ['attack-pattern-1', 'attack-pattern-2'], threatId: 'intrusion-set-1' }))
+      .rejects.toThrow('Security coverage not created');
+    const objectMarking = ['marking-amber', 'marking-red', 'marking-clear'];
+    expect(vi.mocked(addGrouping)).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: expect.stringContaining('Restricted threat'), objectMarking }));
+    expect(vi.mocked(addSecurityCoverage)).toHaveBeenCalledWith(context, user, expect.objectContaining({ objectCovered: 'grouping-1', objectMarking }));
+    expect(vi.mocked(deleteElementById)).toHaveBeenCalledWith(context, user, 'grouping-1', expect.any(String));
   });
 });

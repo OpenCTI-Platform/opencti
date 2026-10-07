@@ -12,6 +12,7 @@ import { KNOWLEDGE_FRONTEND_EXPORT } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
@@ -1231,6 +1232,9 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   }
   const requestedAt = now();
   const name = requestedName || defaultValidationName(attackPatterns.length, threat?.name, requestedAt);
+  // The name and the scenario derive from the threat and the techniques: the Grouping and the Security Coverage carry
+  // their markings, so a reader who cannot access them cannot read what derives from them either
+  const objectMarking = uniq([...attackPatterns, ...(threat ? [threat] : [])].flatMap((element) => element[RELATION_OBJECT_MARKING] ?? []));
   // An external reference is shared by every element with the same URL: it is resolved first and never removed
   const externalReference = referenceUrl
     ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
@@ -1244,6 +1248,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     description: input.description ?? 'Techniques selected from the defense gap backlog for validation with OpenAEV, with the security platforms whose gaps track the request.',
     context: 'defense-validation',
     objects: [...attackPatterns.map((ap) => ap.internal_id), ...(threat ? [threat.internal_id] : []), ...trackedPlatformIds],
+    objectMarking,
   });
   let securityCoverage: BasicStoreEntitySecurityCoverage;
   try {
@@ -1256,6 +1261,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
       duration: input.duration,
       type_affinity: input.type_affinity,
       platforms_affinity: input.platforms_affinity,
+      objectMarking,
       ...(externalReference ? { externalReferences: [externalReference.id] } : {}),
     });
   } catch (error) {
