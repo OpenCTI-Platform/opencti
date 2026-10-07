@@ -88,6 +88,7 @@
   "{counts} tokens": "{counts} Token",
   "{decided}/{total} decided": "{decided}/{total} entschieden",
   "{enabled} of {total} enabled": "{enabled} von {total} aktiviert",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "{entitiesCount} Entitäten und {relationshipsCount} Beziehungen werden entfernt, einschließlich der Beziehungen, die mit den ausgewählten Entitäten verbunden sind.",
   "{entity_type} successfully deleted": "{entity_type} erfolgreich gelöscht",
   "{entity_type} successfully duplicated": "{entity_type} erfolgreich dupliziert",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` hinzugefügt zu `{pirName}`",

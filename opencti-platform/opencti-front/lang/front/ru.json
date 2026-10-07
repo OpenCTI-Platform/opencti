@@ -88,6 +88,7 @@
   "{counts} tokens": "{counts} токенов",
   "{decided}/{total} decided": "Решено {decided}/{total}",
   "{enabled} of {total} enabled": "Включено: {enabled} из {total}",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "Будут удалены {entitiesCount} сущностей и {relationshipsCount} связей, включая связи, относящиеся к выбранным сущностям.",
   "{entity_type} successfully deleted": "{entity_type} успешно удалены",
   "{entity_type} successfully duplicated": "{entity_type} успешно продублирован",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` добавлено к `{pirName}",

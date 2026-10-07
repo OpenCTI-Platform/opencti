@@ -88,6 +88,7 @@
   "{counts} tokens": "{counts} 个 token",
   "{decided}/{total} decided": "已决定 {decided}/{total}",
   "{enabled} of {total} enabled": "已启用 {enabled}/{total}",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "将移除 {entitiesCount} 个实体和 {relationshipsCount} 个关系，包括与所选实体关联的关系。",
   "{entity_type} successfully deleted": "{entity_type} 成功删除",
   "{entity_type} successfully duplicated": "{entity_type}成功复制",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType}{entityName}`添加到`{pirName}`中",

@@ -88,6 +88,7 @@
   "{counts} tokens": "{counts} トークン",
   "{decided}/{total} decided": "{decided}/{total} 件が決定済み",
   "{enabled} of {total} enabled": "{total} 件中 {enabled} 件が有効",
+  "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "{entitiesCount} 件のエンティティと {relationshipsCount} 件のリレーションシップが削除されます（選択したエンティティに関連付けられたリレーションシップを含む）。",
   "{entity_type} successfully deleted": "{entity_type} 正常に削除されました",
   "{entity_type} successfully duplicated": "{entity_type}の複製に成功",
   "{entityType} `{entityName}` added to `{pirName}`": "`{pirName}`に`{entityName}`（{entityType}）が追加されました。",
