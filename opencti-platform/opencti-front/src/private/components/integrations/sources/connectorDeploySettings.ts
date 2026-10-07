@@ -21,8 +21,22 @@ export const deploySettingsValidation = (settings: readonly DeploySetting[], t_i
     return [setting.key, base.required(t_i18n('This field is required'))];
   })));
 
+// The catalog reads an integer setting with parseInt: a value validated in another notation (1e3, 0x10, 1 000) is sent
+// as the decimal number it stands for, parsed as the validation parses it (spaces removed, then the number it reads)
+const decimalNotation = (type: string, value: string) => {
+  const compact = value.replace(/\s/g, '');
+  const numeric = +compact;
+  if (compact === '' || !Number.isFinite(numeric)) {
+    return value.trim();
+  }
+  return type === 'integer' && Number.isInteger(numeric) ? BigInt(numeric).toString() : String(numeric);
+};
+
 export const deploySettingValues = (settings: readonly DeploySetting[], values: Record<string, string | boolean>) => settings
   .map((setting) => {
     const value = String(values[setting.key]);
+    if (setting.type === 'integer' || setting.type === 'number') {
+      return { key: setting.key, value: decimalNotation(setting.type, value) };
+    }
     return { key: setting.key, value: setting.secret ? value : value.trim() };
   });

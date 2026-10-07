@@ -47,4 +47,15 @@ describe('deploySettingValues', () => {
       { key: 'ENABLED', value: 'true' },
     ]);
   });
+
+  it('sends a numeric value validated in another notation as the decimal number it stands for', async () => {
+    const schema = deploySettingsValidation(settings, t);
+    const entered = { ...valid, INTERVAL: '1e3', RATIO: '2.5e-1' };
+    await expect(schema.isValid(entered)).resolves.toBe(true);
+    const sent = (input: Record<string, string | boolean>) => deploySettingValues(settings, input).filter(({ key }) => key === 'INTERVAL' || key === 'RATIO');
+    expect(sent(entered)).toEqual([{ key: 'INTERVAL', value: '1000' }, { key: 'RATIO', value: '0.25' }]);
+    expect(sent({ ...valid, INTERVAL: '0x10', RATIO: '.5' })).toEqual([{ key: 'INTERVAL', value: '16' }, { key: 'RATIO', value: '0.5' }]);
+    expect(sent({ ...valid, INTERVAL: '1 000', RATIO: '60.0' })).toEqual([{ key: 'INTERVAL', value: '1000' }, { key: 'RATIO', value: '60' }]);
+    expect(sent({ ...valid, INTERVAL: '1e21' })[0]).toEqual({ key: 'INTERVAL', value: '1000000000000000000000' });
+  });
 });
