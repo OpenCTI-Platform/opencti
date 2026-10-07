@@ -3,6 +3,8 @@ import type { IndicatorRuleLogsource } from './indicator-types';
 
 // Same bound as the log source values of the telemetry mappings
 const MAX_LOGSOURCE_VALUE_LENGTH = 256;
+// Same bound as the rule status and level of the indicator creation input
+const MAX_RULE_RANK_VALUE_LENGTH = 64;
 
 interface IndicatorRuleMetadataInput {
   x_opencti_rule_status?: string | null;
@@ -22,6 +24,14 @@ const normalizeRuleValue = (value: string | null | undefined): string | undefine
   }
   const normalized = value.trim().toLowerCase();
   return normalized.length > 0 ? normalized : undefined;
+};
+
+const normalizeRuleRankValue = (value: string | null | undefined): string | undefined => {
+  // A field patch does not go through the constraints of the GraphQL input
+  if ((value?.trim().length ?? 0) > MAX_RULE_RANK_VALUE_LENGTH) {
+    throw FunctionalError(`A rule status or level cannot be longer than ${MAX_RULE_RANK_VALUE_LENGTH} characters`, { length: value?.trim().length });
+  }
+  return normalizeRuleValue(value);
 };
 
 /**
@@ -60,9 +70,9 @@ export const withoutIndicatorRuleMetadata = <T extends IndicatorRuleMetadataInpu
 
 export const normalizeIndicatorRuleMetadata = (input: IndicatorRuleMetadataInput): IndicatorRuleMetadata => {
   const metadata: IndicatorRuleMetadata = {};
-  const status = normalizeRuleValue(input.x_opencti_rule_status);
+  const status = normalizeRuleRankValue(input.x_opencti_rule_status);
   if (status) metadata.x_opencti_rule_status = status;
-  const level = normalizeRuleValue(input.x_opencti_rule_level);
+  const level = normalizeRuleRankValue(input.x_opencti_rule_level);
   if (level) metadata.x_opencti_rule_level = level;
   const logsource = normalizeIndicatorRuleLogsource(input.x_opencti_rule_logsource);
   if (logsource) metadata.x_opencti_rule_logsource = logsource;
@@ -77,7 +87,7 @@ export const normalizeIndicatorRuleEditInputs = <T extends { key: string; value:
   return inputs.map((input) => {
     if (input.key === 'x_opencti_rule_status' || input.key === 'x_opencti_rule_level') {
       const value = input.value
-        .map((v) => (typeof v === 'string' ? normalizeRuleValue(v) : v))
+        .map((v) => (typeof v === 'string' ? normalizeRuleRankValue(v) : v))
         .filter((v) => v !== undefined && v !== null);
       return { ...input, value };
     }

@@ -86,6 +86,16 @@ const INDICATOR_ADD = gql`
     indicatorAdd(input: $input) { id x_opencti_rule_status x_opencti_rule_level x_opencti_rule_logsource { category product service } }
   }
 `;
+const INDICATOR_FIELD_PATCH = gql`
+  mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
+    indicatorFieldPatch(id: $id, input: $input) { id x_opencti_rule_status }
+  }
+`;
+const SDO_FIELD_PATCH = gql`
+  mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) { fieldPatch(input: $input) { id } }
+  }
+`;
 const INDICATOR_DELETE = gql`
   mutation IndicatorDelete($id: ID!) {
     indicatorDelete(id: $id)
@@ -320,6 +330,12 @@ describe('Threat-informed defense matrix', () => {
     const result = await queryAsAdminWithSuccess({ query: DEFENSE_PLATFORMS });
     const platform = result.data?.defensePlatforms.find((p: { id: string }) => p.id === created.platform);
     expect(platform).toEqual({ id: created.platform, name: 'Defense matrix test EDR', entity_type: 'SecurityPlatform', security_platform_type: 'EDR' });
+  });
+
+  it('should refuse a rule status or level longer than 64 characters on every field patch of an indicator', async () => {
+    const message = 'A rule status or level cannot be longer than 64 characters';
+    await queryAsAdminWithError({ query: INDICATOR_FIELD_PATCH, variables: { id: created.indicator, input: [{ key: 'x_opencti_rule_status', value: ['s'.repeat(65)] }] } }, message);
+    await queryAsAdminWithError({ query: SDO_FIELD_PATCH, variables: { id: created.indicator, input: [{ key: 'x_opencti_rule_level', value: ['l'.repeat(65)] }] } }, message);
   });
 
   it('should compute the defense level of a technique on a security platform', async () => {
