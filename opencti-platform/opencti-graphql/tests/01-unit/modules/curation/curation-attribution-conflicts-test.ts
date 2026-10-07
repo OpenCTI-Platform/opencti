@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { findAttributionConflictDrafts } from '../../../../src/modules/curation/curation-scan';
+import { commitRotationCursors, findAttributionConflictDrafts as findDrafts, rotationCursors } from '../../../../src/modules/curation/curation-scan';
 import { pageEntitiesConnection } from '../../../../src/database/middleware-loader';
+import type { AuthContext } from '../../../../src/types/user';
 
-const state = vi.hoisted(() => ({ relations: [] as Array<Record<string, unknown>>, cursor: '' }));
+const state = vi.hoisted(() => ({ relations: [] as Array<Record<string, unknown>>, redis: {} as Record<string, string> }));
+const CURSOR_KEY = 'curation_scan_rotation_distinct_pairs';
 
 // A campaign attributed to three actors: A and B were decided distinct, B and C too, A and C never were.
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -22,11 +24,13 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
-  redisGetManagerEventState: vi.fn(async () => state.cursor),
-  redisSetManagerEventState: vi.fn(async (_key: string, value: string) => {
-    state.cursor = value;
+  redisGetManagerEventState: vi.fn(async (key: string) => state.redis[key] ?? null),
+  redisSetManagerEventState: vi.fn(async (key: string, value: string) => {
+    state.redis[key] = value;
   }),
 }));
+
+const findAttributionConflictDrafts = (context: AuthContext) => findDrafts(context, rotationCursors());
 
 const attribution = (actor: string, id: string, author?: string) => ({
   fromId: 'campaign',
@@ -42,7 +46,7 @@ const pairsOf = (drafts: Awaited<ReturnType<typeof findAttributionConflictDrafts
 describe('attribution conflicts', () => {
   beforeEach(() => {
     state.relations = [];
-    state.cursor = '';
+    state.redis = {};
   });
 
   it('raises one proposal per pair decided distinct, so resolving one never removes an attribution of another pair', async () => {
@@ -95,12 +99,15 @@ describe('attribution conflicts', () => {
   it('reads the pairs decided distinct from where the previous scan stopped, and goes back to the start after the last page', async () => {
     const page = vi.mocked(pageEntitiesConnection);
     page.mockResolvedValueOnce({ edges: [], pageInfo: { hasNextPage: true, endCursor: 'cursor-2' } } as never);
-    state.cursor = 'cursor-1';
-    await findAttributionConflictDrafts({} as never);
+    state.redis[CURSOR_KEY] = 'cursor-1';
+    const cursors = rotationCursors();
+    await findDrafts({} as never, cursors);
     expect((page.mock.calls.at(-1)?.[3] as { after?: string }).after).toBe('cursor-1');
-    expect(state.cursor).toBe('cursor-2');
-    await findAttributionConflictDrafts({} as never);
+    await commitRotationCursors(cursors);
+    expect(state.redis[CURSOR_KEY]).toBe('cursor-2');
+    await findDrafts({} as never, cursors);
     expect((page.mock.calls.at(-1)?.[3] as { after?: string }).after).toBe('cursor-2');
-    expect(state.cursor).toBe('');
+    await commitRotationCursors(cursors);
+    expect(state.redis[CURSOR_KEY]).toBe('');
   });
 });

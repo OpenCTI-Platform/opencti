@@ -129,37 +129,67 @@ export const toCandidate = (raw: BasicStoreEntity & Record<string, any>): Curati
 };
 
 const SCAN_ROTATION_STATE = 'curation_scan_rotation_';
+const SCAN_ROTATION_ATTEMPTS_STATE = 'curation_scan_rotation_attempts_';
 const MAX_ROTATING_SLICE = 5000;
+export const MAX_ROTATING_PAGE_ATTEMPTS = 3;
 
 interface RotatingPage<T> {
   edges: Array<{ node: T }>;
   pageInfo: { hasNextPage: boolean; endCursor?: string | null };
 }
 
+/** The cursor moves of the rotating pages read by a scan, committed once the scan has processed them. */
+export type RotationCursors = Map<string, string>;
+
+export const rotationCursors = (): RotationCursors => new Map();
+
+export const commitRotationCursors = async (cursors: RotationCursors) => {
+  const moves = [...cursors.entries()];
+  cursors.clear();
+  for (let index = 0; index < moves.length; index += 1) {
+    const [name, cursor] = moves[index];
+    await redisSetManagerEventState(`${SCAN_ROTATION_STATE}${name}`, cursor);
+    await redisSetManagerEventState(`${SCAN_ROTATION_ATTEMPTS_STATE}${name}`, '0');
+  }
+};
+
 /**
  * The next page of a scan larger than one run, from where the previous scan stopped: the cursor goes back to the
  * start once the last page is read, so successive scans cover every matching element instead of the same window.
- * The cursor moves on before the page is processed: a page whose processing fails is read again at the next rotation
- * instead of blocking the pages after it at every scan.
+ * The cursor moves on when the scan commits its cursors, after processing the page: a page whose processing fails is
+ * read again at the next scan. Its last attempt moves the cursor on first, so a page whose processing always fails
+ * never blocks the pages after it.
  */
-const loadRotatingPage = async <T>(name: string, loadPage: (after: string | undefined) => Promise<RotatingPage<T>>) => {
+export const loadRotatingPage = async <T>(name: string, cursors: RotationCursors, loadPage: (after: string | undefined) => Promise<RotatingPage<T>>) => {
   const stateKey = `${SCAN_ROTATION_STATE}${name}`;
+  const attemptsKey = `${SCAN_ROTATION_ATTEMPTS_STATE}${name}`;
   const after = (await redisGetManagerEventState(stateKey)) || undefined;
+  let attempts = Number(await redisGetManagerEventState(attemptsKey)) || 0;
   let page: RotatingPage<T>;
   try {
     page = await loadPage(after);
   } catch (error) {
     if (!after) throw error;
     logApp.warn('[CURATION] Cannot resume a scan from its cursor, starting over', { cause: error, scan: name });
+    await redisSetManagerEventState(stateKey, '');
+    attempts = 0;
     page = await loadPage(undefined);
   }
-  await redisSetManagerEventState(stateKey, page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? '') : '');
+  const next = page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? '') : '';
+  if (attempts + 1 >= MAX_ROTATING_PAGE_ATTEMPTS) {
+    logApp.warn('[CURATION] A scan page was not processed at its previous attempts, moving past it before the last one', { scan: name, attempts });
+    await redisSetManagerEventState(stateKey, next);
+    await redisSetManagerEventState(attemptsKey, '0');
+  } else {
+    await redisSetManagerEventState(attemptsKey, String(attempts + 1));
+    cursors.set(name, next);
+  }
   return page.edges.map((edge) => edge.node);
 };
 
 /** The next slice of the entities of a type in creation order (see loadRotatingPage). */
-const loadRotatingSlice = async (context: AuthContext, type: string, size: number) => {
-  return loadRotatingPage(type, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+const loadRotatingSlice = async (context: AuthContext, type: string, size: number, cursors: RotationCursors) => {
+  return loadRotatingPage(type, cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
     first: size,
     after,
     orderBy: 'created_at',
@@ -172,7 +202,7 @@ const loadRotatingSlice = async (context: AuthContext, type: string, size: numbe
  * the others for the second half, so that over successive scans every entity is compared with the recent ones.
  * Entities that change are compared with the whole graph by the incremental detection.
  */
-export const loadCuratedEntities = async (context: AuthContext, types: string[], maxPerType: number): Promise<CuratedEntity[]> => {
+export const loadCuratedEntities = async (context: AuthContext, types: string[], maxPerType: number, cursors: RotationCursors): Promise<CuratedEntity[]> => {
   const entities: CuratedEntity[] = [];
   const recentSize = Math.ceil(maxPerType / 2);
   const rotatingSize = Math.min(maxPerType - recentSize, MAX_ROTATING_SLICE);
@@ -183,7 +213,7 @@ export const loadCuratedEntities = async (context: AuthContext, types: string[],
       orderMode: 'desc',
     } as any);
     const recentIds = new Set(recent.map((element) => element.internal_id));
-    const rotating = rotatingSize > 0 ? await loadRotatingSlice(context, types[index], rotatingSize) : [];
+    const rotating = rotatingSize > 0 ? await loadRotatingSlice(context, types[index], rotatingSize, cursors) : [];
     [...recent, ...rotating.filter((element) => !recentIds.has(element.internal_id))]
       .forEach((element) => entities.push(toCuratedEntity(toCandidate(element as BasicStoreEntity & Record<string, any>))));
   }
@@ -383,7 +413,8 @@ const SEARCH_BATCH = 50;
 const searchRotatingPage = async (context: AuthContext, settings: CurationSettings, types: string[], stats: ScanStats) => {
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
-    const page = await loadRotatingPage(`duplicates_search_${type}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+    const cursors = rotationCursors();
+    const page = await loadRotatingPage(`duplicates_search_${type}`, cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
       first: SEARCHED_PER_SCAN,
       after,
       orderBy: 'created_at',
@@ -398,6 +429,7 @@ const searchRotatingPage = async (context: AuthContext, settings: CurationSettin
       stats.created += searched.created;
       stats.suppressed += searched.suppressed;
     }
+    await commitRotationCursors(cursors);
   }
 };
 
@@ -440,10 +472,12 @@ export const runDuplicateScan = async (context: AuthContext, settings: CurationS
   if (!isDuplicateDetectionEnabled(settings)) return stats;
   const groups = scanGroups(settings.curated_entity_types.filter((type) => type !== ENTITY_TYPE_INDICATOR));
   for (let index = 0; index < groups.length; index += 1) {
-    const entities = await loadCuratedEntities(context, groups[index], settings.scan_max_entities_per_type);
+    const cursors = rotationCursors();
+    const entities = await loadCuratedEntities(context, groups[index], settings.scan_max_entities_per_type, cursors);
     stats.scanned += entities.length;
     const drafts = await detectDuplicateDrafts(context, settings, entities);
     await persistDrafts(context, settings, await checkAliasOwnership(context, settings, entities, drafts), stats);
+    await commitRotationCursors(cursors);
     await searchRotatingPage(context, settings, groups[index], stats);
   }
   return stats;
@@ -584,11 +618,11 @@ const DATED_FIELDS: Array<{ types: string[]; start: string; stop: string }> = [
 const inversionScript = (start: string, stop: string) => `doc.containsKey('${start}') && doc.containsKey('${stop}') && doc['${start}'].size() > 0 && doc['${stop}'].size() > 0`
   + ` && doc['${start}'].value.toInstant().toEpochMilli() > doc['${stop}'].value.toInstant().toEpochMilli()`;
 
-export const findDateInversionDrafts = async (context: AuthContext): Promise<ProposalDraft[]> => {
+export const findDateInversionDrafts = async (context: AuthContext, cursors: RotationCursors): Promise<ProposalDraft[]> => {
   const drafts: ProposalDraft[] = [];
   for (let index = 0; index < DATED_FIELDS.length; index += 1) {
     const { types, start, stop } = DATED_FIELDS[index];
-    const elements = await loadRotatingPage(`contradiction_${start}_${stop}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, types, {
+    const elements = await loadRotatingPage(`contradiction_${start}_${stop}`, cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, types, {
       first: MAX_CONTRADICTIONS_PER_TYPE,
       after,
       orderBy: 'created_at',
@@ -608,7 +642,7 @@ export const findDateInversionDrafts = async (context: AuthContext): Promise<Pro
       }));
     });
   }
-  const relationships = await loadRotatingPage('contradiction_relationships', (after) => pageRelationsConnection<BasicStoreRelation>(context, CURATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+  const relationships = await loadRotatingPage('contradiction_relationships', cursors, (after) => pageRelationsConnection<BasicStoreRelation>(context, CURATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
     first: MAX_CONTRADICTIONS_PER_TYPE,
     after,
     orderBy: 'created_at',
@@ -635,8 +669,8 @@ export const findDateInversionDrafts = async (context: AuthContext): Promise<Pro
  * Pairs of entities decided distinct: rejected duplicate proposals (analyst or adjudication decision), a rotating
  * page of them per scan (see loadRotatingPage) so that every pair is checked over successive scans.
  */
-const loadDistinctPairs = async (context: AuthContext) => {
-  const rejected = await loadRotatingPage('distinct_pairs', (after) => pageEntitiesConnection<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
+const loadDistinctPairs = async (context: AuthContext, cursors: RotationCursors) => {
+  const rejected = await loadRotatingPage('distinct_pairs', cursors, (after) => pageEntitiesConnection<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
     first: MAX_DISTINCT_PAIRS,
     after,
     orderBy: 'created_at',
@@ -676,8 +710,8 @@ const sourcesDisagree = (attributions: Attribution[], left: string, right: strin
   return leftAuthors.size > 0 && rightAuthors.size > 0 && ![...leftAuthors].some((author) => rightAuthors.has(author));
 };
 
-export const findAttributionConflictDrafts = async (context: AuthContext): Promise<ProposalDraft[]> => {
-  const distinctPairs = await loadDistinctPairs(context);
+export const findAttributionConflictDrafts = async (context: AuthContext, cursors: RotationCursors): Promise<ProposalDraft[]> => {
+  const distinctPairs = await loadDistinctPairs(context, cursors);
   if (distinctPairs.length === 0) return [];
   const actorIds = R.uniq(distinctPairs.flat());
   const attributions = new Map<string, Attribution[]>();
@@ -725,8 +759,8 @@ export const findAttributionConflictDrafts = async (context: AuthContext): Promi
     }));
 };
 
-export const findRevokedIndicatorDrafts = async (context: AuthContext): Promise<ProposalDraft[]> => {
-  const indicators = await loadRotatingPage('contradiction_revoked_indicators', (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
+export const findRevokedIndicatorDrafts = async (context: AuthContext, cursors: RotationCursors): Promise<ProposalDraft[]> => {
+  const indicators = await loadRotatingPage('contradiction_revoked_indicators', cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['true'], operator: FilterOperator.Eq }], filterGroups: [] },
     first: MAX_REVOKED_INDICATORS,
     after,
@@ -796,14 +830,16 @@ const addSplitDrafts = async (context: AuthContext, drafts: ProposalDraft[]) => 
 export const runContradictionScan = async (context: AuthContext, settings: CurationSettings): Promise<ScanStats> => {
   const stats = emptyStats();
   if (!isEnabled(settings, DETECTOR_CONTRADICTION)) return stats;
+  const cursors = rotationCursors();
   const drafts = [
-    ...(await findDateInversionDrafts(context)),
-    ...(await findAttributionConflictDrafts(context)),
-    ...(await findRevokedIndicatorDrafts(context)),
+    ...(await findDateInversionDrafts(context, cursors)),
+    ...(await findAttributionConflictDrafts(context, cursors)),
+    ...(await findRevokedIndicatorDrafts(context, cursors)),
   ];
   drafts.push(...(await addSplitDrafts(context, drafts)));
   stats.scanned = drafts.length;
   await persistDrafts(context, settings, drafts, stats);
+  await commitRotationCursors(cursors);
   return stats;
 };
 // endregion
@@ -814,11 +850,12 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
   if (!isEnabled(settings, DETECTOR_STALENESS)) return stats;
   const types = R.uniq([...settings.curated_entity_types, ENTITY_TYPE_INDICATOR]);
   const drafts: ProposalDraft[] = [];
+  const cursors = rotationCursors();
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
     const months = getStalenessMonths(settings, type);
     const cutoff = new Date(Date.now() - months * 30 * 24 * 3600 * 1000).toISOString();
-    const candidates = await loadRotatingPage(`staleness_${type}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+    const candidates = await loadRotatingPage(`staleness_${type}`, cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
       filters: {
         mode: FilterMode.And,
         filters: [
@@ -866,7 +903,7 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
   }
   // Decayed indicators: live score at or below the revoke score of their decay rule (the decay manager revokes there
   // too), still not revoked. The decay rule is a flattened attribute, so the comparison is done here, page by page.
-  const decayCandidates = await loadRotatingPage('staleness_decayed_indicators', (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
+  const decayCandidates = await loadRotatingPage('staleness_decayed_indicators', cursors, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -896,6 +933,7 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
     }));
   });
   await persistDrafts(context, settings, drafts, stats);
+  await commitRotationCursors(cursors);
   return stats;
 };
 // endregion
