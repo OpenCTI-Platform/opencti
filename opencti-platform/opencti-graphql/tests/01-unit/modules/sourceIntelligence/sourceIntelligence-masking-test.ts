@@ -66,6 +66,12 @@ describe('Source intelligence recommendation masking', () => {
       .toBe('Raise the confidence of Restricted (now Restricted)');
   });
 
+  it('should mask a name whatever its case, reading the characters of the name literally', () => {
+    expect(maskRestrictedNames('Dismissed: ACME threat research and acme overlap, A.C.M.E. (EU) too', ['Acme', 'Acme Threat Research', 'A.C.M.E. (EU)', '']))
+      .toBe('Dismissed: Restricted and Restricted overlap, Restricted too');
+    expect(maskRestrictedNames('ABC stays', ['A.C'])).toBe('ABC stays');
+  });
+
   it('should keep masking the recorded names once the source is no longer tracked', async () => {
     const recommendation = { internal_id: 'rec-1', source_id: 'source-1', payload: '{"peer_source_id":"source-2"}', named_authors: recorded(['identity-1', 'Acme'], ['identity-2', 'Globex']) };
     expect((await restrictedRecommendationNames(newContext(), user, recommendation)).sort()).toEqual(['Acme', 'Globex']);
@@ -147,9 +153,31 @@ describe('Source intelligence authors the user cannot access', () => {
   });
 
   it('should name such an author Restricted, without its metrics, when it is reached by its id', async () => {
-    const scored = { ...authorSource('source-1', 'identity-1', 'Restricted CERT'), latest_value_score: 87, latest_volume: 1200, enabled: true };
+    const scored = {
+      ...authorSource('source-1', 'identity-1', 'Restricted CERT'),
+      ref_type: 'Organization',
+      source_user_ids: ['user-1'],
+      source_cost: { amount: 12000, currency: 'EUR', period: 'year' as const },
+      tags: ['premium'],
+      owner_id: 'user-2',
+      latest_value_score: 87,
+      latest_volume: 1200,
+      enabled: true,
+    };
     const [masked] = await maskRestrictedSources(newContext(), user, [scored]);
-    expect(masked).toMatchObject({ internal_id: 'source-1', name: 'Restricted', ref_id: '', latest_value_score: null, latest_volume: null, enabled: true });
+    expect(masked).toMatchObject({
+      internal_id: 'source-1',
+      name: 'Restricted',
+      ref_id: '',
+      ref_type: undefined,
+      source_user_ids: [],
+      source_cost: null,
+      tags: [],
+      owner_id: null,
+      latest_value_score: null,
+      latest_volume: null,
+      enabled: true,
+    });
     const accessible = { ...authorSource('source-2', 'identity-2', 'Acme'), latest_value_score: 64 };
     expect(await maskRestrictedSources(newContext(), user, [accessible])).toEqual([accessible]);
   });

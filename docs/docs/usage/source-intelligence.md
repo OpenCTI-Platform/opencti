@@ -89,7 +89,7 @@ The **Leaderboard** tab lists the sources with their value score and their main 
 
 ![Scorecard page of a source](assets/source-intelligence-source-detail.png)
 
-An author you cannot access (because of its markings or organization restrictions) is left out of the leaderboard and of the Sources and Quarantined sources counters, the overlap heatmap, the coverage of the collection gaps and the Sources widgets, and the overlap of the other sources does not name it, so no figure or ranking tells what it wrote: only the number of sources in the status line counts it. Opened from a link, its page reads **Restricted**, without its metrics.
+An author you cannot access (because of its markings or organization restrictions) is left out of the leaderboard and of the Sources and Quarantined sources counters, the overlap heatmap, the coverage of the collection gaps and the Sources widgets, and the overlap of the other sources does not name it, so no figure or ranking tells what it wrote: only the number of sources in the status line counts it. Opened from a link, its page reads **Restricted**, without its metrics, cost, tags or owner.
 
 ### Cost
 

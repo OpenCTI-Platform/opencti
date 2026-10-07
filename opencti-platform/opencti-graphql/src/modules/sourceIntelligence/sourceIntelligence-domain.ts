@@ -244,12 +244,26 @@ const CLEARED_LATEST_KPIS = {
   latest_community_uniqueness: null,
 };
 
-/** A source reached by its id whose author the user cannot access: named Restricted, without its metrics. */
+/**
+ * A source reached by its id whose author the user cannot access: named Restricted, with none of the fields it records
+ * about the author (identity, users, metrics, cost, tags, owner); only its kind and its state stay.
+ */
 export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(context: AuthContext, user: AuthUser, sources: T[]): Promise<T[]> => {
   const accessibleAuthors = await sourceVisibleIds(context, user, sources);
   return sources.map((source) => {
     if (source.source_kind === SOURCE_KIND_AUTHOR && !accessibleAuthors.has(source.ref_id)) {
-      return { ...source, ...CLEARED_LATEST_KPIS, name: RESTRICTED_AUTHOR_NAME, description: undefined, ref_id: '' };
+      return {
+        ...source,
+        ...CLEARED_LATEST_KPIS,
+        name: RESTRICTED_AUTHOR_NAME,
+        description: undefined,
+        ref_id: '',
+        ref_type: undefined,
+        source_user_ids: [],
+        source_cost: null,
+        tags: [],
+        owner_id: null,
+      };
     }
     return source;
   });
@@ -405,12 +419,17 @@ export const restrictedRecommendationNames = (
   return resolution;
 };
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const maskRestrictedNames = (text: string | null | undefined, names: string[]): string | null | undefined => {
-  if (!text || names.length === 0) {
+  const maskedNames = names.filter((name) => name.length > 0);
+  if (!text || maskedNames.length === 0) {
     return text;
   }
-  // Longest first: a name containing another one (a former name extended by a rename) is masked whole
-  return [...names].sort((a, b) => b.length - a.length).reduce((masked, name) => masked.split(name).join(RESTRICTED_AUTHOR_NAME), text);
+  // Whatever its case (free texts such as a dismiss reason are typed by users), and longest first: a name containing
+  // another one (a former name extended by a rename) is masked whole
+  const pattern = new RegExp([...maskedNames].sort((a, b) => b.length - a.length).map(escapeRegExp).join('|'), 'gi');
+  return text.replace(pattern, RESTRICTED_AUTHOR_NAME);
 };
 
 const maskJsonValue = (value: unknown, names: string[]): unknown => {

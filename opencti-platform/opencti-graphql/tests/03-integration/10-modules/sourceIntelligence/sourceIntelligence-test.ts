@@ -752,6 +752,7 @@ describe('Source intelligence', () => {
       latest_value_score: 99,
       latest_volume: 4200,
       latest_cost_per_actionable: 12,
+      source_cost: { amount: 12000, currency: 'EUR', period: 'year' },
     }, ENTITY_TYPE_SOURCE);
     try {
       // Ranked first by its value score if it were listed
@@ -761,6 +762,7 @@ describe('Source intelligence', () => {
       expect(listedIds).not.toContain(restricted.internal_id);
       const { data: detail } = await queryAsAdminWithSuccess({ query: SOURCE_QUERY, variables: { id: restricted.internal_id } });
       expect(detail.source.name).toBe('Restricted');
+      expect(detail.source.cost).toBeNull();
       expect(detail.source.latest_cost_per_actionable).toBeNull();
       expect(detail.source.scorecard).toBeNull();
     } finally {
