@@ -975,7 +975,10 @@ export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, ar
 // endregion
 
 // region validation
-// Idempotent: a retried tracking never appends the same request twice to a gap
+// Validation requests kept on a gap, the latest ones: every validation of a technique appends to its gaps
+export const MAX_GAP_VALIDATION_REQUESTS = 20;
+// Idempotent: a retried tracking never appends the same request twice to a gap. A queued request tracked late may be
+// older than those already kept, so the requests are ordered by date before the oldest ones are dropped.
 const GAP_TRACKING_SCRIPT = `
   if (ctx._source.validation_requests == null) { ctx._source.validation_requests = []; }
   boolean tracked = false;
@@ -985,8 +988,11 @@ const GAP_TRACKING_SCRIPT = `
   if (tracked) {
     ctx.op = 'noop';
   } else {
-    ctx._source.validation_requests.add(params.request);
-    ctx._source.last_validation_requested_at = params.request.requested_at;
+    List requests = ctx._source.validation_requests;
+    requests.add(params.request);
+    requests.sort((a, b) -> a.requested_at.compareTo(b.requested_at));
+    while (requests.size() > params.max) { requests.remove(0); }
+    ctx._source.last_validation_requested_at = requests.get(requests.size() - 1).requested_at;
   }
 `;
 
@@ -1029,7 +1035,7 @@ const trackValidationRequest = async (
       const { _index: _ignored, ...upsertDoc } = element as Record<string, unknown>;
       operations.push(
         { update: { _index: gapIndexById.get(internalId) ?? INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
-        { script: { source: GAP_TRACKING_SCRIPT, lang: 'painless', params: { request } }, upsert: upsertDoc },
+        { script: { source: GAP_TRACKING_SCRIPT, lang: 'painless', params: { request, max: MAX_GAP_VALIDATION_REQUESTS } }, upsert: upsertDoc },
       );
     }
     await elBulk(context, { refresh: true, body: operations });
