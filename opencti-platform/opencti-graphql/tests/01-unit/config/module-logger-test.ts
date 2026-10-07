@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { logApp, prepareLogMetadata } from '../../../src/config/conf';
-import { FunctionalError, InfraError, UnknownError } from '../../../src/config/errors';
+import { DatabaseError, FunctionalError, InfraError, UnknownError } from '../../../src/config/errors';
 import { tagErrorModule, withErrorContext } from '../../../src/config/error-origin';
-import { createModuleLogger, logBoundaryError } from '../../../src/config/module-logger';
+import { bestEffort, createModuleLogger, logBoundaryError } from '../../../src/config/module-logger';
 
 describe('module logger', () => {
   afterEach(() => {
@@ -78,5 +78,37 @@ describe('boundary logger', () => {
       cause: { name: 'INFRA_ERROR', code: 'INFRA_ERROR', message: 'File storage is unavailable', attributes: { dependency: 's3' } },
     });
     expect(record.version).toBeDefined();
+  });
+});
+
+describe('best effort', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return the result of a successful operation', async () => {
+    await expect(bestEffort('push_auth_log', async () => 'pushed')).resolves.toBe('pushed');
+  });
+
+  it('should log an unavailable dependency at warn and continue', async () => {
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    const result = await bestEffort('push_auth_log', async () => {
+      throw DatabaseError('Redis transaction error', { dependency: 'redis' });
+    }, { type: 'OIDC' });
+    expect(result).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('[BEST-EFFORT] Operation failed, continuing', expect.objectContaining({
+      operation: 'push_auth_log',
+      type: 'OIDC',
+      origin: 'infra',
+      dependency: 'redis',
+    }));
+  });
+
+  it('should still log a bug at error', async () => {
+    const error = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    await bestEffort('push_auth_log', async () => {
+      throw new TypeError('x is undefined');
+    });
+    expect(error).toHaveBeenCalledWith('[BEST-EFFORT] Operation failed, continuing', expect.objectContaining({ origin: 'code' }));
   });
 });

@@ -2,8 +2,9 @@
 import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
-import { redisPushAuthLog } from '../../database/redis';
+import { type AuthLogEntry, redisPushAuthLog } from '../../database/redis';
 import { forgetPromise } from '../../utils/promiseUtils';
+import { bestEffort } from '../../config/module-logger';
 import type { CERT_PROVIDER_NAME } from './provider-cert';
 import type { HEADERS_PROVIDER_NAME } from './provider-headers';
 
@@ -38,6 +39,10 @@ export const createAuthLogger = (
   identifier: string,
 ): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
+  // The UI copy of the authentication logs: losing an entry is acceptable, the application log keeps it.
+  const pushAuthLog = (entry: Omit<AuthLogEntry, 'timestamp'>) => {
+    forgetPromise(bestEffort('push_auth_log', () => redisPushAuthLog(id, entry), { type }));
+  };
   const doLogError = (message: string, meta: any, err?: any) => {
     const isAuthError = err instanceof AuthenticationProviderError;
     const messageText = isAuthError ? err.message : message;
@@ -45,20 +50,20 @@ export const createAuthLogger = (
       ...(isAuthError ? err.meta : meta),
       ...(err && !isAuthError ? { message: err.errors ? [err.message, ...err.errors.map((e: any) => e.message)].filter(Boolean) : err.message || undefined } : {}),
     };
-    forgetPromise(redisPushAuthLog(id, { level: 'error', type, identifier, message: messageText, meta: realMeta }));
+    pushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta });
   };
   return ({
     success: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog(id, { level: 'success', type, identifier, message, meta }));
+      pushAuthLog({ level: 'success', type, identifier, message, meta });
     },
     info: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog(id, { level: 'info', type, identifier, message, meta }));
+      pushAuthLog({ level: 'info', type, identifier, message, meta });
     },
     warn: (message, meta = {}) => {
       logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog(id, { level: 'warn', type, identifier, message, meta }));
+      pushAuthLog({ level: 'warn', type, identifier, message, meta });
     },
     error: (message, meta = {}, err?) => {
       logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
