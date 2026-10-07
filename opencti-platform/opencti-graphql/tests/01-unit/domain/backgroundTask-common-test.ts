@@ -153,6 +153,18 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
+    it('should accept a workflow transition action for a user without BYPASS capability', async () => {
+      const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should throw an error for a workflow transition action if the ENTITIES_WORKFLOW feature flag is disabled', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type))
+        .rejects.toThrowError('ENTITIES_WORKFLOW is disabled');
+    });
+
     it('should not check workflow rules for a plain status replace', async () => {
       vi.mocked(isFeatureEnabled).mockReturnValue(false);
       const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };

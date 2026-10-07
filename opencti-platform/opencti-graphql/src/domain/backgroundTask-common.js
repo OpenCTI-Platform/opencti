@@ -18,7 +18,7 @@ import {
 import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
@@ -73,9 +73,14 @@ export const ACTION_TYPE_WORKFLOW_TRANSITION = 'WORKFLOW_TRANSITION';
 const isWorkflowStatusAction = (action) => {
   return action.type === ACTION_TYPE_REPLACE && action.context?.field === 'x_opencti_workflow_id';
 };
+// Real transition triggered by its event name, only applied to elements in an eligible state
+export const isWorkflowTransitionAction = (action) => {
+  return isWorkflowStatusAction(action) && isNotEmptyField(action.context?.options?.eventName);
+};
 // Forced status change through the workflow engine, with or without the onExit/onEnter actions
 export const isWorkflowBypassAction = (action) => {
-  return isWorkflowStatusAction(action) && typeof action.context?.options?.applyTransitionActions === 'boolean';
+  return isWorkflowStatusAction(action) && !isWorkflowTransitionAction(action)
+    && typeof action.context?.options?.applyTransitionActions === 'boolean';
 };
 
 const isDeleteRestrictedAction = ({ type }) => {
@@ -85,7 +90,8 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 
 const checkWorkflowActionsValidity = (context, user, actions) => {
   const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
-  if (!hasBypassAction) {
+  const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
+  if (!hasBypassAction && !hasTransitionAction) {
     return;
   }
   if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
