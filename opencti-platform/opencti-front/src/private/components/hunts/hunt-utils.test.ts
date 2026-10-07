@@ -15,6 +15,7 @@ import {
   huntTypeLabel,
   selectedDerivedElements,
   selectedDerivedRule,
+  buildHuntEditPatch,
   buildHuntPrefill,
   buildHuntScope,
   buildIndicatorHuntPrefill,
@@ -245,6 +246,7 @@ describe('Hunt utils', () => {
         expected_observables: [],
         benign_patterns: ['svc_backup', 'sccm'],
         escalation_threshold: 5,
+        escalate_manual_runs: false,
         hunt_max_results: null,
         huntTargets: ['is-1'],
         huntTechniques: ['ap-1'],
@@ -269,6 +271,18 @@ describe('Hunt utils', () => {
       expect(input.hunt_scope).toEqual('');
       expect(input.hunt_schedule).toEqual('standing');
       expect(input.trigger_filters).toContain('Report');
+    });
+
+    it('should send the escalation of the runs started by hand, off by default', () => {
+      expect(toHuntAddInput(emptyHuntFormValues(), '').escalate_manual_runs).toBe(false);
+      expect(toHuntAddInput({ ...emptyHuntFormValues(), escalate_manual_runs: true }, '').escalate_manual_runs).toBe(true);
+    });
+
+    it('should patch the escalation of the runs started by hand only when it changes', () => {
+      const initial = { ...emptyHuntFormValues(), name: 'APT28 PowerShell' };
+      expect(buildHuntEditPatch(initial, '', { ...initial, escalate_manual_runs: true }, '')).toEqual([{ key: 'escalate_manual_runs', value: [true] }]);
+      expect(buildHuntEditPatch({ ...initial, escalate_manual_runs: true }, '', { ...initial, escalate_manual_runs: false }, '')).toEqual([{ key: 'escalate_manual_runs', value: [false] }]);
+      expect(buildHuntEditPatch(initial, '', { ...initial }, '')).toEqual([]);
     });
   });
 

@@ -363,6 +363,15 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
                 />
               </div>
             </div>
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="escalate_manual_runs"
+                label={t_i18n('Escalate the runs started by hand')}
+                helpertext={<HuntHelp text={t_i18n('On, a run started by hand proposes an incident from the escalation threshold. Off, the incident is offered with a true positive verdict.')} href={HUNT_DOCS.runs} />}
+              />
+            </div>
 
             <HuntRunProducesSection huntType={values.hunt_type} />
             <HuntBenignPatternsField style={fieldSpacingContainerStyle} />

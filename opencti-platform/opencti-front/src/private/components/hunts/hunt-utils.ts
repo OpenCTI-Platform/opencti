@@ -715,6 +715,7 @@ export interface HuntFormValues {
   expected_observables: string[];
   benign_patterns: string;
   escalation_threshold: number | string;
+  escalate_manual_runs: boolean;
   hunt_max_results: number | string;
   huntTargets: FieldOption[];
   huntTechniques: FieldOption[];
@@ -745,6 +746,7 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   expected_observables: [],
   benign_patterns: '',
   escalation_threshold: HUNT_DEFAULT_ESCALATION_THRESHOLD,
+  escalate_manual_runs: false,
   hunt_max_results: '',
   huntTargets: [],
   huntTechniques: [],
@@ -824,6 +826,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     expected_observables: values.expected_observables,
     benign_patterns: parseBenignPatterns(values.benign_patterns),
     escalation_threshold: toInteger(values.escalation_threshold, HUNT_DEFAULT_ESCALATION_THRESHOLD),
+    escalate_manual_runs: values.escalate_manual_runs,
     hunt_max_results: toInteger(values.hunt_max_results, null),
     huntTargets: optionValues(values.huntTargets),
     huntTechniques: optionValues(values.huntTechniques),
@@ -849,6 +852,7 @@ export const HUNT_EDITABLE_KEYS = [
   'expected_observables',
   'benign_patterns',
   'escalation_threshold',
+  'escalate_manual_runs',
   'hunt_max_results',
   'huntTargets',
   'huntTechniques',

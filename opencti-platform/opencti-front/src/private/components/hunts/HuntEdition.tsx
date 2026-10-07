@@ -82,6 +82,7 @@ const huntEditionFragment = graphql`
     hunt_pir_activation
     time_window_hours
     escalation_threshold
+    escalate_manual_runs
     hunt_max_results
     expected_observables
     benign_patterns
@@ -170,6 +171,7 @@ const toFormValues = (hunt: HuntEdition_hunt$data): HuntFormValues => ({
   hunt_pir_activation: hunt.hunt_pir_activation === true,
   time_window_hours: hunt.time_window_hours,
   escalation_threshold: hunt.escalation_threshold,
+  escalate_manual_runs: hunt.escalate_manual_runs === true,
   hunt_max_results: hunt.hunt_max_results ?? '',
   expected_observables: [...(hunt.expected_observables ?? [])],
   benign_patterns: (hunt.benign_patterns ?? []).join('\n'),
@@ -357,6 +359,15 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
                   fullWidth
                 />
               </div>
+            </div>
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="escalate_manual_runs"
+                label={t_i18n('Escalate the runs started by hand')}
+                helpertext={<HuntHelp text={t_i18n('On, a run started by hand proposes an incident from the escalation threshold. Off, the incident is offered with a true positive verdict.')} href={HUNT_DOCS.runs} />}
+              />
             </div>
             <HuntRunProducesSection huntType={values.hunt_type} />
             <HuntBenignPatternsField style={fieldSpacingContainerStyle} />
