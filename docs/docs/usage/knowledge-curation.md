@@ -49,7 +49,7 @@ The curation manager detects findings in two ways:
 
 Turning curation off in the settings stops both: no new proposal is raised, and the open proposals stay in the inbox. A larger scan size covers more entities at each scan, and the scan takes longer.
 
-A finding detected again refreshes the open proposal (its confidence and evidence) instead of creating a new one. A finding that was rejected, reverted or acknowledged is never proposed again. A finding whose fix was applied (dates fixed, aliases added, entity revoked...) is only detected again when the problem came back, for example when the inverted dates are written again: it then gets a new proposal. For duplicates, a pair of entities decided distinct (rejected or reverted) is never proposed again, whatever the detector that compares them later.
+A finding detected again refreshes the open proposal (its confidence and evidence) instead of creating a new one. A proposal being accepted or rejected at that moment is left as the decision read it, and the next detection refreshes it if it is still open. A finding that was rejected, reverted or acknowledged is never proposed again. A finding whose fix was applied (dates fixed, aliases added, entity revoked...) is only detected again when the problem came back, for example when the inverted dates are written again: it then gets a new proposal. For duplicates, a pair of entities decided distinct (rejected or reverted) is never proposed again, whatever the detector that compares them later.
 
 ### The six detectors
 

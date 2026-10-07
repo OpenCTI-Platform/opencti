@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 import { boundaryWrapper } from '../../Error';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -11,6 +10,7 @@ import { isGrantedTo } from '../../../../utils/hooks/useGranted';
 import HubNoAccess from '../../common/hub/HubNoAccess';
 import HubTabBar from '../../common/hub/HubTabBar';
 import { CURATION_TABS, type CurationTab, grantedCurationTabs, PATH_CURATION } from './curationTabs';
+import CurationSkeleton from './CurationSkeleton';
 
 interface CurationRootProps {
   tabs?: CurationTab[];
@@ -45,7 +45,7 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
         }))}
         testIdPrefix="curation-tab"
       />
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <Suspense fallback={<CurationSkeleton />}>
         {boundaryWrapper(current.component)}
       </Suspense>
     </PageContainer>

@@ -33,6 +33,11 @@ describe('Knowledge Health duplicate estimate', () => {
     estimator.add(['e', 'a']);
     expect(estimator.estimate()).toBe(estimateDuplicates([['a', 'b'], ['d', 'e'], ['c', 'b'], ['e', 'a']]));
   });
+
+  it('estimates a chain of proposals as long as the graph without exhausting the call stack', () => {
+    const chain = Array.from({ length: 50000 }, (_, index) => [`e${index + 1}`, `e${index}`]);
+    expect(estimateDuplicates(chain)).toBe(50000);
+  });
 });
 
 type ProposalPages = Record<string, Array<Array<Record<string, unknown>>>>;

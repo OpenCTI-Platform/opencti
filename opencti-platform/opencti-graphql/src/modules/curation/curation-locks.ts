@@ -1,9 +1,9 @@
 import { lockResources } from '../../lock/master-lock';
 
-const withLock = async <T>(key: string, fn: () => Promise<T>): Promise<T> => {
+const withLock = async <T>(key: string, fn: () => Promise<T>, opts: { retryCount?: number } = {}): Promise<T> => {
   let lock;
   try {
-    lock = await lockResources([key]);
+    lock = await lockResources([key], opts);
     return await fn();
   } finally {
     if (lock) {
@@ -17,7 +17,9 @@ const withLock = async <T>(key: string, fn: () => Promise<T>): Promise<T> => {
  * callers read the proposal again under the lock, so two decisions never both see it open and both change the graph.
  * The key is not an element id, so it never collides with the locks the merge and the unmerge take on participants.
  */
-export const withProposalTransitionLock = <T>(id: string, fn: () => Promise<T>) => withLock(`curation-proposal-transition-${id}`, fn);
+export const withProposalTransitionLock = <T>(id: string, fn: () => Promise<T>, opts: { retryCount?: number } = {}) => {
+  return withLock(`curation-proposal-transition-${id}`, fn, opts);
+};
 
 /** Persists one finding at a time: its lookup by fingerprint and the creation of its proposal never interleave. */
 export const withProposalFingerprintLock = <T>(fingerprint: string, fn: () => Promise<T>) => withLock(`curation-proposal-fingerprint-${fingerprint}`, fn);

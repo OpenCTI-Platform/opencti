@@ -93,11 +93,16 @@ export const computeHealthScore = (metrics: KnowledgeHealthMetrics): { score: nu
  */
 export const createDuplicateEstimator = () => {
   const parent = new Map<string, string>();
+  // Iterative: a chain of proposals as long as the graph never grows the call stack.
   const find = (id: string): string => {
-    const current = parent.get(id) ?? id;
-    if (current === id) return id;
-    const root = find(current);
-    parent.set(id, root);
+    let root = id;
+    while ((parent.get(root) ?? root) !== root) root = parent.get(root) as string;
+    let current = id;
+    while (current !== root) {
+      const next = parent.get(current) as string;
+      parent.set(current, root);
+      current = next;
+    }
     return root;
   };
   return {

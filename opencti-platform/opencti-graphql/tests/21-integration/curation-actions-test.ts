@@ -30,6 +30,7 @@ import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
 import { getCurationSettings } from '../../src/modules/curation/curation-settings';
 import { persistProposalDraft, refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../src/modules/curation/curation-proposals';
+import { withProposalTransitionLock } from '../../src/modules/curation/curation-locks';
 import { loadPolicyFacts } from '../../src/modules/curation/curation-policies';
 import { buildSplitDraft } from '../../src/modules/curation/curation-detectors';
 import { computeHealthMetrics } from '../../src/modules/curation/curation-health';
@@ -1329,6 +1330,35 @@ describe('Knowledge curation actions', () => {
     const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { expected_updated_at: read.updated_at } } });
     expect(accepted.data?.curationProposalAccept.proposal_status).toBe('accepted');
     expect((await loadIntrusionSet(target.id)).aliases).toEqual([proposedName]);
+  });
+
+  it('should leave a proposal as a decision in progress read it, and refresh it once the decision is over', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Refresh During Decision`);
+    const draft: ProposalDraft = {
+      kind: PROPOSAL_KIND_ALIAS,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target)],
+      target_id: target.id,
+      recommended_action: ACTION_ADD_ALIASES,
+      action_payload: { aliases: [`${PREFIX} Refresh During Decision Alias`] },
+      evidence: evidenceFor('taxonomy', 'The vendor taxonomy lists a name the entity does not carry'),
+      confidence: 0.7,
+    };
+    const id = await createProposal(draft);
+    const settings = await getCurationSettings(testContext);
+    const loadConfidence = async () => {
+      const stored = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { confidence_score: number };
+      return stored.confidence_score;
+    };
+    // A decision holds the proposal: the same finding detected meanwhile does not wait, and changes nothing.
+    await withProposalTransitionLock(id, async () => {
+      const during = await persistProposalDraft(testContext, settings, { ...draft, confidence: 0.9 });
+      expect(during.created).toBe(false);
+      expect(await loadConfidence()).toBe(0.7);
+    });
+    // The decision is over and the proposal is still open: the next detection refreshes it.
+    await persistProposalDraft(testContext, settings, { ...draft, confidence: 0.9 });
+    expect(await loadConfidence()).toBe(0.9);
   });
 
   it('should hide a proposal from a user who lost access to a subject before its restrictions are refreshed', async () => {

@@ -14,6 +14,7 @@ import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { addCurationProposalCreatedCount, addCurationProposalRevertedCount } from '../../manager/telemetryManager';
 import { logApp } from '../../config/conf';
+import { TYPE_LOCK_ERROR } from '../../config/errors';
 import {
   ACTION_ACKNOWLEDGE,
   type BasicStoreEntityCurationProposal,
@@ -413,6 +414,31 @@ export const retireProposalsOfDeletedSubjects = async (context: AuthContext, del
   return count;
 };
 
+/**
+ * A refresh runs under the transition lock, on the proposal read again under it: a decision reads the proposal it
+ * checks under the same lock, so a refresh never changes what an acceptance is applying. A proposal being applied keeps
+ * the content its application started from, so a retry applies or records that one. The refresh does not wait for a
+ * decision in progress: the proposal is left as it is, and the next detection refreshes it if it is still open.
+ */
+const refreshUndecidedProposal = async (
+  context: AuthContext,
+  existing: BasicStoreEntityCurationProposal,
+  draft: ProposalDraft,
+  inBand: boolean,
+): Promise<PersistResult> => {
+  const unchanged = { proposal: existing, created: false, suppressed: false };
+  try {
+    return await withProposalTransitionLock(existing.internal_id, async () => {
+      const current = await storeLoadById<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL);
+      if (!current || current.proposal_status !== PROPOSAL_STATUS_OPEN || current.application_started_at) return unchanged;
+      return refreshProposal(context, current, draft, inBand);
+    }, { retryCount: 0 });
+  } catch (error: any) {
+    if (error.name !== TYPE_LOCK_ERROR) throw error;
+    return unchanged;
+  }
+};
+
 const persistLockedProposalDraft = async (
   context: AuthContext,
   settings: CurationSettings,
@@ -435,10 +461,7 @@ const persistLockedProposalDraft = async (
   }
   const inBand = isInAmbiguousBand(draft.confidence, settings.ambiguous_band_min, settings.ambiguous_band_max);
   if (existing) {
-    // A proposal being applied keeps the content its application started from, so a retry applies or records that one.
-    const refreshed = existing.application_started_at
-      ? { proposal: existing, created: false, suppressed: false }
-      : await refreshProposal(context, existing, draft, inBand);
+    const refreshed = await refreshUndecidedProposal(context, existing, draft, inBand);
     if (draft.kind === PROPOSAL_KIND_ALIAS) await removeSupersededAliasProposals(context, existing);
     return refreshed;
   }
