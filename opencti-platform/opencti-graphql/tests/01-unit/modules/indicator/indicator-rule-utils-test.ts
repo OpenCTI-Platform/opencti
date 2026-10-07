@@ -37,6 +37,26 @@ describe('Indicator detection rule metadata', () => {
     expect(() => normalizeIndicatorRuleEditInputs([{ key: 'x_opencti_rule_level', value: ['l'.repeat(65)] }]))
       .toThrow('A rule status or level cannot be longer than 64 characters');
   });
+  it.each([
+    ['a status that is not a text', { key: 'x_opencti_rule_status', value: [5] }, 'A rule status or level must be a text'],
+    ['a level that is not a text', { key: 'x_opencti_rule_level', value: [{ level: 'high' }] }, 'A rule status or level must be a text'],
+    ['a log source that is a text', { key: 'x_opencti_rule_logsource', value: ['windows'] }, 'A rule log source must be an object whose category, product and service are texts'],
+    ['a log source that is an empty text', { key: 'x_opencti_rule_logsource', value: [''] }, 'A rule log source must be an object whose category, product and service are texts'],
+    ['a log source that is a list', { key: 'x_opencti_rule_logsource', value: [['windows']] }, 'A rule log source must be an object whose category, product and service are texts'],
+    ['a log source field that is not a text', { key: 'x_opencti_rule_logsource', value: [{ category: 5 }] }, 'A rule log source must be an object whose category, product and service are texts'],
+    ['a patch of one log source field', { key: 'x_opencti_rule_logsource', object_path: '/x_opencti_rule_logsource/product', value: ['windows'] }, 'A rule log source is patched as a whole'],
+  ])('should refuse a field patch with %s', (_, input, message) => {
+    expect(() => normalizeIndicatorRuleEditInputs([input])).toThrow(message);
+  });
+  it('should clear the rule metadata patched with no value', () => {
+    expect(normalizeIndicatorRuleEditInputs([
+      { key: 'x_opencti_rule_status', value: [null] },
+      { key: 'x_opencti_rule_logsource', value: [null] },
+    ])).toEqual([
+      { key: 'x_opencti_rule_status', value: [] },
+      { key: 'x_opencti_rule_logsource', value: [] },
+    ]);
+  });
   it('should remove the raw metadata from an input', () => {
     expect(withoutIndicatorRuleMetadata({ name: 'rule', x_opencti_rule_status: 'test', x_opencti_rule_level: 'low', x_opencti_rule_logsource: { product: 'linux' } }))
       .toEqual({ name: 'rule' });

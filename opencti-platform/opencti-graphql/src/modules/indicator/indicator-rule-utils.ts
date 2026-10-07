@@ -18,6 +18,8 @@ interface IndicatorRuleMetadata {
   x_opencti_rule_logsource?: IndicatorRuleLogsource;
 }
 
+const isRuleText = (value: unknown): value is string | null | undefined => value === null || value === undefined || typeof value === 'string';
+
 const normalizeRuleValue = (value: string | null | undefined): string | undefined => {
   if (value === null || value === undefined) {
     return undefined;
@@ -40,10 +42,13 @@ const normalizeRuleRankValue = (value: string | null | undefined): string | unde
  * can be filtered and mapped consistently. Empty values are dropped.
  */
 export const normalizeIndicatorRuleLogsource = (logsource: IndicatorRuleMetadataInput['x_opencti_rule_logsource']): IndicatorRuleLogsource | undefined => {
-  if (!logsource) {
+  if (logsource === null || logsource === undefined) {
     return undefined;
   }
-  // A field patch does not go through the constraints of the GraphQL input
+  // A field patch does not go through the types and constraints of the GraphQL input
+  if (typeof logsource !== 'object' || Array.isArray(logsource) || ![logsource.category, logsource.product, logsource.service].every(isRuleText)) {
+    throw FunctionalError('A rule log source must be an object whose category, product and service are texts');
+  }
   const tooLong = [logsource.category, logsource.product, logsource.service].find((value) => (value?.trim().length ?? 0) > MAX_LOGSOURCE_VALUE_LENGTH);
   if (tooLong) {
     throw FunctionalError(`A rule log source value cannot be longer than ${MAX_LOGSOURCE_VALUE_LENGTH} characters`, { length: tooLong.trim().length });
@@ -82,19 +87,29 @@ export const normalizeIndicatorRuleMetadata = (input: IndicatorRuleMetadataInput
 /**
  * Same normalization for field patches, so an edited rule keeps matching the telemetry mappings
  * and the status / level rankings. A value normalized to nothing clears the field.
+ * The values of a patch are not typed by the GraphQL input: a value of another shape is refused.
  */
-export const normalizeIndicatorRuleEditInputs = <T extends { key: string; value: unknown[] }>(inputs: T[]): T[] => {
+export const normalizeIndicatorRuleEditInputs = <T extends { key: string; value: unknown[]; object_path?: string | null }>(inputs: T[]): T[] => {
   return inputs.map((input) => {
     if (input.key === 'x_opencti_rule_status' || input.key === 'x_opencti_rule_level') {
       const value = input.value
-        .map((v) => (typeof v === 'string' ? normalizeRuleRankValue(v) : v))
-        .filter((v) => v !== undefined && v !== null);
+        .map((v) => {
+          if (!isRuleText(v)) {
+            throw FunctionalError('A rule status or level must be a text', { key: input.key });
+          }
+          return normalizeRuleRankValue(v);
+        })
+        .filter((v) => v !== undefined);
       return { ...input, value };
     }
     if (input.key === 'x_opencti_rule_logsource') {
+      // The normalization drops the empty fields of the whole log source: a patch of one of its fields would escape it
+      if (input.object_path) {
+        throw FunctionalError('A rule log source is patched as a whole, without object path', { key: input.key });
+      }
       const value = input.value
-        .map((v) => (v && typeof v === 'object' ? normalizeIndicatorRuleLogsource(v as IndicatorRuleMetadataInput['x_opencti_rule_logsource']) : v))
-        .filter((v) => v !== undefined && v !== null);
+        .map((v) => normalizeIndicatorRuleLogsource(v as IndicatorRuleMetadataInput['x_opencti_rule_logsource']))
+        .filter((v) => v !== undefined);
       return { ...input, value };
     }
     return input;
