@@ -14,6 +14,7 @@ import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, type HuntHit } from './huntRun/huntRun-types';
+import { isReadableByReadersOf } from './hunt-iocs';
 import { validateSigmaRule } from './hunt-sigma';
 import { truncate } from './hunt-utils';
 
@@ -232,7 +233,9 @@ export const isHuntIncidentClosed = async (context: AuthContext, incident: Incid
 /**
  * The incident of a previous run of the hunt on the same security platform that is still open: its draft is not
  * validated yet, or it was validated and its status is not the last one of the incident workflow. Null when the latest
- * incident of the hunt on the platform is closed, deleted, or in a draft validated or deleted since.
+ * incident of the hunt on the platform is closed, deleted, or in a draft validated or deleted since, and when a reader of
+ * the incident could not read the run: what the run adds to it, its last seen date included, would disclose the run, so
+ * the run gets an incident of its own.
  */
 export const findOpenHuntIncident = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<OpenHuntIncident | null> => {
   const [previous] = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
@@ -263,12 +266,12 @@ export const findOpenHuntIncident = async (context: AuthContext, run: BasicStore
     ? await internalLoadById<IncidentWithStatus>({ ...context, draft_context: previous.draft_id }, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
     : null;
   if (draft && draft.draft_status === DRAFT_STATUS_OPEN && inDraft) {
-    return { incidentId: inDraft.internal_id, draftId: previous.draft_id ?? null };
+    return await isReadableByReadersOf(context, inDraft, run) ? { incidentId: inDraft.internal_id, draftId: previous.draft_id ?? null } : null;
   }
   // A validated draft published the incident under its standard id
   const live = await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
     ?? (inDraft ? await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, inDraft.standard_id, { type: ENTITY_TYPE_INCIDENT }) : null);
-  if (!live || await isHuntIncidentClosed(context, live)) {
+  if (!live || await isHuntIncidentClosed(context, live) || !await isReadableByReadersOf(context, live, run)) {
     return null;
   }
   return { incidentId: live.internal_id, draftId: null };

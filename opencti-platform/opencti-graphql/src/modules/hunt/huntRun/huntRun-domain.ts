@@ -100,7 +100,7 @@ import {
 } from '../hunt-incident';
 import { createHuntHitObservations } from '../hunt-hit-observations';
 import { upsertHuntSightings } from '../hunt-sightings';
-import { recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
+import { isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -1447,6 +1447,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           runId: current.internal_id,
           keys: evidenceKeys,
           seenAt: lastEvidenceAt.toISOString(),
+          keepKnown: !await isHuntRunRemembered(context, current),
         });
         addedNew = matched.newCount;
         addedRecurring = matched.recurringCount;

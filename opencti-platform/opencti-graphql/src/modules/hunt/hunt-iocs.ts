@@ -2,9 +2,11 @@ import { isIPv4, isIPv6 } from 'node:net';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation } from '../../types/store';
 import { ValidationError } from '../../config/errors';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { pageEntitiesConnection, pageRegardingEntitiesConnection, topRelationsList } from '../../database/middleware-loader';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import type { BasicStoreSettings } from '../../types/settings';
 import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { RELATION_INDICATES, RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import {
@@ -239,6 +241,19 @@ export const isDisclosableByHunt = (hunt: AccessRestricted, element: AccessRestr
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
   const huntOrganizations = hunt[RELATION_GRANTED_TO] ?? [];
   return huntOrganizations.every((id) => elementOrganizations.includes(id));
+};
+
+/**
+ * Whether every reader of an object can read an element, by the markings of both and, with a platform organization,
+ * their organizations: without one, organizations do not restrict reading.
+ */
+export const isReadableByReadersOf = async (context: AuthContext, holder: AccessRestricted, element: AccessRestricted) => {
+  const [settings, markings] = await Promise.all([
+    getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS),
+    getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
+  ]);
+  const restrictions = settings.platform_organization ? holder : { ...holder, [RELATION_GRANTED_TO]: [] };
+  return isDisclosableByHunt(restrictions, element, markings as Map<string, BasicStoreEntityMarkingDefinition>);
 };
 
 export const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];

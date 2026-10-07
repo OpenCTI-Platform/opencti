@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { elCount } from '../../../../src/database/engine';
 import { huntHitKey, identifyingHitKeys, sanitizeHitKeys, sanitizeHits } from '../../../../src/modules/hunt/hunt-utils';
-import { classifyHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
+import { classifyHuntHits, isHuntRunRemembered } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { computeHuntRunWindow, huntIocKeysByHit, huntRunNewHits } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { huntSightingStandardId, nextHuntSightingCount } from '../../../../src/modules/hunt/hunt-sightings';
+import { testContext } from '../../../utils/testQuery';
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/engine')>(),
+  elCount: vi.fn(),
+}));
 
 // The vectors the connectors SDK asserts as well (connectors-sdk tests/test_connectors/test_internal_hunt/test_analysis.py):
 // both sides compute the same key for the same reported hit
@@ -113,6 +120,31 @@ describe('Known hits ledger', () => {
     ]);
     expect(classifyHuntHits('run-2', ['k1', 'k2'], known)).toEqual({ newCount: 1, recurringCount: 1, toWrite: [] });
     expect(classifyHuntHits('run-4', ['k1', 'k2'], known)).toEqual({ newCount: 0, recurringCount: 2, toWrite: ['k1', 'k2'] });
+  });
+
+  it('should only record the hits never seen for late evidence of a run the records may have forgotten', () => {
+    // The records keep the latest runs only: run-1 is no longer among them, whether it counted k1 or not
+    const known = new Map([
+      ['k1', { first_run_id: 'run-0', last_run_id: 'run-60', counted_run_ids: ['run-11', 'run-60'] }],
+      ['k2', { first_run_id: 'run-1', last_run_id: 'run-60', counted_run_ids: ['run-11', 'run-60'] }],
+    ]);
+    expect(classifyHuntHits('run-1', ['k1', 'k2', 'k3'], known, true)).toEqual({ newCount: 2, recurringCount: 1, toWrite: ['k3'] });
+    expect(classifyHuntHits('run-1', ['k1', 'k2', 'k3'], known)).toEqual({ newCount: 2, recurringCount: 1, toWrite: ['k1', 'k3'] });
+  });
+
+  it('should take the records to remember a run while fewer than 25 later runs of the hunt on the platform completed', async () => {
+    const run = { internal_id: 'run-1', hunt_id: 'hunt-1', security_platform_id: 'platform-1', completed_at: '2026-10-05T10:00:00.000Z' };
+    expect(await isHuntRunRemembered(testContext, { ...run, completed_at: null } as never)).toBe(true);
+    expect(elCount).not.toHaveBeenCalled();
+    vi.mocked(elCount).mockResolvedValueOnce(24);
+    expect(await isHuntRunRemembered(testContext, run as never)).toBe(true);
+    vi.mocked(elCount).mockResolvedValueOnce(25);
+    expect(await isHuntRunRemembered(testContext, run as never)).toBe(false);
+    const [, , , { filters }] = vi.mocked(elCount).mock.calls[0] as unknown as [unknown, unknown, unknown, { filters: { filters: unknown[] } }];
+    expect(filters.filters).toEqual(expect.arrayContaining([
+      { key: ['completed_at'], values: [run.completed_at], operator: 'gte' },
+      { key: ['id'], values: ['run-1'], operator: 'not_eq' },
+    ]));
   });
 
   it('should count every hit of a run whose connector identifies none as new', () => {

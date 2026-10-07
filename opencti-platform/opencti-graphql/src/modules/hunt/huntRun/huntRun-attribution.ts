@@ -1,18 +1,14 @@
 import { ForbiddenAccess } from '../../../config/errors';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../../../database/cache';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { registerEntityValidator, type ValidatorFn } from '../../../schema/validator-register';
 import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../../schema/general';
-import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../schema/stixDomainObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../schema/stixSightingRelationship';
-import type { BasicStoreEntityMarkingDefinition, BasicStoreObject } from '../../../types/store';
-import type { BasicStoreSettings } from '../../../types/settings';
+import type { BasicStoreObject } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { HUNT_MANAGER_USER, isBypassUser, isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../../utils/access';
-import { isDisclosableByHunt } from '../hunt-iocs';
+import { isReadableByReadersOf } from '../hunt-iocs';
 import { findByIds } from '../hunt-loaders';
 import { type BasicStoreEntityHuntRun } from './huntRun-types';
 import { findHuntRunById, isHuntRunConnectorCall } from './huntRun-domain';
@@ -53,14 +49,7 @@ const createdOrganizations = async (context: AuthContext, user: AuthUser, reques
  * no organization the run is not shared with. Otherwise a user who cannot read the run could read what it found.
  */
 const validateEvidenceAccess = async (context: AuthContext, run: BasicStoreEntityHuntRun, evidence: () => Promise<EvidenceAccess>) => {
-  const [settings, markings, access] = await Promise.all([
-    getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS),
-    getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
-    evidence(),
-  ]);
-  // Without a platform organization, organizations do not restrict reading
-  const holder = settings.platform_organization ? access : { ...access, [RELATION_GRANTED_TO]: [] };
-  if (!isDisclosableByHunt(holder, run, markings as Map<string, BasicStoreEntityMarkingDefinition>)) {
+  if (!await isReadableByReadersOf(context, await evidence(), run)) {
     throw ForbiddenAccess('The evidence of a run carries at least the markings of the run and no organization the run is not shared with', { runId: run.internal_id });
   }
 };

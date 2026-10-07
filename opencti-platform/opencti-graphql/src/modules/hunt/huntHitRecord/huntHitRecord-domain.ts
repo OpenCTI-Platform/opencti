@@ -12,7 +12,7 @@ import { doYield } from '../../../utils/eventloop-utils';
 import { withHuntLock } from '../hunt-lock';
 import { findByIds } from '../hunt-loaders';
 import { HUNT_PLATFORM_INTERNET } from '../hunt-types';
-import type { BasicStoreEntityHuntRun } from '../huntRun/huntRun-types';
+import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN } from '../huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_HUNT_HIT_RECORD, type BasicStoreEntityHuntHitRecord } from './huntHitRecord-types';
 
@@ -22,6 +22,10 @@ const LEDGER_LOCK = 'hunt_hit_ledger';
 // A run is processed again when its completion report is sent again after an interruption, while the other runs of
 // its hunt on the platform go on: far fewer of them complete in that time than the runs a record remembers
 const COUNTED_RUNS_MAX = 50;
+// Late evidence of a run adds the run to the records it finds only while fewer runs than this completed after it: fewer
+// than COUNTED_RUNS_MAX other runs can then have been added to a record since the run counted it (the later runs, and
+// the earlier ones still within their own window), so the record still tells whether the run counted it
+const LATE_EVIDENCE_RUNS_WINDOW = COUNTED_RUNS_MAX / 2;
 const RECORD_FIELDS = ['internal_id', 'hit_key', 'first_run_id', 'last_run_id', 'counted_run_ids', 'first_seen', 'times_seen'];
 
 /** The record of a hit of a hunt on a security platform: its ids derive from the three, a run finds it without a search. */
@@ -50,9 +54,10 @@ export interface HuntHitClassification {
  * New and recurring hits of a run among its keys, against the records of the hits already known for the hunt on the
  * platform. A hit first recorded by this very run stays new and a record that already counted the run is not updated
  * again, whatever runs were recorded since, so that processing the same run again (its completion report sent again
- * after an interruption) gives the same counts and leaves the records as they are.
+ * after an interruption) gives the same counts and leaves the records as they are. With keepKnown, for a run the
+ * records may have forgotten, only the hits never recorded get a record.
  */
-export const classifyHuntHits = (runId: string, keys: string[], known: Map<string, KnownHit>): HuntHitClassification => {
+export const classifyHuntHits = (runId: string, keys: string[], known: Map<string, KnownHit>, keepKnown = false): HuntHitClassification => {
   let newCount = 0;
   let recurringCount = 0;
   const toWrite: string[] = [];
@@ -65,7 +70,7 @@ export const classifyHuntHits = (runId: string, keys: string[], known: Map<strin
       newCount += 1;
     } else {
       recurringCount += 1;
-      if (!countedRuns(record).includes(runId)) {
+      if (!keepKnown && !countedRuns(record).includes(runId)) {
         toWrite.push(key);
       }
     }
@@ -127,7 +132,33 @@ export interface HuntHitsRecordInput {
   // Indicator hunts: the keys of the values each hit holds, by hit key
   iocKeysByHit?: Map<string, string[]>;
   seenAt: string;
+  // Late evidence of a run the records may have forgotten (isHuntRunRemembered): the known records are left as they are
+  keepKnown?: boolean;
 }
+
+/** Whether the records of the hits of a run still tell whether the run counted them, for its late evidence. */
+export const isHuntRunRemembered = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+  if (!run.completed_at) {
+    return true;
+  }
+  const later = await elCount(context, HUNT_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_HUNT_RUN],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['hunt_id'], values: [run.hunt_id] },
+        run.security_platform_id
+          ? { key: ['security_platform_id'], values: [run.security_platform_id] }
+          : { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil },
+        { key: ['completed_at'], values: [run.completed_at], operator: FilterOperator.Gte },
+        { key: ['id'], values: [run.internal_id], operator: FilterOperator.NotEq },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  return Number(later) < LATE_EVIDENCE_RUNS_WINDOW;
+};
 
 /**
  * Matches the hits of a run against the hits already known for its hunt on its security platform, then records them:
@@ -143,7 +174,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
   const seenAt = new Date(input.seenAt).toISOString();
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
-    const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known);
+    const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown);
     const operations: unknown[] = [];
     for (let index = 0; index < toWrite.length; index += 1) {
       await doYield();

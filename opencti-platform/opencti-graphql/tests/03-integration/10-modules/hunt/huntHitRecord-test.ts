@@ -58,4 +58,10 @@ describe('Hunt hit records', () => {
     expect(record?.last_run_id).toEqual(later);
     expect(record?.counted_run_ids?.slice(-2)).toEqual([interrupted, later]);
   });
+
+  it('should leave a known hit as it is for late evidence of a run the records may have forgotten', async () => {
+    expect(await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [HIT], seenAt: LATER, keepKnown: true }))
+      .toEqual({ newCount: 0, recurringCount: 1 });
+    expect((await lastSeen()).timesSeen).toEqual(5);
+  });
 });
