@@ -328,6 +328,7 @@ describe('JSON ingestion resolver — configuration export / import', () => {
     });
     const exported = JSON.parse(result.data?.ingestionJson.toConfigurationExport);
     expect(exported.type).toBe('jsonFeeds');
+    expect(exported.export_id).toBe(exportIngestionId);
     expect(exported.openCTI_version).toBeDefined();
     expect(exported.configuration).toMatchObject({
       name: 'JSON feed for export test',

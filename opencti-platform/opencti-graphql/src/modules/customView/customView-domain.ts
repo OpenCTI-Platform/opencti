@@ -422,6 +422,7 @@ export const exportCustomView = async (
   const exportConfigration: CustomViewExport = {
     openCTI_version: pjson.version,
     type: 'custom-view',
+    export_id: customView.export_id,
     configuration: {
       name: customView.name,
       manifest: generatedManifest,

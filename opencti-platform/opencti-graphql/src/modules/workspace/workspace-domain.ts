@@ -293,6 +293,7 @@ export const generateWorkspaceExportConfiguration = async (context: AuthContext,
   const exportConfigration = {
     openCTI_version: pjson.version,
     type: 'dashboard',
+    export_id: workspace.export_id,
     configuration: {
       name: workspace.name,
       manifest: generatedManifest,

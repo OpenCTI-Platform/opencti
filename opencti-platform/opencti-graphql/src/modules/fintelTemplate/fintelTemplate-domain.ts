@@ -395,6 +395,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'fintelTemplate',
+    export_id: template.export_id,
     configuration: {
       name,
       description,

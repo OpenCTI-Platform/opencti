@@ -232,6 +232,7 @@ export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionT
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
     type: 'taxiiFeeds',
+    export_id: ingestionTaxii.export_id,
     configuration: {
       name,
       description,

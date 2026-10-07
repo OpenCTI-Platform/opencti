@@ -45,6 +45,7 @@ export interface StixCustomView extends StixObject {
 export interface CustomViewExport {
   openCTI_version: string;
   type: 'custom-view';
+  export_id?: string;
   configuration: {
     name: string;
     manifest: string;
