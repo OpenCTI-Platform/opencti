@@ -281,6 +281,38 @@ const readHuntPackFile = async (file: Promise<FileHandle>): Promise<string> => {
   });
 };
 
+const PACK_HUNT_STRING_FIELDS = ['description', 'hypothesis', 'hunt_type', 'sigma_rule', 'hunt_ioc_filters', 'hunt_schedule', 'created_by_ref'];
+const PACK_HUNT_NUMBER_FIELDS = ['time_window_hours', 'escalation_threshold', 'hunt_max_results'];
+const PACK_HUNT_STRING_LIST_FIELDS = [
+  'object_marking_refs',
+  'labels',
+  'expected_observables',
+  'benign_patterns',
+  ATTRIBUTE_HUNT_TECHNIQUES,
+  ATTRIBUTE_HUNT_TARGETS,
+  ATTRIBUTE_HUNT_SOURCES,
+];
+const PACK_HUNT_OBJECT_LIST_FIELDS = ['native_queries', 'hunt_ioc_values'];
+
+const isListOf = (value: unknown, isItem: (item: unknown) => boolean) => Array.isArray(value) && value.every(isItem);
+const isObject = (item: unknown) => !!item && typeof item === 'object' && !Array.isArray(item);
+
+/** The first field of a pack hunt that the import cannot read (a missing id or name, a value of another type), if any. */
+const malformedPackHuntField = (hunt: Record<string, unknown>) => {
+  const present = (field: string) => hunt[field] !== undefined && hunt[field] !== null;
+  if (typeof hunt.id !== 'string' || hunt.id.length === 0) {
+    return 'id';
+  }
+  if (typeof hunt.name !== 'string' || hunt.name.trim().length === 0) {
+    return 'name';
+  }
+  return PACK_HUNT_STRING_FIELDS.find((field) => present(field) && typeof hunt[field] !== 'string')
+    ?? PACK_HUNT_NUMBER_FIELDS.find((field) => present(field) && (typeof hunt[field] !== 'number' || !Number.isFinite(hunt[field])))
+    ?? PACK_HUNT_STRING_LIST_FIELDS.find((field) => present(field) && !isListOf(hunt[field], (item) => typeof item === 'string'))
+    ?? PACK_HUNT_OBJECT_LIST_FIELDS.find((field) => present(field) && !isListOf(hunt[field], isObject))
+    ?? (present('extensions') && !isObject(hunt.extensions) ? 'extensions' : null);
+};
+
 export const parseHuntPack = async (file: Promise<FileHandle>) => {
   const content = await readHuntPackFile(file);
   let bundle: { type?: string; objects?: Record<string, any>[] } | null;
@@ -293,9 +325,17 @@ export const parseHuntPack = async (file: Promise<FileHandle>) => {
     throw FunctionalError('A hunt pack must be a STIX 2.1 bundle');
   }
   const objects = new Map<string, Record<string, any>>(bundle.objects.filter((object) => typeof object?.id === 'string').map((object) => [object.id, object]));
+  const packHunts = bundle.objects.filter((object) => HUNT_STIX_TYPES.includes(object?.type));
+  // Every hunt is read before any is planned or written: a malformed one refuses the pack with nothing imported
+  packHunts.forEach((hunt) => {
+    const field = malformedPackHuntField(hunt);
+    if (field) {
+      const huntId = typeof hunt.id === 'string' ? hunt.id : null;
+      throw FunctionalError(`${huntId ? `The hunt ${huntId}` : 'A hunt'} of the pack has an invalid ${field}`, { hunt: huntId, field });
+    }
+  });
   // A hunt listed twice is imported once, as its last occurrence (like every other object of the bundle)
-  const hunts = Array.from(new Map((bundle.objects.filter((object) => HUNT_STIX_TYPES.includes(object?.type)) as StixHunt[])
-    .map((hunt) => [hunt.id, hunt])).values());
+  const hunts = Array.from(new Map((packHunts as StixHunt[]).map((hunt) => [hunt.id, hunt])).values());
   if (hunts.length === 0) {
     throw FunctionalError('The bundle does not contain any hunt');
   }

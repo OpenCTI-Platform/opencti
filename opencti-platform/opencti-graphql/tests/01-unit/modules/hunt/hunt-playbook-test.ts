@@ -339,6 +339,36 @@ describe('Hunt packs', () => {
     await expect(parseHuntPack(upload(['not json']))).rejects.toThrow('A hunt pack must be a STIX 2.1 bundle');
   });
 
+  it('should refuse a pack holding a malformed hunt when it is read, before any hunt is planned or written', async () => {
+    const pack = (...hunts: Record<string, unknown>[]) => upload([JSON.stringify({ type: 'bundle', objects: hunts })]);
+    const valid = {
+      id: 'hunt--1',
+      type: 'hunt',
+      name: 'Hunt',
+      description: null,
+      time_window_hours: 24,
+      object_marking_refs: ['marking-definition--1'],
+      native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: null }],
+      extensions: {},
+    };
+    expect((await parseHuntPack(pack(valid))).hunts).toHaveLength(1);
+    const malformed: [Record<string, unknown>, string][] = [
+      [{ ...valid, id: 42 }, 'A hunt of the pack has an invalid id'],
+      [{ ...valid, name: undefined }, 'The hunt hunt--1 of the pack has an invalid name'],
+      [{ ...valid, name: '  ' }, 'The hunt hunt--1 of the pack has an invalid name'],
+      [{ ...valid, sigma_rule: { title: 't' } }, 'The hunt hunt--1 of the pack has an invalid sigma_rule'],
+      [{ ...valid, time_window_hours: '24' }, 'The hunt hunt--1 of the pack has an invalid time_window_hours'],
+      [{ ...valid, object_marking_refs: 'marking-definition--1' }, 'The hunt hunt--1 of the pack has an invalid object_marking_refs'],
+      [{ ...valid, native_queries: ['index=main'] }, 'The hunt hunt--1 of the pack has an invalid native_queries'],
+      [{ ...valid, extensions: [] }, 'The hunt hunt--1 of the pack has an invalid extensions'],
+    ];
+    for (let index = 0; index < malformed.length; index += 1) {
+      const [hunt, message] = malformed[index];
+      // A malformed hunt refuses the pack even listed after a valid one
+      await expect(parseHuntPack(pack({ ...valid, id: 'hunt--0', name: 'First' }, hunt))).rejects.toThrow(message);
+    }
+  });
+
   it('should distribute hunts as hub drafts without local execution settings', () => {
     const stixHunt = {
       id: 'hunt--1',
