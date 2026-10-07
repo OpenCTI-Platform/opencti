@@ -152,6 +152,8 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of source conflicts detected
 - The number of conflicting values adopted
 
+The numbers of relationships with provenance, of corroborated relationships, of stale knowledge elements and of knowledge elements with source conflicts cover the types whose provenance is tracked, and are zero while no type is tracked.
+
 No source and no knowledge content is ever collected, only counts.
 
 ### Retention and activity
