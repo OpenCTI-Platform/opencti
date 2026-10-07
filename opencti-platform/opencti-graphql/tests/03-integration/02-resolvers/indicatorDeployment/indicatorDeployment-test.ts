@@ -16,6 +16,7 @@ import {
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import { createRelation, deleteElementById, stixLoadById } from '../../../../src/database/middleware';
+import * as middleware from '../../../../src/database/middleware';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
@@ -900,6 +901,16 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       expect(beforeReport.creator_id).not.toContain(connectorUserId);
       // Created through the generic path: its creator reported nothing, so it is no reporter
       expect(beforeReport.deployment_reporter_ids ?? []).toEqual([]);
+      // A report whose write fails records nothing: the account does not speak for a report that was not written
+      const failedWrite = vi.spyOn(middleware, 'patchAttribute').mockRejectedValueOnce(new Error('Write conflict'));
+      try {
+        await queryAsUserIsExpectedError(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'deployed' } });
+      } finally {
+        failedWrite.mockRestore();
+      }
+      const afterFailedWrite = await recordedOf();
+      expect(afterFailedWrite.creator_id).not.toContain(connectorUserId);
+      expect(afterFailedWrite.deployment_reporter_ids ?? []).toEqual([]);
       // A heartbeat (same status) is accepted: the connector becomes a creator and a reporter once, the lifecycle is unchanged
       const heartbeat = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'deployed' } });
       expect(heartbeat.data?.indicatorReportDeployment.deployment_status).toEqual('deployed');

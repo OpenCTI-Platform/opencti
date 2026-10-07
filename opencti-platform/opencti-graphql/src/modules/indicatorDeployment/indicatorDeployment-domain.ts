@@ -633,19 +633,21 @@ const applyDeploymentReport = async (
     if (change.stale) {
       return { element: existing, outcome: 'unchanged' };
     }
-    await recordDeploymentReporter(context, existing, user);
     // An accepted report adds its account to the creators of the deployment, as an upsert would
     const addsCreator = isNewDeploymentCreator(existing, user);
     // The first report makes the deployment count as disseminated: it takes the regular path, whose
-    // event refreshes the indicator counters, and only a deployment already reported gets a heartbeat
+    // event refreshes the indicator counters, and only a deployment already reported gets a heartbeat.
+    // Its account becomes a reporter only once the report is written: a failed write records nothing.
     if (!change.meaningful && !addsCreator && isReportedDeployment(existing)) {
       await touchLastSync(context, existing, change.attributes.last_sync_at);
+      await recordDeploymentReporter(context, existing, user);
       return { element: { ...existing, last_sync_at: change.attributes.last_sync_at as Date }, outcome: 'unchanged' };
     }
     const patch: Record<string, unknown> = addsCreator ? { ...change.attributes, creator_id: [user.id] } : change.attributes;
     const { element } = await patchAttribute(context, user, existing.internal_id, RELATION_DEPLOYED_ON, patch, {
       operations: addsCreator ? { creator_id: UPDATE_OPERATION_ADD } : undefined,
     });
+    await recordDeploymentReporter(context, existing, user);
     await notifyRelationEdit(user, element);
     return { element: element as unknown as BasicStoreRelationDeployedOn, outcome: change.meaningful ? 'updated' : 'unchanged' };
   } finally {
