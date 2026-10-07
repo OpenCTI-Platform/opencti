@@ -21,6 +21,7 @@ import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreators from '../../../../components/ItemCreators';
+import ProvenanceOverviewColumn from '../../common/provenance/ProvenanceOverviewColumn';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
@@ -419,75 +420,77 @@ class StixSightingRelationshipContainer extends Component {
             </Card>
           </Grid>
           <Grid item xs={6}>
-            <Card title={t('Details')}>
-              <Grid container={true} spacing={3}>
-                <Grid item xs={6}>
-                  <Label>
-                    {t('Confidence level')}
-                  </Label>
-                  <ItemConfidence
-                    confidence={stixSightingRelationship.confidence}
-                    entityType={stixSightingRelationship.entity_type}
-                  />
-                  {stixSightingRelationship.x_opencti_inferences === null && (
-                    <div>
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('Author')}
-                      </Label>
-                      <ItemAuthor
-                        createdBy={R.propOr(
-                          null,
-                          'createdBy',
-                          stixSightingRelationship,
-                        )}
-                      />
-                    </div>
-                  )}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Original creation date')}
-                  </Label>
-                  {nsdt(stixSightingRelationship.created)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Modification date')}
-                  </Label>
-                  {nsdt(stixSightingRelationship.updated_at)}
+            <ProvenanceOverviewColumn id={stixSightingRelationship.id} entityType="stix-sighting-relationship">
+              <Card title={t('Details')}>
+                <Grid container={true} spacing={3}>
+                  <Grid item xs={6}>
+                    <Label>
+                      {t('Confidence level')}
+                    </Label>
+                    <ItemConfidence
+                      confidence={stixSightingRelationship.confidence}
+                      entityType={stixSightingRelationship.entity_type}
+                    />
+                    {stixSightingRelationship.x_opencti_inferences === null && (
+                      <div>
+                        <Label
+                          sx={{ marginTop: 2 }}
+                        >
+                          {t('Author')}
+                        </Label>
+                        <ItemAuthor
+                          createdBy={R.propOr(
+                            null,
+                            'createdBy',
+                            stixSightingRelationship,
+                          )}
+                        />
+                      </div>
+                    )}
+                    <Label
+                      sx={{ marginTop: 2 }}
+                    >
+                      {t('Original creation date')}
+                    </Label>
+                    {nsdt(stixSightingRelationship.created)}
+                    <Label
+                      sx={{ marginTop: 2 }}
+                    >
+                      {t('Modification date')}
+                    </Label>
+                    {nsdt(stixSightingRelationship.updated_at)}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Label>
+                      {t('Processing status')}
+                    </Label>
+                    <ItemStatus
+                      status={stixSightingRelationship.status}
+                      disabled={!stixSightingRelationship.workflowEnabled}
+                    />
+                    <StixSightingRelationshipLabelsView
+                      labels={stixSightingRelationship.objectLabel}
+                      id={stixSightingRelationship.id}
+                      sx={{ marginTop: 2 }}
+                    />
+                    <Label
+                      sx={{ marginTop: 2 }}
+                    >
+                      {t('Platform creation date')}
+                    </Label>
+                    {fldt(stixSightingRelationship.created_at)}
+                    <Label
+                      sx={{ marginTop: 2 }}
+                    >
+                      {t('Creators')}
+                    </Label>
+                    <ItemCreators
+                      creators={stixSightingRelationship.creators ?? []}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <Label>
-                    {t('Processing status')}
-                  </Label>
-                  <ItemStatus
-                    status={stixSightingRelationship.status}
-                    disabled={!stixSightingRelationship.workflowEnabled}
-                  />
-                  <StixSightingRelationshipLabelsView
-                    labels={stixSightingRelationship.objectLabel}
-                    id={stixSightingRelationship.id}
-                    sx={{ marginTop: 2 }}
-                  />
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Platform creation date')}
-                  </Label>
-                  {fldt(stixSightingRelationship.created_at)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Creators')}
-                  </Label>
-                  <ItemCreators
-                    creators={stixSightingRelationship.creators ?? []}
-                  />
-                </Grid>
-              </Grid>
-            </Card>
+              </Card>
+            </ProvenanceOverviewColumn>
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
             <Grid item xs={12}>

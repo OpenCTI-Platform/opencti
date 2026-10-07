@@ -37,6 +37,7 @@ import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
 import { Box, Stack } from '@mui/material';
+import ProvenanceBadge from '../../private/components/common/provenance/ProvenanceBadge';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -256,6 +257,20 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ context }) => {
       return <Tag label={context} />;
     },
+  },
+  corroboration_count: {
+    id: 'corroboration_count',
+    label: 'Corroboration',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ corroboration_count, freshness_days, freshness_stale, has_conflicts }) => (
+      <ProvenanceBadge
+        corroborationCount={corroboration_count}
+        freshnessDays={freshness_days}
+        stale={freshness_stale}
+        hasConflicts={has_conflicts}
+      />
+    ),
   },
   coverage_last_result: {
     id: 'coverage_last_result',
@@ -513,6 +528,24 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ first_seen }, { nsdt }) => nsdt(first_seen),
   },
+  freshness_days: {
+    id: 'freshness_days',
+    label: 'Freshness',
+    percentWidth: 9,
+    isSortable: true,
+    render: ({ freshness_days, freshness_stale }, { t_i18n }) => {
+      if (freshness_days === null || freshness_days === undefined) {
+        return defaultRender(null);
+      }
+      const state = t_i18n(freshness_stale ? 'Stale' : 'Fresh');
+      const age = t_i18n('{days, plural, =0 {Last asserted today} one {Last asserted # day ago} other {Last asserted # days ago}}', { values: { days: freshness_days } });
+      return (
+        <Tooltip title={`${state} - ${age}`}>
+          <span data-testid="freshness-state"><Truncate>{state}</Truncate></span>
+        </Tooltip>
+      );
+    },
+  },
   fromName: {
     id: 'fromName',
     label: 'From name',
@@ -729,6 +762,22 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ lastname }) => defaultRender(lastname),
+  },
+  last_asserted_at: {
+    id: 'last_asserted_at',
+    label: 'Last assertion',
+    percentWidth: 12,
+    isSortable: true,
+    render: ({ last_asserted_at }, { rd, smhd }) => {
+      if (!last_asserted_at) {
+        return defaultRender(null);
+      }
+      return (
+        <Tooltip title={smhd(last_asserted_at)}>
+          <span><Truncate>{rd(last_asserted_at)}</Truncate></span>
+        </Tooltip>
+      );
+    },
   },
   last_observed: {
     id: 'last_observed',

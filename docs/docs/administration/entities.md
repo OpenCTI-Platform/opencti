@@ -30,6 +30,17 @@ This configuration enables the requirement of a reference message on an entity c
 ![Entity configuration](./assets/entity-configuration.png)
 
 
+## Provenance
+
+The "Track sources and corroboration" switch of the "Provenance" card records, for the elements of the type, the sources asserting them, their corroboration, conflicting values and freshness. It is enabled by default on indicators, intrusion sets, threat actors and malware. When enabled, the "Sources" widget is part of the overview layout of the type: half width, right after the basic information (after the timeline on cases), where it can be moved and resized in the "Overview Layout" tab like the other widgets. Each new assertion costs a write on ingestion: enable it on the types you curate. More information in [Provenance and corroboration](../usage/provenance.md#entity-types-tracked).
+
+![The Overview Layout tab of the Intrusion Set entity type, listing the Sources widget right after Basic information](./assets/overview-layout-sources.png)
+
+??? example "The same tab in the light theme"
+
+    ![The Overview Layout tab of the Intrusion Set entity type in the light theme](./assets/overview-layout-sources-light.png)
+
+
 <a id="workflow-section"></a>
 ## Workflow
 

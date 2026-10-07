@@ -118,6 +118,48 @@ You will also be able to edit your rule, change all its parameters and order, ac
 
     Decay rules are only applied, and indicators score updated, if [indicator decay manager](../deployment/advanced/managers.md) is enabled (enabled by default).
 
+## Knowledge decay rules
+
+Knowledge decay rules age the rest of the knowledge: relationships and entities that no source re-asserted for a given period. They rely on the [provenance](../usage/provenance.md) of the knowledge, never on its creation or modification date, and never change the score of indicators.
+
+Knowledge decay rules are configured in the "Knowledge decay rules" tab of the "Settings > Customization > Decay rules" menu. A rule defines:
+
+- **Target scope**: relationships or entities. Indicators are always handled by the indicator decay rules above.
+- **Target types**: the relationship types (all relationships and sightings if empty) or the entity types (mandatory) the rule applies to.
+- **Filters**: optional filters narrowing the knowledge the rule applies to.
+- **Stale after**: the number of days without any assertion after which the knowledge is considered stale.
+- **Policy for stale knowledge**:
+    - *Flag*: the knowledge is flagged as stale.
+    - *Lower confidence*: the knowledge is flagged and its confidence is lowered by the configured step.
+    - *Revoke*: the knowledge is flagged and revoked. This policy is only available for types supporting revocation.
+- **Order**: when several rules match the same knowledge, the rule with the highest order applies. A rule that is created, activated, reordered or retargeted above other rules takes over the knowledge they already flagged: it is evaluated again under the new rule. Changing the order of a rule also releases the knowledge it flagged, so an overlapping rule that now has a higher order takes it over on the next run.
+
+A rule only applies to the types whose [provenance is tracked](../usage/provenance.md#entity-types-tracked): the knowledge of a type whose tracking is switched off is never flagged, lowered or revoked.
+
+The list and the page of each rule state its effect in one sentence built from its fields, for instance "Malware not re-asserted within 60 days are flagged as stale." or "Uses relationships not re-asserted within 180 days are flagged as stale and their confidence is lowered."
+
+![The Knowledge decay rules tab: two custom rules, on uses relationships and on malware, and the three built-in rules, disabled, each with the sentence stating its effect, the number of elements it currently flags, its state and its order](./assets/knowledge-decay-rules.png)
+
+??? example "The same list in the light theme"
+
+    ![The Knowledge decay rules tab in the light theme](./assets/knowledge-decay-rules-light.png)
+
+The creation and edition form explains each field below it and links to this section ("Learn more about knowledge decay rules").
+
+![The knowledge decay rule form: a help line under the target scope, the relationship types, the stale after delay, the policy, the confidence step, the order and the active switch](./assets/knowledge-decay-rule-form.png)
+
+??? example "The same form in the light theme"
+
+    ![The knowledge decay rule form in the light theme](./assets/knowledge-decay-rule-form-light.png)
+
+Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating or deleting a rule, or changing its targets, filters, delay, policy or confidence step, clears the flags it set: the next run evaluates that knowledge again under the new configuration, so a new policy also applies to the knowledge already flagged. If these flags cannot all be cleared when the rule is saved, the next run of the knowledge freshness manager clears the rest before applying the rules.
+
+Three built-in knowledge decay rules are shipped **disabled**: `communicates-with` relationships after 180 days, `uses` relationships after 24 months and infrastructures after one year. They can only be activated or deactivated: create your own rule to change their configuration.
+
+!!! tip "Knowledge freshness manager"
+
+    Knowledge decay rules are only applied if the [knowledge freshness manager](../deployment/advanced/managers.md#knowledge-freshness-manager) is enabled (enabled by default). It runs every hour.
+
 ## Specific behavior when two sources are trying to position a score
 
 It can happen that two sources would like to push a score update on your indicator. This can impact your platform since the two sources could trigger endless updates on your platform.

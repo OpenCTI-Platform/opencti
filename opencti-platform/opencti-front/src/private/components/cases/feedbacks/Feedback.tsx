@@ -8,6 +8,7 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import { Feedback_case$key } from './__generated__/Feedback_case.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const feedbackFragment = graphql`
   fragment Feedback_case on Feedback {
@@ -130,6 +131,12 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={feedback.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={feedback.id} showEmpty />
                   </Grid>
                 );
               default:

@@ -22,6 +22,7 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import Card from '../../../../components/common/card/Card';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 interface CaseIncidentProps {
   caseIncidentData: CaseUtils_case$key;
@@ -181,6 +182,12 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={caseIncident.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ProvenanceSourcesCard id={caseIncident.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

@@ -14,6 +14,11 @@ const convertDecayRuleToStix = (instance: StoreEntityDecayRule): StixDecayRule =
     decay_pound: instance.decay_pound,
     decay_revoke_score: instance.decay_revoke_score,
     decay_filters: instance.decay_filters,
+    target_scope: instance.target_scope,
+    target_types: instance.target_types,
+    freshness_policy: instance.freshness_policy,
+    stale_after_days: instance.stale_after_days,
+    freshness_confidence_step: instance.freshness_confidence_step,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

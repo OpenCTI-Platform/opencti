@@ -8,7 +8,7 @@ Note that the data deleted by an active retention policy will not appear in the 
 
 Retention rules can be configured in the "Settings > Customization > Retention policies" window. A set of parameters must be configured:
 
-- **Scope**: Define which data are concerned by the retention rule. The possible scopes are: Knowledge, File, Workbench, History, Activity.
+- **Scope**: Define which data are concerned by the retention rule. The possible scopes are: Knowledge, Source conflicts, File, Workbench, History, Activity.
 
 - **Maximum retention**: Set the maximum amount of time an object can remain unchanged before being eligible for deletion.
 
@@ -17,14 +17,16 @@ Retention rules can be configured in the "Settings > Customization > Retention p
 - **Active**: Toggle to enable or disable the retention rule without deleting it (see [Enabling and disabling a rule](#enabling-and-disabling-a-rule)).
 ![Retention policy active/inactive](./assets/retentions-active.png)
 
-- **Filters** (for Knowledge scope only): Define filters based on specific criteria to select the types of objects subject to retention rules.
+- **Filters** (for Knowledge and Source conflicts scopes only): Define filters based on specific criteria to select the types of objects subject to retention rules.
 ![Retention policy parameters](./assets/retention-policy-parameters.png)
 
 ## Scopes
 
-There are 5 possible scopes for a retention rule:
+There are 6 possible scopes for a retention rule:
 
 - **Knowledge**: The rule concerns all the entities of the platform. Users can define filters to target specific objects. Any object respecting the specified filters and that haven't been updated within the maximum retention duration will be permanently deleted.
+
+- **Source conflicts**: The rule concerns the [source conflicts](../usage/provenance.md#source-conflicts) of the knowledge. Elements are kept: only the conflicting values that no source re-asserted within the maximum retention duration are purged. Users can define filters to target specific objects.
 
 - **File**: The rule is applied on the global files (i.e. contained in Data > Import) that have been correctly uploaded (upload status is 'complete') and whose eventual imports have all been correctly completed. Such files are permanently deleted if they has been uploaded for a longer duration then the maximum retention duration. The rule is created by default and set to Inactive if you had not created it before
 

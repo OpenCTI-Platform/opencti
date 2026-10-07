@@ -19,8 +19,11 @@ import { internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadB
 import {
   type BasicStoreEntityNotification,
   type BasicStoreEntityTrigger,
+  DEFAULT_CORROBORATION_THRESHOLD,
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_TRIGGER,
+  MAX_CORROBORATION_THRESHOLD,
+  TRIGGER_EVENT_CORROBORATION,
   NOTIFICATION_NUMBER,
   type NotificationAddInput,
   type StoreEntityNotification,
@@ -53,6 +56,21 @@ import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering
 import { authorizedMembers } from '../../schema/attribute-definition';
 
 // Triggers
+
+/**
+ * A corroboration trigger fires when an element reaches the threshold of distinct sources.
+ */
+export const resolveCorroborationThreshold = (eventTypes: string[] | null | undefined, requested: number | null | undefined): number | null => {
+  if (!(eventTypes ?? []).includes(TRIGGER_EVENT_CORROBORATION)) {
+    return requested ?? null;
+  }
+  const threshold = requested ?? DEFAULT_CORROBORATION_THRESHOLD;
+  if (!Number.isInteger(threshold) || threshold < DEFAULT_CORROBORATION_THRESHOLD || threshold > MAX_CORROBORATION_THRESHOLD) {
+    throw UnsupportedError('The corroboration threshold must be an integer between 2 and 200', { threshold });
+  }
+  return threshold;
+};
+
 // Due to engine limitation we restrict the recipient to only one user for now
 const extractUniqRecipient = async (
   context: AuthContext,
@@ -109,6 +127,7 @@ export const addTrigger = async (
     updated_at: now(),
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
+    ...(type === TriggerTypeValue.Live ? { corroboration_threshold: resolveCorroborationThreshold(input.event_types, input.corroboration_threshold) } : {}),
     restricted_members: members,
     authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN], // Add extra capabilities
   };
@@ -205,13 +224,23 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
   if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
     throw ForbiddenAccess();
   }
+  const finalInput = [...input];
   if (trigger.trigger_type === TriggerTypeValue.Live) {
     const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
     if (emptyTriggerEvents.length > 0) {
       throw UnsupportedError('Attribute "trigger_events" of a live trigger should have at least one event');
     }
+    const eventTypesInput = input.find((editEntry) => editEntry.key === 'event_types');
+    const thresholdInput = input.find((editEntry) => editEntry.key === 'corroboration_threshold');
+    const eventTypes = eventTypesInput ? eventTypesInput.value as string[] : trigger.event_types;
+    const requestedThreshold = thresholdInput ? Number(thresholdInput.value?.[0]) : trigger.corroboration_threshold;
+    const threshold = resolveCorroborationThreshold(eventTypes, requestedThreshold);
+    if (threshold !== (trigger.corroboration_threshold ?? null)) {
+      const otherInputs = finalInput.filter((editEntry) => editEntry.key !== 'corroboration_threshold');
+      finalInput.splice(0, finalInput.length, ...otherInputs, { key: 'corroboration_threshold', value: [threshold === null ? null : String(threshold)] });
+    }
   }
-  const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
+  const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, finalInput);
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
 };
 

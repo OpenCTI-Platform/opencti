@@ -4,8 +4,10 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
 import { workflowId } from './stixDomainObject-registrationAttributes';
+import { provenanceAttributes } from '../provenance/provenance-attributes';
 
 export const stixSightingRelationshipsAttributes: Array<AttributeDefinition> = [
+  ...provenanceAttributes,
   { ...entityType, isFilterable: false },
   { name: 'attribute_count', label: 'Count', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },

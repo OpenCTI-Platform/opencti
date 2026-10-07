@@ -33,7 +33,6 @@ import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils'
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
-
 const settingsResolvers = {
   Query: {
     about: () => getApplicationInfo(),

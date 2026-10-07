@@ -76,6 +76,30 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 
 #: STIX Extension ID for MITRE ATT&CK framework objects
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+
+#: STIX Extension ID for the OpenCTI provenance summary (read-only)
+STIX_EXT_OCTI_PROVENANCE: str = (
+    "extension-definition--283daa2f-7739-5345-a110-19d73676f670"
+)
+
+#: Provenance fields computed by the platform, never sent back as STIX properties:
+#: every field of its provenance side channel, plus the computed freshness_days
+PROVENANCE_READ_ONLY_FIELDS = [
+    "x_opencti_assertions",
+    "assertion_source_ids",
+    "assertion_source_kinds",
+    "x_opencti_conflicts",
+    "conflict_fields",
+    "corroboration_count",
+    "last_asserted_at",
+    "freshness_days",
+    "single_sourced",
+    "has_conflicts",
+    "freshness_stale",
+    "freshness_stale_at",
+    "freshness_rule_id",
+    "procedures",
+]
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
 
@@ -2161,6 +2185,8 @@ class OpenCTIStix2:
             del entity["created_at"]
         if "updated_at" in entity:
             del entity["updated_at"]
+        for field in PROVENANCE_READ_ONLY_FIELDS:
+            entity.pop(field, None)
 
         return {k: v for k, v in entity.items() if self.opencti.not_empty(v)}
 

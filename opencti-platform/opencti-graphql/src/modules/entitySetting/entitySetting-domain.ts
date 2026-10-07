@@ -1,11 +1,18 @@
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
-import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
+import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
+import {
+  ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES,
+  ENTITY_SETTING_PROVENANCE_TRACKING,
+  isProvenanceTrackingEnabled,
+  listProvenanceTrackedTypesOfSetting,
+} from '../provenance/provenance-tracking';
+import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
-import { SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
@@ -14,7 +21,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 import type { BasicConnection, BasicStoreEntity } from '../../types/store';
@@ -24,6 +31,7 @@ import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { emptyPaginationResult } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { now } from '../../utils/format';
 
 // -- LOADING --
 
@@ -76,7 +84,20 @@ export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser,
   return pageEntitiesConnection<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
+const PROVENANCE_TRACKING_KEYS = [ENTITY_SETTING_PROVENANCE_TRACKING, ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES];
+
+// Provenance settings belong to "Settings > Customization": the parameters capability alone cannot change them
+const CUSTOMIZATION_ONLY_KEYS = [
+  ...PROVENANCE_TRACKING_KEYS,
+  'procedures_preservation',
+  'procedures_description_policy',
+];
+
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
+  const customizationKeys = input.map(({ key }) => key).filter((key) => CUSTOMIZATION_ONLY_KEYS.includes(key));
+  if (customizationKeys.length > 0 && !isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION)) {
+    throw ForbiddenAccess('Changing these entity settings requires the customization capability', { keys: customizationKeys });
+  }
   const authorizedMembersEdit = input
     .filter(({ key, value }) => key === 'attributes_configuration' && value.length > 0)
     .flatMap(({ value }) => JSON.parse(value[0]))
@@ -92,7 +113,21 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
       throw FunctionalError('It should have at least one member with admin access');
     }
   }
-  const { element } = await updateAttribute<StoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  // A type that becomes tracked gets its tracking start before the live tracking can record anything for it
+  const changesTracking = PROVENANCE_ENABLED && input.some(({ key }) => PROVENANCE_TRACKING_KEYS.includes(key));
+  // Loaded on use: the backfill depends on the middleware, which loads this module, so a static import would be a cycle
+  const backfill = changesTracking ? await import('../provenance/provenance-backfill') : undefined;
+  const backfillLock = await backfill?.lockProvenanceBackfill();
+  const trackingStart = now();
+  let element: StoreEntityEntitySetting;
+  try {
+    ({ element } = await updateAttribute<StoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input));
+    if (backfill) {
+      await backfill.recordProvenanceTrackingStarts(context, await listProvenanceTrackedTypesOfSetting(context, element), trackingStart);
+    }
+  } finally {
+    await backfillLock?.unlock();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -104,8 +139,58 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
-export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+export const PROVENANCE_SOURCES_WIDGET: OverviewLayoutCustomization = { key: 'sources', width: 6, label: 'Sources' };
+
+const insertBefore = (layout: OverviewLayoutCustomization[], widget: OverviewLayoutCustomization, beforeKey: string) => {
+  const index = layout.findIndex((candidate) => candidate.key === beforeKey);
+  return index < 0 ? [...layout, widget] : [...layout.slice(0, index), widget, ...layout.slice(index)];
+};
+
+/**
+ * The Sources widget opens the second row of the overview, right after the basic information and the timeline that
+ * follows it on cases, so that it pairs with the timeline or with the next half-width widget.
+ */
+export const insertSourcesWidget = (layout: OverviewLayoutCustomization[]) => {
+  let anchor = layout.findIndex((candidate) => candidate.key === 'basicInformation');
+  if (anchor < 0 || layout[anchor + 1]?.key === 'timeline') {
+    anchor = layout.findIndex((candidate) => candidate.key === 'timeline');
+  }
+  return anchor < 0
+    ? [...layout, PROVENANCE_SOURCES_WIDGET]
+    : [...layout.slice(0, anchor + 1), PROVENANCE_SOURCES_WIDGET, ...layout.slice(anchor + 1)];
+};
+
+/**
+ * Widgets registered after a layout was customized take, in the customized layout, the place they have in the default one.
+ */
+export const mergeMissingWidgets = (stored: OverviewLayoutCustomization[], defaults: OverviewLayoutCustomization[]) => {
+  let layout = [...stored];
+  defaults.forEach((widget, index) => {
+    if (layout.some((candidate) => candidate.key === widget.key)) {
+      return;
+    }
+    const next = defaults.slice(index + 1).find((candidate) => layout.some((existing) => existing.key === candidate.key));
+    layout = next ? insertBefore(layout, widget, next.key) : [...layout, widget];
+  });
+  return layout;
+};
+
+/**
+ * Overview layout of a type: the customized one completed with the widgets registered since, the Sources widget
+ * only being part of it while provenance is enabled on the platform and tracked on the type. A layout customized
+ * before the Sources widget existed receives it at its default position and width.
+ */
+export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting, provenanceEnabled = PROVENANCE_ENABLED) => {
+  const stored = entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : undefined;
+  const registered = schemaOverviewLayoutCustomization.get(entitySetting.target_type) as OverviewLayoutCustomization[] | undefined;
+  if (!registered) {
+    return stored;
+  }
+  const layout = stored ? mergeMissingWidgets(stored, registered) : registered;
+  if (!provenanceEnabled || !isProvenanceTrackingEnabled(entitySetting)) {
+    return layout.filter((widget) => widget.key !== PROVENANCE_SOURCES_WIDGET.key);
+  }
+  return layout.some((widget) => widget.key === PROVENANCE_SOURCES_WIDGET.key) ? layout : insertSourcesWidget(layout);
 };
 
 export const getTemplatesForSetting = async (

@@ -166,6 +166,13 @@
     "next_days": 30,
     "created_by_based": false
   },
+  "provenance": {
+    "enabled": true,
+    "reassertion_window_hours": 24,
+    "default_tracked_types": ["Indicator", "Intrusion-Set", "Threat-Actor-Group", "Threat-Actor-Individual", "Malware", "uses", "targets", "attributed-to"],
+    "refresh_on_write": false,
+    "max_conflict_values_per_field": 10
+  },
   "protected_sensitive_config": {
     "enabled": true,
     "markings": {
@@ -305,6 +312,18 @@
     "lock_key": "indicator_decay_manager_lock",
     "batch_size": 10000,
     "interval": 60000
+  },
+  "knowledge_freshness_manager": {
+    "enabled": true,
+    "lock_key": "knowledge_freshness_manager_lock",
+    "batch_size": 1000,
+    "interval": 3600000
+  },
+  "provenance_backfill_manager": {
+    "enabled": true,
+    "lock_key": "provenance_backfill_manager_lock",
+    "batch_size": 500,
+    "interval": 30000
   },
   "platform_usage_metrics_manager": {
     "enabled": false,

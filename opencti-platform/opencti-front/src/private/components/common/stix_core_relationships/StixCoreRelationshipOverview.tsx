@@ -35,6 +35,7 @@ import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObje
 import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
+import ProvenanceOverviewColumn from '../provenance/ProvenanceOverviewColumn';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
@@ -4651,75 +4652,77 @@ const StixCoreRelationshipOverview = ({
           </Card>
         </Grid>
         <Grid item xs={6}>
-          <Card title={t_i18n('Details')}>
-            <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Confidence level')}
-                </Label>
-                <ItemConfidence
-                  confidence={stixCoreRelationship.confidence}
-                  entityType="stix-core-relationship"
-                />
-                {stixCoreRelationship.x_opencti_inferences === null && (
-                  <div>
-                    <Label
-                      sx={{ marginTop: 2 }}
-                    >
-                      {t_i18n('Author')}
-                    </Label>
-                    <ItemAuthor
-                      createdBy={R.propOr(
-                        null,
-                        'createdBy',
-                        stixCoreRelationship,
-                      )}
-                    />
-                  </div>
-                )}
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t_i18n('Original creation date')}
-                </Label>
-                {nsdt(stixCoreRelationship.created)}
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t_i18n('Modification date')}
-                </Label>
-                {nsdt(stixCoreRelationship.updated_at)}
+          <ProvenanceOverviewColumn id={stixCoreRelationship.id} entityType={stixCoreRelationship.relationship_type} inheritedType="stix-core-relationship">
+            <Card title={t_i18n('Details')}>
+              <Grid container={true} spacing={2}>
+                <Grid item xs={6}>
+                  <Label>
+                    {t_i18n('Confidence level')}
+                  </Label>
+                  <ItemConfidence
+                    confidence={stixCoreRelationship.confidence}
+                    entityType="stix-core-relationship"
+                  />
+                  {stixCoreRelationship.x_opencti_inferences === null && (
+                    <div>
+                      <Label
+                        sx={{ marginTop: 2 }}
+                      >
+                        {t_i18n('Author')}
+                      </Label>
+                      <ItemAuthor
+                        createdBy={R.propOr(
+                          null,
+                          'createdBy',
+                          stixCoreRelationship,
+                        )}
+                      />
+                    </div>
+                  )}
+                  <Label
+                    sx={{ marginTop: 2 }}
+                  >
+                    {t_i18n('Original creation date')}
+                  </Label>
+                  {nsdt(stixCoreRelationship.created)}
+                  <Label
+                    sx={{ marginTop: 2 }}
+                  >
+                    {t_i18n('Modification date')}
+                  </Label>
+                  {nsdt(stixCoreRelationship.updated_at)}
+                </Grid>
+                <Grid item xs={6}>
+                  <Label>
+                    {t_i18n('Processing status')}
+                  </Label>
+                  <ItemStatus
+                    status={stixCoreRelationship.status}
+                    disabled={!stixCoreRelationship.workflowEnabled}
+                  />
+                  <StixCoreRelationshipObjectLabelsView
+                    labels={stixCoreRelationship.objectLabel}
+                    id={stixCoreRelationship.id}
+                    sx={{ marginTop: 2 }}
+                  />
+                  <Label
+                    sx={{ marginTop: 2 }}
+                  >
+                    {t_i18n('Platform creation date')}
+                  </Label>
+                  {fldt(stixCoreRelationship.created_at)}
+                  <Label
+                    sx={{ marginTop: 2 }}
+                  >
+                    {t_i18n('Creators')}
+                  </Label>
+                  <ItemCreators
+                    creators={stixCoreRelationship.creators ?? []}
+                  />
+                </Grid>
               </Grid>
-              <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Processing status')}
-                </Label>
-                <ItemStatus
-                  status={stixCoreRelationship.status}
-                  disabled={!stixCoreRelationship.workflowEnabled}
-                />
-                <StixCoreRelationshipObjectLabelsView
-                  labels={stixCoreRelationship.objectLabel}
-                  id={stixCoreRelationship.id}
-                  sx={{ marginTop: 2 }}
-                />
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t_i18n('Platform creation date')}
-                </Label>
-                {fldt(stixCoreRelationship.created_at)}
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t_i18n('Creators')}
-                </Label>
-                <ItemCreators
-                  creators={stixCoreRelationship.creators ?? []}
-                />
-              </Grid>
-            </Grid>
-          </Card>
+            </Card>
+          </ProvenanceOverviewColumn>
         </Grid>
         {stixCoreRelationship.x_opencti_inferences == null && (
           <>

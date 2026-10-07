@@ -8,6 +8,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const reportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -124,6 +125,12 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={report.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={report.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

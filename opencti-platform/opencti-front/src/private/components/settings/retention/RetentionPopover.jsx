@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import RetentionEdition from './RetentionEdition';
+import { isDeletableRetentionRule } from './retentionUtils';
 
 const styles = () => ({
   container: {
@@ -149,7 +150,7 @@ class RetentionPopover extends Component {
           render={({ props }) => {
             if (props) {
               const { retentionRule } = props;
-              const isTechnicalRule = retentionRule?.scope && retentionRule.scope !== 'knowledge';
+              const isTechnicalRule = !isDeletableRetentionRule(retentionRule?.scope);
               return (
                 <>
                   <Menu

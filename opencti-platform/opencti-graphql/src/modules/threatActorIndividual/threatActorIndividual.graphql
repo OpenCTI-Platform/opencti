@@ -28,6 +28,16 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: Identity
+  # Provenance
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
   currentUserAccessRight: String
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
@@ -190,6 +200,9 @@ enum ThreatActorsIndividualOrdering {
   _score
   objectMarking
   threat_actor_types
+  corroboration_count
+  last_asserted_at
+  freshness_days
 }
 type ThreatActorIndividualConnection {
   pageInfo: PageInfo!

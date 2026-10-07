@@ -48,6 +48,15 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
   sync_workflow_status_by_name: Boolean @auth
+  # Effective provenance tracking of the type: the stored setting, otherwise the platform default
+  provenance_tracking: Boolean! @auth
+  # Types governed by this setting (its own type, or the concrete types inheriting an abstract setting) whose provenance is not tracked
+  provenance_untracked_types: [String!]! @auth
+  # Relationships: provenance tracking of each relationship type (empty for the other settings)
+  provenance_relationship_tracking: [ProvenanceRelationshipTracking!]! @auth
+  # Relationships: distinct procedures preserved on uses relationships to attack patterns
+  procedures_preservation: Boolean! @auth
+  procedures_description_policy: ProceduresDescriptionPolicy! @auth
   attributes_configuration: String @auth(for: [SETTINGS_SETCUSTOMIZATION])
   # Attribute definitions (name/label/mandatory/...) are schema metadata also needed by
   # knowledge-level read views (e.g. the draft Review diff panel) to display field labels.

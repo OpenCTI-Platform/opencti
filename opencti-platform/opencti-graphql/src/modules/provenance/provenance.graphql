@@ -1,0 +1,128 @@
+enum AssertionSourceKind {
+  connector
+  feed
+  author
+  user
+  inference
+  emulation
+}
+
+enum ProceduresDescriptionPolicy {
+  longest
+  most_recent
+}
+
+type Assertion {
+  source_id: String!
+  source_kind: AssertionSourceKind!
+  source_name: String!
+  first_asserted_at: DateTime!
+  last_asserted_at: DateTime!
+  assert_count: Int!
+  confidence: Int
+  work_id: String
+}
+
+type SourceConflictValue {
+  value_hash: String!
+  display: String!
+  value: String
+  adoptable: Boolean!
+  source_id: String!
+  source_kind: AssertionSourceKind
+  source_name: String
+  confidence: Int
+  last_asserted_at: DateTime!
+}
+
+type SourceConflict {
+  field: String!
+  # Label of the field in the schema of the element type (the field name when unknown)
+  field_label: String!
+  values: [SourceConflictValue!]!
+}
+
+type Procedure {
+  text: String!
+  source_id: String
+  last_asserted_at: DateTime
+}
+
+type ProvenanceSourceKindCount {
+  source_kind: AssertionSourceKind!
+  count: Int!
+}
+
+type ProvenanceStatistics {
+  total: Int!
+  with_provenance: Int!
+  single_sourced: Int!
+  corroborated: Int!
+  with_conflicts: Int!
+  stale: Int!
+}
+
+type ProvenanceDistributionEntry {
+  label: String!
+  value: Int!
+}
+
+type ProvenanceSingleSourcedEntry {
+  entity_type: String!
+  total: Int!
+  single_sourced: Int!
+}
+
+type ProvenanceRelationshipTracking {
+  relationship_type: String!
+  tracked: Boolean!
+  # Part of the default set, enabled by the "Recommended" action
+  recommended: Boolean!
+}
+
+type ProvenanceTypeStatistics {
+  entity_type: String!
+  # Elements of the type with at least one recorded source
+  with_provenance: Int!
+  # Elements of the type asserted by at least two distinct sources
+  corroborated: Int!
+  last_asserted_at: DateTime
+}
+
+enum ProvenanceBackfillStatus {
+  pending
+  running
+  completed
+}
+
+type ProvenanceBackfill {
+  status: ProvenanceBackfillStatus!
+  processed: Int!
+  expected: Int!
+  updated: Int!
+  errors: Int!
+  started_at: DateTime
+  completed_at: DateTime
+}
+
+extend type Query {
+  provenanceStatistics(types: [String!], filters: FilterGroup): ProvenanceStatistics! @auth(for: [KNOWLEDGE, EXPLORE])
+  # Knowledge per bucket of days since its last assertion (0-30, 31-90, 91-180, 181-365, 366+, unknown)
+  provenanceFreshnessDistribution(types: [String!], filters: FilterGroup): [ProvenanceDistributionEntry!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  provenanceBackfill: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
+  # One entry per concrete type of the given types having knowledge with recorded sources
+  provenanceTypeStatistics(types: [String!]!): [ProvenanceTypeStatistics!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
+extend type Mutation {
+  provenanceConflictAdopt(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceConflictDismiss(id: ID!, field: String!, value_hash: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  # The current user confirms the element is still valid (re-assertion, resets its freshness)
+  provenanceAssert(id: ID!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  provenanceBackfillRestart: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
+  # Tracks, or stops tracking, the provenance of the given relationship types; the other types are unchanged
+  provenanceRelationshipTrackingEdit(relationship_types: [String!]!, tracked: Boolean!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

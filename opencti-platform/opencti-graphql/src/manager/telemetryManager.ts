@@ -58,6 +58,8 @@ import {
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { FilterMode } from '../generated/graphql';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
+import { fetchProvenanceTelemetry } from '../modules/provenance/provenance-telemetry';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -151,6 +153,10 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION = 'knowledgeDecayRuleCreationCount';
+export const TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED = 'knowledgeStaleFlaggedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED = 'provenanceConflictDetectedCount';
+export const TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION = 'provenanceConflictAdoptionCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
@@ -260,6 +266,26 @@ export const addFormIntakeSubmittedCount = async () => {
 
 export const addDecayRuleCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeDecayRuleCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addKnowledgeStaleFlaggedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED, count);
+  }
+};
+
+export const addProvenanceConflictDetectedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED, count);
+  }
+};
+
+export const addProvenanceConflictAdoptionCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -523,6 +549,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region Provenance and knowledge freshness information
+    await fetchProvenanceTelemetry(context, manager);
+    // endregion
+
     // region History retention rule status
     const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
     const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
@@ -766,6 +796,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    // Provenance disabled: no read at all, its gauges stay at zero
+    if (PROVENANCE_ENABLED) {
+      const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
+      manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
+      const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
+      manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
+      const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
+      manager.setProvenanceConflictDetectedCount(provenanceConflictDetectedCountInRedis);
+      const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
+      manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
+    }
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

@@ -143,13 +143,16 @@ describe('Threat actor individual resolver standard behavior', () => {
     // save id info for next tests
     threatActorIndividualEntitySettingId = threatActorIndividualEntitySettingResponse?.node.id;
 
-    expect(threatActorIndividualEntitySettingResponse?.node.overview_layout_customization).toHaveLength(9);
+    // Provenance is tracked by default for threat actors: their overview carries the Sources widget
+    expect(threatActorIndividualEntitySettingResponse?.node.overview_layout_customization).toHaveLength(10);
     // save default config for next tests
     defaultTAIOverviewLayoutCustomization = threatActorIndividualEntitySettingResponse?.node.overview_layout_customization as OverviewLayoutCustomization[];
     expect(defaultTAIOverviewLayoutCustomization.every(({ key, width, label }) => !!key && !!width && !!label)).toBe(true);
+    expect(defaultTAIOverviewLayoutCustomization[2]).toEqual({ key: 'sources', width: 6, label: 'Sources' });
     const defaultOverviewLayoutCustomizationKeys = [
       'details',
       'basicInformation',
+      'sources',
       'demographics',
       'biographics',
       'latestCreatedRelationships',
@@ -179,6 +182,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       const overviewLayoutCustomizationConfiguration: OverviewLayoutCustomization[] = [
         { key: 'details', width: 12, label: 'Entity details' }, // 6 -> 12
         { key: 'basicInformation', width: 12, label: 'Basic information' }, // 6 -> 12
+        { key: 'sources', width: 12, label: 'Sources' }, // 6 -> 12
         { key: 'demographics', width: 6, label: 'Demographics' },
         { key: 'biographics', width: 6, label: 'Biographics' },
         { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
@@ -210,6 +214,7 @@ describe('Threat actor individual resolver standard behavior', () => {
         { key: 'basicInformation', width: 6, label: 'Basic information' }, // order + 1
         { key: 'details', width: 6, label: 'Entity details' }, // order - 1
         { key: 'demographics', width: 6, label: 'Demographics' },
+        { key: 'sources', width: 6, label: 'Sources' }, // order + 1
         { key: 'biographics', width: 6, label: 'Biographics' },
         { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
         { key: 'latestContainers', width: 6, label: 'Latest containers' },

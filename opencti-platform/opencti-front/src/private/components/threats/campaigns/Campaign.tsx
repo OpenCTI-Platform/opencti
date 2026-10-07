@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const campaignFragment = graphql`
   fragment Campaign_campaign on Campaign {
@@ -127,6 +128,12 @@ const CampaignComponent = ({
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={campaign.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={campaign.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

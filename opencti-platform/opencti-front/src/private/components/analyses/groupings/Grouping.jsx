@@ -8,6 +8,7 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -60,6 +61,12 @@ const GroupingComponent = ({ grouping }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={grouping.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={grouping.id} showEmpty />
                   </Grid>
                 );
               case 'notes':
