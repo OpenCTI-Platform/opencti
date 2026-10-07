@@ -527,7 +527,7 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
   await BluePromise.map([...takenOver.entries()], ([requestId, outcomes]) => {
     return recordTakenOverOutcomes(contextOutOfDraft, requestId, outcomes);
   }, { concurrency: CONCURRENCY });
-  await addIocValidationRequestCreationCount();
+  addIocValidationRequestCreationCount();
   return dispatchIocValidationRequest(contextOutOfDraft, request);
 };
 // endregion
@@ -1030,7 +1030,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
     }
   }, { concurrency: CONCURRENCY });
   if (updatedIndicatorIds.length > 0) {
-    await addIocValidationPlatformResultCount(updatedIndicatorIds.length);
+    addIocValidationPlatformResultCount(updatedIndicatorIds.length);
   }
   if (updatedIndicatorIds.length > 0 || retriedIndicatorIds.length > 0) {
     await refreshIndicatorDeploymentCounters(context, [...updatedIndicatorIds, ...retriedIndicatorIds]);

@@ -283,20 +283,25 @@ export const addConnectorDeployedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
 };
 
-export const addIndicatorDeploymentReportCount = async (count = 1) => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT, count);
+// Fire-and-forget: a telemetry failure must never fail a report, a request or results already written.
+export const addIndicatorDeploymentReportCount = (count = 1) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT, count)
+    .catch((reason) => logApp.warn('Error adding indicator deployment report count to telemetry', { reason }));
 };
 
-export const addIndicatorHitsReportCount = async (count = 1) => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_HITS_REPORT, count);
+export const addIndicatorHitsReportCount = (count = 1) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_HITS_REPORT, count)
+    .catch((reason) => logApp.warn('Error adding indicator hits report count to telemetry', { reason }));
 };
 
-export const addIocValidationRequestCreationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION, 1);
+export const addIocValidationRequestCreationCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION, 1)
+    .catch((reason) => logApp.warn('Error adding IOC validation request creation count to telemetry', { reason }));
 };
 
-export const addIocValidationPlatformResultCount = async (count: number) => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT, count);
+export const addIocValidationPlatformResultCount = (count: number) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT, count)
+    .catch((reason) => logApp.warn('Error adding IOC validation platform result count to telemetry', { reason }));
 };
 
 export const addUserLoginCount = () => {

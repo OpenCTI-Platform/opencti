@@ -682,7 +682,7 @@ export const reportIndicatorDeployment = async (context: AuthContext, user: Auth
     loadSecurityPlatform(context, user, args.platformId),
   ]);
   const { element } = await applyDeploymentReport(context, user, indicator, platform, report);
-  await addIndicatorDeploymentReportCount();
+  addIndicatorDeploymentReportCount();
   return element;
 };
 
@@ -730,7 +730,7 @@ export const reportIndicatorDeployments = async (
     }
   }), { concurrency: BATCH_CONCURRENCY });
   if (result.processed > 0) {
-    await addIndicatorDeploymentReportCount(result.processed);
+    addIndicatorDeploymentReportCount(result.processed);
   }
   if (result.errors.length > 0) {
     logApp.warn('[DISSEMINATION] Deployment batch processed with errors', { platformId: platform.internal_id, errors: result.errors.length, processed: result.processed });
@@ -883,7 +883,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       sighting = existingSighting;
     }
     if (!replay) {
-      await addIndicatorHitsReportCount(args.count);
+      addIndicatorHitsReportCount(args.count);
     }
     return sighting;
   } finally {
