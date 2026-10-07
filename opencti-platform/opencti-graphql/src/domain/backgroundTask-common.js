@@ -106,6 +106,9 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   if (hasBypassAction && !isBypassUser(user)) {
     throw ForbiddenAccess();
   }
+  if (actions.some((a) => isWorkflowBypassAction(a) && a.context.values?.length !== 1)) {
+    throw FunctionalError('A workflow status action requires exactly one target status');
+  }
 };
 
 // check a user has the right to create a list or a query background task
