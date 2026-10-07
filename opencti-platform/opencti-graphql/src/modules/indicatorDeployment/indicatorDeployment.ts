@@ -1,0 +1,147 @@
+import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import {
+  DEPLOYMENT_REPORTER_IDS,
+  DEPLOYMENT_STATUSES,
+  INDICATOR_DEPLOYMENT_EXPIRED_COUNT,
+  INDICATOR_DEPLOYMENT_FAILED_COUNT,
+  INDICATOR_DEPLOYMENT_PLATFORMS_COUNT,
+  INDICATOR_DEPLOYMENTS_COUNT,
+  INDICATOR_HIT_PLATFORMS_COUNT,
+  INDICATOR_VALIDATED_PLATFORMS_COUNT,
+  RELATION_DEPLOYED_ON,
+  VALIDATION_STATUSES,
+} from './indicatorDeployment-types';
+
+// Attributes specific to the deployed-on relationship (Indicator -> Security Platform).
+// The relationship mapping itself lives in stixCoreRelationshipsMapping (database/stix.ts).
+export const deployedOnAttributes: Array<AttributeDefinition> = [
+  {
+    name: 'deployment_status',
+    label: 'Deployment status',
+    type: 'string',
+    format: 'enum',
+    values: [...DEPLOYMENT_STATUSES],
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: true,
+    isFilterable: true,
+  },
+  { name: 'external_id', label: 'External id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'deployed_at', label: 'Deployed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'last_sync_at', label: 'Last synchronization', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'removed_at', label: 'Removed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  // Start of the removal grace period, kept by the deployment manager only (side channel): no edit or upsert moves it
+  { name: 'removal_requested_at', label: 'Removal requested at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
+  { name: 'hit_count', label: 'Hit count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'first_hit_at', label: 'First hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  { name: 'last_hit_at', label: 'Last hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  // The ids belong to the instant of last_hit_at: an upsert replaces them with that instant's ids, never adds to them
+  { name: 'last_hit_report_ids', label: 'Reports of the last hit', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
+  {
+    name: 'validation_status',
+    label: 'Validation status',
+    type: 'string',
+    format: 'enum',
+    values: [...VALIDATION_STATUSES],
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: true,
+    isFilterable: true,
+  },
+  { name: 'last_validation_at', label: 'Last validation', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  { name: 'validation_run_id', label: 'Validation run id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  { name: 'error_message', label: 'Deployment error', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  // Accounts whose write-back reports were accepted, the only ones speaking for the security platform: kept by the
+  // write-back only (side channel), never set by a creation, an edit or an upsert, unlike creator_id. Plain strings,
+  // so a user merge does not carry them: the merged account is recorded again at its next report.
+  { name: DEPLOYMENT_REPORTER_IDS, label: 'Deployment reporters', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, update: false, isFilterable: false },
+];
+
+// Derived counters maintained on the Indicator from its deployed-on relationships (side-channel, no stream event).
+export const indicatorDeploymentCountersAttributes: Array<AttributeDefinition> = [
+  {
+    name: INDICATOR_DEPLOYMENT_PLATFORMS_COUNT,
+    label: 'Deployment platforms count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+  {
+    name: INDICATOR_DEPLOYMENT_FAILED_COUNT,
+    label: 'Failed deployments count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+  {
+    name: INDICATOR_DEPLOYMENTS_COUNT,
+    label: 'Deployments count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+  {
+    name: INDICATOR_DEPLOYMENT_EXPIRED_COUNT,
+    label: 'Expired deployments count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+  {
+    name: INDICATOR_VALIDATED_PLATFORMS_COUNT,
+    label: 'Validated platforms count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+  {
+    name: INDICATOR_HIT_PLATFORMS_COUNT,
+    label: 'Platforms with hits count',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: false,
+    update: false,
+    defaultValue: 0,
+    isFilterable: true,
+  },
+];
+
+schemaAttributesDefinition.registerAttributes(RELATION_DEPLOYED_ON, deployedOnAttributes);
+schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INDICATOR, indicatorDeploymentCountersAttributes);

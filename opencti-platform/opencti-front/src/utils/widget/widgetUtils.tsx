@@ -376,6 +376,9 @@ export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelec
   ));
 };
 
+// The lifecycle dates of deployed-on relationships, besides their start and stop times
+export const DEPLOYED_ON_DATE_ATTRIBUTES = ['deployed_at', 'last_sync_at', 'last_hit_at', 'last_validation_at'];
+
 export const checkIfDateAttributeValid = (dataSelection: WidgetDataSelection[]) => {
   const selectionsValid = dataSelection.map((selection) => {
     if (!selection.date_attribute) return true;
@@ -385,6 +388,9 @@ export const checkIfDateAttributeValid = (dataSelection: WidgetDataSelection[]) 
       const selectedEntityType = getEntityTypeFromFilters(selection.filters);
       if (selectedEntityType === 'stix-sighting-relationship') {
         return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'].includes(selection.date_attribute);
+      }
+      if (selectedEntityType === 'deployed-on' && DEPLOYED_ON_DATE_ATTRIBUTES.includes(selection.date_attribute)) {
+        return true;
       }
       return ['created_at', 'updated_at', 'created', 'modified', 'start_time', 'stop_time'].includes(selection.date_attribute);
     }

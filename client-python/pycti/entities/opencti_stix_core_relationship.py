@@ -5,6 +5,24 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+RELATION_DEPLOYED_ON = "deployed-on"
+# Deployment lifecycle carried by deployed-on relationships (Indicator -> Security Platform).
+DEPLOYED_ON_ATTRIBUTES = [
+    "deployment_status",
+    "external_id",
+    "deployed_at",
+    "last_sync_at",
+    "removed_at",
+    "hit_count",
+    "first_hit_at",
+    "last_hit_at",
+    "last_hit_report_ids",
+    "validation_status",
+    "last_validation_at",
+    "validation_run_id",
+    "error_message",
+]
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -724,6 +742,11 @@ class StixCoreRelationship:
         :type external_uri: str
         :param coverage_information: (optional) coverage information
         :type coverage_information: list
+        :param deployment: (optional) deployment lifecycle attributes of a deployed-on relationship
+            (deployment_status, external_id, deployed_at, last_sync_at, removed_at, hit_count,
+            first_hit_at, last_hit_at, last_hit_report_ids, validation_status, last_validation_at,
+            validation_run_id, error_message)
+        :type deployment: dict
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
         :return: stix_core_relationship object
@@ -752,6 +775,7 @@ class StixCoreRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
+        deployment = kwargs.get("deployment", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
 
@@ -773,38 +797,44 @@ class StixCoreRelationship:
                     }
                 }
             """
-        result = self.opencti.query(
-            query,
-            {
-                "input": {
-                    "fromId": from_id,
-                    "toId": to_id,
-                    "stix_id": stix_id,
-                    "relationship_type": relationship_type,
-                    "description": description,
-                    "start_time": start_time,
-                    "stop_time": stop_time,
-                    "revoked": revoked,
-                    "confidence": confidence,
-                    "lang": lang,
-                    "created": created,
-                    "modified": modified,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "objectLabel": object_label,
-                    "objectOrganization": granted_refs,
-                    "externalReferences": external_references,
-                    "killChainPhases": kill_chain_phases,
-                    "x_opencti_workflow_id": x_opencti_workflow_id,
-                    "x_opencti_stix_ids": x_opencti_stix_ids,
-                    "x_opencti_modified_at": x_opencti_modified_at,
-                    "external_uri": external_uri,
-                    "coverage_information": coverage_information,
-                    "update": update,
-                    "upsertOperations": upsert_operations,
+        relationship_input = {
+            "fromId": from_id,
+            "toId": to_id,
+            "stix_id": stix_id,
+            "relationship_type": relationship_type,
+            "description": description,
+            "start_time": start_time,
+            "stop_time": stop_time,
+            "revoked": revoked,
+            "confidence": confidence,
+            "lang": lang,
+            "created": created,
+            "modified": modified,
+            "createdBy": created_by,
+            "objectMarking": object_marking,
+            "objectLabel": object_label,
+            "objectOrganization": granted_refs,
+            "externalReferences": external_references,
+            "killChainPhases": kill_chain_phases,
+            "x_opencti_workflow_id": x_opencti_workflow_id,
+            "x_opencti_stix_ids": x_opencti_stix_ids,
+            "x_opencti_modified_at": x_opencti_modified_at,
+            "external_uri": external_uri,
+            "coverage_information": coverage_information,
+            "update": update,
+            "upsertOperations": upsert_operations,
+        }
+        # Deployment lifecycle of deployed-on relationships: only sent when present,
+        # so platforms without dissemination assurance keep accepting the input.
+        if deployment:
+            relationship_input.update(
+                {
+                    key: value
+                    for key, value in deployment.items()
+                    if key in DEPLOYED_ON_ATTRIBUTES and value is not None
                 }
-            },
-        )
+            )
+        result = self.opencti.query(query, {"input": relationship_input})
         return self.opencti.process_multiple_fields(
             result["data"]["stixCoreRelationshipAdd"]
         )
@@ -1406,9 +1436,25 @@ class StixCoreRelationship:
                 if "score" in cov
             ]
 
+            deployment = None
+            if stix_relation.get("relationship_type") == RELATION_DEPLOYED_ON:
+                # A deployment has no validity window: a date inferred from the
+                # external references would be refused, only explicit times are sent
+                default_date = None
+                deployment = {}
+                for key in DEPLOYED_ON_ATTRIBUTES:
+                    value = stix_relation.get(key)
+                    if value is None:
+                        value = self.opencti.get_attribute_in_extension(
+                            key, stix_relation
+                        )
+                    if value is not None:
+                        deployment[key] = value
+
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
             return self.create(
+                deployment=deployment,
                 fromId=source_ref,
                 toId=target_ref,
                 stix_id=stix_relation["id"],

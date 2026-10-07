@@ -37,7 +37,7 @@ import uuid
 from collections import deque
 from enum import Enum
 from queue import Queue
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, Iterator, List, Optional, Union
 
 import boto3
 import jwt
@@ -2816,6 +2816,133 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :rtype: Optional[Union[bool, int, str]]
         """
         return self.connect_name
+
+    # region dissemination assurance (deployment write-back of stream connectors)
+    def is_indicator_deployment_supported(self) -> bool:
+        """Tell if the platform accepts indicator deployment write-back (cached schema detection).
+
+        :return: True when the platform exposes the deployment mutations
+        :rtype: bool
+        """
+        return self.api.indicator_deployment.is_supported()
+
+    def get_or_create_security_platform(
+        self,
+        name: Optional[str] = None,
+        security_platform_type: Optional[str] = None,
+        description: Optional[str] = None,
+        platform_id: Optional[str] = None,
+    ) -> Optional[Dict]:
+        """Resolve the security platform this connector disseminates to.
+
+        :param name: security platform name, upserted when no id is given
+        :param security_platform_type: EDR, XDR, SIEM, SOAR, NDR or ISPM
+        :param description: optional description used at creation
+        :param platform_id: id of an existing security platform
+        :return: dict with id, standard_id and name, or None
+        :rtype: Optional[Dict]
+        """
+        return self.api.indicator_deployment.get_or_create_security_platform(
+            name=name,
+            security_platform_type=security_platform_type,
+            description=description,
+            platform_id=platform_id,
+        )
+
+    def report_indicator_deployment(
+        self,
+        indicator_id: str,
+        platform_id: str,
+        status: str,
+        external_id: Optional[str] = None,
+        error_message: Optional[str] = None,
+        deployed_at: Optional[str] = None,
+        synced_at: Optional[str] = None,
+        removed_at: Optional[str] = None,
+    ) -> Optional[Dict]:
+        """Report the deployment status of an indicator after a push, a removal or a reconciliation.
+
+        Never raises: on platforms without the feature or on error, returns None.
+
+        :param indicator_id: id of the indicator (internal id from the stream event extension, or STIX id)
+        :param platform_id: id of the security platform
+        :param status: pending, deployed, active, failed or removed
+        :param external_id: identifier of the indicator on the vendor side
+        :param error_message: vendor error when status is failed
+        :param deployed_at: ISO date of the deployment
+        :param synced_at: ISO date of the observation
+        :param removed_at: ISO date of the removal
+        :return: the deployed-on relationship or None
+        :rtype: Optional[Dict]
+        """
+        return self.api.indicator_deployment.report(
+            indicator_id=indicator_id,
+            platform_id=platform_id,
+            status=status,
+            external_id=external_id,
+            error_message=error_message,
+            deployed_at=deployed_at,
+            synced_at=synced_at,
+            removed_at=removed_at,
+        )
+
+    def report_indicator_deployments(
+        self, platform_id: str, reports: List[Dict]
+    ) -> Optional[Dict]:
+        """Report many deployments of the platform at once (chunked by 500).
+
+        :param platform_id: id of the security platform
+        :param reports: items with indicator_id, status and optional external_id, error_message,
+            deployed_at, synced_at, removed_at
+        :return: aggregated result (processed, created, updated, unchanged, errors) or None
+        :rtype: Optional[Dict]
+        """
+        return self.api.indicator_deployment.report_batch(platform_id, reports)
+
+    def report_indicator_hits(
+        self,
+        indicator_id: str,
+        platform_id: str,
+        count: int,
+        last_hit: str,
+        first_hit: Optional[str] = None,
+        report_id: Optional[str] = None,
+    ) -> Optional[Dict]:
+        """Report new hits (alerts, detections, incidents) of an indicator on the platform.
+
+        :param indicator_id: id of the indicator
+        :param platform_id: id of the security platform
+        :param count: number of new hits (>= 1)
+        :param last_hit: ISO date of the most recent hit (required), the idempotency watermark
+            of the report; pass the vendor time of the newest hit so that a re-sent report is ignored
+        :param first_hit: ISO date of the oldest new hit
+        :param report_id: stable id of the report (the same when it is re-sent), so that two
+            distinct reports ending at the same instant are both counted
+        :return: the hits sighting or None
+        :rtype: Optional[Dict]
+        """
+        return self.api.indicator_deployment.report_hits(
+            indicator_id=indicator_id,
+            platform_id=platform_id,
+            count=count,
+            last_hit=last_hit,
+            first_hit=first_hit,
+            report_id=report_id,
+        )
+
+    def list_indicator_deployments(
+        self, platform_id: str, statuses: Optional[List[str]] = None
+    ) -> Iterator[Dict]:
+        """Iterate over the deployments of the platform, for periodic reconciliation.
+
+        :param platform_id: id of the security platform
+        :param statuses: optional deployment statuses to keep
+        :return: generator of deployed-on relationships (indicator in ``from``)
+        :rtype: Iterator[Dict]
+        """
+        return self.api.indicator_deployment.list_for_platform(platform_id, statuses)
+
+    # endregion
 
     def get_stream_collection(self):
         """Get the stream collection configuration.

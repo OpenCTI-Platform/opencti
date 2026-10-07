@@ -496,6 +496,19 @@ describe('widgetUtils', () => {
       expect(checkIfDateAttributeValid(invalidSelection)).toBe(false);
     });
 
+    it('should accept the lifecycle dates of deployed-on relationships only', () => {
+      ['deployed_at', 'last_sync_at', 'last_hit_at', 'last_validation_at', 'start_time', 'created_at'].forEach((date_attribute) => {
+        const dataSelection: WidgetDataSelection[] = [
+          { perspective: 'relationships', filters: relationshipTypeFilterGroup('deployed-on'), date_attribute },
+        ];
+        expect(checkIfDateAttributeValid(dataSelection)).toBe(true);
+      });
+      const otherRelationship: WidgetDataSelection[] = [
+        { perspective: 'relationships', filters: relationshipTypeFilterGroup('uses'), date_attribute: 'last_validation_at' },
+      ];
+      expect(checkIfDateAttributeValid(otherRelationship)).toBe(false);
+    });
+
     it('should return true when perspective is audits', () => {
       const dataSelection: WidgetDataSelection[] = [
         { perspective: 'audits', filters: null, date_attribute: 'created_at' },

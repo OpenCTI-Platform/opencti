@@ -8619,9 +8619,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace | IocValidationRequest
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter | IocValidationRequest
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -8704,6 +8704,13 @@ type StixRelationshipRefSchema {
 }
 
 enum StixCoreRelationshipsOrdering {
+  deployment_status
+  deployed_at
+  last_sync_at
+  hit_count
+  last_hit_at
+  validation_status
+  last_validation_at
   entity_type
   relationship_type
   confidence
@@ -8791,6 +8798,19 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  last_hit_report_ids: [String!]
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
 }
 
 input SecurityCoverageExpectation {
@@ -8825,6 +8845,19 @@ input StixCoreRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  last_hit_report_ids: [String!]
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -9376,6 +9409,10 @@ type Query {
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
+  disseminationAssuranceMetrics(platformId: String, startDate: DateTime, endDate: DateTime): DisseminationAssuranceMetrics
+  iocValidationRequest(id: String!): IocValidationRequest
+  iocValidationRequests(first: Int, after: ID, orderBy: IocValidationRequestsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IocValidationRequestConnection
+  iocValidationConnectors: [Connector!]!
   vulnerability(id: String): Vulnerability
   vulnerabilities(first: Int, after: ID, orderBy: VulnerabilitiesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): VulnerabilityConnection
   decayRule(id: String!): DecayRule
@@ -10277,6 +10314,15 @@ type Mutation {
   indicatorContextClean(id: ID!): Indicator
   indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
+  indicatorReportDeployment(indicatorId: StixRef!, platformId: StixRef!, status: IndicatorDeploymentStatus!, externalId: String, metadata: IndicatorDeploymentMetadataInput): StixCoreRelationship
+  indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult
+  indicatorReportHits(indicatorId: StixRef!, platformId: StixRef!, count: Int!, lastHit: DateTime, firstHit: DateTime, reportId: String): StixSightingRelationship
+  indicatorDeploymentRetry(id: ID!): StixCoreRelationship
+  indicatorDeploymentRemove(id: ID!): StixCoreRelationship
+  indicatorsRequestValidation(platformIds: [StixRef!]!, indicatorIds: [StixRef!]!, testKinds: [IocValidationTestKind!]!, connectorId: ID, name: String, description: String): IocValidationRequest
+  iocValidationRequestStatusUpdate(id: ID!, input: IocValidationRequestStatusInput!): IocValidationRequest
+  iocValidationReportResults(id: ID!, platformId: StixRef!, results: [IocValidationPairResultInput!]!): IocValidationRequest
+  iocValidationRequestDelete(id: ID!): ID
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
@@ -13941,6 +13987,12 @@ input IngestionJsonAddInput {
 }
 
 enum IndicatorsOrdering {
+  deployments_count
+  deployment_platforms_count
+  deployment_failed_count
+  deployment_expired_count
+  validated_platforms_count
+  hit_platforms_count
   pattern_type
   pattern_version
   pattern
@@ -14089,6 +14141,12 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  deployments_count: Int
+  deployment_platforms_count: Int
+  deployment_failed_count: Int
+  deployment_expired_count: Int
+  validated_platforms_count: Int
+  hit_platforms_count: Int
 }
 
 input IndicatorAddInput {
@@ -14135,6 +14193,219 @@ input IndicatorAddInput {
   embedded: [Boolean]
   basedOn: [String!]
   upsertOperations: [EditInput!]
+}
+
+enum IndicatorDeploymentStatus {
+  pending
+  deployed
+  active
+  failed
+  removed
+  expired
+}
+
+enum IndicatorValidationStatus {
+  not_requested
+  requested
+  detected
+  prevented
+  missed
+  error
+}
+
+input IndicatorDeploymentMetadataInput {
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+
+  "*Constraints:*\n* Maximal length: `5000`\n"
+  error_message: String
+}
+
+input IndicatorDeploymentReportInput {
+  indicatorId: StixRef!
+  status: IndicatorDeploymentStatus!
+
+  "*Constraints:*\n* Maximal length: `1000`\n"
+  externalId: String
+  metadata: IndicatorDeploymentMetadataInput
+}
+
+type IndicatorDeploymentReportError {
+  indicatorId: String!
+  message: String!
+}
+
+type IndicatorDeploymentBatchResult {
+  processed: Int!
+  created: Int!
+  updated: Int!
+  unchanged: Int!
+  errors: [IndicatorDeploymentReportError!]!
+}
+
+type DisseminationAssuranceFunnel {
+  created: Int!
+  disseminated: Int!
+  deployed: Int!
+  validated: Int!
+  hit: Int!
+  expired_still_deployed: Int!
+}
+
+type DisseminationAssuranceStatusCount {
+  status: String!
+  count: Int!
+}
+
+type DisseminationAssurancePlatformCount {
+  platform: SecurityPlatform!
+  count: Int!
+}
+
+type DisseminationAssuranceMetrics {
+  funnel: DisseminationAssuranceFunnel!
+  deployment_statuses: [DisseminationAssuranceStatusCount!]!
+  validation_statuses: [DisseminationAssuranceStatusCount!]!
+  failures_by_platform: [DisseminationAssurancePlatformCount!]!
+  deployments_by_platform: [DisseminationAssurancePlatformCount!]!
+  proven_share: Float!
+}
+
+enum IocValidationTestKind {
+  dns_resolution
+  network_traffic
+  http_head
+  file_drop
+  log_injection
+}
+
+enum IocValidationRequestStatus {
+  pending
+  sent
+  awaiting_approval
+  running
+  completed
+  partial
+  failed
+  rejected
+  expired
+}
+
+type IocValidationResultsSummary {
+  total: Int!
+  requested: Int!
+  detected: Int!
+  prevented: Int!
+  missed: Int!
+  error: Int!
+  skipped: Int!
+}
+
+type IocValidationIoc {
+  indicator_id: String!
+  observable_type: String!
+  value: String!
+  test_kind: IocValidationTestKind!
+  file_name: String
+}
+
+type IocValidationPairOutcome {
+  deployed_on_id: String!
+  validation_status: String
+}
+
+type IocValidationSkipped {
+  indicator_id: String!
+  indicator: Indicator
+  platform_id: String
+  reason: String!
+}
+
+type IocValidationRequest implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  creators: [Creator!]
+  name: String!
+  description: String
+  status: IocValidationRequestStatus!
+  status_message: String
+  test_kinds: [IocValidationTestKind!]!
+  platform_ids: [String!]!
+  indicator_ids: [String!]!
+  platforms: [SecurityPlatform!]!
+  indicators_count: Int!
+  results_summary: IocValidationResultsSummary!
+  iocs: [IocValidationIoc!]!
+  skipped: [IocValidationSkipped!]!
+  deployments: [StixCoreRelationship!]!
+  pair_outcomes: [IocValidationPairOutcome!]!
+  openaev_scenario_id: String
+  openaev_simulation_id: String
+  external_uri: String
+  connector: Connector
+  work_id: String
+  requested_by: Creator
+  dispatched_at: DateTime
+  completed_at: DateTime
+}
+
+type IocValidationRequestEdge {
+  cursor: String!
+  node: IocValidationRequest!
+}
+
+type IocValidationRequestConnection {
+  pageInfo: PageInfo!
+  edges: [IocValidationRequestEdge!]!
+}
+
+enum IocValidationRequestsOrdering {
+  name
+  status
+  created_at
+  updated_at
+  dispatched_at
+  completed_at
+  _score
+}
+
+input IocValidationRequestStatusInput {
+  status: IocValidationRequestStatus!
+
+  "*Constraints:*\n* Maximal length: `255`\n"
+  openaev_scenario_id: String
+
+  "*Constraints:*\n* Maximal length: `255`\n"
+  openaev_simulation_id: String
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  external_uri: String
+
+  "*Constraints:*\n* Maximal length: `5000`\n"
+  message: String
+}
+
+enum IocValidationResultStatus {
+  detected
+  prevented
+  missed
+}
+
+input IocValidationPairResultInput {
+  indicatorId: StixRef!
+  status: IocValidationResultStatus!
+  observedAt: DateTime
+  hitCount: Int
+
+  "*Constraints:*\n* Maximal length: `5000`\n"
+  evidence: String
 }
 
 enum VulnerabilitiesOrdering {

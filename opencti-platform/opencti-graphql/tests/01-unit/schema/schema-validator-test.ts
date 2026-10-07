@@ -4,6 +4,7 @@ import { validateAndFormatSchemaAttribute } from '../../../src/schema/schema-val
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../src/schema/stixDomainObject';
 import { type EditInput, EditOperation } from '../../../src/generated/graphql';
+import { RELATION_DEPLOYED_ON } from '../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 
 describe('schema validator observed data counters', () => {
   const validate = (attributeName: string, value: unknown) => {
@@ -30,5 +31,25 @@ describe('schema validator observed data counters', () => {
     expect(() => validate('max_distinct_count', -5)).toThrow('The counter should be a non-negative integer');
     expect(() => validate('number_seen', 1.5)).toThrow('The counter should be a non-negative integer');
     expect(() => validate('max_distinct_count', 'not-a-number')).toThrow('Attribute must be a numeric/string');
+  });
+});
+
+describe('schema validator indicator deployment hit count', () => {
+  const validate = (value: unknown) => {
+    const definition = schemaAttributesDefinition.getAttribute(RELATION_DEPLOYED_ON, 'hit_count');
+    const editInput: EditInput = { key: 'hit_count', value: [value], operation: EditOperation.Replace };
+    return validateAndFormatSchemaAttribute('hit_count', definition, editInput);
+  };
+
+  it('should accept non-negative integer hit counts', () => {
+    expect(() => validate(0)).not.toThrow();
+    expect(() => validate(42)).not.toThrow();
+    expect(() => validate('3')).not.toThrow();
+  });
+
+  it('should reject negative or non-integer hit counts', () => {
+    expect(() => validate(-2)).toThrow('The counter should be a non-negative integer');
+    expect(() => validate('-1')).toThrow('The counter should be a non-negative integer');
+    expect(() => validate(2.5)).toThrow('The counter should be a non-negative integer');
   });
 });

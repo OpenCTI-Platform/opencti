@@ -1,0 +1,163 @@
+# IOC validation: proof, by benign OpenAEV tests, that deployed indicators are detected or prevented.
+
+enum IocValidationTestKind {
+  dns_resolution
+  network_traffic
+  http_head
+  file_drop
+  log_injection
+}
+
+enum IocValidationRequestStatus {
+  pending
+  sent
+  awaiting_approval
+  running
+  completed
+  partial
+  failed
+  rejected
+  expired
+}
+
+type IocValidationResultsSummary {
+  total: Int!
+  requested: Int!
+  detected: Int!
+  prevented: Int!
+  missed: Int!
+  error: Int!
+  skipped: Int!
+}
+
+type IocValidationIoc {
+  indicator_id: String!
+  observable_type: String!
+  value: String!
+  test_kind: IocValidationTestKind!
+  file_name: String
+}
+
+# Outcome of a pair for one request, kept when a newer request validates the deployment again
+type IocValidationPairOutcome {
+  deployed_on_id: String!
+  validation_status: String
+}
+
+type IocValidationSkipped {
+  indicator_id: String!
+  indicator: Indicator
+  platform_id: String
+  reason: String!
+}
+
+type IocValidationRequest implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  creators: [Creator!]
+  # IocValidationRequest
+  name: String!
+  description: String
+  status: IocValidationRequestStatus!
+  status_message: String
+  test_kinds: [IocValidationTestKind!]!
+  platform_ids: [String!]!
+  indicator_ids: [String!]!
+  platforms: [SecurityPlatform!]!
+  indicators_count: Int!
+  results_summary: IocValidationResultsSummary!
+  # Restricted to the indicators the current user can read
+  iocs: [IocValidationIoc!]!
+  skipped: [IocValidationSkipped!]!
+  deployments: [StixCoreRelationship!]!
+  pair_outcomes: [IocValidationPairOutcome!]!
+  openaev_scenario_id: String
+  openaev_simulation_id: String
+  external_uri: String
+  connector: Connector
+  work_id: String
+  requested_by: Creator
+  dispatched_at: DateTime
+  completed_at: DateTime
+}
+
+type IocValidationRequestEdge {
+  cursor: String!
+  node: IocValidationRequest!
+}
+
+type IocValidationRequestConnection {
+  pageInfo: PageInfo!
+  edges: [IocValidationRequestEdge!]!
+}
+
+enum IocValidationRequestsOrdering {
+  name
+  status
+  created_at
+  updated_at
+  dispatched_at
+  completed_at
+  _score
+}
+
+input IocValidationRequestStatusInput {
+  status: IocValidationRequestStatus!
+  openaev_scenario_id: String @constraint(maxLength: 255)
+  openaev_simulation_id: String @constraint(maxLength: 255)
+  external_uri: String @constraint(maxLength: 2048)
+  message: String @constraint(maxLength: 5000)
+}
+
+# Outcome of a validation test proven by the security platform itself (for example a SIEM search)
+enum IocValidationResultStatus {
+  detected
+  prevented
+  missed
+}
+
+input IocValidationPairResultInput {
+  indicatorId: StixRef!
+  status: IocValidationResultStatus!
+  # First matching event, or the end of the observation window for a miss
+  observedAt: DateTime
+  hitCount: Int
+  evidence: String @constraint(maxLength: 5000)
+}
+
+extend union StixObjectOrStixRelationshipOrCreator = IocValidationRequest
+extend union StixObjectOrStixRelationship = IocValidationRequest
+
+type Query {
+  iocValidationRequest(id: String!): IocValidationRequest @auth(for: [KNOWLEDGE])
+  iocValidationRequests(
+    first: Int
+    after: ID
+    orderBy: IocValidationRequestsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): IocValidationRequestConnection @auth(for: [KNOWLEDGE])
+  iocValidationConnectors: [Connector!]! @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+  indicatorsRequestValidation(
+    platformIds: [StixRef!]!
+    indicatorIds: [StixRef!]!
+    testKinds: [IocValidationTestKind!]!
+    connectorId: ID
+    name: String
+    description: String
+  ): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
+  iocValidationRequestStatusUpdate(id: ID!, input: IocValidationRequestStatusInput!): IocValidationRequest @auth(for: [CONNECTORAPI])
+  # Accepted from the request connector, or from an account whose deployment reports of the pairs on that platform were accepted
+  iocValidationReportResults(id: ID!, platformId: StixRef!, results: [IocValidationPairResultInput!]!): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
+  iocValidationRequestDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+}

@@ -116,6 +116,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   INPUT_CREATED_BY,
+  INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INTERNAL_IDS_ALIASES,
@@ -145,7 +146,15 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_DEPLOYED_ON, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import { checkEndsWithoutAuthorizedMembers, pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
+import {
+  claimedGeneratedPairSighting,
+  generatedPairSightingKindOf,
+  suppliedStixIds,
+  withoutWindowMatchedGeneratedSightings,
+} from '../modules/indicatorDeployment/indicatorDeployment-sightings';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -211,7 +220,7 @@ import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityField
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { validateInputCreation, validateInputUpdate, validateUpsertInputs } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
@@ -3285,8 +3294,9 @@ const upsertElement = async (
   element: BasicStoreBase,
   type: string,
   basePatch: Record<string, any>,
-  opts: { elementAlreadyResolved?: boolean } & UpdateAttributeMetaResolvedOpts = {},
+  upsertOpts: { elementAlreadyResolved?: boolean; validateUpsert?: boolean } & UpdateAttributeMetaResolvedOpts = {},
 ) => {
+  const { validateUpsert, ...opts } = upsertOpts;
   // -- Independent update
   let resolvedElement = element as StoreObject;
   if (!opts.elementAlreadyResolved) {
@@ -3331,6 +3341,9 @@ const upsertElement = async (
   const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
   const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  if (validateUpsert && inputs.length > 0) {
+    await validateUpsertInputs(context, user, type, resolvedElement as Record<string, any>, inputs);
+  }
 
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
@@ -3346,12 +3359,18 @@ export const getExistingRelations = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
-  opts: { fromRule?: string } = {},
+  opts: { fromRule?: string; idsOnly?: boolean } = {},
 ) => {
   const { from, to, relationship_type: relationshipType } = input;
-  const { fromRule } = opts;
+  const { fromRule, idsOnly } = opts;
   const existingRelationships: StoreProxyRelation[] = [];
-  if (fromRule) {
+  if (idsOnly && !fromRule) {
+    const idsArgs = {
+      indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+      filters: { mode: FilterMode.And, filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }], filterGroups: [] },
+    };
+    pushAll(existingRelationships, await topRelationsList(context, SYSTEM_USER, relationshipType, idsArgs));
+  } else if (fromRule) {
     // In case inferred rule, try to find the relation with basic filters
     // Only in inferred indices.
     const fromRuleArgs = {
@@ -3406,6 +3425,8 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   references?: string[];
   commitMessage?: string;
   restore?: boolean;
+  // The organizations of the input are the exact sharing of the relationship (platform-generated relationships only)
+  grantedRefsFromInput?: boolean;
 };
 export const createRelationRaw = async (
   context: AuthContext,
@@ -3482,7 +3503,16 @@ export const createRelationRaw = async (
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
-    const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
+    // A hits or validation result sighting of a pair is identified by its deterministic id only: ordinary sightings
+    // sharing its endpoints and time window never merge into it, nor do two of them merge into each other
+    const claimsGeneratedSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && !!await claimedGeneratedPairSighting(context, resolvedInput);
+    if (relationshipType === RELATION_DEPLOYED_ON || claimsGeneratedSighting) {
+      checkEndsWithoutAuthorizedMembers([from, to]);
+    }
+    const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsGeneratedSighting });
+    const existingRelationships = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsGeneratedSighting && !fromRule
+      ? await withoutWindowMatchedGeneratedSightings(context, resolvedInput, getInputIds(relationshipType, resolvedInput, false), matchedRelationships)
+      : matchedRelationships;
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
@@ -3516,8 +3546,27 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
-      // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
+      // The sharing of a deployment and of a generated sighting of its pair is the platform's (the organizations of both
+      // its ends): an upsert never changes it, neither through its sharing field nor through a sharing operation
+      const existingIds = [existingRelationship.standard_id, ...(existingRelationship.x_opencti_stix_ids ?? [])];
+      const sharedByPair = relationshipType === RELATION_DEPLOYED_ON || (relationshipType === STIX_SIGHTING_RELATIONSHIP
+        && !!await generatedPairSightingKindOf(context, resolvedInput, [...existingIds, ...suppliedStixIds(resolvedInput)]));
+      const upsertInput = sharedByPair ? {
+        ...R.dissoc(INPUT_GRANTED_REFS, resolvedInput),
+        ...(Array.isArray(resolvedInput.upsertOperations) ? {
+          upsertOperations: resolvedInput.upsertOperations.filter((operation: { key?: string }) => operation.key !== INPUT_GRANTED_REFS),
+        } : {}),
+      } : resolvedInput;
+      // What a deployment or a generated sighting records is changed under its edition rules, whatever id the upsert
+      // reached it by: the edits of its upsert operations are only known once merged with the stored element
+      const validateUpsert = sharedByPair && opts.bypassValidation !== true;
+      // If not upsert the element, awaited: the lock is released only once the upsert settles
+      return await upsertElement(context, user, existingRelationship, relationshipType, upsertInput, {
+        ...opts,
+        locks: participantIds,
+        elementAlreadyResolved: true,
+        validateUpsert,
+      });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -3529,8 +3578,22 @@ export const createRelationRaw = async (
         throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
       }
     }
+    // A new deployment, like a new hits or validation result sighting of a pair, is shared with exactly the organizations
+    // both its ends are shared with, whatever creates it (generic creation, bundle ingestion): never with the
+    // organizations of the user or of the input.
+    let buildOpts = opts;
+    const sharedByPair = relationshipType === RELATION_DEPLOYED_ON
+      || (!opts.grantedRefsFromInput && claimsGeneratedSighting);
+    if (sharedByPair && !opts.grantedRefsFromInput) {
+      const organizationIds = pairOrganizations(from, to);
+      const organizations = organizationIds.length > 0
+        ? await internalFindByIds(context, SYSTEM_USER, organizationIds, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }) as BasicStoreObject[]
+        : [];
+      resolvedInput = { ...resolvedInput, [INPUT_GRANTED_REFS]: organizations };
+      buildOpts = { ...opts, grantedRefsFromInput: true };
+    }
     // Just build a standard relationship
-    const dataRel = await buildRelationData(context, user, resolvedInput, opts);
+    const dataRel = await buildRelationData(context, user, resolvedInput, buildOpts);
     // Index the created element
     lock.signal.throwIfAborted();
     await indexCreatedElement(context, user, dataRel);
@@ -3703,6 +3766,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
+  grantedRefsFromInput?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,

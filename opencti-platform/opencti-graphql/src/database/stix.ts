@@ -87,6 +87,7 @@ import {
   RELATION_TECHNOLOGY_FROM,
   RELATION_TRANSFERRED_TO,
   RELATION_DEMONSTRATES,
+  RELATION_DEPLOYED_ON,
   RELATION_AMPLIFIES,
   RELATION_SUPPORTS,
 } from '../schema/stixCoreRelationship';
@@ -495,6 +496,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_INDICATES, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM}`]: [
+    { name: RELATION_DEPLOYED_ON, type: REL_NEW },
   ],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_INDICATES, type: REL_BUILT_IN },

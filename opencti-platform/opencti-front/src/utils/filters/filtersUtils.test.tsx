@@ -1556,4 +1556,9 @@ describe('stixFilters', () => {
     expect(stixFilters).toContain('x_opencti_ssvc_automatable');
     expect(stixFilters).toContain('x_opencti_ssvc_technical_impact');
   });
+  it('should include the dissemination assurance filter keys used by triggers', () => {
+    expect(stixFilters).toContain('deployment_status');
+    expect(stixFilters).toContain('validation_status');
+    expect(stixFilters).toContain('deployment_platforms_count');
+  });
 });

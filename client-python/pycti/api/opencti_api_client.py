@@ -45,6 +45,7 @@ from pycti.entities.opencti_grouping import Grouping
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_incident import Incident
 from pycti.entities.opencti_indicator import Indicator
+from pycti.entities.opencti_indicator_deployment import IndicatorDeployment
 from pycti.entities.opencti_infrastructure import Infrastructure
 from pycti.entities.opencti_intrusion_set import IntrusionSet
 from pycti.entities.opencti_kill_chain_phase import KillChainPhase
@@ -332,6 +333,7 @@ class OpenCTIApiClient:
         self.opinion = Opinion(self)
         self.grouping = Grouping(self)
         self.indicator = Indicator(self)
+        self.indicator_deployment = IndicatorDeployment(self)
         self.audit = Audit(self)
         self.log = Log(self)
 
