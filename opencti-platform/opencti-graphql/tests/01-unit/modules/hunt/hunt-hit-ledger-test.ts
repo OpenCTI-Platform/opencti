@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { elCount } from '../../../../src/database/engine';
-import { huntHitKey, identifyingHitKeys, sanitizeHitKeys, sanitizeHits } from '../../../../src/modules/hunt/hunt-utils';
+import { huntHitKey, identifyingHitKeys, sanitizeHitKeys, sanitizeHits, splitHitsByKeys } from '../../../../src/modules/hunt/hunt-utils';
 import { classifyHuntHits, isHuntRunRemembered } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { computeHuntRunWindow, huntIocKeysByHit, huntRunNewHits } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { huntSightingStandardId, nextHuntSightingCount } from '../../../../src/modules/hunt/hunt-sightings';
@@ -74,6 +74,16 @@ describe('Hit key shared with the connectors SDK', () => {
     // An indicator hunt reports the keys of each value
     expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second], sampledKeys: [second] })).toEqual([first, second]);
     expect(identifyingHitKeys([third], { hitsCount: 2, extraKeys: [first, second] })).toBeNull();
+  });
+
+  it('should split the hits without a key of their own like the keyed ones', () => {
+    expect(splitHitsByKeys(28, 12, 16)).toEqual({ newHits: 12, recurringHits: 16 });
+    // 100 hits behind 20 keys: the new and known hits add up to the hits, new keys stand for their share
+    expect(splitHitsByKeys(100, 20, 0)).toEqual({ newHits: 100, recurringHits: 0 });
+    expect(splitHitsByKeys(100, 0, 20)).toEqual({ newHits: 0, recurringHits: 100 });
+    expect(splitHitsByKeys(100, 1, 2)).toEqual({ newHits: 33, recurringHits: 67 });
+    expect(splitHitsByKeys(3, 1, 1)).toEqual({ newHits: 2, recurringHits: 1 });
+    expect(splitHitsByKeys(0, 0, 0)).toEqual({ newHits: 0, recurringHits: 0 });
   });
 });
 

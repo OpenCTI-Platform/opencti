@@ -244,6 +244,22 @@ describe('Hits counted once across the runs of a hunt', () => {
     expect(finalState()).toMatchObject({ incident_id: 'incident-0', draft_id: 'draft-0', incident_continued: true });
   });
 
+  it('should split the hits a key stands for like the keys, so the new and known hits add up to the hits of the run', async () => {
+    // 280 hits behind 28 keys (the events of 28 detections): one new detection stands for 10 new hits
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 1, recurringCount: 27 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 280, hit_keys: KEYS } as never);
+    expect(finalState()).toMatchObject({ hits_count: 280, hits_new_count: 10, hits_recurring_count: 270, hits_identified: true });
+    expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(createHuntIncidentWorkspace).mockClear();
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 28 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 280, hit_keys: KEYS } as never);
+    expect(finalState()).toMatchObject({ hits_count: 280, hits_new_count: 0, hits_recurring_count: 280, hits_identified: true });
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+  });
+
   it('should count every hit as new, and say so, when the connector identifies none or the known hits cannot be read', async () => {
     loading(autonomous);
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);

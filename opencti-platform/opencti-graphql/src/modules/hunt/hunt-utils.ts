@@ -224,8 +224,9 @@ export const sanitizeHitKeys = (keys: unknown, maxItems = HUNT_CONFIG.maxResults
  * The hit keys of a report when they identify its hits, null when they cannot: no list, an entry that is not a hit key,
  * no key for a report with hits, more distinct keys than hits, or a sampled hit whose key is not listed. A connector
  * reports one key per hit it read, distinct and bounded by the maximum results, so fewer keys than hits is expected
- * (hits of one detection, truncated results) and more is not; a sampled hit is one of the hits read, so its key is
- * always listed. `extraKeys` are the keys an indicator hunt reports per value, hits of the report as well.
+ * (hits of one detection, truncated results) and more is not (see splitHitsByKeys); a sampled hit is one of the hits
+ * read, so its key is always listed. `extraKeys` are the keys an indicator hunt reports per value, hits of the report
+ * as well.
  */
 export const identifyingHitKeys = (
   keys: unknown,
@@ -248,6 +249,20 @@ export const identifyingHitKeys = (
     return null;
   }
   return distinct.slice(0, maxItems);
+};
+
+/**
+ * The new and recurring hits of a report or evidence, from the new and known keys among its identifying keys. A key can
+ * stand for several hits (the events of one detection), so the hits without a key of their own are split like the keyed
+ * ones: the new and recurring hits always add up to the hits counted, and new keys never stand for fewer new hits.
+ */
+export const splitHitsByKeys = (hitsCount: number, newKeys: number, recurringKeys: number) => {
+  const keyed = newKeys + recurringKeys;
+  if (keyed === 0 || hitsCount <= keyed) {
+    return { newHits: newKeys, recurringHits: recurringKeys };
+  }
+  const newHits = Math.round((hitsCount * newKeys) / keyed);
+  return { newHits, recurringHits: hitsCount - newHits };
 };
 
 /**

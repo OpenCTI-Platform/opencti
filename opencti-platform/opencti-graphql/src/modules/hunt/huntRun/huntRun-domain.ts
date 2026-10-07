@@ -73,6 +73,7 @@ import {
   sanitizeEvidence,
   sanitizeHitKeys,
   sanitizeHits,
+  splitHitsByKeys,
   techniqueValidationStatus,
   truncate,
 } from '../hunt-utils';
@@ -1179,7 +1180,8 @@ const recordReportedHits = async (
       iocKeysByHit,
       seenAt: reportedAt,
     });
-    return { hits_identified: true, hits_new_count: newCount, hits_recurring_count: recurringCount };
+    const { newHits, recurringHits } = splitHitsByKeys(hits.count, newCount, recurringCount);
+    return { hits_identified: true, hits_new_count: newHits, hits_recurring_count: recurringHits };
   } catch (error) {
     logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched, every hit of the run counts as new', { cause: error, runId: run.internal_id });
     return unidentified;
@@ -1450,8 +1452,9 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           seenAt: lastEvidenceAt.toISOString(),
           keepKnown: !await isHuntRunRemembered(context, current),
         });
-        addedNew = matched.newCount;
-        addedRecurring = matched.recurringCount;
+        const { newHits, recurringHits } = splitHitsByKeys(addedHits, matched.newCount, matched.recurringCount);
+        addedNew = newHits;
+        addedRecurring = recurringHits;
       } catch (error) {
         logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
       }
