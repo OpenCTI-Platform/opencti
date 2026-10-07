@@ -23,8 +23,13 @@ describe('Defense log sources dialog', () => {
     expect(screen.getByTestId('defense-logsource-count').textContent).toBe('3 log sources');
     fireEvent.change(product(), { target: { value: 'one more' } });
     expect(add().disabled).toBe(true);
-    expect(screen.getByLabelText('A declaration holds at most 3 log sources: declare them, then add the others.')).toBeTruthy();
+    const wrapper = screen.getByRole('button', { name: 'Add', description: 'A declaration holds at most 3 log sources: declare them, then add the others.' });
+    expect(wrapper).toHaveAttribute('aria-disabled', 'true');
+    expect(wrapper).toContainElement(add());
     expect((screen.getByTestId('defense-logsource-submit') as HTMLButtonElement).disabled).toBe(false);
+    // Each removal names the log source it removes
+    expect(screen.getAllByRole('button', { name: /^Remove / }).map((button) => button.getAttribute('aria-label')))
+      .toEqual(['Remove product:product-0', 'Remove product:product-1', 'Remove product:product-2']);
   });
 
   it('holds every log source field to the length the API accepts', () => {

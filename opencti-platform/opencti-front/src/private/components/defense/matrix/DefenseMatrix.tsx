@@ -455,7 +455,7 @@ export const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, on
         <Stack direction="row" spacing={1} alignItems="center">
           <DefenseCoverageDashboardButton />
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
-            <DefenseDisabledReason reason={computationAvailable ? undefined : t_i18n('The defense coverage manager is disabled on this platform: the defense coverage is not computed.')}>
+            <DefenseDisabledReason label={t_i18n('Recompute')} reason={computationAvailable ? undefined : t_i18n('The defense coverage manager is disabled on this platform: the defense coverage is not computed.')}>
               <Button
                 variant="secondary"
                 startIcon={<RefreshOutlined fontSize="small" />}

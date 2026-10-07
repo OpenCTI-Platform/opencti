@@ -45,16 +45,17 @@ describe('Defense matrix recomputation', () => {
   it('should offer Recompute while a node runs the defense coverage manager', async () => {
     const recompute = await renderStatus(true);
     expect(recompute).toBeEnabled();
-    expect(screen.queryByLabelText(UNAVAILABLE)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { description: UNAVAILABLE })).not.toBeInTheDocument();
   });
 
   it('should disable Recompute with its reason when no node runs the defense coverage manager', async () => {
     const recompute = await renderStatus(false);
     expect(recompute).toBeDisabled();
     // The reason is on a focusable wrapper: a disabled button receives no pointer event
-    const reason = screen.getByLabelText(UNAVAILABLE);
-    expect(reason).toHaveAttribute('tabindex', '0');
-    expect(reason).toContainElement(recompute);
+    const wrapper = screen.getByRole('button', { name: 'Recompute', description: UNAVAILABLE });
+    expect(wrapper).toHaveAttribute('tabindex', '0');
+    expect(wrapper).toHaveAttribute('aria-disabled', 'true');
+    expect(wrapper).toContainElement(recompute);
     expect(screen.queryByTestId('defense-matrix-recompute-pending')).not.toBeInTheDocument();
   });
 });

@@ -159,7 +159,7 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
           <Input label={t_i18n('Category')} value={current.category} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
           <Input label={t_i18n('Product')} value={current.product} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
           <Input label={t_i18n('Service')} value={current.service} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
-          <DefenseDisabledReason reason={addReason}>
+          <DefenseDisabledReason label={t_i18n('Add')} reason={addReason}>
             <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
           </DefenseDisabledReason>
         </Box>
@@ -181,7 +181,7 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
                   <IconButton
                     size="sm"
                     priority="tertiary"
-                    aria-label={t_i18n('Remove')}
+                    aria-label={t_i18n('Remove {name}', { values: { name: logsourceLabel(logsource) } })}
                     icon={<DeleteOutlined fontSize="small" />}
                     onClick={() => setLogsources(logsources.filter((_, i) => i !== index))}
                   />
@@ -212,7 +212,7 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
       </Box>
       <DialogActions sx={{ paddingX: 0, marginTop: 2, flexShrink: 0 }}>
         <Button variant="secondary" onClick={close}>{t_i18n('Close')}</Button>
-        <DefenseDisabledReason reason={!inFlight && logsources.length === 0 ? t_i18n('Add at least one log source') : undefined}>
+        <DefenseDisabledReason label={t_i18n('Declare')} reason={!inFlight && logsources.length === 0 ? t_i18n('Add at least one log source') : undefined}>
           <Button onClick={submit} disabled={inFlight || logsources.length === 0} data-testid="defense-logsource-submit">
             {t_i18n('Declare')}
           </Button>
