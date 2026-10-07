@@ -175,6 +175,7 @@ export const rssFeedExport = async (context: AuthContext,
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
     type: 'rssFeeds',
+    export_id: ingestionRss.export_id,
     configuration: {
       name,
       description,

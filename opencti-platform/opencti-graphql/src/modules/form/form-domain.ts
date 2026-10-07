@@ -629,6 +629,7 @@ export const generateFormExportConfiguration = async (
   const exportConfiguration = {
     openCTI_version: pjson.version,
     type: 'form',
+    export_id: form.export_id,
     configuration: {
       name: form.name,
       description: form.description,

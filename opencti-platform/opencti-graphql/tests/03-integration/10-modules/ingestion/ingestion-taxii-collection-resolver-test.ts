@@ -49,6 +49,7 @@ describe('TAXII push ingestion resolver — configuration export / import', () =
     });
     const exported = JSON.parse(result.data?.ingestionTaxiiCollection.toConfigurationExport);
     expect(exported.type).toBe('taxiiPushCollections');
+    expect(exported.export_id).toBe(createdTaxiiPushId);
     expect(exported.openCTI_version).toBeDefined();
     expect(exported.configuration).toMatchObject({
       name: 'Taxii push for export test',

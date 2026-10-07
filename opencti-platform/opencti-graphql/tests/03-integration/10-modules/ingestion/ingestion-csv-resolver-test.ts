@@ -402,6 +402,7 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(data?.ingestionCsv.name).toBe('Single column CSV feed ingester');
     const csvFeedIngestion = JSON.parse(data?.ingestionCsv.toConfigurationExport);
     expect(csvFeedIngestion.type).toBe('csvFeeds');
+    expect(csvFeedIngestion.export_id).toBe(singleColumnCsvFeedIngesterId);
     expect(csvFeedIngestion.openCTI_version).toBe(pjson.version);
     expect(csvFeedIngestion.configuration).toBeDefined();
     expect(csvFeedIngestion.configuration.name).toBe('Single column CSV feed ingester');
