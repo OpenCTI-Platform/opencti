@@ -227,4 +227,38 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
     expect(recorded).not.toContain('clear-secret');
     expect(recorded).not.toContain('clear-unknown');
   });
+
+  it('should record a setting entered twice with the entry the deployment keeps, never an earlier password', async () => {
+    const catalogDomain = await vi.importActual<typeof import('../../../src/modules/catalog/catalog-domain')>('../../../src/modules/catalog/catalog-domain');
+    vi.mocked(computeConnectorTargetContract).mockImplementation(catalogDomain.computeConnectorTargetContract);
+    vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({
+      contract_id: 'test-1.0.0',
+      manager_supported: true,
+      slug: 'test',
+      title: 'Test',
+      config_schema: {
+        type: 'object',
+        properties: { API_KEY: { type: 'string', format: 'password', default: 'default-key' }, API_URL: { type: 'string' } },
+        required: ['API_KEY', 'API_URL'],
+      },
+    } as never);
+    const configuration = [
+      { key: 'API_KEY', value: 'clear-secret' },
+      { key: 'API_URL', value: 'https://api.example.com' },
+      { key: 'API_KEY', value: '' },
+    ];
+
+    await managedConnectorAdd(fakeContext, fakeUser, { ...automaticInput, manager_contract_configuration: configuration });
+    const stored = vi.mocked(createEntity).mock.calls[0][2] as any;
+    expect(stored.manager_contract_configuration).toEqual([
+      { key: 'API_KEY', value: 'default-key' },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    const activity = vi.mocked(publishUserAction).mock.calls[0][0] as any;
+    expect(activity.context_data.input.manager_contract_configuration).toEqual([
+      { key: 'API_KEY', value: '' },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    expect(JSON.stringify(activity)).not.toContain('clear-secret');
+  });
 });
