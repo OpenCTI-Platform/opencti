@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import type { Dependency } from './error-origin';
 
 // region DOC CODE
 // Doc codes are a stable contract, they identify a precise error.
@@ -128,6 +129,16 @@ export const UnknownError = (reason?: string, data?: any) => error(UNKNOWN_ERROR
   ...data,
 });
 
+// Thrown by a shared client when the service it wraps is unavailable or failing, after retries.
+// The original error goes in `cause`. See RFC 0006 and config/error-origin.ts.
+export const INFRA_ERROR = 'INFRA_ERROR';
+export const InfraError = (dependency: Dependency, reason?: string, data?: any) => error(INFRA_ERROR, reason || 'A dependency is unavailable', {
+  http_status: 503,
+  genre: CATEGORY_TECHNICAL,
+  dependency,
+  ...data,
+});
+
 export const ACCESS_REQUIRED = 'ACCESS_REQUIRED';
 export const AccessRequiredError = (reason?: string, data?: any) => error(ACCESS_REQUIRED, reason || 'Access required', {
   http_status: 500,
@@ -154,6 +165,7 @@ export const TECHNICAL_ERRORS = [
   FILESYSTEM_ERROR,
   COMPLEX_SEARCH_ERROR,
   CONFIGURATION_ERROR,
+  INFRA_ERROR,
   UNKNOWN_ERROR,
   UNSUPPORTED_ERROR,
 ];
