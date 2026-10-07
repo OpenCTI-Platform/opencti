@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AbortError } from 'node-fetch';
 
-// loggerPlugin.js decides the log severity of a GraphQL error based on
-// whether its extensions.code is listed in FUNCTIONAL_ERRORS (-> warn)
-// or not (-> error). We mock its side-effecting dependencies only.
+// loggerPlugin.js decides the log severity of a GraphQL error from its origin
+// (config/error-origin.ts): rejected input, such as a code listed in
+// FUNCTIONAL_ERRORS, is logged at warn and a code fault at error.
+// We mock its side-effecting dependencies only.
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   return {
