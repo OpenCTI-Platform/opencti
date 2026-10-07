@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
+import { redisPlaybookUpdate } from '../../../../src/database/redis';
 import { offsetToCursor } from '../../../../src/database/utils';
 import { FilterMode } from '../../../../src/generated/graphql';
 import { resumeSettledHuntPlaybooks } from '../../../../src/modules/hunt/hunt-automation';
@@ -16,6 +17,11 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/middleware-loader')>(),
   fullEntitiesList: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/redis')>(),
+  redisPlaybookUpdate: vi.fn(),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-playbook', async (importOriginal) => ({
@@ -52,18 +58,42 @@ describe('Hunt playbook continuation', () => {
       await opts.callback(leaders);
       return [];
     }) as never);
+    vi.mocked(findPlaybookHuntRuns).mockClear();
     vi.mocked(findPlaybookHuntRuns).mockImplementation((async () => [leader]) as never);
+    vi.mocked(redisPlaybookUpdate).mockClear();
     vi.mocked(buildHuntPlaybookResume).mockClear();
     vi.mocked(executeHuntPlaybookResume).mockReset();
     vi.mocked(executeHuntPlaybookResume).mockResolvedValue(true);
   });
 
-  it('should hand the continuation over before the step executes', async () => {
+  it('should record the hand-over before the step executes, and let the continuation go once it ran', async () => {
     expect(await resumeSettledHuntPlaybooks(context)).toEqual(1);
     expect(scanOptions(0).filters).toEqual({ mode: FilterMode.And, filters: [{ key: ['playbook_leader'], values: ['true'] }], filterGroups: [] });
-    expect(patches()).toEqual([{ playbook_leader: false, playbook_resumed_at: expect.any(String) }]);
+    expect(patches()).toEqual([{ playbook_resumed_at: expect.any(String) }, { playbook_leader: false }]);
     expect(executeHuntPlaybookResume).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(patchAttribute).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(executeHuntPlaybookResume).mock.invocationCallOrder[0]);
+    const [handOver, release] = vi.mocked(patchAttribute).mock.invocationCallOrder;
+    const executed = vi.mocked(executeHuntPlaybookResume).mock.invocationCallOrder[0];
+    expect(handOver).toBeLessThan(executed);
+    expect(executed).toBeLessThan(release);
+    expect(redisPlaybookUpdate).not.toHaveBeenCalled();
+  });
+
+  it('should never execute again a step whose hand-over was interrupted, and record the interruption on its execution', async () => {
+    const recent = { ...leader, playbook_resumed_at: new Date(Date.now() - 60000).toISOString() };
+    const interrupted = { ...leaderOf(2), playbook_resumed_at: new Date(Date.now() - 60 * 60000).toISOString() };
+    leaders = [recent, interrupted];
+    expect(await resumeSettledHuntPlaybooks(context)).toEqual(0);
+    expect(executeHuntPlaybookResume).not.toHaveBeenCalled();
+    expect(findPlaybookHuntRuns).not.toHaveBeenCalled();
+    // A hand-over of the last minutes may still be confirmed: only the one left unconfirmed is settled
+    expect(vi.mocked(patchAttribute).mock.calls.map((call) => [call[2], call[4]])).toEqual([['run-2', { playbook_leader: false }]]);
+    expect(redisPlaybookUpdate).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(redisPlaybookUpdate).mock.calls[0][0]).toMatchObject({
+      playbook_id: 'playbook-1',
+      playbook_execution_id: 'execution-2',
+      last_execution_step: 'hunt-step',
+      'step_hunt-step': { status: 'error', in_timestamp: interrupted.playbook_resumed_at },
+    });
   });
 
   it('should not execute a step whose handover could not be recorded, and execute it once handed over at the next tick', async () => {
@@ -77,7 +107,7 @@ describe('Hunt playbook continuation', () => {
   it('should never execute again a step that failed once handed over', async () => {
     vi.mocked(executeHuntPlaybookResume).mockRejectedValueOnce(new Error('playbook step failed'));
     expect(await resumeSettledHuntPlaybooks(context)).toEqual(1);
-    expect(patches()).toEqual([{ playbook_leader: false, playbook_resumed_at: expect.any(String) }]);
+    expect(patches()).toEqual([{ playbook_resumed_at: expect.any(String) }, { playbook_leader: false }]);
     expect(executeHuntPlaybookResume).toHaveBeenCalledTimes(1);
   });
 

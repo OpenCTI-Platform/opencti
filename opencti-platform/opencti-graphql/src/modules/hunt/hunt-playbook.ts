@@ -1,11 +1,14 @@
 import type { AuthContext } from '../../types/user';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { ExecutionEnvelop } from '../../types/playbookExecution';
 import { logApp } from '../../config/conf';
 import { stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
+import { redisPlaybookUpdate } from '../../database/redis';
 import { FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
+import { now } from '../../utils/format';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { isTerminalHuntRunFailure } from './hunt-logic';
 import {
@@ -196,4 +199,27 @@ export const executeHuntPlaybookResume = async (context: AuthContext, step: Muta
 
 export const resumeHuntPlaybookStep = async (context: AuthContext, playbookContext: HuntPlaybookContext, runs: BasicStoreEntityHuntRun[]) => {
   return executeHuntPlaybookResume(context, await buildHuntPlaybookResume(context, playbookContext, runs));
+};
+
+/**
+ * Records on its playbook execution the hunt step a run handed over without the hand-over being confirmed: the platform
+ * stopped while the step ran, or just before. The steps after it may have run, so it is never run again: the execution
+ * shows the failure of the step instead of waiting for good.
+ */
+export const recordInterruptedHuntPlaybookResume = async (run: BasicStoreEntityHuntRun) => {
+  if (!run.playbook_id || !run.playbook_execution_id || !run.playbook_step_id) {
+    return;
+  }
+  const start = run.playbook_resumed_at ?? now();
+  const end = now();
+  const envelop = { playbook_id: run.playbook_id, playbook_execution_id: run.playbook_execution_id, last_execution_step: run.playbook_step_id } as ExecutionEnvelop;
+  envelop[`step_${run.playbook_step_id}`] = {
+    message: 'Hunt step interrupted while the playbook resumed, not run again',
+    status: 'error',
+    in_timestamp: start,
+    out_timestamp: end,
+    duration: new Date(end).getTime() - new Date(start).getTime(),
+    error: JSON.stringify({ name: 'HuntPlaybookResumeInterrupted', message: 'The platform stopped before the hunt step confirmed it resumed: the steps after it may not have run' }, null, 2),
+  };
+  await redisPlaybookUpdate(envelop);
 };
