@@ -490,11 +490,18 @@ const deploymentsByRule = (view: DefenseTechniqueView) => {
 export const defenseTechniqueRules = async (context: AuthContext, user: AuthUser, view: DefenseTechniqueView): Promise<DefenseRuleEvidenceView[]> => {
   const deployments = deploymentsByRule(view);
   const ids = uniq([...view.evaluated.rule_ids, ...deployments.keys()]);
-  const [indicators, mappings] = await Promise.all([
+  // The mappings are read by the users customizing the platform: any other reader only sees the mapped data components
+  // they can access, as the missing telemetry of a gap
+  const readsMappings = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION);
+  const [indicators, mappings, readableDataComponents] = await Promise.all([
     findByIdsChunked<BasicStoreEntityIndicator>(context, user, ids, { type: ENTITY_TYPE_INDICATOR }),
     listAllDefenseLogsourceMappings(context, SYSTEM_USER),
+    readsMappings ? Promise.resolve(undefined) : listDataComponentNames(context, user),
   ]);
   const activeMappings = mappings.filter((m) => m.active);
+  const readableNames = readableDataComponents && new Set(readableDataComponents.map((dc) => (dc.name ?? '').toLowerCase()));
+  const requiredDataComponents = (indicator: BasicStoreEntityIndicator) => mapLogsourceToDataComponents(indicator.x_opencti_rule_logsource, activeMappings)
+    .filter((name) => !readableNames || readableNames.has(name.toLowerCase()));
   const ranked = rankRuleCandidates(indicators.map((indicator) => ({
     id: indicator.internal_id,
     x_opencti_rule_status: indicator.x_opencti_rule_status,
@@ -505,7 +512,7 @@ export const defenseTechniqueRules = async (context: AuthContext, user: AuthUser
   return ranked.map(({ indicator }) => ({
     indicator,
     deployments: deployments.get(indicator.internal_id) ?? [],
-    required_data_components: mapLogsourceToDataComponents(indicator.x_opencti_rule_logsource, activeMappings),
+    required_data_components: requiredDataComponents(indicator),
   }));
 };
 

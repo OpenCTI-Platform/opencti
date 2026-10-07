@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
-import { addPlatformProvidesFromLogsources, exportDefenseGaps } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
+import {
+  addPlatformProvidesFromLogsources,
+  defenseTechniqueRules,
+  type DefenseTechniqueView,
+  exportDefenseGaps,
+} from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
 import { listAllDefenseLogsourceMappings } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -88,6 +93,28 @@ describe('Defense telemetry from log sources', () => {
     } else {
       expect(vi.mocked(addStixCoreRelationship)).not.toHaveBeenCalled();
     }
+  });
+});
+
+describe('Defense rule evidence', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['without', [], ['Process Creation']],
+    ['with', [{ name: 'SETTINGS_SETCUSTOMIZATION' }], ['Process Creation', 'Restricted Component']],
+  ])('should name the required data components of a rule a reader %s the customization capability can see', async (_, capabilities, required) => {
+    const reader = { id: `reader-${capabilities.length}`, capabilities } as unknown as AuthUser;
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'indicator-1', x_opencti_rule_logsource: { product: 'windows' } }] as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation', 'Restricted Component'] },
+    ] as never);
+    // The data components the reader can access
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
+    const view = { evaluated: { rule_ids: ['indicator-1'] }, coverage: undefined, evaluation: {} } as unknown as DefenseTechniqueView;
+    const rules = await defenseTechniqueRules({} as AuthContext, reader, view);
+    expect(rules.map((rule) => rule.required_data_components)).toEqual([required]);
   });
 });
 
