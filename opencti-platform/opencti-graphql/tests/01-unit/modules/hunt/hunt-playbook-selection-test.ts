@@ -65,6 +65,13 @@ describe('Hunts selected by a playbook step from its elements', () => {
     expect(hunts.map((hunt) => hunt.internal_id)).toEqual(['hunt-oldest', 'hunt-recent']);
   });
 
+  it('should load the configured and the selected hunts with their relations, which the runs of the step carry', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValue([] as never);
+    await resolvePlaybookHunts({} as AuthContext, [report], { ...configuration, hunt_ids: ['hunt-1'] });
+    await resolvePlaybookHunts({} as AuthContext, [report], configuration);
+    expect(vi.mocked(topEntitiesList).mock.calls.map((call) => (call[3] as { withoutRels?: boolean }).withoutRels)).toEqual([false, false, false, false]);
+  });
+
   it('should search once for the refs of a small container', async () => {
     vi.mocked(topEntitiesList).mockResolvedValue([] as never);
     const small = { id: 'report--2', type: 'report', object_refs: refs.slice(0, 3) } as unknown as StixObject;
