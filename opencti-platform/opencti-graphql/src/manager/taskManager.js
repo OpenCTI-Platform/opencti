@@ -50,7 +50,9 @@ import {
   TASK_TYPE_RULE,
   ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
   ACTION_TYPE_WORKFLOW_BYPASS,
+  ACTION_TYPE_WORKFLOW_TRANSITION,
   isWorkflowBypassAction,
+  isWorkflowTransitionAction,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
@@ -68,7 +70,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
-import { setWorkflowStatus } from '../modules/workflow/domain/workflow-domain';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../modules/workflow/domain/workflow-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -619,6 +621,13 @@ export const workflowBypassOperationCallback = (context, user, task, operations)
   });
 };
 
+export const workflowTransitionOperationCallback = (context, user, task, operations) => {
+  const { eventName } = operations[0].context.options;
+  return workflowOperationCallback(context, task, (element) => {
+    return triggerWorkflowEvent(context, user, element.internal_id, eventName);
+  });
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -638,6 +647,9 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   }
   if (actionType === ACTION_TYPE_WORKFLOW_BYPASS) {
     return workflowBypassOperationCallback(context, user, task, operations);
+  }
+  if (actionType === ACTION_TYPE_WORKFLOW_TRANSITION) {
+    return workflowTransitionOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
@@ -732,6 +744,9 @@ const taskHandlerGenerator = (context) => {
       }
       if (isWorkflowBypassAction(action)) {
         return ACTION_TYPE_WORKFLOW_BYPASS;
+      }
+      if (isWorkflowTransitionAction(action)) {
+        return ACTION_TYPE_WORKFLOW_TRANSITION;
       }
       // Support generic knowledge
       if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {

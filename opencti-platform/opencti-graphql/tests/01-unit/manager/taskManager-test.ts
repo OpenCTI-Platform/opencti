@@ -1,11 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { baseOperationBuilder, buildContainersElementsBundle, sendResultToQueue, workflowBypassOperationCallback } from '../../../src/manager/taskManager';
+import {
+  baseOperationBuilder,
+  buildContainersElementsBundle,
+  sendResultToQueue,
+  workflowBypassOperationCallback,
+  workflowTransitionOperationCallback,
+} from '../../../src/manager/taskManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { pushBundleToWorker } from '../../../src/database/rabbitmq';
 import { updateExpectationsNumber } from '../../../src/domain/work';
 import { updateTask } from '../../../src/domain/backgroundTask';
-import { setWorkflowStatus } from '../../../src/modules/workflow/domain/workflow-domain';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
 import {
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
@@ -52,6 +58,7 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', async (importOri
   return {
     ...actual,
     setWorkflowStatus: vi.fn(),
+    triggerWorkflowEvent: vi.fn(),
   };
 });
 
@@ -509,5 +516,41 @@ describe('workflowBypassOperationCallback', () => {
 
     expect(setWorkflowStatus).toHaveBeenCalledTimes(3);
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 3 });
+  });
+});
+
+describe('workflowTransitionOperationCallback', () => {
+  const task = { id: 'task-id', task_processed_number: 0 };
+  const operations = [{
+    type: 'REPLACE',
+    context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: [], options: { eventName: 'approve' } },
+  }];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should trigger the transition event on each element', async () => {
+    vi.mocked(triggerWorkflowEvent).mockResolvedValue({ success: true });
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, operations);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve');
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve');
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
+  });
+
+  it('should continue with the next elements when an element is not in an eligible state', async () => {
+    vi.mocked(triggerWorkflowEvent)
+      .mockResolvedValueOnce({ success: false, reason: 'Transition not allowed' })
+      .mockResolvedValueOnce({ success: true });
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, operations);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
+    expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
   });
 });
