@@ -1,12 +1,14 @@
 import { isIP } from 'node:net';
+import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { logApp } from '../../config/conf';
+import { OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_MANAGER_USER } from '../../utils/access';
 import type { BasicStoreEntityHunt } from './hunt-types';
 import type { BasicStoreEntityHuntRun, HuntHit } from './huntRun/huntRun-types';
-import { HUNT_CONFIG } from './hunt-utils';
+import { HUNT_CONFIG, huntHitKey } from './hunt-utils';
 
 /** An observable a hit names, as the observable creation takes it. */
 export interface HuntHitObservable {
@@ -94,6 +96,12 @@ export const extractHitObservables = (hit: HuntHit): HuntHitObservable[] => {
   return Array.from(unique.values());
 };
 
+// The identifier an observed data gets from its objects would make one record of the hits naming the same observables,
+// in a run or across runs: the observed data of a hit is identified by its run and its hit
+export const huntHitObservedDataStandardId = (runId: string, hit: HuntHit) => {
+  return `observed-data--${uuidv5(`hunt-hit-observed-data|${runId}|${hit.hit_key || huntHitKey(hit)}`, OPENCTI_NAMESPACE)}`;
+};
+
 /**
  * One Observed Data per hit of the sample, with the observables it names, in the knowledge graph next to the
  * sightings of the connector: the observation dates are the date of the event (the run window when the hit has none).
@@ -129,6 +137,7 @@ export const createHuntHitObservations = async (context: AuthContext, hunt: Basi
       if (objectIds.length > 0) {
         const observedAt = hit.timestamp ?? run.time_window_end ?? run.time_window_start;
         const observedData = await addObservedData(context, HUNT_MANAGER_USER, {
+          standard_id: huntHitObservedDataStandardId(run.internal_id, hit),
           first_observed: hit.timestamp ?? run.time_window_start ?? observedAt,
           last_observed: observedAt,
           number_observed: 1,
