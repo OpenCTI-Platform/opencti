@@ -31,20 +31,27 @@ describe('Hunt run restrictions', () => {
 
   it('should share a run only with the organizations both its hunt and its security platform are shared with', () => {
     expect(huntRunRestrictions({ granted: ['org-a', 'org-b'] }, { granted: ['org-b', 'org-c'] })?.objectOrganization).toEqual(['org-b']);
-    expect(huntRunRestrictions({ granted: ['org-a'] }, {})?.objectOrganization).toEqual(['org-a']);
-    expect(huntRunRestrictions({}, { granted: ['org-c'] })?.objectOrganization).toEqual(['org-c']);
+    // Shared with no organization: readable by the platform organization only, and so is the run
+    expect(huntRunRestrictions({ granted: ['org-a'] }, {})?.objectOrganization).toEqual([]);
+    expect(huntRunRestrictions({}, { granted: ['org-c'] })?.objectOrganization).toEqual([]);
+    // Without a security platform, the run is shared like its hunt
+    expect(huntRunRestrictions({ granted: ['org-a'] }, null)?.objectOrganization).toEqual(['org-a']);
   });
 
   it('should refuse a run whose hunt and security platform are shared with disjoint organizations', () => {
     expect(huntRunRestrictions({ granted: ['org-a'] }, { granted: ['org-c'] })).toBeNull();
   });
 
-  it('should derive from several objects only the organizations every restricted one shares', () => {
+  it('should derive from several objects only the organizations every one of them shares', () => {
     expect(sharedOrganizations([])).toEqual([]);
     expect(sharedOrganizations([[], []])).toEqual([]);
-    expect(sharedOrganizations([['org-a', 'org-b'], [], ['org-b', 'org-c'], ['org-b']])).toEqual(['org-b']);
-    expect(sharedOrganizations([['org-a', 'org-a'], []])).toEqual(['org-a']);
+    expect(sharedOrganizations([['org-a', 'org-b'], ['org-b', 'org-c'], ['org-b']])).toEqual(['org-b']);
+    expect(sharedOrganizations([['org-a', 'org-a']])).toEqual(['org-a']);
+    // One of them shared with no organization: the platform organization only
+    expect(sharedOrganizations([['org-a', 'org-b'], [], ['org-b', 'org-c'], ['org-b']])).toEqual([]);
+    expect(sharedOrganizations([['org-a', 'org-a'], []])).toEqual([]);
     expect(sharedOrganizations([['org-a'], ['org-b', 'org-c'], ['org-a', 'org-b']])).toBeNull();
+    expect(sharedOrganizations([['org-a'], [], ['org-c']])).toBeNull();
   });
 });
 

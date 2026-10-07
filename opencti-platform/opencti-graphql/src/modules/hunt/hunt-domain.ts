@@ -229,8 +229,10 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
   const references = referenceIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, referenceIds) : [];
   const inheritedMarkings = references.flatMap((reference) => (reference[RELATION_OBJECT_MARKING] ?? []) as string[]);
   const objectMarking = Array.from(new Set([...(input.objectMarking ?? []), ...inheritedMarkings]));
+  const requestedOrganizations = (input.objectOrganization ?? []).filter((id): id is string => !!id);
+  // No organization asked for is no restriction asked for: only the references then restrict the proposal
   const objectOrganization = sharedOrganizations([
-    (input.objectOrganization ?? []).filter((id): id is string => !!id),
+    ...(requestedOrganizations.length > 0 ? [requestedOrganizations] : []),
     ...references.map((reference) => (reference[RELATION_GRANTED_TO] ?? []) as string[]),
   ]);
   if (!objectOrganization) {
@@ -265,7 +267,7 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
     ...input,
     huntTechniques: techniqueIds,
     objectMarking,
-    ...(objectOrganization.length > 0 ? { objectOrganization } : {}),
+    objectOrganization,
     hunt_status: HuntStatus.Draft,
     hunt_source_kind: input.hunt_source_kind ?? HuntSourceKind.Agent,
   });

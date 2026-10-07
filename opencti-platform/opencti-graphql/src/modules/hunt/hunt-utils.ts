@@ -470,13 +470,10 @@ export const buildHuntScopeFilter = (platformIds: string[]): string => {
 type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[] };
 
 /**
- * Access of a run, which discloses both its hunt and its target security platform: the markings of both, and only
- * the organizations both are shared with (an element is shared with any of its organizations). Null when the hunt
- * and the platform are shared with disjoint organizations, a restriction one list of organizations cannot express.
- */
-/**
- * The organizations an object derived from several others is shared with: those every one restricted to organizations
- * shares, an empty list when none is restricted, null when the restricted ones share none (nothing can be derived).
+ * The organizations an object derived from several others is shared with: those every one of them is shared with.
+ * With a platform organization, an object shared with no organization is readable by the platform organization only,
+ * so one of them shared with none makes the list empty. Null when those shared with organizations have none in
+ * common (nothing can be derived).
  */
 export const sharedOrganizations = (restrictions: string[][]): string[] | null => {
   const restricted = restrictions.filter((organizations) => organizations.length > 0);
@@ -484,12 +481,20 @@ export const sharedOrganizations = (restrictions: string[][]): string[] | null =
     return [];
   }
   const shared = restricted.reduce((kept, organizations) => kept.filter((id) => organizations.includes(id)));
-  return shared.length > 0 ? Array.from(new Set(shared)) : null;
+  if (shared.length === 0) {
+    return null;
+  }
+  return restricted.length < restrictions.length ? [] : Array.from(new Set(shared));
 };
 
+/**
+ * Access of a run, which discloses both its hunt and its target security platform: the markings of both, and only
+ * the organizations both are shared with (sharedOrganizations). Null when the hunt and the platform are shared with
+ * disjoint organizations.
+ */
 export const huntRunRestrictions = (hunt: AccessRestricted, platform?: AccessRestricted | null) => {
   const objectMarking = Array.from(new Set([...(hunt[RELATION_OBJECT_MARKING] ?? []), ...(platform?.[RELATION_OBJECT_MARKING] ?? [])]));
-  const objectOrganization = sharedOrganizations([hunt[RELATION_GRANTED_TO] ?? [], platform?.[RELATION_GRANTED_TO] ?? []]);
+  const objectOrganization = sharedOrganizations([hunt[RELATION_GRANTED_TO] ?? [], ...(platform ? [platform[RELATION_GRANTED_TO] ?? []] : [])]);
   return objectOrganization ? { objectMarking, objectOrganization } : null;
 };
 

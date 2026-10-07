@@ -68,7 +68,11 @@ describe('Hunt proposals of agents', () => {
   });
 
   it('should carry the markings and the organizations of the techniques it references', async () => {
-    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', []), reference('report-1', []), reference('attack-pattern-1', ['tlp-amber'], ['org-a'])]);
+    vi.mocked(findByIds).mockResolvedValue([
+      reference('intrusion-set-1', [], ['org-a', 'org-b']),
+      reference('report-1', [], ['org-a']),
+      reference('attack-pattern-1', ['tlp-amber'], ['org-a']),
+    ]);
     expect(await proposedMarkings({ huntTechniques: ['attack-pattern-1'] })).toEqual(['tlp-amber']);
     expect(vi.mocked(findByIds).mock.calls[0][2]).toEqual(['intrusion-set-1', 'report-1', 'attack-pattern-1']);
     expect(vi.mocked(createEntity).mock.calls[0][2].objectOrganization).toEqual(['org-a']);
@@ -121,6 +125,18 @@ describe('Hunt proposals of agents', () => {
     expect(JSON.stringify(workspace)).not.toContain(proposalInput.name);
   });
 
+  it('should share with no organization a proposal referencing an object shared with none, whatever the caller asked for', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [])]);
+    await proposedMarkings({ objectOrganization: ['org-a'] });
+    expect(vi.mocked(createEntity).mock.calls[0][2].objectOrganization).toEqual([]);
+  });
+
+  it('should keep the organizations asked for that every reference shares', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a', 'org-b']), reference('report-1', [], ['org-a', 'org-b'])]);
+    await proposedMarkings({ objectOrganization: ['org-b'] });
+    expect(vi.mocked(createEntity).mock.calls[0][2].objectOrganization).toEqual(['org-b']);
+  });
+
   it('should refuse a proposal whose references share no organization, creating nothing', async () => {
     vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [], ['org-b'])]);
     await expect(addHuntProposal(testContext, ADMIN_USER, proposalInput)).rejects.toThrow(/organizations that have none in common/);
@@ -129,7 +145,7 @@ describe('Hunt proposals of agents', () => {
   });
 
   it('should refuse a proposal restricted to organizations when its caller cannot restrict access to organizations', async () => {
-    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [])]);
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [], ['org-a'])]);
     const caller = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as typeof ADMIN_USER;
     await expect(addHuntProposal(testContext, caller, proposalInput)).rejects.toThrow(/only a user who can restrict access to organizations/);
     expect(addDraftWorkspace).not.toHaveBeenCalled();
