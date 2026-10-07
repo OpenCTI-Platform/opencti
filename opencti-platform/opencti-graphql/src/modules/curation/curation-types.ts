@@ -334,8 +334,6 @@ export interface CurationPolicyDryRunResult {
   estimated_impact: { key: string; count: number }[];
   exclusions: { key: string; count: number }[];
   sample_proposal_ids: string[];
-  // The user the dry run counted for: it only counts the proposals this user can read.
-  computed_by_id?: string;
 }
 
 export interface BasicStoreEntityCurationPolicy extends BasicStoreEntity {
@@ -350,7 +348,6 @@ export interface BasicStoreEntityCurationPolicy extends BasicStoreEntity {
   require_adjudication: boolean;
   max_applies_per_run: number;
   last_applied_at?: string | null;
-  last_dry_run?: CurationPolicyDryRunResult | null;
 }
 
 export interface StoreEntityCurationPolicy extends StoreEntity, Omit<BasicStoreEntityCurationPolicy, keyof BasicStoreEntity> {}

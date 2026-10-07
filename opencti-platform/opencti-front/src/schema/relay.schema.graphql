@@ -17471,7 +17471,6 @@ type CurationPolicy implements InternalObject & BasicObject {
   require_adjudication: Boolean!
   max_applies_per_run: Int!
   last_applied_at: DateTime
-  last_dry_run: CurationPolicyDryRun
   applied_count: Int!
 }
 

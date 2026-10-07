@@ -199,11 +199,6 @@ const curationResolvers: Resolvers = {
     },
   },
   CurationPolicy: {
-    last_dry_run: (policy, _, context) => {
-      const lastDryRun = (policy as unknown as BasicStoreEntityCurationPolicy).last_dry_run;
-      // A dry run counts what its user can read: another user is never shown those counts.
-      return (lastDryRun && lastDryRun.computed_by_id === context.user?.id ? lastDryRun : null) as any;
-    },
     applied_count: (policy, _, context) => countPolicyApplications(context, policy as unknown as BasicStoreEntityCurationPolicy),
   },
   CurationSettings: {

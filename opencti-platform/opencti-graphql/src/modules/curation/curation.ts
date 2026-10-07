@@ -192,7 +192,6 @@ const CURATION_POLICY_DEFINITION: ModuleDefinition<StoreEntityCurationPolicy, St
     { name: 'require_adjudication', label: 'Require adjudication agreement', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'max_applies_per_run', label: 'Maximum applies per run', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'last_applied_at', label: 'Last applied', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'last_dry_run', label: 'Last dry run', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixCurationPolicy) => stix.name,

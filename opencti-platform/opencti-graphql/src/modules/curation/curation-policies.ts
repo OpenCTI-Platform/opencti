@@ -412,6 +412,7 @@ export const evaluateDryRun = async (context: AuthContext, user: AuthUser, polic
   return { eligibleCount, exclusions, impact, sampleIds };
 };
 
+/** A dry run writes nothing, its result included: it is served by a query, which a client may send again at will. */
 export const dryRunCurationPolicy = async (context: AuthContext, user: AuthUser, id: string): Promise<CurationPolicyDryRunResult> => {
   await checkEnterpriseEdition(context);
   const policy = await findPolicyById(context, user, id);
@@ -424,9 +425,7 @@ export const dryRunCurationPolicy = async (context: AuthContext, user: AuthUser,
     estimated_impact: Object.entries(impact).map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count),
     exclusions: Object.entries(exclusions).map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count),
     sample_proposal_ids: sampleIds,
-    computed_by_id: user.id,
   };
-  await patchAttribute(context, SYSTEM_USER, policy.internal_id, ENTITY_TYPE_CURATION_POLICY, { last_dry_run: result });
   return result;
 };
 

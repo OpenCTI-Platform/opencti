@@ -1,6 +1,5 @@
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
-import { ENTITY_TYPE_CURATION_POLICY } from '../curation/curation-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../customView/customView-types';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
@@ -160,13 +159,6 @@ export const USER_MERGE_BLOB_TARGETS: UserMergeBlobTarget[] = [
     registerRow: 'curation-settings.user-ids',
     entityType: ENTITY_TYPE_MANAGER_CONFIGURATION,
     path: 'manager_setting',
-    shape: 'object',
-  },
-  {
-    id: 'curation-policy-dry-run',
-    registerRow: 'curation-policy.last-dry-run-computed-by-id',
-    entityType: ENTITY_TYPE_CURATION_POLICY,
-    path: 'last_dry_run',
     shape: 'object',
   },
 ];

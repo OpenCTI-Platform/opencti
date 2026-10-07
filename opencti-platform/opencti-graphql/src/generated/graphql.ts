@@ -6624,7 +6624,6 @@ export type CurationPolicy = BasicObject & InternalObject & {
   forbid_open_contradiction: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   last_applied_at?: Maybe<Scalars['DateTime']['output']>;
-  last_dry_run?: Maybe<CurationPolicyDryRun>;
   max_applies_per_run: Scalars['Int']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
@@ -41585,7 +41584,7 @@ export type ResolversTypes = ResolversObject<{
   CurationPolicy: ResolverTypeWrapper<BasicStoreEntityCurationPolicy>;
   CurationPolicyAddInput: CurationPolicyAddInput;
   CurationPolicyConnection: ResolverTypeWrapper<Omit<CurationPolicyConnection, 'edges'> & { edges: Array<ResolversTypes['CurationPolicyEdge']> }>;
-  CurationPolicyDryRun: ResolverTypeWrapper<Omit<CurationPolicyDryRun, 'estimated_impact' | 'exclusions' | 'sample_proposals'> & { estimated_impact: Array<ResolversTypes['CurationImpactEntry']>, exclusions: Array<ResolversTypes['CurationImpactEntry']>, sample_proposals: Array<ResolversTypes['CurationProposal']> }>;
+  CurationPolicyDryRun: ResolverTypeWrapper<Omit<CurationPolicyDryRun, 'sample_proposals'> & { sample_proposals: Array<ResolversTypes['CurationProposal']> }>;
   CurationPolicyEdge: ResolverTypeWrapper<Omit<CurationPolicyEdge, 'node'> & { node: ResolversTypes['CurationPolicy'] }>;
   CurationPolicyOrdering: CurationPolicyOrdering;
   CurationPolicySourceClass: CurationPolicySourceClass;
@@ -42800,7 +42799,7 @@ export type ResolversParentTypes = ResolversObject<{
   CurationPolicy: BasicStoreEntityCurationPolicy;
   CurationPolicyAddInput: CurationPolicyAddInput;
   CurationPolicyConnection: Omit<CurationPolicyConnection, 'edges'> & { edges: Array<ResolversParentTypes['CurationPolicyEdge']> };
-  CurationPolicyDryRun: Omit<CurationPolicyDryRun, 'estimated_impact' | 'exclusions' | 'sample_proposals'> & { estimated_impact: Array<ResolversParentTypes['CurationImpactEntry']>, exclusions: Array<ResolversParentTypes['CurationImpactEntry']>, sample_proposals: Array<ResolversParentTypes['CurationProposal']> };
+  CurationPolicyDryRun: Omit<CurationPolicyDryRun, 'sample_proposals'> & { sample_proposals: Array<ResolversParentTypes['CurationProposal']> };
   CurationPolicyEdge: Omit<CurationPolicyEdge, 'node'> & { node: ResolversParentTypes['CurationPolicy'] };
   CurationProposal: BasicStoreEntityCurationProposal;
   CurationProposalAcceptInput: CurationProposalAcceptInput;
@@ -45882,7 +45881,6 @@ export type CurationPolicyResolvers<ContextType = any, ParentType extends Resolv
   forbid_open_contradiction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_applied_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  last_dry_run?: Resolver<Maybe<ResolversTypes['CurationPolicyDryRun']>, ParentType, ContextType>;
   max_applies_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
