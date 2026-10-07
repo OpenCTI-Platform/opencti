@@ -12,7 +12,7 @@ vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
 }));
 
 import { findLatestCompatibleCatalogContractBySlug } from '../../../../src/modules/catalog/catalog-api';
-import { buildErrorScope, tagErrorModule } from '../../../../src/config/error-origin';
+import { buildErrorScope, resolveErrorContext, tagErrorModule } from '../../../../src/config/error-origin';
 import { FunctionalError, InfraError } from '../../../../src/config/errors';
 
 const context = {} as any;
@@ -47,6 +47,12 @@ describe('catalog public API', () => {
   it('should keep the tag of the shared code the catalog went through', async () => {
     mockFindLatestCompatibleCatalogContractBySlug.mockRejectedValue(tagErrorModule(new TypeError('bug in a shared client'), 'core'));
     expect(await failureSeenByConnector()).toEqual({ origin: 'code', module: 'core', entry_module: 'connector' });
+  });
+
+  it('should record the catalog function the caller went through', async () => {
+    mockFindLatestCompatibleCatalogContractBySlug.mockRejectedValue(new TypeError('x is undefined'));
+    const error = await findLatestCompatibleCatalogContractBySlug(context, user, 'slug').catch((e: unknown) => e);
+    expect(resolveErrorContext(error)).toEqual({ api: 'catalog.findLatestCompatibleCatalogContractBySlug' });
   });
 
   it('should return the result untouched', async () => {

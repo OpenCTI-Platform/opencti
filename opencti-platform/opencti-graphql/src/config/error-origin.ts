@@ -21,40 +21,73 @@ export const DEPENDENCIES = ['elasticsearch', 'rabbitmq', 'redis', 's3', 'remote
 export type Dependency = typeof DEPENDENCIES[number];
 // endregion
 
+// region error context
+// Identifiers a layer knows and the error boundary doesn't (which catalog, which item of a batch).
+// Attached to the error itself: its class, message and origin don't change, and unlike the `data` of our
+// error factories (sent to GraphQL clients in `extensions.data`), it never leaves the platform.
+// Identifiers and counts only: never intelligence content, never in the message, never a metric label.
+const ERROR_CONTEXT = Symbol('errorContext');
+export type ErrorContext = Record<string, string | number | boolean | null | undefined>;
+type ContextualError = object & { [ERROR_CONTEXT]?: ErrorContext };
+
+// A key already set, closer to the failure, wins.
+export const withErrorContext = <T>(e: T, context: ErrorContext): T => {
+  if (e !== null && typeof e === 'object') {
+    const contextual = e as ContextualError;
+    contextual[ERROR_CONTEXT] = { ...context, ...contextual[ERROR_CONTEXT] };
+  }
+  return e;
+};
+
+// Add context to whatever the call throws or rejects with.
+export const runWithErrorContext = async <T>(context: ErrorContext, call: () => Promise<T>): Promise<T> => {
+  try {
+    return await call();
+  } catch (e) {
+    throw withErrorContext(e, context);
+  }
+};
+// endregion
+
 // region module tag
 const MODULE_TAG = Symbol('moduleTag');
 type TaggableError = object & { [MODULE_TAG]?: AppModule };
 
-// Tag an error with the module it leaves. A tag already set is kept: the innermost module wins.
-export const tagErrorModule = <T>(e: T, module: AppModule): T => {
+// Tag an error with the module it leaves, and the public API function it left through.
+// A tag already set is kept: the innermost module wins.
+export const tagErrorModule = <T>(e: T, module: AppModule, api?: string): T => {
   if (e !== null && typeof e === 'object' && !(MODULE_TAG in e)) {
     (e as TaggableError)[MODULE_TAG] = module;
+    if (api) {
+      withErrorContext(e, { api });
+    }
   }
   return e;
 };
 
 // Wrap a function of a module public API, so that the errors it throws or rejects with are tagged.
-export const withModuleTag = <F extends (...args: any[]) => any>(module: AppModule, fn: F): F => {
+export const withModuleTag = <F extends (...args: any[]) => any>(module: AppModule, fn: F, api?: string): F => {
   return ((...args: Parameters<F>) => {
     try {
       const result = fn(...args);
       if (result !== null && typeof result === 'object' && typeof result.then === 'function') {
         return Promise.resolve(result).catch((e: unknown) => {
-          throw tagErrorModule(e, module);
+          throw tagErrorModule(e, module, api);
         });
       }
       return result;
     } catch (e) {
-      throw tagErrorModule(e, module);
+      throw tagErrorModule(e, module, api);
     }
   }) as F;
 };
 
-// Wrap every function of a module public API.
+// Wrap every function of a module public API. Errors record the function they left through,
+// as `api: '<module>.<function>'` in their context: the call another module made.
 export const withModuleApi = <T extends Record<string, unknown>>(module: AppModule, api: T): T => {
   const wrapped: Record<string, unknown> = {};
   Object.entries(api).forEach(([name, value]) => {
-    wrapped[name] = typeof value === 'function' ? withModuleTag(module, value as (...args: any[]) => any) : value;
+    wrapped[name] = typeof value === 'function' ? withModuleTag(module, value as (...args: any[]) => any, `${module}.${name}`) : value;
   });
   return wrapped as T;
 };
@@ -76,6 +109,18 @@ export const errorChain = (e: unknown): object[] => {
 };
 
 const errorCode = (e: any): string | undefined => e?.extensions?.code ?? e?.code;
+
+// The context of the whole chain. On a key set at several levels, the innermost wins.
+export const resolveErrorContext = (e: unknown): ErrorContext | undefined => {
+  let merged: ErrorContext | undefined;
+  errorChain(e).forEach((item) => {
+    const context = (item as ContextualError)[ERROR_CONTEXT];
+    if (context) {
+      merged = { ...merged, ...context };
+    }
+  });
+  return merged;
+};
 
 // The innermost module tag in the chain: where the error was raised.
 export const resolveErrorModule = (e: unknown): AppModule | undefined => {
