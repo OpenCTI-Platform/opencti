@@ -20,6 +20,34 @@ interface FilterRepresentative {
   color: string | null;
 }
 
+// Entities a module serves only to some readers, or with parts masked: resolved as the queries of that module serve them
+type FilterRepresentativesReader = (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]) => Promise<Array<BasicStoreEntity | undefined>>;
+const filterRepresentativesReaders = new Map<string, FilterRepresentativesReader>();
+
+export const registerFilterRepresentativesReader = (entityTypes: string[], reader: FilterRepresentativesReader) => {
+  entityTypes.forEach((entityType) => filterRepresentativesReaders.set(entityType, reader));
+};
+
+const readRepresentedEntities = async (context: AuthContext, user: AuthUser, entities: Array<BasicStoreEntity | undefined>) => {
+  const read = [...entities];
+  const indexesByReader = new Map<FilterRepresentativesReader, number[]>();
+  entities.forEach((entity, index) => {
+    const reader = entity ? filterRepresentativesReaders.get(entity.entity_type) : undefined;
+    if (reader) {
+      indexesByReader.set(reader, [...(indexesByReader.get(reader) ?? []), index]);
+    }
+  });
+  const readers = Array.from(indexesByReader.entries());
+  for (let i = 0; i < readers.length; i += 1) {
+    const [reader, indexes] = readers[i];
+    const readable = await reader(context, user, indexes.map((index) => entities[index] as BasicStoreEntity));
+    indexes.forEach((index, position) => {
+      read[index] = readable[position];
+    });
+  }
+  return read;
+};
+
 // region filters representatives
 // return an array of the value of the ids existing in inputFilters:
 // the entity representative for entities, null for deleted or restricted entities, the id for ids not corresponding to an entity
@@ -38,7 +66,7 @@ export const findFiltersRepresentatives = async (
   const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve, false, true);
   const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true, true);
   // resolve the ids
-  const resolvedEntities = await storeLoadByIds<BasicStoreEntity>(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
+  const resolvedEntities = await readRepresentedEntities(context, user, await storeLoadByIds<BasicStoreEntity>(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT));
   const internalUsersIds = Object.keys(INTERNAL_USERS);
   if (idsToResolve.filter((e) => internalUsersIds.includes(e)).length > 0) {
     for (let index = 0; index < idsToResolve.length; index += 1) {

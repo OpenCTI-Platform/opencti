@@ -489,6 +489,29 @@ export const withoutRestrictedScorecards = async <T extends Pick<StoreSourceScor
     .map((scorecard) => ({ ...scorecard, overlap: (scorecard.overlap ?? []).filter((share) => !isRestricted(share.source_id)) }));
 };
 
+// The capabilities every Sources query requires
+export const canReadSourceIntelligence = (user: AuthUser) => isUserHasCapability(user, 'MODULES') || isUserHasCapability(user, 'INGESTION');
+
+/**
+ * Sources and scorecards read through a generic lookup by id (filter representatives), as the Sources queries serve
+ * them: none without the Sources capabilities, a source whose author the user cannot access named Restricted, and no
+ * scorecard of such a source.
+ */
+export const readableSourcesAndScorecards = async (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]): Promise<Array<BasicStoreEntity | undefined>> => {
+  if (!canReadSourceIntelligence(user)) {
+    return entities.map(() => undefined);
+  }
+  const { isRestricted } = await sourceRestrictions(context, user);
+  return Promise.all(entities.map(async (entity) => {
+    if (entity.entity_type === ENTITY_TYPE_SOURCE) {
+      const [source] = await maskRestrictedSources(context, user, [entity as unknown as BasicStoreEntitySource]);
+      return source as unknown as BasicStoreEntity;
+    }
+    const scorecard = entity as unknown as StoreSourceScorecard;
+    return isRestricted(scorecard.source_id, scorecard.source_kind) ? undefined : entity;
+  }));
+};
+
 export const findSourceById = async (context: AuthContext, user: AuthUser, id: string) => {
   const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
   if (!source) {

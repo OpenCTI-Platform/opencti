@@ -27,7 +27,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { DatabaseError, FORBIDDEN_ACCESS, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -93,7 +93,14 @@ import {
   type RuleSourceUser,
   SCHEDULE_CONFIGURATION_KEY,
 } from './sourceIntelligence-rules';
-import { clearDisabledSourcesLiveData, recommendationTransitionLock, recordNamedAuthors } from './sourceIntelligence-domain';
+import {
+  canReadSourceIntelligence,
+  clearDisabledSourcesLiveData,
+  maskRestrictedNames,
+  recommendationTransitionLock,
+  recordNamedAuthors,
+  restrictedRecommendationNames,
+} from './sourceIntelligence-domain';
 import { buildSourceResolver } from './sourceIntelligence-provenance';
 import { resolveFalsePositiveLabelIds } from './sourceIntelligence-compute';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
@@ -228,6 +235,24 @@ export const findRecommendationById = async (context: AuthContext, user: AuthUse
     return null;
   }
   return recommendation;
+};
+
+/**
+ * Recommendations read through a generic lookup by id (filter representatives), as findRecommendationById serves
+ * them: in Enterprise Edition, with the Sources capabilities, for an accessible PIR, and with the names of the authors
+ * the user cannot access masked in their name.
+ */
+export const readableRecommendations = async (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]): Promise<Array<BasicStoreEntity | undefined>> => {
+  if (!canReadSourceIntelligence(user) || !(await isEnterpriseEdition(context))) {
+    return entities.map(() => undefined);
+  }
+  return Promise.all((entities as unknown as BasicStoreEntitySourceRecommendation[]).map(async (recommendation) => {
+    if (!(await canAccessRecommendationPir(context, user, recommendation))) {
+      return undefined;
+    }
+    const names = await restrictedRecommendationNames(context, user, recommendation);
+    return { ...recommendation, name: maskRestrictedNames(recommendation.name, names) } as unknown as BasicStoreEntity;
+  }));
 };
 
 export const countRecommendations = async (context: AuthContext, user: AuthUser, sourceId: string, status: string[]) => {

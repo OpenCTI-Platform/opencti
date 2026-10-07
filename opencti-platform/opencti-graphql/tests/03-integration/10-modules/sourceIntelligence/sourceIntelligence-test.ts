@@ -82,6 +82,16 @@ const SOURCES_QUERY = gql`
   }
 `;
 
+const FILTERS_REPRESENTATIVES_QUERY = gql`
+  query sourceFiltersRepresentatives($filters: FilterGroup!) {
+    filtersRepresentatives(filters: $filters) {
+      id
+      value
+      entity_type
+    }
+  }
+`;
+
 const SOURCE_QUERY = gql`
   query source($id: ID!) {
     source(id: $id) {
@@ -773,6 +783,19 @@ describe('Source intelligence', () => {
       expect(costed.sourceSetCost.cost).toBeNull();
       const { data: patched } = await queryAsAdminWithSuccess({ query: SOURCE_PATCH_MUTATION, variables: { id: restricted.internal_id, input: [{ key: 'tags', value: ['premium'] }] } });
       expect(patched.sourceFieldPatch.tags).toEqual([]);
+      // A generic lookup by id serves the sources as the Sources queries do
+      const representatives = {
+        query: FILTERS_REPRESENTATIVES_QUERY,
+        variables: { filters: { mode: 'and', filters: [{ key: ['ids'], values: [restricted.internal_id, sourceId] }], filterGroups: [] } },
+      };
+      const valueOf = (data: any, id: string) => data.filtersRepresentatives.find((representative: { id: string }) => representative.id === id)?.value;
+      const { data: forAdmin } = await queryAsAdminWithSuccess(representatives);
+      expect(valueOf(forAdmin, restricted.internal_id)).toBe('Restricted');
+      expect(valueOf(forAdmin, sourceId)).toBeTruthy();
+      expect(valueOf(forAdmin, sourceId)).not.toBe('Restricted');
+      const { data: forEditor } = await queryAsUserWithSuccess(USER_EDITOR, representatives);
+      expect(valueOf(forEditor, restricted.internal_id)).toBeNull();
+      expect(valueOf(forEditor, sourceId)).toBeNull();
     } finally {
       await deleteElementById(testContext, ADMIN_USER, restricted.internal_id, ENTITY_TYPE_SOURCE);
     }

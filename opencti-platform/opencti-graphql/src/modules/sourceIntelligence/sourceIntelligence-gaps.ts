@@ -26,7 +26,7 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cac
 import { elCount, elFilteredAggregations } from '../../database/engine';
 import { READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { logApp } from '../../config/conf';
-import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -66,6 +66,7 @@ import { buildSourceResolver, type SourceResolver, userSource } from './sourceIn
 import { round } from './sourceIntelligence-scoring';
 import { connectorMatchesCatalogEntry, recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
 import { applySourceRecommendation, findOrCreateProposal, findRecommendationsByFingerprint, listAccessiblePirIds, upsertProposals } from './sourceIntelligence-recommendations';
+import { canReadSourceIntelligence } from './sourceIntelligence-domain';
 
 const DAY_MS = 24 * 3600 * 1000;
 const COVERAGE_PAGE_SIZE = 1000;
@@ -580,6 +581,19 @@ export const findCollectionGaps = async (context: AuthContext, user: AuthUser, a
     orderMode: args.orderMode ?? 'asc',
     filters: { mode: 'and', filters, filterGroups: [] },
   } as any);
+};
+
+/**
+ * Collection gaps read through a generic lookup by id (filter representatives), as findCollectionGaps serves them: in
+ * Enterprise Edition, with the Sources capabilities, and for the PIRs the user can access.
+ */
+export const readableCollectionGaps = async (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]): Promise<Array<BasicStoreEntity | undefined>> => {
+  if (!canReadSourceIntelligence(user) || !(await isEnterpriseEdition(context))) {
+    return entities.map(() => undefined);
+  }
+  const accessiblePirIds = new Set(await listAccessiblePirIds(context, user));
+  return (entities as unknown as BasicStoreEntityCollectionGap[])
+    .map((gap) => (accessiblePirIds.has(gap.pir_id) ? gap as unknown as BasicStoreEntity : undefined));
 };
 // endregion
 
