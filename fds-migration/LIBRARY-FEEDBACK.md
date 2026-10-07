@@ -2351,3 +2351,26 @@ search beside it is the library `SearchField` at `md`.
 the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
+
+## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
+
+**Needed.** A row menu that ends with a Delete command shows that row in the
+danger colour, text and icon, after a separator. The Map configuration rows of
+*Settings > Parameters* (`SettingsMapSource.tsx`) are the first library `Menu` in
+the product to carry one.
+
+**Today.** `MenuItem` takes `startIcon`, `endIcon` and `selected`, and no tone.
+The button family already has one: `buttonVariants` and `iconButtonVariants`
+both expose `destructive` (entry 53), so the design language knows the role and
+only the menu row lacks it.
+
+**Workaround.** FDS-WORKAROUND #64 in `SettingsMapSource.tsx`: the Delete row
+sets its text colour inline from the theme's `palette.error.main`, and its icon
+takes MUI's `color="error"`.
+
+**Ask.** A `destructive` tone on `MenuItem`, covering the text, the icon slot and
+the hover state, named like the button family's.
+
+**Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
+the tone, remove its `style` colour, the icon's `color` prop and the marker, and
+confirm the row text and icon render in the library's destructive colour.
