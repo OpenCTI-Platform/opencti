@@ -262,8 +262,8 @@ export const buildHuntRunMessage = async (
     authorId ? loadRefs(context, [authorId]) : Promise.resolve([]),
     getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
   ]);
-  // The references are read with the system identity: one more restricted than the hunt, by its markings or its
-  // organizations, is left out of the message. An indicator left out of the values an indicator hunt looks for is
+  // The references are read with the system identity: one more restricted than the hunt, by its markings, its
+  // organizations or authorized members, is left out of the message. An indicator left out of the values an indicator hunt looks for is
   // therefore neither described nor sighted, and no restricted technique, target or author is named to the connector
   const isDisclosable = (element: BasicStoreEntity) => isDisclosableByHunt(hunt, element, markingDefinitions as Map<string, BasicStoreEntityMarkingDefinition>);
   const techniques = loadedTechniques.filter(isDisclosable);

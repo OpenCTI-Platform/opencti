@@ -101,6 +101,9 @@ describe('Indicator hunt values', () => {
     // Shared with no organization: readable by the platform organization only
     expect(isDisclosableByHunt({}, { granted: ['org-a'] }, MARKINGS)).toBe(true);
     expect(isDisclosableByHunt({ granted: ['org-a'] }, {}, MARKINGS)).toBe(false);
+    // Restricted to authorized members, which a hunt cannot be
+    expect(isDisclosableByHunt(amberHunt, { 'object-marking': ['tlp-green'], restricted_members: [{ id: 'user-analyst', access_right: 'view' }] }, MARKINGS)).toBe(false);
+    expect(isDisclosableByHunt(amberHunt, { 'object-marking': ['tlp-green'], restricted_members: [] }, MARKINGS)).toBe(true);
   });
 
   it('should know whether an indicator hunt has something to look for', () => {

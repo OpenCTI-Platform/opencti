@@ -103,6 +103,24 @@ describe('Values an indicator hunt looks up', () => {
     expect(vi.mocked(pageRegardingEntitiesConnection).mock.calls.map((call) => call[6]?.first)).toEqual([1]);
     expect(mixed.truncated).toBe(true);
   });
+
+  it('should take no value from an indicator, an observable or a report restricted to authorized members', async () => {
+    const members = [{ id: 'user-analyst', access_right: 'view' }];
+    vi.mocked(findByIds).mockResolvedValue([
+      address('report-9', 0),
+      { ...address('report-9', 1), restricted_members: members },
+      { ...report(1), restricted_members: members },
+      report(2),
+    ] as never);
+    vi.mocked(pageRegardingEntitiesConnection).mockImplementation(async (_context, _user, sourceId) => ({
+      edges: [{ node: address(String(sourceId), 0) }],
+    }) as never);
+    const set = await resolveHuntIocSet(testContext, { internal_id: 'hunt-1', hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: ['report-9-ip-0', 'report-9-ip-1', 'report-1', 'report-2'] } as unknown as BasicStoreEntityHunt);
+    // The report restricted to authorized members is never read
+    expect(vi.mocked(pageRegardingEntitiesConnection).mock.calls.map((call) => call[2])).toEqual(['report-2']);
+    expect(set.iocs.map((ioc) => ioc.value).sort()).toEqual(['10.2.0.0', '10.9.0.0']);
+    expect(set.restricted_count).toBe(1);
+  });
 });
 
 describe('Sources of a hunt', () => {

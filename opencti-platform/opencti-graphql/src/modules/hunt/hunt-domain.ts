@@ -59,7 +59,7 @@ import {
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
 } from './hunt-types';
-import { normalizeHuntIocValues, resolveHuntIocSet } from './hunt-iocs';
+import { isRestrictedToMembers, normalizeHuntIocValues, resolveHuntIocSet } from './hunt-iocs';
 import { computeHuntReadiness, isUnmetReadinessItem } from './hunt-readiness';
 import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { validateSigmaRule } from './hunt-sigma';
@@ -222,7 +222,7 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
 // A hunt holds no authorized members: the hunt manager, its connectors and every analyst of its runs read it, so
 // intelligence shared with selected members only never passes its content to a hunt made from it
 const restrictedToMembers = (elements: BasicStoreEntity[]) => elements
-  .filter((element) => (element.restricted_members ?? []).length > 0)
+  .filter(isRestrictedToMembers)
   .map((element) => element.internal_id);
 
 /**

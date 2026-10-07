@@ -224,11 +224,18 @@ export const normalizeHuntIocValues = (rawValues: unknown): HuntIocValue[] => {
  * each of its markings is matched by a marking of the hunt of the same type and at least the same level, and it is
  * shared with every organization the hunt is shared with. With a platform organization, the readers of an element are
  * the platform organization and the organizations it is shared with: an element shared with none is readable by the
- * platform organization only, so a hunt shared with an organization never discloses it.
+ * platform organization only, so a hunt shared with an organization never discloses it. An element restricted to
+ * authorized members is never disclosed: a hunt and its runs cannot be restricted that way.
  */
-type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[] };
+type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[]; restricted_members?: unknown[] | null };
+
+/** Whether an element is shared with selected users or groups only, which a hunt and its runs cannot be. */
+export const isRestrictedToMembers = (element: { restricted_members?: unknown[] | null }) => (element.restricted_members ?? []).length > 0;
 
 export const isDisclosableByHunt = (hunt: AccessRestricted, element: AccessRestricted, markings: Map<string, BasicStoreEntityMarkingDefinition>) => {
+  if (isRestrictedToMembers(element)) {
+    return false;
+  }
   const huntMarkings = (hunt[RELATION_OBJECT_MARKING] ?? []).map((id) => markings.get(id)).filter((marking) => !!marking);
   const covered = (element[RELATION_OBJECT_MARKING] ?? []).every((id) => {
     const marking = markings.get(id);
@@ -314,7 +321,10 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
   const sources = await findByIds<IocElement>(context, SYSTEM_USER, readSourceIds);
   const elements: IocElement[] = sources.filter((source) => IOC_ELEMENT_TYPES.includes(source.entity_type));
   budget -= elements.length;
-  const expansions = sources.filter((source) => HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type) || HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type));
+  // What a report, a grouping or an incident response restricted to authorized members contains is for its members
+  // only: a hunt never takes values from it
+  const expansions = sources.filter((source) => (HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type) || HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type))
+    && !isRestrictedToMembers(source));
   for (let index = 0; index < expansions.length && budget > 0; index += 1) {
     const source = expansions[index];
     // Expanded elements of revoked indicators are not hunted, an explicitly chosen one is
