@@ -1911,6 +1911,15 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
   const completedFilters: FilterGroup = { ...filters, filters: [...filters.filters, { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] }] };
   const range = { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
   const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, dateAttribute: 'created_at' };
+  // The last run of the period, like every other figure
+  const inRangeFilters: FilterGroup = {
+    ...filters,
+    filters: [
+      ...filters.filters,
+      { key: ['created_at'], values: [range.startDate], operator: FilterOperator.Gte },
+      { key: ['created_at'], values: [range.endDate], operator: FilterOperator.Lte },
+    ],
+  };
   type Bucket = { label: string; count: number };
   const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: completedFilters, field: 'verdict', normalizeLabel: false }),
@@ -1919,7 +1928,7 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
     elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }),
     elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }),
-    topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }),
+    topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters: inRangeFilters }),
   ]) as [Bucket[], Bucket[], Bucket[], Bucket[], any[], any[], BasicStoreEntityHuntRun[]];
   const countOf = (buckets: Bucket[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
   const platformIds = platforms.map((bucket) => bucket.label).filter((label) => label !== 'unknown');

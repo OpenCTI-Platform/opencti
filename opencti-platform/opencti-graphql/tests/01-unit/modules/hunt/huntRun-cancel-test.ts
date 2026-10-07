@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { cancelOrphanHuntRuns, reconcileOrphanedHuntRuns } from '../../../../src/modules/hunt/hunt-automation';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { cursorToOffset } from '../../../../src/database/utils';
@@ -230,6 +230,18 @@ describe('Hunt statistics', () => {
     expect(statusFilters()).toEqual(expect.arrayContaining([
       { key: ['hunt_id'], values: ['hunt-1'] },
       { key: ['hunt_orphaned'], values: ['true'], operator: 'not_eq' },
+    ]));
+  });
+
+  it('should name the last run of the period, never one before or after it', async () => {
+    vi.mocked(topEntitiesList).mockClear();
+    const period = { startDate: '2026-09-01T00:00:00.000Z', endDate: '2026-09-30T00:00:00.000Z' };
+    await computeHuntStatistics(testContext, ADMIN_USER, { huntId: 'hunt-1', ...period });
+    const lastRun = vi.mocked(topEntitiesList).mock.calls.find((call) => (call[3] as { orderBy?: string }).orderBy === 'created_at');
+    expect((lastRun?.[3] as { filters: { filters: unknown[] } }).filters.filters).toEqual(expect.arrayContaining([
+      { key: ['hunt_id'], values: ['hunt-1'] },
+      { key: ['created_at'], values: [period.startDate], operator: 'gte' },
+      { key: ['created_at'], values: [period.endDate], operator: 'lte' },
     ]));
   });
 });
