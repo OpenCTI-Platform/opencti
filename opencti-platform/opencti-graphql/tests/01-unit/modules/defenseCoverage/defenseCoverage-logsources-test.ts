@@ -43,6 +43,14 @@ describe('Defense telemetry from log sources', () => {
     expect(vi.mocked(storeLoadById)).toHaveBeenCalledTimes(1);
   });
 
+  it('should refuse to declare telemetry on a revoked platform', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1', revoked: true } as never);
+    await expect(addPlatformProvidesFromLogsources(context, user, 'platform-1', [{ product: 'windows' }]))
+      .rejects.toThrow('A revoked security platform or system cannot declare telemetry');
+    expect(vi.mocked(listAllDefenseLogsourceMappings)).not.toHaveBeenCalled();
+    expect(vi.mocked(addStixCoreRelationship)).not.toHaveBeenCalled();
+  });
+
   it.each([
     [true, 1, 0],
     [false, 0, 1],

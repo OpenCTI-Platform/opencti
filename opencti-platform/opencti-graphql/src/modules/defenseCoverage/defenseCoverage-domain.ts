@@ -1141,6 +1141,11 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (unresolvedIds.length > 0) {
     throw FunctionalError('Some techniques of the validation request cannot be found', { ids: unresolvedIds });
   }
+  // A revoked technique is withdrawn knowledge: it has left the matrix and its gaps
+  const revokedIds = attackPatterns.filter((attackPattern) => attackPattern.revoked).map((attackPattern) => attackPattern.internal_id);
+  if (revokedIds.length > 0) {
+    throw FunctionalError('Some techniques of the validation request are revoked', { ids: revokedIds });
+  }
   if (attackPatterns.length > MAX_VALIDATION_TECHNIQUES) {
     throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatterns.length });
   }
@@ -1149,6 +1154,10 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     threat = await storeLoadById<BasicStoreEntity>(context, user, input.threatId, DEFENSE_THREAT_TYPES);
     if (!threat) {
       throw FunctionalError('The threat of the validation request cannot be found', { threatId: input.threatId });
+    }
+    // A revoked threat leaves every threat scope
+    if (threat.revoked) {
+      throw FunctionalError('The threat of the validation request is revoked', { threatId: input.threatId });
     }
   }
   const platforms = await findDefensePlatforms(context, user);
@@ -1259,6 +1268,10 @@ export const addPlatformProvidesFromLogsources = async (
   const platform = await storeLoadById<BasicStoreEntity>(context, user, platformId, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, ENTITY_TYPE_IDENTITY_SYSTEM]);
   if (!platform) {
     throw FunctionalError('Security platform or system not found', { platformId });
+  }
+  // A revoked platform has left the matrix: no new telemetry is declared on it
+  if (platform.revoked) {
+    throw FunctionalError('A revoked security platform or system cannot declare telemetry', { platformId });
   }
   const mappings = (await listAllDefenseLogsourceMappings(context, SYSTEM_USER)).filter((m) => m.active);
   const names = uniq(logsources.flatMap((logsource) => mapLogsourceToDataComponents(logsource, mappings)));
