@@ -300,7 +300,7 @@ export const connectorsForNotification = async (
 ) => [
   ...await connectorsFor(context, user, CONNECTOR_INTERNAL_NOTIFICATION, scope, onlyAlive, onlyAuto, onlyContextual),
   // TODO Built-in notifiers should be declared by the notifier module through the built-in connector registry
-  //  (see connector-built-in-domain.ts)
+  //  (see connector-built-in-domain.ts, #18840)
   ...Object.values(BUILTIN_NOTIFIERS_CONNECTORS),
 ];
 
@@ -309,7 +309,7 @@ export const connectorsForPlaybook = async (context: AuthContext, user: AuthUser
 };
 
 // TODO The sync, playbook, background task and PIR worker queues should be declared by their own modules through the
-//  built-in connector registry (see connector-built-in-domain.ts) instead of being hardcoded here.
+//  built-in connector registry (see connector-built-in-domain.ts, #18840) instead of being hardcoded here.
 export const connectorsForWorker = async (context: AuthContext, user: AuthUser) => {
   const registeredConnectors = await connectors(context, user);
   registeredConnectors.push(
