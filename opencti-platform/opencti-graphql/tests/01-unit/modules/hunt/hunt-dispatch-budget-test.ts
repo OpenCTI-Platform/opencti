@@ -83,12 +83,20 @@ describe('Hunt run dispatch budget of a manager tick', () => {
     expect(dispatchHuntRun).toHaveBeenCalledTimes(3);
   });
 
-  it('should not count a run deferred by its connector budget', async () => {
-    HUNT_CONFIG.maxRunsPerTick = 1;
-    serveQueue([queuedRun(0, 'saturated'), queuedRun(1, 'saturated'), queuedRun(0, 'free')]);
+  it('should count a run deferred by its connector budget once per connector and tick', async () => {
+    HUNT_CONFIG.maxRunsPerTick = 2;
+    serveQueue([queuedRun(0, 'saturated'), queuedRun(1, 'saturated'), queuedRun(0, 'free'), queuedRun(1, 'free')]);
     vi.mocked(dispatchHuntRun).mockImplementation(async (_context, run) => run.connector_id !== 'saturated');
     expect(await dispatchQueuedHuntRuns(testContext)).toEqual(1);
     expect(dispatchedConnectors()).toEqual(['saturated', 'free']);
+  });
+
+  it('should bound the attempts of a tick however many connectors defer their runs', async () => {
+    HUNT_CONFIG.maxRunsPerTick = 3;
+    serveQueue(Array.from({ length: 8 }, (_, index) => queuedRun(0, `saturated-${index}`)));
+    vi.mocked(dispatchHuntRun).mockResolvedValue(false);
+    expect(await dispatchQueuedHuntRuns(testContext)).toEqual(0);
+    expect(dispatchHuntRun).toHaveBeenCalledTimes(3);
   });
 
   it('should dispatch the queue within what the earlier phases of the tick left of its budget', async () => {
@@ -107,7 +115,7 @@ describe('Hunt run dispatch budget of a manager tick', () => {
   });
 
   it('should never page through the backlog of an offline connector', async () => {
-    HUNT_CONFIG.maxRunsPerTick = 2;
+    HUNT_CONFIG.maxRunsPerTick = 3;
     // A connector offline for long: its queued runs come first, far beyond one page
     serveQueue([...Array.from({ length: 40 }, (_, index) => queuedRun(index, 'offline')), queuedRun(0, 'up'), queuedRun(1, 'up')]);
     vi.mocked(dispatchHuntRun).mockImplementation(async (_context, run) => run.connector_id !== 'offline');

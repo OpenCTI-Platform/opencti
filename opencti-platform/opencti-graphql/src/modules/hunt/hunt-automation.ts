@@ -425,9 +425,9 @@ export const finalizeInterruptedHuntRuns = async (context: AuthContext): Promise
  * Queued runs deferred by the connector budgets or a connector outage, translation previews first (an analyst waits
  * for them), then the oldest runs. The queue is read page by page and a connector that defers a run is skipped for the
  * rest of the tick, so the runs waiting on a saturated or offline connector never hold back the other connectors.
- * Every run the tick works on counts against its budget, a failed dispatch included, and a connector whose dispatch
- * fails is skipped for the rest of the tick too: an outage of work creation or queue publication costs one attempt per
- * connector and tick, never a pass over the whole queue.
+ * Every run the tick works on counts against its budget, a deferred or failed dispatch included, and a connector whose
+ * dispatch fails is skipped for the rest of the tick too: a saturated or offline connector, or an outage of work
+ * creation or queue publication, costs one attempt per connector and tick, never a pass over the whole queue.
  */
 export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
   const hunts = new Map<string, BasicStoreEntityHunt | undefined>();
@@ -444,17 +444,13 @@ export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntT
           hunts.set(run.hunt_id, await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT }) ?? undefined);
         }
         const hunt = hunts.get(run.hunt_id);
-        let deferred = false;
         try {
           if (!hunt) {
             await cancelHuntRun(context, run.internal_id, HUNT_MESSAGES.runCancelledHuntDeleted);
           } else if (await dispatchHuntRun(context, run, hunt)) {
             dispatched += 1;
-          } else {
-            deferred = true;
-            if (run.connector_id) {
-              deferringConnectors.add(run.connector_id);
-            }
+          } else if (run.connector_id) {
+            deferringConnectors.add(run.connector_id);
           }
         } catch (error) {
           if (run.connector_id) {
@@ -462,9 +458,7 @@ export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntT
           }
           logApp.warn('[OPENCTI-MODULE] Hunt run dispatch failed, its connector is skipped until the next tick', { cause: error, runId: run.internal_id, connectorId: run.connector_id });
         }
-        if (!deferred) {
-          budget.remaining -= 1;
-        }
+        budget.remaining -= 1;
       }
     }
     return true;
