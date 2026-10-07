@@ -27,7 +27,8 @@ import { DefenseProvidedDataComponentsLogsourcesMutation } from './__generated__
 const PROVIDES = 'provides';
 const PROVIDED_PAGE_SIZE = 100;
 
-// A revoked declaration provides no telemetry to the levels: the list shows the declarations they count
+// A revoked declaration, or one of a revoked data component, provides no telemetry to the levels: the list shows the
+// declarations they count. The revoked data components are left out once loaded, the relationships cannot filter on them.
 const ACTIVE_PROVIDES_FILTERS = { mode: 'and' as const, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] };
 
 const defenseProvidedDataComponentsQuery = graphql`
@@ -63,6 +64,7 @@ const defenseProvidedDataComponentsFragment = graphql`
               id
               name
               entity_type
+              revoked
             }
           }
         }
@@ -243,8 +245,8 @@ const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<Defens
   );
   const [commitDelete, deleting] = useApiMutation<DefenseProvidedDataComponentsDeleteMutation>(defenseProvidedDataComponentsDeleteMutation);
   const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
-  const relations = (data.stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id);
-  if (relations.length === 0) {
+  const relations = (data.stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id && !node.to.revoked);
+  if (relations.length === 0 && !hasNext) {
     return <WidgetNoData message={t_i18n('No data component is declared as provided.')} />;
   }
   const remove = () => toRemove && commitDelete({
