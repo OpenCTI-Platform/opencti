@@ -57,7 +57,7 @@ import {
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/rabbitmq';
-import { updateProcessedTime } from '../domain/work';
+import { reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -593,20 +593,29 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   };
 };
 
-// Workflow operations go through the workflow engine, element by element, instead of the workers
-const workflowOperationCallback = (context, task, applyOnElement) => {
+// Workflow operations go through the workflow engine, element by element, instead of the workers.
+// Each element is reported on the task work, so the task completes and rejections are listed as errors.
+const workflowOperationCallback = (context, user, task, applyOnElement) => {
   let totalProcessed = task.task_processed_number;
   return async (elements) => {
+    if (task.work_id) {
+      await updateExpectationsNumber(context, user, task.work_id, elements.length);
+    }
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const element = elements[index];
+      let errorData;
       try {
         const result = await applyOnElement(element);
         if (!result.success) {
-          logApp.warn('[OPENCTI-MODULE][TASK-MANAGER] Workflow operation not applied, skipping element', { id: element.internal_id, reason: result.reason });
+          errorData = { error: result.reason, source: element.internal_id };
         }
       } catch (error) {
         logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Workflow operation error, skipping element', { cause: error, id: element.internal_id });
+        errorData = { error: error.message, source: element.internal_id };
+      }
+      if (task.work_id) {
+        await reportExpectation(context, user, task.work_id, errorData);
       }
     }
     totalProcessed += elements.length;
@@ -616,14 +625,14 @@ const workflowOperationCallback = (context, task, applyOnElement) => {
 
 export const workflowBypassOperationCallback = (context, user, task, operations) => {
   const { values, options } = operations[0].context;
-  return workflowOperationCallback(context, task, (element) => {
+  return workflowOperationCallback(context, user, task, (element) => {
     return setWorkflowStatus(context, user, element.internal_id, values[0], options.applyTransitionActions);
   });
 };
 
 export const workflowTransitionOperationCallback = (context, user, task, operations) => {
   const { eventName } = operations[0].context.options;
-  return workflowOperationCallback(context, task, (element) => {
+  return workflowOperationCallback(context, user, task, (element) => {
     return triggerWorkflowEvent(context, user, element.internal_id, eventName);
   });
 };

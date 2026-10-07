@@ -9,7 +9,7 @@ import {
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { pushBundleToWorker } from '../../../src/database/rabbitmq';
-import { updateExpectationsNumber } from '../../../src/domain/work';
+import { reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
 import { updateTask } from '../../../src/domain/backgroundTask';
 import { setWorkflowStatus, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
 import {
@@ -42,6 +42,7 @@ vi.mock('../../../src/domain/work', async (importOriginal) => {
   return {
     ...actual,
     updateExpectationsNumber: vi.fn(),
+    reportExpectation: vi.fn(),
   };
 });
 
@@ -483,7 +484,7 @@ describe('baseOperationBuilder', () => {
 });
 
 describe('workflowBypassOperationCallback', () => {
-  const task = { id: 'task-id', task_processed_number: 0 };
+  const task = { id: 'task-id', work_id: 'work-id', task_processed_number: 0 };
   const buildOperations = (applyTransitionActions: boolean) => [{
     type: 'REPLACE',
     context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: ['status-id'], options: { applyTransitionActions } },
@@ -502,6 +503,9 @@ describe('workflowBypassOperationCallback', () => {
     expect(setWorkflowStatus).toHaveBeenCalledTimes(2);
     expect(setWorkflowStatus).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'status-id', false);
     expect(setWorkflowStatus).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'status-id', false);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', 2);
+    expect(reportExpectation).toHaveBeenCalledTimes(2);
+    expect(reportExpectation).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', undefined);
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
   });
 
@@ -515,12 +519,15 @@ describe('workflowBypassOperationCallback', () => {
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }, { internal_id: 'entity-3' }]);
 
     expect(setWorkflowStatus).toHaveBeenCalledTimes(3);
+    expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'boom', source: 'entity-1' });
+    expect(reportExpectation).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'work-id', { error: 'not mapped', source: 'entity-2' });
+    expect(reportExpectation).toHaveBeenNthCalledWith(3, testContext, ADMIN_USER, 'work-id', undefined);
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 3 });
   });
 });
 
 describe('workflowTransitionOperationCallback', () => {
-  const task = { id: 'task-id', task_processed_number: 0 };
+  const task = { id: 'task-id', work_id: 'work-id', task_processed_number: 0 };
   const operations = [{
     type: 'REPLACE',
     context: { field: 'x_opencti_workflow_id', type: 'ATTRIBUTE', values: [], options: { eventName: 'approve' } },
@@ -551,6 +558,7 @@ describe('workflowTransitionOperationCallback', () => {
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
 
     expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
+    expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'Transition not allowed', source: 'entity-1' });
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
   });
 });
