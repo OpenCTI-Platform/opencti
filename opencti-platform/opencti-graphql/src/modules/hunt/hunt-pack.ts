@@ -37,6 +37,8 @@ export const HUNT_PACK_MAX_HUNTS = 200;
 export const HUNT_PACK_MAX_BYTES = 20 * 1024 * 1024;
 const HUNT_STIX_TYPES = ['hunt', 'x-opencti-hunt'];
 const HUNT_EXTENSION_CREATED = '2026-10-03T00:00:00.000Z';
+// The JSON Schema of the hunt SDO, kept in this repository at config/schema/hunt-extension.json
+export const HUNT_EXTENSION_SCHEMA_URL = 'https://raw.githubusercontent.com/OpenCTI-Platform/opencti/master/opencti-platform/opencti-graphql/config/schema/hunt-extension.json';
 const FILIGRAN_NAME = 'Filigran';
 
 const filigranIdentityId = () => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: FILIGRAN_NAME, identity_class: 'organization' });
@@ -51,7 +53,7 @@ export const huntExtensionDefinition = () => ({
   modified: HUNT_EXTENSION_CREATED,
   name: 'OpenCTI Hunt',
   description: 'A threat hunt: a falsifiable hypothesis, a canonical Sigma rule with per-platform native queries, the threats and techniques it targets and its execution guardrails.',
-  schema: 'https://docs.opencti.io/latest/usage/hunts/',
+  schema: HUNT_EXTENSION_SCHEMA_URL,
   version: '1.0.0',
   extension_types: ['new-sdo'],
 });
