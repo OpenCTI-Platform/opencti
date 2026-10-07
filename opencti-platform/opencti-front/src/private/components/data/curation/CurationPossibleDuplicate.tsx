@@ -10,31 +10,55 @@ import { CURATION_PROPOSALS_PATH, formatPercent } from './curationUtils';
 import { type CurationExplanationMessage, useExplanationTranslator } from './CurationProposalExplanation';
 import { CurationPossibleDuplicateQuery$data } from './__generated__/CurationPossibleDuplicateQuery.graphql';
 
-// Each kind is read on its own: in one list limited by confidence, proposals of other kinds would take their place.
+// Each kind is read on its own, its most confident proposal with the number of all of them.
 const possibleDuplicateQuery = graphql`
-  query CurationPossibleDuplicateQuery($id: ID!) {
-    merges: curationProposalsForEntity(id: $id, status: [open], kind: [merge]) {
-      id
-      confidence_score
-      subject_ids
-      subject_names
-      created_at
-      explanation {
-        title { template values text }
+  query CurationPossibleDuplicateQuery($merges: FilterGroup, $aliases: FilterGroup) {
+    merges: curationProposals(first: 1, orderBy: confidence_score, orderMode: desc, filters: $merges) {
+      pageInfo {
+        globalCount
+      }
+      edges {
+        node {
+          id
+          confidence_score
+          subject_ids
+          subject_names
+          created_at
+          explanation {
+            title { template values text }
+          }
+        }
       }
     }
-    aliases: curationProposalsForEntity(id: $id, status: [open], kind: [alias]) {
-      id
-      confidence_score
-      subject_ids
-      subject_names
-      created_at
-      explanation {
-        title { template values text }
+    aliases: curationProposals(first: 1, orderBy: confidence_score, orderMode: desc, filters: $aliases) {
+      pageInfo {
+        globalCount
+      }
+      edges {
+        node {
+          id
+          confidence_score
+          subject_ids
+          subject_names
+          created_at
+          explanation {
+            title { template values text }
+          }
+        }
       }
     }
   }
 `;
+
+const openProposalsOf = (entityId: string, kind: 'merge' | 'alias') => ({
+  mode: 'and',
+  filters: [
+    { key: ['subject_ids'], values: [entityId], operator: 'eq', mode: 'or' },
+    { key: ['proposal_status'], values: ['open'], operator: 'eq', mode: 'or' },
+    { key: ['proposal_kind'], values: [kind], operator: 'eq', mode: 'or' },
+  ],
+  filterGroups: [],
+} as const);
 
 const MAX_NAME_LENGTH = 40;
 
@@ -65,12 +89,12 @@ interface LoadedProposals extends HeaderProposals {
 
 type Proposals = CurationPossibleDuplicateQuery$data['merges'];
 
-const toHeaderProposal = (proposals: Proposals, entityId: string): HeaderProposal | null => {
-  if (proposals.length === 0) return null;
-  const [first] = proposals;
+const toHeaderProposal = (proposals: Proposals | undefined, entityId: string): HeaderProposal | null => {
+  const first = proposals?.edges[0]?.node;
+  if (!proposals || !first) return null;
   return {
     proposalId: first.id,
-    count: proposals.length,
+    count: proposals.pageInfo.globalCount,
     otherName: first.subject_names.find((_, index) => first.subject_ids[index] !== entityId) ?? null,
     confidence: first.confidence_score,
     proposedAt: first.created_at,
@@ -92,15 +116,15 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
   useEffect(() => {
     if (draftContext) return undefined;
     let active = true;
-    fetchQuery(possibleDuplicateQuery, { id: entityId })
+    fetchQuery(possibleDuplicateQuery, { merges: openProposalsOf(entityId, 'merge'), aliases: openProposalsOf(entityId, 'alias') })
       .toPromise()
       .then((data) => {
         if (!active) return;
         const result = data as CurationPossibleDuplicateQuery$data | undefined;
         setFound({
           entityId,
-          duplicate: toHeaderProposal(result?.merges ?? [], entityId),
-          aliases: toHeaderProposal(result?.aliases ?? [], entityId),
+          duplicate: toHeaderProposal(result?.merges, entityId),
+          aliases: toHeaderProposal(result?.aliases, entityId),
         });
       })
       .catch(() => {

@@ -25524,6 +25524,7 @@ export type Query = {
   curationPolicyDryRun?: Maybe<CurationPolicyDryRun>;
   curationProposal?: Maybe<CurationProposal>;
   curationProposals?: Maybe<CurationProposalConnection>;
+  /** The 50 most confident proposals of the entity, open ones unless statuses are given: for a total, count with curationProposals. */
   curationProposalsForEntity: Array<CurationProposal>;
   curationResolve?: Maybe<CurationResolution>;
   curationSettings: CurationSettings;

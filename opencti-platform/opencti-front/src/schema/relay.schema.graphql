@@ -9482,6 +9482,10 @@ type Query {
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
   curationProposal(id: ID!): CurationProposal
   curationProposals(first: Int, after: ID, orderBy: CurationProposalOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CurationProposalConnection
+
+  """
+  The 50 most confident proposals of the entity, open ones unless statuses are given: for a total, count with curationProposals.
+  """
   curationProposalsForEntity(id: ID!, status: [CurationProposalStatus!], kind: [CurationProposalKind!]): [CurationProposal!]!
   curationStatistics: CurationStatistics!
   curationResolve(name: String!, type: String!): CurationResolution

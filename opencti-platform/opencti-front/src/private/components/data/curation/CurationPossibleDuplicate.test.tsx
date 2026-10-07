@@ -13,11 +13,16 @@ vi.mock('../../../../relay/environment', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../relay/environment')>();
   return {
     ...actual,
-    fetchQuery: (_query: unknown, variables: { id: string }) => ({ toPromise: () => lookup(variables.id) }),
+    fetchQuery: (_query: unknown, variables: Variables) => ({ toPromise: () => lookup(variables.merges.filters[0].values[0], variables) }),
   };
 });
 
 vi.mock('../../../../utils/hooks/useDraftContext', () => ({ default: () => draft.current }));
+
+interface Variables {
+  merges: { filters: Array<{ key: string[]; values: string[] }> };
+  aliases: { filters: Array<{ key: string[]; values: string[] }> };
+}
 
 const proposalOf = (entityId: string, otherName: string, title: string) => ({
   id: `proposal-${entityId}`,
@@ -28,9 +33,14 @@ const proposalOf = (entityId: string, otherName: string, title: string) => ({
   explanation: { title: { template: title, values: null, text: title } },
 });
 
+const pageOf = (proposals: Array<ReturnType<typeof proposalOf>>, globalCount = proposals.length) => ({
+  pageInfo: { globalCount },
+  edges: proposals.map((node) => ({ node })),
+});
+
 const mergeProposalOf = (entityId: string, otherName: string) => ({
-  merges: [proposalOf(entityId, otherName, 'Merge the entities')],
-  aliases: [],
+  merges: pageOf([proposalOf(entityId, otherName, 'Merge the entities')]),
+  aliases: pageOf([]),
 });
 
 describe('CurationPossibleDuplicate', () => {
@@ -57,10 +67,20 @@ describe('CurationPossibleDuplicate', () => {
   });
 
   it('shows each chip from the open proposals of its own kind', async () => {
-    lookup.mockResolvedValue({ merges: [], aliases: [proposalOf('first', 'Sofacy', 'Add the aliases')] });
+    lookup.mockResolvedValue({ merges: pageOf([]), aliases: pageOf([proposalOf('first', 'Sofacy', 'Add the aliases')]) });
     testRender(<CurationPossibleDuplicate entityId="first" />);
     expect(await screen.findByTestId('curation-aliases-to-review')).toBeInTheDocument();
     expect(screen.queryByTestId('curation-possible-duplicate')).toBeNull();
+    const [, variables] = lookup.mock.calls[0] as [string, Variables];
+    const kindOf = (group: Variables['merges']) => group.filters.find(({ key }) => key[0] === 'proposal_kind')?.values;
+    expect(kindOf(variables.merges)).toEqual(['merge']);
+    expect(kindOf(variables.aliases)).toEqual(['alias']);
+  });
+
+  it('counts every open merge proposal of the entity, not only the most confident one it reads', async () => {
+    lookup.mockResolvedValue({ merges: pageOf([proposalOf('first', 'Fancy Bear', 'Merge the entities')], 73), aliases: pageOf([]) });
+    testRender(<CurationPossibleDuplicate entityId="first" />);
+    expect(await screen.findByText('73 possible duplicates')).toBeInTheDocument();
   });
 
   it('shows nothing once a draft is entered, without a new lookup', async () => {
