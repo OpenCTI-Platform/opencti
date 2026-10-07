@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
-import type { DefenseLogsourceMappingAddInput, EditInput, QueryDefenseLogsourceMappingsArgs } from '../../../generated/graphql';
+import { type DefenseLogsourceMappingAddInput, type EditInput, EditOperation, type QueryDefenseLogsourceMappingsArgs } from '../../../generated/graphql';
 import { createInternalObject } from '../../../domain/internalObject';
 import { deleteElementById, updateAttribute } from '../../../database/middleware';
 import { FunctionalError } from '../../../config/errors';
@@ -32,7 +32,12 @@ const cleanValue = (value?: string | null) => {
   return cleaned.length > 0 ? cleaned : undefined;
 };
 
-export const cleanDataComponentNames = (names: ReadonlyArray<string | null | undefined>) => {
+const isText = (value: unknown): value is string | null | undefined => value === null || value === undefined || typeof value === 'string';
+
+export const cleanDataComponentNames = (names: ReadonlyArray<unknown>) => {
+  if (!names.every(isText)) {
+    throw FunctionalError('The data components of a log source mapping must be texts');
+  }
   const cleaned = Array.from(new Set(names.map((n) => (n ?? '').trim()).filter((n) => n.length > 0)));
   if (cleaned.length === 0) {
     throw FunctionalError('A log source mapping requires at least one data component');
@@ -118,6 +123,15 @@ export const addDefenseLogsourceMapping = async (context: AuthContext, user: Aut
   return created;
 };
 
+// A mapping always keeps between one and MAX_DATA_COMPONENTS data components: an added or removed value, or an object
+// path, would change them without that check, so a patch replaces the values of a key as a whole
+export const normalizeMappingEditInputs = (input: EditInput[]) => input.map((i) => {
+  if ((i.operation && i.operation !== EditOperation.Replace) || i.object_path) {
+    throw FunctionalError('A log source mapping is updated by replacing its values, without operation or object path', { key: i.key });
+  }
+  return i.key === 'data_components' ? { ...i, value: cleanDataComponentNames(i.value) } : i;
+});
+
 export const fieldPatchDefenseLogsourceMapping = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const mapping = await findById(context, user, id);
   if (!mapping) {
@@ -129,7 +143,7 @@ export const fieldPatchDefenseLogsourceMapping = async (context: AuthContext, us
       keys: forbidden.map((f) => f.key),
     });
   }
-  const finalInput = input.map((i) => (i.key === 'data_components' ? { ...i, value: cleanDataComponentNames(i.value) } : i));
+  const finalInput = normalizeMappingEditInputs(input);
   const { element } = await updateAttribute<StoreEntityDefenseLogsourceMapping>(context, user, id, ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING, finalInput);
   await publishUserAction({
     user,

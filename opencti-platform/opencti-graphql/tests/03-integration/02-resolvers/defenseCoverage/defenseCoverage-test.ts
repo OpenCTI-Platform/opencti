@@ -596,6 +596,14 @@ describe('Threat-informed defense matrix', () => {
       { query: MAPPING_PATCH, variables: { id: mappingId, input: [{ key: 'logsource_product', value: ['other'] }] } },
       'Only the data components, the description and the activation of a log source mapping can be updated',
     );
+    await queryAsAdminWithError(
+      { query: MAPPING_PATCH, variables: { id: mappingId, input: [{ key: 'data_components', value: ['Defense matrix mapped telemetry'], operation: 'remove' }] } },
+      'A log source mapping is updated by replacing its values, without operation or object path',
+    );
+    await queryAsAdminWithError(
+      { query: MAPPING_PATCH, variables: { id: mappingId, input: [{ key: 'data_components', value: [12] }] } },
+      'The data components of a log source mapping must be texts',
+    );
     const builtIns = await queryAsAdminWithSuccess({ query: MAPPINGS, variables: { search: 'process_creation' } });
     const builtIn = builtIns.data?.defenseLogsourceMappings.edges.map((e: { node: { id: string; built_in: boolean } }) => e.node).find((m: { built_in: boolean }) => m.built_in);
     expect(builtIn).toBeDefined();
