@@ -4,7 +4,7 @@ import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
-import { withHuntLock } from './hunt-lock';
+import { huntRunTransitionLockKey, withHuntLock } from './hunt-lock';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { completeConnector } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
@@ -424,10 +424,12 @@ export const dispatchHuntRun = async (
     logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector executes against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
     return false;
   }
-  // Reserved and published under the dispatch lock, which a registration of the connector takes to bind it: the
-  // registration read under the lock (its liveness, binding, limits and query contract) still holds when the message is
-  // published
-  const workId = await withConnectorDispatchLock(connector.internal_id, async () => {
+  // Read, reserved and published under the transition lock of the run, which its cancellation, its connector reports and
+  // its expiry take: a run settled meanwhile is never sent. Then under the dispatch lock of the connector, which a
+  // registration of the connector takes to bind it: the registration read under the lock (its liveness, binding, limits
+  // and query contract) still holds when the message is published. The run lock is always taken first, as a retry does
+  // when it dispatches its next attempt
+  const workId = await withHuntLock(huntRunTransitionLockKey(run.internal_id), () => withConnectorDispatchLock(connector.internal_id, async () => {
     const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
     if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
       logApp.debug('[OPENCTI-MODULE] Hunt run already dispatched or settled', { runId: run.internal_id });
@@ -449,7 +451,7 @@ export const dispatchHuntRun = async (
     }
     await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
     return publishHuntRun(context, run, hunt, bound, current);
-  });
+  }));
   if (!workId) {
     return false;
   }

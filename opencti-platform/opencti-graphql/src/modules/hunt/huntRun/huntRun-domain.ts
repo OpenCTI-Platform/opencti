@@ -6,7 +6,7 @@ import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
 import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
-import { withHuntLock } from '../hunt-lock';
+import { huntRunTransitionLockKey, withHuntLock } from '../hunt-lock';
 import { checkHuntEditAccess } from '../hunt-access';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import {
@@ -947,8 +947,6 @@ const scheduleAutomaticTriage = (context: AuthContext, run: BasicStoreEntityHunt
     .catch((error) => logApp.warn('[OPENCTI-MODULE] Automatic hunt triage skipped', { cause: error, runId: run.internal_id }));
 };
 
-const HUNT_RUN_TRANSITION_LOCK = 'hunt_run_transition';
-
 // Connector reports and manager expiries of a run are serialized, the run is read again under the lock so that a run
 // is finalized (verdict, statistics, retry schedule, notification) only once
 const withHuntRunTransition = async <T>(
@@ -956,7 +954,7 @@ const withHuntRunTransition = async <T>(
   runId: string,
   transition: (current: BasicStoreEntityHuntRun) => Promise<T>,
 ): Promise<T> => {
-  return withHuntLock(`${HUNT_RUN_TRANSITION_LOCK}_${runId}`, async () => {
+  return withHuntLock(huntRunTransitionLockKey(runId), async () => {
     const current = await findHuntRunById(context, HUNT_MANAGER_USER, runId);
     if (!current) {
       throw ResourceNotFoundError('Hunt run cannot be found', { runId });

@@ -5,7 +5,7 @@ import { elCount } from '../../../../src/database/engine';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun } from '../../../../src/modules/hunt/hunt-dispatch';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
-import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
+import { huntRunTransitionLockKey, withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { findHuntConnectors, huntConnectorPlatformLockKey, registerHuntConnector } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -139,7 +139,23 @@ describe('Hunt connectors and their security platforms', () => {
       return action();
     });
     expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
-    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-splunk']);
+    // The lock of the run first, as a retry takes it before dispatching its next attempt, then the lock of the connector
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntRunTransitionLockKey('run-1'), 'hunt_connector_dispatch_connector-splunk']);
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should never send a run cancelled while its dispatch waited for the transition lock of the run', async () => {
+    const run = { internal_id: 'run-1', hunt_id: 'hunt-1', connector_id: SPLUNK_PROD.internal_id, security_platform_id: 'platform-prod', hunt_run_status: 'queued', hunt_run_mode: 'execute' };
+    serving([SPLUNK_PROD]);
+    vi.mocked(internalFindByIds).mockResolvedValue([run] as never);
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      // The deletion of its hunt cancelled the run while holding the lock first
+      vi.mocked(internalFindByIds).mockResolvedValue([{ ...run, hunt_run_status: 'cancelled' }] as never);
+      return action();
+    });
+    expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
+    expect(vi.mocked(withHuntLock).mock.calls[0][0]).toEqual(huntRunTransitionLockKey('run-1'));
+    expect(elCount).not.toHaveBeenCalled();
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
