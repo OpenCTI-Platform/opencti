@@ -11,6 +11,12 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
   fetchQuery: (...args: unknown[]) => mockFetchQuery(...args),
 }));
 
+// A low limit: the field behaves the same at the limit of the API, without rendering hundreds of threats
+vi.mock('./defenseMatrix-utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./defenseMatrix-utils')>()),
+  DEFENSE_MAX_SELECTED_THREATS: 2,
+}));
+
 // The account of the reader, changed without a remount as when another user logs in
 const mockAccount = { id: 'reader-1' };
 vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => {
@@ -62,7 +68,7 @@ describe('Defense threats field', () => {
     expect(screen.queryByText('Threat of reader 1')).not.toBeInTheDocument();
   });
 
-  it('should stop the selection at the limit the API applies, and say why', async () => {
+  it('should stop the selection at the limit, and say why', async () => {
     mockAccount.id = 'reader-1';
     mockFetchQuery.mockReset();
     mockFetchQuery.mockReturnValue(searchAnswer([
@@ -71,7 +77,7 @@ describe('Defense threats field', () => {
     ]));
     const selected = Array.from({ length: DEFENSE_MAX_SELECTED_THREATS }, (_, index) => ({ value: `threat-${index}`, label: `Threat ${index}`, type: 'Malware' }));
     const { user } = testRender(<DefenseThreatsField value={selected} onChange={vi.fn()} />);
-    expect(screen.getByTestId('defense-threats-limit')).toBeInTheDocument();
+    expect(screen.getByTestId('defense-threats-limit')).toHaveTextContent('At most 2 threats can be selected');
     await user.type(screen.getByTestId('defense-threats-input'), 't');
     // A selected threat can still be removed, no other one can be added
     expect((await screen.findByText('Other threat')).closest('[role="option"]')).toHaveAttribute('aria-disabled', 'true');
