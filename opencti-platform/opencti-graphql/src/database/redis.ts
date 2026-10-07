@@ -1251,13 +1251,20 @@ export const redisCurationQueueRestrictionRefresh = async (entityIds: string[]) 
   await client.hset(CURATION_RESTRICTION_RETRY_KEY, Object.fromEntries(entityIds.map((id) => [id, '0'])));
 };
 
+const CURATION_RESTRICTION_RETRY_CURSOR_KEY = `${CURATION_KEY_PREFIX}restriction_refresh_retry_cursor`;
+
+// Each read goes on from where the previous one stopped, and the entities tried the least come first (a small hash is
+// read whole): entities that keep failing never hold back the ones queued after them.
 export const redisCurationGetQueuedRestrictionRefreshes = async (count: number): Promise<Array<{ entityId: string; attempts: number }>> => {
-  const [, flat] = await getClientBase().hscan(CURATION_RESTRICTION_RETRY_KEY, '0', 'COUNT', count);
+  const client = getClientBase();
+  const cursor = (await client.get(CURATION_RESTRICTION_RETRY_CURSOR_KEY)) ?? '0';
+  const [next, flat] = await client.hscan(CURATION_RESTRICTION_RETRY_KEY, cursor, 'COUNT', count);
+  await client.set(CURATION_RESTRICTION_RETRY_CURSOR_KEY, next);
   const queued: Array<{ entityId: string; attempts: number }> = [];
-  for (let index = 0; index + 1 < flat.length && queued.length < count; index += 2) {
+  for (let index = 0; index + 1 < flat.length; index += 2) {
     queued.push({ entityId: flat[index], attempts: Number(flat[index + 1]) || 0 });
   }
-  return queued;
+  return R.sortBy((entry) => entry.attempts, queued).slice(0, count);
 };
 
 export const redisCurationCompleteRestrictionRefresh = async (entityId: string) => {

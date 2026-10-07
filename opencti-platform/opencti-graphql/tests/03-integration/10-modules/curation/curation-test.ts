@@ -28,7 +28,15 @@ import {
   ENTITY_TYPE_MERGE_RECORD,
 } from '../../../../src/modules/curation/curation-types';
 import type { BasicStoreEntity } from '../../../../src/types/store';
-import { redisCurationGetCounters, redisCurationReserveCounter, redisCurationSwapFieldWriter } from '../../../../src/database/redis';
+import {
+  redisCurationCompleteRestrictionRefresh,
+  redisCurationFailRestrictionRefresh,
+  redisCurationGetCounters,
+  redisCurationGetQueuedRestrictionRefreshes,
+  redisCurationQueueRestrictionRefresh,
+  redisCurationReserveCounter,
+  redisCurationSwapFieldWriter,
+} from '../../../../src/database/redis';
 
 const PROPOSALS_FOR_ENTITY_QUERY = gql`
   query CurationProposalsForEntity($id: ID!, $status: [CurationProposalStatus!]) {
@@ -587,6 +595,35 @@ describe('Knowledge curation', () => {
     expect(await reserve(3)).toBe(true);
     expect(await reserve(3)).toBe(false);
     expect(await redisCurationGetCounters('budget-test', [day])).toEqual([3]);
+  });
+
+  it('reaches every queued restriction refresh while the ones read keep failing', async () => {
+    const prefix = `curation-test-retry-${Date.now()}`;
+    const failing = `${prefix}-failing`;
+    const fresh = [`${prefix}-fresh-1`, `${prefix}-fresh-2`];
+    await redisCurationQueueRestrictionRefresh([failing, ...fresh]);
+    await redisCurationFailRestrictionRefresh(failing);
+    await redisCurationFailRestrictionRefresh(failing);
+    const small = (await redisCurationGetQueuedRestrictionRefreshes(1000)).filter(({ entityId }) => entityId.startsWith(prefix));
+    expect(small.map(({ entityId }) => entityId).slice(0, 2).sort()).toEqual(fresh);
+    expect(small[2]).toEqual({ entityId: failing, attempts: 2 });
+    // A hash too large to be read whole is read page after page: the scan goes on where the previous read stopped.
+    const queued = Array.from({ length: 600 }, (_, index) => `${prefix}-queued-${index}`);
+    await redisCurationQueueRestrictionRefresh(queued);
+    const seen = new Set<string>();
+    for (let read = 0; read < 80 && queued.some((id) => !seen.has(id)); read += 1) {
+      const page = await redisCurationGetQueuedRestrictionRefreshes(50);
+      expect(page.length).toBeLessThanOrEqual(50);
+      for (let index = 0; index < page.length; index += 1) {
+        seen.add(page[index].entityId);
+        await redisCurationFailRestrictionRefresh(page[index].entityId);
+      }
+    }
+    expect(queued.filter((id) => !seen.has(id))).toEqual([]);
+    const all = [failing, ...fresh, ...queued];
+    for (let index = 0; index < all.length; index += 1) {
+      await redisCurationCompleteRestrictionRefresh(all[index]);
+    }
   });
 
   describe('source field authority', () => {
