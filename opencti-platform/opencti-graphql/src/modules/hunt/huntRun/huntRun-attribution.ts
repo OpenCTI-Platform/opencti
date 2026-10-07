@@ -87,6 +87,10 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial) =>
   if (!attributed) {
     return validateHuntRunAttribution(context, user, attributedRunId(initial?.[ATTRIBUTE_HUNT_RUN_ID]), null);
   }
+  // The stored access is what the attribution is checked against: a patch changing it as well would escape the check
+  if (!isBypassUser(user) && (INPUT_MARKINGS in instance || INPUT_GRANTED_REFS in instance)) {
+    throw ForbiddenAccess('An object is attributed to a run in a change of its own: set its markings and organizations first', { runId: attributed });
+  }
   return validateHuntRunAttribution(context, user, attributed, async () => ({
     [RELATION_OBJECT_MARKING]: referenceIds(initial?.[RELATION_OBJECT_MARKING]),
     [RELATION_GRANTED_TO]: referenceIds(initial?.[RELATION_GRANTED_TO]),

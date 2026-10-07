@@ -82,4 +82,10 @@ describe('Evidence attributed to a hunt run', () => {
     await expect(validateUpdate({ x_opencti_hunt_run_id: 'run-1' }, { [RELATION_OBJECT_MARKING]: [] })).rejects.toThrow(/carries at least the markings of the run/);
     expect(await validateUpdate({ x_opencti_hunt_run_id: '' }, { x_opencti_hunt_run_id: 'run-1', [RELATION_OBJECT_MARKING]: [] })).toBe(true);
   });
+
+  it('should refuse to attribute an object to a run in the change that sets its markings or organizations', async () => {
+    const stored = { [RELATION_OBJECT_MARKING]: ['marking-amber'], [RELATION_GRANTED_TO]: ['organization-1'] };
+    await expect(validateUpdate({ x_opencti_hunt_run_id: 'run-1', objectMarking: [] }, stored)).rejects.toThrow(/in a change of its own/);
+    await expect(validateUpdate({ x_opencti_hunt_run_id: 'run-1', objectOrganization: ['organization-2'] }, stored)).rejects.toThrow(/in a change of its own/);
+  });
 });
