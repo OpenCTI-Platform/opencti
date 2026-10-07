@@ -340,7 +340,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
 
   it('should share a deployment again with the organizations of both its ends after a sharing change of one end', async () => {
     await setOrganizations(platformId, [platformOrganizationId]);
-    await repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
+    // Not streamed: the deployment manager would repair the pair again from this event a moment later, maybe while a
+    // later test lends the pair to the editor, and the raw stream counts of the suite would depend on when it runs
+    const streamed = vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never);
+    try {
+      await repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
+      expect(streamed).toHaveBeenCalledTimes(1);
+    } finally {
+      streamed.mockRestore();
+    }
     expect(await loadOrganizations(deploymentId)).toEqual([platformOrganizationId]);
   });
 
