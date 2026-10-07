@@ -33,13 +33,14 @@ describe('Defense coverage per platform of a relationship', () => {
   });
 
   it('should drop the malformed entries without reading anything when none is left', async () => {
-    await expect(coveragePlatformsInformationForReader(context, user, [null, entry(42)] as never)).resolves.toEqual([]);
+    await expect(coveragePlatformsInformationForReader(context, user, [null, entry(42), entry('')] as never)).resolves.toEqual([]);
     expect(vi.mocked(internalFindByIdsMapped)).not.toHaveBeenCalled();
   });
 
   it.each([
     ['without a name', { platform_ref: 'security-platform--accessible', coverage_score: 100 }],
     ['with a name that is not a text', { platform_ref: 'security-platform--accessible', coverage_name: 12, coverage_score: 100 }],
+    ['with an empty name', { platform_ref: 'security-platform--accessible', coverage_name: '', coverage_score: 100 }],
     ['without a score', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection' }],
     ['with a score that is not a number', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: '100' }],
     ['with a score that is not finite', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: Number.NaN }],

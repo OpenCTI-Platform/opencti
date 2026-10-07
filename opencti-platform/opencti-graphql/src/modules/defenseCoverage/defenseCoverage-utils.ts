@@ -30,6 +30,9 @@ const COVERAGE_DETECTION = 'detection';
 const COVERAGE_PREVENTION = 'prevention';
 
 // region validation
+// The platform reference and the name of a per-platform OpenAEV result, a stored raw value: an empty one designates nothing
+export const isPlatformCoverageText = (value: unknown): value is string => typeof value === 'string' && value.length > 0;
+
 /**
  * Validation status of one OpenAEV result for a technique.
  * - prevented: the prevention success rate reaches the threshold,

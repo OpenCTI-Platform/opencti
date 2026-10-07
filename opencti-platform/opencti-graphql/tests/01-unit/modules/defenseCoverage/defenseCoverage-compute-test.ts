@@ -162,6 +162,8 @@ describe('Defense coverage of platform-scoped OpenAEV results', () => {
   it.each([
     ['without a name', { platform_ref: 'identity--edr', coverage_score: 10 }],
     ['with a name that is not a text', { platform_ref: 'identity--edr', coverage_name: 12, coverage_score: 10 }],
+    ['with an empty name', { platform_ref: 'identity--edr', coverage_name: '', coverage_score: 10 }],
+    ['with an empty platform reference', { platform_ref: '', coverage_name: 'DETECTION', coverage_score: 10 }],
     ['without a score', { platform_ref: 'identity--edr', coverage_name: 'DETECTION' }],
     ['with a score that is not a number', { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 'none' }],
     ['with a score that is not finite', { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: Number.NaN }],

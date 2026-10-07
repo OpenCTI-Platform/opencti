@@ -31,7 +31,15 @@ import {
   type DefenseTelemetryEvidence,
   type DefenseValidationEvidence,
 } from './defenseCoverage-types';
-import { capEvidences, cellForPlatform, computeValidationStatus, evaluateCoverage, type LogsourceCondition, mapLogsourceToDataComponents } from './defenseCoverage-utils';
+import {
+  capEvidences,
+  cellForPlatform,
+  computeValidationStatus,
+  evaluateCoverage,
+  isPlatformCoverageText,
+  type LogsourceCondition,
+  mapLogsourceToDataComponents,
+} from './defenseCoverage-utils';
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
 import { bumpDefenseCoverageVersion, queuePendingLevelChanges } from './defenseCoverage-state';
@@ -250,17 +258,17 @@ const relationScores = (relation: BasicStoreRelation): DefenseScore[] => {
 type RawPlatformCoverageEntry = { platform_ref: string; coverage_name?: unknown; coverage_score?: unknown };
 const relationPlatformEntries = (relation: BasicStoreRelation) => {
   const raw = (relation as unknown as { coverage_platforms_information?: unknown }).coverage_platforms_information;
-  return coverageEntries<{ platform_ref?: unknown }>(raw).filter((c): c is RawPlatformCoverageEntry => typeof c.platform_ref === 'string');
+  return coverageEntries<{ platform_ref?: unknown }>(raw).filter((c): c is RawPlatformCoverageEntry => isPlatformCoverageText(c.platform_ref));
 };
 
-// An entry without a text name or a finite score cannot be evaluated: it is skipped, never thrown on nor read as a failure
-const isScoredPlatformEntry = (entry: RawPlatformCoverageEntry): entry is PlatformCoverageEntry => typeof entry.coverage_name === 'string'
+// An entry without a name or a finite score cannot be evaluated: it is skipped, never thrown on nor read as a failure
+const isScoredPlatformEntry = (entry: RawPlatformCoverageEntry): entry is PlatformCoverageEntry => isPlatformCoverageText(entry.coverage_name)
   && typeof entry.coverage_score === 'number' && Number.isFinite(entry.coverage_score);
 
 const relationPlatformScores = (relation: BasicStoreRelation) => groupBy(relationPlatformEntries(relation).filter(isScoredPlatformEntry), (c) => c.platform_ref);
 
 // OpenAEV scoped the result to platforms: it never counts technique-wide, even when none of them resolves here or can be evaluated
-const hasPlatformAttribution = (relation: BasicStoreRelation) => relationPlatformEntries(relation).some((c) => !!c.platform_ref);
+const hasPlatformAttribution = (relation: BasicStoreRelation) => relationPlatformEntries(relation).length > 0;
 
 const resultDate = (result: BasicStoreEntity | undefined, relation: BasicStoreRelation) => {
   const lastResult = (result as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result;

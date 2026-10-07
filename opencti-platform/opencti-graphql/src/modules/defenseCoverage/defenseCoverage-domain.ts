@@ -58,6 +58,7 @@ import {
   defaultValidationName,
   evaluateCoverage,
   gapPlatformEvidence,
+  isPlatformCoverageText,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
   validationEvidencePool,
@@ -1366,7 +1367,7 @@ export const coveragePlatformsInformationForReader = async <T extends { platform
   if (!Array.isArray(information)) return information as null | undefined;
   // The stored entries are raw: an entry the GraphQL type cannot carry is skipped, a decimal score is rounded to the integer it holds
   const entries = information
-    .filter((entry): entry is T => !!entry && typeof entry.platform_ref === 'string' && typeof entry.coverage_name === 'string'
+    .filter((entry): entry is T => !!entry && isPlatformCoverageText(entry.platform_ref) && isPlatformCoverageText(entry.coverage_name)
       && typeof entry.coverage_score === 'number' && Number.isFinite(entry.coverage_score))
     .map((entry) => ({ ...entry, coverage_score: Math.round(entry.coverage_score as number) }))
     .filter((entry) => isGraphQLInt(entry.coverage_score));
