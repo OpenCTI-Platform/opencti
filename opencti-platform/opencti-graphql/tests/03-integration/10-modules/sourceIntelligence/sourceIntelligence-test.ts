@@ -125,6 +125,7 @@ const SOURCE_QUERY = gql`
 const SOURCE_SCORECARDS_QUERY = gql`
   query sourceScorecards($sourceId: ID!, $period: SourceScorecardPeriod) {
     sourceScorecards(sourceId: $sourceId, period: $period) {
+      id
       source_id
       period
       scorecard_date
@@ -515,9 +516,16 @@ describe('Source intelligence', () => {
     expect(history.data.sourceScorecards.length).toBeGreaterThan(0);
     history.data.sourceScorecards.forEach((point: { source_id: string }) => expect(point.source_id).toBe(sourceId));
     // The snapshots, then the live scorecard carrying the increments since the last snapshot
-    const points = history.data.sourceScorecards as Array<{ is_live: boolean }>;
+    const points = history.data.sourceScorecards as Array<{ id: string; is_live: boolean }>;
     expect(points.filter((point) => point.is_live)).toHaveLength(1);
     expect(points[points.length - 1].is_live).toBe(true);
+    // Kept in their own index, scorecards are read through their source only, never by a generic lookup by id
+    const liveId = points[points.length - 1].id;
+    const { data: represented } = await queryAsAdminWithSuccess({
+      query: FILTERS_REPRESENTATIVES_QUERY,
+      variables: { filters: { mode: 'and', filters: [{ key: ['ids'], values: [liveId] }], filterGroups: [] } },
+    });
+    expect(represented.filtersRepresentatives).toEqual([{ id: liveId, value: null, entity_type: null }]);
   });
 
   it('should return no scorecard for an unknown source', async () => {

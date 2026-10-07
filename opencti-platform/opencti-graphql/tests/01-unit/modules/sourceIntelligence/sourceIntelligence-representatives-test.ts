@@ -41,8 +41,6 @@ const ENTITIES = [
   { internal_id: 'source-1', entity_type: 'Source', source_kind: 'author', ref_id: 'identity-1', name: 'Restricted CERT' },
   { internal_id: 'source-2', entity_type: 'Source', source_kind: 'author', ref_id: 'identity-2', name: 'Acme' },
   { internal_id: 'source-3', entity_type: 'Source', source_kind: 'connector', ref_id: 'connector-1', name: 'MISP' },
-  { internal_id: 'scorecard-1', entity_type: 'SourceScorecard', source_id: 'source-1', source_kind: 'author', source_name: 'Restricted CERT' },
-  { internal_id: 'scorecard-3', entity_type: 'SourceScorecard', source_id: 'source-3', source_kind: 'connector', source_name: 'MISP' },
   { internal_id: 'rec-1', entity_type: 'SourceRecommendation', source_id: 'source-1', payload: '{}', name: 'Raise the confidence of Restricted CERT' },
   { internal_id: 'rec-2', entity_type: 'SourceRecommendation', source_id: null, pir_id: 'pir-2', payload: '{}', name: 'Deploy MISP for the finance PIR' },
   { internal_id: 'gap-1', entity_type: 'CollectionGap', pir_id: 'pir-1', name: 'Ransomware in Europe' },
@@ -72,8 +70,6 @@ describe('Source intelligence entities in the filter representatives', () => {
       'source-1': 'Restricted',
       'source-2': 'Acme',
       'source-3': 'MISP',
-      'scorecard-1': null,
-      'scorecard-3': 'MISP',
       'rec-1': 'Raise the confidence of Restricted',
       'rec-2': null,
       'gap-1': 'Ransomware in Europe',
@@ -87,8 +83,6 @@ describe('Source intelligence entities in the filter representatives', () => {
       'source-1': null,
       'source-2': null,
       'source-3': null,
-      'scorecard-1': null,
-      'scorecard-3': null,
       'rec-1': null,
       'rec-2': null,
       'gap-1': null,
@@ -100,6 +94,6 @@ describe('Source intelligence entities in the filter representatives', () => {
   it('should serve no recommendation and no collection gap outside Enterprise Edition', async () => {
     vi.mocked(isEnterpriseEdition).mockResolvedValue(false);
     const values = await representatives(analyst);
-    expect(values).toMatchObject({ 'source-2': 'Acme', 'scorecard-3': 'MISP', 'rec-1': null, 'gap-1': null, 'malware-1': 'Emotet' });
+    expect(values).toMatchObject({ 'source-1': 'Restricted', 'source-2': 'Acme', 'rec-1': null, 'gap-1': null, 'malware-1': 'Emotet' });
   });
 });

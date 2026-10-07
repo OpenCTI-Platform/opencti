@@ -493,23 +493,15 @@ export const withoutRestrictedScorecards = async <T extends Pick<StoreSourceScor
 export const canReadSourceIntelligence = (user: AuthUser) => isUserHasCapability(user, 'MODULES') || isUserHasCapability(user, 'INGESTION');
 
 /**
- * Sources and scorecards read through a generic lookup by id (filter representatives), as the Sources queries serve
- * them: none without the Sources capabilities, a source whose author the user cannot access named Restricted, and no
- * scorecard of such a source.
+ * Sources read through a generic lookup by id (filter representatives), as findSourceById serves them: none without
+ * the Sources capabilities, and a source whose author the user cannot access named Restricted. Scorecards, kept in
+ * their own index, are never loaded by such a lookup: they are read through their source only.
  */
-export const readableSourcesAndScorecards = async (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]): Promise<Array<BasicStoreEntity | undefined>> => {
+export const readableSources = async (context: AuthContext, user: AuthUser, entities: BasicStoreEntity[]): Promise<Array<BasicStoreEntity | undefined>> => {
   if (!canReadSourceIntelligence(user)) {
     return entities.map(() => undefined);
   }
-  const { isRestricted } = await sourceRestrictions(context, user);
-  return Promise.all(entities.map(async (entity) => {
-    if (entity.entity_type === ENTITY_TYPE_SOURCE) {
-      const [source] = await maskRestrictedSources(context, user, [entity as unknown as BasicStoreEntitySource]);
-      return source as unknown as BasicStoreEntity;
-    }
-    const scorecard = entity as unknown as StoreSourceScorecard;
-    return isRestricted(scorecard.source_id, scorecard.source_kind) ? undefined : entity;
-  }));
+  return await maskRestrictedSources(context, user, entities as unknown as BasicStoreEntitySource[]) as unknown as BasicStoreEntity[];
 };
 
 export const findSourceById = async (context: AuthContext, user: AuthUser, id: string) => {
