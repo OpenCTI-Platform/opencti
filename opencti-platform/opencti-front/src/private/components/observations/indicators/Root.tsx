@@ -21,6 +21,7 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
@@ -102,6 +103,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   const basePath = PATH_INDICATOR(indicatorId);
   const link = `${basePath}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const isOverview = isPathOverview(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {indicator ? (
@@ -191,7 +193,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               ),
             }}
-            extraActions={<HuntThisMenu entity={indicator} />}
+            extraActions={isOverview && <HuntThisMenu entity={indicator} />}
           />
         </div>
       ) : (
