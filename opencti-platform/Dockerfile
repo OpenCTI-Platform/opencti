@@ -18,7 +18,15 @@ RUN <<EOT
   npm install -g corepack
 EOT
 
-COPY .yarnrc.yml /opt/opencti/
+WORKDIR /opt/opencti
+
+COPY .yarnrc.yml package.json yarn.lock ./
+COPY patch/ ./patch/
+COPY opencti-platform/eslint-plugin-custom-rules/package.json ./opencti-platform/eslint-plugin-custom-rules/
+COPY opencti-platform/opencti-front/package.json ./opencti-platform/opencti-front/
+COPY opencti-platform/opencti-graphql/package.json ./opencti-platform/opencti-graphql/
+
+ENV YARN_ENABLE_IMMUTABLE_INSTALLS="true"
 
 
 ##############################
@@ -31,16 +39,12 @@ FROM builder AS builder-back
 ARG TAG_VERSION
 ENV TAG_VERSION="${TAG_VERSION}"
 
-WORKDIR /opt/opencti/opencti-graphql
+RUN yarn workspaces focus opencti-graphql
 
-# Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ./
-COPY opencti-graphql/patch/ ./patch/
-
-RUN yarn install --immutable
+WORKDIR /opt/opencti/opencti-platform/opencti-graphql
 
 # Copy all remaining sources
-COPY opencti-graphql/ ./
+COPY opencti-platform/opencti-graphql/ ./
 RUN yarn build:prod
 
 ##############################
@@ -48,17 +52,13 @@ RUN yarn build:prod
 ##############################
 
 FROM builder AS builder-front
-WORKDIR /opt/opencti/opencti-front
 
-# Copy sources necessary for install (preserve cache if no dependency changes)
-COPY opencti-front/package.json opencti-front/yarn.lock ./
-COPY opencti-front/packages/ ./packages/
-COPY opencti-front/patch/ ./patch/
+RUN yarn workspaces focus opencti-front
 
-RUN yarn install --immutable
+WORKDIR /opt/opencti/opencti-platform/opencti-front
 
 # Copy all remaining sources and build
-COPY opencti-front/ ./
+COPY opencti-platform/opencti-front/ ./
 RUN yarn build
 
 ##############################
@@ -76,7 +76,7 @@ RUN <<EOT
   python3 -m ensurepip
 EOT
 
-RUN --mount=type=bind,source=opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
+RUN --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
   set -euxo pipefail
 
   apk --no-cache add -t .pip_deps git
@@ -87,11 +87,11 @@ EOT
 
 WORKDIR /opt/opencti
 
-COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
-COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
-COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
-COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
-COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/build/ ./build/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/config/ ./config/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/static/ ./static/
+COPY --from=builder-front /opt/opencti/opencti-platform/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"

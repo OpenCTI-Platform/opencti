@@ -9,7 +9,7 @@ import importNewlines from 'eslint-plugin-import-newlines';
 import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
-  // Build and tool output is already named once, in `.gitignore`.
+  includeIgnoreFile(fileURLToPath(new URL('../../.gitignore', import.meta.url))),
   includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.meta.url))),
 
   {

@@ -3,19 +3,16 @@
   "sourceRoot": "opencti-platform/opencti-front",
   "projectType": "application",
   "targets": {
-    "install": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "opencti-platform/opencti-front",
-        "command": "yarn install"
-      },
-      "metadata": {
-        "description": "Install the OpenCTI front dependencies"
-      }
-    },
     "build": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "build"
+        }
+      ],
       "options": {
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn build"
@@ -47,7 +44,12 @@
     "e2e": {
       "executor": "nx:run-commands",
       "dependsOn": [
-        { "projects": ["opencti-worker"], "target": "dev" }
+        {
+          "projects": [
+            "opencti-worker"
+          ],
+          "target": "dev"
+        }
       ],
       "options": {
         "cwd": "opencti-platform/opencti-front",
@@ -96,7 +98,14 @@
         "cwd": "opencti-platform/opencti-front",
         "command": "yarn relay"
       },
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "graphql" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "graphql"
+        }
+      ],
       "metadata": {
         "description": "Generate the relay schema based on the backend GraphQL schema"
       }
