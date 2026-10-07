@@ -304,6 +304,8 @@ Add filters to control which elements in your bundle the action defined in the c
 - ***Out***: At least one hunt run was started. The playbook continues down this route, once the runs are settled when waiting for the results.
 - ***No-hunt***: No hunt could run for the elements (no matching hunt, or no hunt connector serving their scope).
 
+When the runs of a hunt cannot all be created, the step starts no further run and logs the security platforms left without one. When waiting for the results, it waits on the runs already started; otherwise, or when none was started, the step fails.
+
 ## Share and access components
 
 These components manage the access permissions and allow you to share the bundle with organizations.

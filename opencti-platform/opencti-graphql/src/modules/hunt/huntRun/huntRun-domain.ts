@@ -430,12 +430,13 @@ export const recordHuntRunSummary = async (context: AuthContext, hunt: BasicStor
   return false;
 };
 
-/**
- * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
- * dispatches the deferred ones). Runs are created by the hunt manager identity with the markings and organizations
- * of both the hunt and the target security platform, the human or system at the origin of the run is kept in triggered_by.
- */
-export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<BasicStoreEntityHuntRun[]> => {
+interface HuntRunCreation {
+  runs: BasicStoreEntityHuntRun[];
+  // The security platforms (or connectors, on the internet) left without a run when the creation was interrupted
+  notCreatedOn: string[];
+}
+
+const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<HuntRunCreation> => {
   const mode = request.mode ?? HUNT_RUN_MODE_EXECUTE;
   if (context.draft_context) {
     throw FunctionalError('A hunt runs once it is validated from its draft', { huntId: hunt.internal_id });
@@ -490,6 +491,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   // Taken before any run is published: a run its connector completes during the dispatch records a later date
   const queuedAt = now();
   const createdAccess: HuntRunAccess[] = [];
+  const notCreatedOn: string[] = [];
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
   for (let index = 0; index < targets.length; index += 1) {
     const { connector, securityPlatform, restrictions } = targets[index];
@@ -553,6 +555,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
         created: runs.length,
         targets: targets.length,
       });
+      notCreatedOn.push(...targets.slice(index).map((target) => target.securityPlatform?.name ?? target.connector.name));
       break;
     }
     runs.push(run);
@@ -575,7 +578,30 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     await recordHuntRunSummary(context, hunt, createdAccess, { last_run_at: queuedAt, last_run_status: HUNT_RUN_STATUS_QUEUED })
       .catch((error) => logApp.warn('[OPENCTI-MODULE] Hunt last run information not recorded', { cause: error, huntId: hunt.internal_id }));
   }
-  return runs;
+  return { runs, notCreatedOn };
+};
+
+const partialHuntRunsError = (hunt: BasicStoreEntityHunt, creation: HuntRunCreation) => {
+  const total = creation.runs.length + creation.notCreatedOn.length;
+  return FunctionalError(
+    `The hunt started on ${creation.runs.length} of ${total} security platforms: its runs could not be created on ${creation.notCreatedOn.join(', ')}, run it again on them`,
+    { huntId: hunt.internal_id, runIds: creation.runs.map((run) => run.internal_id) },
+  );
+};
+
+/**
+ * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
+ * dispatches the deferred ones). Runs are created by the hunt manager identity with the markings and organizations
+ * of both the hunt and the target security platform, the human or system at the origin of the run is kept in triggered_by.
+ * When the creation is interrupted, a recurring trigger returns the runs created, and a one-shot trigger (manual,
+ * playbook), which has no next run to catch up the others, fails once they are kept.
+ */
+export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntityHunt, request: HuntRunRequest): Promise<BasicStoreEntityHuntRun[]> => {
+  const creation = await createHuntRunsOnTargets(context, hunt, request);
+  if (creation.notCreatedOn.length > 0 && !HUNT_RUN_INCREMENTAL_TRIGGERS.includes(request.trigger)) {
+    throw partialHuntRunsError(hunt, creation);
+  }
+  return creation.runs;
 };
 
 /**
@@ -609,14 +635,14 @@ export const startHuntRuns = async (
     const { template, values } = huntTranslationMessage(translation);
     throw FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
   }
-  const runs = await createHuntRuns(context, hunt, {
+  const creation = await createHuntRunsOnTargets(context, hunt, {
     trigger: 'manual',
     securityPlatformIds: input?.security_platform_ids ?? [],
     timeWindowHours: input?.time_window_hours,
     triggeredBy: user.id,
     requester: user,
   });
-  if (runs.length === 0) {
+  if (creation.runs.length === 0) {
     throw FunctionalError('No live hunt connector serves a security platform of this hunt you can access', { huntId });
   }
   await publishUserAction({
@@ -624,10 +650,13 @@ export const startHuntRuns = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'extended',
-    message: `runs hunt \`${hunt.name}\` on ${runs.length} platform(s)`,
+    message: `runs hunt \`${hunt.name}\` on ${creation.runs.length} platform(s)`,
     context_data: { id: hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input: input ?? {} },
   });
-  return runs;
+  if (creation.notCreatedOn.length > 0) {
+    throw partialHuntRunsError(hunt, creation);
+  }
+  return creation.runs;
 };
 
 export const startHuntPreview = async (context: AuthContext, user: AuthUser, huntId: string, securityPlatformId?: string | null) => {
