@@ -13,12 +13,16 @@ const numberConf = (key: string, fallback: number): number => {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 };
 
-// Counts bound loops, pages, batches and slices: a decimal is floored, a count below one falls back to the default
-export const huntCountSetting = (setting: unknown, fallback: number): number => {
+// Counts bound loops, pages, batches, slices and retries: a decimal is floored, a blank value or a count below the
+// minimum (one, zero where none is meaningful) falls back to the default
+export const huntCountSetting = (setting: unknown, fallback: number, min = 1): number => {
+  if (setting === undefined || setting === null || (typeof setting === 'string' && setting.trim() === '')) {
+    return fallback;
+  }
   const value = Math.floor(Number(setting));
-  return Number.isFinite(value) && value > 0 ? value : fallback;
+  return Number.isFinite(value) && value >= min ? value : fallback;
 };
-const countConf = (key: string, fallback: number): number => huntCountSetting(conf.get(key), fallback);
+const countConf = (key: string, fallback: number, min = 1): number => huntCountSetting(conf.get(key), fallback, min);
 
 export const HUNT_CONFIG = {
   enabled: booleanConf('hunt_manager:enabled', true),
@@ -32,7 +36,7 @@ export const HUNT_CONFIG = {
   dailyRunsPerConnector: countConf('hunt_manager:daily_runs_per_connector', 200),
   runTimeoutMinutes: numberConf('hunt_manager:run_timeout_minutes', 60),
   previewTimeoutMinutes: numberConf('hunt_manager:preview_timeout_minutes', 5),
-  maxRetries: Number.isFinite(Number(conf.get('hunt_manager:max_retries'))) ? Number(conf.get('hunt_manager:max_retries')) : 2,
+  maxRetries: countConf('hunt_manager:max_retries', 2, 0),
   retryBackoffMinutes: numberConf('hunt_manager:retry_backoff_minutes', 10),
   standingDebounceMinutes: numberConf('hunt_manager:standing_debounce_minutes', 15),
   standingFilterEvaluationsPerTick: countConf('hunt_manager:standing_filter_evaluations_per_tick', 20000),

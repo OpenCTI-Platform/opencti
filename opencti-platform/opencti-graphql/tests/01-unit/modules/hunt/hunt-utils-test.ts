@@ -223,6 +223,13 @@ describe('Hunt helpers', () => {
     expect(huntCountSetting(-4, 20)).toBe(20);
     expect(huntCountSetting('abc', 20)).toBe(20);
     expect(huntCountSetting(undefined, 20)).toBe(20);
+    expect(huntCountSetting(' ', 20)).toBe(20);
+    // Retries: zero disables them, a negative or blank value gives the default
+    expect(huntCountSetting('0', 2, 0)).toBe(0);
+    expect(huntCountSetting(1.7, 2, 0)).toBe(1);
+    expect(huntCountSetting(-1, 2, 0)).toBe(2);
+    expect(huntCountSetting('', 2, 0)).toBe(2);
+    expect(huntCountSetting(null, 2, 0)).toBe(2);
   });
 
   it('should derive the validation of a technique from the counts of all its emulation runs', () => {

@@ -72,4 +72,4 @@ Work a tick cannot take is kept for the next tick, never dropped: due scheduled 
 | `hunt_manager:run_retention_days` | `HUNT_MANAGER__RUN_RETENTION_DAYS` | `365` | Retention of the executed runs |
 | `hunt_manager:preview_retention_days` | `HUNT_MANAGER__PREVIEW_RETENTION_DAYS` | `7` | Retention of the query tests |
 
-The settings that count (runs, pages, evaluations, results, values, items and lengths) are whole numbers: a decimal is rounded down. A value that is not a number or not positive, including a count below one, gives the default. Durations accept decimals.
+The settings that count (runs, retries, pages, evaluations, results, values, items and lengths) are whole numbers: a decimal is rounded down. A blank value, a value that is not a number, or a count below one gives the default; the retries accept 0, which disables them. Durations accept decimals.
