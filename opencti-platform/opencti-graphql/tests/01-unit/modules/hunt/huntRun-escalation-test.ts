@@ -182,6 +182,16 @@ describe('Escalation at the end of a run above the threshold', () => {
     expect(finalState()).toMatchObject({ draft_id: 'draft-1', incident_id: 'incident-1' });
   });
 
+  it('should keep the distinct entities unknown when the connector does not count them', async () => {
+    loading({ ...running, auto_escalation: false });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);
+    expect(finalState().distinct_entities).toBeNull();
+    vi.mocked(patchAttribute).mockReset();
+    loading({ ...running, auto_escalation: false });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, distinct_entities: 0 } as never);
+    expect(finalState().distinct_entities).toEqual(0);
+  });
+
   it('should offer the incident at verdict time: a true positive opens it unless the analyst declines', async () => {
     const completed = { ...running, hunt_run_status: 'completed', hits_count: 28, verdict_source: 'auto', auto_escalation: false } as BasicStoreEntityHuntRun;
     loading(completed);

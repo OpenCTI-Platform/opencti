@@ -147,7 +147,7 @@ Runs are visible in the **Runs** tab of the hunt and in the **Hunt runs** list. 
 
 When a run completes, the hunt connector sends to OpenCTI:
 
-- the number of **hits** and of distinct entities,
+- the number of **hits** and of distinct entities (a connector that does not count the entities leaves their number unknown, never zero: the run and its incident then leave it out),
 - an **evidence sample**: the result fields with their occurrence count. Raw values are never stored: each value is hashed and only a truncated preview is kept, in which OpenCTI masks credentials (named fields, authorization headers, the password of a URL such as `https://user:password@host`, command-line arguments such as `curl -u user:password` or `--password value`), tokens, keys, e-mail users and long numbers before storing it, whatever the connector sent,
 - the **key of every hit** it read, which tells OpenCTI the hits it never saw before (see [How hits are counted](#how-hits-are-counted)),
 - **knowledge**: the observables and observed data described in [What a run produces](#what-a-run-produces). This knowledge carries the hunt run identifier, so it can always be traced back to the run that produced it.

@@ -673,7 +673,8 @@ export const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string =>
 export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatformName: string | undefined) => ({
   id: run.internal_id,
   hits_count: run.hits_count ?? 0,
-  distinct_entities: run.distinct_entities ?? 0,
+  // Unknown (null) when the connector does not count the entities of its hits
+  distinct_entities: run.distinct_entities ?? null,
   // Partial (true), complete (false) or unknown (null): only complete results let a run without hits be benign
   results_truncated: run.results_truncated ?? null,
   time_window: { start: run.time_window_start, end: run.time_window_end },
@@ -1244,7 +1245,8 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       // Evidence attached while the run was running stays with it: the report adds its hits, samples and results to it.
       // Only the reported hits are matched against the known hits, the evidence was matched when it was attached.
       let reportedHits = Math.max(0, Math.round(input.hits_count ?? 0));
-      patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
+      // A connector that does not count the entities of its hits leaves the count unknown, never zero
+      patch.distinct_entities = typeof input.distinct_entities === 'number' ? Math.max(0, Math.round(input.distinct_entities)) : null;
       const reportedSample = sanitizeHits(input.hits_sample);
       const hitsSample = mergeHits(run.hits_sample ?? [], reportedSample);
       patch.hits_sample = hitsSample;

@@ -53,6 +53,9 @@ describe('Hunt run triage request', () => {
     expect(huntTriageRunPayload(run({ hits_count: 0, results_truncated: false }), 'Splunk prod')).toMatchObject({ hits_count: 0, results_truncated: false });
     // A connector that did not state the completeness of its results: unknown, never complete
     expect(huntTriageRunPayload(run({ hits_count: 4 }), undefined)).toMatchObject({ hits_count: 4, results_truncated: null, security_platform: 'internet' });
+    // Nor does it count entities it did not report
+    expect(huntTriageRunPayload(run({ hits_count: 4 }), undefined).distinct_entities).toBeNull();
+    expect(huntTriageRunPayload(run({ hits_count: 4, distinct_entities: 0 }), undefined).distinct_entities).toEqual(0);
   });
 });
 
