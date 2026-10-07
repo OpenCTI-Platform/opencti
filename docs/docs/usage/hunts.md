@@ -287,6 +287,8 @@ Hunts can be shared as **hunt packs**: STIX 2.1 bundles carrying the hunts throu
 
 Importing a pack creates the missing hunts and updates the existing ones. A hunt is identified by its name: a pack hunt with the name of a hunt of the platform updates that hunt, whatever STIX ID the pack gives it. The local run settings of an existing hunt (status, schedule, scope, trigger filters, PIR activation) are kept: a pack update changes the logic, never how and where your hunts run. Hunts of a pack that are new to the platform are created as drafts. Every hunt of the pack is checked before the first one is written, and the pack is refused as a whole, with nothing imported, when it holds an invalid hunt, two hunts with the same name, or a hunt named like a hunt of the platform you cannot read.
 
+A pack hunt keeps its markings and the organizations it is restricted to. A hunt whose markings or organizations are unknown on the platform is skipped, its references listed as unresolved: importing it without them would lower its protection. A pack holding a hunt restricted to organizations is refused to a user who cannot restrict access to organizations.
+
 ## Automation
 
 Hunts can run on a schedule, react to new knowledge, be armed by Priority Intelligence Requirements and be orchestrated by playbooks. See [Hunt automation](hunt-automation.md).

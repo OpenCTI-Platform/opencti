@@ -746,7 +746,7 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
     const plan = await planHuntPackImport(context, user, hunts[index], objects);
     plan.unresolved.forEach((ref) => unresolved.add(ref));
     if (plan.blocked) {
-      logApp.warn('[OPENCTI-MODULE] Hunt pack hunt skipped, its markings are unknown on this platform', { hunt: hunts[index].id });
+      logApp.warn('[OPENCTI-MODULE] Hunt pack hunt skipped, its markings or organizations are unknown on this platform', { hunt: hunts[index].id });
     } else {
       // A pack updates the definition of a hunt that exists here, never how it runs here (status, origin, schedule)
       const input = { ...plan.input };

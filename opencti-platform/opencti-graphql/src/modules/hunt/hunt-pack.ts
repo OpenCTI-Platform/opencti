@@ -11,7 +11,8 @@ import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
-import { STIX_EXT_OCTI_HUNT } from '../../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_HUNT } from '../../types/stix-2-1-extensions';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../utils/access';
 import { FilterMode } from '../../generated/graphql';
 import { INPUT_CREATED_BY, INPUT_MARKINGS } from '../../schema/general';
 import { addLabel } from '../../domain/label';
@@ -162,8 +163,8 @@ export interface HuntPackImportPlan {
 
 /**
  * Builds the creation input of a pack hunt: references are resolved against the local knowledge (standard ids,
- * ATT&CK ids for techniques). A hunt whose markings cannot be resolved is not imported: importing it without
- * its markings would lower its protection.
+ * ATT&CK ids for techniques). A hunt whose markings or organizations cannot be resolved is not imported: importing it
+ * without them would lower its protection.
  */
 export const planHuntPackImport = async (
   context: AuthContext,
@@ -202,10 +203,23 @@ export const planHuntPackImport = async (
   };
   const markingRefs = stixHunt.object_marking_refs ?? [];
   const markings = markingRefs.length > 0 ? await findByIds<BasicStoreEntity>(context, user, markingRefs) : [];
-  const blocked = markings.length !== markingRefs.length;
-  if (blocked) {
+  const markingsBlocked = markings.length !== markingRefs.length;
+  if (markingsBlocked) {
     const foundMarkings = new Set(markings.map((marking) => marking.standard_id));
     markingRefs.filter((ref) => !foundMarkings.has(ref)).forEach((ref) => unresolved.push(ref));
+  }
+  const grantedRefs: unknown = stixHunt.extensions?.[STIX_EXT_OCTI]?.granted_refs;
+  const organizationRefs = Array.isArray(grantedRefs) ? Array.from(new Set(grantedRefs.filter((ref): ref is string => typeof ref === 'string'))) : [];
+  const organizations = organizationRefs.length > 0
+    ? await findByIds<BasicStoreEntity>(context, user, organizationRefs, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION })
+    : [];
+  const foundOrganizations = new Set<string>(organizations.flatMap((organization) => [organization.standard_id, ...(organization.x_opencti_stix_ids ?? [])]));
+  const missingOrganizations = organizationRefs.filter((ref) => !foundOrganizations.has(ref));
+  missingOrganizations.forEach((ref) => unresolved.push(ref));
+  const blocked = markingsBlocked || missingOrganizations.length > 0;
+  // Without this capability the organizations of a created object are those of its creator, not the ones given
+  if (!blocked && organizations.length > 0 && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    throw FunctionalError('This hunt pack holds a hunt restricted to organizations: only a user who can restrict access to organizations can import it', { hunt: stixHunt.id });
   }
   const authorRef = stixHunt.created_by_ref;
   const author = authorRef ? await findByIds<BasicStoreEntity>(context, user, [authorRef]) : [];
@@ -233,6 +247,9 @@ export const planHuntPackImport = async (
     [INPUT_HUNT_SOURCES]: await resolveIds(stixHunt[ATTRIBUTE_HUNT_SOURCES]),
     objectMarking: markings.map((marking) => marking.internal_id),
   };
+  if (organizations.length > 0) {
+    input.objectOrganization = organizations.map((organization) => organization.internal_id);
+  }
   if (author.length > 0) {
     input.createdBy = author[0].internal_id;
   }
