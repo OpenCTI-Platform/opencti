@@ -54,7 +54,14 @@ import {
   revertAppliedPatch,
 } from './curation-apply';
 import { findMergeRecordById, settlePendingMergeRecord, unmergeFromRecord } from './curation-merge-record';
-import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules, validateStaleOverrides } from './curation-settings';
+import {
+  getCurationSettings,
+  getCurationSettingsId,
+  saveCurationSettings,
+  validateFieldAuthorityRules,
+  validateNumericSettings,
+  validateStaleOverrides,
+} from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, adjudicationDecisionsFor, isAdjudicationAvailable } from './curation-adjudication';
 import { adjudicationDecidesAction, canUserApplyPolicy, canUserApplyProposal, canUserRevertProposal, effectiveProposalAction, isProposalChoiceRequired } from './curation-access';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
@@ -752,6 +759,7 @@ export const editCurationSettings = async (context: AuthContext, user: AuthUser,
   if (patch.adjudication_enabled === true) {
     await checkEnterpriseEdition(context);
   }
+  validateNumericSettings(patch);
   if (patch.field_authority_rules) {
     validateFieldAuthorityRules(patch.field_authority_rules);
   }

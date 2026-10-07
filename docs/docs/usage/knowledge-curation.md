@@ -443,6 +443,8 @@ Go to **Settings > Customization > Curation**, tab **Settings** (reading and cha
 | Field authority                 | Off                                                                                                                                      | Enables [field authority](#field-authority) and its rules.                                                                                                                                                        |
 | Scan size                       | 5,000                                                                                                                                    | The entities read per entity type at each scan (100 to 100,000): half the most recently updated ones, half a rotating slice of the others.                                                                        |
 
+A change with a value outside the range a setting gives (a whole number where the setting counts days, months, entities or requests) is refused with the range, through the API as in the form: nothing is saved.
+
 **Run a scan now** requests a full scan at the next manager cycle. A request is refused while curation is disabled (in the settings, or for its manager in the platform configuration), and switching curation off drops a pending one. The settings also show the dates of the last scan, snapshot and digest, and the version of the vendor taxonomy.
 
 Platform administrators can tune the manager schedules and the merge record limits in the [configuration](../deployment/configuration.md#engines-schedules-managers) (`curation_manager:*` and `curation:*` keys).

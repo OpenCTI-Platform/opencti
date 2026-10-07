@@ -57,6 +57,49 @@ const clampNumber = (value: unknown, min: number, max: number, fallback: number)
   return Math.min(max, Math.max(min, parsed));
 };
 
+interface NumberRange {
+  min: number;
+  max: number;
+  integer: boolean;
+}
+
+type NumericCurationSetting = 'similarity_threshold' | 'description_similarity_threshold' | 'behavior_threshold' | 'proposal_min_confidence'
+  | 'ambiguous_band_min' | 'ambiguous_band_max' | 'adjudication_daily_limit' | 'stale_default_months' | 'merge_record_retention_days'
+  | 'digest_day' | 'scan_max_entities_per_type';
+
+/** The range of each numeric setting: an edit outside it is refused, a stored value outside it is brought back into it. */
+const NUMERIC_SETTING_RANGES: Record<NumericCurationSetting, NumberRange> = {
+  similarity_threshold: { min: 0.5, max: 1, integer: false },
+  description_similarity_threshold: { min: 0.5, max: 1, integer: false },
+  behavior_threshold: { min: 0.1, max: 1, integer: false },
+  proposal_min_confidence: { min: 0, max: 1, integer: false },
+  ambiguous_band_min: { min: 0, max: 1, integer: false },
+  ambiguous_band_max: { min: 0, max: 1, integer: false },
+  adjudication_daily_limit: { min: 0, max: 10000, integer: true },
+  stale_default_months: { min: 1, max: 240, integer: true },
+  merge_record_retention_days: { min: 1, max: 3650, integer: true },
+  digest_day: { min: 0, max: 6, integer: true },
+  scan_max_entities_per_type: { min: 100, max: 100000, integer: true },
+};
+const STALE_OVERRIDE_MONTHS: NumberRange = { min: 1, max: 240, integer: true };
+
+const rangedNumber = (value: unknown, { min, max, integer }: NumberRange, fallback: number) => {
+  const clamped = clampNumber(value, min, max, fallback);
+  return integer ? Math.round(clamped) : clamped;
+};
+
+const numberSetting = (source: CurationSettings, key: NumericCurationSetting) => {
+  return rangedNumber(source[key], NUMERIC_SETTING_RANGES[key], DEFAULT_CURATION_SETTINGS[key]);
+};
+
+const isInRange = (value: unknown, { min, max, integer }: NumberRange) => {
+  return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max && (!integer || Number.isInteger(value));
+};
+
+const rangeError = (name: string, value: unknown, { min, max, integer }: NumberRange) => {
+  return FunctionalError(`The ${name} must be ${integer ? 'a whole number' : 'a number'} between ${min} and ${max}`, { value, min, max });
+};
+
 const asStringArray = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string' && v.length > 0) : []);
 
 /**
@@ -67,14 +110,14 @@ export const normalizeCurationSettings = (raw: Partial<CurationSettings> | null 
   const enabledDetectors = asStringArray(source.enabled_detectors)
     .filter((detector): detector is CurationDetector => (CURATION_DETECTORS as readonly string[]).includes(detector));
   const curatedTypes = asStringArray(source.curated_entity_types).filter(isCuratableEntityType);
-  const bandMin = clampNumber(source.ambiguous_band_min, 0, 1, DEFAULT_CURATION_SETTINGS.ambiguous_band_min);
-  const bandMax = clampNumber(source.ambiguous_band_max, 0, 1, DEFAULT_CURATION_SETTINGS.ambiguous_band_max);
+  const bandMin = numberSetting(source, 'ambiguous_band_min');
+  const bandMax = numberSetting(source, 'ambiguous_band_max');
   const mode = (RELATIONSHIP_CONFLICT_MODES as readonly string[]).includes(source.relationship_conflict_mode)
     ? source.relationship_conflict_mode as RelationshipConflictMode
     : DEFAULT_CURATION_SETTINGS.relationship_conflict_mode;
   const staleOverrides: StalenessOverride[] = (Array.isArray(source.stale_overrides) ? source.stale_overrides : [])
     .filter((override) => override && typeof override.entity_type === 'string' && isCuratableEntityType(override.entity_type))
-    .map((override) => ({ entity_type: override.entity_type, months: Math.round(clampNumber(override.months, 1, 240, 24)) }));
+    .map((override) => ({ entity_type: override.entity_type, months: rangedNumber(override.months, STALE_OVERRIDE_MONTHS, 24) }));
   const rules: FieldAuthorityRule[] = (Array.isArray(source.field_authority_rules) ? source.field_authority_rules : [])
     .filter((rule) => rule && typeof rule.entity_type === 'string' && typeof rule.attribute === 'string' && Array.isArray(rule.sources))
     .map((rule) => ({
@@ -91,27 +134,27 @@ export const normalizeCurationSettings = (raw: Partial<CurationSettings> | null 
     enabled_detectors: enabledDetectors,
     // An empty list saved by an administrator examines no type; only a setting that never had the list takes the defaults.
     curated_entity_types: Array.isArray(source.curated_entity_types) ? curatedTypes : DEFAULT_CURATED_ENTITY_TYPES,
-    similarity_threshold: clampNumber(source.similarity_threshold, 0.5, 1, DEFAULT_CURATION_SETTINGS.similarity_threshold),
+    similarity_threshold: numberSetting(source, 'similarity_threshold'),
     description_similarity_enabled: source.description_similarity_enabled === true,
-    description_similarity_threshold: clampNumber(source.description_similarity_threshold, 0.5, 1, DEFAULT_CURATION_SETTINGS.description_similarity_threshold),
-    behavior_threshold: clampNumber(source.behavior_threshold, 0.1, 1, DEFAULT_CURATION_SETTINGS.behavior_threshold),
-    proposal_min_confidence: clampNumber(source.proposal_min_confidence, 0, 1, DEFAULT_CURATION_SETTINGS.proposal_min_confidence),
+    description_similarity_threshold: numberSetting(source, 'description_similarity_threshold'),
+    behavior_threshold: numberSetting(source, 'behavior_threshold'),
+    proposal_min_confidence: numberSetting(source, 'proposal_min_confidence'),
     ambiguous_band_min: Math.min(bandMin, bandMax),
     ambiguous_band_max: Math.max(bandMin, bandMax),
     adjudication_enabled: source.adjudication_enabled === true,
     adjudication_agent_slug: typeof source.adjudication_agent_slug === 'string' && source.adjudication_agent_slug.length > 0 ? source.adjudication_agent_slug : null,
     adjudication_run_as_id: typeof source.adjudication_run_as_id === 'string' && source.adjudication_run_as_id.length > 0 ? source.adjudication_run_as_id : null,
-    adjudication_daily_limit: Math.round(clampNumber(source.adjudication_daily_limit, 0, 10000, DEFAULT_CURATION_SETTINGS.adjudication_daily_limit)),
-    stale_default_months: Math.round(clampNumber(source.stale_default_months, 1, 240, DEFAULT_CURATION_SETTINGS.stale_default_months)),
+    adjudication_daily_limit: numberSetting(source, 'adjudication_daily_limit'),
+    stale_default_months: numberSetting(source, 'stale_default_months'),
     stale_overrides: staleOverrides,
     relationship_conflict_mode: mode,
-    merge_record_retention_days: Math.round(clampNumber(source.merge_record_retention_days, 1, 3650, DEFAULT_CURATION_SETTINGS.merge_record_retention_days)),
+    merge_record_retention_days: numberSetting(source, 'merge_record_retention_days'),
     digest_enabled: source.digest_enabled === true,
-    digest_day: Math.round(clampNumber(source.digest_day, 0, 6, DEFAULT_CURATION_SETTINGS.digest_day)),
+    digest_day: numberSetting(source, 'digest_day'),
     digest_recipient_ids: asStringArray(source.digest_recipient_ids).slice(0, 500),
     field_authority_enabled: source.field_authority_enabled === true,
     field_authority_rules: rules,
-    scan_max_entities_per_type: Math.round(clampNumber(source.scan_max_entities_per_type, 100, 100000, DEFAULT_CURATION_SETTINGS.scan_max_entities_per_type)),
+    scan_max_entities_per_type: numberSetting(source, 'scan_max_entities_per_type'),
     force_scan: source.force_scan === true,
     last_scan_date: source.last_scan_date ?? null,
     last_snapshot_date: source.last_snapshot_date ?? null,
@@ -152,14 +195,30 @@ export const validateFieldAuthorityRules = (rules: FieldAuthorityRule[]) => {
 };
 
 /**
+ * Reject a numeric setting outside its range with an explicit error (normalizeCurationSettings brings it back into its
+ * range: the save would succeed and store another value).
+ */
+export const validateNumericSettings = (patch: Partial<CurationSettings>) => {
+  (Object.keys(NUMERIC_SETTING_RANGES) as NumericCurationSetting[]).forEach((key) => {
+    const value = patch[key];
+    if (value !== undefined && !isInRange(value, NUMERIC_SETTING_RANGES[key])) {
+      throw rangeError(key, value, NUMERIC_SETTING_RANGES[key]);
+    }
+  });
+};
+
+/**
  * Reject staleness overrides the detection would not use (normalizeCurationSettings drops an override of another type,
- * and the detection reads only the first override of a type).
+ * and the detection reads only the first override of a type), or would not use as given (months out of range).
  */
 export const validateStaleOverrides = (overrides: StalenessOverride[]) => {
   const seen = new Set<string>();
   overrides.forEach((override) => {
     if (typeof override?.entity_type !== 'string' || !isCuratableEntityType(override.entity_type)) {
       throw FunctionalError('Staleness overrides only apply to knowledge entity types', { entity_type: override?.entity_type });
+    }
+    if (!isInRange(override.months, STALE_OVERRIDE_MONTHS)) {
+      throw rangeError('months of a staleness override', override.months, STALE_OVERRIDE_MONTHS);
     }
     if (seen.has(override.entity_type)) {
       throw FunctionalError('Only one staleness override per entity type', { entity_type: override.entity_type });

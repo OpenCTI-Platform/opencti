@@ -69,6 +69,26 @@ describe('curation settings edit', () => {
     await editCurationSettings(context, user, { stale_overrides: [{ entity_type: 'Indicator', months: 12 }, { entity_type: 'Campaign', months: 36 }] });
     expect(saveCurationSettings).toHaveBeenCalledTimes(1);
   });
+
+  it('refuses a numeric setting outside its range instead of saving another value', async () => {
+    const refused: Array<[Partial<CurationSettings>, string]> = [
+      [{ scan_max_entities_per_type: 1 }, 'The scan_max_entities_per_type must be a whole number between 100 and 100000'],
+      [{ scan_max_entities_per_type: 100001 }, 'The scan_max_entities_per_type must be a whole number between 100 and 100000'],
+      [{ merge_record_retention_days: 0 }, 'The merge_record_retention_days must be a whole number between 1 and 3650'],
+      [{ digest_day: 7 }, 'The digest_day must be a whole number between 0 and 6'],
+      [{ adjudication_daily_limit: 2.5 }, 'The adjudication_daily_limit must be a whole number between 0 and 10000'],
+      [{ similarity_threshold: 0.4 }, 'The similarity_threshold must be a number between 0.5 and 1'],
+      [{ behavior_threshold: 1.2 }, 'The behavior_threshold must be a number between 0.1 and 1'],
+      [{ proposal_min_confidence: Number.NaN }, 'The proposal_min_confidence must be a number between 0 and 1'],
+      [{ stale_overrides: [{ entity_type: 'Indicator', months: 0 }] }, 'The months of a staleness override must be a whole number between 1 and 240'],
+    ];
+    await Promise.all(refused.map(([input, message]) => expect(editCurationSettings(context, user, input)).rejects.toThrow(message)));
+    expect(saveCurationSettings).not.toHaveBeenCalled();
+    // The bounds themselves are valid.
+    const bounds = { scan_max_entities_per_type: 100, merge_record_retention_days: 3650, digest_day: 0, similarity_threshold: 1, proposal_min_confidence: 0 };
+    await editCurationSettings(context, user, bounds);
+    expect(saveCurationSettings).toHaveBeenCalledWith(context, user, bounds, expect.anything());
+  });
 });
 
 describe('curation scan request', () => {
