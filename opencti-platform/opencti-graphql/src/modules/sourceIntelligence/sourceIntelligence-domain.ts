@@ -20,7 +20,7 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { connectorIdFromIngestId } from '../../domain/connector';
-import { ConnectorType, type EditInput, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
+import { ConnectorType, type EditInput, type FilterGroup } from '../../generated/graphql';
 import { addFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
 import { generateStandardId } from '../../schema/identifier';
 import {
@@ -297,9 +297,10 @@ const sourceRestrictionsByContext = new WeakMap<AuthContext, Map<string, Promise
 
 /**
  * Whether a source is count-only for the user: an author source whose identity the user cannot access, or an author
- * source that no longer exists and cannot be checked. Such a source is left out of every list, scorecard, overlap,
- * coverage and widget the user reads, so no metric, sort or aggregation tells what it wrote; the number of sources
- * of the status still counts it. The author sources are bounded by the discovery settings.
+ * source that no longer exists and cannot be checked, as a source an entry names by its id only (an overlap share kept
+ * in an older snapshot) that no longer exists. Such a source is left out of every list, scorecard, overlap, coverage
+ * and widget the user reads, so no metric, sort or aggregation tells what it wrote; the number of sources of the
+ * status still counts it. The sources are bounded by the discovery settings and the connectors and feeds.
  */
 export const sourceRestrictions = (context: AuthContext, user: AuthUser): Promise<SourceRestrictions> => {
   let memo = sourceRestrictionsByContext.get(context);
@@ -310,16 +311,18 @@ export const sourceRestrictions = (context: AuthContext, user: AuthUser): Promis
   let resolution = memo.get(user.id);
   if (!resolution) {
     resolution = (async () => {
-      const authors = await fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE], {
-        filters: { mode: FilterMode.And, filters: [{ key: ['source_kind'], values: [SOURCE_KIND_AUTHOR], operator: FilterOperator.Eq, mode: FilterMode.Or }], filterGroups: [] },
-      });
+      const sources = await fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE]);
+      const authors = sources.filter((source) => source.source_kind === SOURCE_KIND_AUTHOR);
       const accessible = await sourceVisibleIds(context, user, authors);
+      const sourceIds = new Set(sources.map((source) => source.internal_id));
       const authorIds = new Set(authors.map((source) => source.internal_id));
       const restrictedIds = authors.filter((source) => !accessible.has(source.ref_id)).map((source) => source.internal_id);
       const restricted = new Set(restrictedIds);
       return {
         restrictedIds,
-        isRestricted: (sourceId: string, sourceKind?: string | null) => restricted.has(sourceId) || (sourceKind === SOURCE_KIND_AUTHOR && !authorIds.has(sourceId)),
+        isRestricted: (sourceId: string, sourceKind?: string | null) => restricted.has(sourceId)
+          || (sourceKind === SOURCE_KIND_AUTHOR && !authorIds.has(sourceId))
+          || (!sourceKind && !sourceIds.has(sourceId)),
       };
     })();
     memo.set(user.id, resolution);

@@ -31,10 +31,10 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalFindByIds: vi.fn(async (_context: unknown, _user: unknown, ids: string[]) => ids
     .filter((id) => accessibleIdentities.has(id))
     .map((id) => ({ internal_id: id }))),
-  // The stored author sources, as the query on their kind returns them
+  // The stored sources
   fullEntitiesList: vi.fn(async () => {
     listedSources.calls += 1;
-    return [...cachedSources.values()].filter((source) => (source as BasicStoreEntitySource).source_kind === SOURCE_KIND_AUTHOR);
+    return [...cachedSources.values()];
   }),
 }));
 
@@ -159,6 +159,13 @@ describe('Source intelligence authors the user cannot access', () => {
     expect((await withoutRestrictedSources(newContext(), user, sources)).map((source) => source.internal_id)).toEqual(['source-2', 'source-3']);
     const covering = [share('source-1'), share('source-2'), share('source-3')];
     expect((await withoutRestrictedSourceEntries(newContext(), user, covering)).map((entry) => entry.source_id)).toEqual(['source-2', 'source-3']);
+  });
+
+  it('should leave out an entry naming by its id only a source that no longer exists, whose access cannot be checked', async () => {
+    // An older snapshot keeps the share of an author source removed since, recorded without its kind
+    const [kept] = await withoutRestrictedScorecards(newContext(), user, [scorecard('source-2', SOURCE_KIND_AUTHOR, [share('source-8'), share('source-3')])]);
+    expect(kept.overlap).toEqual([share('source-3')]);
+    expect(await withoutRestrictedSourceEntries(newContext(), user, [share('source-8'), share('source-2')])).toEqual([share('source-2')]);
   });
 
   it('should name such an author Restricted, without its metrics, when it is reached by its id', async () => {

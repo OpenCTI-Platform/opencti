@@ -31,7 +31,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
     .map((id) => ({ internal_id: id }))),
   fullEntitiesList: vi.fn(async (_context: unknown, _user: unknown, types: string[]) => (types.includes('Pir')
     ? [...accessiblePirs].map((id) => ({ internal_id: id }))
-    : [...stored.values()].filter((entity) => entity.entity_type === 'Source' && entity.source_kind === 'author'))),
+    : [...stored.values()].filter((entity) => entity.entity_type === 'Source'))),
 }));
 
 const analyst = { id: 'analyst', capabilities: [{ name: 'KNOWLEDGE' }, { name: 'MODULES_MODMANAGE' }] } as AuthUser;
