@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
+import { APP_MODULE } from '../../../utils/logs/errorOrigin';
 import Loader from '../../../components/Loader';
 
 const Integrations = lazy(() => import('./Integrations'));
@@ -32,7 +33,7 @@ const Root = () => {
         />
         <Route
           path="/catalog/:connectorSlug"
-          element={boundaryWrapper(IngestionCatalogConnector)}
+          element={boundaryWrapper(IngestionCatalogConnector, APP_MODULE.CATALOG)}
         />
         <Route
           path="/feeds/:feedKind/:feedId"
