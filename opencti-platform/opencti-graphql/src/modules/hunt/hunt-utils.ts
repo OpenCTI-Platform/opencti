@@ -4,7 +4,7 @@ import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationStatus } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, type HuntNativeQuery } from './hunt-types';
+import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence, HuntHit } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
@@ -84,6 +84,14 @@ const EVIDENCE_FIELD_MAX_LENGTH = 256;
  */
 export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null; hunt_pir_activation?: boolean | null }) => {
   return isCronSchedule(hunt.hunt_schedule) || hunt.hunt_schedule === HUNT_SCHEDULE_STANDING || hunt.hunt_pir_activation === true;
+};
+
+/** The Sigma rule a hunt runs: an indicator or internet infrastructure hunt runs none, whatever rule it still carries. */
+export const huntSigmaRule = (hunt: { hunt_type?: string | null; sigma_rule?: string | null }): string | null => {
+  if (hunt.hunt_type === HUNT_TYPE_INDICATORS || hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
+    return null;
+  }
+  return typeof hunt.sigma_rule === 'string' && hunt.sigma_rule.trim().length > 0 ? hunt.sigma_rule : null;
 };
 
 export const sha256 = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');

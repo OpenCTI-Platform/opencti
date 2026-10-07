@@ -94,6 +94,15 @@ describe('Hunt planner answers', () => {
     expect(spec.hunt_type).toBe('infrastructure');
     expect(spec.sigma_rule).toBe('');
   });
+
+  it('should neither check nor keep the Sigma rule of an infrastructure plan, which runs none', () => {
+    const spec = validateHuntPlanSpec(planAnswer({
+      hunt_type: 'infrastructure',
+      sigma_rule: 'title: broken',
+      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
+    }), []);
+    expect(spec.sigma_rule).toBe('');
+  });
 });
 
 const emptyDraft = (overrides: Partial<HuntAssistDraft> = {}): HuntAssistDraft => ({

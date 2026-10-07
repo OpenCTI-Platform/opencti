@@ -121,4 +121,16 @@ describe('Hunt run message', () => {
     const shared = await buildHuntRunMessage(testContext, run as never, sharedHunt as never, { hunt_platform: 'splunk' } as never, null, 'work-2');
     expect(shared.event.hunt.targets.map((element) => element.standard_id)).toEqual(['malware--target-organization']);
   });
+
+  it('should give the connector the Sigma rule of a detection-rule hunt only', async () => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(markings as never);
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => ids.map((id) => elements.get(id)).filter((element) => !!element) as never);
+    const hunt = { internal_id: 'hunt-4', standard_id: 'hunt--4', name: 'Rule hunt', hunt_type: 'telemetry', sigma_rule: 'title: t', native_queries: [], escalation_threshold: 1 };
+    const run = { internal_id: 'run-4', attempt: 1, hunt_run_trigger: 'manual', hunt_run_mode: 'execute' };
+    const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-4');
+    expect(message.event.hunt.sigma_rule).toBe('title: t');
+    // The rule an internet infrastructure hunt still carries is not its logic
+    const internet = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'infrastructure' } as never, { hunt_platform: 'internet' } as never, null, 'work-4');
+    expect(internet.event.hunt.sigma_rule).toBeNull();
+  });
 });

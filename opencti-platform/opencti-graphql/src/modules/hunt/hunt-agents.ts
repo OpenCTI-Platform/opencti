@@ -8,7 +8,15 @@ import { type AgentJwtUser, buildPlaybookAutomationContext, callXtmAgent, isXtmO
 import { type SigmaValidation, validateSigmaRule } from './hunt-sigma';
 import { HUNT_PLATFORMS, HUNT_TYPE_INFRASTRUCTURE, HUNT_TYPE_TELEMETRY, type HuntNativeQuery } from './hunt-types';
 import { huntLogicError } from './hunt-validators';
-import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, HUNT_MAX_ESCALATION_THRESHOLD, normalizeNativeQueries } from './hunt-utils';
+import {
+  clampInteger,
+  HUNT_CONFIG,
+  HUNT_DEFAULT_ESCALATION_THRESHOLD,
+  HUNT_DEFAULT_TIME_WINDOW_HOURS,
+  HUNT_MAX_ESCALATION_THRESHOLD,
+  huntSigmaRule,
+  normalizeNativeQueries,
+} from './hunt-utils';
 import { HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE, HUNT_VERDICT_TRUE_POSITIVE } from './huntRun/huntRun-types';
 
 export const HUNT_PLANNER_INTENT = 'cti.hunt_hypothesis';
@@ -240,7 +248,7 @@ export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[]): 
     throw huntAgentError(HUNT_AGENT_FAILURE.invalidAnswer, 'The hunt planner answer does not match the hunt spec schema', { errors: ajv.errorsText(validatePlanSchema.errors) });
   }
   const spec = raw as RawHuntPlanSpec;
-  const sigmaRule = (spec.sigma_rule ?? '').trim();
+  const sigmaRule = (huntSigmaRule(spec) ?? '').trim();
   let nativeQueries: HuntNativeQuery[];
   try {
     nativeQueries = normalizeNativeQueries(spec.native_queries ?? []);

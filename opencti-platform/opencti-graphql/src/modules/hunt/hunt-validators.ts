@@ -17,7 +17,7 @@ import {
   type HuntNativeQuery,
   RELATION_HUNT_SOURCES,
 } from './hunt-types';
-import { HUNT_CONFIG, HUNT_MAX_ESCALATION_THRESHOLD, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import { HUNT_CONFIG, HUNT_MAX_ESCALATION_THRESHOLD, huntSigmaRule, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
 import { HUNT_MESSAGES, renderHuntMessage } from './hunt-messages';
 import { hasHuntIocLogic, normalizeHuntIocValues } from './hunt-iocs';
 
@@ -92,7 +92,8 @@ export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>):
  * executed run checks the logic again.
  */
 export const validateHuntState = async (context: AuthContext, state: HuntValidationState) => {
-  const sigmaError = sigmaRuleError(state.sigma_rule);
+  // A hunt is not refused for a rule its type does not run and its form does not show
+  const sigmaError = sigmaRuleError(huntSigmaRule(state));
   if (sigmaError) {
     throw ValidationError(sigmaError, 'sigma_rule');
   }

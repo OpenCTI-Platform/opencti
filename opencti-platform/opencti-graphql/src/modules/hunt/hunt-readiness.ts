@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { HUNT_PLATFORM_INTERNET, HUNT_SCHEDULE_MANUAL, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type BasicStoreEntityHunt } from './hunt-types';
-import { HUNT_CONFIG, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import { HUNT_CONFIG, huntSigmaRule, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
 import { validateHuntSchedule } from './hunt-schedule';
 import { huntLogicError, sigmaRuleErrors } from './hunt-validators';
 import { HUNT_MESSAGES, type HuntMessageValues, listNames, renderHuntMessage } from './hunt-messages';
@@ -52,8 +52,8 @@ const item = (key: ReadinessKey, status: ReadinessStatus, template: string, valu
 });
 
 const logicItems = (hunt: BasicStoreEntityHunt, iocSet: HuntIocSet | null): HuntReadinessItem[] => {
-  const sigmaErrors = sigmaRuleErrors(hunt.sigma_rule);
-  if (sigmaErrors.length > 0 && hunt.hunt_type !== HUNT_TYPE_INDICATORS && hunt.hunt_type !== HUNT_TYPE_INFRASTRUCTURE) {
+  const sigmaErrors = sigmaRuleErrors(huntSigmaRule(hunt));
+  if (sigmaErrors.length > 0) {
     return [item('logic', 'unmet', HUNT_MESSAGES.sigmaInvalid, { errors: sigmaErrors.join('; ') })];
   }
   const logicError = huntLogicError(hunt);
@@ -77,7 +77,7 @@ const logicItems = (hunt: BasicStoreEntityHunt, iocSet: HuntIocSet | null): Hunt
     return items;
   }
   const nativePlatforms = normalizeNativeQueries(hunt.native_queries).map((nativeQuery) => nativeQuery.platform);
-  if (hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE || !hunt.sigma_rule?.trim()) {
+  if (!huntSigmaRule(hunt)) {
     return [item('logic', 'met', HUNT_MESSAGES.nativeQueries, { platforms: listNames(nativePlatforms) })];
   }
   return [item('logic', 'met', HUNT_MESSAGES.sigmaValid)];
