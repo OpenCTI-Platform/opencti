@@ -572,6 +572,41 @@ describe('Knowledge curation actions', () => {
     expect(await storeLoadById(testContext, ADMIN_USER, removedRelation.id, RELATION_ATTRIBUTED_TO)).toBeDefined();
   });
 
+  it('should never remove the last attribution left once an attribution in conflict is deleted, and retire the proposal', async () => {
+    const campaign = track(await addCampaign(testContext, ADMIN_USER, { name: `${PREFIX} Resolved Campaign` }), ENTITY_TYPE_CAMPAIGN) as BasicStoreEntity;
+    const deletedActor = await createIntrusionSet(`${PREFIX} Attribution Deleted`);
+    const remainingActor = await createIntrusionSet(`${PREFIX} Attribution Remaining`);
+    const deletedRelation = await createRelation(testContext, ADMIN_USER, { fromId: campaign.id, toId: deletedActor.id, relationship_type: RELATION_ATTRIBUTED_TO });
+    const remainingRelation = await createRelation(testContext, ADMIN_USER, { fromId: campaign.id, toId: remainingActor.id, relationship_type: RELATION_ATTRIBUTED_TO });
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_CONTRADICTION,
+      detector: DETECTOR_CONTRADICTION,
+      subjects: [subjectOf(campaign), subjectOf(deletedActor), subjectOf(remainingActor)],
+      target_id: campaign.id,
+      recommended_action: ACTION_RESOLVE_ATTRIBUTION,
+      action_payload: {
+        relationships: [
+          { actor_id: deletedActor.id, relationship_id: deletedRelation.id },
+          { actor_id: remainingActor.id, relationship_id: remainingRelation.id },
+        ],
+      },
+      evidence: evidenceFor('attribution_conflict', 'The campaign is attributed to two distinct intrusion sets'),
+      confidence: 0.9,
+    });
+    await deleteElementById(testContext, ADMIN_USER, deletedRelation.id, RELATION_ATTRIBUTED_TO);
+
+    const keepDeleted = await queryAsAdmin({ query: ACCEPT_MUTATION, variables: { id, input: { action_payload: JSON.stringify({ keep_actor_id: deletedActor.id }) } } });
+    expect(keepDeleted.errors?.[0]?.message).toContain('The attribution to keep was deleted since the proposal was raised');
+    const keepRemaining = await queryAsAdmin({ query: ACCEPT_MUTATION, variables: { id, input: { action_payload: JSON.stringify({ keep_actor_id: remainingActor.id }) } } });
+    expect(keepRemaining.errors?.[0]?.message).toContain('so the contradiction is resolved');
+    expect(await storeLoadById(testContext, ADMIN_USER, remainingRelation.id, RELATION_ATTRIBUTED_TO)).toBeDefined();
+    expect((await loadProposal(id)).proposal_status).toBe('open');
+
+    // The deletion event names the relationship and its endpoints, through which the proposal is found and retired.
+    expect(await retireProposalsOfDeletedSubjects(testContext, [deletedRelation.id, campaign.id, deletedActor.id])).toBe(1);
+    expect(await loadProposal(id)).toBeNull();
+  });
+
   it('should carry the restrictions of the attributions in conflict, and never resolve one the user cannot read', async () => {
     const campaign = track(await addCampaign(testContext, ADMIN_USER, { name: `${PREFIX} Hidden Campaign` }), ENTITY_TYPE_CAMPAIGN) as BasicStoreEntity;
     const kept = await createIntrusionSet(`${PREFIX} Hidden Attribution Kept`);

@@ -72,11 +72,16 @@ export const reclassifiedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>):
   return [extension.id, extension.source_ref, extension.target_ref].filter((id): id is string => typeof id === 'string' && id.length > 0);
 }));
 
+/**
+ * The deleted elements. A deleted relationship also brings its endpoints: the proposals whose action names it (an
+ * attribution in conflict) are found through their subjects.
+ */
 export const deletedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>): string[] => R.uniq(streamEvents.flatMap((streamEvent) => {
   const event = streamEvent.data;
   if (event.type !== EVENT_TYPE_DELETE) return [];
-  const id = (event.data?.extensions?.[STIX_EXT_OCTI] as { id?: string } | undefined)?.id;
-  return id ? [id] : [];
+  const extension = event.data?.extensions?.[STIX_EXT_OCTI] as { id?: string; source_ref?: string; target_ref?: string } | undefined;
+  if (!extension?.id) return [];
+  return [extension.id, extension.source_ref, extension.target_ref].filter((id): id is string => typeof id === 'string' && id.length > 0);
 }));
 
 const refreshRestrictions = async (context: AuthContext, entityIds: string[]) => {

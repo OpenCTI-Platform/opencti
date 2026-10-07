@@ -38,4 +38,14 @@ describe('open proposals about deleted entities', () => {
     ];
     expect(proposalsOfMissingSubjects(open, new Set(['a', 'b'])).map((proposal) => proposal.internal_id)).toEqual(['one-deleted']);
   });
+
+  it('retires the proposals whose action names a deleted relationship, its subjects all there', () => {
+    const relationships = (...ids: string[]) => JSON.stringify({ relationships: ids.map((id, index) => ({ actor_id: `actor-${index}`, relationship_id: id })) });
+    const open = [
+      { internal_id: 'both-attributions', subject_ids: ['campaign', 'actor-0', 'actor-1'], action_payload: relationships('rel-0', 'rel-1') },
+      { internal_id: 'one-attribution-deleted', subject_ids: ['campaign', 'actor-0', 'actor-1'], action_payload: relationships('rel-0', 'rel-gone') },
+    ];
+    expect(proposalsOfMissingSubjects(open, new Set(['campaign', 'actor-0', 'actor-1', 'rel-0', 'rel-1'])).map((proposal) => proposal.internal_id))
+      .toEqual(['one-attribution-deleted']);
+  });
 });

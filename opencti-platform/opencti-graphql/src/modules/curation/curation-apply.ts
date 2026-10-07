@@ -314,6 +314,18 @@ const applyResolveAttribution = async (context: AuthContext, user: AuthUser, pro
   if (existing.some((relation) => !readableById.has(relation.internal_id))) {
     throw ForbiddenAccess('You cannot read every attribution in conflict: this contradiction is resolved by a user who can read them all');
   }
+  // The conflict is checked again so that resolving it never removes the last attribution left: the attribution to keep
+  // must still exist, and so must another one, unless the attempt that started this application removed it.
+  const existingIds = new Set(existing.flatMap((relation) => [relation.internal_id, relation.standard_id]));
+  const remaining = relationships.filter((relation) => existingIds.has(relation.relationship_id));
+  if (!remaining.some((relation) => relation.actor_id === keepActorId)) {
+    throw FunctionalError('The attribution to keep was deleted since the proposal was raised: reject the proposal', { proposal_id: proposal.internal_id });
+  }
+  if (!proposal.application_started_at && !remaining.some((relation) => relation.actor_id !== keepActorId)) {
+    throw FunctionalError('The other attributions were deleted since the proposal was raised, so the contradiction is resolved: reject the proposal', {
+      proposal_id: proposal.internal_id,
+    });
+  }
   const toDelete = relationships
     .filter((relation) => relation.actor_id !== keepActorId)
     .map((relation) => relation.relationship_id)

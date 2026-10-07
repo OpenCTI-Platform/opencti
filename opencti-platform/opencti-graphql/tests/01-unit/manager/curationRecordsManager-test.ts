@@ -99,6 +99,20 @@ describe('Curation records manager', () => {
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '10-0');
   });
 
+  it('brings the endpoints of a deleted relationship, whose proposals are found through them', async () => {
+    const deletion = {
+      id: '12-0',
+      event: 'delete',
+      data: {
+        type: 'delete',
+        data: { extensions: { [OCTI_EXTENSION]: { id: 'attributed-to-b', type: 'attributed-to', source_ref: 'campaign-b', target_ref: 'intrusion-set-b' } } },
+      },
+    } as unknown as SseEvent<DataEvent>;
+    expect(deletedEntityIds([deletion])).toEqual(['attributed-to-b', 'campaign-b', 'intrusion-set-b']);
+    await curationRecordsManagerStreamHandler([deletion], '12-0');
+    expect(retireProposalsOfDeletedSubjects).toHaveBeenCalledWith(expect.anything(), ['attributed-to-b', 'campaign-b', 'intrusion-set-b']);
+  });
+
   it('queues a deleted entity whose proposals could not be removed, and removes them at a later cycle', async () => {
     const deletion = {
       id: '11-0',

@@ -139,6 +139,8 @@ interface RotatingPage<T> {
 /**
  * The next page of a scan larger than one run, from where the previous scan stopped: the cursor goes back to the
  * start once the last page is read, so successive scans cover every matching element instead of the same window.
+ * The cursor moves on before the page is processed: a page whose processing fails is read again at the next rotation
+ * instead of blocking the pages after it at every scan.
  */
 const loadRotatingPage = async <T>(name: string, loadPage: (after: string | undefined) => Promise<RotatingPage<T>>) => {
   const stateKey = `${SCAN_ROTATION_STATE}${name}`;

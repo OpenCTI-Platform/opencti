@@ -370,23 +370,33 @@ const removeSupersededAliasProposals = async (context: AuthContext, current: Bas
   }
 };
 
-/** The open proposals to retire: they name a subject that no longer exists, and no acceptance has started writing. */
-export const proposalsOfMissingSubjects = (
-  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'subject_ids' | 'application_started_at'>>,
-  existingIds: Set<string>,
-) => open.filter((proposal) => !proposal.application_started_at && proposal.subject_ids.some((id) => !existingIds.has(id)));
+const proposalElementIds = (proposal: Pick<BasicStoreEntityCurationProposal, 'subject_ids' | 'action_payload'>) => [
+  ...proposal.subject_ids,
+  ...payloadRelationshipIds(proposal.action_payload),
+];
 
 /**
- * Remove the open proposals about deleted entities, whether curation is enabled or not: they could no longer be applied,
- * yet they would stay listed and counted. A subject restored since (an unmerge, the trash) keeps its proposals, and one
- * an acceptance started to apply stays, so that accepting it again records what was done.
+ * The open proposals to retire: they name a subject, or a relationship their action acts on, that no longer exists,
+ * and no acceptance has started writing.
+ */
+export const proposalsOfMissingSubjects = (
+  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'subject_ids' | 'action_payload' | 'application_started_at'>>,
+  existingIds: Set<string>,
+) => open.filter((proposal) => !proposal.application_started_at && proposalElementIds(proposal).some((id) => !existingIds.has(id)));
+
+/**
+ * Remove the open proposals about deleted elements, whether curation is enabled or not: they could no longer be applied
+ * as raised, yet they would stay listed and counted. A deleted relationship is named with its endpoints, through which
+ * the proposals whose action names it (an attribution in conflict) are found; a contradiction that still holds is
+ * raised again by the next scan. An element restored since (an unmerge, the trash) keeps its proposals, and one an
+ * acceptance started to apply stays, so that accepting it again records what was done.
  */
 export const retireProposalsOfDeletedSubjects = async (context: AuthContext, deletedIds: string[]) => {
   const open = await findOpenProposalsForSubjects(context, deletedIds);
   if (open.length === 0) return 0;
-  const subjectIds = R.uniq(open.flatMap((proposal) => proposal.subject_ids));
-  const existing = await internalFindByIds(context, SYSTEM_USER, subjectIds, { baseData: true }) as BasicStoreBase[];
-  const retired = proposalsOfMissingSubjects(open, new Set(existing.map((element) => element.internal_id)));
+  const elementIds = R.uniq(open.flatMap(proposalElementIds));
+  const existing = await internalFindByIds(context, SYSTEM_USER, elementIds, { baseData: true }) as BasicStoreBase[];
+  const retired = proposalsOfMissingSubjects(open, new Set(existing.flatMap((element) => [element.internal_id, element.standard_id])));
   let count = 0;
   for (let index = 0; index < retired.length; index += 1) {
     const { internal_id: id } = retired[index];
