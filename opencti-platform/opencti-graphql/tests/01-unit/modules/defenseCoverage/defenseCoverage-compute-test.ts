@@ -334,6 +334,8 @@ describe('Defense coverage stream impact', () => {
     expect(collectDefenseImpact([event('merge', threat)]).overlayChanged).toEqual(true);
     expect(collectDefenseImpact([updateWith('/object_marking_refs/0')]).overlayChanged).toEqual(true);
     expect(collectDefenseImpact([updateWith('/extensions/extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba/granted_refs/0')]).overlayChanged).toEqual(true);
+    // A revoked threat leaves every scope, a restored one comes back
+    expect(collectDefenseImpact([updateWith('/revoked')]).overlayChanged).toEqual(true);
     // A routine update of a threat (description, aliases) keeps the overlays
     expect(collectDefenseImpact([updateWith('/description')]).overlayChanged).toEqual(false);
   });

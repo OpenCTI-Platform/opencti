@@ -74,11 +74,13 @@ const loadSnapshot = async (context: AuthContext, version: string): Promise<Defe
     withoutRels: false,
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] },
   } as never);
-  const subTechniques = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_SUBTECHNIQUE_OF, {
+  // A revoked sub-technique relationship no longer folds the sub-technique into its parent
+  const subTechniques = (await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_SUBTECHNIQUE_OF, {
     fromTypes: [ENTITY_TYPE_ATTACK_PATTERN],
     toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
     baseData: true,
-  });
+    baseFields: ['revoked'],
+  })).filter((relation) => !relation.revoked);
   const parentBySub = new Map(subTechniques.map((s) => [s.fromId, { id: s.toId, rel: s.internal_id }]));
   const phases = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
   const techniques: DefenseTechniqueEntry[] = attackPatterns.map((ap) => {
@@ -223,11 +225,12 @@ const loadThreatUsages = async (context: AuthContext, user: AuthUser, threatIds?
     fromTypes: DEFENSE_THREAT_TYPES,
     toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
     baseData: true,
-    baseFields: ['confidence'],
+    baseFields: ['confidence', 'revoked'],
     withInferences: true,
   };
+  // A revoked usage is withdrawn knowledge: it no longer puts the technique in the overlay
   if (!threatIds) {
-    return fullRelationsList<BasicStoreRelation>(context, user, RELATION_USES, args);
+    return (await fullRelationsList<BasicStoreRelation>(context, user, RELATION_USES, args)).filter((relation) => !relation.revoked);
   }
   const relations: BasicStoreRelation[] = [];
   const chunks = R.splitEvery(IDS_CHUNK_SIZE, threatIds);
@@ -235,13 +238,14 @@ const loadThreatUsages = async (context: AuthContext, user: AuthUser, threatIds?
     const found = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_USES, { ...args, fromId: chunks[index] });
     relations.push(...found);
   }
-  return relations;
+  return relations.filter((relation) => !relation.revoked);
 };
 
+// A revoked threat leaves every scope: the SELECTED and FILTERED scopes drop it from their threats
 const resolveScopeThreatIds = async (context: AuthContext, user: AuthUser, scope: DefenseThreatScope): Promise<string[] | undefined> => {
   if (scope.mode === 'SELECTED') {
-    const found = await internalFindByIds<BasicStoreEntity>(context, user, scope.threatIds ?? [], { type: DEFENSE_THREAT_TYPES, baseData: true }) as BasicStoreEntity[];
-    return found.map((f) => f.internal_id);
+    const found = await internalFindByIds<BasicStoreEntity>(context, user, scope.threatIds ?? [], { type: DEFENSE_THREAT_TYPES, baseData: true, baseFields: ['revoked'] }) as BasicStoreEntity[];
+    return found.filter((f) => !f.revoked).map((f) => f.internal_id);
   }
   if (scope.mode === 'FILTERED') {
     // Every matching threat counts: the listing is paginated to the end, as the uses relationships of the
@@ -249,10 +253,20 @@ const resolveScopeThreatIds = async (context: AuthContext, user: AuthUser, scope
     const threats = await fullEntitiesList<BasicStoreEntity>(context, user, DEFENSE_THREAT_TYPES, {
       filters: scope.filters as never,
       baseData: true,
+      baseFields: ['revoked'],
     } as never);
-    return threats.map((t) => t.internal_id);
+    return threats.filter((t) => !t.revoked).map((t) => t.internal_id);
   }
   return undefined;
+};
+
+// The ALL scope reads every usage at once: the revoked threats it leaves out are listed to drop their usages and count
+const loadRevokedThreatIds = async (context: AuthContext, user: AuthUser) => {
+  const revoked = await fullEntitiesList<BasicStoreEntity>(context, user, DEFENSE_THREAT_TYPES, {
+    filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['true'] }], filterGroups: [] },
+    baseData: true,
+  } as never);
+  return new Set(revoked.map((threat) => threat.internal_id));
 };
 
 const computeOverlay = async (context: AuthContext, user: AuthUser, scope: DefenseThreatScope): Promise<DefenseThreatOverlay> => {
@@ -261,13 +275,16 @@ const computeOverlay = async (context: AuthContext, user: AuthUser, scope: Defen
     return { computed_at: computedAt, threats_count: 0, usages: new Map() };
   }
   const threatIds = await resolveScopeThreatIds(context, user, scope);
-  // The ALL scope holds every threat the reader can access, those that use no technique yet included, as the other
-  // scopes count every threat they match
-  const threatsCount = threatIds ? threatIds.length : await elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: DEFENSE_THREAT_TYPES });
+  const revokedIds = threatIds ? new Set<string>() : await loadRevokedThreatIds(context, user);
+  // The ALL scope holds every threat the reader can access that is not revoked, those that use no technique yet
+  // included, as the other scopes count every threat they match
+  const threatsCount = threatIds
+    ? threatIds.length
+    : Math.max(0, await elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: DEFENSE_THREAT_TYPES }) - revokedIds.size);
   if (threatsCount === 0) {
     return { computed_at: computedAt, threats_count: 0, usages: new Map() };
   }
-  const relations = await loadThreatUsages(context, user, threatIds);
+  const relations = (await loadThreatUsages(context, user, threatIds)).filter((relation) => !revokedIds.has(relation.fromId));
   const usages = new Map<string, DefenseThreatUsage[]>();
   relations.forEach((relation) => {
     const usage: DefenseThreatUsage = {

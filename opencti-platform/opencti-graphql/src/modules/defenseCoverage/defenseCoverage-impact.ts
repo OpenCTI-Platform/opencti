@@ -116,7 +116,8 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     }
     if (DEFENSE_THREAT_TYPES.includes(extension.type)) {
       impact.threatsChanged = true;
-      if (eventType !== EVENT_TYPE_UPDATE || isAccessUpdate(event)) {
+      // A revoked threat leaves every scope, a restored one comes back
+      if (eventType !== EVENT_TYPE_UPDATE || isAccessUpdate(event) || isPatchOf(event, REVOKED_PATCH_PATH)) {
         impact.overlayChanged = true;
         return;
       }

@@ -81,6 +81,38 @@ describe('Defense coverage reader caches', () => {
     expect(overlay.usages.get('attack-pattern-1')).toEqual([{ threat_id: 'intrusion-set-1', relationship_id: 'uses-1', confidence: 80 }]);
   });
 
+  it('should not fold a sub-technique into its parent through a revoked relationship', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'sub-1' }, { internal_id: 'sub-2' }, { internal_id: 'parent' }] as never);
+    vi.mocked(fullRelationsList).mockResolvedValueOnce([
+      { internal_id: 'rel-1', fromId: 'sub-1', toId: 'parent' },
+      { internal_id: 'rel-2', fromId: 'sub-2', toId: 'parent', revoked: true },
+    ] as never);
+    const snapshot = await getDefenseSnapshot(draftContext);
+    expect(snapshot.techniquesById.get('sub-1')?.parent_id).toEqual('parent');
+    expect(snapshot.techniquesById.get('sub-2')?.parent_id).toBeUndefined();
+  });
+
+  it('should leave the revoked threats and usages out of the ALL scope', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'intrusion-set-revoked' }] as never);
+    vi.mocked(elCount).mockResolvedValueOnce(3);
+    vi.mocked(fullRelationsList).mockResolvedValueOnce([
+      { internal_id: 'uses-1', fromId: 'intrusion-set-1', toId: 'attack-pattern-1', confidence: 80 },
+      { internal_id: 'uses-2', fromId: 'intrusion-set-revoked', toId: 'attack-pattern-1', confidence: 80 },
+      { internal_id: 'uses-3', fromId: 'intrusion-set-1', toId: 'attack-pattern-2', confidence: 80, revoked: true },
+    ] as never);
+    const overlay = await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
+    expect(overlay.threats_count).toEqual(2);
+    expect(overlay.usages.get('attack-pattern-1')).toEqual([{ threat_id: 'intrusion-set-1', relationship_id: 'uses-1', confidence: 80 }]);
+    expect(overlay.usages.has('attack-pattern-2')).toEqual(false);
+  });
+
+  it('should leave a revoked threat out of the selected scope', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'intrusion-set-1' }, { internal_id: 'intrusion-set-revoked', revoked: true }] as never);
+    const overlay = await getThreatOverlay(draftContext, reader, { mode: 'SELECTED', threatIds: ['intrusion-set-1', 'intrusion-set-revoked'] } as never);
+    expect(overlay.threats_count).toEqual(1);
+    expect(vi.mocked(fullRelationsList).mock.calls[0][3]).toEqual(expect.objectContaining({ fromId: ['intrusion-set-1'] }));
+  });
+
   it('should not load any usage when the reader can access no threat in the ALL scope', async () => {
     vi.mocked(elCount).mockResolvedValueOnce(0);
     const overlay = await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
