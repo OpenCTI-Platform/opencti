@@ -242,12 +242,14 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
             <TableBody>
               {gaps.map((gap) => {
                 const title = gap.x_mitre_id ? `[${gap.x_mitre_id}] ${gap.attack_pattern_name}` : gap.attack_pattern_name;
+                const platformLabel = gap.platform?.name ?? t_i18n('All platforms');
                 return (
                   <TableRow key={gap.id} hover selected={selectedIds.has(gap.id)} data-testid={`defense-gap-${gap.attack_pattern_id}-${gap.platform_id}`}>
                     {canValidate && (
                       <TableCell padding="checkbox">
+                        {/* A technique has a row per platform: the platform keeps the names of its checkboxes apart */}
                         <Checkbox
-                          aria-label={t_i18n('Select {name}', { values: { name: title } })}
+                          aria-label={t_i18n('Select {name}', { values: { name: `${title} - ${platformLabel}` } })}
                           checked={selectedIds.has(gap.id)}
                           onCheckedChange={(checked) => toggle(gap.id, checked === true)}
                         />
@@ -263,7 +265,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                         {title}
                       </Box>
                     </TableCell>
-                    <TableCell>{gap.platform?.name ?? t_i18n('All platforms')}</TableCell>
+                    <TableCell>{platformLabel}</TableCell>
                     <TableCell>
                       <Chip label={defenseLevelLabel(t_i18n, gap.level)} color={defenseLevelColor(theme, gap.level)} />
                     </TableCell>

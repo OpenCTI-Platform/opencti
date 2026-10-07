@@ -9,7 +9,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DefenseGapsLines, { defenseGapsLinesQuery } from './DefenseGapsLines';
 import DefenseTechniqueDrawer from './DefenseTechniqueDrawer';
 import { DefenseGapsLinesPaginationQuery } from './__generated__/DefenseGapsLinesPaginationQuery.graphql';
-import { DEFAULT_DEFENSE_SCOPE, DEFENSE_LEVEL_DETECTION_AVAILABLE, DEFENSE_LEVEL_DETECTION_DEPLOYED } from './defenseMatrix-utils';
+import { DEFAULT_DEFENSE_SCOPE, DEFENSE_AGGREGATE_PLATFORM, DEFENSE_LEVEL_DETECTION_AVAILABLE, DEFENSE_LEVEL_DETECTION_DEPLOYED } from './defenseMatrix-utils';
 
 const knowledgeEditor = createMockUserContext({
   me: { name: 'editor', user_email: 'editor@opencti.io', capabilities: [{ name: KNOWLEDGE_KNUPDATE }] },
@@ -29,22 +29,33 @@ const GapsLines = () => {
 
 const waitForQuery = (relayEnv: RelayMockEnvironment) => waitFor(() => expect(relayEnv.mock.getAllOperations().length).toBeGreaterThan(0));
 
-const renderGapsLines = async (validationAvailable: boolean) => {
+type GapOverride = (index: number) => Record<string, unknown>;
+
+const renderGapsLines = async (validationAvailable: boolean, gapsCount = 1, gapOverride: GapOverride = () => ({})) => {
   const { relayEnv } = testRender(<GapsLines />, { userContext: knowledgeEditor });
   await waitForQuery(relayEnv);
   await act(async () => {
     relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       DefenseCoverageStatus: () => ({ validation_available: validationAvailable }),
-      DefenseGap: () => ({
-        attack_pattern_id: 'attack-pattern-1',
-        platform_id: 'platform-1',
-        level: 0,
-        detection: 'none',
-        validated: 'none',
-        recommended_action: 'add_telemetry',
-        threats_count: 0,
-        last_validation_requested_at: null,
-      }),
+      DefenseGapConnection: () => ({ edges: Array.from({ length: gapsCount }, () => ({})) }),
+      // The path of a gap ends with the index of its edge, then node
+      DefenseGap: ({ path }) => {
+        const index = path ? Number(path[path.length - 2]) : 0;
+        return {
+          id: `gap-${index}`,
+          attack_pattern_id: 'attack-pattern-1',
+          x_mitre_id: 'T1059',
+          attack_pattern_name: 'Command and Scripting Interpreter',
+          platform_id: 'platform-1',
+          level: 0,
+          detection: 'none',
+          validated: 'none',
+          recommended_action: 'add_telemetry',
+          threats_count: 0,
+          last_validation_requested_at: null,
+          ...gapOverride(index),
+        };
+      },
     }));
   });
   await screen.findByTestId('defense-gaps-table');
@@ -79,6 +90,14 @@ describe('Defense validation actions', () => {
     await renderGapsLines(true);
     expect(screen.getByTestId('defense-gaps-validate')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Select all' })).toBeInTheDocument();
+  });
+
+  it('should name the platform in the checkbox of every gap, so the rows of one technique stay distinct', async () => {
+    await renderGapsLines(true, 2, (index) => (index === 0
+      ? { platform_id: 'platform-1', platform: { id: 'platform-1', name: 'Windows EDR', entity_type: 'Security-Platform' } }
+      : { platform_id: DEFENSE_AGGREGATE_PLATFORM, platform: null }));
+    expect(screen.getByRole('checkbox', { name: 'Select [T1059] Command and Scripting Interpreter - Windows EDR' })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Select [T1059] Command and Scripting Interpreter - All platforms' })).toBeInTheDocument();
   });
 
   it('should hide the gap selection and the validation without an OpenAEV connector', async () => {
