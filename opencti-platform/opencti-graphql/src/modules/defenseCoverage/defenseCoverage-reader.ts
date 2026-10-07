@@ -144,8 +144,9 @@ const sortedIds = (elements: Array<{ internal_id: string }> | undefined) => (ele
 
 /**
  * Fingerprint of everything deciding what a reader may access: identity, groups, roles, organizations, capabilities,
- * allowed markings and the platform organization. Granting or revoking any of them changes the fingerprint, so a
- * read cached under the previous grants is never served again.
+ * allowed markings, the service account flag (it bypasses the authorized members), the linked individual and the
+ * platform organization (both decide the organization restrictions). Granting or revoking any of them changes the
+ * fingerprint, so a read cached under the previous grants is never served again.
  */
 export const computeReaderAccessFingerprint = async (context: AuthContext, user: AuthUser): Promise<string> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -156,6 +157,9 @@ export const computeReaderAccessFingerprint = async (context: AuthContext, user:
     sortedIds(user.organizations),
     (user.capabilities ?? []).map((c) => c.name).sort(),
     sortedIds(user.allowed_marking),
+    user.user_service_account === true,
+    user.individual_id ?? null,
+    context.user_inside_platform_organization === true,
     settings?.platform_organization ?? null,
   ]);
   return createHash('sha256').update(material).digest('hex');

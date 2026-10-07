@@ -134,4 +134,19 @@ describe('Defense coverage reader caches', () => {
     expect(vi.mocked(fullEntitiesList)).toHaveBeenCalledTimes(2);
     expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(1);
   });
+
+  it.each([
+    ['the service account flag', { user: { user_service_account: true } }],
+    ['the linked individual', { user: { individual_id: 'individual-1' } }],
+    ['the membership of the platform organization', { context: { user_inside_platform_organization: true } }],
+  ])('should evaluate the access of a reader again when %s changes', async (_, change: { user?: object; context?: object }) => {
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'attack-pattern-1', name: 'Phishing' }] as never);
+    const snapshot = await getDefenseSnapshot(draftContext);
+    await getAccessPredicate(draftContext, reader, snapshot);
+    await getAccessPredicate(draftContext, reader, snapshot);
+    expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(1);
+    const changedReader = { ...reader, ...change.user } as AuthUser;
+    await getAccessPredicate({ ...draftContext, ...change.context } as AuthContext, changedReader, snapshot);
+    expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(2);
+  });
 });
