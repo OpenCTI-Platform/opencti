@@ -3,15 +3,9 @@ import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
+import { toFrontendLogEntry } from '../config/frontend-log';
 
 const MAX_FRONTEND_LOGS_PER_CALL = 100;
-
-const FRONTEND_LOG_LEVELS = {
-  DEBUG: 'debug',
-  INFO: 'info',
-  WARN: 'warn',
-  ERROR: 'error',
-};
 
 const logResolvers = {
   Query: {
@@ -47,14 +41,8 @@ const logResolvers = {
     },
     frontendLogsAdd: (_, { logs }, __) => {
       logs.slice(0, MAX_FRONTEND_LOGS_PER_CALL).forEach((log) => {
-        const { timestamp, level, message, eventName, data, exception } = log;
-        const logLevel = FRONTEND_LOG_LEVELS[level] ?? 'error';
-        logFrontend[logLevel](message, {
-          client_timestamp: timestamp,
-          event_name: eventName,
-          data,
-          exception,
-        });
+        const { level, message, meta } = toFrontendLogEntry(log);
+        logFrontend[level](message, meta);
       });
       return true;
     },

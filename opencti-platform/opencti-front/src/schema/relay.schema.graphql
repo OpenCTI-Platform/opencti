@@ -574,6 +574,28 @@ type Log {
   user_metadata: JSON
 }
 
+enum AppModule {
+  core
+  catalog
+  connector
+}
+
+enum ErrorOrigin {
+  code
+  infra
+  input
+}
+
+enum ErrorDependency {
+  elasticsearch
+  rabbitmq
+  redis
+  s3
+  remote_http
+  api
+  assets
+}
+
 enum FrontendLogLevel {
   DEBUG
   INFO
@@ -594,6 +616,10 @@ input FrontendLogInput {
   eventName: String!
   data: JSON
   exception: FrontendLogExceptionInput
+  origin: ErrorOrigin
+  module: AppModule
+  entryModule: AppModule
+  dependency: ErrorDependency
 }
 
 type AttributesMap {

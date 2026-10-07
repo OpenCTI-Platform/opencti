@@ -542,6 +542,28 @@ type Log {
   user_metadata: JSON
 }
 
+############## Error classification (RFC 0006)
+# Closed enums shared with the UI. They mirror APP_MODULE and DEPENDENCIES in config/error-origin.ts.
+enum AppModule {
+  core
+  catalog
+  connector
+}
+enum ErrorOrigin {
+  code
+  infra
+  input
+}
+enum ErrorDependency {
+  elasticsearch
+  rabbitmq
+  redis
+  s3
+  remote_http
+  api
+  assets
+}
+
 ############## Frontend logs
 enum FrontendLogLevel {
   DEBUG
@@ -561,6 +583,11 @@ input FrontendLogInput {
   eventName: String!
   data: JSON
   exception: FrontendLogExceptionInput
+  # RFC 0006: when set, the backend derives the level from the origin (policy A).
+  origin: ErrorOrigin
+  module: AppModule
+  entryModule: AppModule
+  dependency: ErrorDependency
 }
 
 ############## Attributes

@@ -17,7 +17,8 @@ export type AppModule = typeof APP_MODULE[keyof typeof APP_MODULE];
 
 // region dependencies
 // The services outside the process. `remote_http`: a remote endpoint reached over HTTP.
-export const DEPENDENCIES = ['elasticsearch', 'rabbitmq', 'redis', 's3', 'remote_http'] as const;
+// `api` and `assets` are the browser's: the platform API and the UI's own static files.
+export const DEPENDENCIES = ['elasticsearch', 'rabbitmq', 'redis', 's3', 'remote_http', 'api', 'assets'] as const;
 export type Dependency = typeof DEPENDENCIES[number];
 // endregion
 
@@ -136,7 +137,8 @@ export const resolveErrorModule = (e: unknown): AppModule | undefined => {
 // endregion
 
 // region origin
-export type ErrorOrigin = 'code' | 'infra' | 'input';
+export const ERROR_ORIGINS = ['code', 'infra', 'input'] as const;
+export type ErrorOrigin = typeof ERROR_ORIGINS[number];
 
 // The codes the GraphQL boundary already logged below ERROR before this classification.
 // Races (ALREADY_DELETED_ERROR) and locks stay here until RFC 0006 open questions 6 and 7 are settled.

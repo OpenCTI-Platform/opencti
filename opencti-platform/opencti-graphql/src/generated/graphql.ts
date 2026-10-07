@@ -688,6 +688,12 @@ export type AppMemory = {
   used_heap_size?: Maybe<Scalars['Float']['output']>;
 };
 
+export enum AppModule {
+  Catalog = 'catalog',
+  Connector = 'connector',
+  Core = 'core'
+}
+
 export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Artifact';
   cases?: Maybe<CaseConnection>;
@@ -8954,6 +8960,22 @@ export enum EntitySettingsOrdering {
   TargetType = 'target_type'
 }
 
+export enum ErrorDependency {
+  Api = 'api',
+  Assets = 'assets',
+  Elasticsearch = 'elasticsearch',
+  Rabbitmq = 'rabbitmq',
+  Redis = 'redis',
+  RemoteHttp = 'remote_http',
+  S3 = 's3'
+}
+
+export enum ErrorOrigin {
+  Code = 'code',
+  Infra = 'infra',
+  Input = 'input'
+}
+
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -10222,10 +10244,14 @@ export type FrontendLogExceptionInput = {
 
 export type FrontendLogInput = {
   data?: InputMaybe<Scalars['JSON']['input']>;
+  dependency?: InputMaybe<ErrorDependency>;
+  entryModule?: InputMaybe<AppModule>;
   eventName: Scalars['String']['input'];
   exception?: InputMaybe<FrontendLogExceptionInput>;
   level: FrontendLogLevel;
   message: Scalars['String']['input'];
+  module?: InputMaybe<AppModule>;
+  origin?: InputMaybe<ErrorOrigin>;
   timestamp: Scalars['DateTime']['input'];
 };
 
@@ -40610,6 +40636,7 @@ export type ResolversTypes = ResolversObject<{
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
   AppInfo: ResolverTypeWrapper<AppInfo>;
   AppMemory: ResolverTypeWrapper<AppMemory>;
+  AppModule: AppModule;
   Artifact: ResolverTypeWrapper<Omit<Artifact, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ArtifactAddInput: ArtifactAddInput;
   AskSendOtpInput: AskSendOtpInput;
@@ -40925,6 +40952,8 @@ export type ResolversTypes = ResolversObject<{
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
   EntitySettingsOrdering: EntitySettingsOrdering;
+  ErrorDependency: ErrorDependency;
+  ErrorOrigin: ErrorOrigin;
   Event: ResolverTypeWrapper<BasicStoreEntityEvent>;
   EventAddInput: EventAddInput;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
