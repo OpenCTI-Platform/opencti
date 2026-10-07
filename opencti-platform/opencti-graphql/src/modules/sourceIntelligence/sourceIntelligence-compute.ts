@@ -560,6 +560,19 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
   };
   // Relationships, containers and PIR links created after the computation time are counted by the streaming increments only
   const createdBeforeRun = { range: { created_at: { lte: new Date(run.asOf).toISOString() } } };
+  // The negative flag of a sighting only has its current value: a past day of the history backfill counts the
+  // sightings not updated since that day (see currentStateKnownAt), never one whose flag may have changed later
+  const sightingStateKnown = run.historical
+    ? [{
+        bool: {
+          should: [
+            { range: { updated_at: { lte: new Date(run.asOf).toISOString() } } },
+            { bool: { must_not: [{ exists: { field: 'updated_at' } }] } },
+          ],
+          minimum_should_match: 1,
+        },
+      }]
+    : [];
   // A relationship is PIR relevant through the entities it connects: they are looked up with the objects of the page
   const pirIds = run.pirRelevance
     ? [...new Set([...ids, ...docs.flatMap((doc) => (doc.connections ?? []).map((connection) => connection.internal_id))])]
@@ -580,7 +593,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
     : Promise.resolve(null);
   const [sightingsData, relationshipsData, containersData, pirData] = await Promise.all([
     rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
-      query: { bool: { filter: [createdBeforeRun, { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'from') } } } }] } },
+      query: { bool: { filter: [createdBeforeRun, ...sightingStateKnown, { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'from') } } } }] } },
       aggs: sightingsAggs,
     }),
     rawSearch(context, [READ_INDEX_STIX_CORE_RELATIONSHIPS], {
