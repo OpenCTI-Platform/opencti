@@ -135,6 +135,31 @@ describe('Curation records manager', () => {
     expect(retireProposalsOfDeletedSubjects).toHaveBeenCalledWith(expect.anything(), ['attributed-to-b', 'campaign-b', 'intrusion-set-b']);
   });
 
+  it('removes the open proposals about the entities a merge merged away, and refreshes the merged entity it reclassified', async () => {
+    const merge = (eventId: string, path: string) => ({
+      id: eventId,
+      event: 'merge',
+      data: {
+        type: 'merge',
+        data: { name: 'malware-m', extensions: { [OCTI_EXTENSION]: { id: 'malware-m', type: 'Malware' } } },
+        context: {
+          patch: [{ op: 'add', path, value: ['marking-id'] }],
+          sources: [
+            { name: 'malware-n', extensions: { [OCTI_EXTENSION]: { id: 'malware-n', type: 'Malware' } } },
+            { name: 'malware-o', extensions: { [OCTI_EXTENSION]: { id: 'malware-o', type: 'Malware' } } },
+          ],
+        },
+      },
+    }) as unknown as SseEvent<DataEvent>;
+    expect(deletedEntityIds([merge('13-0', '/description')])).toEqual(['malware-n', 'malware-o']);
+    expect(reclassifiedEntityIds([merge('13-0', '/description')])).toEqual([]);
+    await curationRecordsManagerStreamHandler([merge('14-0', '/object_marking_refs/0')], '14-0');
+    expect(retireProposalsOfDeletedSubjects).toHaveBeenCalledWith(expect.anything(), ['malware-n', 'malware-o']);
+    expect(refreshMergeRecordRestrictions).toHaveBeenCalledWith(expect.anything(), ['malware-m']);
+    expect(refreshProposalRestrictions).toHaveBeenCalledWith(expect.anything(), ['malware-m']);
+    expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '14-0');
+  });
+
   it('queues a deleted entity whose proposals could not be removed, and removes them at a later cycle', async () => {
     const deletion = {
       id: '11-0',

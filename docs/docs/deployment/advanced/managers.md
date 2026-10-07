@@ -98,7 +98,7 @@ More information can be found [here](../../usage/knowledge-curation.md).
 
 ## Curation records manager
 
-The curation records manager keeps what knowledge curation stores consistent, whether the curation manager runs or not: it completes the merge records an interrupted merge left pending, closes once a day the merge records whose retention window is over, and gives the merge records and the open curation proposals the new markings and organization sharing of an entity when the entity is reclassified, and removes the open curation proposals about an entity when the entity is deleted. Disabling it on every node leaves the merges recorded but stops this upkeep.
+The curation records manager keeps what knowledge curation stores consistent, whether the curation manager runs or not: it completes the merge records an interrupted merge left pending, closes once a day the merge records whose retention window is over, and gives the merge records and the open curation proposals the new markings and organization sharing of an entity when the entity is reclassified (a merge included), and removes the open curation proposals about an entity when the entity is deleted or merged into another one. Disabling it on every node leaves the merges recorded but stops this upkeep.
 
 More information can be found [here](../../usage/knowledge-curation.md#reversible-merges-and-unmerge).
 

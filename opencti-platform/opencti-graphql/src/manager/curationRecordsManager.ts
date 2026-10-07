@@ -3,9 +3,9 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { CURATION_MANAGER_USER, executionContext } from '../utils/access';
 import type { AuthContext } from '../types/user';
-import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
+import type { DataEvent, MergeEvent, SseEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/utils';
 import {
   redisCurationClearStreamFailures,
   redisCurationCompleteRestrictionRefresh,
@@ -57,12 +57,13 @@ export const curationRecordsManagerCronHandler = async () => {
 };
 
 /**
- * The elements whose markings or organization sharing an event changes. A reclassified relationship also brings its
- * endpoints: the proposals whose action names it (an attribution in conflict) are found through their subjects.
+ * The elements whose markings or organization sharing an event changes, a merge giving them to its merged entity. A
+ * reclassified relationship also brings its endpoints: the proposals whose action names it (an attribution in conflict)
+ * are found through their subjects.
  */
 export const reclassifiedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>): string[] => R.uniq(streamEvents.flatMap((streamEvent) => {
-  const event = streamEvent.data as UpdateEvent;
-  if (event.type !== EVENT_TYPE_UPDATE) return [];
+  const event = streamEvent.data as UpdateEvent | MergeEvent;
+  if (event.type !== EVENT_TYPE_UPDATE && event.type !== EVENT_TYPE_MERGE) return [];
   const extension = event.data?.extensions?.[STIX_EXT_OCTI] as { id?: string; source_ref?: string; target_ref?: string } | undefined;
   const reclassified = (event.context?.patch ?? []).some((operation: any) => typeof operation.path === 'string'
     && (operation.path.startsWith('/object_marking_refs') || operation.path.includes('/granted_refs')));
@@ -71,11 +72,17 @@ export const reclassifiedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>):
 }));
 
 /**
- * The deleted elements. A deleted relationship also brings its endpoints: the proposals whose action names it (an
- * attribution in conflict) are found through their subjects.
+ * The deleted elements, and the entities a merge merged away, for which it emits no deletion. A deleted relationship
+ * also brings its endpoints: the proposals whose action names it (an attribution in conflict) are found through their
+ * subjects.
  */
 export const deletedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>): string[] => R.uniq(streamEvents.flatMap((streamEvent) => {
   const event = streamEvent.data;
+  if (event.type === EVENT_TYPE_MERGE) {
+    return ((event as MergeEvent).context?.sources ?? [])
+      .map((source) => (source.extensions?.[STIX_EXT_OCTI] as { id?: string } | undefined)?.id)
+      .filter((id): id is string => typeof id === 'string' && id.length > 0);
+  }
   if (event.type !== EVENT_TYPE_DELETE) return [];
   const extension = event.data?.extensions?.[STIX_EXT_OCTI] as { id?: string; source_ref?: string; target_ref?: string } | undefined;
   if (!extension?.id) return [];
