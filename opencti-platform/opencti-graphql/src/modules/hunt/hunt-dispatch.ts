@@ -424,8 +424,9 @@ export const dispatchHuntRun = async (
     logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector executes against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
     return false;
   }
-  // Reserved and published under the dispatch lock, which a registration of the connector takes to bind it: the binding
-  // read under the lock still holds when the message is published
+  // Reserved and published under the dispatch lock, which a registration of the connector takes to bind it: the
+  // registration read under the lock (its liveness, binding, limits and query contract) still holds when the message is
+  // published
   const workId = await withConnectorDispatchLock(connector.internal_id, async () => {
     const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
     if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
@@ -433,17 +434,21 @@ export const dispatchHuntRun = async (
       return null;
     }
     const bound = (await listHuntConnectors(context, false)).find((candidate) => candidate.internal_id === connector.internal_id);
-    if (!bound || !isHuntConnectorBoundToRun(bound, current)) {
+    if (!bound || bound.active !== true) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, connector is not alive', { runId: run.internal_id, connectorId: run.connector_id });
+      return null;
+    }
+    if (!isHuntConnectorBoundToRun(bound, current)) {
       logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector was registered against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
       return null;
     }
-    const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
+    const budget = await checkConnectorBudget(context, bound, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
     if (!budget.canDispatch) {
       logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
       return null;
     }
     await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
-    return publishHuntRun(context, run, hunt, connector, current);
+    return publishHuntRun(context, run, hunt, bound, current);
   });
   if (!workId) {
     return false;

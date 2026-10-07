@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { patchAttribute } from '../../../../src/database/middleware';
+import { elCount } from '../../../../src/database/engine';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun } from '../../../../src/modules/hunt/hunt-dispatch';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
@@ -21,6 +22,16 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
   patchAttribute: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/engine')>(),
+  elCount: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/engine')>(),
+  elCount: vi.fn(async () => 0),
 }));
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
@@ -75,6 +86,8 @@ describe('Hunt connectors and their security platforms', () => {
     vi.mocked(patchAttribute).mockReset();
     vi.mocked(addSecurityPlatform).mockReset();
     vi.mocked(withHuntLock).mockClear();
+    vi.mocked(elCount).mockClear();
+    vi.mocked(elCount).mockResolvedValue(0 as never);
   });
 
   it('should list the connectors of the internet and of the security platforms the user can read only', async () => {
@@ -126,6 +139,35 @@ describe('Hunt connectors and their security platforms', () => {
     });
     expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
     expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-splunk']);
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should hold a run to the limits its connector registered while the dispatch lock was held', async () => {
+    const run = { internal_id: 'run-1', hunt_id: 'hunt-1', connector_id: SPLUNK_PROD.internal_id, security_platform_id: 'platform-prod', hunt_run_status: 'queued', hunt_run_mode: 'execute' };
+    serving([SPLUNK_PROD]);
+    vi.mocked(internalFindByIds).mockResolvedValue([run] as never);
+    // One run of the connector is already dispatched, within the default limit of two
+    vi.mocked(elCount).mockResolvedValue(1 as never);
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      // The registration against the same platform held the lock first and lowered the limit to one run at a time
+      serving([{ ...SPLUNK_PROD, hunt_max_concurrent_runs: 1 }]);
+      return action();
+    });
+    expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
+    expect(elCount).toHaveBeenCalledTimes(1);
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should keep a run queued when its connector stopped while the dispatch lock was awaited', async () => {
+    const run = { internal_id: 'run-1', hunt_id: 'hunt-1', connector_id: SPLUNK_PROD.internal_id, security_platform_id: 'platform-prod', hunt_run_status: 'queued', hunt_run_mode: 'execute' };
+    serving([SPLUNK_PROD]);
+    vi.mocked(internalFindByIds).mockResolvedValue([run] as never);
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      serving([{ ...SPLUNK_PROD, updated_at: '2026-01-01T00:00:00.000Z' }]);
+      return action();
+    });
+    expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
+    expect(elCount).not.toHaveBeenCalled();
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
