@@ -143,6 +143,10 @@ export const buildDashboardVariable = (
   if (isDuplicatedName) throw FunctionalError('A dashboard variable with this name already exists', { name });
   const type = input.type as DashboardVariableTypeName;
   if (current && current.type !== type) throw FunctionalError('The type of a dashboard variable cannot be changed');
+  // A value is never resolved further than one level: a token-shaped value would leave a token in the filter.
+  if ([input.defaultValue, ...(input.restriction?.values ?? [])].some((value) => value && containsDashboardVariableToken(value))) {
+    throw FunctionalError('A variable value cannot reference another variable');
+  }
   const typeSpecificFields = buildTypeSpecificFields(type, input);
   const restriction = buildRestriction(type, input);
   const defaultValue = buildDefaultValue(type, input, restriction, now);

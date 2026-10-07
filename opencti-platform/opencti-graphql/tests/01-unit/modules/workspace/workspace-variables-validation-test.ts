@@ -48,6 +48,8 @@ describe('buildDashboardVariable - creation', () => {
     ['invalid boolean', { type: 'boolean', defaultValue: 'yes' }, 'A boolean variable default value must be true or false'],
     ['invalid numeric', { type: 'numeric', defaultValue: 'ten' }, 'A numeric variable default value must be a number'],
     ['invalid date', { type: 'date', defaultValue: 'not a date' }, 'A date variable default value must be a valid date'],
+    ['token as default value', { defaultValue: '$var:11111111-1111-4111-8111-111111111111' }, 'A variable value cannot reference another variable'],
+    ['token in selection', { restriction: { mode: 'selection', values: ['a', '$var:11111111-1111-4111-8111-111111111111'] }, defaultValue: 'a' }, 'A variable value cannot reference another variable'],
   ])('should reject %s', (_, input, message) => {
     expect(() => build(input as Partial<DashboardVariableInputLike>)).toThrow(message);
   });

@@ -25,7 +25,7 @@ const parseVariableToken = (value: unknown): string | null => {
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
- * A token without a (non-empty) value is kept in place and reported in `unresolved`:
+ * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
  * the widget must then not run its query (fail closed), never run it without the filter.
  */
 export const resolveVariablesInFilterGroup = <T>(
@@ -37,7 +37,8 @@ export const resolveVariablesInFilterGroup = <T>(
     const variableId = parseVariableToken(value);
     if (variableId !== null) {
       const current = values.get(variableId);
-      if (current === undefined || current === '') {
+      // A value that is itself a token is not resolved further (no chaining, no cycle): fail closed.
+      if (current === undefined || current === '' || parseVariableToken(current) !== null) {
         if (!unresolved.includes(variableId)) unresolved.push(variableId);
         return value;
       }

@@ -31,7 +31,7 @@ export const containsDashboardVariableToken = (serialized: string) => TOKEN_ANYW
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
- * A token without a (non-empty) value is kept in place and reported in `unresolved`:
+ * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
  * the caller must then refuse to run the query (fail closed), never drop the filter.
  * The input is never mutated.
  */
@@ -44,7 +44,8 @@ export const resolveVariablesInFilterGroup = <T>(
     const variableId = parseDashboardVariableToken(value);
     if (variableId !== null) {
       const current = values.get(variableId);
-      if (current === undefined || current === '') {
+      // A value that is itself a token is not resolved further (no chaining, no cycle): fail closed.
+      if (current === undefined || current === '' || parseDashboardVariableToken(current) !== null) {
         if (!unresolved.includes(variableId)) unresolved.push(variableId);
         return value;
       }

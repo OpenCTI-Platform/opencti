@@ -64,5 +64,11 @@
     "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
     "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"] }] },
     "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["value-a"] }] }, "unresolved": [] }
+  },
+  {
+    "name": "a value that is itself a token is treated as unresolved",
+    "values": { "11111111-1111-4111-8111-111111111111": "$var:22222222-2222-4222-8222-222222222222", "22222222-2222-4222-8222-222222222222": "value-b" },
+    "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "not_eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "not_eq", "mode": "or" }], "filterGroups": [] }, "unresolved": ["11111111-1111-4111-8111-111111111111"] }
   }
 ]
