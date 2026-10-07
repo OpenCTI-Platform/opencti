@@ -75,6 +75,7 @@ import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
 import { waitForManagedConnectorAutoUpgrade } from '../modules/connector/managed-connector-auto-upgrade-readiness';
+import { connectorCatalogIdentity, connectorCatalogIdentityOptions, connectorCatalogIdentityUpdate } from '../domain/connector-catalog-identity';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -109,6 +110,7 @@ const connectorResolvers = {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     },
     // endregion
+    connectorCatalogIdentityOptions: (_, __, context) => connectorCatalogIdentityOptions(context),
   },
   Connector: { // For UI display
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
@@ -125,6 +127,7 @@ const connectorResolvers = {
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    catalog_identity: (cn, _, context) => connectorCatalogIdentity(context, context.user, cn),
     jwks: () => getConnectorJwks(),
   },
   ManagedConnector: { // For composer
@@ -161,6 +164,7 @@ const connectorResolvers = {
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
+    updateConnectorCatalogIdentity: (_, { id, slug }, context) => connectorCatalogIdentityUpdate(context, context.user, id, slug),
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {
       return managedConnectorAdd(context, context.user, input);

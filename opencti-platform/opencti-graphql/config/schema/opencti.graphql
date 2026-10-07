@@ -1940,6 +1940,33 @@ type ManagerContractExcerpt {
   logo: String!
 }
 
+# How the catalog entry of a connector was found, from the most to the least reliable:
+# the composer contract, a choice made by hand, the slug reported at registration,
+# a name that matches exactly one catalog entry (equal to its title or its slug,
+# otherwise containing its title or contained in it).
+enum ConnectorCatalogIdentitySource {
+  composer
+  manual
+  reported
+  name
+}
+
+type ConnectorCatalogIdentity {
+  slug: String!
+  title: String!
+  logo: String
+  short_description: String
+  source: ConnectorCatalogIdentitySource!
+}
+
+type ConnectorCatalogIdentityOption {
+  slug: String!
+  title: String!
+  logo: String
+  connector_type: String
+  short_description: String
+}
+
 enum ConnectorPriorityGroup {
   REALTIME
   DEFAULT
@@ -2054,6 +2081,10 @@ type Connector implements BasicObject & InternalObject {
   xtm_one_intent: String
   version: String
   slug: String
+  # Catalog entry of the connector (logo, title, slug), however it was deployed
+  catalog_identity: ConnectorCatalogIdentity
+  # Slug of the catalog entry chosen by hand, kept when the entry leaves the catalog
+  catalog_slug_manual: String
   jwks: String!
 }
 
@@ -14428,6 +14459,7 @@ type Query {
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment! @auth(for: [MODULES_MODMANAGE])
+  connectorCatalogIdentityOptions: [ConnectorCatalogIdentityOption!]! @auth(for: [MODULES_MODMANAGE])
   work(id: ID!): Work @auth(for: [MODULES])
   isWorkAlive(id: ID!): Boolean @auth(for: [MODULES])
   works(
@@ -16017,6 +16049,8 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
+  # Binds a self-deployed connector to a catalog entry by hand; a null slug returns to automatic identification
+  updateConnectorCatalogIdentity(id: ID!, slug: String): Connector @auth(for: [MODULES_MODMANAGE])
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector! @auth(for: [MODULES_MODMANAGE])
 
   ######## STIX OBJECT

@@ -6,6 +6,7 @@ import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
+import { catalogIdentityHint, isSameConnectorName } from '@components/data/connectors/utils/connectorCatalogIdentity';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -95,6 +96,10 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
     return <ItemBoolean status={item.status === 'active'} label={statusText} />;
   })();
 
+  const identityHint = catalogIdentityHint(item.identitySource, t_i18n);
+  const logoTooltip = item.description && identityHint ? `${item.description} - ${identityHint}` : (item.description ?? '');
+  const description = isSameConnectorName(item.description, item.name) ? null : item.description;
+
   return (
     <Box
       data-testid="integration-card"
@@ -139,16 +144,18 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             }}
           >
             {item.logo ? (
-              <img
-                style={{
-                  height: 38,
-                  width: 38,
-                  objectFit: 'contain',
-                  borderRadius: 4,
-                }}
-                src={item.logo}
-                alt={item.name}
-              />
+              <Tooltip title={logoTooltip}>
+                <img
+                  style={{
+                    height: 38,
+                    width: 38,
+                    objectFit: 'contain',
+                    borderRadius: 4,
+                  }}
+                  src={item.logo}
+                  alt={item.name}
+                />
+              </Tooltip>
             ) : (
               <TypeIcon sx={{ fontSize: 24, color: theme.palette.primary.main }} />
             )}
@@ -199,7 +206,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
         </Stack>
 
         <Box sx={{ flexGrow: 1, overflow: 'hidden', width: '100%' }}>
-          {item.description && (
+          {description && (
             <Typography
               variant="body2"
               sx={{
@@ -213,7 +220,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
                 wordBreak: 'break-all',
               }}
             >
-              {item.description}
+              {description}
             </Typography>
           )}
         </Box>
