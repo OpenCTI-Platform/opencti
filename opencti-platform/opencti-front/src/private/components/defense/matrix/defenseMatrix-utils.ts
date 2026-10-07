@@ -15,9 +15,10 @@ export const DEFENSE_LEVELS = [
   DEFENSE_LEVEL_DETECTION_DEPLOYED,
   DEFENSE_LEVEL_VALIDATED,
 ] as const;
-// A technique counts as covered once a detection is live on a security platform.
+// A technique counts as covered from level 3: a detection deployed on a security platform, or proven by OpenAEV (level 4)
+// even without a deployment record.
 export const DEFENSE_COVERED_LEVEL = DEFENSE_LEVEL_DETECTION_DEPLOYED;
-// "Uncovered" means without a deployed detection, as the coverage percentage counts it. The gaps API keeps a gap open
+// "Uncovered" means below level 3, as the coverage percentage counts it. The gaps API keeps a gap open
 // until it is validated, deployed detections (level 3) included, so the uncovered views ask for these levels only.
 export const DEFENSE_UNCOVERED_LEVELS: number[] = DEFENSE_LEVELS.filter((level) => level < DEFENSE_COVERED_LEVEL);
 // Techniques per validation request accepted by the platform

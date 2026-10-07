@@ -42,7 +42,7 @@ const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseLevelsQue
   return (
     <Box data-testid="widget-defense-levels" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', gap: 2 }}>
-        <Figure value={countFrom(levels, DEFENSE_COVERED_LEVEL)} label={t_i18n('Techniques with a deployed detection')} testId="widget-defense-levels-covered" />
+        <Figure value={countFrom(levels, DEFENSE_COVERED_LEVEL)} label={t_i18n('Covered techniques')} testId="widget-defense-levels-covered" />
         <Figure value={countFrom(levels, DEFENSE_LEVEL_VALIDATED)} label={t_i18n('Techniques validated with OpenAEV')} testId="widget-defense-levels-validated" />
       </Box>
       <DefenseLevelsBar levels={levels} />
