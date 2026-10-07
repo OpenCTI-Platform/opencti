@@ -183,10 +183,17 @@ export const loadPolicyFacts = async (context: AuthContext, proposals: BasicStor
 // endregion
 
 // region CRUD
-const validatePolicyInput = (input: Record<string, any>) => {
+const BOOLEAN_POLICY_KEYS = ['policy_enabled', 'forbid_open_contradiction', 'require_adjudication'];
+
+export const validatePolicyInput = (input: Record<string, any>) => {
   // An edit goes through the generic edit input, which does not carry the constraints of the creation input.
   if (input.name !== undefined && (typeof input.name !== 'string' || input.name.trim().length < 2)) {
     throw FunctionalError('The policy name needs at least 2 characters', { name: input.name });
+  }
+  // A string such as "false" would be stored as it is and read as true by the workers.
+  const notBooleans = BOOLEAN_POLICY_KEYS.filter((key) => input[key] !== undefined && input[key] !== null && typeof input[key] !== 'boolean');
+  if (notBooleans.length > 0) {
+    throw FunctionalError('These curation policy fields take true or false', { keys: notBooleans });
   }
   if (input.auto_apply_threshold !== undefined) {
     const threshold = Number(input.auto_apply_threshold);

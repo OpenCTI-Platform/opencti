@@ -1780,6 +1780,8 @@ describe('Knowledge curation actions', () => {
       expect(invalidTypes.errors?.[0]?.message).toContain('Policies only apply to knowledge entity types');
       const invalidMax = await queryAsAdmin({ query: POLICY_PATCH_MUTATION, variables: { id: policyId, input: [{ key: 'max_applies_per_run', value: [5000] }] } });
       expect(invalidMax.errors?.[0]?.message).toContain('between 1 and 1000');
+      const invalidSwitch = await queryAsAdmin({ query: POLICY_PATCH_MUTATION, variables: { id: policyId, input: [{ key: 'require_adjudication', value: ['false'] }] } });
+      expect(invalidSwitch.errors?.[0]?.message).toContain('take true or false');
       // The policy an edit produces is validated: removing its only kind, or a required value, is refused.
       const noKind = await queryAsAdmin({ query: POLICY_PATCH_MUTATION, variables: { id: policyId, input: [{ key: 'policy_kinds', value: [PROPOSAL_KIND_ALIAS], operation: 'remove' }] } });
       expect(noKind.errors?.[0]?.message).toContain('auto-applicable proposal kind');
