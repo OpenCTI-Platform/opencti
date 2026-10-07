@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { internalFindByIdsMapped } from '../../../../src/database/middleware-loader';
 import { coveragePlatformsInformationForReader } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../../src/schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -17,7 +19,7 @@ describe('Defense coverage per platform of a relationship', () => {
     vi.clearAllMocks();
   });
 
-  it('should return only the entries of the platforms the reader can access', async () => {
+  it('should return only the entries of the security platforms and systems the reader can access', async () => {
     vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({ 'security-platform--accessible': { internal_id: 'platform-1' } } as never);
     const information = [entry('security-platform--accessible'), entry('security-platform--restricted'), entry('security-platform--accessible')];
     await expect(coveragePlatformsInformationForReader(context, user, information))
@@ -26,7 +28,7 @@ describe('Defense coverage per platform of a relationship', () => {
       context,
       user,
       ['security-platform--accessible', 'security-platform--restricted'],
-      expect.objectContaining({ mapWithAllIds: true }),
+      expect.objectContaining({ mapWithAllIds: true, type: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, ENTITY_TYPE_IDENTITY_SYSTEM] }),
     );
   });
 

@@ -1342,7 +1342,8 @@ export const addPlatformProvidesFromLogsources = async (
 // region coverage per platform
 /**
  * The OpenAEV results per security platform of a `has-covered` relationship reference their platform: an entry only
- * reaches a reader who can access that platform, designated by any of its ids as the computation resolves it.
+ * reaches a reader who can access that platform, designated by any of its ids as the computation resolves it, and an
+ * entry referencing anything but a Security Platform or a System is no platform result.
  */
 export const coveragePlatformsInformationForReader = async <T extends { platform_ref?: unknown; coverage_name?: unknown; coverage_score?: unknown }>(
   context: AuthContext,
@@ -1357,7 +1358,12 @@ export const coveragePlatformsInformationForReader = async <T extends { platform
     .map((entry) => ({ ...entry, coverage_score: Math.round(entry.coverage_score as number) }));
   const refs = uniq(entries.map((entry) => entry.platform_ref as string));
   if (refs.length === 0) return [];
-  const accessible = await internalFindByIdsMapped<BasicStoreEntity>(context, user, refs, { baseData: true, baseFields: ['x_opencti_stix_ids'], mapWithAllIds: true });
+  const accessible = await internalFindByIdsMapped<BasicStoreEntity>(context, user, refs, {
+    type: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, ENTITY_TYPE_IDENTITY_SYSTEM],
+    baseData: true,
+    baseFields: ['x_opencti_stix_ids'],
+    mapWithAllIds: true,
+  });
   return entries.filter((entry) => !!accessible[entry.platform_ref as string]);
 };
 // endregion
