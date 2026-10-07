@@ -16,6 +16,7 @@ import { getCurationSettings } from '../../../src/modules/curation/curation-sett
 import { AUTHORITY_SOURCE_AUTHOR, AUTHORITY_SOURCE_CONNECTOR } from '../../../src/modules/curation/curation-types';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { getEntitiesListFromCache } from '../../../src/database/cache';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../../src/types/event';
 
 vi.mock('../../../src/manager/managerModule', () => ({ registerManager: vi.fn() }));
@@ -366,5 +367,60 @@ describe('Curation manager field precedence on an author rule', () => {
     ruleRecordedAt('2026-07-01T00:00:00.000Z');
     await curationManagerStreamHandler([descriptionEdit('32-0', 'feed-user', '2026-07-02T00:00:00.000Z')], '32-0');
     expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+});
+
+describe('Curation manager field precedence on a value written for a ranked author', () => {
+  const updatedAt = '2026-07-02T00:00:00.000Z';
+  // The low-ranked connector wrote for the vendor, the first source: its upsert recorded the vendor, after its write.
+  const writtenForTheVendor = (entityUpdatedAt: string) => {
+    vi.mocked(storeLoadById).mockResolvedValue({
+      internal_id: 'intrusion-set-1',
+      updated_at: entityUpdatedAt,
+      i_field_authority: [{ attribute: 'description', source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor', updated_at: '2026-07-02T00:00:00.040Z' }],
+    } as never);
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getCurationSettings).mockResolvedValue({
+      curation_enabled: true,
+      curated_entity_types: ['Intrusion-Set'],
+      enabled_detectors: [],
+      field_authority_enabled: true,
+      field_authority_rules: [{
+        entity_type: 'Intrusion-Set',
+        attribute: 'description',
+        sources: [
+          { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor' },
+          { source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: 'connector-feed' },
+          { source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: 'connector-mirror' },
+        ],
+      }],
+    } as never);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([
+      { internal_id: 'connector-feed', connector_user_id: 'feed-user' },
+      { internal_id: 'connector-mirror', connector_user_id: 'mirror-user' },
+    ] as never);
+    (persistProposalDraft as any).mockResolvedValue({ created: true, suppressed: false });
+    vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ name: 'description' } as never);
+    vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'feed-user', replayed: false });
+  });
+
+  afterEach(() => {
+    vi.mocked(schemaAttributesDefinition.getAttribute).mockRestore();
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([{ internal_id: 'connector-feed', connector_user_id: 'feed-user' }] as never);
+  });
+
+  it('ranks the new value by the author its write recorded, so nothing restores the less authoritative one', async () => {
+    writtenForTheVendor(updatedAt);
+    await curationManagerStreamHandler([descriptionEdit('40-0', 'mirror-user', updatedAt)], '40-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+
+  it('ranks it by the connector of its writer once the entity was updated since, as the record may be of a later write', async () => {
+    writtenForTheVendor('2026-07-03T00:00:00.000Z');
+    await curationManagerStreamHandler([descriptionEdit('41-0', 'mirror-user', updatedAt)], '41-0');
+    expect((persistProposalDraft as any).mock.calls[0][2].kind).toBe('field_precedence');
   });
 });

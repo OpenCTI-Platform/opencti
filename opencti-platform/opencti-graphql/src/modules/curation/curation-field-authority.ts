@@ -113,6 +113,18 @@ export const recordedSourcesBefore = (element: BasicStoreCommon, attribute: stri
   return recordedSources(element, attribute, connectors);
 };
 
+/**
+ * Sources of the value an update wrote, as the write ranked them (its author or its connector): the record of the update
+ * itself, only while the entity was not updated since, so that a later write never lends its source to an earlier one.
+ */
+export const recordedSourcesOfUpdate = (element: BasicStoreCommon, attribute: string, updatedAt?: string): FieldAuthoritySource[] => {
+  if (!updatedAt || Date.parse((element as Record<string, any>).updated_at) !== Date.parse(updatedAt)) return [];
+  const entries = ((element as Record<string, any>)[FIELD_AUTHORITY_ATTRIBUTE] ?? []) as FieldAuthorityEntry[];
+  const entry = entries.find((e) => e.attribute === attribute);
+  if (!entry || Date.parse(entry.updated_at) < Date.parse(updatedAt)) return [];
+  return [{ source_type: entry.source_type as FieldAuthoritySource['source_type'], source_id: entry.source_id }];
+};
+
 const rulesFor = async (context: AuthContext, type: string) => {
   const settings = await getCurationSettings(context);
   if (!settings.field_authority_enabled) return [];

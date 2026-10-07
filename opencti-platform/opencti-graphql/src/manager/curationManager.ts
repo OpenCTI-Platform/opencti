@@ -34,7 +34,7 @@ import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isDuplicateDetectionEnabled, isProcedureConflict } from '../modules/curation/curation-detectors';
-import { decideFieldAuthority, isRankedSource, recordedSourcesBefore } from '../modules/curation/curation-field-authority';
+import { decideFieldAuthority, isRankedSource, recordedSourcesBefore, recordedSourcesOfUpdate } from '../modules/curation/curation-field-authority';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isOlderThan } from '../modules/curation/curation-schedule';
 import {
   ACTION_SET_FIELD,
@@ -203,6 +203,16 @@ const recordedSourcesOf = async (context: AuthContext, entityId: string, entityT
   return recordedSourcesBefore(element, field, await connectorsOf(context), updatedAt);
 };
 
+/** Sources of the value an update wrote: the ones its write recorded, else the connectors of its writer. */
+const writtenSourcesOf = async (context: AuthContext, writer: string, entityId: string, entityType: string, field: string, updatedAt?: string) => {
+  if (updatedAt) {
+    const element = await storeLoadById(context, CURATION_MANAGER_USER, entityId, entityType);
+    const recorded = element ? recordedSourcesOfUpdate(element, field, updatedAt) : [];
+    if (recorded.length > 0) return recorded;
+  }
+  return connectorSourcesOfUser(context, writer);
+};
+
 const parsedPayload = (proposal: BasicStoreEntityCurationProposal): Record<string, any> => {
   const payload = proposal.action_payload as unknown;
   if (typeof payload !== 'string') return (payload ?? {}) as Record<string, any>;
@@ -283,7 +293,7 @@ const trackFieldWriters = async (
     } else if (sameWriter) {
       continue;
     }
-    const decision = decideFieldAuthority(rule, previousSources, await connectorSourcesOfUser(context, writer));
+    const decision = decideFieldAuthority(rule, previousSources, await writtenSourcesOf(context, writer, entityId, entityType, change.field, updatedAt));
     if (decision !== 'allow') continue;
     drafts.push({
       kind: PROPOSAL_KIND_FIELD_PRECEDENCE,
