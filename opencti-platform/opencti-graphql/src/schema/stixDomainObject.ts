@@ -28,6 +28,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedbac
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { ENTITY_TYPE_CURATION_PROPOSAL, ENTITY_TYPE_MERGE_RECORD } from '../modules/curation/curation-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -203,4 +204,6 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
 
 export const STIX_ORGANIZATIONS_RESTRICTED = [
   ENTITY_TYPE_DELETE_OPERATION, // deleted operations are internal objects but need to have organization restrictions applied
+  ENTITY_TYPE_CURATION_PROPOSAL, // curation records reveal the knowledge they are about: they are shared as it is
+  ENTITY_TYPE_MERGE_RECORD,
 ];

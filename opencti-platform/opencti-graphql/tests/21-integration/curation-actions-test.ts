@@ -1,8 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import * as entrepriseEdition from '../../src/enterprise-edition/ee';
-import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../utils/testQueryHelper';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../utils/testQuery';
+import {
+  queryAsAdmin,
+  queryAsAdminWithSuccess,
+  queryAsUserIsExpectedError,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess,
+  setOrganization,
+  unSetOrganization,
+} from '../utils/testQueryHelper';
+import { resetCacheForEntity } from '../../src/database/cache';
 import { elUpdate } from '../../src/database/engine';
 import { completePendingMergeRecords, expireMergeRecords } from '../../src/modules/curation/curation-merge-record';
 import { addIntrusionSet } from '../../src/domain/intrusionSet';
@@ -25,11 +34,11 @@ import { loadPolicyFacts } from '../../src/modules/curation/curation-policies';
 import { buildSplitDraft } from '../../src/modules/curation/curation-detectors';
 import { computeHealthMetrics } from '../../src/modules/curation/curation-health';
 import { EditOperation } from '../../src/generated/graphql';
-import { INPUT_MARKINGS } from '../../src/schema/general';
+import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../src/schema/general';
 import { MARKING_TLP_RED } from '../../src/schema/identifier';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { procedureNoteStixId } from '../../src/modules/curation/curation-apply';
-import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 import {
   ACTION_ACKNOWLEDGE,
   ACTION_ADD_ALIASES,
@@ -92,6 +101,14 @@ const PROPOSAL_QUERY = gql`
   query CurationActionsProposal($id: ID!) {
     curationProposal(id: $id) {
       ${PROPOSAL_FIELDS}
+    }
+  }
+`;
+
+const STATISTICS_QUERY = gql`
+  query CurationActionsStatistics {
+    curationStatistics {
+      open_count
     }
   }
 `;
@@ -644,6 +661,36 @@ describe('Knowledge curation actions', () => {
     expect((await queryAsUserWithSuccess(USER_EDITOR, { query: targetQuery, variables: { id: target.id } })).data?.intrusionSet).not.toBeNull();
     expect((await queryAsUserWithSuccess(USER_EDITOR, { query: PROPOSAL_QUERY, variables: { id: splitId } })).data?.curationProposal).toBeNull();
     expect((await queryAsAdminWithSuccess({ query: PROPOSAL_QUERY, variables: { id: splitId } })).data?.curationProposal).not.toBeNull();
+  });
+
+  it('should read and count a proposal only through the organizations it is shared with', async () => {
+    const left = await createIntrusionSet(`${PREFIX} Shared Left`, { objectOrganization: [TEST_ORGANIZATION.id] });
+    const right = await createIntrusionSet(`${PREFIX} Shared Right`, { objectOrganization: [TEST_ORGANIZATION.id] });
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_MERGE,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(left), subjectOf(right)],
+      target_id: left.id,
+      recommended_action: ACTION_MERGE,
+      evidence: evidenceFor('canonical_collision', 'Same canonical name'),
+      confidence: 0.9,
+    });
+    const openCount = async () => (await queryAsUserWithSuccess(USER_EDITOR, { query: STATISTICS_QUERY, variables: {} })).data?.curationStatistics.open_count as number;
+    const readByEditor = async () => (await queryAsUserWithSuccess(USER_EDITOR, { query: PROPOSAL_QUERY, variables: { id } })).data?.curationProposal;
+    await setOrganization(PLATFORM_ORGANIZATION);
+    try {
+      // The editor, outside the platform organization, reads the subjects and the proposal through the test organization.
+      expect(await readByEditor()).not.toBeNull();
+      const sharedCount = await openCount();
+      // The proposal carries fewer organizations than its subjects now have, as before a refresh: its own sharing decides.
+      await updateAttribute(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL, [{ key: INPUT_GRANTED_REFS, value: [PLATFORM_ORGANIZATION.id] }]);
+      expect(await readByEditor()).toBeNull();
+      expect(await openCount()).toBe(sharedCount - 1);
+      expect(await loadProposal(id)).not.toBeNull();
+    } finally {
+      await unSetOrganization();
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    }
   });
 
   it('should carry the restrictions of the attributions in conflict, and never resolve one the user cannot read', async () => {
