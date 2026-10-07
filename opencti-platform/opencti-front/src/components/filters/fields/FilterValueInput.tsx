@@ -85,6 +85,7 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
       setInputValues={setInputValues}
       filterLabel={filterLabel}
       filterValue={value}
+      commitOnBlur
     />
   );
 

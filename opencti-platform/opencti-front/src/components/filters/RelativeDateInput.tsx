@@ -45,6 +45,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   // just the small icon), so they open at the same position as the native mode's own popper
   // (start of the input), keeping the two modes visually consistent.
   const fieldContainerRef = useRef<HTMLDivElement | null>(null);
+  // Valid date typed in the native field but not accepted yet; saved when the field loses focus.
+  const pendingDate = useRef<Date | null>(null);
 
   useEffect(() => {
     setDraft(dateInput[valueOrder]);
@@ -121,13 +123,23 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         <DateTimePicker
           label={label}
           value={new Date(committedValue)}
+          onChange={(value) => {
+            pendingDate.current = value && !Number.isNaN(value.getTime()) ? value : null;
+          }}
           onAccept={(value) => {
+            pendingDate.current = null;
             if (value) {
               handleChangeRangeDateFilter(value.toISOString());
             }
           }}
           slotProps={{
             textField: {
+              onBlur: () => {
+                if (pendingDate.current) {
+                  handleChangeRangeDateFilter(pendingDate.current.toISOString());
+                  pendingDate.current = null;
+                }
+              },
               id: filter?.id ?? `${filterKey}-id`,
               size: 'small',
               variant: 'outlined',

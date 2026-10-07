@@ -187,6 +187,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                     filters={filters}
                     variant="small"
                     redirection
+                    showGroupsSummaryButtonOnReadOnly
                     entityTypes={data.instance_trigger ? ['Instance'] : ['Stix-Core-Object', 'Stix-Filtering']}
                   />
                 ) : EMPTY_VALUE}
