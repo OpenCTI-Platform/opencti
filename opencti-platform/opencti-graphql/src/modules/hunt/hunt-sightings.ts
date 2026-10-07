@@ -12,6 +12,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { SYSTEM_USER, HUNT_MANAGER_USER } from '../../utils/access';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { findByIds } from './hunt-loaders';
 import { isDisclosableByHunt } from './hunt-iocs';
@@ -146,6 +147,25 @@ const sightingDescription = (hunt: BasicStoreEntityHunt, platformName: string, c
     + 'its count holds the distinct hits found so far, its first and last seen dates the first and latest hit.', 2000);
 };
 
+/**
+ * The access of a sighting a run updates: a sighting holds what every run that fed it found, so it never becomes readable
+ * by a user who could not read one of them. Its markings are those of the sighting and of the run, the highest of each
+ * marking type kept; its organizations are those both are shared with (with a platform organization, an element shared
+ * with no organization is readable by the platform organization only).
+ */
+export const accumulatedHuntSightingAccess = async (
+  context: AuthContext,
+  stored: Pick<HuntSighting, typeof RELATION_OBJECT_MARKING | typeof RELATION_GRANTED_TO>,
+  runMarkings: string[],
+  runOrganizations: string[],
+) => {
+  const markings: BasicStoreEntityMarkingDefinition[] = await cleanMarkings(context, Array.from(new Set([...(stored[RELATION_OBJECT_MARKING] ?? []), ...runMarkings])));
+  return {
+    objectMarking: markings.map((marking) => marking.internal_id),
+    objectOrganization: (stored[RELATION_GRANTED_TO] ?? []).filter((id) => runOrganizations.includes(id)),
+  };
+};
+
 const keepHuntSightings = async (
   context: AuthContext,
   hunt: BasicStoreEntityHunt,
@@ -155,13 +175,15 @@ const keepHuntSightings = async (
 ): Promise<HuntSightingsOutcome> => {
   const targets = await resolveHuntSightingTargets(context, hunt, run);
   const identified = run.hits_identified === true;
-  // A sighting says what the runs of its hunt found so far: it is restricted like the run that updated it last
-  const objectMarking = run[RELATION_OBJECT_MARKING] ?? [];
-  const objectOrganization = run[RELATION_GRANTED_TO] ?? [];
+  const runMarkings = run[RELATION_OBJECT_MARKING] ?? [];
+  const runOrganizations = run[RELATION_GRANTED_TO] ?? [];
   for (let index = 0; index < targets.length; index += 1) {
     const target = targets[index];
     const standardId = huntSightingStandardId(hunt.internal_id, target.id, platform.internal_id);
     const stored = await findHuntSighting(context, standardId);
+    const { objectMarking, objectOrganization } = stored
+      ? await accumulatedHuntSightingAccess(context, stored, runMarkings, runOrganizations)
+      : { objectMarking: runMarkings, objectOrganization: runOrganizations };
     const knownHits = identified ? await countHuntHitRecords(context, hunt.internal_id, [platform.internal_id], target.iocKeys) : 0;
     const count = nextHuntSightingCount(stored, run.internal_id, { identified, knownHits, runHits: target.runHits });
     const firstSeen = earliest([stored?.first_seen, target.firstSeen]) as string;

@@ -19,9 +19,15 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalLoadById: vi.fn(),
 }));
 
+const markingDefinitions = [
+  { internal_id: 'marking-green', id: 'marking-green', definition_type: 'TLP', x_opencti_order: 2 },
+  { internal_id: 'marking-red', id: 'marking-red', definition_type: 'TLP', x_opencti_order: 4 },
+  { internal_id: 'marking-statement', id: 'marking-statement', definition_type: 'statement', x_opencti_order: 0 },
+];
+
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/cache')>(),
-  getEntitiesMapFromCache: vi.fn(async () => new Map()),
+  getEntitiesMapFromCache: vi.fn(async () => new Map(markingDefinitions.map((marking) => [marking.internal_id, marking]))),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => ({
@@ -80,23 +86,56 @@ describe('Hunt sightings access', () => {
     }));
   });
 
-  it('should restrict an updated sighting like the run that updates it', async () => {
+  it('should restrict an updated sighting like every run that fed it', async () => {
     loadWith({
       internal_id: 'sighting-1',
       attribute_count: 2,
       first_seen: '2026-10-04T08:00:00.000Z',
       last_seen: '2026-10-04T09:00:00.000Z',
       x_opencti_hunt_run_id: 'run-1',
-      [RELATION_OBJECT_MARKING]: ['marking-green'],
-      [RELATION_GRANTED_TO]: [],
+      [RELATION_OBJECT_MARKING]: ['marking-green', 'marking-statement'],
+      [RELATION_GRANTED_TO]: ['organization-1', 'organization-2'],
     });
     const outcome = await upsertHuntSightings({} as AuthContext, hunt, run);
     expect(outcome.updated).toEqual(1);
     expect(patchAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'sighting-1', expect.anything(), expect.objectContaining({
       attribute_count: 5,
-      objectMarking: ['marking-red'],
+      objectMarking: ['marking-red', 'marking-statement'],
       objectOrganization: ['organization-1'],
     }), expect.anything());
+  });
+
+  it('should never widen the access of a sighting when a later run is less restricted', async () => {
+    loadWith({
+      internal_id: 'sighting-1',
+      attribute_count: 2,
+      first_seen: '2026-10-04T08:00:00.000Z',
+      last_seen: '2026-10-04T09:00:00.000Z',
+      x_opencti_hunt_run_id: 'run-1',
+      [RELATION_OBJECT_MARKING]: ['marking-red'],
+      [RELATION_GRANTED_TO]: ['organization-1'],
+    });
+    const lessRestricted = { ...run, [RELATION_OBJECT_MARKING]: ['marking-green'], [RELATION_GRANTED_TO]: ['organization-1', 'organization-2'] } as BasicStoreEntityHuntRun;
+    await upsertHuntSightings({} as AuthContext, hunt, lessRestricted);
+    expect(patchAttribute).toHaveBeenCalledTimes(1);
+    const patch = vi.mocked(patchAttribute).mock.calls[0][4];
+    expect(patch).toEqual(expect.objectContaining({ attribute_count: 5 }));
+    expect(patch).not.toHaveProperty('objectMarking');
+    expect(patch).not.toHaveProperty('objectOrganization');
+  });
+
+  it('should keep a sighting shared with no organization when a later run is shared with one', async () => {
+    loadWith({
+      internal_id: 'sighting-1',
+      attribute_count: 2,
+      first_seen: '2026-10-04T08:00:00.000Z',
+      last_seen: '2026-10-04T09:00:00.000Z',
+      x_opencti_hunt_run_id: 'run-1',
+      [RELATION_OBJECT_MARKING]: ['marking-red'],
+      [RELATION_GRANTED_TO]: [],
+    });
+    await upsertHuntSightings({} as AuthContext, hunt, run);
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).not.toHaveProperty('objectOrganization');
   });
 
   it('should update the access of a sighting whose counters did not change, and leave unchanged refs out of the patch', async () => {
