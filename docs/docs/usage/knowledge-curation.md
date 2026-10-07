@@ -208,7 +208,7 @@ Before the first scan has raised any proposal, the Inbox explains what fills it 
 
 ![Approval of a merge, with what moves to the surviving entity and the undo line](assets/curation-proposal-accept-dialog.png)
 
-On an entity, a **Possible duplicate** chip in the header signals an open `merge` proposal, names the other entity (or the number of possible duplicates when there are several) and links to the proposal. An open `alias` proposal shows an **Aliases to review** chip instead: it adds names, it never says the entity is duplicated. The tooltip of each chip gives the title of the proposal, its confidence and its date.
+On an entity, a **Possible duplicate** chip in the header signals an open `merge` proposal, names the other entity (or the number of possible duplicates when there are several) and links to the proposal. An open `alias` proposal shows an **Aliases to review** chip instead: it adds names, it never says the entity is duplicated. Each chip reads the open proposals of its own kind, up to the 50 most confident, so proposals of the other kind never hide it. The tooltip of each chip gives the title of the proposal, its confidence and its date.
 
 ![Possible duplicate and Aliases to review chips in the header of an intrusion set](assets/curation-explanation-after-entity-header.png)
 

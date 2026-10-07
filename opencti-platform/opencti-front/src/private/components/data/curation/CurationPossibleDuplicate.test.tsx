@@ -19,16 +19,18 @@ vi.mock('../../../../relay/environment', async (importOriginal) => {
 
 vi.mock('../../../../utils/hooks/useDraftContext', () => ({ default: () => draft.current }));
 
+const proposalOf = (entityId: string, otherName: string, title: string) => ({
+  id: `proposal-${entityId}`,
+  confidence_score: 0.92,
+  subject_ids: [entityId, `other-${entityId}`],
+  subject_names: ['Subject', otherName],
+  created_at: '2026-10-06T08:00:00.000Z',
+  explanation: { title: { template: title, values: null, text: title } },
+});
+
 const mergeProposalOf = (entityId: string, otherName: string) => ({
-  curationProposalsForEntity: [{
-    id: `proposal-${entityId}`,
-    proposal_kind: 'merge',
-    confidence_score: 0.92,
-    subject_ids: [entityId, `other-${entityId}`],
-    subject_names: ['Subject', otherName],
-    created_at: '2026-10-06T08:00:00.000Z',
-    explanation: { title: { template: 'Merge the entities', values: null, text: 'Merge the entities' } },
-  }],
+  merges: [proposalOf(entityId, otherName, 'Merge the entities')],
+  aliases: [],
 });
 
 describe('CurationPossibleDuplicate', () => {
@@ -52,6 +54,13 @@ describe('CurationPossibleDuplicate', () => {
 
     await act(async () => answerSecond(mergeProposalOf('second', 'Sofacy')));
     expect(await screen.findByText('Possible duplicate of Sofacy')).toBeInTheDocument();
+  });
+
+  it('shows each chip from the open proposals of its own kind', async () => {
+    lookup.mockResolvedValue({ merges: [], aliases: [proposalOf('first', 'Sofacy', 'Add the aliases')] });
+    testRender(<CurationPossibleDuplicate entityId="first" />);
+    expect(await screen.findByTestId('curation-aliases-to-review')).toBeInTheDocument();
+    expect(screen.queryByTestId('curation-possible-duplicate')).toBeNull();
   });
 
   it('shows nothing once a draft is entered, without a new lookup', async () => {

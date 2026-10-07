@@ -89,7 +89,7 @@ const curationResolvers: Resolvers = {
   Query: {
     curationProposal: (_, { id }, context) => findProposalById(context, context.user, id),
     curationProposals: (_, args, context) => findProposalsPaginated(context, context.user, args as any),
-    curationProposalsForEntity: (_, { id, status }, context) => findProposalsForEntity(context, context.user, id, status as string[] | null),
+    curationProposalsForEntity: (_, { id, status, kind }, context) => findProposalsForEntity(context, context.user, id, status as string[] | null, kind as string[] | null),
     curationStatistics: (_, __, context) => curationStatistics(context, context.user),
     curationResolve: (_, { name, type }, context) => curationResolve(context, context.user, name, type),
     mergeRecord: (_, { id }, context) => findMergeRecordById(context, context.user, id),

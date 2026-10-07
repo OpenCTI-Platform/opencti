@@ -10,11 +10,21 @@ import { CURATION_PROPOSALS_PATH, formatPercent } from './curationUtils';
 import { type CurationExplanationMessage, useExplanationTranslator } from './CurationProposalExplanation';
 import { CurationPossibleDuplicateQuery$data } from './__generated__/CurationPossibleDuplicateQuery.graphql';
 
+// Each kind is read on its own: in one list limited by confidence, proposals of other kinds would take their place.
 const possibleDuplicateQuery = graphql`
   query CurationPossibleDuplicateQuery($id: ID!) {
-    curationProposalsForEntity(id: $id, status: [open]) {
+    merges: curationProposalsForEntity(id: $id, status: [open], kind: [merge]) {
       id
-      proposal_kind
+      confidence_score
+      subject_ids
+      subject_names
+      created_at
+      explanation {
+        title { template values text }
+      }
+    }
+    aliases: curationProposalsForEntity(id: $id, status: [open], kind: [alias]) {
+      id
       confidence_score
       subject_ids
       subject_names
@@ -53,7 +63,7 @@ interface LoadedProposals extends HeaderProposals {
   entityId: string | null;
 }
 
-type Proposals = CurationPossibleDuplicateQuery$data['curationProposalsForEntity'];
+type Proposals = CurationPossibleDuplicateQuery$data['merges'];
 
 const toHeaderProposal = (proposals: Proposals, entityId: string): HeaderProposal | null => {
   if (proposals.length === 0) return null;
@@ -86,11 +96,11 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
       .toPromise()
       .then((data) => {
         if (!active) return;
-        const proposals = (data as CurationPossibleDuplicateQuery$data | undefined)?.curationProposalsForEntity ?? [];
+        const result = data as CurationPossibleDuplicateQuery$data | undefined;
         setFound({
           entityId,
-          duplicate: toHeaderProposal(proposals.filter((proposal) => proposal.proposal_kind === 'merge'), entityId),
-          aliases: toHeaderProposal(proposals.filter((proposal) => proposal.proposal_kind === 'alias'), entityId),
+          duplicate: toHeaderProposal(result?.merges ?? [], entityId),
+          aliases: toHeaderProposal(result?.aliases ?? [], entityId),
         });
       })
       .catch(() => {

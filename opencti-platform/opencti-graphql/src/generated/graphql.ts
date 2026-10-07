@@ -26403,6 +26403,7 @@ export type QueryCurationProposalsArgs = {
 
 export type QueryCurationProposalsForEntityArgs = {
   id: Scalars['ID']['input'];
+  kind?: InputMaybe<Array<CurationProposalKind>>;
   status?: InputMaybe<Array<CurationProposalStatus>>;
 };
 

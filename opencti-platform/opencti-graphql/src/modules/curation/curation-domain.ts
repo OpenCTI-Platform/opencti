@@ -89,10 +89,20 @@ export const findProposalsPaginated = async (context: AuthContext, user: AuthUse
   return pageWithReadableParticipants<BasicStoreEntityCurationProposal>(context, user, ENTITY_TYPE_CURATION_PROPOSAL, opts, proposalSubjectIds);
 };
 
-export const findProposalsForEntity = async (context: AuthContext, user: AuthUser, entityId: string, statuses?: string[] | null) => {
+export const findProposalsForEntity = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityId: string,
+  statuses?: string[] | null,
+  kinds?: string[] | null,
+) => {
   const filters = [{ key: ['subject_ids'], values: [entityId], operator: FilterOperator.Eq }];
   const wanted = statuses && statuses.length > 0 ? statuses : [PROPOSAL_STATUS_OPEN];
   filters.push({ key: ['proposal_status'], values: wanted, operator: FilterOperator.Eq });
+  // Read by kind before the limit: proposals of other kinds never take the place of the wanted ones.
+  if (kinds && kinds.length > 0) {
+    filters.push({ key: ['proposal_kind'], values: kinds, operator: FilterOperator.Eq });
+  }
   const page = await pageWithReadableParticipants<BasicStoreEntityCurationProposal>(context, user, ENTITY_TYPE_CURATION_PROPOSAL, {
     filters: { mode: FilterMode.And, filters, filterGroups: [] },
     orderBy: 'confidence_score',

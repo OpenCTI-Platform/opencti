@@ -538,7 +538,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): CurationProposalConnection @auth(for: [KNOWLEDGE])
-  curationProposalsForEntity(id: ID!, status: [CurationProposalStatus!]): [CurationProposal!]! @auth(for: [KNOWLEDGE])
+  curationProposalsForEntity(id: ID!, status: [CurationProposalStatus!], kind: [CurationProposalKind!]): [CurationProposal!]! @auth(for: [KNOWLEDGE])
   curationStatistics: CurationStatistics! @auth(for: [KNOWLEDGE])
   curationResolve(name: String!, type: String!): CurationResolution @auth(for: [KNOWLEDGE])
   mergeRecord(id: ID!): MergeRecord @auth(for: [KNOWLEDGE])
