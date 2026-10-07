@@ -153,6 +153,12 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
+    it('should throw an error if a workflow bypass action has no target status', async () => {
+      const emptyBypassAction = { ...bypassAction, context: { ...bypassAction.context, values: [] } };
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([emptyBypassAction]), scope, type))
+        .rejects.toThrowError('A workflow status action requires exactly one target status');
+    });
+
     it('should accept a workflow transition action for a user without BYPASS capability', async () => {
       const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type)).resolves.toEqual(undefined);
