@@ -145,6 +145,11 @@ export const mockChatbotBackend = async (page: Page) => {
 
   await page.route('**/chatbot/agents**', (route) => route.fulfill(json(AGENTS)));
 
+  // Nothing to offer: no saved prompts, and `null` is what XTM One answers when
+  // there is no quota to show, so the composer hides both affordances.
+  await page.route('**/chatbot/prompts', (route) => route.fulfill(json([])));
+  await page.route('**/chatbot/quota', (route) => route.fulfill(json(null)));
+
   await page.route('**/chatbot/sessions', (route) => route.fulfill(
     json(route.request().method() === 'GET' ? SESSIONS : SESSION),
   ));
