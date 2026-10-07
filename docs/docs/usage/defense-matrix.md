@@ -1,6 +1,6 @@
 # Defense matrix
 
-The defense matrix answers three questions for every MITRE ATT&CK technique, on every security platform you operate: can you **see** it, can you **detect** it, and did you **prove** it? It compares the answer with the techniques used by the threats you care about, and turns the difference into a prioritized backlog.
+The defense matrix answers three questions for every technique (attack pattern), on every security platform you operate: can you **see** it, can you **detect** it, and did you **prove** it? It compares the answer with the techniques used by the threats you care about, and turns the difference into a prioritized backlog.
 
 The matrix is computed by OpenCTI from knowledge you already have. It is deterministic: every level is explained by the evidences that produced it, and nothing is deployed automatically.
 
@@ -64,9 +64,9 @@ A rule whose detection logic is not its query alone is imported with the whole l
 
 ## Matrix
 
-The **Matrix** section displays the ATT&CK matrix with the defense level of each technique. The level is written in every colored technique, so it never depends on the color alone.
+The **Matrix** section displays the techniques by tactic (kill chain phase), as the ATT&CK matrix, with the defense level of each technique: the MITRE ATT&CK techniques and any other attack pattern you can access, as a threat may use a technique created by an analyst or imported from another framework. The level is written in every colored technique, so it never depends on the color alone.
 
-As long as the platform holds no ATT&CK technique, the section explains what the matrix answers and offers **Import MITRE ATT&CK**, which opens the connector catalog.
+As long as you can access no technique, the section explains what the matrix answers and offers **Import MITRE ATT&CK**, which opens the connector catalog.
 
 ![Defense matrix on first use](assets/defense-matrix-matrix-first-use.png)
 
