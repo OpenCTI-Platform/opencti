@@ -77,7 +77,7 @@ A header sums the scope up: the selected security platforms and threats, and the
 * **Security platforms**: select one or several platforms to restrict the levels, or keep all of them.
 * **Threats**: choose the threats to compare with: all threats, selected threats, threats matching a filter, or none. Techniques used by these threats are outlined, with the number of threats using them.
 * **Layers**: show or hide telemetry, detection, validation and mitigations.
-* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats. Each tactic column shows the share of its techniques with a deployed detection (**% covered**). In every one of these figures, a technique counts once. Over all techniques, it counts at the best level of the technique and its sub-techniques. Over the techniques used by the selected threats, it counts at the best level of the technique itself and of the sub-techniques these threats use: the coverage of a sub-technique they do not use never counts for a sibling they use.
+* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats. Each tactic column shows the share of its covered techniques, at level 3 or 4 (**% covered**). In every one of these figures, a technique counts once. Over all techniques, it counts at the best level of the technique and its sub-techniques. Over the techniques used by the selected threats, it counts at the best level of the technique itself and of the sub-techniques these threats use: the coverage of a sub-technique they do not use never counts for a sibling they use.
 
 ![Security platform selection](assets/defense-matrix-filters.png)
 
@@ -160,7 +160,7 @@ Each recipient is told about the level they see: both levels are computed from t
 
 ## Dashboards
 
-Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** (the techniques without a deployed detection, highest priority first) and **Techniques by defense level** (the number of techniques with a deployed detection, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
+Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** (the techniques below level 3, highest priority first) and **Techniques by defense level** (the number of covered techniques, at level 3 or 4, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
 
 Click **Create the defense coverage dashboard** next to **Recompute** in the defense matrix to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
