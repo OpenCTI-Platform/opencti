@@ -111,6 +111,11 @@ class Hunt:
                 value
                 color
             }
+            objectOrganization {
+                id
+                standard_id
+                name
+            }
             huntTargets {
                 id
                 standard_id
@@ -302,6 +307,8 @@ class Hunt:
         :param createdBy: (optional) the author ID
         :param objectMarking: (optional) list of marking definition IDs
         :param objectLabel: (optional) list of label IDs
+        :param objectOrganization: (optional) list of the organization IDs the hunt
+            is restricted to
         :param externalReferences: (optional) list of external reference IDs
         :param confidence: (optional) confidence
         :param stix_id: (optional) the STIX ID
@@ -322,6 +329,7 @@ class Hunt:
             "createdBy": kwargs.get("createdBy", None),
             "objectMarking": kwargs.get("objectMarking", None),
             "objectLabel": kwargs.get("objectLabel", None),
+            "objectOrganization": kwargs.get("objectOrganization", None),
             "externalReferences": kwargs.get("externalReferences", None),
             "confidence": kwargs.get("confidence", None),
             "created": kwargs.get("created", None),
@@ -459,6 +467,10 @@ class Hunt:
             stix_object["x_opencti_stix_ids"] = self.opencti.get_attribute_in_extension(
                 "stix_ids", stix_object
             )
+        if "x_opencti_granted_refs" not in stix_object:
+            stix_object["x_opencti_granted_refs"] = (
+                self.opencti.get_attribute_in_extension("granted_refs", stix_object)
+            )
         fields = {field: stix_object.get(field) for field in HUNT_FIELDS}
         # The platform exports an empty filter for the hunts that have none
         fields["hunt_ioc_filters"] = fields["hunt_ioc_filters"] or None
@@ -479,6 +491,7 @@ class Hunt:
             createdBy=extras.get("created_by_id"),
             objectMarking=extras.get("object_marking_ids"),
             objectLabel=extras.get("object_label_ids"),
+            objectOrganization=stix_object.get("x_opencti_granted_refs"),
             externalReferences=extras.get("external_references_ids"),
             x_opencti_stix_ids=stix_object.get("x_opencti_stix_ids"),
             update=update,

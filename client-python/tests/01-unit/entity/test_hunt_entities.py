@@ -54,10 +54,12 @@ class TestHunt(TestCase):
             hunt_schedule="0 * * * *",
             huntTechniques=["T1059.001"],
             objectMarking=["marking-1"],
+            objectOrganization=["organization-1"],
         )
         self.assertEqual(result, {"id": "hunt-1"})
         hunt_input = _variables(opencti)["input"]
         self.assertEqual(hunt_input["name"], "Hunt")
+        self.assertEqual(hunt_input["objectOrganization"], ["organization-1"])
         self.assertEqual(hunt_input["hunt_schedule"], "0 * * * *")
         self.assertEqual(hunt_input["huntTechniques"], ["T1059.001"])
         self.assertEqual(hunt_input["native_queries"][0]["platform"], "splunk")
@@ -89,6 +91,9 @@ class TestHunt(TestCase):
         self.assertIn("escalation_threshold", properties)
         self.assertIn("escalate_manual_runs", properties)
 
+    def test_default_fields_read_the_organizations_of_the_hunt(self):
+        self.assertIn("objectOrganization {", Hunt(_opencti({})).properties)
+
     def test_create_requires_a_name(self):
         opencti = _opencti({})
         self.assertIsNone(Hunt(opencti).create(hypothesis="h"))
@@ -109,10 +114,12 @@ class TestHunt(TestCase):
                 "target_refs": ["intrusion-set--1"],
                 "technique_refs": ["attack-pattern--1"],
                 "source_refs": ["indicator--1"],
+                "x_opencti_granted_refs": ["identity--organization-1"],
             },
             extras={"created_by_id": "identity-1", "object_marking_ids": ["marking-1"]},
         )
         hunt_input = _variables(opencti)["input"]
+        self.assertEqual(hunt_input["objectOrganization"], ["identity--organization-1"])
         self.assertEqual(hunt_input["stix_id"], "hunt--1")
         self.assertEqual(hunt_input["hunt_status"], "draft")
         self.assertEqual(hunt_input["hunt_source_kind"], "hub")
@@ -142,6 +149,17 @@ class TestHunt(TestCase):
         self.assertEqual(hunt_input["hunt_type"], "indicators")
         self.assertEqual(hunt_input["hunt_ioc_values"], values)
         self.assertIsNone(hunt_input["hunt_ioc_filters"])
+
+    def test_import_from_stix2_keeps_the_organizations_of_the_extension(self):
+        opencti = _opencti({"huntAdd": {"id": "hunt-1"}})
+        opencti.get_attribute_in_extension.side_effect = lambda key, _: (
+            ["identity--organization-1"] if key == "granted_refs" else None
+        )
+        Hunt(opencti).import_from_stix2(
+            stixObject={"id": "hunt--3", "type": "hunt", "name": "Restricted hunt"},
+        )
+        hunt_input = _variables(opencti)["input"]
+        self.assertEqual(hunt_input["objectOrganization"], ["identity--organization-1"])
 
     def test_export_pack_returns_the_bundle(self):
         opencti = _opencti({"huntPackExport": '{"type": "bundle", "objects": []}'})
