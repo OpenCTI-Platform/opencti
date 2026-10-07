@@ -68,6 +68,8 @@ When the scan stops at the maximum number of objects set in the settings, a warn
 
 ![Sources header when the manager is disabled in the platform configuration](assets/source-intelligence-sources-manager-disabled.png)
 
+![Sources area with the history backfill paused on a day whose scan reached the limit](assets/source-intelligence-backfill-paused.png)
+
 Before the first computation, or while no source has written knowledge yet, the area explains which sources it will score and when the scorecards appear:
 
 ![Sources area before the first scorecards](assets/source-intelligence-sources-first-use.png)
@@ -102,6 +104,8 @@ Costs are never converted between currencies. A widget showing a cost metric (nu
 The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects and the share of the row source's knowledge that the column source also asserted. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement. Each scorecard keeps the sources it overlaps with the most, up to the number of overlapping sources set in the settings: a pair of sources missing from what both scorecards keep is not measured, and its cell stays empty (its tooltip reads "Not measured") rather than showing 0 %. Raising that number in the settings measures it from the next computation.
 
 ![Overlap heatmap of the sources](assets/source-intelligence-overlap.jpg)
+
+![Overlap heatmap with one overlapping source kept per scorecard: the pairs cut from both are not measured](assets/source-intelligence-overlap-not-measured.jpg)
 
 ## Collection gaps (EE)
 
