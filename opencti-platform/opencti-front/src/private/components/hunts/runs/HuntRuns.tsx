@@ -260,7 +260,9 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
             disableLineSelection
             disableToolBar
             removeSelectAll
-            emptyStateMessage={t_i18n('No run yet: click Run now to run the hunt over its time window, or Activate it to run on its schedule.')}
+            emptyStateMessage={canEdit
+              ? t_i18n('No run yet: click Run now to run the hunt over its time window, or Activate it to run on its schedule.')
+              : t_i18n('No run yet. Runs appear here once a user who can edit the hunt runs it or activates it.')}
             createButton={canEdit ? <HuntRunStart hunt={hunt} paginationOptions={queryPaginationOptions} /> : undefined}
           />
         )}

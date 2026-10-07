@@ -38,7 +38,13 @@ const huntLatestRunsQuery = graphql`
   }
 `;
 
-const LatestRunsList = ({ huntId }: { huntId: string }) => {
+interface HuntLatestRunsProps {
+  huntId: string;
+  // The edit right of the hunt page: the next step named to a user who can only view the hunt is not theirs to take
+  canEdit: boolean;
+}
+
+const LatestRunsList = ({ huntId, canEdit }: HuntLatestRunsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const filters: HuntLatestRunsQuery$variables['filters'] = {
@@ -61,7 +67,9 @@ const LatestRunsList = ({ huntId }: { huntId: string }) => {
         <Text variant="content-compact">{t_i18n('This hunt has not run yet')}</Text>
         <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }}>
           <HuntHelp
-            text={t_i18n('Next step: Run now at the top of the page, or Activate it to run on its schedule. Each run appears here with its verdict.')}
+            text={canEdit
+              ? t_i18n('Next step: Run now at the top of the page, or Activate it to run on its schedule. Each run appears here with its verdict.')
+              : t_i18n('Each run appears here with its verdict once a user who can edit the hunt runs it or activates it.')}
             href={HUNT_DOCS.runHunt}
           />
         </Text>
@@ -99,12 +107,12 @@ const LatestRunsList = ({ huntId }: { huntId: string }) => {
   );
 };
 
-const HuntLatestRuns = ({ huntId }: { huntId: string }) => {
+const HuntLatestRuns = ({ huntId, canEdit }: HuntLatestRunsProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Card title={t_i18n('Latest runs')} action={<Link to={`${PATH_HUNT(huntId)}/runs`}>{t_i18n('View all')}</Link>}>
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <LatestRunsList huntId={huntId} />
+        <LatestRunsList huntId={huntId} canEdit={canEdit} />
       </Suspense>
     </Card>
   );

@@ -7,7 +7,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { BYPASS } from '../../../utils/hooks/useGranted';
 import HuntStatusHeader, { HuntReadinessChecklist, huntPrimaryStatusAction } from './HuntStatusHeader';
 import { huntLogicMissingSentence } from './HuntLogic';
-import { HUNT_STATUS_MEANINGS, HUNT_STATUSES } from './hunt-utils';
+import { HUNT_STATUS_MEANINGS, HUNT_STATUS_MEANINGS_READ_ONLY, HUNT_STATUSES } from './hunt-utils';
 
 vi.mock('react-relay', async (importOriginal) => {
   const original = await importOriginal<typeof import('react-relay')>();
@@ -44,6 +44,11 @@ describe('Hunt status header', () => {
     expect(HUNT_STATUS_MEANINGS.draft).toBe('The hunt is being written; it never runs.');
   });
 
+  it('never names a control in the meanings shown to a user who can only view the hunt', () => {
+    HUNT_STATUSES.forEach((status) => expect(HUNT_STATUS_MEANINGS_READ_ONLY[status]).not.toMatch(/Run now|click/));
+    expect(HUNT_STATUS_MEANINGS_READ_ONLY.paused).toBe('The schedule and the triggers are stopped; a user who can edit the hunt can still run it.');
+  });
+
   it('lists each readiness item with the place to fix the unmet ones', () => {
     testRender(
       <HuntReadinessChecklist
@@ -65,6 +70,15 @@ describe('Hunt status header', () => {
     const scope = screen.getByTestId('hunt-readiness-scope');
     expect(within(scope).getByText('Runs on Splunk Production')).toBeInTheDocument();
     expect(within(scope).queryByRole('button')).toBeNull();
+  });
+
+  it('words the manual schedule without its control for a user who can only view the hunt', () => {
+    const manual = item('schedule', 'met', 'Manual: it runs when you click Run now');
+    const { unmount } = testRender(<HuntReadinessChecklist huntId="hunt-id" items={[manual]} />);
+    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when you click Run now');
+    unmount();
+    testRender(<HuntReadinessChecklist huntId="hunt-id" items={[manual]} canEdit={false} />);
+    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user who can edit the hunt runs it');
   });
 
   it('words a missing logic as the platform does', () => {
@@ -97,7 +111,7 @@ describe('Hunt status header dialogs', () => {
     testRender(<HuntStatusHeader data={{ ...hunt, readiness: { ready: false, items: [unmetScope] } } as never} canEdit={false} />, {
       userContext: createMockUserContext({ me: { name: 'admin', user_email: 'admin@opencti.io', capabilities: [{ name: BYPASS }] } as never }),
     });
-    expect(screen.getByTestId('hunt-status-meaning')).toBeInTheDocument();
+    expect(screen.getByTestId('hunt-status-meaning')).toHaveTextContent(HUNT_STATUS_MEANINGS_READ_ONLY.active);
     expect(screen.queryByTestId('hunt-status-to-retired')).not.toBeInTheDocument();
     expect(screen.queryByTestId('hunt-query-preview-open')).not.toBeInTheDocument();
     expect(screen.queryByTestId('hunt-status-to-paused')).not.toBeInTheDocument();

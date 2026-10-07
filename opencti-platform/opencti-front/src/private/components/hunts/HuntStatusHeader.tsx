@@ -18,7 +18,15 @@ import { HuntStatusChip } from './HuntChips';
 import HuntRunStart from './runs/HuntRunStart';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import { useHuntScheduleText } from './HuntSchedulePreview';
-import { HUNT_STATUS_MEANINGS, HUNT_STATUSES, huntDraftWorkspacePath, huntStatusLabel, type HuntStatusValue } from './hunt-utils';
+import {
+  HUNT_READINESS_READ_ONLY_TEMPLATES,
+  HUNT_STATUS_MEANINGS,
+  HUNT_STATUS_MEANINGS_READ_ONLY,
+  HUNT_STATUSES,
+  huntDraftWorkspacePath,
+  huntStatusLabel,
+  type HuntStatusValue,
+} from './hunt-utils';
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { HuntStatusHeader_hunt$data, HuntStatusHeader_hunt$key } from './__generated__/HuntStatusHeader_hunt.graphql';
 import { HuntStatusHeaderStatusMutation } from './__generated__/HuntStatusHeaderStatusMutation.graphql';
@@ -81,12 +89,13 @@ export const huntPrimaryStatusAction = (status: string): { to: HuntStatusValue; 
 export const useReadinessSentence = () => {
   const { t_i18n } = useFormatter();
   const scheduleText = useHuntScheduleText();
-  return (item: Pick<ReadinessItem, 'key' | 'template' | 'values'>) => {
+  return (item: Pick<ReadinessItem, 'key' | 'template' | 'values'>, canEdit = true) => {
     const values: Record<string, string> = Object.fromEntries(item.values.map(({ name, value }) => [name, value]));
     if (item.key === 'schedule' && values.schedule) {
       values.schedule = scheduleText(values.schedule);
     }
-    return t_i18n(item.template, { values });
+    const template = canEdit ? item.template : (HUNT_READINESS_READ_ONLY_TEMPLATES[item.template] ?? item.template);
+    return t_i18n(template, { values });
   };
 };
 
@@ -168,7 +177,7 @@ export const HuntReadinessChecklist = ({ huntId, items, canEdit = true }: HuntRe
         >
           <ReadinessIcon status={item.status} />
           <span className="sr-only" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>{statusLabel(item.status)}</span>
-          <Text variant="content-compact">{sentence(item)}</Text>
+          <Text variant="content-compact">{sentence(item, canEdit)}</Text>
           {item.status !== 'met' && <ReadinessAction item={item} huntId={huntId} canEdit={canEdit} />}
         </li>
       ))}
@@ -204,6 +213,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
   const needsReadiness = primary?.to === 'active';
   const primaryBlocked = needsReadiness && unmet.length > 0;
   const scopePlatformIds = (hunt.scopePlatforms ?? []).map((platform) => platform.id);
+  const meanings = canEdit ? HUNT_STATUS_MEANINGS : HUNT_STATUS_MEANINGS_READ_ONLY;
 
   const apply = (to: HuntStatusValue) => {
     commit({
@@ -257,7 +267,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
           <div style={{ minWidth: 280, flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
               <HuntStatusChip value={status} />
-              <Text variant="content-compact" data-testid="hunt-status-meaning">{t_i18n(HUNT_STATUS_MEANINGS[status] ?? '')}</Text>
+              <Text variant="content-compact" data-testid="hunt-status-meaning">{t_i18n(meanings[status] ?? '')}</Text>
               <Button variant="tertiary" size="small" aria-expanded={showStatuses} onClick={() => setShowStatuses(!showStatuses)} data-testid="hunt-status-model-toggle">
                 {showStatuses ? t_i18n('Hide the statuses') : t_i18n('How statuses work')}
               </Button>
@@ -267,7 +277,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
                 {HUNT_STATUSES.map((value) => (
                   <React.Fragment key={value}>
                     <dt><Text variant={value === status ? 'content-compact-bold' : 'content-compact'}>{t_i18n(huntStatusLabel(value))}</Text></dt>
-                    <dd style={{ margin: 0 }}><Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n(HUNT_STATUS_MEANINGS[value])}</Text></dd>
+                    <dd style={{ margin: 0 }}><Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n(meanings[value])}</Text></dd>
                   </React.Fragment>
                 ))}
               </dl>

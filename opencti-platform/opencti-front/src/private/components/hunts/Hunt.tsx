@@ -67,9 +67,10 @@ const huntFragment = graphql`
 
 interface HuntProps {
   data: Hunt_hunt$key;
+  canEdit: boolean;
 }
 
-const Hunt = ({ data }: HuntProps) => {
+const Hunt = ({ data, canEdit }: HuntProps) => {
   const hunt = useFragment(huntFragment, data);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(hunt.entity_type);
   return (
@@ -99,7 +100,7 @@ const Hunt = ({ data }: HuntProps) => {
             case 'latestRuns':
               return (
                 <Grid key={key} item xs={width}>
-                  <HuntLatestRuns huntId={hunt.id} />
+                  <HuntLatestRuns huntId={hunt.id} canEdit={canEdit} />
                 </Grid>
               );
             case 'externalReferences':

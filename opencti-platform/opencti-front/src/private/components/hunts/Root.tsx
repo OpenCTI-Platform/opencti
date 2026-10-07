@@ -156,7 +156,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
         entity={hunt}
         basePath={basePath}
         pages={{
-          overview: <Hunt data={hunt} />,
+          overview: <Hunt data={hunt} canEdit={canEdit} />,
           logic: <HuntLogic data={hunt} canEdit={canEdit} />,
           runs: <HuntRuns hunt={hunt} canEdit={canEdit} />,
           evidence: <HuntEvidence huntId={hunt.id} />,

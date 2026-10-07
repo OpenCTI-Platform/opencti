@@ -344,6 +344,18 @@ export const HUNT_STATUS_MEANINGS: Record<HuntStatusValue, string> = {
   retired: 'Kept for the record; it never runs again until it is reopened as a draft.',
 };
 
+/** The same meanings for a user who can only view the hunt, who is not shown the controls they name. */
+export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
+  ...HUNT_STATUS_MEANINGS,
+  active: 'The hunt runs: on its schedule, when a PIR flags one of its targets, or when a user who can edit it runs it.',
+  paused: 'The schedule and the triggers are stopped; a user who can edit the hunt can still run it.',
+};
+
+/** The readiness sentences of the platform that name a control, as a user who can only view the hunt reads them. */
+export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
+  'Manual: it runs when you click Run now': 'Manual: it runs when a user who can edit the hunt runs it',
+};
+
 export const huntSourceKindLabel = (sourceKind?: string | null) => {
   switch (sourceKind) {
     case 'agent': return 'AI agent';

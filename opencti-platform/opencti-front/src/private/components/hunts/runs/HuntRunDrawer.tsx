@@ -562,6 +562,7 @@ const RunTriage = ({ run }: { run: Run }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { available, isEnterpriseEdition } = useHuntAI();
+  const canEdit = useContext(HuntEditContext);
   const [commitTriage, triaging] = useApiMutation<HuntRunDrawerTriageMutation>(huntRunDrawerTriageMutation);
   const [commitVerdict, accepting] = useApiMutation<HuntRunDrawerVerdictMutation>(huntRunDrawerVerdictMutation);
   const incident = parseHuntIncidentProposal(run.incident_proposal);
@@ -595,7 +596,7 @@ const RunTriage = ({ run }: { run: Run }) => {
         {unavailableReason && <Text variant="content-compact">{unavailableReason}</Text>}
         {!unavailableReason && !hasProposal && (
           <Text variant="content-compact">
-            {t_i18n('Ask an agent to propose a verdict for this run; the proposal is never applied without you')}
+            {canEdit ? t_i18n('Ask an agent to propose a verdict for this run; the proposal is never applied without you') : t_i18n('No verdict proposed yet.')}
           </Text>
         )}
         {hasProposal && (
