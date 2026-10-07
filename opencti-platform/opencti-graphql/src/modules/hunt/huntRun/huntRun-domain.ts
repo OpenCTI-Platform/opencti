@@ -801,6 +801,16 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   }
   let current = run;
   let complete = true;
+  // A failed step is attempted again by the hunt manager, unless the finalization is forced: its work is then lost
+  const stepFailed = (message: string, error: unknown) => {
+    complete = false;
+    const meta = { cause: error, runId: current.internal_id };
+    if (force) {
+      logApp.error(`${message}, given up`, meta);
+    } else {
+      logApp.warn(`${message}, attempted again by the hunt manager`, meta);
+    }
+  };
   // The hits as knowledge first: the incident relates to them
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_sample ?? []).length > 0 && (current.hit_observation_ids ?? []).length === 0) {
     try {
@@ -811,8 +821,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
         current = await patchHuntRun(context, current, { hit_observation_ids: observationIds, result_ids: resultIds });
       }
     } catch (error) {
-      complete = false;
-      logApp.error('[OPENCTI-MODULE] Hunt hit observations creation failed', { cause: error, runId: current.internal_id });
+      stepFailed('[OPENCTI-MODULE] Hunt hit observations creation failed', error);
     }
   }
   // One sighting per hunt, sighted object and platform, updated in place: never a sighting per run
@@ -824,8 +833,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
         current = await patchHuntRun(context, current, { result_ids: resultIds, sightings_created_count: current.sightings_created_count ?? sightings.created });
       }
     } catch (error) {
-      complete = false;
-      logApp.error('[OPENCTI-MODULE] Hunt sightings update failed', { cause: error, runId: current.internal_id });
+      stepFailed('[OPENCTI-MODULE] Hunt sightings update failed', error);
     }
   }
   // Only hits never seen before escalate: a standing hunt above its threshold on known activity opens nothing new. A
@@ -837,8 +845,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     try {
       current = await escalateHuntRun(context, hunt, current, null);
     } catch (error) {
-      complete = false;
-      logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: current.internal_id });
+      stepFailed('[OPENCTI-MODULE] Hunt incident draft creation failed', error);
     }
   }
   try {
@@ -849,15 +856,13 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       last_new_hits_count: newHits,
     }, { onlyIfNewer: true });
   } catch (error) {
-    complete = false;
-    logApp.error('[OPENCTI-MODULE] Hunt statistics update failed', { cause: error, runId: current.internal_id });
+    stepFailed('[OPENCTI-MODULE] Hunt statistics update failed', error);
   }
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
     try {
       await writeHuntCoverageResult(context, current);
     } catch (error) {
-      complete = false;
-      logApp.error('[OPENCTI-MODULE] Hunt coverage write-back failed', { cause: error, runId: current.internal_id });
+      stepFailed('[OPENCTI-MODULE] Hunt coverage write-back failed', error);
     }
   }
   if (!complete && !force) {
@@ -968,7 +973,7 @@ export const cancelHuntRuns = async (context: AuthContext, filters: FilterGroup[
         cancelled += 1;
       }
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt run cannot be cancelled', { cause: error, runId: runs[index].internal_id });
+      logApp.warn('[OPENCTI-MODULE] Hunt run cannot be cancelled, the hunt manager cancels it at a later pass', { cause: error, runId: runs[index].internal_id });
     }
   }
   return cancelled;
@@ -979,7 +984,7 @@ export const cancelDeletedHuntRuns = async (context: AuthContext, huntId: string
   try {
     return await cancelHuntRuns(context, [{ key: ['hunt_id'], values: [huntId] }], HUNT_MESSAGES.runCancelledHuntDeleted);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Runs of a deleted hunt cannot be cancelled', { cause: error, huntId });
+    logApp.warn('[OPENCTI-MODULE] Runs of a deleted hunt cannot be cancelled, the hunt manager cancels them at a later pass', { cause: error, huntId });
     return 0;
   }
 };
@@ -989,7 +994,7 @@ export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, conne
   try {
     return await cancelHuntRuns(context, [{ key: ['connector_id'], values: [connectorId] }], HUNT_MESSAGES.runCancelledConnectorDeleted);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Runs of a deleted hunt connector cannot be cancelled', { cause: error, connectorId });
+    logApp.warn('[OPENCTI-MODULE] Runs of a deleted hunt connector cannot be cancelled, the hunt manager cancels them at a later pass', { cause: error, connectorId });
     return 0;
   }
 };

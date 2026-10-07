@@ -218,7 +218,7 @@ export const requeueUnpublishedHuntRuns = async (context: AuthContext): Promise<
         logApp.warn('[OPENCTI-MODULE] Hunt run publication not recorded, run queued again under its work', { runId: run.internal_id, workId: run.work_id ?? null });
       }
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt run reservation cannot be released', { cause: error, runId: run.internal_id });
+      logApp.warn('[OPENCTI-MODULE] Hunt run reservation cannot be released, retried at the next tick', { cause: error, runId: run.internal_id });
     }
   }
   return requeued;
@@ -250,7 +250,7 @@ const cancelOrphanRunsOfPage = async (context: AuthContext, runs: BasicStoreEnti
           cancelled += 1;
         }
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Orphan hunt run cannot be cancelled', { cause: error, runId: run.internal_id });
+        logApp.warn('[OPENCTI-MODULE] Orphan hunt run cannot be cancelled, retried at the next tick', { cause: error, runId: run.internal_id });
       }
     }
   }
@@ -305,7 +305,7 @@ export const reconcileOrphanedHuntRuns = async (context: AuthContext): Promise<n
       await markHuntRunsOrphaned(Array.from(clear), false);
       reconciled += flag.size + clear.size;
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Runs of deleted hunts cannot be flagged', { cause: error, hunts: flag.size + clear.size });
+      logApp.warn('[OPENCTI-MODULE] Runs of deleted hunts cannot be flagged, flagged at the next pass of the scan', { cause: error, hunts: flag.size + clear.size });
     }
   }, { scan: 'orphaned-runs' });
   return reconciled;
@@ -350,7 +350,7 @@ export const expireStaleHuntRuns = async (context: AuthContext): Promise<number>
         await expireHuntRun(context, runs[index], reason);
         expired += 1;
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt run expiration failed', { cause: error, runId: runs[index].internal_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt run expiration failed, retried at the next tick', { cause: error, runId: runs[index].internal_id });
       }
     }
   }
@@ -394,9 +394,9 @@ export const retryFailedHuntRuns = async (context: AuthContext, budget: HuntTick
         }
       }
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt run retry failed', { cause: error, runId: listed.internal_id });
+      logApp.warn('[OPENCTI-MODULE] Hunt run retry failed, planned again', { cause: error, runId: listed.internal_id });
       await patchAttribute(context, HUNT_MANAGER_USER, listed.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(listed.attempt ?? 1) })
-        .catch((restoreError) => logApp.error('[OPENCTI-MODULE] Hunt run retry reschedule failed', { cause: restoreError, runId: listed.internal_id }));
+        .catch((restoreError) => logApp.warn('[OPENCTI-MODULE] Hunt run retry cannot be planned again, retried at the next tick', { cause: restoreError, runId: listed.internal_id }));
     }
   }
   return retried;
@@ -428,7 +428,7 @@ export const finalizeInterruptedHuntRuns = async (context: AuthContext): Promise
         finalized += 1;
       }
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt run finalization could not be completed', { cause: error, runId: runs[index].internal_id });
+      logApp.warn('[OPENCTI-MODULE] Hunt run finalization could not be completed, retried at the next tick', { cause: error, runId: runs[index].internal_id });
     }
   }
   return finalized;
@@ -538,7 +538,7 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
         await deleteElementById(context, HUNT_MANAGER_USER, runs[index].internal_id, ENTITY_TYPE_HUNT_RUN);
         purged += 1;
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt run purge failed', { cause: error, runId: runs[index].internal_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt run purge failed, retried at the next tick', { cause: error, runId: runs[index].internal_id });
       }
     }
   }
@@ -546,7 +546,7 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
   try {
     await purgeExpiredHuntHitRecords(minutesAgo(HUNT_CONFIG.runRetentionDays * 24 * 60));
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Hunt known hits purge failed', { cause: error });
+    logApp.warn('[OPENCTI-MODULE] Hunt known hits purge failed, retried at the next tick', { cause: error });
   }
   return purged;
 };
