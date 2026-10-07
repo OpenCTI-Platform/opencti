@@ -207,7 +207,7 @@ export class TelemetryMeterManager {
   relationshipsProvidesCount = 0;
 
   // Number of techniques with a defense level above none
-  defenseCoveredTechniquesCount = 0;
+  defenseTechniquesWithLevelCount = 0;
 
   // Number of techniques whose detection or prevention is validated by OpenAEV
   defenseValidatedTechniquesCount = 0;
@@ -552,8 +552,8 @@ export class TelemetryMeterManager {
     this.relationshipsProvidesCount = n;
   }
 
-  setDefenseCoveredTechniquesCount(n: number) {
-    this.defenseCoveredTechniquesCount = n;
+  setDefenseTechniquesWithLevelCount(n: number) {
+    this.defenseTechniquesWithLevelCount = n;
   }
 
   setDefenseValidatedTechniquesCount(n: number) {
@@ -803,7 +803,7 @@ export class TelemetryMeterManager {
     this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
     this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
     this.registerGauge('relationships_provides_count', 'Number of relationships provides', 'relationshipsProvidesCount');
-    this.registerGauge('defense_covered_techniques_count', 'Number of techniques with a defense level above none', 'defenseCoveredTechniquesCount');
+    this.registerGauge('defense_techniques_with_level_count', 'Number of techniques with a defense level above none', 'defenseTechniquesWithLevelCount');
     this.registerGauge('defense_validated_techniques_count', 'Number of techniques validated by OpenAEV', 'defenseValidatedTechniquesCount');
     this.registerGauge('defense_open_gaps_count', 'Number of open defense gaps', 'defenseOpenGapsCount');
     this.registerGauge('defense_validation_request_count', 'Number of defense validation requests created from gaps', 'defenseValidationRequestCount');
