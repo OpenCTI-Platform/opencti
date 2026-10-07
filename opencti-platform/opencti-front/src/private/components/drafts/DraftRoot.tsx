@@ -1,8 +1,5 @@
-import React, { Suspense, useEffect } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import React, { Suspense, useCallback, useEffect } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router';
 import DraftEntities from '@components/drafts/DraftEntities';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
@@ -11,7 +8,7 @@ import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
-import Paper from '@mui/material/Paper';
+import { Paper, Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
@@ -25,6 +22,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
+import useDraftAutoEnter from './useDraftAutoEnter';
 import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
@@ -142,19 +140,17 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
 
   // switch to draft
   const { enterDraft } = useSwitchDraft();
-
-  useEffect(() => {
-    if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
-      enterDraft(draftId, {
-        onCompleted: () => {
-          MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
-        },
-        onError: (error) => {
-          MESSAGING$.notifyRelayError(error);
-        },
-      });
-    }
-  }, [draftContext, draftId, enterDraft, isDraftReadOnly, t_i18n]);
+  const enterThisDraft = useCallback((id: string) => {
+    enterDraft(id, {
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(<span>{t_i18n('You are now in Draft Mode')}</span>);
+      },
+      onError: (error) => {
+        MESSAGING$.notifyRelayError(error);
+      },
+    });
+  }, [enterDraft, t_i18n]);
+  useDraftAutoEnter({ draftId, disabled: isDraftReadOnly, enterDraft: enterThisDraft });
 
   useEffect(() => {
     // Refresh
@@ -202,8 +198,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {validationWork && (
             <Paper
               key={validationWork.id}
-              style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
-              variant="outlined"
+              padding={16}
+              style={{ margin: '10px 0 20px 0', position: 'relative' }}
             >
               <ConnectorWorkLine
                 workId={validationWork.id}
@@ -221,81 +217,40 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           )}
         </>
       )}
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
+      <Tabs
+        id="tabs-container"
+        value={getCurrentTab(location.pathname, basePath)}
+        panels="external"
       >
-        <Tabs
-          id="tabs-container"
-          value={getCurrentTab(location.pathname, basePath)}
-        >
-          <Tab
-            component={Link}
-            to="overview"
-            value="overview"
-            label={
-              <span>{t_i18n('Overview')}</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="entities"
-            value="entities"
-            label={
-              <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="observables"
-            value="observables"
-            label={
-              <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="relationships"
-            value="relationships"
-            label={
-              <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="sightings"
-            value="sightings"
-            label={
-              <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
-            }
-          />
-          <Tab
-            component={Link}
-            to="containers"
-            value="containers"
-            label={
-              <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
-            }
-          />
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview" asChild>
+            <Link to={`${basePath}/overview`}>{t_i18n('Overview')}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="entities" asChild>
+            <Link to={`${basePath}/entities`}>{`${t_i18n('Entities')} (${objectsCount.entitiesCount})`}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="observables" asChild>
+            <Link to={`${basePath}/observables`}>{`${t_i18n('Observables')} (${objectsCount.observablesCount})`}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="relationships" asChild>
+            <Link to={`${basePath}/relationships`}>{`${t_i18n('Relationships')} (${objectsCount.relationshipsCount})`}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="sightings" asChild>
+            <Link to={`${basePath}/sightings`}>{`${t_i18n('Sightings')} (${objectsCount.sightingsCount})`}</Link>
+          </TabsTrigger>
+          <TabsTrigger value="containers" asChild>
+            <Link to={`${basePath}/containers`}>{`${t_i18n('Containers')} (${objectsCount.containersCount})`}</Link>
+          </TabsTrigger>
           {!isDraftReadOnly && canAskImportKnowledge && (
-            <Tab
-              component={Link}
-              to="files"
-              value="files"
-              label={t_i18n('Files')}
-            />
+            <TabsTrigger value="files" asChild>
+              <Link to={`${basePath}/files`}>{t_i18n('Files')}</Link>
+            </TabsTrigger>
           )}
-          <Tab
-            component={Link}
-            to="review"
-            value="review"
-            label={<span>{t_i18n('Review')} ({objectsCount.reviewsCount})</span>}
-          />
-        </Tabs>
-      </Box>
+          <TabsTrigger value="review" asChild>
+            <Link to={`${basePath}/review`}>{`${t_i18n('Review')} (${objectsCount.reviewsCount})`}</Link>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
       <Routes>
         <Route
           path="/"

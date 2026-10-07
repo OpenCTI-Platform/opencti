@@ -18,6 +18,9 @@ import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
 import { GqlFilterGroup, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Card from '../../../../components/common/card/Card';
 
+// The library item declares a 16x16 glyph.
+const GLYPH = { fontSize: 16 };
+
 interface TriggersProps {
   recipientId: string;
   filterKey: string;
@@ -98,8 +101,8 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <Card
         title={t_i18n('Triggers and Digests')}
         action={(
-          <Stack direction="row" gap={1}>
-            <div>
+          <Stack direction="row" gap={1} alignItems="center">
+            <Stack direction="row" alignItems="center" gap={0.5}>
               <Tooltip title={t_i18n('Add a live trigger')}>
                 <IconButton
                   aria-label="Add"
@@ -107,7 +110,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
                   size="small"
                   color="primary"
                 >
-                  <CampaignOutlined fontSize="small" />
+                  <CampaignOutlined sx={GLYPH} />
                 </IconButton>
               </Tooltip>
               <TriggerLiveCreation
@@ -123,12 +126,11 @@ const Triggers: FunctionComponent<TriggersProps> = ({
                   size="small"
                   color="primary"
                 >
-                  <BackupTableOutlined fontSize="small" />
+                  <BackupTableOutlined sx={GLYPH} />
                 </IconButton>
               </Tooltip>
-            </div>
+            </Stack>
             <SearchInput
-              style={{ transform: 'translateY(-5px)' }}
               variant="thin"
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}

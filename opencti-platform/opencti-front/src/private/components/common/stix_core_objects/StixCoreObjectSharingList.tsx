@@ -1,13 +1,13 @@
 import { ReactNode, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
-import Tag from '@common/tag/Tag';
-import { AccountBalanceOutlined } from '@mui/icons-material';
 import TagsOverflow from '@common/tag/TagsOverflow';
+import ItemOrganizations from 'src/components/ItemOrganizations';
 
 const objectOrganizationFragment = graphql`
   fragment StixCoreObjectSharingListFragment on StixCoreObject {
@@ -79,13 +79,35 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
       getKey={(organization) => organization.id}
       getLabel={(organization) => organization.name}
       renderTag={(organization) => (
-        <Tag
-          label={organization.name}
-          onDelete={() => removeOrganization(organization.id)}
+        <ItemOrganizations
+          organizationName={organization.name}
+          organizationId={organization.id}
+          removeOrganization={removeOrganization}
           disabled={disabled || disabledOrgs.includes(organization.id)}
-          icon={<AccountBalanceOutlined fontSize="small" />}
-          maxWidth={150}
         />
+      )}
+      renderOverflowTooltip={(hiddenOrganizations) => (
+        <Stack
+          direction="column"
+          gap={0.5}
+          sx={{
+            p: 0.5,
+            '& > span': {
+              width: '100%',
+              justifyContent: 'space-between',
+            },
+          }}
+        >
+          {hiddenOrganizations.map((organization) => (
+            <ItemOrganizations
+              key={organization.id}
+              organizationName={organization.name}
+              organizationId={organization.id}
+              removeOrganization={removeOrganization}
+              disabled={disabled || disabledOrgs.includes(organization.id)}
+            />
+          ))}
+        </Stack>
       )}
       direction="rtl"
     >

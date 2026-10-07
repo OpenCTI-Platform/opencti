@@ -63,16 +63,6 @@ const notesLineFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
   }
 `;
@@ -153,8 +143,9 @@ const Notes: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notes | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable } } = useAuth();
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -197,7 +188,7 @@ const Notes: FunctionComponent = () => {
     creator: { isSortable: isRuntimeSort },
     objectLabel: {},
     created: { percentWidth: 10 },
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
+    x_opencti_workflow_id: {},
     objectMarking: { isSortable: isRuntimeSort },
   };
 

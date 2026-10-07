@@ -7,7 +7,6 @@ import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { CREATOR_AUTHORIZED_CONFIG } from '../../../../../utils/authorizedMembers';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -31,11 +30,11 @@ vi.mock('../../../common/entreprise_edition/EEChip', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn()) => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <StatusForm />
+        <StatusForm entityType={entityType} />
       </Form>
     </Formik>,
   );
@@ -151,7 +150,7 @@ describe('StatusForm – EE / CE gating', () => {
         const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
         expect(uamAction?.params?.authorized_members).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+            expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
           ]),
         );
       });
@@ -170,10 +169,31 @@ describe('StatusForm – EE / CE gating', () => {
         const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
         expect(uamAction?.params?.authorized_members).toEqual(
           expect.arrayContaining([
-            expect.objectContaining({ value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' }),
+            expect.objectContaining({ value: 'CREATORS', accessRight: 'admin' }),
           ]),
         );
       });
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// entityType-based section visibility
+// ---------------------------------------------------------------------------
+describe('StatusForm – entityType-based section visibility', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('hides "On enter actions" and "On exit actions" for a non-supported entityType', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Malware');
+    expect(screen.queryByText(/on enter actions/i)).toBeNull();
+    expect(screen.queryByText(/on exit actions/i)).toBeNull();
+  });
+
+  it('renders "On enter actions" and "On exit actions" for a Container entityType that supports authorized members', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Report');
+    expect(screen.queryByText(/on enter actions/i)).not.toBeNull();
+    expect(screen.queryByText(/on exit actions/i)).not.toBeNull();
   });
 });

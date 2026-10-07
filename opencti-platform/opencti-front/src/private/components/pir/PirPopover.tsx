@@ -17,7 +17,7 @@ import React, { UIEvent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { Menu, MenuItem, PopoverProps, ToggleButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { PirPopoverFragment$key } from './__generated__/PirPopoverFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
 import stopEvent from '../../../utils/domEvent';

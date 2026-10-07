@@ -1,7 +1,17 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
+import {
+  Combobox,
+  type ComboboxChangeMeta,
+  ComboboxChips,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxHelperText,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import { FilesNativeFieldQuery$data } from '@components/common/form/__generated__/FilesNativeFieldQuery.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import { FileOutline } from 'mdi-material-ui';
@@ -30,9 +40,7 @@ const useStyles = makeStyles(() => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
+
 }));
 
 const filesNativeFieldQuery = graphql`
@@ -108,42 +116,48 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
   };
   return (
     <div style={{ width: '100%' }}>
-      <Autocomplete
-        size="small"
+      <Combobox<{ label: string; value: string }>
         selectOnFocus={true}
-        autoHighlight={true}
-        handleHomeEndKeys={true}
         multiple={true}
+        // MUI parity: none of these mounts passed disableCloseOnSelect, so the panel closed
+        // after each pick.
+        closeOnSelect
         value={currentValue}
+        // Truncation lives in the label function here, so it already applied to BOTH the chips
+        // and the input under MUI — unlike the fields whose renderTags used a different label.
         getOptionLabel={(option) => truncate(option?.label ?? '', 40)}
-        renderInput={({ inputProps: { value, ...inputProps }, ...params }) => (
-          <TextField
-            {...{ ...params, inputProps }}
-            label={label}
-            value={value}
-            name={name}
-            fullWidth={true}
-            style={containerStyle}
-            helperText={helperText}
-          />
-        )}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { label: string; value: string },
-        ) => (
-          <li {...props}>
+        // MUI hid its clear indicator with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
+        clearable={false}
+        options={files}
+        // searchFiles takes no argument — it loads every file of the entity — so
+        // the cause gate only avoids redundant fetches.
+        onInputChange={(_search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchFiles();
+        }}
+        onValueChange={(value) => (onChange ? onChange(value as { label: string; value: string }[]) : null)}
+        renderOption={(option) => (
+          <>
             <div className={classes.icon}>
               <FileOutline />
             </div>
             <div className={classes.text}>{option.label ?? ''}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        options={files}
-        onFocus={searchFiles}
-        onInputChange={searchFiles}
-        onChange={(_, value) => (onChange ? onChange(value) : null)}
-      />
+      >
+        <div style={containerStyle}>
+          <ComboboxLabel>{label}</ComboboxLabel>
+          <ComboboxField>
+            <ComboboxChips aria-label={label} />
+            <ComboboxInput name={name} onFocus={() => searchFiles()} />
+            <ComboboxControls>
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
+        </div>
+        <ComboboxContent listAriaLabel={label} />
+      </Combobox>
     </div>
   );
 };

@@ -10,7 +10,9 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
-import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
@@ -18,7 +20,7 @@ interface AttackPatternsMatrixColumnsElementProps {
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
 }
 
@@ -32,9 +34,18 @@ const AttackPatternsMatrixColumnsElement = ({
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
+  const { t_i18n } = useFormatter();
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
+
+  const getAvgCoverageScore = (): number | null => {
+    if (coverage) {
+      return coverage.reduce((sum, c) => sum + c.coverage_score, 0) / coverage.length;
+    } else {
+      return null;
+    }
+  };
 
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
@@ -58,12 +69,16 @@ const AttackPatternsMatrixColumnsElement = ({
     }
 
     // Get the average coverage score if there are multiple coverages
-    const avgScore = coverage.reduce((sum, c) => sum + c.coverage_score, 0) / coverage.length;
+    const avgScore = getAvgCoverageScore();
 
     // Calculate color based on score (0-100)
     // Green to red gradient
-    const red = Math.round(255 * (1 - avgScore / 100));
-    const green = Math.round(255 * (avgScore / 100));
+    let red = 255;
+    let green = 255;
+    if (avgScore) {
+      red = Math.round(255 * (1 - avgScore / 100));
+      green = Math.round(255 * (avgScore / 100));
+    }
     const bgOpacity = isHovered ? 0.25 : 0.15;
     const borderOpacity = 0.5;
 
@@ -78,11 +93,23 @@ const AttackPatternsMatrixColumnsElement = ({
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
   const { border, backgroundColor } = styles;
+
+  const a11yProps = () => {
+    const scoreValue = getAvgCoverageScore();
+    if (scoreValue) {
+      return {
+        'aria-label': `${Math.round(scoreValue)}% ${t_i18n('Coverage')}`,
+      };
+    }
+    return undefined;
+  };
+
   return (
     <Box
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => handleOpen(attackPattern, e)}
+      {...a11yProps()}
       sx={{
         display: 'flex',
         cursor: 'pointer',

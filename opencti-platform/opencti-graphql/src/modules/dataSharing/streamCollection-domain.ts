@@ -10,7 +10,7 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { validateFilterGroupForStreamOriginMatch } from '../../utils/filtering/filtering-stream-origin/stream-origin-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { TAXIIAPI } from '../../domain/user';
+import { TAXIIAPI } from '../user/user-domain';
 import { validatePublicUserId } from './dataSharing-utils';
 import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';

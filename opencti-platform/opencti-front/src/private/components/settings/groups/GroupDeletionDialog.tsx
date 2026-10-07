@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { DialogActions, DialogContentText } from '@mui/material';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -29,8 +29,7 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('Group') },
   });
   const [commitDeleteMutation] = useApiMutation(

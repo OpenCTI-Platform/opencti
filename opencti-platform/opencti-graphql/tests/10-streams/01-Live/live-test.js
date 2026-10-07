@@ -65,6 +65,6 @@ describe('Live streams tests', () => {
       const diffElements = await checkInstanceDiff(stixReport, stixInstance);
       expect(diffElements.length).toBe(0);
     },
-    FIVE_MINUTES
+    FIVE_MINUTES,
   );
 });

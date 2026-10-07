@@ -25,8 +25,11 @@ const ClearFiltersIcon = ({
       <IconButton
         color={buttonColor}
         onClick={onClear}
-        size="small"
+        size="default"
         disabled={hasActiveFilters != undefined ? !hasActiveFilters : disabled}
+        // Back on MUI, by Sandy's ruling.
+        keepMui
+        aria-label={t_i18n('Clear filters')}
       >
         <FilterAltOff fontSize="small" />
       </IconButton>

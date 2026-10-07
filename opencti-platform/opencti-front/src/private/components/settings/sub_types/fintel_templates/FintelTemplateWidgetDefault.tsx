@@ -1,6 +1,7 @@
 import React from 'react';
 import { ContentCopy, Edit, DeleteOutline, WarningAmber } from '@mui/icons-material';
-import { ListItemText, Tooltip, Typography, IconButton, ListItem } from '@mui/material';
+import { ListItemText, Tooltip, Typography, ListItem } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
 import { renderWidgetIcon } from '../../../../../utils/widget/widgetUtils';
 import { useFormatter } from '../../../../../components/i18n';
@@ -56,22 +57,24 @@ const FintelTemplateWidgetDefault = ({
         <div>
           <Tooltip title={t_i18n('Change which data to retrieve in this widget')}>
             <IconButton
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Change which data to retrieve in this widget')}
               aria-haspopup="true"
-              color="primary"
               onClick={onUpdate}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
+              icon={<Edit fontSize="small" />}
+            />
           </Tooltip>
 
           <Tooltip title={t_i18n('Delete widget')}>
             <IconButton
+              variant="default"
+              priority="tertiary"
+              aria-label={t_i18n('Delete widget')}
               aria-haspopup="true"
-              color="primary"
               onClick={onDelete}
-            >
-              <DeleteOutline fontSize="small" />
-            </IconButton>
+              icon={<DeleteOutline fontSize="small" />}
+            />
           </Tooltip>
         </div>
       </div>
@@ -93,12 +96,13 @@ const FintelTemplateWidgetDefault = ({
 
         <Tooltip title={t_i18n('Copy widget name to clipboard')}>
           <IconButton
+            variant="default"
+            priority="tertiary"
+            aria-label={t_i18n('Copy widget name to clipboard')}
             aria-haspopup="true"
-            color="primary"
             onClick={copyWidgetToClipboard}
-          >
-            <ContentCopy fontSize="small" />
-          </IconButton>
+            icon={<ContentCopy fontSize="small" />}
+          />
         </Tooltip>
       </div>
     </ListItem>

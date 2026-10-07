@@ -47,6 +47,8 @@ const forbiddenProperties = new Set([
   'setPrototypeOf',
 ]);
 
+const isForbiddenName = (name: string) => name.includes('\\') || name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name);
+
 const authorizeGlobals = new Map<string, string | true>([
   ['undefined', true],
   ['Object', safeName('Object')],
@@ -83,10 +85,7 @@ const forbiddenGlobals = [
 
 const noop = () => {};
 
-const createSafeContext = (
-  async: boolean,
-  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod, escape }: SafeOptions & { escape?: (str: string) => string },
-) => {
+const createSafeContext = (async: boolean, data: Data, { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod }: SafeOptions) => {
   let executedStatementCount = 0;
   const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
     executedStatementCount += 1;
@@ -102,7 +101,7 @@ const createSafeContext = (
     }
   } : noop;
 
-  const context: Record<string, unknown> = {
+  const guards: Record<string, unknown> = {
     [safeName('statement')]: async
       ? async () => {
         checkMaxExecutedStatementCount();
@@ -145,12 +144,13 @@ const createSafeContext = (
     }),
   };
 
-  // If a custom escape function is provided, make it available in template context
-  if (escape) {
-    context.escape = escape;
-  }
-
-  return context;
+  const globals = Object.fromEntries(
+    [...authorizeGlobals.entries()].map(([name, replacement]) => [
+      name,
+      replacement === true ? (globalThis as Record<string, unknown>)[name] : guards[replacement],
+    ]),
+  );
+  return { ...globals, ...data, ...guards };
 };
 
 /**
@@ -337,7 +337,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     const rawPropertyName = nodeText();
     const isQuoted = ['"', '\'', '`'].includes(rawPropertyName[0]);
     const propertyName = isQuoted ? rawPropertyName.substring(1, rawPropertyName.length - 1) : rawPropertyName;
-    if (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName)) {
+    if (isForbiddenName(propertyName)) {
       throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName })}`);
     }
   };
@@ -351,10 +351,11 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
 
   const processVariableDefinition = () => {
     const variableName = nodeText();
-    if (variableName.startsWith(safeReservedPrefix) || forbiddenGlobals.includes(variableName) || forbiddenProperties.has(variableName)) {
+    const shadowsHostGlobal = !authorizeGlobals.has(variableName) && typeof (globalThis as Record<string, unknown>)[variableName] !== 'undefined';
+    if (isForbiddenName(variableName) || shadowsHostGlobal) {
       throw new VerifierIllegalAccessError(`Forbidden variable definition ${JSON.stringify({ variableName })}`);
     }
-    allowedVars.set(variableName, true); // TODO: should we handle the variable scope ?
+    allowedVars.set(variableName, true);
   };
 
   const processVariableName = () => {
@@ -439,6 +440,6 @@ export const safeRender = (template: string, data: Data, options: SafeRenderOpti
   }
   const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
-  const safeContext = createSafeContext(async, options);
-  return ejs.render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);
+  const safeContext = createSafeContext(async, data ?? {}, options);
+  return ejs.render(safeTemplate, safeContext, options);
 };

@@ -285,13 +285,36 @@ const initHistoryManager = () => {
   let running = false;
   let shutdown = false;
   const waitTimer = new InterruptibleTimer();
-  const historyHandler = async (lastEventId: string) => {
+  // Find the last event id indexed, to restart the stream consumption from this point.
+  // Must be computed at each (re)start, as the processor can stop at any time (redis error, lock lost, ...)
+  const resolveLastIndexedEventId = async () => {
+    const context = executionContext('history_manager');
+    const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
+      first: 1,
+      indices: [INDEX_HISTORY],
+      orderBy: ['timestamp'],
+      orderMode: OrderingMode.Desc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
+        filterGroups: [],
+      },
+      noFiltersChecking: true,
+    });
+    if (histoElements.length > 0) {
+      const histoDate = histoElements[0].timestamp;
+      return `${utcDate(histoDate).unix() * 1000}-0`;
+    }
+    return '0-0';
+  };
+  const historyHandler = async () => {
     let lock;
     try {
       // Lock the manager
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
+      const lastEventId = await resolveLastIndexedEventId();
       streamProcessor = createStreamProcessor('History manager', historyStreamHandler, { bufferTime: 5000, withInternal: true });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
@@ -313,29 +336,9 @@ const initHistoryManager = () => {
   };
   return {
     start: async () => {
-      // To start the manager we need to find the last event id indexed
-      // and restart the stream consumption from this point.
-      const context = executionContext('history_manager');
-      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
-        first: 1,
-        indices: [INDEX_HISTORY],
-        orderBy: ['timestamp'],
-        orderMode: OrderingMode.Desc,
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
-          filterGroups: [],
-        },
-        noFiltersChecking: true,
-      });
-      let lastEventId = '0-0';
-      if (histoElements.length > 0) {
-        const histoDate = histoElements[0].timestamp;
-        lastEventId = `${utcDate(histoDate).unix() * 1000}-0`;
-      }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        await historyHandler(lastEventId);
+        await historyHandler();
       }, SCHEDULE_TIME);
     },
     status: () => {

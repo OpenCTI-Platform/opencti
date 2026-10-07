@@ -18,7 +18,7 @@ import { FunctionalError } from '../../config/errors';
 import { getEntitySettingSchemaAttributes, getMandatoryAttributesForSetting } from './entitySetting-attributeUtils';
 import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewLayoutCustomization';
 import type { BasicConnection, BasicStoreEntity } from '../../types/store';
-import { findAllMembers } from '../../domain/user';
+import { findAllMembers } from '../user/user-domain';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';

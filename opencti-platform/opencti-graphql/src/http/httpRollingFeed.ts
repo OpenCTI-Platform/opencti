@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';

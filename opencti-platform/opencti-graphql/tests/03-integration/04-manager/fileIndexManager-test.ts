@@ -21,37 +21,37 @@ docList.push(getMockDocument('doc1'));
 docList.push(getMockDocument('doc2'));
 docList.push(getMockDocument('doc3'));
 
+vi.mock('../../../src/modules/internal/document/document-domain', () => {
+  return {
+    allFilesForPaths: vi.fn(() => docList),
+  };
+});
+
+// GIVEN one document in the list that throw an error.
+vi.mock('../../../src/database/file-storage', () => {
+  return {
+    getFileContent: vi.fn().mockImplementation((id) => {
+      if (id === 'doc2') {
+        throw new Error('thrown error');
+      }
+    }),
+  };
+});
+
+vi.mock('../../../src/modules/managerConfiguration/managerConfiguration-domain', () => {
+  return {
+    getManagerConfigurationFromCache: vi.fn().mockImplementation(() => {
+      const managerMock: Partial<BasicStoreEntityManagerConfiguration> = {
+        manager_running: true,
+      };
+      return managerMock;
+    }),
+  };
+});
+
 describe.concurrent('Testing exception management in FileIndexManager', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  vi.mock('../../../src/modules/internal/document/document-domain', () => {
-    return {
-      allFilesForPaths: vi.fn(() => docList),
-    };
-  });
-
-  // GIVEN one document in the list that throw an error.
-  vi.mock('../../../src/database/file-storage', () => {
-    return {
-      getFileContent: vi.fn().mockImplementation((id) => {
-        if (id === 'doc2') {
-          throw new Error('thrown error');
-        }
-      }),
-    };
-  });
-
-  vi.mock('../../../src/modules/managerConfiguration/managerConfiguration-domain', () => {
-    return {
-      getManagerConfigurationFromCache: vi.fn().mockImplementation(() => {
-        const managerMock: Partial<BasicStoreEntityManagerConfiguration> = {
-          manager_running: true,
-        };
-        return managerMock;
-      }),
-    };
   });
 
   it('should not block indexing when an exception is raised for one file.', async () => {

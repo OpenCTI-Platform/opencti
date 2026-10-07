@@ -9,11 +9,11 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -22,7 +22,9 @@ import { memoize } from '../utils/memoize';
 import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
-import { LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
+import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -41,6 +43,22 @@ export const issueConnectorJWT = async () => {
   return await keyPair.signJwt(jwt);
 };
 
+export const isConnectorActive = (connector) => {
+  if (connector.built_in) {
+    return connector.active ?? true;
+  }
+  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
+    // return false if managed connector is stopped or stopping
+    const connectorStopped = connector.manager_requested_status === 'stopping'
+      || connector.manager_requested_status === 'stopped'
+      || connector.manager_current_status === 'stopped';
+    if (connectorStopped) {
+      return false;
+    }
+  }
+  return sinceNowInMinutes(connector.updated_at) < 5;
+};
+
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
@@ -56,7 +74,7 @@ export const completeConnector = (connector) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
+    completed.active = isConnectorActive(connector);
     return completed;
   }
   return null;
@@ -76,28 +94,22 @@ export const connector = async (context, user, id) => {
 };
 
 export const computeManagerConnectorContract = async (_context, _user, cn) => {
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-  return contract ? JSON.stringify(contract) : contract;
+  if (!cn.manager_contract) {
+    return null;
+  }
+  return JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(cn.manager_contract, { excludeRuntimeConfigVars: true }));
 };
 
 export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
-  if (!cn.manager_contract_image) {
+  if (!cn.manager_contract) {
     return null;
   }
-
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-
-  if (!contract) {
-    logApp.warn('No contract found for', { connectorName: cn.name });
-    return null;
-  }
+  const managerContract = cn.manager_contract;
 
   return {
-    title: contract.title,
-    slug: contract.slug,
-    logo: contract.logo,
+    title: managerContract.title,
+    slug: managerContract.slug,
+    logo: managerContract.logo_uri ?? '',
   };
 };
 
@@ -171,10 +183,18 @@ export const computeManagerConnectorConfiguration = async (context, _, cn, { wit
 };
 
 export const computeManagerConnectorImage = async (cn) => {
-  const contracts = await getSupportedContractsByImage();
-  const contract = contracts.get(cn.manager_contract_image);
-  if (!contract) return '';
-  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
+  if (!cn.manager_contract) {
+    return '';
+  }
+  const managerContract = cn.manager_contract;
+  if (!managerContract.image || !managerContract.contract_version) {
+    throw FunctionalError('Invalid manager contract snapshot', {
+      connectorId: cn.id ?? cn.internal_id,
+      image: managerContract.image,
+      version: managerContract.contract_version,
+    });
+  }
+  return `${managerContract.image}:${managerContract.contract_version}`;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {
@@ -209,6 +229,38 @@ export const connectorsForManagers = async (context, user) => {
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
+};
+
+const NO_UPDATE_STATUS = {
+  update_available: false,
+  latest_compatible_version: null,
+  has_newer_incompatible_version: false,
+};
+
+// Batched for connector lists: the catalog contracts of all the connectors are loaded at once, by slug.
+// Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
+// A catalog failure only removes the update hints: the connectors themselves still resolve.
+export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
+  // Without decoupled versions, the catalog only changes with the platform: no update to report
+  if (!isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)) {
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
+  try {
+    const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
+    const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
+    const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
+    const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
+    return connectorsToCheck.map((cn, index) => {
+      const slug = slugs[index];
+      if (!slug) {
+        return NO_UPDATE_STATUS;
+      }
+      return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
+    });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to compute the connectors update status', { module: 'connector', error });
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
 };
 
 export const connectorsForWorker = async (context, user) => {

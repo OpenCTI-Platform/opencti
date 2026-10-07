@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import {
   ThreatActorIndividualEditionOverview_ThreatActorIndividual$key,
@@ -24,6 +21,7 @@ import ThreatActorIndividualEditionDemographics from './ThreatActorIndividualEdi
 import ThreatActorIndividualEditionBiographics from './ThreatActorIndividualEditionBiographics';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 interface ThreatActorIndividualEditionContainerProps {
   queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
@@ -58,8 +56,8 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
     queryRef,
   );
 
-  const [currentTab, setCurrentTab] = useState(0);
-  const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
+  const [currentTab, setCurrentTab] = useState('overview');
+  const enableReferences = useIsEnforceReference(THREAT_ACTOR_TYPE);
 
   if (threatActorIndividual !== null) {
     return (
@@ -72,44 +70,45 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
       >
         {({ onClose }) => (
           <>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={currentTab} onChange={handleChangeTab}>
-                <Tab label={t_i18n('Overview')} />
-                <Tab label={t_i18n('Details')} />
-                <Tab label={t_i18n('Demographics')} />
-                <Tab label={t_i18n('Biographics')} />
-              </Tabs>
-            </Box>
-            {currentTab === 0 && (
-              <ThreatActorIndividualEditionOverview
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionOverview_ThreatActorIndividual$key}
-                enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual?.editContext}
-                handleClose={onClose}
-              />
-            )}
-            {currentTab === 1 && (
-              <ThreatActorIndividualEditionDetails
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDetails_ThreatActorIndividual$key}
-                enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual?.editContext}
-                handleClose={onClose}
-              />
-            )}
-            {currentTab === 2 && (
-              <ThreatActorIndividualEditionDemographics
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key}
-                enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual?.editContext}
-              />
-            )}
-            {currentTab === 3 && (
-              <ThreatActorIndividualEditionBiographics
-                threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key}
-                enableReferences={useIsEnforceReference(THREAT_ACTOR_TYPE)}
-                context={threatActorIndividual?.editContext}
-              />
-            )}
+            <Tabs value={currentTab} onValueChange={setCurrentTab}>
+              <TabsList>
+                <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+                <TabsTrigger value="details">{t_i18n('Details')}</TabsTrigger>
+                <TabsTrigger value="demographics">{t_i18n('Demographics')}</TabsTrigger>
+                <TabsTrigger value="biographics">{t_i18n('Biographics')}</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview">
+                <ThreatActorIndividualEditionOverview
+                  threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionOverview_ThreatActorIndividual$key}
+                  enableReferences={enableReferences}
+                  context={threatActorIndividual?.editContext}
+                  handleClose={onClose}
+                />
+              </TabsContent>
+              <TabsContent value="details">
+                <ThreatActorIndividualEditionDetails
+                  threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDetails_ThreatActorIndividual$key}
+                  enableReferences={enableReferences}
+                  context={threatActorIndividual?.editContext}
+                  handleClose={onClose}
+                />
+              </TabsContent>
+              <TabsContent value="demographics">
+                <ThreatActorIndividualEditionDemographics
+                  threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key}
+                  enableReferences={enableReferences}
+                  context={threatActorIndividual?.editContext}
+                />
+              </TabsContent>
+              <TabsContent value="biographics">
+                <ThreatActorIndividualEditionBiographics
+                  threatActorIndividualRef={threatActorIndividual as ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key}
+                  enableReferences={enableReferences}
+                  context={threatActorIndividual?.editContext}
+                />
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </Drawer>

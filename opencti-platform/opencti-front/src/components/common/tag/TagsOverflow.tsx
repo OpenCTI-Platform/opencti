@@ -13,6 +13,7 @@ interface TagsOverflowProps<T> {
   children?: React.ReactNode;
   direction?: 'ltr' | 'rtl';
   onTagCounterClick?: () => void;
+  renderOverflowTooltip?: (hiddenItems: T[]) => React.ReactNode;
 }
 
 export function TagsOverflow<T>({
@@ -21,6 +22,7 @@ export function TagsOverflow<T>({
   getLabel,
   renderTag,
   onTagCounterClick,
+  renderOverflowTooltip,
   maxWidth = '100%',
   gapPx = 8,
   children,
@@ -42,9 +44,14 @@ export function TagsOverflow<T>({
   const displayItems = isRTL ? [...visibleItems].reverse() : visibleItems;
 
   const hiddenItems = (items as T[]).slice(visibleCount);
-  const tooltipTitle = getLabel
-    ? hiddenItems.map((item) => getLabel(item)).join(', ')
-    : undefined;
+  const renderDefaultOverflowTooltip = (items: T[]) => {
+    return getLabel
+      ? items.map((item) => getLabel(item)).join(', ')
+      : undefined;
+  };
+  const tooltipTitle = renderOverflowTooltip
+    ? renderOverflowTooltip(hiddenItems)
+    : renderDefaultOverflowTooltip(hiddenItems);
 
   return (
     <>

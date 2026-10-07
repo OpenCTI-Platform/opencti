@@ -1,9 +1,10 @@
-import { IngestionAuthType } from '../../generated/graphql';
-import { FunctionalError } from '../../config/errors';
+import { IngestionAuthType, IngestionLogLevel } from '../../generated/graphql';
+import { DatabaseError, FunctionalError } from '../../config/errors';
 import { decryptValue, encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { verifyUriWithDenyList } from '../../utils/uriDenyList';
 import { uriDenyList } from '../../config/uriDenyList';
+import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
 
 export const verifyIngestionUri = (uri: string): void => {
   verifyUriWithDenyList(uri, uriDenyList(), 'This URI is not allowed for ingestion.');
@@ -95,3 +96,29 @@ export const addAuthenticationCredentials = (currentValue: string | undefined | 
 
   return currentValue;
 };
+
+// region ingestion feed logs (shared across TAXII, CSV, RSS, JSON... feed types)
+const ingestionLogLevelFromString = (level: string): IngestionLogLevel => {
+  switch (level) {
+    case 'success':
+      return IngestionLogLevel.Success;
+    case 'info':
+      return IngestionLogLevel.Info;
+    case 'warn':
+      return IngestionLogLevel.Warn;
+    case 'error':
+      return IngestionLogLevel.Error;
+    default:
+      throw DatabaseError('Unknown ingestion log level', { level });
+  }
+};
+
+export const findIngestionLogsForFeed = async (feedId: string) => {
+  const entries: IngestionLogEntry[] = await redisGetIngestionLogHistory(feedId);
+  return entries.map(({ timestamp, level, ...others }) => ({
+    timestamp: new Date(timestamp),
+    level: ingestionLogLevelFromString(level),
+    ...others,
+  }));
+};
+// endregion

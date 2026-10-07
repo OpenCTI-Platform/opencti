@@ -115,6 +115,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
               onClick={() => data.openAddSibling(getNode(id))}
               aria-haspopup="true"
               size="small"
+              aria-label={t_i18n('Add a sibling node')}
             >
               <LoginOutlined style={{ fontSize: 12 }} />
             </IconButton>

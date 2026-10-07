@@ -208,7 +208,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
           {isSavedFiltersMode ? (
             <>
               <WidgetSavedFiltersSelection
@@ -242,7 +242,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
         {perspective === 'relationships' && (
           <>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               {isSavedDynamicFromMode ? (
                 <>
                   <WidgetSavedFiltersSelection
@@ -275,7 +275,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 </>
               )}
             </Box>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               {isSavedDynamicToMode ? (
                 <>
                   <WidgetSavedFiltersSelection

@@ -11,6 +11,20 @@ export interface AuthorizedMemberOption extends FieldOption {
 
 export const CAN_USE_ENTITY_TYPES = ['Organization'];
 
+// Entity types that support authorized members (mirrors the backend's
+// AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, plus DraftWorkspace which has its
+// own dedicated authorized members mechanism).
+export const AUTHORIZED_MEMBERS_ENTITY_TYPES = [
+  'Organization',
+  'Report',
+  'Note',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rft',
+  'Case-Rfi',
+  'DraftWorkspace',
+];
+
 export const ALL_MEMBERS_AUTHORIZED_CONFIG = {
   id: 'ALL',
   labelKey: 'Everyone on the platform',

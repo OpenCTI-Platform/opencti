@@ -1,4 +1,5 @@
-import { Alert, Drawer, IconButton, ListItem, ListItemText, SxProps, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Alert, Drawer, ListItem, ListItemText, SxProps, Toolbar, Tooltip, Typography } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import React from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/styles';
@@ -93,12 +94,13 @@ const EmailTemplateAttributesSidebar = () => {
 
                   <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      aria-label={t_i18n('Copy attribute name to clipboard')}
                       aria-haspopup="true"
-                      color="primary"
                       onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-                    >
-                      <ContentCopy fontSize="small" />
-                    </IconButton>
+                      icon={<ContentCopy fontSize="small" />}
+                    />
                   </Tooltip>
                 </div>
               );
@@ -140,12 +142,13 @@ const EmailTemplateAttributesSidebar = () => {
 
                   <Tooltip title={t_i18n('Copy attribute name to clipboard')}>
                     <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      aria-label={t_i18n('Copy attribute name to clipboard')}
                       aria-haspopup="true"
-                      color="primary"
                       onClick={() => copyAttributeToClipboard(column.variableName ?? '')}
-                    >
-                      <ContentCopy fontSize="small" />
-                    </IconButton>
+                      icon={<ContentCopy fontSize="small" />}
+                    />
                   </Tooltip>
                 </div>
               );

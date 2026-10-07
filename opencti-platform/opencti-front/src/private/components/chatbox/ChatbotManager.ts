@@ -5,6 +5,7 @@ import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore — legacy v1 package installed under an npm alias
 import type { BubbleProps } from '@filigran/chatbot-legacy';
+import { TOP_BAR_HEIGHT } from '../nav/topBarConstants';
 
 type FiligranChatbotElement = HTMLElement & BubbleProps;
 
@@ -41,13 +42,14 @@ class ChatbotManager {
   }
 
   private getCustomCSS(): string {
-    const totalOffset = 68 + this.bannerHeight;
+    // Bar height read from the Header's own custom property — one source of truth.
+    const totalOffset = `${TOP_BAR_HEIGHT} + ${this.bannerHeight}px`;
     return `
       * {
         font-family: "IBM Plex Sans" !important;
       }
       div[part="bot"] {
-        height: calc(100% - ${totalOffset}px) !important;
+        height: calc(100% - ${totalOffset}) !important;
         max-height: inherit !important;
         bottom: 0 !important;
         left: unset !important;

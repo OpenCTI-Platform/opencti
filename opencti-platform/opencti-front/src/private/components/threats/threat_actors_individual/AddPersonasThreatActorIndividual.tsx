@@ -41,8 +41,10 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
     queryRef,
   );
 
+  // flex, not block: an inline-flex button in a block wrapper reserves a text
+  // descender below it, and Label centres the wrapper, not the button.
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <IconButton
         aria-label={t_i18n('Add')}
         onClick={handleOpen}

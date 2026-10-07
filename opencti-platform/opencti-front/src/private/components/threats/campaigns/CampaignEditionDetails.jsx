@@ -6,7 +6,7 @@ import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
 import { campaignEditionOverviewFocus, campaignMutationRelationAdd, campaignMutationRelationDelete } from './CampaignEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
+
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import { buildDate, parse } from '../../../../utils/Time';
@@ -16,6 +16,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import TextareaField from '../../../../components/TextareaField';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionDetailsFieldPatchMutation(
@@ -171,7 +172,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus context={context} fieldName="first_seen" />
@@ -185,7 +186,7 @@ const CampaignEditionDetailsComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
@@ -194,13 +195,11 @@ const CampaignEditionDetailsComponent = (props) => {
             }}
           />
           <Field
-            component={TextField}
+            component={TextareaField}
             name="objective"
             label={t_i18n('Objective')}
-            fullWidth={true}
-            multiline={true}
             rows={4}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={

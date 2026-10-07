@@ -19,6 +19,7 @@ import { type AgentOption } from '../../../../utils/ai/agentApi';
 import useAgentStream from '../../../../utils/ai/useAgentStream';
 import { useChatbot } from '../../chatbox/ChatbotContext';
 import XtmOneAISummaryDisplay from './XtmOneAISummaryDisplay';
+import AISummaryContent from './AISummaryContent';
 
 const subscription = graphql`
   subscription AISummaryActivitySubscription($id: ID!) {
@@ -118,19 +119,21 @@ const AISummaryActivityComponent = ({
   return (
     <>
       {generateTrend(result?.stixCoreObjectAskAiActivity?.trend ?? 'unknown')}
-      {parse(content)}
+      <AISummaryContent loading={loading}>
+        {parse(content)}
+      </AISummaryContent>
       {!loading && (
         <>
           <Divider />
           <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
             <Typography variant="caption">Generated on {nsdt(result?.stixCoreObjectAskAiActivity?.updated_at)}.</Typography>
             <Tooltip title={t_i18n('Copy to clipboard')}>
-              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+              <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)} aria-label={t_i18n('Copy to clipboard')}>
                 <ContentCopyOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Retry')}>
-              <IconButton size="small" color="primary" onClick={() => refetch()}>
+              <IconButton size="small" color="primary" onClick={() => refetch()} aria-label={t_i18n('Retry')}>
                 <AutoModeOutlined fontSize="small" />
               </IconButton>
             </Tooltip>

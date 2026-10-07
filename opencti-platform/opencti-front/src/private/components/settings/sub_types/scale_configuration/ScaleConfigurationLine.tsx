@@ -60,7 +60,7 @@ const ScaleConfigurationLine: FunctionComponent<
                 <Field
                   component={TextField}
                   type="number"
-                  variant="standard"
+                  variant="outlined"
                   name="value"
                   label={tickLabel}
                   fullWidth={true}
@@ -70,7 +70,7 @@ const ScaleConfigurationLine: FunctionComponent<
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={ColorPickerField}
-                  variant="standard"
+                  variant="outlined"
                   name="color"
                   label={t_i18n('Color')}
                   fullWidth={true}
@@ -80,7 +80,7 @@ const ScaleConfigurationLine: FunctionComponent<
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={TextField}
-                  variant="standard"
+                  variant="outlined"
                   name="label"
                   label={t_i18n('Label')}
                   fullWidth={true}

@@ -32,8 +32,8 @@ const fieldToSelect = (muiProps: SelectFieldProps) => {
     ...muiProps,
     disabled: disabled ?? isSubmitting,
     error: showError,
-    onBlur: () => {},
-    onChange: fieldOnChange ?? (() => {}),
+    onBlur: () => { },
+    onChange: fieldOnChange ?? (() => { }),
     onClose: onClose ?? (async (e) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

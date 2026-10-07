@@ -89,7 +89,7 @@ You should have:
 - redis
 - redis insight
 - rabbitmq
-- minio
+- silo (S3 object storage)
 
 #### Start backend
 

@@ -25,4 +25,3 @@ export const EXPECTED_AI_PROMPT = {
   labels: [],
   external_references: [],
 };
-

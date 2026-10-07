@@ -7,11 +7,11 @@ describe('validateDataBeforeIndexing', () => {
     internal_id: '3f9d5688-25e1-427f-8eff-a92110f87ca3',
     entity_type: 'Malware',
     representative: {
-      main: 'Agent Racoon'
+      main: 'Agent Racoon',
     },
     is_family: true,
     updated_at: '2024-02-23T09:43:39.913Z',
-    modified: '2024-02-23T09:43:39.913Z'
+    modified: '2024-02-23T09:43:39.913Z',
   };
 
   const threatActorIndividual = {
@@ -20,16 +20,16 @@ describe('validateDataBeforeIndexing', () => {
     entity_type: 'Threat-Actor-Individual',
     representative: {
       main: 'Jhon Threat Actor Individual',
-      secondary: 'This organized threat actor individual.'
+      secondary: 'This organized threat actor individual.',
     },
     height: [
       {
         measure: 1.2192,
-        date_seen: '2024-02-15T23:00:00.000Z'
-      }
+        date_seen: '2024-02-15T23:00:00.000Z',
+      },
     ],
     updated_at: '2024-02-23T09:53:26.245Z',
-    modified: '2024-02-23T09:53:26.245Z'
+    modified: '2024-02-23T09:53:26.245Z',
   };
 
   const user = {
@@ -37,18 +37,18 @@ describe('validateDataBeforeIndexing', () => {
     internal_id: '421781aa-52cb-4019-abf1-3f8c3c8617bd',
     entity_type: 'User',
     representative: {
-      main: 'Plop'
+      main: 'Plop',
     },
     user_confidence_level: {
       max_confidence: 73,
       overrides: [
         {
           max_confidence: 77,
-          entity_type: 'Report'
-        }
-      ]
+          entity_type: 'Report',
+        },
+      ],
     },
-    updated_at: '2024-02-23T09:57:32.006Z'
+    updated_at: '2024-02-23T09:57:32.006Z',
   };
 
   it('validates correct payloads', () => {
@@ -79,7 +79,7 @@ describe('validateDataBeforeIndexing', () => {
         overrides: [{
           max_confidence: 77,
           // entity_type: 'Report' // missing mandatory field in a inner multiple object
-        }]
+        }],
       },
     };
     expect(() => validateDataBeforeIndexing(invalidUser))
@@ -89,7 +89,7 @@ describe('validateDataBeforeIndexing', () => {
       ...threatActorIndividual,
       height: [{
         // measure: 1.2192, // missing mandatory field in a multiple object
-        date_seen: '2024-02-15T23:00:00.000Z'
+        date_seen: '2024-02-15T23:00:00.000Z',
       }],
     };
     expect(() => validateDataBeforeIndexing(invalidThreatActorIndividual))

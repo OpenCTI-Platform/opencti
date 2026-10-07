@@ -20,6 +20,7 @@ import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
 import Security from '../utils/Security';
 import { useExportTheme } from '../utils/ExportThemeContext';
 import { DASHBOARD_BUTTONS_STYLE } from '../private/components/workspaces/workspaceHeader/WorkspaceHeader';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../utils/fdsLayer';
 
 const styles = () => ({
   exportButtons: {
@@ -332,7 +333,9 @@ export class ExportButtons extends Component {
                 }
               </Menu>
               <Dialog
-                slotProps={{ paper: { elevation: 1 } }}
+                // Layer 2 like every other dialog paper, so the theme's
+                // `--bg-elevation-default` resolves to the same surface.
+                slotProps={{ paper: { elevation: 1, className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
                 open={exporting}
                 keepMounted={true}
                 fullScreen={true}

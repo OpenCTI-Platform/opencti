@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import MenuItem from '@mui/material/MenuItem';
 import { v4 as uuid } from 'uuid';
 import { graphql } from 'react-relay';
 import { DialogTitle } from '@mui/material';
@@ -11,11 +10,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Radio from '@mui/material/Radio';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import TextField from '@mui/material/TextField';
-import { createSearchParams, useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate } from 'react-router';
 import Alert from '@mui/material/Alert';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import {
@@ -30,10 +27,14 @@ import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCo
 import { stixCoreObjectMappableContentFieldPatchMutation } from './StixCoreObjectMappableContent';
 import FilesNativeField from '../form/FilesNativeField';
 import { useFormatter } from '../../../../components/i18n';
-import ResponseDialog from '../../../../utils/ai/ResponseDialog';
+import ResponseDialog, { type ResponseAgentAction } from '../../../../utils/ai/ResponseDialog';
+import { buildContainerReportPrompt, CONTAINER_REPORT_FORMAT, CONTAINER_REPORT_INTENT } from '../../../../utils/ai/containerReport';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
+import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveLink } from '../../../../utils/Entity';
-import useGranted, { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPLOAD, SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import useAI from '../../../../utils/hooks/useAI';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { aiLanguage } from '../../../../components/AppIntlProvider';
@@ -88,6 +89,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const { fullyActive } = useAI();
   const defaultLanguageName = getDefaultAiLanguage();
 
   const [language, setLanguage] = useState(defaultLanguageName);
@@ -103,12 +106,31 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+  const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
+  const [agentMode, setAgentMode] = useState<{
+    intent: string;
+    action: ResponseAgentAction;
+    inputContent: string;
+    format: string;
+  } | null>(null);
+  // Same routing as AI Insights and the text tools: an XTM One agent when XTM
+  // One is configured, the legacy in-platform AI otherwise.
+  const { xtmOneConfigured } = useChatbot();
+  const useXtmOne = xtmOneConfigured === true;
+  // The chatbot routes refuse every call until the Filigran AI terms are
+  // accepted, so no agent could be listed.
+  const isCGUStatusPending = useXtmOne && !fullyActive;
 
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
+  // The XTM One agent answers in HTML, so no other format is offered there.
+  const availableFormats = useXtmOne ? [CONTAINER_REPORT_FORMAT] : actionsFormat[action];
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => {
     setContent('');
     setDisplayAskAI(false);
+    // An agent-mode dialog is unmounted on close: the next generation starts
+    // from a fresh agent selection instead of re-running the previous one.
+    if (agentMode) setBusId(null);
   };
 
   const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
@@ -117,9 +139,31 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
 
   const handleAskAiContent = () => {
     handleCloseOptions();
-    setDisableResponse(true);
     const id = uuid();
     setBusId(id);
+    if (useXtmOne) {
+      // ResponseDialog picks the agent bound to the intent and streams its answer.
+      setDisableResponse(false);
+      setContent('');
+      setFormat(CONTAINER_REPORT_FORMAT);
+      setAgentMode({
+        intent: CONTAINER_REPORT_INTENT,
+        action: 'report',
+        inputContent: buildContainerReportPrompt({
+          containerId: instanceId,
+          containerName: instanceName,
+          containerType: instanceType,
+          paragraphs,
+          tone,
+          language,
+        }),
+        format: CONTAINER_REPORT_FORMAT,
+      });
+      handleOpenAskAI();
+      return;
+    }
+    setAgentMode(null);
+    setDisableResponse(true);
     handleOpenAskAI();
     commitMutationContainerReport({
       variables: {
@@ -142,6 +186,14 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   };
 
   const handleAskAi = () => {
+    if (isCGUStatusPending) {
+      if (isAdmin) {
+        setDisplayCGUDialog(true);
+      } else {
+        MESSAGING$.notifyError(t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.'));
+      }
+      return;
+    }
     // check paragraphs value is correct
     if (action === 'container-report' || action === 'summarize-files') {
       if (Number.isNaN(paragraphs)) {
@@ -158,7 +210,8 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
 
   const handleCancelDestination = () => {
     setAcceptedResult(null);
-    setDisplayAskAI(true);
+    // An agent-mode dialog was unmounted on accept; only the legacy one reopens.
+    if (busId) setDisplayAskAI(true);
   };
 
   const submitAcceptedResult = () => {
@@ -226,34 +279,36 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         <Alert severity="info">
           {action && t_i18n(actionsExplanation[action])}
         </Alert>
-        <FormControl style={fieldSpacingContainerStyle}>
-          <InputLabel id="format">{t_i18n('Format')}</InputLabel>
-          <Select
-            labelId="format"
-            value={format}
-            onChange={(event) => setFormat(event.target.value as unknown as 'html' | 'markdown' | 'text' | 'json')}
-            fullWidth={true}
-          >
-            {action && actionsFormat[action].includes('html') && <MenuItem value="html">{t_i18n('HTML')}</MenuItem>}
-            {action && actionsFormat[action].includes('markdown') && <MenuItem value="markdown">{t_i18n('Markdown')}</MenuItem>}
-            {action && actionsFormat[action].includes('text') && <MenuItem value="text">{t_i18n('Plain text')}</MenuItem>}
-            {action && actionsFormat[action].includes('json') && <MenuItem value="json">{t_i18n('JSON')}</MenuItem>}
-          </Select>
-        </FormControl>
+        <Select
+          value={format}
+          onValueChange={(value) => setFormat(value as 'html' | 'markdown' | 'text' | 'json')}
+        >
+          <SelectLabel>{t_i18n('Format')}</SelectLabel>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Format')}>
+            {availableFormats.includes('html') && <SelectItem value="html">{t_i18n('HTML')}</SelectItem>}
+            {availableFormats.includes('markdown') && <SelectItem value="markdown">{t_i18n('Markdown')}</SelectItem>}
+            {availableFormats.includes('text') && <SelectItem value="text">{t_i18n('Plain text')}</SelectItem>}
+            {availableFormats.includes('json') && <SelectItem value="json">{t_i18n('JSON')}</SelectItem>}
+          </SelectContent>
+        </Select>
         {action && actionsOptions[action].includes('tone') && (
-          <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-            <Select
-              labelId="tone"
-              value={tone}
-              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-              fullWidth={true}
-            >
-              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-              <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-              <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-            </Select>
-          </FormControl>
+          <Select
+            value={tone}
+            onValueChange={(value) => setTone(value as 'tactical' | 'operational' | 'strategic')}
+          >
+            <SelectLabel>{t_i18n('Tone')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Tone')}>
+              <SelectItem value="tactical">{t_i18n('Tactical')}</SelectItem>
+              <SelectItem value="operational">{t_i18n('Operational')}</SelectItem>
+              <SelectItem value="strategic">{t_i18n('Strategic')}</SelectItem>
+            </SelectContent>
+          </Select>
         )}
         {action && actionsOptions[action].includes('paragraphs') && (
           <TextField
@@ -262,7 +317,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
             type="number"
             value={paragraphs}
             onChange={(event) => setParagraphs(parseInt(event.target.value, 10))}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
         )}
         {action && actionsOptions[action].includes('files') && (
@@ -277,19 +332,20 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           />
         )}
         {action && actionsOptions[action].includes('language') && (
-          <FormControl style={fieldSpacingContainerStyle}>
-            <InputLabel id="language">{t_i18n('Language')}</InputLabel>
-            <Select
-              labelId="language"
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              fullWidth={true}
-            >
+          <Select
+            value={language}
+            onValueChange={setLanguage}
+          >
+            <SelectLabel>{t_i18n('Language')}</SelectLabel>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Language')}>
               {aiLanguage.map((lang) => (
-                <MenuItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</MenuItem>
+                <SelectItem key={lang.value} value={lang.name}>{t_i18n(lang.name)}</SelectItem>
               ))}
-            </Select>
-          </FormControl>
+            </SelectContent>
+          </Select>
         )}
         <DialogActions>
           <Button
@@ -364,7 +420,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
               fullWidth={true}
               value={newFileName ?? instanceName}
               onChange={(event) => setNewFileName(event.target.value as unknown as string)}
-              style={fieldSpacingContainerStyle}
+              className="mt-5"
             />
           )}
         </DialogContent>
@@ -382,6 +438,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       </Dialog>
       {busId && (
         <ResponseDialog
+          key={busId}
           id={busId}
           isDisabled={disableResponse}
           isOpen={displayAskAI}
@@ -395,7 +452,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
           handleFollowUp={handleCloseAskAI}
           followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
           format={format}
+          agentMode={agentMode}
         />
+      )}
+      {displayCGUDialog && (
+        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
       )}
     </>
   );

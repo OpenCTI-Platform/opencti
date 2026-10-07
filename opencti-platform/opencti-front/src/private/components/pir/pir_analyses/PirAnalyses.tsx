@@ -15,7 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
-import { Chip, Tooltip, Alert } from '@mui/material';
+import { Tooltip, Alert } from '@mui/material';
+import { Chip } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
@@ -46,16 +47,6 @@ const pirAnalysesContainerFragment = graphql`
         id
         name
         color
-      }
-    }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
       }
     }
     representative {
@@ -222,10 +213,9 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   );
 
   const {
-    platformModuleHelpers: { isRuntimeFieldEnable, isFeatureEnable },
+    platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isWorkflowInstanceEnabled = isFeatureEnable('ENTITIES_WORKFLOW');
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 10 },
@@ -279,9 +269,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
             )}
           >
             <Chip
-              size="small"
-              label={countLabel}
-              sx={{ width: 100, borderRadius: 1 }}
+              label={String(countLabel)}
             />
           </Tooltip>
         );
@@ -298,7 +286,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     created: {
       percentWidth: 13,
     },
-    ...(isWorkflowInstanceEnabled ? { workflowInstance: {} } : { x_opencti_workflow_id: {} }),
+    x_opencti_workflow_id: {},
     objectMarking: {
       isSortable: isRuntimeSort,
       percentWidth: 10,

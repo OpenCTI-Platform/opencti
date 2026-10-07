@@ -22,6 +22,34 @@ The following metrics are exposed by the OpenCTI API.
 | `opencti_api_latency` | Histogram | Measures the latency of API query execution. | Milliseconds |
 | `opencti_api_direct_bulk` | Gauge | Measures the size of bulks for direct ingestion (fast path). | Count |
 | `opencti_api_side_bulk` | Gauge | Measures the size of bulks for absorption impacts (worker path). | Count |
+| `opencti_dependency_up` | Gauge | Reports the connectivity state of a platform dependency: `1` when the dependency answers, `0` when it fails. | Boolean |
+| `opencti_elasticsearch_used_size_bytes` | Gauge | Reports the total ElasticSearch/OpenSearch primary store size, replicas excluded. | Bytes |
+| `opencti_storage_used_size_bytes` | Gauge | Reports the total size of the files stored by the platform (imports, exports, embedded and support files, files generated from templates, and draft files), summed from the size indexed for each file rather than by listing the S3/MinIO bucket. Objects written outside the file management, such as offloaded stream events or catalog logos, are not counted. Also exposed as `s3_used_size` by `/health`. | Bytes |
+| `opencti_queue_consumers` | Gauge | Reports the number of active consumers on the push queues, per connector type. | Count |
+
+## Platform Health Metrics
+
+A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:dependency_check_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
+
+Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: they describe the platform as a whole rather than one node's view of it, so a dedicated manager (`platform_usage_metrics_manager`, see [Configuration](configuration.md)) computes the value once per interval and shares it with the rest of the cluster through Redis; every node then just adopts that shared value on its own polling cycle, which keeps every node reporting the same figure. This manager is disabled by default: set `PLATFORM_USAGE_METRICS_MANAGER__ENABLED=true` to collect the usage metrics.
+
+A usage metric that cannot be collected is not exported, instead of being exported as `0`.
+
+The platform reports raw consumer counts per connector type and does not aggregate them into an ingestion capacity value. Consumers of the metric decide how to combine the types that are relevant to them.
+
+### Dependency Metrics Attributes
+Applies to: `opencti_dependency_up`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `dependency` | The monitored platform dependency. | `elasticsearch`, `storage`, `rabbitmq`, `redis` |
+
+### Queue Consumers Metrics Attributes
+Applies to: `opencti_queue_consumers`
+
+| Attribute | Description | Example |
+|:---|:---|:---|
+| `connector_type` | The connector type declared on the push queue. Queues without a declared type are reported as `UNKNOWN`. | `EXTERNAL_IMPORT`, `INTERNAL_ENRICHMENT`, `INTERNAL_IMPORT_FILE`, `INTERNAL_EXPORT_FILE` |
 
 ## Metric Attributes
 

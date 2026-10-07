@@ -68,16 +68,6 @@ const securityCoverageFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     objectCovered {
       ... on Report {
@@ -132,7 +122,7 @@ const SecurityCoverageComponent = ({
 
       <Grid size={12}>
         <SecurityCoverageAttackPatterns
-          data={securityCoverage}
+          securityCoverage={securityCoverage}
           dataKillChains={dataKillChains}
         />
       </Grid>

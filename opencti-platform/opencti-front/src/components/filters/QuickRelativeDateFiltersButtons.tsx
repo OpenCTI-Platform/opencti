@@ -28,7 +28,15 @@ const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFilter
     handleClose();
   };
   return (
-    <div style={{ marginLeft: 10, marginTop: 5, marginBottom: 5 }}>
+    <div style={{
+      marginLeft: 10,
+      marginTop: 5,
+      marginBottom: 5,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+    }}
+    >
       {quickButtons.map((button) => (
         <Button
           key={button.value}

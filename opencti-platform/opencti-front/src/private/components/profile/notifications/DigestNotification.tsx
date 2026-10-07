@@ -1,12 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
-import Chip from '@mui/material/Chip';
-import { deepPurple, green, red } from '@mui/material/colors';
+import { Chip } from '@filigran/design-system';
 import { iconSelector } from './notificationUtils';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
-import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'digest_notification';
@@ -28,31 +26,21 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       percentWidth: 20,
       isSortable: false,
       render: ({ operation }) => {
-        const getChipOperationColor = () => {
+        const getChipOperationSeverity = () => {
           switch (operation) {
-            case 'create':
-              return green[500];
             case 'update':
-              return deepPurple[500];
+              return 'info' as const;
             case 'delete':
-              return red[500];
+              return 'critical' as const;
             default:
-              return green[500];
+              return 'low' as const;
           }
         };
         return (
           <Chip
-            style={{ fontSize: 12,
-              height: 20,
-              float: 'left',
-              width: 150,
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              backgroundColor: hexToRGB(getChipOperationColor(), 0.08),
-              color: getChipOperationColor(),
-              border: `1px solid ${getChipOperationColor()}`,
-            }}
+            severity={getChipOperationSeverity()}
             label={t_i18n(operation)}
+            style={{ float: 'left' }}
           />
         );
       },

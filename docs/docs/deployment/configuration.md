@@ -39,6 +39,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:base_path                | APP__BASE_PATH                 |                       | Specific URI (ie. /opencti)                                                                                                                                                      |
 | app:base_url                 | APP__BASE_URL                  | http://localhost:4000 | Full URL of the platform (should include the `base_path` if any)                                                                                                                 |
 | app:request_timeout          | APP__REQUEST_TIMEOUT           | 1200000               | Request timeout, in ms (default 20 minutes)                                                                                                                                      |
+| app:keep_alive_timeout       | APP__KEEP_ALIVE_TIMEOUT        | 65000                 | Keep-alive timeout of idle HTTP(S) connections, in ms. Must be greater than the idle timeout of your load balancer / reverse proxy (AWS ALB defaults to 60s), otherwise the platform closes sockets the proxy still reuses and clients get intermittent 502. `0` disables the timeout. |
 | app:session_timeout          | APP__SESSION_TIMEOUT           | 1200000               | Session timeout, in ms (default 20 minutes)                                                                                                                                      |
 | app:session_idle_timeout     | APP__SESSION_IDLE_TIMEOUT      | 0                     | Idle timeout (locking the screen), in ms (default 0 minute - disabled)                                                                                                           |
 | app:session_cookie           | APP__SESSION_COOKIE            | false                 | Use memory/session cookie instead of persistent one                                                                                                                              |
@@ -47,6 +48,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:admin:password           | APP__ADMIN__PASSWORD           | ChangeMe              | Default password of the admin user                                                                                                                                               |
 | app:admin:token              | APP__ADMIN__TOKEN              | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                                                           |
 | app:health_access_key        | APP__HEALTH_ACCESS_KEY         | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe`                                     |
+| app:health_monitoring:dependency_check_interval | APP__HEALTH_MONITORING__DEPENDENCY_CHECK_INTERVAL | 30000 | Interval in milliseconds between two dependency checks (ElasticSearch/OpenSearch, S3/MinIO, RabbitMQ, Redis). The `/health` endpoint answers from the state collected by these checks. |
+| app:health_monitoring:usage_metrics_interval | APP__HEALTH_MONITORING__USAGE_METRICS_INTERVAL | 300000 | Interval in milliseconds between two collections of storage and ingestion usage metrics, collected by the `platform_usage_metrics_manager` (disabled by default, see `platform_usage_metrics_manager:enabled`) and shared across the cluster through Redis. Also the polling interval every node uses to adopt that shared value. Set to `0` to disable the collection.                                                 |
 | app:liveness_port            | APP__LIVENESS_PORT             | null (disabled)       | Port for the [liveness probe](advanced/liveness-probe.md) HTTP server. Starts immediately on process launch, before platform initialization.                                     |
 | app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE    |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html |
 
@@ -117,10 +120,11 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### Maps & references
 
-| Parameter                 | Environment variable       | Default value                | Description                              |
-|:-------------------------|:--------------------------|:----------------------------|:----------------------------------------|
+| Parameter                 | Environment variable       | Default value                 | Description                                                      |
+|:--------------------------|:---------------------------|:------------------------------|:----------------------------------------|
 | app:map_bundled_file_path | APP__MAP_BUNDLED_FILE_PATH | `./static/maps/world.pmtiles` | Path to the bundled PMTiles file on disk |
-| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                      | External reference mandatory attachment  |
+| app:map_countries_bundled_file_path | APP__MAP_COUNTRIES_BUNDLED_FILE_PATH | `./static/maps/countries.json` | Path to the bundled country boundaries GeoJSON file on disk |
+| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                       | External reference mandatory attachment                          |
 
 #### Functional customization
 
@@ -162,6 +166,20 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_reject_unauthorized     | XTM__OPENAEV_REJECT_UNAUTHORIZED | false                   | Enable TLS certificate check                                                                                 |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
+| xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL, as reachable from OpenCTI (an internal address such as `http://xtm-one:4000` in Docker works) |
+| xtm:xtm_one_token                   | XTM__XTM_ONE_TOKEN               |                         | XTM One registration token. With the URL, the platform registers with XTM One every 5 minutes                |
+
+!!! note "XTM One reached on an internal URL"
+
+    OpenCTI signs the requests of its users to XTM One, and verifies the requests XTM One sends back, with short-lived tokens. When `XTM__XTM_ONE_URL` is an internal address, OpenCTI reads XTM One's public identity (its `BASE_URL`) from `/xtm/auth/metadata` on that address and fetches XTM One's signing keys there too, so the two URLs may differ. The links that open XTM One in the browser (Ask Ariane, the CTEM Command Center, the MCP card of the profile) use that public identity as well. On the XTM One side, set `OPENCTI_API_URL` to the address XTM One reaches OpenCTI on. `APP__BASE_URL` stays the public URL of OpenCTI: it is the identity XTM One trusts.
+
+!!! note "Enterprise Edition granted through XTM One"
+
+    When the XTM license installed on XTM One sub-licenses this platform (its identifier, or `global`), XTM One returns that Filigran-signed license with every registration. OpenCTI then runs in full Enterprise Edition, exactly as with an OpenCTI license, but only when the XTM license verifies against the XTM certificate authority embedded in OpenCTI and its dates are valid (90 days of grace after expiration, none for trial and ci licenses). It is checked again at every registration, every 5 minutes, and the platform returns to the Community Edition as soon as the license no longer grants it. The `ee_enabled` flag of the registration answer is never trusted on its own.
+
+    The **Settings > Filigran Experience** page shows where the Enterprise Edition comes from: the license source (OpenCTI license or XTM One license), the customer, the type and the dates of that license. An OpenCTI license takes precedence when both are valid, and is not affected by the XTM license. As for OpenCTI licenses, an LTS platform only accepts an `lts` or `ci` XTM license.
+
+    This requires an XTM One release returning the license at registration ([XTM One #3831](https://github.com/XTM-One-Platform/xtm-one/pull/3831)). **Upgrade XTM One first, then OpenCTI.** Against an older XTM One, the XTM license grants nothing and OpenCTI logs a warning asking for the XTM One upgrade.
  
 
 #### ElasticSearch
@@ -193,6 +211,8 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | redis:namespace            | REDIS__NAMESPACE            |               | Namespace (to use as prefix)                                                          |
 | redis:hostname             | REDIS__HOSTNAME             | localhost     | Hostname of the Redis Server                                                          |
 | redis:hostnames            | REDIS__HOSTNAMES            |               | Hostnames definition for Redis cluster or sentinel mode: a list of host:port objects. |
+| redis:tls_servername       | REDIS__TLS_SERVERNAME       |               | Optional shared server name used for TLS SNI and certificate validation. In cluster mode, leave empty to validate each node individually. |
+| redis:tls_cluster_node_mode| REDIS__TLS_CLUSTER_NODE_MODE| `false`       | When set to `true`, each cluster node certificate is validated individually. |
 | redis:port                 | REDIS__PORT                 | 6379          | Port of the Redis Server                                                              |
 | redis:sentinel_master_name | REDIS__SENTINEL_MASTER_NAME |               | Name of your Redis Sentinel Master (mandatory in sentinel mode)                       |
 | redis:sentinel_username    | REDIS__SENTINEL_USERNAME    |               | Username to authenticate on Redis Sentinel                                            |
@@ -233,13 +253,13 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 | Parameter           | Environment variable | Default value  | Description                                                                                                                                                                                                                 |
 |:--------------------|:---------------------|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Minio as an S3 Bucket Service. |
+| minio:endpoint      | MINIO__ENDPOINT      | localhost      | Hostname of the S3 Service. Example if you use AWS Bucket S3: __s3.us-east-1.amazonaws.com__ (if `minio:bucket_region` value is _us-east-1_). This parameter value can be omitted if you use Silo as an S3 Bucket Service.  |
 | minio:port          | MINIO__PORT          | 9000           | Port of the S3 Service. For AWS Bucket S3 over HTTPS, this value can be changed (usually __443__).                                                                                                                          |
 | minio:use_ssl       | MINIO__USE_SSL       | `false`        | Indicates whether the S3 Service has TLS enabled. For AWS Bucket S3 over HTTPS, this value could be `true`.                                                                                                                 |
 | minio:access_key    | MINIO__ACCESS_KEY    | ChangeMe       | Access key for the S3 Service.                                                                                                                                                                                              |
 | minio:secret_key    | MINIO__SECRET_KEY    | ChangeMe       | Secret key for the S3 Service.                                                                                                                                                                                              |
 | minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
-| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                 |
+| minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Silo as an S3 Bucket Service.                                                                                                  |
 | minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
 
 !!! note "Using a proxy for AWS S3"
@@ -264,12 +284,14 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | smtp:oauth_issuer          | SMTP__OAUTH_ISSUER          |               | OAuth2: OIDC issuer URL of the identity provider (used for discovery and refresh token grant)                        |
 | smtp:oauth_refresh_token   | SMTP__OAUTH_REFRESH_TOKEN   |               | OAuth2: long-lived refresh token used to obtain a fresh access token before each email is sent                       |
 | smtp:forced_sender_email   | SMTP__FORCED_SENDER_EMAIL   |               | When set, forces all emails to use this address as sender and disables the UI-based SMTP configuration               |
+| smtp:connection_timeout    | SMTP__CONNECTION_TIMEOUT    | 10000         | Maximum time, in milliseconds, to wait for the TCP connection to the SMTP server                                     |
+| smtp:greeting_timeout      | SMTP__GREETING_TIMEOUT      | 10000         | Maximum time, in milliseconds, to wait for the SMTP server greeting after the connection opens                       |
 
 !!! note "Interface-based SMTP configuration"
 
     OpenCTI also supports configuring SMTP entirely from the **Settings > Security > SMTP configuration** interface, without requiring a deployment restart. When the **Use configuration in interface** toggle is enabled in the interface, the platform uses the settings stored in the database and ignores the backend JSON/env configuration.
 
-    The backend parameters above act as a fallback when the interface configuration is not enabled.
+    The backend parameters above act as a fallback when the interface configuration is not enabled. Exception: `smtp:connection_timeout` and `smtp:greeting_timeout` always come from the backend configuration and also apply when the interface configuration is enabled.
 
     See [SMTP configuration](../administration/smtp-configuration.md) for details.
 
@@ -397,7 +419,7 @@ JSON version:
 }
 ```
 
-Another example for MinIo (S3) using certificate:
+Another example for the S3 storage (`minio` section) using certificate:
 
 Environment variables:
 ```yaml
@@ -482,13 +504,16 @@ Environment variables:
 | indicator_decay_manager:interval                     | INDICATOR_DECAY_MANAGER__INTERVAL                     | 60000                            | Interval to check for indicators to update                                                                                                     |
 | indicator_decay_manager:batch_size                   | INDICATOR_DECAY_MANAGER__BATCH_SIZE                   | 10000                            | Number of indicators handled by the manager                                                                                                    |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
+| platform_usage_metrics_manager:enabled               | PLATFORM_USAGE_METRICS_MANAGER__ENABLED               | `false`                          | Enable/disable the manager that collects storage and ingestion usage metrics. Disabled by default; while disabled, these metrics are reported as `null` by `/health` and not exported to Prometheus. Interval and TTL are shared with `app:health_monitoring:usage_metrics_interval`. |
+| platform_usage_metrics_manager:lock_key              | PLATFORM_USAGE_METRICS_MANAGER__LOCK_KEY              | platform_usage_metrics_manager_lock | Lock key for the manager in Redis                                                                                                           |
+| -                                                    | -                                                     | -                                | -                                                                                                                                              |
 | garbage_collection_manager:enabled                   | GARBAGE_COLLECTION_MANAGER__ENABLED                   | `true`                           | Enable/disable the trash manager                                                                                                               |
 | garbage_collection_manager:lock_key                  | GARBAGE_COLLECTION_MANAGER__LOCK_KEY                  | garbage_collection_manager_lock  | Lock key for the manager in Redis                                                                                                              |
 | garbage_collection_manager:interval                  | GARBAGE_COLLECTION_MANAGER__INTERVAL                  | 60000                            | Interval to check for trash elements to delete                                                                                                 |
 | garbage_collection_manager:batch_size                | GARBAGE_COLLECTION_MANAGER__BATCH_SIZE                | 10000                            | Number of trash elements to delete at once                                                                                                     |
 | garbage_collection_manager:deleted_retention_days    | GARBAGE_COLLECTION_MANAGER__DELETED_RETENTION_DAYS    | 7                                | Days after which elements in trash are deleted                                                                                                 |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
-| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_LOCK                          | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
+| telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_KEY                           | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
 
 
 !!! note "Manager's duties"
@@ -524,6 +549,16 @@ Can be configured manually using the configuration file `config.yml` or through 
 | Parameter               | Environment variable    | Default value | Description                                                                                                                                                              |
 |:------------------------|:------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+
+#### Missing-reference retry schedule
+
+When the platform rejects an object because a referenced entity is not ingested yet (`MISSING_REFERENCE_ERROR`), the worker waits and retries up to 4 times. By default it waits a flat random 1 to 3 seconds before each retry. The exponential schedule waits less on the first retry and more on the last ones (0.5 s, 1 s, 2 s, 4 s on average, with jitter), which fits the common case where the referenced entity lands a fraction of a second later. These settings are environment variables only (read by the `pycti` library, so they also apply to connectors importing bundles directly).
+
+| Parameter | Environment variable                      | Default value | Description                                                                                                      |
+|:----------|:------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------------|
+| -         | OPENCTI_MISSING_REF_RETRY_EXPONENTIAL     | false         | Enable the exponential retry schedule for missing references (`true` / `false`)                                  |
+| -         | OPENCTI_MISSING_REF_RETRY_INITIAL_DELAY   | 0.5           | Exponential schedule only: average wait in seconds before the first retry (minimum 0)                            |
+| -         | OPENCTI_MISSING_REF_RETRY_FACTOR          | 2             | Exponential schedule only: multiplier applied to the wait at each retry (minimum 1, 1 = constant wait)           |
 
 #### Telemetry
 

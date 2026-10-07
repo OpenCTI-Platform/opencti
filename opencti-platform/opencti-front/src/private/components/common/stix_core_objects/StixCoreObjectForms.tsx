@@ -50,6 +50,7 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
             variant="secondary"
             value="formIntake"
             onClick={() => setIsFormSelectorOpen(true)}
+            aria-label={t_i18n('Use a form to create')}
           >
             <AssignmentOutlined color="primary" />
           </IconButton>

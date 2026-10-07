@@ -14,7 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
@@ -161,6 +161,7 @@ const HistoryLineContent = ({
                           <IconButton
                             onClick={() => handleOpenExternalLink(externalReference.url!)}
                             color="primary"
+                            aria-label={t_i18n('Browse the link')}
                           >
                             <OpenInBrowserOutlined />
                           </IconButton>

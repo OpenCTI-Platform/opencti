@@ -1,6 +1,6 @@
 import React from 'react';
 import { importMutation } from '@components/workspaces/WorkspaceCreation';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { WorkspaceCreationImportMutation } from '@components/workspaces/__generated__/WorkspaceCreationImportMutation.graphql';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { resolveLink } from '../../../utils/Entity';

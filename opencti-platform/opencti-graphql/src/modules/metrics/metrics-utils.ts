@@ -4,7 +4,7 @@ import { UnsupportedError } from '../../config/errors';
 let metricsConfiguration: EntityMetricConfiguration[];
 const allAttributesFlat: string [] = [];
 
-interface EntityMetricConfiguration {
+export interface EntityMetricConfiguration {
   entity_type: string;
   metrics: MetricDescription[];
 }

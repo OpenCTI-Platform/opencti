@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import AutocompleteField from '../../../../components/AutocompleteField';
+import ComboboxField from '../../../../components/ComboboxField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -19,9 +19,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -73,30 +70,25 @@ const CsvMapperField: FunctionComponent<CsvMapperFieldComponentProps> = ({
   return (
     <>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         style={fieldSpacingContainerStyle}
         name={name}
         multiple={false}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('CSV Mappers'),
-        }}
+        label={t_i18n('CSV Mappers')}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={csvMappersPreloaded}
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={onChange}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="csvmapper" />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
       />
     </>

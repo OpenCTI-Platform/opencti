@@ -1,4 +1,14 @@
 import { APIRequestContext } from '@playwright/test';
+import { graphqlRequest } from './graphql.data';
+
+interface NamedNode {
+  id: string;
+  name: string;
+}
+
+interface EdgesOf<T> {
+  edges: Array<{ node: T }>;
+}
 
 const getCapabilities = () => `
   query {
@@ -54,27 +64,19 @@ const addRoleCapability = (roleId: string, capabilityId: string) => `
 `;
 
 export const addRoles = async (request: APIRequestContext, roles: AddRoleInput[]) => {
-  const capabilitiesResponse = await request.post('/graphql', { data: { query: getCapabilities() } });
-  const capabilitiesResponseData = JSON.parse((await capabilitiesResponse.body()).toString());
-  const capabilities = capabilitiesResponseData.data.capabilities.edges.map((e: any) => e.node);
+  const { capabilities } = await graphqlRequest<{ capabilities: EdgesOf<NamedNode> }>(request, getCapabilities(), 'list capabilities');
+  const allCapabilities = capabilities.edges.map((e) => e.node);
 
-  const existingRolesResponse = await request.post('/graphql', { data: { query: getRoles() } });
-  const existingRolesResponseData = JSON.parse((await existingRolesResponse.body()).toString());
-  const existingRoles = existingRolesResponseData.data.roles.edges.map((e: any) => e.node.name);
+  const { roles: existing } = await graphqlRequest<{ roles: EdgesOf<NamedNode> }>(request, getRoles(), 'list roles');
+  const existingRoles = existing.edges.map((e) => e.node.name);
 
-  await Promise.all(roles.map(async (role) => {
-    if (!existingRoles.includes(role.name)) {
-      const addRoleResponse = await request.post('/graphql', { data: { query: addRole(role) } });
-
-      if (role.capabilities && role.capabilities.length > 0) {
-        const roleCapabilities = capabilities.filter((capa: any) => role.capabilities?.includes(capa.name));
-        const addRoleResponseData = JSON.parse((await addRoleResponse.body()).toString());
-        const roleId = addRoleResponseData.data.roleAdd.id;
-
-        await Promise.all(roleCapabilities.map(async (capa: any) => {
-          await request.post('/graphql', { data: { query: addRoleCapability(roleId, capa.id) } });
-        }));
-      }
+  for (const role of roles) {
+    if (existingRoles.includes(role.name)) continue;
+    const { roleAdd } = await graphqlRequest<{ roleAdd: NamedNode }>(request, addRole(role), `create role ${role.name}`);
+    for (const capabilityName of role.capabilities ?? []) {
+      const capability = allCapabilities.find((c) => c.name === capabilityName);
+      if (!capability) throw new Error(`create role ${role.name}: unknown capability ${capabilityName}`);
+      await graphqlRequest(request, addRoleCapability(roleAdd.id, capability.id), `add capability ${capabilityName} to role ${role.name}`);
     }
-  }));
+  }
 };

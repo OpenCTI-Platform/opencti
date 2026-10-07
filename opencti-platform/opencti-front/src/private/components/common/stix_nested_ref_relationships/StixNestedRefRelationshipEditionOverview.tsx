@@ -142,7 +142,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Start time'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               helperText: (
                 <SubscriptionFocus
@@ -159,7 +159,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Stop time'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (

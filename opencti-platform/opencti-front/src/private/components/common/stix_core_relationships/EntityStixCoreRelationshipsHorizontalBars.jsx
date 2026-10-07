@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import Card from '@common/card/Card';
 import Chart from '../charts/Chart';

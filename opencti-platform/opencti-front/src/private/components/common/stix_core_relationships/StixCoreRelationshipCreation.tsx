@@ -27,6 +27,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { FieldOption } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -438,7 +439,7 @@ const StixCoreRelationshipCreation = ({
                 >
                   <Close fontSize="small" color="primary" />
                 </IconButton>
-                <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
+                <Typography id="drawer-title" variant="h6">{t_i18n('Create a relationship')}</Typography>
               </div>
               <StixCoreRelationshipCreationForm
                 fromEntities={fromObjects}
@@ -472,7 +473,7 @@ const StixCoreRelationshipCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
+          <Typography id="drawer-title" variant="h6">{t_i18n('Select a relationship')}</Typography>
         </div>
         <List component="div" style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
@@ -701,7 +702,19 @@ const StixCoreRelationshipCreation = ({
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the shared one, so it has to declare its
+        // own layer: a drawer is a layer-2 surface and its fields read the layer from the paper.
+        slotProps={{
+          paper: {
+            'aria-modal': 'true',
+            'aria-labelledby': step > 0 ? 'drawer-title' : undefined,
+            role: 'dialog',
+            className: fdsLayerClass(SURFACE_LAYER),
+            sx: { ...layerInputVars },
+          },
+        }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}

@@ -6,7 +6,7 @@ import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
-import { sendEmailToUser } from '../../../domain/user';
+import { sendEmailToUser } from '../../user/user-domain';
 import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
 
 export interface SendEmailTemplateConfiguration {

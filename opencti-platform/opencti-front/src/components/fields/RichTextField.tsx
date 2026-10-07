@@ -12,6 +12,7 @@ import useAI from '../../utils/hooks/useAI';
 import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
+import Box from '@mui/material/Box';
 
 interface RichTextFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -51,25 +52,36 @@ const RichTextField = ({
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
   const RichTextEditorInstance = (
-    <RichTextEditor
-      onTextSelection={(text) => {
-        if (onTextSelection && disabled && !fullScreen && text.length > 2) {
-          onTextSelection(text);
-        }
+    <Box
+      sx={{
+        '& .tiptap-editor-content': {
+          // Same surface as the markdown textarea, read from the token so it
+          // follows the layer the field is dropped on.
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
+        },
       }}
-      data={value}
-      onChange={(_, adapter) => {
-        const html = adapter.getData();
-        setFieldValue(name, html);
-        onChange?.(name, html);
-      }}
-      onBlur={() => {
-        setFieldTouched(name, true);
-        onSubmit?.(name, value);
-      }}
-      onFocus={() => onFocus?.(name)}
-      disabled={disabled}
-    />
+    >
+      <RichTextEditor
+        onTextSelection={(text) => {
+          if (onTextSelection && disabled && !fullScreen && text.length > 2) {
+            onTextSelection(text);
+          }
+        }}
+        data={value}
+        onChange={(_, adapter) => {
+          const html = adapter.getData();
+          setFieldValue(name, html);
+          onChange?.(name, html);
+        }}
+        onBlur={() => {
+          setFieldTouched(name, true);
+          onSubmit?.(name, value);
+        }}
+        onFocus={() => onFocus?.(name)}
+        disabled={disabled}
+      />
+    </Box>
   );
 
   const toolbarEmpty = !label && !askAi && !hasFullScreen && lastSavedValue === undefined;
@@ -108,7 +120,7 @@ const RichTextField = ({
             />
           )}
           {hasFullScreen && (
-            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)}>
+            <IconButton aria-label={t_i18n('Set full screen')} size="small" onClick={() => setFullScreen(true)} sx={{ marginBottom: '2px' }}>
               <FullscreenOutlined fontSize="small" />
             </IconButton>
           )}

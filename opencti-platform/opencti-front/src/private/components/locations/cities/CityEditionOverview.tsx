@@ -242,7 +242,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           <AlertConfidenceForEntity entity={city} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -279,8 +279,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -294,8 +294,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}

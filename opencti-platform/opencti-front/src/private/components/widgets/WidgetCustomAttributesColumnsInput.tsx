@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { Box, Checkbox, FormControlLabel, IconButton, List, ListItem, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material';
+import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import { Checkbox, IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -20,6 +22,14 @@ type WidgetCustomAttributesColumnsInputProps = {
   onChange: (columns: WidgetColumn[]) => void;
   layout?: WidgetColumnsLayout;
   onLayoutChange?: (layout: WidgetColumnsLayout) => void;
+  labels?: {
+    title?: string;
+    available?: string;
+    selected?: string;
+  };
+  selectedPanelFlex?: number;
+  landscapeWarningThreshold?: number;
+  landscapeWarningMessage?: string;
 };
 
 type DraggableColumnItemProps = {
@@ -28,6 +38,7 @@ type DraggableColumnItemProps = {
   isLast: boolean;
   label: string;
   onRemove: (attribute?: string | null) => void;
+  t_i18n: (s: string) => string;
 };
 
 type ColumnLayoutProps = {
@@ -38,6 +49,8 @@ type ColumnLayoutProps = {
   t_i18n: (key: string) => string;
   theme: Theme;
   listSx: object;
+  selectedLabel: string;
+  selectedPanelFlex: number;
 };
 
 const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
@@ -46,6 +59,7 @@ const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
   isLast,
   label,
   onRemove,
+  t_i18n,
 }) => (
   <Draggable draggableId={column.attribute ?? ''} index={index}>
     {(providedDrag, snapshotDrag) => (
@@ -59,9 +73,14 @@ const DraggableColumnItem: FunctionComponent<DraggableColumnItemProps> = ({
           height: 42,
         }}
         secondaryAction={(
-          <IconButton onClick={() => onRemove(column.attribute)}>
-            <Close />
-          </IconButton>
+          <IconButton
+            variant="default"
+            priority="tertiary"
+            size="sm"
+            onClick={() => onRemove(column.attribute)}
+            aria-label={t_i18n('Remove this column')}
+            icon={<Close />}
+          />
         )}
       >
         <ListItemIcon {...providedDrag.dragHandleProps}>
@@ -80,10 +99,12 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   formatColumnName,
   t_i18n,
   listSx,
+  selectedLabel,
+  selectedPanelFlex,
 }) => (
-  <Box sx={{ flex: 2 }}>
+  <Box sx={{ flex: selectedPanelFlex }}>
     <Typography variant="h4">
-      {`${t_i18n('Selected attributes')} (${value.length})`}
+      {`${selectedLabel} (${value.length})`}
     </Typography>
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="col_1">
@@ -101,6 +122,7 @@ const SingleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
                 isLast={index === value.length - 1}
                 label={t_i18n(formatColumnName(column))}
                 onRemove={handleToggleColumn}
+                t_i18n={t_i18n}
               />
             ))}
             {providedDrop.placeholder}
@@ -118,14 +140,16 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
   formatColumnName,
   t_i18n,
   theme,
+  selectedLabel,
+  selectedPanelFlex,
 }) => {
   const col1Items = value.filter((_, i) => i % 2 === 0);
   const col2Items = value.filter((_, i) => i % 2 === 1);
 
   return (
-    <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ flex: selectedPanelFlex, display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">
-        {`${t_i18n('Selected attributes')} (${value.length})`}
+        {`${selectedLabel} (${value.length})`}
       </Typography>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Box sx={{
@@ -158,6 +182,7 @@ const DoubleColumnLayout: FunctionComponent<ColumnLayoutProps> = ({
                         isLast={index === colItems.length - 1}
                         label={t_i18n(formatColumnName(column))}
                         onRemove={handleToggleColumn}
+                        t_i18n={t_i18n}
                       />
                     ))}
                     {providedDrop.placeholder}
@@ -179,9 +204,19 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   onChange,
   layout = '1',
   onLayoutChange,
+  labels,
+  selectedPanelFlex = 2,
+  landscapeWarningThreshold,
+  landscapeWarningMessage,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const titleLabel = labels?.title ?? t_i18n('Customize attributes');
+  const availableLabel = labels?.available ?? t_i18n('Available attributes');
+  const selectedLabel = labels?.selected ?? t_i18n('Selected attributes');
+  const shouldDisplayLandscapeWarning = !!landscapeWarningMessage
+    && typeof landscapeWarningThreshold === 'number'
+    && value.length >= landscapeWarningThreshold;
 
   const { handleDragEndSingleColumn, handleDragEndDoubleColumns, handleToggleColumn, formatColumnName } = useWidgetColumnsCustomization(
     availableColumns,
@@ -198,21 +233,27 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   return (
     <Accordion sx={{ width: '100%' }} defaultExpanded>
       <AccordionSummary>
-        <Typography>{t_i18n('Customize attributes')}</Typography>
+        <Typography>{titleLabel}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
+        {shouldDisplayLandscapeWarning && (
+          <Alert severity="warning" sx={{ marginBottom: theme.spacing(2) }}>
+            {landscapeWarningMessage}
+          </Alert>
+        )}
 
         {/* Layout selector */}
         {onLayoutChange && (
           <Box sx={{ marginBottom: theme.spacing(2) }}>
             <Typography variant="h4">{t_i18n('Layout')}</Typography>
             <RadioGroup
-              row
+              aria-label={t_i18n('Layout')}
+              orientation="horizontal"
               value={layout}
-              onChange={(e) => onLayoutChange(e.target.value as WidgetColumnsLayout)}
+              onValueChange={(value) => onLayoutChange(value as WidgetColumnsLayout)}
             >
-              <FormControlLabel value="1" control={<Radio size="small" />} label={t_i18n('1 column')} />
-              <FormControlLabel value="2" control={<Radio size="small" />} label={t_i18n('2 columns')} />
+              <Radio value="1" label={t_i18n('1 column')} />
+              <Radio value="2" label={t_i18n('2 columns')} />
             </RadioGroup>
           </Box>
         )}
@@ -220,16 +261,20 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h4">
-              {`${t_i18n('Available attributes')} (${availableColumns.length})`}
+              {`${availableLabel} (${availableColumns.length})`}
             </Typography>
             <List sx={{ ...listSx, flex: 1 }}>
               {availableColumns.map((column) => (
-                <ListItem disablePadding key={column.attribute} sx={{ height: 42 }}>
+                <ListItem
+                  disablePadding
+                  key={column.attribute}
+                  sx={{ height: 42, paddingLeft: theme.spacing(2) }}
+                >
                   <Checkbox
+                    label={t_i18n(formatColumnName(column))}
                     checked={value.some((col) => col.attribute === column.attribute)}
-                    onChange={() => handleToggleColumn(column.attribute)}
+                    onCheckedChange={() => handleToggleColumn(column.attribute)}
                   />
-                  <ListItemText primary={t_i18n(formatColumnName(column))} />
                 </ListItem>
               ))}
             </List>
@@ -244,6 +289,8 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               t_i18n={t_i18n}
               theme={theme}
               listSx={listSx}
+              selectedLabel={selectedLabel}
+              selectedPanelFlex={selectedPanelFlex}
             />
           ) : (
             <SingleColumnLayout
@@ -254,6 +301,8 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
               t_i18n={t_i18n}
               theme={theme}
               listSx={listSx}
+              selectedLabel={selectedLabel}
+              selectedPanelFlex={selectedPanelFlex}
             />
           )}
         </Box>

@@ -42,4 +42,3 @@ export const EXPECTED_NETWORK_TRAFFIC = {
   dst_byte_count: 4096,
   encapsulates_refs: [],
 };
-

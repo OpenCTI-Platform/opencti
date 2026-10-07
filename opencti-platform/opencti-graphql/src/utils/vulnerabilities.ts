@@ -333,13 +333,19 @@ export const getCodeValue = (
   );
   if (found) return found[1];
 
+  const normalizeLabel = (label: string) => label.toLowerCase().replace(/[\s_-]/g, '');
+  const normalizedMatch = Object.entries(map).find(
+    ([full]) => normalizeLabel(full) === normalizeLabel(processedValue),
+  );
+  if (normalizedMatch) return normalizedMatch[1];
+
   // Also, code input in lowercase? ("n" instead of "N")
   const codeFromLower = Object.entries(map).find(
     ([, code]) => code.toLowerCase() === processedValue.toLowerCase(),
   );
   if (codeFromLower) return codeFromLower[1];
 
-  return processedValue;
+  throw FunctionalError(`Unknown CVSS component value ${value} for component ${metric}`, { metric, value });
 };
 
 // --- CVSS Criticity ---
@@ -493,15 +499,21 @@ export const updateCvssVector = (
       return [k && k.toUpperCase(), v];
     });
   const parts = new Map<string, string | undefined>(initialParts);
+  const normalizedFields: CvssFieldUpdate[] = [];
   updates.forEach(({ key, value }) => {
     const metric = openctiToCode[key];
     if (metric) {
       const val = Array.isArray(value) ? value[0] : value;
-      if (val !== null && val !== undefined) {
-        parts.set(metric, getCodeValue(metric, String(val), config));
+      if (isNotEmptyField(val)) {
+        const code = getCodeValue(metric, String(val), config);
+        parts.set(metric, code);
+        normalizedFields.push({ key, value: [getFullValue(metric, code, config)] });
       }
     }
   });
+  if (parts.size === 0) {
+    return asObject ? {} : [];
+  }
   const updatedVector = (prefix || '')
     + ordered
       .filter((k) => parts.has(k))
@@ -539,6 +551,7 @@ export const updateCvssVector = (
     result = [{ key: baseVectorKey, value: [updatedVector] }];
     if (severityKey) result.push({ key: severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
   }
+  pushAll(result, normalizedFields);
   return asObject ? Object.fromEntries(result.map((e) => [e.key, e.value[0]])) : result;
 };
 
@@ -594,5 +607,15 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
       pushAll(newUpdates, updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
     }
   }
-  return newUpdates;
+  // Replace inputs already present to avoid producing two updates for the same key
+  const addedUpdates: CvssFieldUpdate[] = [];
+  newUpdates.forEach((newUpdate) => {
+    const existingUpdate = updates.find((e) => e.key === newUpdate.key);
+    if (existingUpdate) {
+      existingUpdate.value = newUpdate.value;
+    } else {
+      addedUpdates.push(newUpdate);
+    }
+  });
+  return addedUpdates;
 };

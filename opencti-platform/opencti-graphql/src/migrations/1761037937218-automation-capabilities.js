@@ -3,7 +3,7 @@ import { AUTOMATION, AUTOMATION_AUTMANAGE, executionContext, SYSTEM_USER } from 
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 
 const message = '[MIGRATION] create playbook capability';

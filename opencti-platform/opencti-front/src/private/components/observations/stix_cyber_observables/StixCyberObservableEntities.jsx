@@ -16,6 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { Stack } from '@mui/material';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 const styles = (theme) => ({
   paper: {
@@ -34,15 +35,7 @@ const styles = (theme) => ({
     paddingLeft: 10,
     textTransform: 'uppercase',
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,

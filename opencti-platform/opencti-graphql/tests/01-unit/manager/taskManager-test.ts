@@ -69,25 +69,31 @@ const expectedWithoutNeighborsFieldPatch = [{
   operation: 'add',
   value: [element.id],
 }];
+const relationshipElement = {
+  ...element,
+  entity_type: 'stix-core-relationship',
+  fromId: 'malware-id',
+  toId: 'location-id',
+};
+
+vi.mock('../../../src/database/middleware-loader', () => {
+  return {
+    fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
+      const { callback, fromOrToId } = args;
+      const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
+        return { fromId: id, toId: `${id}toId`, id: `${id}rel` };
+      }) : [];
+      if (callback) {
+        callback(mockRelations);
+      }
+      return mockRelations;
+    }),
+  };
+});
 
 describe('TaskMananger objectsFromElements tests', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  vi.mock('../../../src/database/middleware-loader', () => {
-    return {
-      fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
-        const { callback, fromOrToId } = args;
-        const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
-          return { fromId: id, toId: `${id}toId`, id: `${id}rel` };
-        }) : [];
-        if (callback) {
-          callback(mockRelations);
-        }
-        return mockRelations;
-      }),
-    };
   });
 
   it('buildContainersElementsBundle should return object', async () => {
@@ -98,6 +104,16 @@ describe('TaskMananger objectsFromElements tests', () => {
     const objectsWithout = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [element], false, 'ADD');
     expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_operation).toEqual('patch');
     expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual(expectedWithoutNeighborsFieldPatch);
+  });
+
+  it('does not include relationship endpoints when removing a relationship from a container', async () => {
+    const objects = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [relationshipElement], false, 'REMOVE');
+
+    expect(objects[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual([{
+      key: 'objects',
+      operation: 'remove',
+      value: [relationshipElement.id],
+    }]);
   });
 });
 

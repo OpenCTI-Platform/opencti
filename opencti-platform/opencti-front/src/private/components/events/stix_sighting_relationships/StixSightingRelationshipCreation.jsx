@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
 
 const styles = (theme) => ({
@@ -369,7 +370,7 @@ class StixSightingRelationshipCreation extends Component {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a sighting')}</Typography>
+          <Typography id="drawer-title" variant="h6">{t('Create a sighting')}</Typography>
         </div>
         <StixSightingRelationshipCreationForm
           fromEntities={fromObjects}
@@ -400,7 +401,7 @@ class StixSightingRelationshipCreation extends Component {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Select a sighting')}</Typography>
+          <Typography id="drawer-title" variant="h6">{t('Select a sighting')}</Typography>
         </div>
         <List component="div" className={classes.container}>
           {existingSightings.map((sighting) => (
@@ -632,7 +633,18 @@ class StixSightingRelationshipCreation extends Component {
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
+        // This creation drawer mounts MUI's Drawer directly instead of the shared one, so it has to declare its
+        // own layer: a drawer is a layer-2 surface and its fields read the layer from the paper.
+        slotProps={{
+          paper: {
+            'aria-labelledby': step > 0 ? 'drawer-title' : undefined,
+            'aria-modal': 'true',
+            role: 'dialog',
+            className: fdsLayerClass(SURFACE_LAYER),
+            sx: { ...layerInputVars } },
+        }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}

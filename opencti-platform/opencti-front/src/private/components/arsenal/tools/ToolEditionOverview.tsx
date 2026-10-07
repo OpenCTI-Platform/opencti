@@ -331,7 +331,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             name="tool_version"
             label={t_i18n('Tool Version')}
             fullWidth
-            style={{ marginTop: theme.spacing(2) }}
+            className="mt-4"
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}

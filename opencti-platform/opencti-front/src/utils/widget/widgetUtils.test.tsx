@@ -5,7 +5,6 @@ import {
   getCurrentAvailableParameters,
   getCurrentDataSelectionLimit,
   getCurrentIsRelationships,
-  isWidgetListOrTimeline,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
   showEstimationWarningForUniqCount,
@@ -15,8 +14,10 @@ import {
   fintelTemplatesWidgetVisualizationTypes,
   getWidgetInterval,
   useGetNumberWidgetTitle,
+  checkIfDateAttributeValid,
 } from './widgetUtils';
 import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 
 vi.mock('src/utils/hooks/useEntityTranslation', () => ({
   default: () => ({
@@ -179,31 +180,6 @@ describe('widgetUtils', () => {
 
     it('should return false for invalid widget type', () => {
       expect(getCurrentIsRelationships('invalid-type')).toBe(false);
-    });
-  });
-
-  describe('isWidgetListOrTimeline', () => {
-    it('should return true for list widget', () => {
-      expect(isWidgetListOrTimeline('list')).toBe(true);
-    });
-
-    it('should return true for timeline widget', () => {
-      expect(isWidgetListOrTimeline('timeline')).toBe(true);
-    });
-
-    it('should return false for other widget types', () => {
-      expect(isWidgetListOrTimeline('number')).toBe(false);
-      expect(isWidgetListOrTimeline('donut')).toBe(false);
-      expect(isWidgetListOrTimeline('text')).toBe(false);
-      expect(isWidgetListOrTimeline('vertical-bar')).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      expect(isWidgetListOrTimeline('')).toBe(false);
-    });
-
-    it('should return false for invalid widget type', () => {
-      expect(isWidgetListOrTimeline('invalid-type')).toBe(false);
     });
   });
 
@@ -457,6 +433,86 @@ describe('widgetUtils', () => {
     it('should return translated default title when parameters.title is undefined', () => {
       const { result } = renderHook(() => useGetNumberWidgetTitle({} as WidgetParameters, 'Number of entities'));
       expect(result.current).toBe('translated_Number of entities');
+    });
+  });
+
+  describe('checkIfDateAttributeValid', () => {
+    const relationshipTypeFilterGroup = (relationshipType: string): FilterGroup => ({
+      mode: 'and',
+      filters: [{ key: 'relationship_type', values: [relationshipType], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    });
+
+    it('should return true when date_attribute is not set', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { perspective: 'entities', filters: null },
+      ];
+      expect(checkIfDateAttributeValid(dataSelection)).toBe(true);
+    });
+
+    it('should return true for valid entities date attributes', () => {
+      const validAttributes = ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'];
+      validAttributes.forEach((date_attribute) => {
+        const dataSelection: WidgetDataSelection[] = [
+          { perspective: 'entities', filters: null, date_attribute },
+        ];
+        expect(checkIfDateAttributeValid(dataSelection)).toBe(true);
+      });
+    });
+
+    it('should return false for invalid entities date attributes', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { perspective: 'entities', filters: null, date_attribute: 'start_time' },
+      ];
+      expect(checkIfDateAttributeValid(dataSelection)).toBe(false);
+    });
+
+    it('should return true for valid relationships date attributes', () => {
+      const validAttributes = ['created_at', 'updated_at', 'created', 'modified', 'start_time', 'stop_time'];
+      validAttributes.forEach((date_attribute) => {
+        const dataSelection: WidgetDataSelection[] = [
+          { perspective: 'relationships', filters: relationshipTypeFilterGroup('uses'), date_attribute },
+        ];
+        expect(checkIfDateAttributeValid(dataSelection)).toBe(true);
+      });
+    });
+
+    it('should return false for invalid relationships date attributes', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { perspective: 'relationships', filters: relationshipTypeFilterGroup('uses'), date_attribute: 'first_seen' },
+      ];
+      expect(checkIfDateAttributeValid(dataSelection)).toBe(false);
+    });
+
+    it('should use entity-style attributes for stix-sighting-relationship', () => {
+      const validSelection: WidgetDataSelection[] = [
+        { perspective: 'relationships', filters: relationshipTypeFilterGroup('stix-sighting-relationship'), date_attribute: 'first_seen' },
+      ];
+      expect(checkIfDateAttributeValid(validSelection)).toBe(true);
+
+      const invalidSelection: WidgetDataSelection[] = [
+        { perspective: 'relationships', filters: relationshipTypeFilterGroup('stix-sighting-relationship'), date_attribute: 'start_time' },
+      ];
+      expect(checkIfDateAttributeValid(invalidSelection)).toBe(false);
+    });
+
+    it('should return true when perspective is audits', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { perspective: 'audits', filters: null, date_attribute: 'created_at' },
+      ];
+      expect(checkIfDateAttributeValid(dataSelection)).toBe(true);
+    });
+
+    it('should return true for an empty data selection', () => {
+      expect(checkIfDateAttributeValid([])).toBe(true);
+    });
+
+    it('should return false when at least one selection is invalid', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { perspective: 'entities', filters: null, date_attribute: 'created_at' },
+        { perspective: 'entities', filters: null, date_attribute: 'invalid_attribute' },
+      ];
+      expect(checkIfDateAttributeValid(dataSelection)).toBe(false);
     });
   });
 });

@@ -26,10 +26,10 @@ export const csvMapperMockSimpleSkipLine: Partial<CsvMapperParsed> = {
             column_name: 'AG',
             configuration: {
               separator: ',',
-            }
+            },
           },
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ],
 };

@@ -1,5 +1,5 @@
 import { useWidgetConfigContext } from './WidgetConfigContext';
-import { getCurrentAvailableParameters, isDataSelectionNumberValid } from '../../../utils/widget/widgetUtils';
+import { checkIfDateAttributeValid, getCurrentAvailableParameters, isDataSelectionNumberValid } from '../../../utils/widget/widgetUtils';
 
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 
@@ -51,6 +51,9 @@ const useWidgetConfigValidateForm = () => {
     || fintelTemplateVariableNameChecker.test(config.fintelVariableName)
   );
 
+  // Check date attribute is valid according to the widget perspective
+  const isDateAttributeValid = checkIfDateAttributeValid(dataSelection);
+
   // Check title is filled in case of fintel
   const isTitleFilled = (
     (host.kind !== 'fintelTemplate')
@@ -67,6 +70,7 @@ const useWidgetConfigValidateForm = () => {
       && isDataSelectionAttributesFilled
       && isVariableNameFilled
       && isVariableNameValid
+      && isDateAttributeValid
       && isTitleFilled
       && isTypeFilled
       && !isWidgetVarNameAlreadyUsed
@@ -74,6 +78,7 @@ const useWidgetConfigValidateForm = () => {
     isWidgetVarNameAlreadyUsed,
     isVarNameAlreadyUsed,
     isVariableNameValid,
+    isDateAttributeValid,
   };
 };
 

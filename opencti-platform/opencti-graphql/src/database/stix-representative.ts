@@ -74,7 +74,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import type { BasicStoreCommon } from '../types/store';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { ENTITY_TYPE_VULNERABILITY, type StixVulnerability } from '../modules/vulnerability/vulnerability-types';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
@@ -162,7 +162,7 @@ export const extractStixRepresentative = (
     return (stix as SDO.StixTool).name;
   }
   if (entityType === ENTITY_TYPE_VULNERABILITY) {
-    return (stix as SDO.StixVulnerability).name;
+    return (stix as StixVulnerability).name;
   }
   // endregion
   // region meta entities

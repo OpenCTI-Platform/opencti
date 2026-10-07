@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { useIntl } from 'react-intl';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import { bytesFormat, numberFormat } from '../utils/Number';
 import { EMPTY_VALUE } from '../utils/String';
 

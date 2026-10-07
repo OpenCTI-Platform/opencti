@@ -20,7 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@common/button/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import fileDownload from 'js-file-download';
 import { PlaybooksLinesPaginationQuery$variables } from '@components/data/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import PlaybookPopoverToggleDialog from './PlaybookPopoverToggleDialog';
@@ -94,8 +94,7 @@ const PlaybookPopover = ({
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Playbook') },
   });
   const [commitDelete] = useApiMutation<PlaybookPopoverDeletionMutation>(
@@ -104,8 +103,7 @@ const PlaybookPopover = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const duplicatedSuccessMessage = t_i18n('', {
-    id: '... successfully duplicated',
+  const duplicatedSuccessMessage = t_i18n('{entity_type} successfully duplicated', {
     values: { entity_type: t_i18n('entity_Playbook') },
   });
   const [commitDuplicate] = useApiMutation<PlaybookPopoverDuplicateMutation>(

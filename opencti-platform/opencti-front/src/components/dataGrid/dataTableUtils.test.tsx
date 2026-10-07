@@ -1,57 +1,52 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { screen } from '@testing-library/react';
+import testRender from '../../utils/tests/test-render';
 import { defaultColumnsMap } from './dataTableUtils';
 
-vi.mock('../i18n', () => ({
-  useFormatter: () => ({
-    t_i18n: (s: string) => s,
-    fsd: (s: string) => s,
-    n: (s: number) => String(s),
-    nsdt: (s: string) => s,
-    ftd: (s: string) => s,
-  }),
-}));
+const renderColumn = (id: string, data: unknown, helpers?: unknown) => {
+  const column = defaultColumnsMap.get(id);
+  if (!column?.render) throw new Error(`Column "${id}" has no render function`);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return testRender(<div>{column.render(data as any, helpers as any)}</div>);
+};
 
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => vi.fn(),
-}));
+const fileData = (mimetype: string, size: number) => ({
+  importFiles: { edges: [{ node: { name: 'sample.bin', metaData: { mimetype }, size } }] },
+});
 
-describe('dataTableUtils - workflowInstance column', () => {
-  const workflowInstanceCol = defaultColumnsMap.get('workflowInstance');
-
-  it('is defined in defaultColumnsMap', () => {
-    expect(workflowInstanceCol).toBeDefined();
+describe('dataTableUtils default columns — tooltip anchors', () => {
+  it('anchors the color tooltip', async () => {
+    const { user } = renderColumn('color', { color: '#ff7f50' });
+    await user.hover(screen.getByText('#ff7f50'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('#ff7f50');
   });
 
-  it('has isSortable set to false', () => {
-    expect(workflowInstanceCol?.isSortable).toBe(false);
+  it('anchors the x_opencti_color tooltip', async () => {
+    const { user } = renderColumn('x_opencti_color', { x_opencti_color: '#4b0082' });
+    await user.hover(screen.getByText('#4b0082'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('#4b0082');
   });
 
-  it('has label "Workflow status"', () => {
-    expect(workflowInstanceCol?.label).toBe('Workflow status');
+  it('anchors the file_size tooltip, on the size the cell shows', async () => {
+    const { user } = renderColumn('file_size', fileData('text/plain', 42), {
+      b: (value: number) => `${value} Bytes`,
+    });
+    await user.hover(screen.getByText('42 Bytes'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('42 Bytes');
   });
 
-  it('has percentWidth of 12', () => {
-    expect(workflowInstanceCol?.percentWidth).toBe(8);
+  it('anchors the number_observed tooltip', async () => {
+    const { user } = renderColumn('number_observed', { number_observed: 7 }, {
+      n: (value: number) => `${value} times`,
+    });
+    await user.hover(screen.getByText('7 times'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('7');
   });
 
-  it('renders ItemStatus with disabled=true when workflowInstance is undefined', () => {
-    const renderFn = workflowInstanceCol?.render;
-    if (!renderFn) throw new Error('render function not found');
-    const { container } = render(<>{renderFn({ workflowInstance: undefined })}</>);
-    expect(container).toBeTruthy();
-  });
-
-  it('renders ItemStatus with disabled=false when workflowInstance.currentStatus is set', () => {
-    const renderFn = workflowInstanceCol?.render;
-    if (!renderFn) throw new Error('render function not found');
-    const mockData = {
-      workflowInstance: {
-        currentStatus: { id: 'status-1', template: { name: 'In Progress', color: '#ff0' } },
-      },
-    };
-    const { container } = render(<>{renderFn(mockData)}</>);
-    expect(container).toBeTruthy();
+  it('anchors the operatingSystem tooltip', async () => {
+    const { user } = renderColumn('operatingSystem', { operatingSystem: { name: 'Debian 12' } });
+    await user.hover(screen.getByText('Debian 12'));
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Debian 12');
   });
 });

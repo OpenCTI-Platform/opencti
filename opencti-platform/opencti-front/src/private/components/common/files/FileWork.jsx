@@ -14,7 +14,7 @@ import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutli
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Slide from '@mui/material/Slide';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -188,6 +188,7 @@ const FileWorkComponent = (props) => {
                       color="primary"
                       onClick={() => navigateToDraft(work.draft_context)}
                       size="small"
+                      aria-label={t('Navigate to draft')}
                     >
                       <ArchitectureOutlined fontSize="small" />
                     </IconButton>
@@ -198,6 +199,7 @@ const FileWorkComponent = (props) => {
                     onClick={() => isCurrentContextWork && handleDelete(work.id)}
                     disabled={work.status === 'deleting'}
                     size="small"
+                    aria-label={t_i18n('Delete the work')}
                   >
                     <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
                   </IconButton>

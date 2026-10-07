@@ -4,7 +4,7 @@ import { RelayEnvironmentProvider } from 'react-relay';
 import type { OperationDescriptor } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator as MockGen } from 'relay-test-utils';
 import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material/styles';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from './components/AppIntlProvider';
 import Profile, { profileQuery } from './private/components/profile/Profile';
@@ -53,7 +53,7 @@ describe('App', () => {
     environment.mock.queuePendingOperation(profileQuery, {});
     const { getByDisplayValue } = render(
       <RelayEnvironmentProvider environment={environment}>
-        <BrowserRouter basename={APP_BASE_PATH}>
+        <BrowserRouter basename={APP_BASE_PATH} useTransitions={false}>
           <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
             <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
               <UserContext.Provider value={UserContextValue}>

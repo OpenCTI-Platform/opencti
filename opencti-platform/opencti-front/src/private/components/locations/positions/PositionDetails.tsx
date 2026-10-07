@@ -1,12 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, PreloadedQuery } from 'react-relay';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { Position_position$data } from './__generated__/Position_position.graphql';
-import type { Theme } from '../../../../components/Theme';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { PositionDetails_positionRelationships$key } from './__generated__/PositionDetails_positionRelationships.graphql';
@@ -14,19 +12,6 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 4,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-}));
 
 interface PositionDetailsProps {
   position: Position_position$data;
@@ -133,7 +118,6 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const data = usePreloadedFragment<
     PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
     PositionDetails_positionRelationships$key
@@ -209,8 +193,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               {cities?.map((name) => (
                 <Chip
                   key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
+                  severity="neutral"
+                  label={name ?? ''}
                 />
               ))}
             </FieldOrEmpty>
@@ -223,8 +207,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               {countries?.map((name) => (
                 <Chip
                   key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
+                  severity="neutral"
+                  label={name ?? ''}
                 />
               ))}
             </FieldOrEmpty>
@@ -237,8 +221,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               {regions?.map((name) => (
                 <Chip
                   key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
+                  severity="neutral"
+                  label={name ?? ''}
                 />
               ))}
             </FieldOrEmpty>
@@ -251,8 +235,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               {areas?.map((name) => (
                 <Chip
                   key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
+                  severity="neutral"
+                  label={name ?? ''}
                 />
               ))}
             </FieldOrEmpty>

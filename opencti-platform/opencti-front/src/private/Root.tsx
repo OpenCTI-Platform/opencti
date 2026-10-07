@@ -1,7 +1,7 @@
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
@@ -89,6 +89,7 @@ const rootSettingsFragment = graphql`
       license_type
       license_extra_expiration
       license_extra_expiration_days
+      license_source
     }
     platform_theme {
       name

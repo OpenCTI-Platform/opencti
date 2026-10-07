@@ -25,4 +25,3 @@ export const EXPECTED_MEDIA_CONTENT = {
   labels: [],
   external_references: [],
 };
-

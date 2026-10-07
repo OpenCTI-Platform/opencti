@@ -15,16 +15,16 @@ const CLASSIC_OBJECT = {
             index_uuid: 'ntQ2slJaRmWphjOmcls3lA',
             reason: 'reason',
             shard: '0',
-            type: 'version_conflict_engine_exception'
-          }
+            type: 'version_conflict_engine_exception',
+          },
         ],
         genre: 'TECHNICAL',
-        http_status: 500
+        http_status: 500,
       },
       message: 'Bulk indexing fail',
       name: 'DATABASE_ERROR',
-      stack: 'GraphQLError: Bulk indexing fail'
-    }
+      stack: 'GraphQLError: Bulk indexing fail',
+    },
   ],
   id: '3f001108-c42c-4131-b3a3-583a98043c15',
   level: 'error',
@@ -32,7 +32,7 @@ const CLASSIC_OBJECT = {
   message: 'Bulk indexing fail',
   source: 'backend',
   timestamp: '2025-01-09T20:57:05.422Z',
-  version: '6.4.6'
+  version: '6.4.6',
 };
 const CATEGORY_TO_LIMIT = [
   'Item 1',
@@ -90,28 +90,28 @@ const CATEGORY_TO_LIMIT = [
   'Item 53',
   'Item 54',
   'Item 55',
-  'Item 56'
+  'Item 56',
 ];
 const TOO_COMPLEX_OBJECT = {
   category: 'APP',
   cause: FunctionalError('my error', { category_to_limit: CATEGORY_TO_LIMIT }),
   errors: [
     {
-      category_to_limit: CATEGORY_TO_LIMIT
+      category_to_limit: CATEGORY_TO_LIMIT,
     },
     {
       category_to_limit: ['2', '1', '3'],
-    }
+    },
   ],
   id: '3f001108-c42c-4131-b3a3-583a98043c15',
   level: 'error',
   source: R.range(1, 6000).map(() => 'A').join(''),
-  timestamp: '2025-01-09T20:57:05.422Z'
+  timestamp: '2025-01-09T20:57:05.422Z',
 };
 const WITH_ERROR_OBJECT = {
   level: 'error',
   cause: FunctionalError('my error', { cause: new Error('embedded error') }),
-  timestamp: '2025-01-09T20:57:05.422Z'
+  timestamp: '2025-01-09T20:57:05.422Z',
 };
 // endregion
 

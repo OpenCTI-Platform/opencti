@@ -21,7 +21,9 @@ export default class IntrusionSetDetailsPage {
   }
 
   getVictimologyTab() {
-    return this.page.getByRole('menuitem', { name: 'Victimology' }).click();
+    // The knowledge bar's rows are real links now, not MUI menu items: the bar
+    // is permanent navigation, not an application menu with roving focus.
+    return this.page.getByRole('link', { name: 'Victimology' }).click();
   }
 
   getCreateRelationshipButton() {

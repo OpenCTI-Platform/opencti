@@ -93,16 +93,6 @@ const caseRfiEditionOverviewFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
     objectMarking {
       id
@@ -300,7 +290,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -319,7 +309,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Request for Information date'),
-              variant: 'standard',
+              variant: 'outlined',
               required: (mandatoryAttributes.includes('created')),
               fullWidth: true,
               helperText: (

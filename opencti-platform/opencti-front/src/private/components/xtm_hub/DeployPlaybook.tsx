@@ -2,7 +2,7 @@ import React from 'react';
 import { playbookImportMutation } from '@components/data/playbooks/PlaybookCreation';
 import { PlaybookCreationImportMutation } from '@components/data/playbooks/__generated__/PlaybookCreationImportMutation.graphql';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { resolveLink } from '../../../utils/Entity';
 import { MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';

@@ -1,7 +1,6 @@
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
@@ -11,7 +10,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -165,23 +164,25 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
             {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="user_service_account"
-                      label={t_i18n('This user is a service account')}
-                    />
-                    <Tooltip
-                      title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        style={{ cursor: 'default' }}
+                  {hasSetAccess && (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="user_service_account"
+                        label={t_i18n('This user is a service account')}
                       />
-                    </Tooltip>
-                  </div>
+                      <Tooltip
+                        title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                      >
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          style={{ cursor: 'default' }}
+                        />
+                      </Tooltip>
+                    </div>
+                  )}
                   <Field
                     component={TextField}
                     name="name"
@@ -190,7 +191,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="user_email"
                     label={t_i18n('Email address')}
                     fullWidth={true}
@@ -198,14 +199,14 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="firstname"
                     label={t_i18n('Firstname')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
+                    variant="outlined"
                     name="lastname"
                     label={t_i18n('Lastname')}
                     fullWidth={true}
@@ -222,7 +223,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     <PasswordPolicies value={values.password} />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="password"
                       label={t_i18n('Password')}
                       type="password"
@@ -231,7 +232,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     />
                     <Field
                       component={TextField}
-                      variant="standard"
+                      variant="outlined"
                       name="confirmation"
                       label={t_i18n('Confirmation')}
                       type="password"
@@ -266,8 +267,8 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     )}
                   />
                   <Field
-                    component={SelectField}
-                    variant="standard"
+                    component={SelectFieldFds}
+                    variant="outlined"
                     name="account_status"
                     label={t_i18n('Account Status')}
                     fullWidth={true}
@@ -275,9 +276,9 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   >
                     {settings.platform_user_statuses.map((s) => {
                       return (
-                        <MenuItem key={s.status} value={s.status}>
+                        <SelectItem key={s.status} value={s.status}>
                           {t_i18n(s.status)}
-                        </MenuItem>
+                        </SelectItem>
                       );
                     })}
                   </Field>
@@ -287,7 +288,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     textFieldProps={{
                       label: t_i18n('Account Expire Date'),
                       style: fieldSpacingContainerStyle,
-                      variant: 'standard',
+                      variant: 'outlined',
                       fullWidth: true,
                     }}
                   />

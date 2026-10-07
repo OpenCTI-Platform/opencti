@@ -188,7 +188,6 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_MIGRATION_STATUS]: () => uuidv4(),
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [{ src: 'title' }, { src: 'timestamp' }],
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),

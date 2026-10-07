@@ -4,11 +4,10 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import FormHelperText from '@mui/material/FormHelperText';
-import MenuItem from '@mui/material/MenuItem';
 import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
-import SelectField from '../../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
@@ -188,7 +187,7 @@ const UserEditionOverviewComponent: FunctionComponent<
         <Form style={{ marginTop: theme.spacing(2) }}>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             disabled={external}
@@ -201,12 +200,12 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="user_email"
             disabled={external}
             label={t_i18n('Email address')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -215,11 +214,11 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="firstname"
             label={t_i18n('Firstname')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -228,11 +227,11 @@ const UserEditionOverviewComponent: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="lastname"
             label={t_i18n('Lastname')}
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -254,8 +253,8 @@ const UserEditionOverviewComponent: FunctionComponent<
             }
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="language"
             label={t_i18n('Language')}
             fullWidth={true}
@@ -263,11 +262,11 @@ const UserEditionOverviewComponent: FunctionComponent<
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
           >
-            <MenuItem value="auto">
+            <SelectItem value="auto">
               <em>{t_i18n('Automatic')}</em>
-            </MenuItem>
-            <MenuItem value="en">English</MenuItem>
-            <MenuItem value="fr">Français</MenuItem>
+            </SelectItem>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="fr">Français</SelectItem>
           </Field>
           <FormHelperText>
             <SubscriptionFocus context={context} fieldName="language" />
@@ -285,8 +284,8 @@ const UserEditionOverviewComponent: FunctionComponent<
             outlined={false}
           />
           <Field
-            component={SelectField}
-            variant="standard"
+            component={SelectFieldFds}
+            variant="outlined"
             name="account_status"
             label={t_i18n('Account Status')}
             fullWidth={true}
@@ -295,7 +294,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             onChange={handleSubmitField}
           >
             {settings.platform_user_statuses.map((s) => {
-              return <MenuItem key={s.status} value={s.status}>{t_i18n(s.status)}</MenuItem>;
+              return <SelectItem key={s.status} value={s.status}>{t_i18n(s.status)}</SelectItem>;
             })}
           </Field>
           <FormHelperText>
@@ -306,7 +305,7 @@ const UserEditionOverviewComponent: FunctionComponent<
             name="account_lock_after_date"
             textFieldProps={{
               label: t_i18n('Account Expire Date'),
-              variant: 'standard',
+              variant: 'outlined',
               style: fieldSpacingContainerStyle,
               fullWidth: true,
             }}

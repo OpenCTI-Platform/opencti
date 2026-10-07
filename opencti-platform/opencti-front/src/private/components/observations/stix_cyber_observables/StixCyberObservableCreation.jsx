@@ -1,11 +1,11 @@
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
 import { ListItemButton, Stack } from '@mui/material';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
@@ -784,7 +784,7 @@ const StixCyberObservableCreation = ({
                       <div>
                         <Field
                           component={TextField}
-                          variant="standard"
+                          variant="outlined"
                           name="x_opencti_score"
                           label={t_i18n('Score')}
                           fullWidth={true}
@@ -811,7 +811,7 @@ const StixCyberObservableCreation = ({
                             return (
                               <Field
                                 component={BulkTextField}
-                                variant="standard"
+                                variant="outlined"
                                 name={attribute.value}
                                 label={attributeLabel}
                                 key={attribute.value}
@@ -827,7 +827,7 @@ const StixCyberObservableCreation = ({
                               <div key={attribute.value}>
                                 <Field
                                   component={isFieldInBulk('hashes_MD5') ? BulkTextField : TextField}
-                                  variant="standard"
+                                  variant="outlined"
                                   name="hashes_MD5"
                                   label={t_i18n('hash_md5')}
                                   fullWidth={true}
@@ -836,7 +836,7 @@ const StixCyberObservableCreation = ({
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
-                                  variant="standard"
+                                  variant="outlined"
                                   name="hashes_SHA-1"
                                   label={t_i18n('hash_sha-1')}
                                   fullWidth={true}
@@ -845,7 +845,7 @@ const StixCyberObservableCreation = ({
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
-                                  variant="standard"
+                                  variant="outlined"
                                   name="hashes_SHA-256"
                                   label={t_i18n('hash_sha-256')}
                                   fullWidth={true}
@@ -854,7 +854,7 @@ const StixCyberObservableCreation = ({
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
-                                  variant="standard"
+                                  variant="outlined"
                                   name="hashes_SHA-512"
                                   label={t_i18n('hash_sha-512')}
                                   fullWidth={true}
@@ -890,7 +890,7 @@ const StixCyberObservableCreation = ({
                                 withSeconds={true}
                                 textFieldProps={{
                                   label: attribute.value,
-                                  variant: 'standard',
+                                  variant: 'outlined',
                                   fullWidth: true,
                                   style: { marginTop: 20 },
                                 }}
@@ -901,13 +901,13 @@ const StixCyberObservableCreation = ({
                             return (
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 key={attribute.value}
                                 name={attribute.value}
                                 label={attribute.value}
                                 fullWidth={true}
                                 type="number"
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                               />
                             );
                           }
@@ -946,12 +946,12 @@ const StixCyberObservableCreation = ({
                             return (
                               <Field
                                 component={TextField}
-                                variant="standard"
+                                variant="outlined"
                                 key={attribute.value}
                                 name={attribute.value}
                                 label={t_i18n(attribute.value)}
                                 fullWidth={true}
-                                style={{ marginTop: 20 }}
+                                className="mt-5"
                                 onSubmit={setDefaultAutonomousSystemId}
                               />
                             );
@@ -959,13 +959,13 @@ const StixCyberObservableCreation = ({
                           return (
                             <Field
                               component={TextField}
-                              variant="standard"
+                              variant="outlined"
                               key={attribute.value}
                               name={attribute.value}
                               label={attributeLabel}
                               required={isValueAttribute}
                               fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              className="mt-5"
                             />
                           );
                         })}
@@ -1093,14 +1093,15 @@ const StixCyberObservableCreation = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
-          <Fab
+          <IconButton
             onClick={handleOpen}
-            color="primary"
             aria-label="Add"
             className={classes.createButtonContextual}
+            variant="tertiary"
+            size="small"
           >
             <Add />
-          </Fab>
+          </IconButton>
         )}
         <Dialog
           open={speeddial ? open : status.open}

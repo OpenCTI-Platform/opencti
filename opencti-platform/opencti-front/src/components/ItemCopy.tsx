@@ -125,6 +125,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
             size="small"
             aria-label={t_i18n('Copy')}
             color={copied ? 'success' : 'primary'}
+            keepMui
           >
             {copied ? (
               <Check sx={{ fontSize: variant === 'inLine' ? 12 : 16 }} />

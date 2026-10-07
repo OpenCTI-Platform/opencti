@@ -10,15 +10,16 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Drawer from '@components/common/drawer/Drawer';
 import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { NorthEastOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { useTasksDataColumns } from './useTasksDataColumns';
+import { tasksDataColumns } from './tasksDataColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
 import TaskPopover from './TaskPopover';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -31,15 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.primary.main,
     minWidth: 52,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
 }));
 
 const CaseTaskFragment = graphql`
@@ -71,16 +64,6 @@ const CaseTaskFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     ...CaseTaskOverview_task
   }
 `;
@@ -100,7 +83,6 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fld, t_i18n } = useFormatter();
-  const tasksDataColumns = useTasksDataColumns();
   const task = useFragment(CaseTaskFragment, node);
   const [open, setOpen] = useState(false);
   return (
@@ -166,7 +148,6 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 export const CaseTasksLineDummy = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const tasksDataColumns = useTasksDataColumns();
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -175,7 +156,6 @@ export const CaseTasksLineDummy = () => {
         <IconButton
           aria-label={t_i18n('Open menu')}
           disabled={true}
-          aria-haspopup="true"
           style={{ marginTop: 3 }}
         >
           <MoreVert />

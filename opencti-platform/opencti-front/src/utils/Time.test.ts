@@ -102,8 +102,11 @@ describe('Time utils', () => {
   describe('minutesBefore', () => {
     it('should return a date string N minutes before a given date', () => {
       const result = minutesBefore(30, '2024-06-15T10:00:00.000Z');
-      expect(result).toContain('2024-06-15');
-      expect(result).toContain('09:30');
+      // Compare timestamps instead of formatted-string substrings, since the formatted
+      // output is timezone-dependent (this asserted UTC-formatted '09:30', which fails
+      // outside UTC, e.g. under TZ=Europe/Paris).
+      const expected = new Date('2024-06-15T10:00:00.000Z').getTime() - (30 * 60 * 1000);
+      expect(new Date(result).getTime()).toBe(expected);
     });
   });
 

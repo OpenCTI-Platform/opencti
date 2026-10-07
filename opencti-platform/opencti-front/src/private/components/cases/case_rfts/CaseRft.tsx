@@ -16,7 +16,7 @@ import CaseRftDetails from './CaseRftDetails';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { useTasksDataColumns } from '../tasks/useTasksDataColumns';
+import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -30,7 +30,6 @@ interface CaseRftProps {
 
 const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   const { t_i18n } = useFormatter();
-  const tasksDataColumns = useTasksDataColumns();
   const ref = useRef(null);
   const caseRft = useFragment(caseFragment, caseRftData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRft.entity_type);

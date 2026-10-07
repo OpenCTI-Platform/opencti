@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -12,6 +12,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
@@ -175,6 +176,11 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
+            />
+          ),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
             />
           ),
           files: (

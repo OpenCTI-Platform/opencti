@@ -1,0 +1,8 @@
+{
+  "__generated": "GENERATED FILE — do not edit by hand. Regenerate from the filigran-design-system repo: pnpm generate:mui-bridge --product opencti --write-to-product.",
+  "product": "opencti",
+  "themeCssHash": "sha256:4719a8a35ab7c376301f1b39942ad6a67ae93ec882a7bfa8c9e439ab0afdbd8e",
+  "generator": "@filigran/design-system scripts/generate-mui-bridge.ts",
+  "tsFile": "fds-tokens.generated.ts",
+  "tsFileSha256": "sha256:c01e9cf98d7b7e5c6a11863be4100b98449110a1f30aaea435c083190fbd8c01"
+}

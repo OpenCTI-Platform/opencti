@@ -1,11 +1,11 @@
-import React, { Suspense, SyntheticEvent, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
 import { type SavedFiltersAutocompleteOptionType, WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
 import { type WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
-import type { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import WidgetCustomFiltersIcon from 'src/components/saved_filters/WidgetCustomFiltersIcon';
 import Divider from '@mui/material/Divider';
@@ -74,9 +74,7 @@ const WidgetSavedFiltersComponent = ({
     setInputValue('');
   };
 
-  const handleInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
-    if (reason === 'input') setInputValue(value);
-  };
+  const handleInputChange = (value: string) => setInputValue(value);
 
   return (
     <>

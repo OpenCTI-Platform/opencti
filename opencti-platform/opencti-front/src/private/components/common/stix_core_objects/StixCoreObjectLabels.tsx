@@ -18,12 +18,14 @@ interface StixCoreObjectLabelsProps {
   onClick?: HandleAddFilter;
   variant?: string;
   revoked?: boolean;
+  defaultValueIfEmpty?: string;
 }
 
 const StixCoreObjectLabels = ({
   labels,
   onClick,
   revoked,
+  defaultValueIfEmpty,
 }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -80,7 +82,7 @@ const StixCoreObjectLabels = ({
         </Stack>
 
         {/* Visible chips */}
-        <Stack direction="row" gap={1} overflow="hidden" flex={1}>
+        <Stack direction="row" gap={1} overflow="hidden">
           {labels.slice(0, visibleCount).map((label) => (
             <Box key={label.id} sx={{ minWidth: 0 }}>
               <RawTag
@@ -109,7 +111,7 @@ const StixCoreObjectLabels = ({
 
   // case no labels
   return (
-    <>{EMPTY_VALUE}</>
+    <>{defaultValueIfEmpty ?? EMPTY_VALUE}</>
   );
 };
 

@@ -196,7 +196,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
           <AlertConfidenceForEntity entity={securityPlatform} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -334,16 +334,6 @@ export default createFragmentContainer(SecurityPlatformEditionOverview, {
         template {
           name
           color
-        }
-      }
-      workflowInstance {
-        id
-        currentStatus {
-          template {
-            id
-            name
-            color
-          }
         }
       }
       workflowEnabled

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { graphql, type PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import type { FragmentRef, GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -14,6 +14,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import CaseRft from './CaseRft';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -166,6 +167,11 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
+            />
+          ),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
             />
           ),
           files: (

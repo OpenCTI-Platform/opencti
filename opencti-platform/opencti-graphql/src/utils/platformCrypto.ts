@@ -237,10 +237,25 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
     };
   };
 
+  // Derive a raw secret, base64 encoded.
+  // Only intended for third party libraries requiring a shared secret material, otherwise prefer the
+  // other derivation functions that never expose the derived key material.
+  const deriveSecret = async (
+    derivationPath: string[],
+    version: number,
+    length = 32,
+  ): Promise<string> => {
+    const secret = await deriveBytes([...derivationPath, 'secret'], version, length);
+    const encodedSecret = secret.toString('base64');
+    secret.fill(0); // clean the local secret buffer
+    return encodedSecret;
+  };
+
   return {
     deriveAesKey,
     deriveHmac,
     deriveEd25519KeyPair,
+    deriveSecret,
   };
 };
 

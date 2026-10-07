@@ -23,4 +23,3 @@ export const EXPECTED_MAC_ADDR = {
   x_opencti_external_references: [],
   value: '00:1B:44:11:3A:B7',
 };
-

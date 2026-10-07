@@ -104,7 +104,7 @@ class LabelEditionContainer extends Component {
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="value"
                 label={t('Value')}
                 fullWidth={true}

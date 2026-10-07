@@ -14,7 +14,7 @@ const ProfileLocalStorage: React.FC = () => {
 
   return (
     <>
-      <Card title={t_i18n('Local settings')}>
+      <Card title={t_i18n('Local settings')} sx={{ marginBottom: 3 }}>
         <Alert
           severity="info"
           variant="outlined"

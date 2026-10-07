@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "builder",
+    "*.ts",
+    "script/get-connectors-manifest.ts",
+    "script/script-stack-analysis.ts"
+  ],
+  "files": [],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tool.tsbuildinfo",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true
+  }
+}

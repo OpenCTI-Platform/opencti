@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -22,6 +22,7 @@ import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './_
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -33,15 +34,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   goIcon: {
     position: 'absolute',
     right: -10,
@@ -67,13 +60,6 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
   const isContainer = typesWithFintelTemplates.includes(node.entity_type);
   let redirectionLink = `${resolveLink(node.entity_type)}/${node.id}`;
   if (redirectionMode !== 'overview' && isContainer) redirectionLink += `/${redirectionMode}`;
-
-  const statusColumn = dataColumns.workflowInstance ?? dataColumns.x_opencti_workflow_id;
-  const workflowInstance = node.workflowInstance as unknown as { id?: string; currentStatus?: { template?: { name: string; color: string } | null } | null } | null;
-  const isNotMigrated = (workflowInstance?.id ?? '').startsWith('initial-');
-  const currentStatus = dataColumns.workflowInstance
-    ? (isNotMigrated ? (node.status ?? null) : (workflowInstance?.currentStatus ?? null))
-    : node.status;
 
   return (
     <ListItemButton
@@ -130,11 +116,11 @@ export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: Functio
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: statusColumn.width }}
+              style={{ width: dataColumns.x_opencti_workflow_id.width }}
             >
               <ItemStatus
-                status={currentStatus}
-                disabled={!currentStatus}
+                status={node.status}
+                disabled={!node.workflowEnabled}
               />
             </div>
             <div
@@ -170,16 +156,6 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             template {
               name
               color
-            }
-          }
-          workflowInstance {
-            id
-            currentStatus {
-              template {
-                id
-                name
-                color
-              }
             }
           }
           creators {

@@ -1,9 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import Stack from '@mui/material/Stack';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -25,6 +23,7 @@ import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObjec
 import { FieldOption } from '../../../utils/field';
 import type { Theme } from '../../Theme';
 import { isGraphNode } from '../graph.types';
+import { Checkbox } from '@filigran/design-system';
 
 interface ReferenceFormData {
   message: string;
@@ -114,15 +113,20 @@ const GraphToolbarRemoveConfirm = ({
     });
   };
 
+  // Links attached to a selected node go with it. A link both selected and attached
+  // is counted once, so it is never removed twice.
+  const selectedNodeIds = selectedNodes.map((n) => n.id);
+  const selectedLinkIds = selectedLinks.map((l) => l.id);
+  const associatedLinks = (graphData?.links ?? []).filter(({ id, source_id, target_id }) => {
+    return !selectedLinkIds.includes(id)
+      && (selectedNodeIds.includes(source_id) || selectedNodeIds.includes(target_id));
+  });
+
   const removeKnowledge = async (referencesValues?: ReferenceFormData) => {
     const nodesToRemove: string[] = [];
     const linksToRemove: string[] = [];
 
     const allSelection = [...selectedNodes, ...selectedLinks];
-    const selectedNodeIds = selectedNodes.map((n) => n.id);
-    const associatedLinks = (graphData?.links ?? []).filter(({ source_id, target_id }) => {
-      return selectedNodeIds.includes(source_id) || selectedNodeIds.includes(target_id);
-    });
 
     setTotalToDelete(allSelection.length + associatedLinks.length);
 
@@ -186,16 +190,12 @@ const GraphToolbarRemoveConfirm = ({
     if (!onRemove) {
       removeKnowledge(referencesValues);
     } else {
-      const nodesIds = selectedNodes.map((s) => s.id);
-      const linksIds = selectedLinks.map((s) => s.id);
-      const correlatedLinksIds = (graphData?.links ?? []).filter((l) => {
-        return nodesIds.includes(l.source_id) || nodesIds.includes(l.target_id);
-      }).map((l) => l.id);
+      const correlatedLinksIds = associatedLinks.map((l) => l.id);
       onRemove(
-        [...nodesIds, ...linksIds, ...correlatedLinksIds],
+        [...selectedNodeIds, ...selectedLinkIds, ...correlatedLinksIds],
         () => {
-          removeNodes(nodesIds);
-          removeLinks([...linksIds, ...correlatedLinksIds]);
+          removeNodes(selectedNodeIds);
+          removeLinks([...selectedLinkIds, ...correlatedLinksIds]);
         },
       );
       clearSelection();
@@ -224,27 +224,30 @@ const GraphToolbarRemoveConfirm = ({
         onClose={close}
         title={t_i18n('Do you want to remove these elements?')}
       >
+        <Typography>
+          {t_i18n('{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.', {
+            values: {
+              entitiesCount: selectedNodes.length,
+              relationshipsCount: selectedLinks.length + associatedLinks.length,
+            },
+          })}
+        </Typography>
         {context !== 'investigation' && (
           <Alert
             severity="warning"
             variant="outlined"
             style={{ marginTop: 20 }}
           >
-            <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-            <FormGroup>
-              <FormControlLabel
+            <Stack spacing={1} pl={1}>
+              <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+              <Checkbox
                 label={t_i18n('Delete the element if no other containers contain it')}
-                control={(
-                  <Checkbox
-                    checked={andDelete}
-                    onChange={() => setAndDelete((d) => !d)}
-                  />
-                )}
+                checked={andDelete}
+                onCheckedChange={() => setAndDelete((d) => !d)}
               />
-            </FormGroup>
+            </Stack>
           </Alert>
-        )
-        }
+        )}
 
         {totalToDelete > 0 && (
           <div

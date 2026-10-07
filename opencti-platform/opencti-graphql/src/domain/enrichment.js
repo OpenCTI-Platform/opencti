@@ -10,7 +10,7 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
-import { resolveUserByIdFromCache } from './user';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {

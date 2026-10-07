@@ -23,7 +23,7 @@ import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.gra
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import CaseTaskCreation from './CaseTaskCreation';
 import { CaseTasksLine } from './CaseTasksLine';
-import { useTasksDataColumns } from './useTasksDataColumns';
+import { tasksDataColumns } from './tasksDataColumns';
 
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
@@ -94,7 +94,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
-  const tasksDataColumns = useTasksDataColumns();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -188,6 +187,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             <Tooltip title={t_i18n('Add a task to this container')}>
               <IconButton
                 onClick={handleOpen}
+                aria-label={t_i18n('Add a task to this container')}
               >
                 <AddOutlined fontSize="small" />
               </IconButton>
@@ -195,6 +195,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             <Tooltip title={t_i18n('Apply a new case template')}>
               <IconButton
                 onClick={() => setOpenCaseTemplate(true)}
+                aria-label={t_i18n('Apply a new case template')}
               >
                 <ContentPasteGoOutlined fontSize="small" />
               </IconButton>

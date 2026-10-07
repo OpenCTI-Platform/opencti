@@ -29,4 +29,3 @@ export const EXPECTED_WINDOWS_REGISTRY_VALUE = {
   data: '1',
   data_type: '2',
 };
-

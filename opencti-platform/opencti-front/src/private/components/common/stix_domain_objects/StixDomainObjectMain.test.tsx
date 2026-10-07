@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import { Route } from 'react-router-dom';
+import { Route } from 'react-router';
 import testRender from '../../../../utils/tests/test-render';
 import StixDomainObjectMain from './StixDomainObjectMain';
 import { StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
@@ -19,6 +19,7 @@ const TABS_TEST_DATA = [
   ['Sightings', 'sightings'],
   ['Entities', 'entities'],
   ['Observables', 'observables'],
+  ['Relationships', 'relationships'],
   ['Data', 'files'],
   ['History', 'history'],
 ] as const satisfies [string, StixDomainObjectTabsBoxTab][];

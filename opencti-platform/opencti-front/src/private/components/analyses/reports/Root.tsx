@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -15,6 +15,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -170,6 +171,11 @@ const RootReport = () => {
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
+                        />
+                      ),
+                      relationships: (
+                        <ContainerStixCoreRelationships
+                          containerId={report.id}
                         />
                       ),
                       files: (

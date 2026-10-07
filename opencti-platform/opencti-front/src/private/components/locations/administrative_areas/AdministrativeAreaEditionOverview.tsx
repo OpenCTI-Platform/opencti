@@ -112,16 +112,6 @@ export const administrativeAreaEditionOverviewFragment = graphql`
         color
       }
     }
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
     workflowEnabled
   }
 `;
@@ -262,7 +252,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           <AlertConfidenceForEntity entity={administrativeArea} />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -299,8 +289,8 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="latitude"
             type="number"
             label={t_i18n('Latitude')}
@@ -314,8 +304,8 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
           />
           <Field
             component={TextField}
-            variant="standard"
-            style={{ marginTop: 20 }}
+            variant="outlined"
+            className="mt-5"
             name="longitude"
             type="number"
             label={t_i18n('Longitude')}

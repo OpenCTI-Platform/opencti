@@ -37,6 +37,11 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
         <ContainerHeader
           container={opinion}
           disableAuthorizedMembers={true}
+          EditComponent={(
+            <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
+              <OpinionEdition opinionId={opinion.id} />
+            </CollaborativeSecurity>
+          )}
         />
       </CollaborativeSecurity>
       <Grid
@@ -67,9 +72,6 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
           />
         </Grid>
       </Grid>
-      <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
-        <OpinionEdition opinionId={opinion.id} />
-      </CollaborativeSecurity>
     </>
   );
 };

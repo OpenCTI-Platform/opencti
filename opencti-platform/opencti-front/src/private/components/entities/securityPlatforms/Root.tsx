@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -12,6 +12,7 @@ import SecurityPlatformAnalysis from '@components/entities/securityPlatforms/Sec
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -183,6 +184,23 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 analyses: (
                   <SecurityPlatformAnalysis
                     securityPlatform={securityPlatform}
+                  />
+                ),
+                sightings: (
+                  <EntityStixSightingRelationships
+                    entityId={securityPlatform.id}
+                    entityLink={link}
+                    noPadding={true}
+                    isTo={true}
+                    stixCoreObjectTypes={[
+                      'Threat-Actor',
+                      'Intrusion-Set',
+                      'Campaign',
+                      'Malware',
+                      'Tool',
+                      'Vulnerability',
+                      'Indicator',
+                    ]}
                   />
                 ),
                 files: (

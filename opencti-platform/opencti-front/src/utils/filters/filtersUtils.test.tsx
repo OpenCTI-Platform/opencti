@@ -16,6 +16,7 @@ import {
   removeFrontendIdAndEmptyFiltersFromFilterGroupObject,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
+  stixFilters,
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
   GqlFilterGroup,
@@ -431,8 +432,8 @@ describe('Filters utils', () => {
     });
 
     it('should return all the types if several entity types filters', () => {
-      // filters: Report AND Malware
-      // result: Malware
+      // filters: Report OR Malware
+      // result: Report, Malware
       const filters = {
         mode: 'or',
         filters: [
@@ -443,6 +444,21 @@ describe('Filters utils', () => {
       };
       const result = getEntityTypeThreeFirstLevelsFilterValues(filters, [], ['Malware', 'Report', 'Country', 'City']);
       expect(result).toEqual(['Report', 'Malware']);
+    });
+
+    it('should return all the types if both entity type and relationship type filters', () => {
+      // filters: Report OR related-to
+      // result: Report, related-to
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Report'] },
+          { key: 'relationship_type', operator: 'eq', values: ['related-to'] },
+        ],
+        filterGroups: [],
+      };
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, []);
+      expect(result).toEqual(['Report', 'related-to']);
     });
 
     it('should return all the types if several entity types filters', () => {
@@ -1445,6 +1461,48 @@ describe('Function normalizeFilterGroupForFrontend', () => {
     expect(result.filters[0].mode).toEqual('and');
     expect(result.filters[0].values).toEqual(['val1', 'val2']);
   });
+
+  it('should normalize nested filter groups inside dynamicRegardingOf dynamic values', () => {
+    const input = {
+      mode: 'and',
+      filters: [
+        {
+          key: ['dynamicRegardingOf'],
+          operator: 'eq',
+          mode: 'or',
+          values: [
+            { key: 'relationship_type', values: ['targets'] },
+            {
+              key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+                  ],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      filterGroups: [],
+    } as unknown as GqlFilterGroup;
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.filters[0].key).toEqual('dynamicRegardingOf');
+    expect(result.filters[0].id).toBeDefined();
+    const values = result.filters[0].values as unknown as Array<{ key: string; values: unknown[] }>;
+    // non-dynamic sub-value is preserved untouched
+    expect(values[0]).toEqual({ key: 'relationship_type', values: ['targets'] });
+    // dynamic sub-value has its nested filter groups normalized (array key -> string key + id added)
+    const dynamicValue = values[1];
+    expect(dynamicValue.key).toEqual('dynamic');
+    const nestedFilterGroup = dynamicValue.values[0] as FilterGroup;
+    expect(nestedFilterGroup.filters[0].key).toEqual('entity_type');
+    expect(nestedFilterGroup.filters[0].id).toBeDefined();
+    expect(typeof nestedFilterGroup.filters[0].id).toBe('string');
+  });
 });
 
 describe('isDraftWorkspaceFilterGroup', () => {
@@ -1489,5 +1547,13 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('stixFilters', () => {
+  it('should include the SSVC filter keys', () => {
+    expect(stixFilters).toContain('x_opencti_ssvc_exploitation');
+    expect(stixFilters).toContain('x_opencti_ssvc_automatable');
+    expect(stixFilters).toContain('x_opencti_ssvc_technical_impact');
   });
 });

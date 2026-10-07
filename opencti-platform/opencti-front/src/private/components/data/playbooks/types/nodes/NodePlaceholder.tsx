@@ -3,42 +3,20 @@ import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import type { Theme } from '../../../../../../components/Theme';
 import Button from '@common/button/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { useFormatter } from '../../../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
+  // Only the geometry: the tone is the library's own primary button.
   node: {
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px dashed rgba(255, 255, 255, 0.05)'
-        : '1px dashed rgba(0, 0, 0, 0.05)',
-    borderRadius: 4,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)',
-    color:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)',
     width: 160,
     height: 50,
-    padding: '11px 5px 5px 5px',
-    textAlign: 'center',
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, 0.04)'
-          : 'rgba(0, 0, 0, 0.04)',
-      border:
-        theme.palette.mode === 'dark'
-          ? '1px dashed rgba(255, 255, 255, 0.2)'
-          : '1px dashed rgba(0, 0, 0, 0.2)',
-    },
-    '&:focus-visible': {
-      outline: '2px solid blue',
-    },
+    padding: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   handle: {
     visibility: 'hidden',
@@ -47,23 +25,36 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const NodePlaceholder = ({ id, data }: NodeProps) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { getNode } = useReactFlow();
   return (
-    <Button className={classes.node} onClick={() => data.openConfig(getNode(id))}>
-      {data.name}
-      <Handle
-        className={classes.handle}
-        type="target"
-        position={Position.Top}
-        isConnectable={false}
-      />
-      <Handle
-        className={classes.handle}
-        type="source"
-        position={Position.Bottom}
-        isConnectable={false}
-      />
-    </Button>
+    <Tooltip>
+      {/* The wrapper carries the ref: the shared Button does not forward one. */}
+      <TooltipTrigger asChild>
+        <span style={{ display: 'inline-flex' }}>
+          <Button
+            className={classes.node}
+            aria-label={t_i18n('Add component')}
+            onClick={() => data.openConfig(getNode(id))}
+          >
+            {data.name}
+            <Handle
+              className={classes.handle}
+              type="target"
+              position={Position.Top}
+              isConnectable={false}
+            />
+            <Handle
+              className={classes.handle}
+              type="source"
+              position={Position.Bottom}
+              isConnectable={false}
+            />
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t_i18n('Add component')}</TooltipContent>
+    </Tooltip>
   );
 };
 

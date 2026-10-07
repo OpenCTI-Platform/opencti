@@ -1,15 +1,17 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 interface StatusDotProps {
   item: DeployedIntegrationItem;
@@ -80,7 +82,6 @@ export interface DeployedIntegrationCardProps {
 const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProps) => {
   const { t_i18n, n, nsdt } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -101,7 +102,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
       sx={{
         height: '100%',
         '& .MuiCard-root': {
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+          border: `1px solid ${paperBorder(theme)}`,
           transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
@@ -112,7 +113,8 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
       }}
     >
       <Card
-        onClick={() => navigate(item.detailUrl)}
+        // A real link, so ctrl/cmd and middle click open the detail in a new tab.
+        to={item.detailUrl}
         sx={{
           height: 220,
           borderRadius: 1,
@@ -247,9 +249,10 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={(event) => event.stopPropagation()}>
+          <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+            {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
-          </Box>
+          </Stack>
         </Stack>
       </Card>
     </Box>

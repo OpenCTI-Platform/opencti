@@ -10,6 +10,7 @@ interface ExternalLinkPopoverProps {
   externalLink: string | URL | undefined;
   setDisplayExternalLink: (value: boolean) => void;
   setExternalLink?: (value: string | URL | undefined) => void;
+  onConfirm?: () => void;
 }
 
 const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
@@ -17,6 +18,7 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
   externalLink,
   setDisplayExternalLink,
   setExternalLink,
+  onConfirm,
 }) => {
   const { t_i18n } = useFormatter();
   const handleCloseExternalLink = () => {
@@ -26,6 +28,7 @@ const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
   const handleBrowseExternalLink = () => {
     window.open(externalLink, '_blank');
     setDisplayExternalLink(false);
+    onConfirm?.();
     setExternalLink?.(undefined);
   };
 

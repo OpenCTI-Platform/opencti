@@ -1,16 +1,20 @@
-import { findCatalog, findById, findContractBySlug } from './catalog-domain';
 import type { Resolvers } from '../../generated/graphql';
+import type { AuthContext } from '../../types/user';
+import { findCatalogRevisions, queryCatalogById, queryCatalogs, queryContractBySlug } from './catalog-domain';
 
 const catalogResolver: Resolvers = {
   Query: {
     catalog: (_, { id }, context) => {
-      return findById(context, context.user, id);
+      return queryCatalogById(context, context.user, id);
     },
-    catalogs: (_, args, context) => {
-      return findCatalog(context, context.user);
+    catalogs: (_, _args, context) => {
+      return queryCatalogs(context, context.user);
+    },
+    catalogsRevisions: (_: unknown, _args: Record<string, never>, context: AuthContext) => {
+      return findCatalogRevisions(context, context.user!);
     },
     contract: (_, { slug }, context) => {
-      return findContractBySlug(context, context.user, slug);
+      return queryContractBySlug(context, context.user, slug);
     },
   },
 };

@@ -35,7 +35,7 @@ const PlaybookFlowFieldString = ({
       fullWidth
       name={name}
       label={label}
-      variant="standard"
+      variant="outlined"
       component={TextField}
       style={fieldSpacingContainerStyle}
       multiline={multiline}

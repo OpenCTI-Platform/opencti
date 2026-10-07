@@ -113,16 +113,6 @@ export const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
               }
             }
           }
-          parentAttackPatterns {
-            edges {
-              node {
-                id
-                name
-                description
-                x_mitre_id
-              }
-            }
-          }
           subAttackPatterns {
             edges {
               node {
@@ -138,10 +128,6 @@ export const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
             kill_chain_name
             phase_name
             x_opencti_order
-          }
-          creators {
-            id
-            name
           }
           objectMarking {
             id

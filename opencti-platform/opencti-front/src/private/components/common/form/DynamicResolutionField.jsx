@@ -8,8 +8,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { v4 as uuid } from 'uuid';
 import { fetchQuery } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
@@ -20,33 +19,35 @@ import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { isEmptyField } from '../../../../utils/utils';
 
+// Floated cells capped at 20px cut the 36px select and the chip; flex row now.
 const inlineStyles = {
+  row: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
   type: {
     fontSize: 13,
-    float: 'left',
-    width: '30%',
-    height: 20,
+    width: '36%',
+    minWidth: 0,
+    flexShrink: 0,
+  },
+  typeText: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   default_value: {
     fontSize: 13,
-    float: 'left',
-    width: '50%',
-    height: 20,
+    flex: 1,
+    minWidth: 0,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
   in_platform: {
     fontSize: 13,
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    flexShrink: 0,
   },
 };
 
@@ -142,14 +143,16 @@ const DynamicResolutionField = ({
     const { value } = event.target;
     setTextFieldValue(splitIntoLines(value));
   };
-  const handleChangeType = (id, event) => {
+  // Takes the value directly: `onValueChange` hands over the string, so the
+  // handler no longer reaches into an event to find it.
+  const handleChangeType = (id, value) => {
     setFieldValue(
       field.name,
       field.value.map((n) => (n.id === id
         ? {
             ...n,
-            id: `${convertToStixType(event.target.value)}--${uuid()}`,
-            type: event.target.value,
+            id: `${convertToStixType(value)}--${uuid()}`,
+            type: value,
           }
         : n)),
     );
@@ -183,28 +186,27 @@ const DynamicResolutionField = ({
                   </ListItemIcon>
                   <ListItemText
                     primary={(
-                      <div>
+                      <div style={inlineStyles.row}>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
-                            t_i18n(`entity_${item.type}`)
+                            <div style={inlineStyles.typeText}>
+                              {t_i18n(`entity_${item.type}`)}
+                            </div>
                           ) : (
                             <Select
-                              variant="standard"
-                              labelId="type"
                               value={convertFromStixType(item.type)}
-                              onChange={(event) => handleChangeType(item.id, event)
-                              }
-                              style={{
-                                margin: 0,
-                                width: '80%',
-                                height: '100%',
-                              }}
+                              onValueChange={(value) => handleChangeType(item.id, value)}
                             >
-                              {types.map((n) => (
-                                <MenuItem key={n} value={n}>
-                                  {t_i18n(`entity_${n}`)}
-                                </MenuItem>
-                              ))}
+                              <SelectTrigger aria-label={t_i18n('Entity type')}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent aria-label={t_i18n('Entity type')}>
+                                {types.map((n) => (
+                                  <SelectItem key={n} value={n}>
+                                    {t_i18n(`entity_${n}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
                             </Select>
                           )}
                         </div>

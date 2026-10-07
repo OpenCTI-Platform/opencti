@@ -3,7 +3,6 @@ import { Add } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -16,7 +15,6 @@ import { useState } from 'react';
 import { graphql } from 'react-relay';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
-import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
@@ -27,9 +25,7 @@ import StixSightingRelationshipCreationForm from './StixSightingRelationshipCrea
 import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
   stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
-import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
-  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
-} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
+import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -67,6 +63,9 @@ const stixSightingRelationshipCreationFromEntityQuery = graphql`
         name
       }
       ... on System {
+        name
+      }
+      ... on SecurityPlatform {
         name
       }
       ... on Indicator {
@@ -140,14 +139,14 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [search, setSearch] = useState('');
+  const [tableRootRef, setTableRootRef] = useState(null);
   const [commit] = useApiMutation(
     stixSightingRelationshipCreationFromEntityMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
   );
   const stixDomainObjectsPaginationOptions = {
-    search,
+    search: '',
     types: stixCoreObjectTypes,
     orderBy: 'created_at',
     orderMode: 'desc',
@@ -203,10 +202,6 @@ const StixSightingRelationshipCreationFromEntity = ({
     setTargetEntity(null);
   };
 
-  const handleSearch = (keyword) => {
-    setSearch(keyword);
-  };
-
   const handleSelectEntity = (stixDomainObject) => {
     setStep(1);
     setTargetEntity(stixDomainObject);
@@ -256,28 +251,12 @@ const StixSightingRelationshipCreationFromEntity = ({
     }
 
     return (
-      <div>
-        <QueryRenderer
-          query={
-            stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
-          }
-          variables={{
-            count: 25,
-            ...stixDomainObjectsPaginationOptions,
-          }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
-                  handleSelect={handleSelectEntity}
-                  data={props}
-                />
-              );
-            }
-            return renderFakeList();
-          }}
-        />
-      </div>
+      <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+        handleSelect={handleSelectEntity}
+        entityId={entityId}
+        stixCoreObjectTypes={stixCoreObjectTypes}
+        rootRef={tableRootRef ?? undefined}
+      />
     );
   };
 
@@ -295,7 +274,7 @@ const StixSightingRelationshipCreationFromEntity = ({
           stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
         }
         variables={{
-          search,
+          search: '',
           types: targetStixCyberObservableTypes,
           count: 50,
           orderBy: 'created_at',
@@ -330,9 +309,10 @@ const StixSightingRelationshipCreationFromEntity = ({
   };
 
   const renderSelectEntity = () => {
+    const hasObservableResults = targetStixCyberObservableTypes?.length > 0;
     return (
-      <Stack gap={2}>
-        {search.length === 0 && (
+      <Stack gap={2} sx={{ height: '100%' }}>
+        {hasObservableResults && (
           <Alert
             severity="info"
             variant="outlined"
@@ -343,13 +323,9 @@ const StixSightingRelationshipCreationFromEntity = ({
             )}
           </Alert>
         )}
-        <div>
-          <SearchInput
-            keyword={search}
-            onSubmit={handleSearch}
-          />
+        <div ref={setTableRootRef} style={{ flex: 1, minHeight: 0 }}>
+          {renderSearchResults()}
         </div>
-        {renderSearchResults()}
       </Stack>
     );
   };
@@ -409,7 +385,7 @@ const StixSightingRelationshipCreationFromEntity = ({
         );
       default:
         return (
-          <Fab
+          <IconButton
             onClick={handleOpen}
             color="secondary"
             aria-label="Add"
@@ -417,7 +393,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             style={{ right: paddingRight || 30 }}
           >
             <Add />
-          </Fab>
+          </IconButton>
         );
     }
   };
@@ -429,14 +405,14 @@ const StixSightingRelationshipCreationFromEntity = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a sighting')}
+        containerStyle={{ overflowY: step === 0 ? 'hidden' : 'auto' }}
         header={step === 0 && (
           <StixDomainObjectCreation
             display={open}
-            inputValue={search}
+            inputValue=""
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
             controlledDialStyles={{ float: 'right' }}
-            controlledDialSize="small"
           />
         )}
       >

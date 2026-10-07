@@ -14,6 +14,7 @@ import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
 import canDeleteConnector from '@components/data/connectors/utils/canDeleteConnector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
+import { BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
 import FeedUpdateDrawer from '@components/integrations/feeds/FeedUpdateDrawer';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
@@ -23,7 +24,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import stopEvent from '../../../../utils/domEvent';
+import stopEvent, { stopLinkNavigation } from '../../../../utils/domEvent';
 
 interface DeployedIntegrationPopoverProps {
   item: DeployedIntegrationItem;
@@ -47,7 +48,9 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
 
   const isConnector = item.kind === 'connector';
   const isForm = item.kind === 'form';
-  const feedConfig = !isConnector ? FEED_MUTATIONS[item.kind] : null;
+  const feedConfig = item.kind in FEED_MUTATIONS
+    ? FEED_MUTATIONS[item.kind as BuiltInIntegrationKind]
+    : null;
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     stopEvent(event);
@@ -197,7 +200,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   }
 
   return (
-    <div onClick={stopEvent}>
+    <div onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
       <IconButton
         aria-label={t_i18n('Open menu')}
         onClick={handleOpen}

@@ -8,7 +8,12 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddAutoUserInput, IngestionRssAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createOnTheFlyUser } from '../user/user-domain';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -36,12 +41,13 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
   let onTheFlyCreatedUser;
   let finalInput;
   if (input.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
+    onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
       user_id: onTheFlyCreatedUser.id,
     };
   } else {
+    await validateIngestionExecutionIdentity(context, user, input.user_id);
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
     };
@@ -55,7 +61,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       type: 'RSS',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id,
+      connector_user_id: finalInput.user_id,
     });
     await publishUserAction({
       user,
@@ -74,7 +80,7 @@ export const patchRssIngestion = async (context: AuthContext, user: AuthUser, id
   return patched.element;
 };
 export const ingestionAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionRssId: string, input: IngestionRssAddAutoUserInput) => {
-  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+  const onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user,
     { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
   return ingestionEditField(context, user, ingestionRssId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
@@ -85,6 +91,8 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const { element } = await updateAttribute<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
   await registerConnectorForIngestion(context, {
     id: element.id,
@@ -102,6 +110,23 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+};
+
+export const ingestionRssResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
+  await patchRssIngestion(context, user, ingestionId, { current_state_date: undefined });
+  const ingestionUpdated = await findById(context, user, ingestionId);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `reset state of rss ingestion \`${ingestionUpdated.name}\``,
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input: ingestionUpdated },
+  });
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

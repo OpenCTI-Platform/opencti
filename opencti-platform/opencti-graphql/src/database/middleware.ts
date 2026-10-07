@@ -161,7 +161,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -170,6 +170,7 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -236,7 +237,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -780,7 +781,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -961,7 +961,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -1469,13 +1469,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   // endregion
   if (isDateAttribute(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (isEmptyField(finalValElement)) {
       finalVal = [null];
     }
   }
   if (dateForLimitsAttributes.includes(key)) {
-    const finalValElement = R.head(finalVal);
+    const finalValElement = R.head(finalVal ?? []);
     if (dateForStartAttributes.includes(key) && isEmptyField(finalValElement)) {
       finalVal = [FROM_START_STR];
     }
@@ -1886,6 +1886,10 @@ const mergeEntitiesRaw = async (
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
       }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
+      }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
         const concatSource = mergedEntityCurrentFieldValue as any[] ?? [];
@@ -2007,7 +2011,22 @@ export const mergeEntities = async (
       throw FunctionalError('Cannot access initial instance', { targetEntityId });
     }
     const target = { ...initialInstance } as BasicStoreEntity;
-    const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    const loadedSources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
+    // storeLoadByIdsWithRefs relies on an unsorted elastic query, so re-align the sources on the requested
+    // ids order: for single meta refs (created-by, ...) the first source wins, the order must be deterministic.
+    const sourcesByIds = new Map<string, StoreObject>();
+    // Sources are indexed in internal_id order with a first-write-wins rule to keep the mapping
+    // deterministic even if several sources share a secondary id (duplicated standard_id, stix ids or aliases).
+    const orderedLoadedSources = R.sortBy((s) => s.internal_id, loadedSources);
+    orderedLoadedSources.forEach((source) => {
+      const sourceIds = [source.internal_id, source.standard_id, ...(source.x_opencti_stix_ids ?? []), ...(source.i_aliases_ids ?? [])];
+      sourceIds.forEach((id) => {
+        if (!sourcesByIds.has(id)) {
+          sourcesByIds.set(id, source);
+        }
+      });
+    });
+    const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
@@ -2038,18 +2057,14 @@ export const transformPatchToInput = (
   patch: Record<string, any>,
   operations: Record<string, undefined | 'add' | 'remove' | 'replace'> = {},
 ): EditInput[] => {
-  return R.pipe(
-    R.toPairs,
-    R.map((t) => {
-      const val = R.last(t) as any;
-      const key = R.head(t) as string;
-      const operation = operations[key] || UPDATE_OPERATION_REPLACE;
-      if (!R.isNil(val)) {
-        return { key, value: Array.isArray(val) ? val : [val], operation };
-      }
-      return { key, value: null, operation } as any;
-    }),
-  )(patch);
+  return Object.entries(patch).map(([key, val]) => {
+    const operation = (operations[key] || UPDATE_OPERATION_REPLACE) as EditOperation;
+    if (val !== undefined && val !== null) {
+      return { key, value: Array.isArray(val) ? val : [val], operation };
+    }
+    // A nil value means "reset the attribute": kept as null so downstream removes the field from the document.
+    return { key, value: null as unknown as EditInput['value'], operation };
+  });
 };
 const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
@@ -2475,13 +2490,15 @@ const resolveRefsForInputs = async (
   return revolvedInputs;
 };
 
-type UpdateAttributeMetaResolvedOpts = {
+type UpdateAttributeMetaResolvedOpts = EventOpts & {
   locks?: string[];
   impactStandardId?: boolean;
   references?: string[];
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
+  skipUserIndividualSync?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2559,12 +2576,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2849,7 +2860,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {
@@ -2865,7 +2882,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user) && !opts.skipUserIndividualSync) {
       const args = {
         filters: {
           mode: FilterMode.And,
@@ -2913,7 +2930,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,
@@ -3599,7 +3618,7 @@ export const createRelation = async (
   opts: CreateRelationRawOpts = {},
 ) => {
   const data = await createRelationRaw(context, user, input, opts);
-  if (data.isCreation && isFeatureEnabled('ENTITIES_WORKFLOW')) {
+  if (data.isCreation && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
     await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
   }
   return data.element;
@@ -4051,7 +4070,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4059,10 +4078,10 @@ export const createEntity = async (
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
-    if (isFeatureEnabled('ENTITIES_WORKFLOW')) {
+    if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null) { // upsert
+  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
@@ -4247,7 +4266,7 @@ export const internalDeleteElementById = async <T extends StoreObject>(
   const isTrashableElement = !isInferredIndex(element._index)
     && (isStixCoreObject(element.entity_type) || isStixCoreRelationship(element.entity_type) || isStixSightingRelationship(element.entity_type));
   const isPermanentDelete = !!opts.forceDelete || !conf.get('app:trash:enabled') || !isTrashableElement;
-  if (isFeatureEnabled('ENTITIES_WORKFLOW') && isPermanentDelete) {
+  if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && isPermanentDelete) {
     // Clean up the WorkflowInstance (if any) so it doesn't stay orphaned after its entity is permanently deleted.
     // Skipped for trash (soft) deletions: the `has-workflow` relation is kept for restoration and must still
     // point to a live WorkflowInstance, otherwise restoring the entity from trash would fail.

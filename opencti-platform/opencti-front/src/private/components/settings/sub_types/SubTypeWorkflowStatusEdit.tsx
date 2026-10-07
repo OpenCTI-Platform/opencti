@@ -128,12 +128,12 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
             />
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="order"
               label={t_i18n('Order')}
               fullWidth={true}
               type="number"
-              style={{ marginTop: 20 }}
+              className="mt-5"
             />
             <DialogActions>
               <Button onClick={submitForm} disabled={isSubmitting}>

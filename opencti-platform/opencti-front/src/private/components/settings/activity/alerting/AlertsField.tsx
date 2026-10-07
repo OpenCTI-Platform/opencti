@@ -9,7 +9,8 @@ import { triggersQueriesActivitySearchQuery } from '../../../profile/triggers/Tr
 import { TriggersQueriesSearchActivityQuery$data } from '../../../profile/triggers/__generated__/TriggersQueriesSearchActivityQuery.graphql';
 import { TriggerEventType } from '../../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggerType } from './__generated__/AlertingLine_node.graphql';
-import AutocompleteField from '../../../../../components/AutocompleteField';
+import type { ComboboxChangeMeta } from '@filigran/design-system';
+import ComboboxField from '../../../../../components/ComboboxField';
 import AlertLiveCreation from './AlertLiveCreation';
 import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
@@ -26,9 +27,6 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -95,13 +93,13 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   const handleCloseTriggerCreation = () => {
     setTriggerCreation(false);
   };
-  const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchTriggers = (search: string) => {
     const filters = {
       mode: 'and',
       filters: [{ key: 'trigger_type', values: ['live'] }],
       filterGroups: [],
     };
-    fetchQuery(triggersQueriesActivitySearchQuery, { search: event && event.target.value, filters })
+    fetchQuery(triggersQueriesActivitySearchQuery, { search, filters })
       .toPromise()
       .then((data) => {
         const newTriggersEdges = ((data as TriggersQueriesSearchActivityQuery$data)
@@ -132,33 +130,30 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   return (
     <div>
       <Field
-        component={AutocompleteField}
+        component={ComboboxField}
+        // MUI hid its clear indicator here with display:none; the library defaults
+        // clearable to true, so the affordance must be declined explicitly.
         style={style}
         name={name}
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t_i18n('Triggers'),
-          helperText: helpertext,
-          onFocus: searchTriggers,
-        }}
+        label={t_i18n('Triggers')}
+        helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
         options={triggers}
-        onInputChange={searchTriggers}
+        onInputChange={(search: string, meta: ComboboxChangeMeta) => {
+          if (meta.cause === 'type') searchTriggers(search);
+        }}
+        onFocusInput={() => searchTriggers('')}
         openCreate={handleOpenTriggerCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
-          <li {...props}>
+        renderOption={(option: FieldOption) => (
+          <>
             <div className={classes.icon} style={{ color: option.color }}>
               <CampaignOutlined />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </li>
+          </>
         )}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
       <AlertLiveCreation
         open={triggerCreation}

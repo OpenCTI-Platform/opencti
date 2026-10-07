@@ -15,6 +15,7 @@ import {
   DeployedStatusFacet,
 } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { useFormatter } from '../../../../components/i18n';
+import { paperBg, paperBorder } from '../paperSurface';
 
 const STATUS_FACET_ICONS: Record<DeployedStatusFacet, SvgIconComponent> = {
   active: PlayCircleOutlined,
@@ -49,11 +50,13 @@ interface DeployedFacetSidebarProps {
   onFiltersChange: Dispatch<SetStateAction<DeployedFilterState>>;
   hasActiveFilters: boolean;
   onClearAll: () => void;
+  showUpdateAvailableFacet: boolean;
   facets: {
     types: string[];
     typeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     kindCounts: Record<string, number>;
+    updateAvailableCount: number;
   };
 }
 
@@ -62,6 +65,7 @@ const DeployedFacetSidebar = ({
   onFiltersChange,
   hasActiveFilters,
   onClearAll,
+  showUpdateAvailableFacet,
   facets,
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
@@ -111,8 +115,8 @@ const DeployedFacetSidebar = ({
           gap: 2,
           padding: 2,
           borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${paperBorder(theme)}`,
+          backgroundColor: paperBg(theme),
           maxHeight: { xs: 'none', md: `calc(100vh - ${theme.spacing(20)})` },
           overflowY: { xs: 'visible', md: 'auto' },
         }}
@@ -175,6 +179,19 @@ const DeployedFacetSidebar = ({
             />
           ))}
         </Box>
+
+        {showUpdateAvailableFacet && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('Version')}</FacetGroupLabel>
+            <FacetCheckbox
+              checked={filters.updateAvailable}
+              count={facets.updateAvailableCount}
+              icon={AutorenewOutlined}
+              label={t_i18n('Update available')}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, updateAvailable: !prev.updateAvailable }))}
+            />
+          </Box>
+        )}
       </Box>
     </Box>
   );

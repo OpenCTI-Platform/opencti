@@ -9,6 +9,7 @@ import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import parse from 'html-react-parser';
 import { useFormatter } from '../../../../components/i18n';
 import { copyToClipboard } from '../../../../utils/utils';
+import AISummaryContent from './AISummaryContent';
 
 interface XtmOneAISummaryDisplayProps {
   disclaimerText: string; // Translated disclaimer shown in the info alert
@@ -50,7 +51,12 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
             {disclaimerText}
           </Alert>
           {loading && !content && <CircularProgress size={24} style={{ marginTop: 20 }} />}
-          {content && parse(content)}
+          {content
+            && (
+              <AISummaryContent loading={loading}>
+                {parse(content)}
+              </AISummaryContent>
+            )}
           {!loading && content && (
             <>
               <Divider />
@@ -61,12 +67,12 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
                   </Typography>
                 )}
                 <Tooltip title={t_i18n('Copy to clipboard')}>
-                  <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                  <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)} aria-label={t_i18n('Copy to clipboard')}>
                     <ContentCopyOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={t_i18n('Retry')}>
-                  <IconButton size="small" color="primary" onClick={onRetry}>
+                  <IconButton size="small" color="primary" onClick={onRetry} aria-label={t_i18n('Retry')}>
                     <AutoModeOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>

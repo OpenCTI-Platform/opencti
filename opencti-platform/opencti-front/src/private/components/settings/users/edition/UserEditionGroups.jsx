@@ -5,13 +5,13 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import Checkbox from '@mui/material/Checkbox';
 import { GroupOutlined, ReportGmailerrorred } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import { groupsSearchQuery } from '../../Groups';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../../../components/i18n';
+import { Checkbox } from '@filigran/design-system';
 
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
@@ -46,8 +46,8 @@ const UserEditionGroupsComponent = ({ user }) => {
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const { t_i18n } = useFormatter();
 
-  const handleToggle = (groupId, userGroup, event) => {
-    if (event.target.checked) {
+  const handleToggle = (groupId, userGroup, checked) => {
+    if (checked) {
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
@@ -85,10 +85,10 @@ const UserEditionGroupsComponent = ({ user }) => {
               divider={true}
               secondaryAction={(
                 <Checkbox
-                  onChange={(event) => handleToggle(
+                  onCheckedChange={(state) => handleToggle(
                     group.id,
                     userGroup,
-                    event,
+                    state === true,
                   )}
                   checked={userGroup !== undefined}
                 />

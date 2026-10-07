@@ -240,7 +240,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
           <Form>
             <Field
               component={BulkTextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               required={(mandatoryAttributes.includes('name'))}
@@ -266,7 +266,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               textFieldProps={{
                 label: t_i18n('First seen'),
                 required: (mandatoryAttributes.includes('first_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
@@ -277,7 +277,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               textFieldProps={{
                 label: t_i18n('Last seen'),
                 required: (mandatoryAttributes.includes('last_seen')),
-                variant: 'standard',
+                variant: 'outlined',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}

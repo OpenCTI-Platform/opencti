@@ -1,6 +1,6 @@
-import React, { Suspense, useEffect, useMemo } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
-import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
+import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
+import { Link, Navigate, useParams } from 'react-router';
+import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -29,7 +29,10 @@ import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { fetchQuery } from '../../../relay/environment';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import { paperBg, paperBorder } from './paperSurface';
+import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
 export type IntegrationsTab = 'deployed' | 'available';
 
@@ -40,6 +43,7 @@ export interface IntegrationsData {
   deploymentData: IngestionConnectorsQuery['response'] | null;
   feedsData: IngestionFeedsData | null;
   formsData: IngestionFeedsFormsData | null;
+  refetchCatalogs: () => Promise<void>;
   refetchFeeds: () => void;
   refetchForms: () => void;
 }
@@ -62,8 +66,9 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   useEffect(() => {
     if (isConnectorReader) {
-      // fetch once the catalogs and use the cache during runtime
-      loadCatalogs({}, { fetchPolicy: 'store-or-network' });
+      // Refresh catalogs on mount so a stale Relay cache cannot become the
+      // polling baseline for the available integrations view.
+      loadCatalogs({}, { fetchPolicy: 'store-and-network' });
       loadDeployment({}, { fetchPolicy: 'store-and-network' });
     }
     if (isIngestionReader) {
@@ -76,16 +81,25 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   // store-and-network: the previous data keeps rendering while the refresh
   // happens in the background, so refetching never suspends the whole page.
-  const refetchFeeds = () => {
+  const refetchFeeds = useCallback(() => {
     if (isIngestionReader) {
       loadFeeds({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
-  const refetchForms = () => {
+  }, [isIngestionReader, loadFeeds]);
+  const refetchForms = useCallback(() => {
     if (isFormReader) {
       loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
+  }, [isFormReader, loadForms]);
+  // Resolves once the fresh catalogs are in the store (rejects if the request fails),
+  // so the catalog polling only moves its baseline after a successful reload.
+  const refetchCatalogs = useCallback(async () => {
+    if (!isConnectorReader) {
+      return;
+    }
+    await fetchQuery<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery, {}, { fetchPolicy: 'network-only' }).toPromise();
+    loadCatalogs({}, { fetchPolicy: 'store-only' });
+  }, [isConnectorReader, loadCatalogs]);
 
   const renderWithForms = (
     catalogsData: IngestionConnectorsCatalogsQuery['response'] | null,
@@ -95,11 +109,27 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     if (formsRef) {
       return (
         <IngestionFeedsForms queryRef={formsRef}>
-          {({ data: formsData }) => children({ catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms })}
+          {({ data: formsData }) => children({
+            catalogsData,
+            deploymentData,
+            feedsData,
+            formsData,
+            refetchCatalogs,
+            refetchFeeds,
+            refetchForms,
+          })}
         </IngestionFeedsForms>
       );
     }
-    return children({ catalogsData, deploymentData, feedsData, formsData: null, refetchFeeds, refetchForms });
+    return children({
+      catalogsData,
+      deploymentData,
+      feedsData,
+      formsData: null,
+      refetchCatalogs,
+      refetchFeeds,
+      refetchForms,
+    });
   };
 
   const renderWithFeeds = (
@@ -154,8 +184,8 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: 1,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${paperBorder(theme)}`,
+        backgroundColor: paperBg(theme),
         padding: 3,
       }}
     >
@@ -246,21 +276,19 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
 
         <IntegrationsHero deployedCount={deployedCount} />
 
-        <Tabs value={tab}>
-          <Tab
-            label={t_i18n('Deployed')}
-            value="deployed"
-            component={Link}
-            to="/dashboard/integrations/deployed"
-            data-testid="integrations-tab-deployed"
-          />
-          <Tab
-            label={t_i18n('Available')}
-            value="available"
-            component={Link}
-            to="/dashboard/integrations/available"
-            data-testid="integrations-tab-available"
-          />
+        <Tabs value={tab} panels="external">
+          <TabsList>
+            <TabsTrigger value="deployed" asChild>
+              <Link to="/dashboard/integrations/deployed" data-testid="integrations-tab-deployed">
+                {t_i18n('Deployed')}
+              </Link>
+            </TabsTrigger>
+            <TabsTrigger value="available" asChild>
+              <Link to="/dashboard/integrations/available" data-testid="integrations-tab-available">
+                {t_i18n('Available')}
+              </Link>
+            </TabsTrigger>
+          </TabsList>
         </Tabs>
 
         {tab === 'deployed' ? (

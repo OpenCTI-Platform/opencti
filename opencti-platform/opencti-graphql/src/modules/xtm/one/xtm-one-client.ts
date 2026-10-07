@@ -53,7 +53,12 @@ export interface XtmOneRegistrationResponse {
   status: string;
   version: string;
   platform_identifier: string;
+  // Advisory, like ee_sources: only a verified xtm_license_pem grants the XTM One entitlement.
   ee_enabled: boolean;
+  // Absent from an XTM One that predates the license proof.
+  ee_sources?: string[];
+  // The Filigran-signed XTM license, present when XTM One reports that its XTM license sub-licenses this platform.
+  xtm_license_pem?: string | null;
   user_integrations: number;
   chat_web_token: string | null;
   intent_catalog: IntentCatalogEntry[];

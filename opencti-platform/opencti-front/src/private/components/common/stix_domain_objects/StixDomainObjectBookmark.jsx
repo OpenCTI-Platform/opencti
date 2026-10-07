@@ -59,6 +59,9 @@ const StixDomainObjectBookmarkComponent = ({ node }) => {
           '.MuiCardHeader-subheader': {
             fontSize: 12,
             color: theme.palette.text.secondary,
+            // 4px between the card title and its subtitle. The secondary tone
+            // the pass also asks for was already in place.
+            marginTop: '4px',
           },
         }}
         action={(

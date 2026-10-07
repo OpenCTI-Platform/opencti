@@ -139,7 +139,7 @@ const FeedbackCreation: FunctionComponent<{
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={fieldSpacingContainerStyle}
+              style={{ width: '100%' }}
               autoPersistOnBlur={false}
               registerMarkdownImagesController={registerMarkdownImagesController}
             />

@@ -28,7 +28,7 @@ describe('stixCyberObservable deprecated API [>=6.2 & <6.8]', () => {
     const observable = await addStixCyberObservable(testContext, ADMIN_USER, {
       type: 'Domain-Name',
       DomainName: {
-        value: 'Test.Promote.Domain'
+        value: 'Test.Promote.Domain',
       },
     });
     expect(observable).not.toBeUndefined();
@@ -45,8 +45,8 @@ describe('stixCyberObservable deprecated API [>=6.2 & <6.8]', () => {
           mode: 'or',
           filters: [{ key: 'name', operator: 'eq', mode: 'and', values: ['Test.Promote.Domain'] }],
           filterGroups: [],
-        }
-      }
+        },
+      },
     });
     const createdIndicatorId = queryResult.data?.indicators.edges?.[0].node?.id;
     expect(createdIndicatorId).not.toBeUndefined();

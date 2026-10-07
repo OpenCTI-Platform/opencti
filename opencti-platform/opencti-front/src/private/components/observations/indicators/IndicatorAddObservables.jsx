@@ -1,3 +1,4 @@
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
 import List from '@mui/material/List';
@@ -18,7 +19,7 @@ import IndicatorAddObservablesLines, { indicatorAddObservablesLinesQuery } from 
 class IndicatorAddObservables extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, search: '' };
+    this.state = { open: false, search: '', observableCreation: false, creationKey: 0 };
   }
 
   handleOpen() {
@@ -60,6 +61,15 @@ class IndicatorAddObservables extends Component {
                 onSubmit={this.handleSearch.bind(this)}
                 key="searchInput"
               />
+            )],
+            right: [(
+              <Button
+                key="createObservable"
+                aria-label={t('Create an observable')}
+                onClick={() => this.setState({ observableCreation: true })}
+              >
+                {t('Create an observable')}
+              </Button>
             )],
           }}
         >
@@ -120,8 +130,17 @@ class IndicatorAddObservables extends Component {
           />
         </Drawer>
         <StixCyberObservableCreation
-          display={this.state.open}
+          display={false}
           contextual={true}
+          speeddial={true}
+          // Remount on close: the host-driven close does not reset the type the
+          // dialog's own one does, so it would reopen on the last form.
+          key={this.state.creationKey}
+          open={this.state.observableCreation}
+          handleClose={() => this.setState(({ creationKey }) => ({
+            observableCreation: false,
+            creationKey: creationKey + 1,
+          }))}
           inputValue={this.state.search}
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}

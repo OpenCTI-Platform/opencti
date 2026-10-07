@@ -1,6 +1,14 @@
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel, batchUserTokens } from '../domain/user';
+import {
+  authenticateUserFromRequest,
+  userWithOrigin,
+  batchCreator,
+  batchCreators,
+  batchRolesForUsers,
+  batchUserEffectiveConfidenceLevel,
+  batchUserTokens,
+} from '../modules/user/user-domain';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
@@ -10,10 +18,11 @@ import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
-import { batchIsSubAttackPattern } from '../domain/attackPattern';
+import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns } from '../domain/attackPattern';
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
+import { computeConnectorsUpdateStatus } from '../database/repository';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -36,6 +45,9 @@ export const computeLoaders = (executeContext, user) => {
     requestAccessStatusBatchLoader: batchLoader(batchRequestAccessStatusesByType, executeContext, user),
     entitySettingsBatchLoader: batchLoader(batchEntitySettingsByType, executeContext, user),
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
+    subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
+    coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
+    connectorUpdateStatusBatchLoader: batchLoader(computeConnectorsUpdateStatus, executeContext, user),
   };
 };
 

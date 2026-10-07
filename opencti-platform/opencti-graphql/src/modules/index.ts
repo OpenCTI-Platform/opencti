@@ -79,11 +79,13 @@ import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
+import './securityCoverage/securityCoverageResult/securityCoverageResult';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
+import './user/user';
 
 // incomplete modules
 import './report/report';
@@ -157,6 +159,7 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './securityCoverage/securityCoverage-graphql';
+import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql';
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
@@ -170,6 +173,12 @@ import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
+import './user/user-graphql';
+import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+// endregion
+
+// region modules static init
+import './userMerge/userMerge-init';
 // endregion

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import Axios from 'axios';
 import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -121,6 +120,12 @@ const styles = (theme) => ({
   editorContainerPreview: {
     overflowY: 'scroll',
     overflowX: 'hidden',
+  },
+  htmlEditorContainer: {
+    '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
+      // reduce gap between buttons in the toolbar to let space for the AI button
+      gap: 0,
+    },
   },
 });
 
@@ -269,7 +274,7 @@ class StixCoreObjectContentComponent extends Component {
       ...getExportFiles(stixCoreObject),
       ...getFilesFromTemplate(stixCoreObject),
     ];
-    this.setState({ isLoading: true }, () => {
+    this.setState({ isLoading: true }, async () => {
       const { currentFileId } = this.state;
       if (!currentFileId) {
         return this.setState({ isLoading: false });
@@ -285,13 +290,13 @@ class StixCoreObjectContentComponent extends Component {
       const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
         currentFileId,
       )}`;
-      return Axios.get(url).then((res) => {
-        const content = res.data;
-        return this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+      const content = await res.text();
+      return this.setState({
+        initialContent: content,
+        currentContent: content,
+        isLoading: false,
       });
     });
   }
@@ -619,7 +624,7 @@ class StixCoreObjectContentComponent extends Component {
                   navOpen={navOpen}
                 />
                 <div
-                  className={classes.editorContainer}
+                  className={`${classes.editorContainer} ${classes.htmlEditorContainer}`}
                   style={{ minHeight: height, height }}
                 >
                   <RichTextEditor
@@ -638,7 +643,7 @@ class StixCoreObjectContentComponent extends Component {
                     }}
                     format="html"
                     variant="html"
-                    style={{ position: 'absolute', top: 0, right: 10 }}
+                    style={{ position: 'absolute', top: 10, right: 0 }}
                   />
                 </div>
               </>
@@ -720,6 +725,7 @@ class StixCoreObjectContentComponent extends Component {
                   }
                 >
                   <Document
+                    suspense={false}
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                     onLoadError={this.handlePdfLoadError.bind(this)}
                     onPassword={this.handlePdfPasswordRequest.bind(this)}
@@ -951,6 +957,7 @@ const StixCoreObjectContent = createRefetchContainer(
           fintelTemplates {
             id
             name
+            default
             template_content
           }
         }

@@ -1,22 +1,20 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { MoreVert } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
-import Chip from '@mui/material/Chip';
+import { Chip } from '@filigran/design-system';
 import IconButton from '@common/button/IconButton';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
-import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -25,6 +23,9 @@ import Security from '../../../../utils/Security';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { Checkbox } from '@filigran/design-system';
+import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
+import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -36,35 +37,9 @@ const useStyles = makeStyles((theme) => ({
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  bodyItem: {
-    height: 25,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
+  bodyItem: bodyItemStyle,
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  chip: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-  chipNoLink: {
-    fontSize: 13,
-    lineHeight: '12px',
-    height: 20,
-    textTransform: 'uppercase',
-    borderRadius: 4,
   },
 }));
 
@@ -85,10 +60,11 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n, fd, n } = useFormatter();
+  const computeLink = useComputeLink();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-  const link = `${resolveLink(node.entity_type)}/${node.id}`;
+  const link = computeLink(node);
   const linkAnalyses = `${link}/analyses`;
   return (
     <ListItem
@@ -127,7 +103,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           }
         >
           <Checkbox
-            edge="start"
             disabled={isOnlyThroughInference}
             checked={
               (selectAll
@@ -135,7 +110,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
             }
-            disableRipple={true}
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -192,16 +166,13 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                   'Data-Source',
                 ].includes(node.entity_type) ? (
                       <Chip
-                        classes={{ root: classes.chipNoLink }}
+                        severity="neutral"
                         label={n(node.containersNumber.total)}
                       />
                     ) : (
-                      <Chip
-                        classes={{ root: classes.chip }}
-                        label={n(node.containersNumber.total)}
-                        component={Link}
-                        to={linkAnalyses}
-                      />
+                      <Link to={linkAnalyses}>
+                        <Chip severity="neutral" label={n(node.containersNumber.total)} />
+                      </Link>
                     )}
               </div>
               <div
@@ -337,6 +308,15 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on Case {
           name
         }
+        ... on SecurityCoverage {
+          name
+        }
+        ... on SecurityCoverageResult {
+          name
+          resultOf {
+            id
+          }
+        }
         ... on Task {
           name
         }
@@ -379,7 +359,6 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         <IconButton
           disabled={true}
           aria-label={t_i18n('Open menu')}
-          aria-haspopup="true"
           classes={classes.itemIconDisabled}
         >
           <MoreVert />
@@ -390,7 +369,9 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
       >
-        <Checkbox edge="start" disabled={true} disableRipple={true} />
+        <Checkbox
+          disabled={true}
+        />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />

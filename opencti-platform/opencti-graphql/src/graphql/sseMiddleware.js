@@ -3,11 +3,11 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elCount, elList } from '../database/engine';
+import { elCount, elList, elFindByIds } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -80,6 +80,27 @@ const sendErrorStatus = (_req, res, httpStatus) => {
     // We don't care but can be interesting for debug.
     logApp.info('Error when trying to kill a session', { error });
   }
+};
+
+/**
+ * Stream connections held for a user on this node.
+ *
+ * A connection authenticates once, when it opens, and then serves events for up to a day on that
+ * decision — nothing re-reads the account status afterwards. Disabling or merging the user away
+ * therefore does not interrupt an already open stream.
+ *
+ * `broadcastClients` is process memory, so this only ever sees the connections opened against the
+ * node it runs on. Making it exhaustive across a cluster would need a pub/sub round trip; the
+ * callers that matter run on a platform at rest, where there is no open connection to miss.
+ */
+export const userStreamConnections = (userId) => {
+  return Object.values(broadcastClients).filter((client) => client.userId === userId);
+};
+
+export const closeUserStreamConnections = (userId) => {
+  const clients = userStreamConnections(userId);
+  clients.forEach((client) => client.close());
+  return clients.length;
 };
 
 const createBroadcastClient = (channel) => {
@@ -280,6 +301,33 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
   }
   // Return flattened results in reverse order (deepest dependencies first)
   return allResolvedElements.flat();
+};
+
+// before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access
+// By using entities in the cache to avoid reloading all of them
+// And by checking the ids that are not in the cache to load only the missing ones
+export const sendEventWithFilteredObjectRefs = async (
+  context,
+  user,
+  cache,
+  client,
+  eventToSend,
+) => {
+  let objectsRefs = eventToSend.eventData.data.object_refs;
+  if (objectsRefs?.length > 0) {
+    const objectsRefsNotFoundInCache = objectsRefs.filter((ref) => !cache.has(ref));
+    const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache?.length > 0
+      ? (await elFindByIds(
+          context,
+          user,
+          objectsRefsNotFoundInCache,
+          { baseData: true, baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
+        )
+      : {};
+    objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined);
+    eventToSend.eventData.data.object_refs = objectsRefs;
+  }
+  return client.sendEvent(eventToSend.eventId, eventToSend.eventType, eventToSend.eventData);
 };
 
 const createSseMiddleware = () => {
@@ -634,6 +682,7 @@ const createSseMiddleware = () => {
     }
     return undefined;
   };
+
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
     try {
@@ -711,7 +760,7 @@ const createSseMiddleware = () => {
                         // and replace the (now-restricted) current data with the previous, already-visible
                         // document, to avoid leaking the post-update state (e.g. new markings, changed fields)
                         const deleteEventData = { ...eventData, data: previous, context: {} };
-                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, deleteEventData);
+                        await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: EVENT_TYPE_DELETE, eventData: deleteEventData });
                         cache.set(stix.id, 'hit');
                       }
                     } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
@@ -721,7 +770,7 @@ const createSseMiddleware = () => {
                           // If the user didn't have access to the element before the update
                           // we need to remove the context from the create event to avoid leaking information on the update context
                           const createEventData = { ...eventData, context: {} };
-                          await client.sendEvent(eventId, EVENT_TYPE_CREATE, createEventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: EVENT_TYPE_CREATE, eventData: createEventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
@@ -730,7 +779,7 @@ const createSseMiddleware = () => {
                       if (isOriginVisible && userHasAccessToUpdateEvent) {
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
@@ -755,7 +804,7 @@ const createSseMiddleware = () => {
                         // At least one container is matching the filter, so publishing the event
                         if (countRelatedContainers > 0) {
                           await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }
@@ -764,13 +813,13 @@ const createSseMiddleware = () => {
                     if (isOriginVisible) {
                       if (type === EVENT_TYPE_DELETE) {
                         if (publishDeletion) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       } else { // Create and merge
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, event, eventData);
+                          await sendEventWithFilteredObjectRefs(context, user, cache, client, { eventId, eventType: event, eventData });
                           cache.set(stix.id, 'hit');
                         }
                       }

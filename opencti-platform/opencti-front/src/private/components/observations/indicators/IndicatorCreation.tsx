@@ -2,9 +2,6 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
-import { Add } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
@@ -14,7 +11,6 @@ import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -37,20 +33,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-}));
+import TextareaField from '../../../../components/TextareaField';
 
 const indicatorMutation = graphql`
   mutation IndicatorCreationMutation($input: IndicatorAddInput!) {
@@ -240,7 +223,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         <Form>
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="name"
             label={t_i18n('Name')}
             required={(mandatoryAttributes.includes('name'))}
@@ -269,15 +252,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             multiple={false}
           />
           <Field
-            component={TextField}
-            variant="standard"
+            component={TextareaField}
             name="pattern"
             label={t_i18n('Pattern')}
             required={(mandatoryAttributes.includes('pattern'))}
-            fullWidth={true}
-            multiline={true}
             rows="4"
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
             detectDuplicate={['Indicator']}
           />
           <TypesField
@@ -301,7 +281,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             textFieldProps={{
               label: t_i18n('Valid from'),
               required: (mandatoryAttributes.includes('valid_from')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -312,7 +292,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             textFieldProps={{
               label: t_i18n('Valid until'),
               required: (mandatoryAttributes.includes('valid_until')),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
             }}
@@ -328,13 +308,13 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
+            variant="outlined"
             name="x_opencti_score"
             label={t_i18n('Score')}
             required={(mandatoryAttributes.includes('x_opencti_score'))}
             type="number"
             fullWidth={true}
-            style={fieldSpacingContainerStyle}
+            className="mt-5"
           />
           <Field
             component={MarkdownField}
@@ -421,14 +401,21 @@ interface IndicatorCreationProps {
   paginationOptions: IndicatorsLinesPaginationQuery$variables;
   contextual?: boolean;
   display?: boolean;
+  open?: boolean;
+  handleClose?: () => void;
 }
 
-const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
+const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({
+  paginationOptions,
+  contextual,
+  display,
+  open: openProp,
+  handleClose: handleCloseProp,
+}) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = contextual ? !!openProp : localOpen;
+  const handleClose = () => (contextual ? handleCloseProp?.() : setLocalOpen(false));
   const onReset = () => handleClose();
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Indicator" {...props} />
@@ -443,15 +430,6 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   if (contextual) {
     return (
       <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
-        <Fab
-          onClick={handleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-          sx={{ zIndex: 1203 }}
-        >
-          <Add />
-        </Fab>
         <Dialog
           open={open}
           onClose={handleClose}

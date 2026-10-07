@@ -1,0 +1,64 @@
+name: build-platform-tar
+description: Build the opencti platform and produce a tar.gz artifact
+
+inputs:
+  checkout_ref:
+    description: "Reference of the branch or commit sha"
+    default: ${{ github.sha }}
+  client_python_local:
+    description: "Use client python from the same commit"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Use client-python in OpenCTI from same branch
+      shell: bash
+      if: ${{ inputs.client_python_local == 'true' }}
+      run: |
+        find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i {} \;
+
+    - name: Build platform and package tar.gz
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "${{ github.workspace }}:/workspace" \
+          -w /workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22 \
+          sh -c '
+            apt-get update && apt-get install -y --no-install-recommends build-essential libffi-dev curl g++ make python3 python3-dev && rm -rf /var/lib/apt/lists/* &&
+            npm install -g node-gyp &&
+            cd /workspace/opencti-platform/opencti-graphql &&
+            yarn install --immutable &&
+            yarn build
+          '
+
+    - name: Package tar.gz
+      shell: bash
+      run: |
+        set -eux
+        mkdir -p release
+        ls -lart
+        rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
+        cp -a ./opencti-platform/opencti-graphql release/opencti
+        cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        cp -a ./opencti-worker/src release/opencti/worker
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
+        git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
+        ls -lart release
+        pwd
+        ls -lart
+        cd release && tar -zcvf /tmp/opencti.tar.gz opencti
+
+    - name: Upload tar artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+      with:
+        name: tar-opencti-platform
+        path: /tmp/opencti.tar.gz
+        retention-days: 10
+

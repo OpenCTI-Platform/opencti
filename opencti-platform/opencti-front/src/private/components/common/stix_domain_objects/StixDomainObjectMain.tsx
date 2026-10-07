@@ -1,5 +1,5 @@
 import { ReactElement, ReactNode } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
@@ -51,6 +51,9 @@ const StixDomainObjectMain = ({
         )}
         {tabs.includes('observables') && (
           <Route path="/observables" element={pages.observables} />
+        )}
+        {tabs.includes('relationships') && (
+          <Route path="/relationships" element={pages.relationships} />
         )}
         {tabs.includes('files') && (
           <Route path="/files" element={pages.files} />

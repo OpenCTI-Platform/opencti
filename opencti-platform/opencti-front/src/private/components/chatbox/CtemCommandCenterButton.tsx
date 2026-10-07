@@ -1,10 +1,7 @@
 import { RadarOutlined } from '@mui/icons-material';
-import { Box, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/styles';
-import IconButton from '@common/button/IconButton';
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { CGUStatus } from '@components/settings/Experience';
 import React from 'react';
-import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { toSafeHttpUrl } from '../../../utils/url';
@@ -19,12 +16,11 @@ import { useChatbot } from './ChatbotContext';
  * AI is not disabled. NOT Enterprise-gated: the CTEM Command Center is also
  * available in full CE (metrics only).
  *
- * Uses the shared top-bar IconButton (tertiary) so it gets the exact same shape
- * and hover halo as the other top-bar actions; only the glyph is AI-tinted.
+ * Uses the library IconButton in its `ia` variant, so it gets the same shape and
+ * hover halo as the other top-bar actions and the AI tint comes from the token.
  */
 const CtemCommandCenterButton = () => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const { xtmOneConfigured, xtmOneUrl } = useChatbot();
 
@@ -38,23 +34,19 @@ const CtemCommandCenterButton = () => {
   }
 
   return (
-    <Tooltip
-      title={(
-        // The global MuiTooltip theme lower-cases tooltip text (sentence case),
-        // which would mangle the "CTEM" / "XTM One" acronyms - opt this one out so
-        // the product name keeps its true casing.
-        <Box component="span" sx={{ textTransform: 'none' }}>
-          {t_i18n('Open CTEM Command Center in XTM One')}
-        </Box>
-      )}
-    >
-      <IconButton
-        size="default"
-        onClick={() => window.open(safeXtmOneUrl, '_blank', 'noopener,noreferrer')}
-        aria-label={t_i18n('CTEM Command Center')}
-      >
-        <RadarOutlined fontSize="medium" sx={{ color: theme.palette.ai.main }} />
-      </IconButton>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <IconButton
+          variant="ia"
+          priority="tertiary"
+          onClick={() => window.open(safeXtmOneUrl, '_blank', 'noopener,noreferrer')}
+          aria-label={t_i18n('CTEM Command Center')}
+          icon={<RadarOutlined fontSize="medium" />}
+        />
+      </TooltipTrigger>
+      {/* The library tooltip does not lower-case its text, so "CTEM" and
+          "XTM One" keep their casing without an opt-out wrapper. */}
+      <TooltipContent>{t_i18n('Open CTEM Command Center in XTM One')}</TooltipContent>
     </Tooltip>
   );
 };

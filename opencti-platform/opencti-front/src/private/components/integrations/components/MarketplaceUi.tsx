@@ -1,14 +1,16 @@
 import React, { useContext } from 'react';
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Chip, IconButton } from '@filigran/design-system';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { navigationClickHandlers } from '../../../../utils/domEvent';
 
 export const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
@@ -36,7 +38,6 @@ export const BrowseMoreButton = () => {
 // is provided, clicking the chip opens the deployed tab with matching filters.
 export const DeployedCountChip = ({ count, to }: { count: number; to?: string }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
   const navigate = useNavigate();
   if (count <= 0) return null;
   return (
@@ -46,30 +47,13 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
       slotProps={{ popper: { sx: { textTransform: 'none' } } }}
     >
       <Chip
-        icon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
         label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
-        size="small"
-        variant="outlined"
-        onClick={to
-          ? (event) => {
-            // The chip may live inside a clickable card: do not trigger it.
-              event.stopPropagation();
-              navigate(to);
-            }
-          : undefined}
-        sx={{
-          height: 24,
-          fontSize: 11,
-          fontWeight: 600,
-          borderRadius: 1,
-          color: theme.palette.success.main,
-          borderColor: alpha(theme.palette.success.main, 0.4),
-          backgroundColor: alpha(theme.palette.success.main, 0.08),
-          '& .MuiChip-icon': { color: theme.palette.success.main },
-          '&.MuiChip-clickable:hover': {
-            backgroundColor: alpha(theme.palette.success.main, 0.16),
-          },
-        }}
+        severity="low"
+        startIcon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
+        // The chip lives inside cards and lines rendered as links, and nested
+        // anchors are invalid: it stays a button that never triggers the
+        // enclosing link and opens the deployed tab itself.
+        {...(to ? navigationClickHandlers(to, navigate) : {})}
       />
     </Tooltip>
   );
@@ -142,18 +126,21 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed =
       <Box sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }} />
       {onToggleCollapse && (
         <IconButton
-          size="small"
+          variant="default"
+          priority="tertiary"
+          size="sm"
           aria-expanded={!collapsed}
           aria-label={label}
-        >
-          <ExpandMoreOutlined
-            fontSize="small"
-            sx={{
-              transition: 'transform 0.2s ease-in-out',
-              transform: collapsed ? 'rotate(-90deg)' : 'none',
-            }}
-          />
-        </IconButton>
+          icon={(
+            <ExpandMoreOutlined
+              fontSize="small"
+              sx={{
+                transition: 'transform 0.2s ease-in-out',
+                transform: collapsed ? 'rotate(-90deg)' : 'none',
+              }}
+            />
+          )}
+        />
       )}
     </Stack>
   );

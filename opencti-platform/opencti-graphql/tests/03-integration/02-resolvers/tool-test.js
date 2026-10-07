@@ -85,7 +85,7 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.tool.killChainPhases.length).toEqual(1);
     expect(queryResult.data.tool.killChainPhases[0].standard_id).toEqual(
-      'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'
+      'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0',
     );
   });
   it('should tool loaded by stix id', async () => {

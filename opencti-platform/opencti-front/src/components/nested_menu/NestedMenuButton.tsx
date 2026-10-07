@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
+import { IconButton } from '@filigran/design-system';
 import MenuItem from '@mui/material/MenuItem';
 import { Box, ClickAwayListener, Grow, MenuList, Paper, Popper, Typography } from '@mui/material';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { ButtonProps } from '@mui/material/Button/Button';
 
 // This function checks whether a point (x, y) is on the left or right side of a line formed by two points (px, py) and (qx, qy).
 // If the result is negative, the point is on the right side of the line. If positive, it's on the left side.
@@ -46,14 +45,15 @@ type Option = {
 
 type NestedMenuProps = {
   menuButtonChildren?: React.ReactNode;
-  menuButtonProps?: ButtonProps;
+  /** Required: the trigger is icon-only and had no accessible name before. */
+  menuButtonLabel: string;
   options: Array<Option>;
   menuLevels: number;
   onClick?: (option: Option) => void; // global click handler
 };
 
 const NestedMenuButton: React.FC<NestedMenuProps> = ({
-  menuButtonProps = {},
+  menuButtonLabel,
   menuButtonChildren,
   options,
   menuLevels,
@@ -265,15 +265,17 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
 
   return (
     <React.Fragment>
-      <Button
+      <IconButton
         ref={buttonRef}
+        variant="default"
+        priority="tertiary"
+        size="md"
+        aria-label={menuButtonLabel}
         onClick={(event) => {
           handleOpen(event);
         }}
-        {...menuButtonProps}
-      >
-        { menuButtonChildren ?? 'Menu' }
-      </Button>
+        icon={menuButtonChildren}
+      />
 
       {anchors.elements.map((anchorElement, index) => (anchorElement ? (
         <Popper

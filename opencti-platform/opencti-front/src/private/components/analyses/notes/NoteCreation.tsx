@@ -1,13 +1,9 @@
 import Button from '@common/button/Button';
-import Dialog from '@common/dialog/Dialog';
 import { NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import { Add } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
@@ -18,7 +14,6 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SliderField from '../../../../components/fields/SliderField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -34,17 +29,6 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-}));
 
 export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
@@ -105,6 +89,7 @@ interface NoteFormProps {
   defaultCreatedBy?: FieldOption;
   defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
+  marginTop?: boolean;
 }
 
 export const NOTE_TYPE = 'Note';
@@ -116,6 +101,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  marginTop,
 }) => {
   const { t_i18n } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -223,10 +209,11 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             name="created"
             textFieldProps={{
               label: t_i18n('Publication date'),
-              variant: 'standard',
+              variant: 'outlined',
               fullWidth: true,
               required: mandatoryAttributes.includes('created'),
             }}
+            sx={marginTop ? { marginTop: 2 } : undefined}
           />
           <Field
             component={TextField}
@@ -234,7 +221,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             label={t_i18n('Abstract')}
             required={(mandatoryAttributes.includes('attribute_abstract'))}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            className="mt-5"
             askAi={true}
           />
           <Field
@@ -265,19 +252,19 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             entityType="Note"
             containerStyle={fieldSpacingContainerStyle}
           />
-          <Field
-            component={SliderField}
-            name="likelihood"
-            required={(mandatoryAttributes.includes('likelihood'))}
-            label={t_i18n('Likelihood')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
+          <div style={fieldSpacingContainerStyle}>
+            <Field
+              component={SliderField}
+              name="likelihood"
+              required={(mandatoryAttributes.includes('likelihood'))}
+              label={t_i18n('Likelihood')}
+            />
+          </div>
           {userIsKnowledgeEditor && (
             <CreatedByField
               name="createdBy"
               required={(mandatoryAttributes.includes('createdBy'))}
-              style={{ marginTop: 10 }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
           )}
@@ -325,61 +312,26 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
 
 const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   inputValue,
-  display,
-  contextual,
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
     return insertNode(store, 'Pagination_notes', paginationOptions, key);
   };
   const CreateNoteControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Note" {...props} />
   );
-  const renderClassic = () => {
-    return (
-      <Drawer
-        title={t_i18n('Create a note')}
-        controlledDial={CreateNoteControlledDial}
-      >
-        <NoteCreationForm
-          inputValue={inputValue}
-          updater={updater}
-        />
-      </Drawer>
-    );
-  };
-  const renderContextual = () => {
-    return (
-      <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab
-          onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButtonContextual}
-        >
-          <Add />
-        </Fab>
-        <Dialog
-          open={open}
-          onClose={() => setOpen(false)}
-          title={t_i18n('Create a note')}
-        >
-          <NoteCreationForm
-            inputValue={inputValue}
-            updater={updater}
-            onClose={() => setOpen(false)}
-          />
-        </Dialog>
-      </div>
-    );
-  };
-  if (contextual) {
-    return renderContextual();
-  }
-  return renderClassic();
+  return (
+    <Drawer
+      title={t_i18n('Create a note')}
+      controlledDial={CreateNoteControlledDial}
+    >
+      <NoteCreationForm
+        inputValue={inputValue}
+        updater={updater}
+      />
+    </Drawer>
+  );
 };
 
 export default NoteCreation;

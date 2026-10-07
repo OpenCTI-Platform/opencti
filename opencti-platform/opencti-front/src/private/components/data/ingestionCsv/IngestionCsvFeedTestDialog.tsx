@@ -119,6 +119,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
         <Button
           color={result?.ingestionCsvTester?.nbEntities ? 'primary' : 'secondary'}
           onClick={() => onTest()}
+          keepMui
         >
           {t_i18n('Test')}
         </Button>

@@ -45,15 +45,5 @@ export const incidentLineFragment = graphql`
       }
     }
     workflowEnabled
-    workflowInstance {
-      id
-      currentStatus {
-        template {
-          id
-          name
-          color
-        }
-      }
-    }
   }
 `;

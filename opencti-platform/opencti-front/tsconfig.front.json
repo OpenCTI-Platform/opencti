@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src",
+    "tests_e2e",
+    "index.d.ts",
+    "vitest.d.ts"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.front.tsbuildinfo",
+    "lib": [
+      "dom",
+      "esnext"
+    ],
+    "jsx": "react-jsx",
+    "paths": {
+      "@common/*": ["./src/components/common/*"],
+      "@components/*": ["./src/private/components/*"],
+      "src/*": ["./src/*"],
+      "tests_e2e/*": ["./tests_e2e/*"]
+    },
+    "types": ["vite/client"]
+  }
+}

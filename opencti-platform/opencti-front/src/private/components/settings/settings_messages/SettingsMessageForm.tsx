@@ -131,7 +131,7 @@ const SettingsMessageForm = ({
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
+                variant="outlined"
                 name="message"
                 label={t_i18n('Message')}
                 fullWidth={true}

@@ -1,8 +1,8 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
@@ -25,7 +25,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import useGranted, { MODULES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { FIVE_SECONDS } from '../../../../utils/Time';
+import { paperBg, paperBorder } from '../paperSurface';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -53,6 +55,8 @@ const IntegrationsDeployedContent = ({
   const theme = useTheme();
   const [searchParams] = useSearchParams();
   const typeMetadata = useDeployedTypeMetadata();
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
 
   const items = useDeployedIntegrations({
@@ -61,6 +65,7 @@ const IntegrationsDeployedContent = ({
     feedsData,
     formsData,
     logosBySlug,
+    isConnectorUpdateEnabled,
   });
 
   const {
@@ -73,7 +78,7 @@ const IntegrationsDeployedContent = ({
     hasActiveFilters,
     clearAllFilters,
     facets,
-  } = useDeployedIntegrationsFilters({ items, searchParams });
+  } = useDeployedIntegrationsFilters({ items, searchParams, isConnectorUpdateEnabled });
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
@@ -143,6 +148,7 @@ const IntegrationsDeployedContent = ({
         onFiltersChange={setFilters}
         hasActiveFilters={hasActiveFilters}
         onClearAll={handleResetFilters}
+        showUpdateAvailableFacet={isConnectorUpdateEnabled}
         facets={facets}
       />
 
@@ -160,7 +166,7 @@ const IntegrationsDeployedContent = ({
             label={t_i18n('Sort by')}
             value={sort}
             onChange={(event) => setSort(event.target.value as DeployedSortMode)}
-            sx={{ width: 200, backgroundColor: theme.palette.background.paper }}
+            sx={{ width: 200, backgroundColor: paperBg(theme) }}
           >
             <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
             <MenuItem value="status">{t_i18n('Status')}</MenuItem>
@@ -173,7 +179,7 @@ const IntegrationsDeployedContent = ({
             exclusive
             value={view}
             onChange={handleViewChange}
-            sx={{ backgroundColor: theme.palette.background.paper }}
+            sx={{ backgroundColor: paperBg(theme) }}
           >
             <ToggleButton value="cards" aria-label="cards" data-testid="integrations-view-cards">
               <Tooltip title={t_i18n('Cards view')}>
@@ -230,8 +236,8 @@ const IntegrationsDeployedContent = ({
                     <Box
                       sx={{
                         borderRadius: 1,
-                        border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-                        backgroundColor: theme.palette.background.paper,
+                        border: `1px solid ${paperBorder(theme)}`,
+                        backgroundColor: paperBg(theme),
                         overflow: 'hidden',
                       }}
                     >

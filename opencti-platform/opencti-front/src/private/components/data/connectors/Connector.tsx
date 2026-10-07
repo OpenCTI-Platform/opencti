@@ -9,13 +9,11 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { interval } from 'rxjs';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -38,6 +36,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
@@ -56,6 +55,8 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -135,7 +136,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
   };
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} className="mb-5">
       <QueryRenderer
         key="connector-works-in-progress"
         query={connectorWorksQuery}
@@ -245,7 +246,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const connectorFiltersScope = useGetConnectorFilterEntityTypes(connectorConfig);
   const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connectorConfig);
   const [filters, helpers] = useFiltersState(connectorFilters);
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState('overview');
   const [editionOpen, setEditionOpen] = useState(false);
 
   // API mutations - defined early to avoid use-before-define errors
@@ -298,9 +299,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const compatibleUpdateVersion = isConnectorUpdateEnabled && connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
@@ -558,6 +559,22 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
               <Grid item={true} xs={12}>
                 <Label>
+                  {t_i18n('Version')}
+                </Label>
+                <FieldOrEmpty source={connector.version}>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {connector.version}
+                  </Typography>
+                </FieldOrEmpty>
+                {compatibleUpdateVersion && (
+                  <Box sx={{ marginTop: 1 }}>
+                    <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
+                  </Box>
+                )}
+              </Grid>
+
+              <Grid item={true} xs={12}>
+                <Label>
                   {t_i18n('State')}
                 </Label>
                 <FieldOrEmpty source={connector.connector_state}>
@@ -712,6 +729,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunExistingInState,
     checkLastRunIsNumber,
     lastRunConverted,
+    compatibleUpdateVersion,
     theme,
     t_i18n,
     nsdt,
@@ -988,6 +1006,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       },
                     },
                   })}
+                  keepMui
                 >
                   {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
                 </Button>
@@ -997,24 +1016,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </div>
       </div>
 
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
-      >
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={t_i18n('Overview')} />
-          <Tab label={t_i18n('Works')} />
-          {connector.is_managed && <Tab label={t_i18n('Logs')} />}
-        </Tabs>
-      </Box>
-      <Box>
-        {tabValue === 0 && overviewTabContent}
-        {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
-        {tabValue === 2 && connector.is_managed && connectorLogsContent}
-      </Box>
+      <Tabs value={tabValue} onValueChange={setTabValue}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
+          <TabsTrigger value="works">{t_i18n('Works')}</TabsTrigger>
+          {connector.is_managed && <TabsTrigger value="logs">{t_i18n('Logs')}</TabsTrigger>}
+        </TabsList>
+        <Box>
+          <TabsContent value="overview">{overviewTabContent}</TabsContent>
+          <TabsContent value="works">
+            <ConnectorWorksSection connectorId={connector.id} />
+          </TabsContent>
+          <TabsContent value="logs">{connector.is_managed && connectorLogsContent}</TabsContent>
+        </Box>
+      </Tabs>
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition
@@ -1053,6 +1068,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        version
         connector_user_id
         is_managed
         manager_contract_configuration {
@@ -1116,6 +1132,9 @@ const Connector = createRefetchContainer(
           messages_number
           messages_size
         }
+        update_available
+        latest_compatible_version
+        has_newer_incompatible_version
         updated_at
         created_at
         config {

@@ -8,7 +8,7 @@ vi.mock('../../../../../src/modules/playbook/playbook-components', () => ({
 
 import * as cache from '../../../../../src/database/cache';
 import * as utils from '../../../../../src/utils/access';
-import * as userDomain from '../../../../../src/domain/user';
+import * as userDomain from '../../../../../src/modules/user/user-domain';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';

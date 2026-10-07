@@ -6,7 +6,7 @@ import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
-import { resolveUserIndividual } from '../../../domain/user';
+import { resolveUserIndividual } from '../../user/user-domain';
 import { isEmptyField } from '../../../database/utils';
 import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseIncident } from './case-incident-types';

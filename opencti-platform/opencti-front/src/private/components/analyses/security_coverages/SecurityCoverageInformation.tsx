@@ -1,13 +1,11 @@
 import Label from '@common/label/Label';
-import SecurityCoverageScores from './SecurityCoverageScores';
+import SecurityCoverageScores from './security_coverage_scores/SecurityCoverageScores';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { CoverageInformation } from './SecurityCoverage-types';
 
 interface SecurityCoverageInformationProps {
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information: ReadonlyArray<CoverageInformation> | null | undefined;
 }
 
 const SecurityCoverageInformation = ({ coverage_information }: SecurityCoverageInformationProps) => {

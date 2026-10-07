@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import TopBanner from '../../../../components/TopBanner';
 import { useFormatter } from '../../../../components/i18n';
 import { getSmtpRefreshTokenBannerState } from '../../../../utils/bannerUtils';

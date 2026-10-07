@@ -3,12 +3,12 @@ import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
 import FormGroup from '@mui/material/FormGroup';
-import TextField from '@mui/material/TextField';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { isEmptyField } from '../../../../utils/utils';
+import { Textarea } from '@filigran/design-system';
 
 const EnterpriseEditionAgreementMutationFieldPatch = graphql`
   mutation EnterpriseEditionAgreementMutation($id: ID!, $input: [EditInput]!) {
@@ -64,13 +64,10 @@ const EnterpriseEditionAgreement: FunctionComponent<
       </Alert>
 
       <FormGroup style={{ marginTop: 15 }}>
-        <TextField
+        <Textarea
           onChange={(event) => setEnterpriseLicense(event.target.value)}
-          multiline={true}
-          fullWidth={true}
           minRows={10}
           placeholder={t_i18n('Paste your Filigran OpenCTI Enterprise Edition license')}
-          variant="outlined"
         />
       </FormGroup>
 

@@ -1,15 +1,18 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
+import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -53,7 +56,7 @@ export const DeployedIntegrationLinesHeader = () => {
         paddingInline: 1.5,
         paddingBlock: 1,
         backgroundColor: alpha(theme.palette.text.primary, 0.02),
-        borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+        borderBottom: `1px solid ${paperBorder(theme)}`,
       }}
     >
       <Typography component="div" sx={{ ...headerCellSx, flex: 1, minWidth: 0 }}>
@@ -92,7 +95,6 @@ export interface DeployedIntegrationLineProps {
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -114,7 +116,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   return (
     <Box
       data-testid="integration-line"
-      onClick={() => navigate(item.detailUrl)}
+      // A real link, so ctrl/cmd and middle click open the detail in a new tab.
+      component={Link}
+      to={item.detailUrl}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -122,6 +126,8 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         paddingInline: 1.5,
         paddingBlock: 0.75,
         cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'inherit',
         transition: 'background-color 0.2s ease-in-out',
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -228,7 +234,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
                   : {
                       color: theme.palette.text.secondary,
                       backgroundColor: alpha(theme.palette.text.primary, 0.04),
-                      border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+                      border: `1px solid ${paperBorder(theme)}`,
                     }),
               }}
             >
@@ -284,10 +290,13 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         )}
       </Box>
       {/* Status column. */}
-      <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
-        {item.status === 'processing'
-          ? <ItemBoolean status={undefined} label={statusText} />
-          : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+      <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
+        <Stack direction="column" alignItems="flex-start" gap={0.5}>
+          {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
+          {item.status === 'processing'
+            ? <ItemBoolean status={undefined} label={statusText} />
+            : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        </Stack>
       </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>

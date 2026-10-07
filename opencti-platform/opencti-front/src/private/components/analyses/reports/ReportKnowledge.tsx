@@ -1,6 +1,6 @@
 import { SyntheticEvent, useEffect, useReducer, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -141,7 +141,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     navigate,
     location,
     LOCAL_STORAGE_KEY,
-  ), (params) => ({
+  ), (params: Partial<ReportKnowledgeComponentState>) => ({
     currentModeOnlyActive: params['currentModeOnlyActive'] ?? false,
     currentKillChain: params['currentKillChain'] ?? 'mitre-attack',
     timeLineDisplayRelationships: params['timeLineDisplayRelationships'] ?? false,
@@ -384,9 +384,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={report.id}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route index element={<Navigate replace={true} to="graph" />} />

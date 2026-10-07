@@ -16,6 +16,8 @@ import {
   extractMarkdownImageReferences,
   resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
+  MARKDOWN_FIELD_KEYS,
+  MARKDOWN_FIELD_KEY_SET,
 } from './markdown-embedded-images';
 import { UPDATE_OPERATION_REMOVE, wait } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -23,7 +25,6 @@ import type { BasicStoreBase } from '../types/store';
 import type { EditInput } from '../generated/graphql';
 import type { InternalEditInput } from '../types/store';
 
-export const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
 const TEMP_IMAGE_TOKEN_REGEX = /([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/;
 const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 5;
 const EMBEDDED_IMAGE_EXPORT_FETCH_BASE_BACKOFF_MS = 200;
@@ -326,7 +327,7 @@ export const rewriteEmbeddedDataUriImagesInUpdateInputs = async (
   for (let i = 0; i < updates.length; i += 1) {
     const updateInput = updates[i];
     const { key, value, operation } = updateInput;
-    if (!MARKDOWN_FIELD_KEYS.includes(key)) {
+    if (!MARKDOWN_FIELD_KEY_SET.has(key)) {
       continue;
     }
     if (operation === UPDATE_OPERATION_REMOVE || !Array.isArray(value) || value.length === 0) {
@@ -346,7 +347,7 @@ export const rewriteEmbeddedDataUriImagesInUpdateInputs = async (
 
   for (let i = 0; i < updates.length; i += 1) {
     const updateInput = updates[i];
-    if (!MARKDOWN_FIELD_KEYS.includes(updateInput.key)) {
+    if (!MARKDOWN_FIELD_KEY_SET.has(updateInput.key)) {
       continue;
     }
     const rewrittenValue = payloadByKey.has(updateInput.key)
@@ -532,7 +533,7 @@ export const rewriteMarkdownPatchUpdatesForExport = async (
 
   for (let i = 0; i < updates.length; i += 1) {
     const patch = updates[i];
-    if (!MARKDOWN_FIELD_KEYS.includes(patch.key) || !Array.isArray(patch.value) || patch.value.length === 0) {
+    if (!MARKDOWN_FIELD_KEY_SET.has(patch.key) || !Array.isArray(patch.value) || patch.value.length === 0) {
       rewrittenPatches.push(patch);
       continue;
     }

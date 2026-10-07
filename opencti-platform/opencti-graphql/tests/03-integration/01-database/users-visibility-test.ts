@@ -1,14 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import {
-  ADMIN_USER,
-  getOrganizationIdByName,
-  GREEN_GROUP,
-  PLATFORM_ORGANIZATION,
-  testContext,
-  USER_EDITOR,
-  USER_SECURITY,
-} from '../../utils/testQuery';
+import { ADMIN_USER, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, testContext, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { queryAsAuthUser } from '../../utils/testQueryHelper';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { getInferences } from '../../utils/rule-utils';
@@ -20,7 +12,7 @@ import { createRuleContent } from '../../../src/rules/rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
 import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { findAllMembers, findMembersPaginated, resolveUserById } from '../../../src/domain/user';
+import { findAllMembers, findMembersPaginated, resolveUserById } from '../../../src/modules/user/user-domain';
 import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { MEMBERS_ENTITY_TYPES, SYSTEM_USER } from '../../../src/utils/access';

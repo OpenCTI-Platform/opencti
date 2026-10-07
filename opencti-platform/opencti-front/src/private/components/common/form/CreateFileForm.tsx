@@ -1,11 +1,11 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { DialogActions, MenuItem } from '@mui/material';
+import { DialogActions } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
-import SelectField from '../../../../components/fields/SelectField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -53,22 +53,22 @@ const CreateFileForm = ({ isOpen, onClose, onReset, onSubmit }: CreateFileFormPr
           >
             <Field
               component={TextField}
-              variant="standard"
+              variant="outlined"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
             />
             <Field
-              component={SelectField}
-              variant="standard"
+              component={SelectFieldFds}
+              variant="outlined"
               name="type"
               label={t_i18n('Type')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
-              <MenuItem value="text/html">{t_i18n('HTML')}</MenuItem>
-              <MenuItem value="text/markdown">{t_i18n('Markdown')}</MenuItem>
-              <MenuItem value="text/plain">{t_i18n('Text')}</MenuItem>
+              <SelectItem value="text/html">{t_i18n('HTML')}</SelectItem>
+              <SelectItem value="text/markdown">{t_i18n('Markdown')}</SelectItem>
+              <SelectItem value="text/plain">{t_i18n('Text')}</SelectItem>
             </Field>
             <ObjectMarkingField
               label={t_i18n('File marking definition levels')}

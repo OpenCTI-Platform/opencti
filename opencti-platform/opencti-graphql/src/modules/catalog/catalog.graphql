@@ -8,12 +8,17 @@ type Catalog implements InternalObject & BasicObject {
   # Catalog
   name: String!
   description: String!
-  contracts: [String!]!
+  contracts: [String!]! # JSON.Stringified GraphqlCatalogContract items
 }
 
 type ExtendedContract {
   catalog_id: String!
-  contract: String!
+  contract: String! # JSON.Stringified GraphqlCatalogContract items
+}
+
+type CatalogRevision {
+  catalog_id: String!
+  revision: String
 }
 
 # Ordering
@@ -34,7 +39,18 @@ type CatalogEdge {
 
 # Queries
 type Query {
+  # Returns one version of each contract, for backwards compatibility: the
+  # latest compatible one, or the latest one when no version is compatible
+  # with the platform version. Check `compatibility` in the contract JSON.
   catalog(id: String!): Catalog @auth(for: [INGESTION])
+  # Returns one version of each contract, for backwards compatibility: the
+  # latest compatible one, or the latest one when no version is compatible
+  # with the platform version. Check `compatibility` in the contract JSON.
   catalogs: [Catalog!]! @auth(for: [INGESTION])
+  # Lightweight polling endpoint for catalog refresh detection.
+  catalogsRevisions: [CatalogRevision!]! @auth(for: [INGESTION])
+  # Returns one version of the contract, for backwards compatibility: the
+  # latest compatible one, or the latest one when no version is compatible
+  # with the platform version. Check `compatibility` in the contract JSON.
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }

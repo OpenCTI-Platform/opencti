@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
-import { IconButton, Stack, Tooltip } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
+import { IconButton } from '@filigran/design-system';
 import { FunctionComponent, Suspense, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,11 +43,12 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
   return (
     <Tooltip title={t_i18n('Add an entity to this container')}>
       <IconButton
-        color="primary"
+        variant="default"
+        priority="tertiary"
+        aria-label={t_i18n('Add an entity to this container')}
         onClick={() => onOpen()}
-      >
-        <Add />
-      </IconButton>
+        icon={<Add />}
+      />
     </Tooltip>
   );
 };

@@ -15,8 +15,8 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'H',
           operator: CsvMapperOperator.Eq,
-          value: 'sha256'
-        }
+          value: 'sha256',
+        },
       },
       attributes: [
         {
@@ -31,7 +31,7 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
             column_name: 'A',
           },
         },
-      ]
+      ],
     },
     {
       id: 'file-md5',
@@ -41,8 +41,8 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
         column_based: {
           column_reference: 'H',
           operator: CsvMapperOperator.Eq,
-          value: 'md5'
-        }
+          value: 'md5',
+        },
       },
       attributes: [
         {
@@ -57,7 +57,7 @@ export const csvMapperMockFileHashHack: Partial<CsvMapperParsed> = {
             column_name: 'A',
           },
         },
-      ]
+      ],
     },
-  ]
+  ],
 };

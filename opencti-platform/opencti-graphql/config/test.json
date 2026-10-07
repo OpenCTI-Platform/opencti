@@ -84,6 +84,9 @@
   "connector_manager": {
     "enabled": true
   },
+  "catalog_manager": {
+    "enabled": false
+  },
   "import_csv_built_in_connector": {
     "enabled": true,
     "interval": 2000,
@@ -108,6 +111,9 @@
     "interval": 6000000
   },
   "ingestion_manager": {
+    "enabled": false
+  },
+  "telemetry_manager": {
     "enabled": false
   },
   "providers": {

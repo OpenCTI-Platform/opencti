@@ -15,6 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import useAuth from './useAuth';
 
+// The Enterprise Edition is granted by the XTM license of XTM One, not by an OpenCTI license.
+export const isEnterpriseEditionFromXtmOne = (enterpriseEdition?: { license_source?: string | null } | null) => {
+  return enterpriseEdition?.license_source === 'XTM_ONE_LICENSE';
+};
+
 const useEnterpriseEdition = (): boolean => {
   const { settings } = useAuth();
   return settings.platform_enterprise_edition?.license_validated;

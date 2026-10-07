@@ -14,6 +14,7 @@ import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/d
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
+  hasPublishedWorkflowDefinition: vi.fn(),
   getWorkflowInstance: vi.fn(),
   getAllowedTransitions: vi.fn(),
   setWorkflowDefinition: vi.fn(),
@@ -341,6 +342,25 @@ describe('workflow-resolvers', () => {
           'entity-123',
         );
         expect(result).toBe(mockInstance);
+      });
+    });
+
+    describe('workflowDefinitionPublished', () => {
+      it('should call hasPublishedWorkflowDefinition with correct arguments', async () => {
+        vi.mocked(workflowDomain.hasPublishedWorkflowDefinition).mockResolvedValue(true);
+
+        const result = await workflowResolvers.Query.workflowDefinitionPublished(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(workflowDomain.hasPublishedWorkflowDefinition).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'Incident',
+        );
+        expect(result).toBe(true);
       });
     });
 

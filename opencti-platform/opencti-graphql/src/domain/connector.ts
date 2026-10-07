@@ -1,4 +1,5 @@
 import { v5 as uuidv5 } from 'uuid';
+import semver from 'semver';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -55,7 +56,7 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -67,6 +68,8 @@ import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
+import { checkEnterpriseEdition } from '../enterprise-edition/ee';
+import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -137,7 +140,8 @@ export const updateConnectorWithConnectorInfo = async (
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
   }
-  await patchAttribute(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, connectorEntity.id, ENTITY_TYPE_CONNECTOR, connectorPatch);
+  return element;
 };
 
 export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
@@ -149,8 +153,8 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
-  await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
+  const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
+  return completeConnector(updatedConnector);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
@@ -164,7 +168,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return completeConnector(element);
 };
 interface RegisterOptions {
   built_in?: boolean;
@@ -201,13 +205,12 @@ export const managedConnectorEdit = async (
   user: AuthUser,
   input: EditManagedConnectorInput,
 ) => {
-  const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
+  const conn = await storeLoadById<BasicStoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
     throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(conn.manager_contract_image);
-  if (isEmptyField(targetContract)) {
+  const targetContract = conn.manager_contract;
+  if (!targetContract) {
     throw UnsupportedError('Target contract not found');
   }
   const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
@@ -224,11 +227,30 @@ export const managedConnectorEdit = async (
   const patch: any = {
     name: input.name,
     title: input.title,
-    connector_type: targetContract.container_type,
+    connector_type: targetContract.connector_type,
     connector_user_id: input.connector_user_id,
     manager_contract_configuration: contractConfigurations,
   };
+
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${input.name}\``,
+    context_data: {
+      entity_type: ENTITY_TYPE_CONNECTOR, id: input.id, input: {
+        id: input.id,
+        name: input.name,
+        title: input.title,
+        connector_user_id: input.connector_user_id,
+      },
+    },
+  });
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return element;
 };
 
@@ -237,10 +259,18 @@ export const managedConnectorAdd = async (
   user: AuthUser,
   input: AddManagedConnectorInput,
 ) => {
+  await checkEnterpriseEdition(context);
   // Get contract
-  const contractsMap = await getSupportedContractsByImage();
-  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
   if (isEmptyField(targetContract)) {
+    // Distinguish an unknown connector from a connector that the platform version cannot run
+    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    if (imageContracts.length > 0) {
+      throw FunctionalError('This connector is not compatible with the platform version', {
+        image: input.manager_contract_image,
+        platformVersion: PLATFORM_VERSION,
+      });
+    }
     throw UnsupportedError('Target contract not found');
   }
   if (!targetContract.manager_supported) {
@@ -286,11 +316,13 @@ export const managedConnectorAdd = async (
   const connectorToCreate: any = {
     title: input.name,
     name: sanitizedName,
-    connector_type: targetContract.container_type,
+    connector_type: targetContract.connector_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
+    manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(targetContract),
+    manager_upgrade_strategy: 'latest',
     manager_requested_status: 'stopped',
     connector_state_timestamp: now(),
     built_in: false,
@@ -323,6 +355,13 @@ export const registerConnector = async (
 ) => {
   const { id, name, type, scope, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const { auto = null, auto_update = null, enrichment_resolution = null, xtm_one_intent = null } = connectorData;
+  const { version = null, slug = null } = connectorData;
+  if (!isEmptyField(version) && !semver.valid(version) && version !== 'rolling') {
+    logApp.warn('[OPENCTI-MODULE] Connector version is not a valid format', {
+      version,
+      module: 'connector',
+    });
+  }
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -340,6 +379,8 @@ export const registerConnector = async (
       playbook_compatible,
       listen_callback_uri,
       xtm_one_intent,
+      version,
+      slug,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
@@ -364,6 +405,8 @@ export const registerConnector = async (
     playbook_compatible,
     listen_callback_uri,
     xtm_one_intent,
+    version,
+    slug,
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,
@@ -525,7 +568,14 @@ export const unregisterConnectorForIngestion = async (context: AuthContext, id: 
   await connectorDelete(context, SYSTEM_USER, connectorId);
 };
 
-export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: { running: boolean }) => {
+type SynchronizerPatch = {
+  running?: boolean;
+  current_state_date?: Date | string;
+  last_execution_date?: Date | string;
+  last_execution_status?: string;
+};
+
+export const patchSync = async (context: AuthContext, user: AuthUser, id: string, patch: SynchronizerPatch) => {
   const patched = await patchAttribute(context, user, id, ENTITY_TYPE_SYNC, patch);
   return patched.element;
 };

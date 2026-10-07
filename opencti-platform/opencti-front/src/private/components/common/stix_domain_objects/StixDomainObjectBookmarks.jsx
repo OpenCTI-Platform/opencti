@@ -39,7 +39,7 @@ class StixDomainObjectBookmarksComponent extends Component {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ padding: '0 0 5px 18px', float: 'left' }}
+            style={{ padding: '0 0 8px 18px', float: 'left' }}
           >
             {t('Favorite entities')}
           </Typography>
@@ -62,6 +62,14 @@ class StixDomainObjectBookmarksComponent extends Component {
             DummyCardComponent={<StixDomainObjectBookmarkDummy />}
             rowHeight={112}
           />
+          {/* Title lives here, not in the five *Cards pages — see fds-migration/MIGRATION-DECISIONS.md#bookmarks-sibling-title */}
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ padding: '0 0 8px 18px', margin: '16px 0 0 0' }}
+          >
+            {t('All entities')}
+          </Typography>
         </div>
       );
     }
