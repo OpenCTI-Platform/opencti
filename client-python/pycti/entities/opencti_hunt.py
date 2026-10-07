@@ -268,7 +268,7 @@ class Hunt:
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(result["data"]["hunt"])
         if filters is not None:
-            result = self.list(filters=filters)
+            result = self.list(filters=filters, customAttributes=custom_attributes)
             return result[0] if len(result) > 0 else None
         self.opencti.app_logger.error(
             "[opencti_hunt] Missing parameters: id or filters"

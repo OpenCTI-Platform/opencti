@@ -99,6 +99,17 @@ class TestHunt(TestCase):
     def test_default_fields_read_the_organizations_of_the_hunt(self):
         self.assertIn("objectOrganization {", Hunt(_opencti({})).properties)
 
+    def test_read_with_filters_returns_the_requested_fields(self):
+        hunt = {"id": "hunt-1", "name": "Hunt"}
+        opencti = _opencti({"hunts": {"edges": [{"node": hunt}], "pageInfo": {}}})
+        filters = {"mode": "and", "filters": [], "filterGroups": []}
+        result = Hunt(opencti).read(filters=filters, customAttributes="id name")
+        self.assertEqual(result, hunt)
+        query = opencti.query.call_args.args[0]
+        self.assertIn("id name", query)
+        self.assertNotIn("escalation_threshold", query)
+        self.assertEqual(_variables(opencti)["filters"], filters)
+
     def test_create_requires_a_name(self):
         opencti = _opencti({})
         self.assertIsNone(Hunt(opencti).create(hypothesis="h"))
