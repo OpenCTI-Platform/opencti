@@ -151,6 +151,23 @@ export const validateFieldAuthorityRules = (rules: FieldAuthorityRule[]) => {
   });
 };
 
+/**
+ * Reject staleness overrides the detection would not use (normalizeCurationSettings drops an override of another type,
+ * and the detection reads only the first override of a type).
+ */
+export const validateStaleOverrides = (overrides: StalenessOverride[]) => {
+  const seen = new Set<string>();
+  overrides.forEach((override) => {
+    if (typeof override?.entity_type !== 'string' || !isCuratableEntityType(override.entity_type)) {
+      throw FunctionalError('Staleness overrides only apply to knowledge entity types', { entity_type: override?.entity_type });
+    }
+    if (seen.has(override.entity_type)) {
+      throw FunctionalError('Only one staleness override per entity type', { entity_type: override.entity_type });
+    }
+    seen.add(override.entity_type);
+  });
+};
+
 export const getCurationSettings = async (context: AuthContext): Promise<CurationSettings> => {
   const configuration = await getManagerConfigurationFromCache(context, SYSTEM_USER, CURATION_MANAGER_ID);
   return normalizeCurationSettings(configuration?.manager_setting as Partial<CurationSettings> | undefined);

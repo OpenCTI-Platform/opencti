@@ -54,7 +54,7 @@ import {
   revertAppliedPatch,
 } from './curation-apply';
 import { findMergeRecordById, settlePendingMergeRecord, unmergeFromRecord } from './curation-merge-record';
-import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
+import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules, validateStaleOverrides } from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, adjudicationDecisionsFor, isAdjudicationAvailable } from './curation-adjudication';
 import { adjudicationDecidesAction, canUserApplyPolicy, canUserApplyProposal, canUserRevertProposal, effectiveProposalAction, isProposalChoiceRequired } from './curation-access';
 import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './curation-policies';
@@ -721,6 +721,8 @@ export const curationSettingsForApi = async (context: AuthContext) => {
   return {
     id,
     ...settings,
+    // Only a scan clears a request: one is pending only while scans run.
+    force_scan: settings.force_scan && isCurationRunning(settings.curation_enabled),
     available_detectors: [...CURATION_DETECTORS],
     adjudication_available: adjudicationAvailable,
     graph_similarity_available: graphSimilarityAvailable,
@@ -743,6 +745,12 @@ export const editCurationSettings = async (context: AuthContext, user: AuthUser,
   if (patch.field_authority_rules) {
     validateFieldAuthorityRules(patch.field_authority_rules);
   }
+  if (patch.stale_overrides) {
+    validateStaleOverrides(patch.stale_overrides);
+  }
+  if (patch.curation_enabled === false) {
+    patch.force_scan = false;
+  }
   const changesBand = patch.ambiguous_band_min !== undefined || patch.ambiguous_band_max !== undefined;
   // A partial input is checked against the settings it is merged into, read under the settings write lock.
   const validate = (merged: CurationSettings) => {
@@ -758,7 +766,13 @@ export const editCurationSettings = async (context: AuthContext, user: AuthUser,
 };
 
 export const requestCurationScan = async (context: AuthContext, user: AuthUser) => {
-  await saveCurationSettings(context, user, { force_scan: true });
+  // Checked under the settings write lock, so a request never lands just after curation was switched off.
+  const validate = (merged: CurationSettings) => {
+    if (!isCurationRunning(merged.curation_enabled)) {
+      throw FunctionalError('A scan runs only while knowledge curation is enabled', { curation_enabled: merged.curation_enabled });
+    }
+  };
+  await saveCurationSettings(context, user, { force_scan: true }, { validate });
   return curationSettingsForApi(context);
 };
 

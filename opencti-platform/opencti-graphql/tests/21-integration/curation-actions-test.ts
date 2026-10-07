@@ -39,6 +39,7 @@ import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../src/schema/general';
 import { MARKING_TLP_RED } from '../../src/schema/identifier';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { procedureNoteStixId } from '../../src/modules/curation/curation-apply';
+import { curationSettingsForApi } from '../../src/modules/curation/curation-domain';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 import {
   ACTION_ACKNOWLEDGE,
@@ -1180,10 +1181,12 @@ describe('Knowledge curation actions', () => {
     expect(refreshed.curation_adjudication ?? null).toBeNull();
   });
 
-  it('should request a full scan', async () => {
+  it('should request a full scan only while curation runs', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SCAN_REQUEST_MUTATION, variables: {} });
-    const requested = await queryAsAdminWithSuccess({ query: SCAN_REQUEST_MUTATION, variables: {} });
-    expect(requested.data?.curationScanRequest.force_scan).toBe(true);
+    // The curation manager is switched off in the test configuration: no scan would ever clear the request.
+    const refused = await queryAsAdmin({ query: SCAN_REQUEST_MUTATION, variables: {} });
+    expect(refused.errors?.[0]?.message).toContain('A scan runs only while knowledge curation is enabled');
+    expect((await curationSettingsForApi(testContext)).force_scan).toBe(false);
   });
 
   it('should keep the restrictions of an open proposal in line with its subjects, never widening it while one is gone', async () => {
