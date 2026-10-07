@@ -77,7 +77,8 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
 };
 
 // Clearing the attribution of an object takes the connector of the run it was attributed to; attributing an object
-// already stored to a run takes it to be as restricted as the run
+// already stored to a run takes it to be as restricted as the run. A later change of the markings or organizations of
+// attributed evidence is the decision of a user allowed to make it, as for any object: it is not checked against the run
 const validatorUpdate: ValidatorFn = async (context, user, instance, initial) => {
   if (!(ATTRIBUTE_HUNT_RUN_ID in instance)) {
     return true;
