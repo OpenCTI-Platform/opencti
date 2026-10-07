@@ -149,12 +149,17 @@ export const writePlaybookDefinitionHuntSteps = async <T extends string | null |
   return nodes.length > 0 ? JSON.stringify(definition) : playbookDefinition;
 };
 
-// The writer of a step, as it searches and changes hunts: outside of any draft, and only while it can start hunt runs
-const resolvePlaybookHuntAuthor = async (context: AuthContext, configuration: WrittenHuntConfiguration) => {
+// The writer of a step, as it searches and changes hunts and reads the security platforms its runs target: outside of
+// any draft, and only while it can start hunt runs
+const resolvePlaybookHuntAuthor = async (context: AuthContext, configuration: WrittenHuntConfiguration): Promise<AuthUser | null> => {
   const authorId = configuration[PLAYBOOK_HUNT_AUTHOR];
   const cached = authorId ? await resolveUserByIdFromCache(context, authorId) : undefined;
   const author = cached ? { ...cached, draft_context: undefined } : null;
-  return author && isUserHasCapability(author, KNOWLEDGE_KNUPDATE) ? author : null;
+  if (!author || !isUserHasCapability(author, KNOWLEDGE_KNUPDATE)) {
+    logApp.warn('[OPENCTI-MODULE] Playbook hunt step runs no hunt, the user who wrote it cannot start hunt runs', { authorId });
+    return null;
+  }
+  return author;
 };
 
 const elementRefs = (element: StixObject): string[] => {
@@ -173,15 +178,9 @@ const byLastRunAt = (a: BasicStoreEntityHunt, b: BasicStoreEntityHunt) => {
 /**
  * Hunts a playbook step runs: the configured hunts, or the active hunts targeting a threat, covering a technique or
  * based on an indicator / report of the elements in scope (containers bring the objects they contain). Either way only
- * the hunts the writer of the step can still read and change: a step whose writer is gone or can no longer start hunt
- * runs runs none.
+ * the hunts the writer of the step can still read and change.
  */
-export const resolvePlaybookHunts = async (context: AuthContext, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
-  const author = await resolvePlaybookHuntAuthor(context, configuration);
-  if (!author) {
-    logApp.warn('[OPENCTI-MODULE] Playbook hunt step runs no hunt, the user who wrote it cannot start hunt runs', { authorId: configuration[PLAYBOOK_HUNT_AUTHOR] });
-    return [];
-  }
+const findPlaybookHunts = async (context: AuthContext, author: AuthUser, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
   const maxHunts = Math.min(PLAYBOOK_HUNT_MAX_HUNTS, Math.max(1, Math.round(configuration.max_hunts || 10)));
   const activeFilter = { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] };
   if ((configuration.hunt_ids ?? []).length > 0) {
@@ -224,6 +223,12 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
     (await filterEditableHunts(context, author, found)).forEach((hunt) => hunts.set(hunt.internal_id, hunt));
   }
   return Array.from(hunts.values()).sort(byLastRunAt).slice(0, maxHunts);
+};
+
+/** Hunts a playbook step runs (findPlaybookHunts): a step whose writer is gone or can no longer start hunt runs runs none. */
+export const resolvePlaybookHunts = async (context: AuthContext, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
+  const author = await resolvePlaybookHuntAuthor(context, configuration);
+  return author ? findPlaybookHunts(context, author, elements, configuration) : [];
 };
 
 const HUNT_PLAYBOOK_DEBOUNCE_LOCK = 'hunt_playbook_debounce';
@@ -327,7 +332,8 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
     try {
       const inScope = bundle.objects.filter((object) => isBundleElementInScope(object, configuration.applyToElements, dataInstanceId));
       const elements = await filterBundleElements(context, inScope, configuration.applyWithFilters);
-      const hunts = elements.length > 0 ? await resolvePlaybookHunts(context, elements, configuration) : [];
+      const author = elements.length > 0 ? await resolvePlaybookHuntAuthor(context, configuration) : null;
+      const hunts = author ? await findPlaybookHunts(context, author, elements, configuration) : [];
       for (let index = 0; index < hunts.length; index += 1) {
         const hunt = hunts[index];
         // Check and creation are serialized per hunt: concurrent executions cannot both find no recent run and both start
@@ -341,8 +347,11 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
             });
             return [];
           }
+          // The security platforms are read as the writer of the step: a platform it can no longer read gets no run
           return createHuntRuns(context, hunt, {
             trigger: HUNT_RUN_TRIGGER_PLAYBOOK,
+            requester: author,
+            triggeredBy: HUNT_MANAGER_USER.id,
             securityPlatformIds: configuration.security_platform_ids ?? [],
             timeWindowHours: configuration.time_window_hours > 0 ? configuration.time_window_hours : null,
             playbook: {

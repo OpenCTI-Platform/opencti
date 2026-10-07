@@ -74,15 +74,16 @@ vi.mock('../../../../../src/modules/hunt/hunt-playbook', async (importOriginal) 
 
 const bundle = { id: 'bundle--1', type: 'bundle', objects: [{ id: 'malware--1', type: 'malware', name: 'Emotet' }] } as unknown as StixBundle;
 
-const notifyStep = (executionId: string, waiting = false) => {
+const notifyStep = (executionId: string, waiting = false, configured: Record<string, unknown> = {}) => {
   const notify = PLAYBOOK_HUNT_COMPONENT.notify as NonNullable<typeof PLAYBOOK_HUNT_COMPONENT.notify>;
+  const configuration = { applyToElements: 'only-main', hunt_ids: ['hunt-1'], wait_for_results: waiting, include_results: false, author_id: 'user-1', ...configured };
   return notify({
     executionId,
     eventId: 'event-1',
     playbookId: 'playbook-1',
     dataInstanceId: 'malware--1',
     previousPlaybookNodeId: 'step-0',
-    playbookNode: { id: 'step-hunt', configuration: { applyToElements: 'only-main', hunt_ids: ['hunt-1'], wait_for_results: waiting, include_results: false, author_id: 'user-1' } },
+    playbookNode: { id: 'step-hunt', configuration },
     bundle,
     previousStepBundle: bundle,
   } as never);
@@ -130,6 +131,20 @@ describe('Run hunts playbook step', () => {
     vi.mocked(topEntitiesList).mockResolvedValue([] as never);
     await notifyStep('execution-1');
     await expect(outcome).resolves.toMatchObject({ output_port: 'no-hunt' });
+    expect(createHuntRuns).not.toHaveBeenCalled();
+  });
+
+  it('should start its runs as its writer, so that its security platforms are read with the current access of the writer', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValue([{ internal_id: 'hunt-1', name: 'Emotet loaders' }] as never);
+    vi.mocked(createHuntRuns).mockResolvedValue([] as never);
+    await notifyStep('execution-1', false, { security_platform_ids: ['platform-1'] });
+    expect(createHuntRuns).toHaveBeenCalledTimes(1);
+    const [, hunt, request] = vi.mocked(createHuntRuns).mock.calls[0];
+    expect(hunt.internal_id).toEqual('hunt-1');
+    expect(request).toMatchObject({ securityPlatformIds: ['platform-1'], requester: { id: 'user-1' }, triggeredBy: HUNT_MANAGER_USER.id });
+    // A writer who can no longer start hunt runs starts none, never on behalf of the hunt manager
+    vi.mocked(createHuntRuns).mockClear();
+    await notifyStep('execution-2', false, { security_platform_ids: ['platform-1'], author_id: 'user-gone' });
     expect(createHuntRuns).not.toHaveBeenCalled();
   });
 });
