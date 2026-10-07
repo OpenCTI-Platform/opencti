@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runStalenessScan } from '../../../../src/modules/curation/curation-scan';
 import { persistProposalDraft } from '../../../../src/modules/curation/curation-proposals';
+import { redisSetManagerEventState } from '../../../../src/database/redis';
 import { DEFAULT_CURATION_SETTINGS } from '../../../../src/modules/curation/curation-defaults';
 import { type CurationSettings, DETECTOR_STALENESS, EVIDENCE_DECAYED_INDICATOR, EVIDENCE_STALENESS, type ProposalDraft } from '../../../../src/modules/curation/curation-types';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
@@ -44,6 +45,9 @@ vi.mock('../../../../src/modules/curation/curation-proposals', async (importOrig
 
 const settings: CurationSettings = { ...DEFAULT_CURATION_SETTINGS, curation_enabled: true, enabled_detectors: [DETECTOR_STALENESS], curated_entity_types: [] };
 
+const committedCursors = () => vi.mocked(redisSetManagerEventState).mock.calls
+  .map(([key]) => key as string)
+  .filter((key) => key.startsWith('curation_scan_rotation_') && !key.startsWith('curation_scan_rotation_attempts_'));
 const draftsBySubject = () => new Map(vi.mocked(persistProposalDraft).mock.calls.map(([, , draft]) => [(draft as ProposalDraft).subjects[0].id, draft as ProposalDraft]));
 const evidenceTypes = (draft?: ProposalDraft) => draft?.evidence.map((item) => item.evidence_type);
 
@@ -62,5 +66,13 @@ describe('staleness scan', () => {
     // The confidence of a decay alone is that of its evidence, not raised by an inactivity that was not found.
     expect(drafts.get('indicator-decayed')?.confidence).toBeCloseTo(0.6);
     expect(drafts.get('indicator-both')?.confidence).toBeGreaterThan(0.6);
+    expect(committedCursors()).not.toHaveLength(0);
+  });
+
+  it('attempts every draft when one cannot be persisted, then leaves the cursors of the page, so the next scan reads it again', async () => {
+    vi.mocked(persistProposalDraft).mockRejectedValueOnce(new Error('Search engine unavailable'));
+    await runStalenessScan({} as never, settings);
+    expect(persistProposalDraft).toHaveBeenCalledTimes(3);
+    expect(committedCursors()).toHaveLength(0);
   });
 });

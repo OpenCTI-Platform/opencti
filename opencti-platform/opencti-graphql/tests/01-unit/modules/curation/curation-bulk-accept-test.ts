@@ -39,6 +39,16 @@ describe('curation bulk accept', () => {
     expect(createListTask).toHaveBeenCalledTimes(1);
   });
 
+  it('refuses up front a proposal whose subject the user can no longer read, before its restrictions are refreshed', async () => {
+    vi.mocked(internalFindByIds)
+      .mockResolvedValueOnce([{ ...proposal('merge-1', ACTION_MERGE), subject_ids: ['reclassified-id'] }] as never)
+      .mockResolvedValueOnce([] as never)
+      .mockResolvedValueOnce([{ internal_id: 'reclassified-id' }] as never);
+    const merger = userWith(['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNUPDATE_KNMERGE']);
+    await expect(bulkAcceptProposals({} as AuthContext, merger, ['merge-1'])).rejects.toThrow('do not exist or are not accessible');
+    expect(createListTask).not.toHaveBeenCalled();
+  });
+
   it('queues each proposal with the revision it was accepted on, for the worker to send back', async () => {
     (internalFindByIds as any).mockResolvedValue([
       proposal('merge-1', ACTION_MERGE, '2026-10-06T16:00:01.000Z'),

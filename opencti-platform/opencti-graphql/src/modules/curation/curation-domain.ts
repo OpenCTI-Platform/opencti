@@ -632,7 +632,8 @@ export const bulkAcceptProposals = async (context: AuthContext, user: AuthUser, 
   if (uniqueIds.length === 0 || uniqueIds.length > MAX_BULK) {
     throw FunctionalError(`Bulk accept handles between 1 and ${MAX_BULK} proposals`, { count: uniqueIds.length });
   }
-  const proposals = await internalFindByIds(context, user, uniqueIds, { type: ENTITY_TYPE_CURATION_PROPOSAL }) as unknown as BasicStoreEntityCurationProposal[];
+  const found = await internalFindByIds(context, user, uniqueIds, { type: ENTITY_TYPE_CURATION_PROPOSAL }) as unknown as BasicStoreEntityCurationProposal[];
+  const proposals = await keepWithReadableParticipants(context, user, found, proposalSubjectIds);
   const resolvedIds = new Set(proposals.flatMap((proposal) => [proposal.internal_id, proposal.standard_id]));
   if (uniqueIds.some((id) => !resolvedIds.has(id))) {
     throw ForbiddenAccess('Some of the selected curation proposals do not exist or are not accessible');

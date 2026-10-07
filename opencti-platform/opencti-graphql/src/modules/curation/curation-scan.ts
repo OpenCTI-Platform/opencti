@@ -331,7 +331,12 @@ export const countRelationshipsByEntity = async (context: AuthContext, entityIds
 };
 // endregion
 
+/**
+ * Every draft is attempted, then the first failure is thrown: the scan does not commit the cursor of the page, which is
+ * read again at the next scan (the drafts persisted meanwhile are found again, not duplicated).
+ */
 const persistDrafts = async (context: AuthContext, settings: CurationSettings, drafts: ProposalDraft[], stats: ScanStats) => {
+  let failure: unknown;
   for (let index = 0; index < drafts.length; index += 1) {
     try {
       const result = await persistProposalDraft(context, settings, drafts[index]);
@@ -339,10 +344,23 @@ const persistDrafts = async (context: AuthContext, settings: CurationSettings, d
       if (result.suppressed) stats.suppressed += 1;
     } catch (error) {
       logApp.warn('[CURATION] Cannot persist a curation proposal', { cause: error, kind: drafts[index].kind });
+      failure ??= error;
     }
   }
-
   stats.drafts += drafts.length;
+  if (failure) throw failure;
+};
+
+/** The drafts of a scan page, then its cursors: a page not fully persisted is read again, the other pages go on. */
+const persistPage = async (context: AuthContext, settings: CurationSettings, drafts: ProposalDraft[], stats: ScanStats, cursors: RotationCursors) => {
+  try {
+    await persistDrafts(context, settings, drafts, stats);
+  } catch (error) {
+    logApp.warn('[CURATION] A scan page will be read again: not all its proposals were persisted', { cause: error, scans: [...cursors.keys()] });
+    cursors.clear();
+    return;
+  }
+  await commitRotationCursors(cursors);
 };
 
 // region duplicates (detectors 1, 2, 3)
@@ -423,14 +441,20 @@ const searchRotatingPage = async (context: AuthContext, settings: CurationSettin
       baseData: true,
     } as any));
     const batches = R.splitEvery(SEARCH_BATCH, page.map((element) => element.internal_id));
-    for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
-      const searched = await runIncrementalDuplicateDetection(context, settings, batches[batchIndex]);
-      stats.scanned += searched.scanned;
-      stats.drafts += searched.drafts;
-      stats.created += searched.created;
-      stats.suppressed += searched.suppressed;
+    let searched = true;
+    try {
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
+        const batchStats = await runIncrementalDuplicateDetection(context, settings, batches[batchIndex]);
+        stats.scanned += batchStats.scanned;
+        stats.drafts += batchStats.drafts;
+        stats.created += batchStats.created;
+        stats.suppressed += batchStats.suppressed;
+      }
+    } catch (error) {
+      logApp.warn('[CURATION] A scan page will be read again: not all its proposals were persisted', { cause: error, scans: [...cursors.keys()] });
+      searched = false;
     }
-    await commitRotationCursors(cursors);
+    if (searched) await commitRotationCursors(cursors);
   }
 };
 
@@ -477,8 +501,7 @@ export const runDuplicateScan = async (context: AuthContext, settings: CurationS
     const entities = await loadCuratedEntities(context, groups[index], settings.scan_max_entities_per_type, cursors);
     stats.scanned += entities.length;
     const drafts = await detectDuplicateDrafts(context, settings, entities);
-    await persistDrafts(context, settings, await checkAliasOwnership(context, settings, entities, drafts), stats);
-    await commitRotationCursors(cursors);
+    await persistPage(context, settings, await checkAliasOwnership(context, settings, entities, drafts), stats, cursors);
     await searchRotatingPage(context, settings, groups[index], stats);
   }
   return stats;
@@ -839,8 +862,7 @@ export const runContradictionScan = async (context: AuthContext, settings: Curat
   ];
   drafts.push(...(await addSplitDrafts(context, drafts)));
   stats.scanned = drafts.length;
-  await persistDrafts(context, settings, drafts, stats);
-  await commitRotationCursors(cursors);
+  await persistPage(context, settings, drafts, stats, cursors);
   return stats;
 };
 // endregion
@@ -932,8 +954,7 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
     });
   });
   const drafts = [...elements.values()].map(buildStaleDraft);
-  await persistDrafts(context, settings, drafts, stats);
-  await commitRotationCursors(cursors);
+  await persistPage(context, settings, drafts, stats, cursors);
   return stats;
 };
 // endregion
