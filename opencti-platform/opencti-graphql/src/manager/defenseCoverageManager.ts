@@ -18,6 +18,7 @@ import {
   consumeFullComputationRequest,
   getFullComputationRunningSince,
   getLastFullComputation,
+  isFullComputationRequested,
   listPendingLevelChanges,
   markFullComputationRunning,
   requestFullDefenseCoverageComputation,
@@ -90,7 +91,7 @@ export const defenseCoverageCronHandler = async () => {
   }
   await deliverQueuedLevelChanges(context);
   const lastFull = await getLastFullComputation();
-  const requested = await consumeFullComputationRequest();
+  const requested = await isFullComputationRequested();
   const isDue = !lastFull || Date.now() - new Date(lastFull).getTime() >= FULL_COMPUTATION_INTERVAL;
   if (!isDue && !requested) {
     return;
@@ -98,6 +99,9 @@ export const defenseCoverageCronHandler = async () => {
   const startedAt = new Date().toISOString();
   await markFullComputationRunning(startedAt);
   try {
+    // Consumed once the run is marked, so the status always shows a request as pending or running; a request made
+    // before this point is served by this run, a later one stays pending for the next run
+    await consumeFullComputationRequest();
     await runComputation(context);
     await setLastFullComputation(startedAt);
   } catch (e) {
