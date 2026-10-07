@@ -58,6 +58,7 @@ type VocabularyFieldDefinition {
 type VocabularyDefinition {
   key: VocabularyCategory!
   description: String
+  closed: Boolean!
   entity_types: [String!]!
   fields: [VocabularyFieldDefinition!]!
 }

@@ -1221,7 +1221,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
     .filter(([_, value]) => value.entity_types?.length > 0)
-    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value }))
+    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value, closed: value.closed ?? false }))
     .sort();
 };
 

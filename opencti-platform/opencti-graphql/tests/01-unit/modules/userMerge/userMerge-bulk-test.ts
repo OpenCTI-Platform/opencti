@@ -56,6 +56,77 @@ describe('User merge bulk update', () => {
   });
 });
 
+/**
+ * The body Elasticsearch answers a conflicting `_update_by_query` with, and the shape the search
+ * client carries it in. Reproduced from a real `409`, so the test breaks if either one moves.
+ */
+const abortRejection = () => Object.assign(new Error('Response Error'), {
+  meta: {
+    statusCode: 409,
+    body: {
+      took: 63850,
+      timed_out: false,
+      total: 300,
+      updated: 250,
+      deleted: 0,
+      batches: 251,
+      version_conflicts: 1,
+      noops: 0,
+      failures: [{
+        index: 'opencti_stix_domain_objects-000001',
+        id: 'abc-123',
+        cause: { type: 'version_conflict_engine_exception', reason: 'version conflict' },
+        status: 409,
+      }],
+    },
+  },
+});
+
+describe('User merge bulk abort report', () => {
+  beforeEach(() => {
+    elRawUpdateByQuery.mockReset();
+  });
+
+  it('should say how many documents the update had already written', async () => {
+    elRawUpdateByQuery.mockRejectedValue(abortRejection());
+    await expect(userMergeBulkUpdate('scalar-user-references', ['index'], { query: {} }))
+      .rejects.toThrow('250 of 300 documents written');
+  });
+
+  it('should name the document the update stopped on', async () => {
+    elRawUpdateByQuery.mockRejectedValue(abortRejection());
+    await expect(userMergeBulkUpdate('scalar-user-references', ['index'], { query: {} }))
+      .rejects.toThrow('first on document abc-123 in opencti_stix_domain_objects-000001');
+  });
+
+  it('should attribute the conflict to a platform that kept writing', async () => {
+    elRawUpdateByQuery.mockRejectedValue(abortRejection());
+    await expect(userMergeBulkUpdate('scalar-user-references', ['index'], { query: {} }))
+      .rejects.toThrow('1 version conflict (the platform was not at rest)');
+  });
+
+  it('should carry the written count in the error data, for the journal to record', async () => {
+    elRawUpdateByQuery.mockRejectedValue(abortRejection());
+    const err = await userMergeBulkUpdate('scalar-user-references', ['index'], { query: {} }).catch((e) => e);
+    expect(err.extensions.data).toMatchObject({
+      label: 'scalar-user-references',
+      updated: 250,
+      total: 300,
+      version_conflicts: 1,
+      first_failure: { index: 'opencti_stix_domain_objects-000001', id: 'abc-123' },
+    });
+  });
+
+  it('should not invent counters when the rejection carries none', async () => {
+    // A refused connection wrote nothing. Reporting "0 of 0 documents written" would read as a
+    // measurement rather than as an absence of one.
+    elRawUpdateByQuery.mockRejectedValue(new Error('connection reset'));
+    const err = await userMergeBulkUpdate('label', ['index'], { query: {} }).catch((e) => e);
+    expect(err.message).toBe('User merge bulk update failed');
+    expect(err.extensions.data.updated).toBeUndefined();
+  });
+});
+
 const hit = (id: string, index = 'opencti_internal_objects') => ({
   _id: `${index}/${id}`,
   _index: index,

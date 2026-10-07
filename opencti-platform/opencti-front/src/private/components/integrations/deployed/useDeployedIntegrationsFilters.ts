@@ -17,6 +17,7 @@ export interface DeployedFilterState {
   types: string[];
   statuses: DeployedStatusFacet[];
   kinds: DeployedKindFacet[];
+  updateAvailable: boolean;
 }
 
 export interface DeployedSection {
@@ -51,7 +52,7 @@ const itemStatusFacet = (item: DeployedIntegrationItem): DeployedStatusFacet => 
   return item.status;
 };
 
-type FacetGroup = 'types' | 'statuses' | 'kinds';
+type FacetGroup = 'types' | 'statuses' | 'kinds' | 'updateAvailable';
 
 const matchesFilters = (
   item: DeployedIntegrationItem,
@@ -71,15 +72,20 @@ const matchesFilters = (
   if (skip !== 'kinds' && filters.kinds.length > 0 && !filters.kinds.includes(itemKindFacet(item))) {
     return false;
   }
+  if (skip !== 'updateAvailable' && filters.updateAvailable && !item.updateAvailable) {
+    return false;
+  }
   return true;
 };
 
 interface UseDeployedIntegrationsFiltersProps {
   items: DeployedIntegrationItem[];
   searchParams: URLSearchParams;
+  // Without connector update detection, a shared link must not restore an update filter nothing can match
+  isConnectorUpdateEnabled: boolean;
 }
 
-const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedIntegrationsFiltersProps) => {
+const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdateEnabled }: UseDeployedIntegrationsFiltersProps) => {
   // The legacy feed screens redirect to /integrations/deployed?kind=<feed>:
   // the kind is folded into the type facet as an initial selection.
   const legacyKind = searchParams.get('kind');
@@ -95,6 +101,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       .filter((s): s is DeployedStatusFacet => (DEPLOYED_STATUS_FACETS as string[]).includes(s)),
     kinds: parseListParam(searchParams.get('deployment'))
       .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
+    updateAvailable: isConnectorUpdateEnabled && searchParams.get('updateAvailable') === 'true',
   });
   const [sort, setSort] = useState<DeployedSortMode>(
     (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
@@ -106,6 +113,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
     if (filters.types.length > 0) params.set('type', [...filters.types].sort().join(','));
     if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
     if (filters.kinds.length > 0) params.set('deployment', [...filters.kinds].sort().join(','));
+    if (filters.updateAvailable) params.set('updateAvailable', 'true');
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();
@@ -143,6 +151,16 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       }
     }
     return counts;
+  }, [items, filters]);
+
+  const updateAvailableCount = useMemo(() => {
+    let count = 0;
+    for (const item of items) {
+      if (matchesFilters(item, filters, 'updateAvailable') && item.updateAvailable) {
+        count += 1;
+      }
+    }
+    return count;
   }, [items, filters]);
 
   const availableTypes = useMemo(() => {
@@ -191,10 +209,11 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
   const hasActiveFilters = filters.search !== ''
     || filters.types.length > 0
     || filters.statuses.length > 0
-    || filters.kinds.length > 0;
+    || filters.kinds.length > 0
+    || filters.updateAvailable;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], statuses: [], kinds: [] });
+    setFilters({ search: '', types: [], statuses: [], kinds: [], updateAvailable: false });
   };
 
   return {
@@ -211,6 +230,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       typeCounts,
       statusCounts,
       kindCounts,
+      updateAvailableCount,
     },
   };
 };

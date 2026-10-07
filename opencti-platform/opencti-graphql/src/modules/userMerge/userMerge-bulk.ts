@@ -1,5 +1,5 @@
 import { DatabaseError } from '../../config/errors';
-import { elBulk, elRawSearch, elRawUpdateByQuery } from '../../database/engine';
+import { elBulk, elRawSearch, elRawUpdateByQuery, elRefreshIndices } from '../../database/engine';
 import { logApp } from '../../config/conf';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
@@ -11,6 +11,60 @@ export interface UserMergeBulkResult {
   failures: unknown[];
   version_conflicts: number;
 }
+
+/** The counters a partial write leaves behind, read back from a rejected update. */
+export interface UserMergeBulkAbortReport {
+  message: string;
+  data: Record<string, unknown>;
+}
+
+interface AbortBody {
+  updated?: number;
+  total?: number;
+  version_conflicts?: number;
+  failures?: { index?: string; id?: string }[];
+}
+
+/**
+ * Turns a rejected update into what an operator needs to know.
+ *
+ * `_update_by_query` is not transactional: aborting on a conflict stops the pass, it does not undo
+ * the documents already written. Elasticsearch answers `409` with the counters of what it did get
+ * through, and the search client carries that body on the rejection. Reporting only that the call
+ * failed drops the one number that says how much of the platform was rewritten.
+ *
+ * Returns null when the rejection carries no such body — a timeout or a refused connection wrote
+ * nothing, and claiming `0 of 0 documents written` would replace one silence with one falsehood.
+ */
+export const userMergeBulkAbortReport = (label: string, err: unknown): UserMergeBulkAbortReport | null => {
+  const body = (err as { meta?: { body?: AbortBody } })?.meta?.body;
+  if (!body || typeof body.updated !== 'number') {
+    return null;
+  }
+  const updated = body.updated;
+  const total = body.total ?? 0;
+  const versionConflicts = body.version_conflicts ?? 0;
+  const failure = body.failures?.[0];
+  const parts = [`${updated} of ${total} documents written`];
+  if (versionConflicts > 0) {
+    // A version conflict means another process wrote to a document this pass had selected, which
+    // the merge's own precondition rules out. Naming it saves the operator the deduction.
+    parts.push(`${versionConflicts} version conflict${versionConflicts > 1 ? 's' : ''} (the platform was not at rest)`);
+  }
+  if (failure?.id) {
+    parts.push(`first on document ${failure.id} in ${failure.index}`);
+  }
+  return {
+    message: `User merge bulk update aborted on ${label}: ${parts.join(', ')}`,
+    data: {
+      label,
+      updated,
+      total,
+      version_conflicts: versionConflicts,
+      first_failure: failure ? { index: failure.index, id: failure.id } : undefined,
+    },
+  };
+};
 
 /**
  * Bulk update primitive for the merge engine.
@@ -41,6 +95,10 @@ export const userMergeBulkUpdate = async (
     wait_for_completion: true,
     body,
   }).catch((err) => {
+    const report = userMergeBulkAbortReport(label, err);
+    if (report) {
+      throw DatabaseError(report.message, { ...report.data, cause: err });
+    }
     throw DatabaseError('User merge bulk update failed', { label, cause: err });
   });
   const result: UserMergeBulkResult = {
@@ -142,11 +200,15 @@ export const userMergeScanForRewrite = async (
  *
  * Partial documents rather than whole ones: a merge rewrites one field and must not resurrect
  * the rest of a document read a moment earlier.
+ *
+ * `refresh: false` is for a caller writing page by page, which then refreshes once with
+ * {@link userMergeRefresh} rather than on every page.
  */
 export const userMergeBulkRewrite = async (
   context: AuthContext,
   label: string,
   updates: { id: string; index: string; doc: Record<string, unknown> }[],
+  opts: { refresh?: boolean } = {},
 ): Promise<number> => {
   if (updates.length === 0) {
     return 0;
@@ -155,11 +217,21 @@ export const userMergeBulkRewrite = async (
     { update: { _index: update.index, _id: update.id } },
     { doc: update.doc },
   ]);
-  await elBulk(context, { refresh: true, timeout: '60m', body }).catch((err: unknown) => {
+  await elBulk(context, { refresh: opts.refresh ?? true, timeout: '60m', body }).catch((err: unknown) => {
     throw DatabaseError('User merge bulk rewrite failed', { label, cause: err });
   });
   logApp.info('[MERGE_USERS] bulk rewrite done', { label, updated: updates.length });
   return updates.length;
+};
+
+/** Makes the unrefreshed writes of a page-by-page rewrite visible to the reads that follow. */
+export const userMergeRefresh = async (label: string, indices: string[]): Promise<void> => {
+  if (indices.length === 0) {
+    return;
+  }
+  await elRefreshIndices(indices).catch((err: unknown) => {
+    throw DatabaseError('User merge refresh failed', { label, indices, cause: err });
+  });
 };
 
 /** Deletes the documents the caller selected, each in the index it was read from. */

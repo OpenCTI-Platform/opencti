@@ -606,6 +606,10 @@ export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
 // entity types with a published WorkflowDefinition behave as before this change.
 export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 
+// Connector versions decoupled from the platform version (use isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)
+// to check activation): remote catalog synchronization and connector update detection.
+export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

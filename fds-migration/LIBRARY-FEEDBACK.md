@@ -2352,7 +2352,31 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
-## 64. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
+## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
+
+**Needed.** A row menu that ends with a Delete command shows that row in the
+danger colour, text and icon, after a separator. The Map configuration rows of
+*Settings > Parameters* (`SettingsMapSource.tsx`) are the first library `Menu` in
+the product to carry one.
+
+**Today.** `MenuItem` takes `startIcon`, `endIcon` and `selected`, and no tone.
+The button family already has one: `buttonVariants` and `iconButtonVariants`
+both expose `destructive` (entry 53), so the design language knows the role and
+only the menu row lacks it.
+
+**Workaround.** FDS-WORKAROUND #64 in `SettingsMapSource.tsx`: the Delete row
+sets its text colour inline from the theme's `palette.error.main`, and its icon
+takes MUI's `color="error"`.
+
+**Ask.** A `destructive` tone on `MenuItem`, covering the text, the icon slot and
+the hover state, named like the button family's.
+
+**Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
+the tone, remove its `style` colour, the icon's `color` prop and the marker, and
+confirm the row text and icon render in the library's destructive colour.
+
+
+## 65. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
 
 **Raised** by the Hunts screens (#18671): a hunt carries a Sigma rule (YAML) and
 native queries (KQL, SPL, EQL, ...) that analysts write and read back.
@@ -2376,7 +2400,7 @@ creation drawer and the Logic tab: the Sigma rule is highlighted, `Tab` indents,
 `Escape` then `Tab` reaches the next field.
 
 
-## 65. No inline alert or callout, so status banners stay on the MUI wrapper
+## 66. No inline alert or callout, so status banners stay on the MUI wrapper
 
 **Raised** by the Hunts screens (#18671): the hunt detail shows a banner when an
 agent or XTM Hub proposed the hunt, when the user works in a draft workspace, and
@@ -2407,7 +2431,7 @@ description is a paragraph, so the list of what a draft still needs is built fro
 phrasing content (`role="list"` / `role="listitem"` spans).
 
 
-## 66. `SelectContent` does not take its name from its trigger
+## 67. `SelectContent` does not take its name from its trigger
 
 **Raised** by `check-accessible-names.mjs` on the Hunts screens (#18671): four
 selects with a named `SelectTrigger` were flagged `listbox-unnamed`.
@@ -2427,7 +2451,7 @@ example `aria-labelledby` pointing at the trigger) when it has none of its own.
 `check-accessible-names.mjs` stays clean and a screen reader announces the
 listbox as "Period".
 
-## 67. No hero or first-use layout, so a first-use screen is assembled by hand
+## 68. No hero or first-use layout, so a first-use screen is assembled by hand
 
 **Raised** by the Hunts screens (#18671): Defense > Hunts opens on a first-use
 screen when the platform has no hunt yet (what a hunt does, then "Create a hunt",
