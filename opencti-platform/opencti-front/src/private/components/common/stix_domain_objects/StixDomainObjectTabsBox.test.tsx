@@ -20,6 +20,7 @@ const TABS_TEST_DATA = [
   ['Sightings', 'sightings', '/sightings'],
   ['Entities', 'entities', '/entities'],
   ['Observables', 'observables', '/observables'],
+  ['Relationships', 'relationships', '/relationships'],
   ['Data', 'files', '/files'],
   ['History', 'history', '/history'],
 ] as const;
