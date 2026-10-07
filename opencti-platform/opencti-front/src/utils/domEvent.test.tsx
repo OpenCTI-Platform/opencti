@@ -1,3 +1,6 @@
+/* The `<div onClick>` wrappers below are test fixtures standing in for clickable
+   rows/cards, to assert that clicks do or do not bubble up to them. */
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
