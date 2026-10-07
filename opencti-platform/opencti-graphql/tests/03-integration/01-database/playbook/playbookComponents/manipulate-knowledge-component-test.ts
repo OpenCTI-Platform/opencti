@@ -570,7 +570,21 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       }));
 
       expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledWith(expect.anything(), expect.anything(), THREAT_ACTOR_ID, TARGET_STATUS_ID, true);
+      expect(result.output_port).toEqual('out');
+      expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].workflow_id).toEqual(TARGET_STATUS_ID);
       expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should keep the bundle unmodified when the workflow engine rejects the status', async () => {
+      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: false, reason: 'not mapped' });
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: THREAT_ACTOR_ID,
+        bundleObjects: [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })],
+        configuration: { applyToElements: 'only-main', actions: [statusAction(true)] },
+      }));
+
+      expect(result.output_port).toEqual('unmodified');
+      expect(result.bundle.objects[0].extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
     });
 
     it('should patch the status in the bundle when transition actions are not requested', async () => {
