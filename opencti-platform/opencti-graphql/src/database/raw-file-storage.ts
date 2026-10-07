@@ -18,8 +18,9 @@ import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
-import { InfraError, UnsupportedError } from '../config/errors';
-import { APP_MODULE, isNetworkFailure, tagErrorModule } from '../config/error-origin';
+import { UnsupportedError } from '../config/errors';
+import { isNetworkFailure } from '../config/error-origin';
+import { defineDependencyClient } from './dependency-client';
 import type { AuthUser } from '../types/user';
 import { getRoleAssumerWithWebIdentity, setupAwsClient } from '../utils/awsSdk';
 
@@ -54,7 +55,8 @@ export const s3ConnectionConfig = () => ({
 let s3Client: S3Client; // Client reference
 
 // region error classification (RFC 0006)
-// The SDK already retried, so a failure left here is final for the caller.
+// The SDK already retried (standard retry mode), so a failure left here is final for the caller.
+// Unavailable: network failure, SDK timeout, a server fault (5xx) or throttling (429).
 const isS3Unavailable = (err: any) => {
   if (isNetworkFailure(err) || err?.name === 'TimeoutError') {
     return true;
@@ -63,26 +65,12 @@ const isS3Unavailable = (err: any) => {
   return err?.$fault === 'server' || (typeof status === 'number' && (status >= 500 || status === 429));
 };
 
-// - The service is unavailable or failing: a typed infra error, `origin: infra`.
-// - A bug in this client or in the SDK: tagged `core`, `origin: code`.
-// - The service rejected our request (4xx): untouched, the calling module owns it.
-export const classifyS3Error = (err: unknown, operation: string) => {
-  if (isS3Unavailable(err)) {
-    return InfraError('s3', 'File storage is unavailable', { operation, cause: err });
-  }
-  if (err instanceof TypeError) {
-    return tagErrorModule(err, APP_MODULE.CORE);
-  }
-  return err;
-};
-
-const s3Call = async <T>(operation: string, call: () => Promise<T>): Promise<T> => {
-  try {
-    return await call();
-  } catch (err) {
-    throw classifyS3Error(err, operation);
-  }
-};
+export const s3Dependency = defineDependencyClient({
+  dependency: 's3',
+  isUnavailable: isS3Unavailable,
+  unavailableMessage: 'File storage is unavailable',
+});
+const s3Call = s3Dependency.call;
 // endregion
 
 const buildCredentialProvider = async () => {
@@ -192,7 +180,7 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
       return null;
     }
     // Logged by the error boundary that catches it.
-    throw classifyS3Error(err, 'download');
+    throw s3Dependency.classify(err, { operation: 'download' });
   }
   if (!object || !object.Body) {
     throw UnsupportedError('File body is null or undefined', { fileId: id });
@@ -246,7 +234,7 @@ export const downloadFileRange = async (id: string, range?: string): Promise<Ran
       return { stream: Readable.from([]), contentLength: 0, totalSize, rangeNotSatisfiable: true };
     }
     // Logged by the error boundary that catches it.
-    throw classifyS3Error(err, 'download_range');
+    throw s3Dependency.classify(err, { operation: 'download_range' });
   }
 };
 
@@ -378,7 +366,7 @@ export const getFileMetadata = async (key: string): Promise<FileMetadata | null>
     if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
       return null;
     }
-    throw classifyS3Error(err, 'head');
+    throw s3Dependency.classify(err, { operation: 'head' });
   }
 };
 
