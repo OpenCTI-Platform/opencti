@@ -39,6 +39,7 @@ const renderIntegrations = ({
   feeds = {},
   forms = [],
   logosBySlug = new Map<string, string>(),
+  isConnectorUpdateEnabled = true,
 }: {
   connectors?: unknown[];
   states?: unknown[];
@@ -46,6 +47,7 @@ const renderIntegrations = ({
   feeds?: Record<string, unknown>;
   forms?: unknown[];
   logosBySlug?: Map<string, string>;
+  isConnectorUpdateEnabled?: boolean;
 } = {}) => {
   const props = {
     connectorsListData: { connectors },
@@ -53,6 +55,7 @@ const renderIntegrations = ({
     feedsData: { ...emptyFeeds, ...feeds },
     formsData: { forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) } },
     logosBySlug,
+    isConnectorUpdateEnabled,
   } as unknown as HookProps;
   return renderHook(() => useDeployedIntegrations(props));
 };
@@ -67,6 +70,7 @@ describe('useDeployedIntegrations', () => {
       feedsData: null,
       formsData: null,
       logosBySlug: new Map(),
+      isConnectorUpdateEnabled: true,
     }));
     expect(withNullData.current).toEqual([]);
   });
@@ -111,6 +115,25 @@ describe('useDeployedIntegrations', () => {
         states: [makeState({ active: false })],
       });
       expect(result.current[0].status).toBe('inactive');
+    });
+
+    it('keeps backend-computed update metadata on the deployed connector item', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector({ update_available: true, latest_compatible_version: '1.2.3', has_newer_incompatible_version: true })],
+      });
+      expect(result.current[0].updateAvailable).toBe(true);
+      expect(result.current[0].latestCompatibleVersion).toBe('1.2.3');
+      expect(result.current[0].hasNewerIncompatibleVersion).toBe(true);
+    });
+
+    it('ignores the update metadata when connector update detection is disabled', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector({ update_available: true, latest_compatible_version: '1.2.3', has_newer_incompatible_version: true })],
+        isConnectorUpdateEnabled: false,
+      });
+      expect(result.current[0].updateAvailable).toBe(false);
+      expect(result.current[0].latestCompatibleVersion).toBeNull();
+      expect(result.current[0].hasNewerIncompatibleVersion).toBe(false);
     });
 
     it('reports a processing status while a managed connector is transitioning', () => {
