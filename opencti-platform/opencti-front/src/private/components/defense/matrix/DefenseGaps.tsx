@@ -38,6 +38,7 @@ import {
   DEFENSE_ACTION_LABELS,
   DEFENSE_ACTIONS,
   DEFENSE_GAPS_EXPORT_MAX,
+  DEFENSE_LEVEL_VALIDATED,
   DEFENSE_LEVELS,
   type DefenseAction,
   defenseGapsExportFileName,
@@ -114,7 +115,10 @@ const DefenseGapsPage = ({ scope, setScope }: {
   const [orderMode, setOrderMode] = useState<'asc' | 'desc'>('desc');
   const [exporting, setExporting] = useState(false);
 
-  const levelOptions: LevelOption[] = DEFENSE_LEVELS.map((level) => ({ value: level, label: defenseLevelLabel(t_i18n, level) }));
+  // A validated technique is no gap: the levels offered are the ones below
+  const levelOptions: LevelOption[] = DEFENSE_LEVELS
+    .filter((level) => level < DEFENSE_LEVEL_VALIDATED)
+    .map((level) => ({ value: level, label: defenseLevelLabel(t_i18n, level) }));
   const actionOptions: ActionOption[] = DEFENSE_ACTIONS.map((action) => ({ value: action, label: t_i18n(DEFENSE_ACTION_LABELS[action]) }));
 
   // Without threat overlay no technique is used by threats: the filter would empty the backlog
