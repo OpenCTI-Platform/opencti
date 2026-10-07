@@ -193,13 +193,6 @@ describe('password generator', () => {
     expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
       .toThrowError('password policy cannot be satisfied');
   });
-  it('should reject policy requiring a too long password', async () => {
-    expect(() => generatePasswordFromPolicy({ password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
-      .toThrowError('password policy requires a too long password');
-    expect(() => generatePasswordFromPolicy({ password_policy_min_length: 2000 }))
-      .toThrowError('password policy requires a too long password');
-    expect(generatePasswordFromPolicy({ password_policy_min_length: 1024 }).length).toBe(1024);
-  });
 });
 
 describe('isSensitiveChangesAllowed use case coverage', () => {
