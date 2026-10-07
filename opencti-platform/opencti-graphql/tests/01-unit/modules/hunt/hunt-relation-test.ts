@@ -3,6 +3,7 @@ import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation } from '../
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { huntAddRelation, huntDeleteRelation } from '../../../../src/modules/hunt/hunt-domain';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
+import { huntStateLockKey, withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS } from '../../../../src/modules/hunt/hunt-types';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
@@ -23,6 +24,17 @@ vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => (
   findByIds: vi.fn(),
 }));
 
+// The platform lock, in memory: the actions of a key run one after the other
+const { held } = vi.hoisted(() => ({ held: new Map<string, Promise<unknown>>() }));
+vi.mock('../../../../src/modules/hunt/hunt-lock', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-lock')>(),
+  withHuntLock: vi.fn(async (key: string, action: () => Promise<unknown>) => {
+    const current = (held.get(key) ?? Promise.resolve()).then(action);
+    held.set(key, current.catch(() => undefined));
+    return current;
+  }),
+}));
+
 const indicatorHunt = (status: string, sources: string[]) => ({
   internal_id: 'hunt-1',
   entity_type: 'Hunt',
@@ -35,6 +47,7 @@ describe('Hunt relations changed through the API', () => {
   beforeEach(() => {
     vi.mocked(stixDomainObjectAddRelation).mockClear();
     vi.mocked(stixDomainObjectDeleteRelation).mockClear();
+    vi.mocked(stixDomainObjectDeleteRelation).mockImplementation((async () => ({ id: 'hunt-1' })) as never);
     vi.mocked(findByIds).mockImplementation((async (_context: unknown, _user: unknown, ids: string[]) => ids.map((id) => ({ internal_id: `internal-${id}` }))) as never);
   });
 
@@ -67,5 +80,22 @@ describe('Hunt relations changed through the API', () => {
     await huntDeleteRelation(testContext, ADMIN_USER, 'hunt-1', 'marking-definition--1', RELATION_OBJECT_MARKING);
     expect(storeLoadById).not.toHaveBeenCalled();
     expect(stixDomainObjectDeleteRelation).toHaveBeenCalledWith(testContext, ADMIN_USER, 'hunt-1', 'marking-definition--1', RELATION_OBJECT_MARKING);
+  });
+
+  it('should validate and write one change of a hunt at a time, so that concurrent removals never leave an active hunt without a source', async () => {
+    let sources = ['internal-indicator--1', 'internal-indicator--2'];
+    vi.mocked(storeLoadById).mockImplementation((async () => indicatorHunt('active', sources)) as never);
+    vi.mocked(stixDomainObjectDeleteRelation).mockImplementation((async (_context: unknown, _user: unknown, _huntId: string, toId: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      sources = sources.filter((id) => id !== `internal-${toId}`);
+      return { id: 'hunt-1' };
+    }) as never);
+    const removals = await Promise.allSettled([
+      huntDeleteRelation(testContext, ADMIN_USER, 'hunt-1', 'indicator--1', RELATION_HUNT_SOURCES),
+      huntDeleteRelation(testContext, ADMIN_USER, 'hunt-1', 'indicator--2', RELATION_HUNT_SOURCES),
+    ]);
+    expect(removals.map((removal) => removal.status)).toEqual(['fulfilled', 'rejected']);
+    expect(sources).toEqual(['internal-indicator--2']);
+    expect(withHuntLock).toHaveBeenCalledWith(huntStateLockKey('hunt-1'), expect.any(Function));
   });
 });

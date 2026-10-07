@@ -89,7 +89,7 @@ import {
 } from './hunt-agents';
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
-import { withHuntLock } from './hunt-lock';
+import { huntStateLockKey, withHuntLock } from './hunt-lock';
 import { filterEditableHunts } from './hunt-access';
 import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, markHuntRunsOrphaned, startHuntTranslationCheck } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
@@ -305,6 +305,15 @@ export const huntDelete = async (context: AuthContext, user: AuthUser, huntId: s
   return huntId;
 };
 
+/**
+ * Runs a change validated against the stored hunt under the state lock of the hunt: two changes validated against the
+ * same state (two removals of its last two sources, a removal and an activation) could together leave it invalid.
+ */
+const withHuntStateLock = async <T>(context: AuthContext, user: AuthUser, huntId: string, action: () => Promise<T>) => {
+  const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
+  return withHuntLock(huntStateLockKey(hunt?.internal_id ?? huntId), action);
+};
+
 export const huntEditField = async (
   context: AuthContext,
   user: AuthUser,
@@ -326,18 +335,20 @@ export const huntEditField = async (
   // one; inside a draft workspace the hunt only runs once the draft is validated, its logic is checked at the edit
   const activation = normalizedInput.find((editInput) => editInput.key === 'hunt_status');
   let activated = false;
-  if (activation && (activation.value ?? [])[0] === HUNT_STATUS_ACTIVE && !context.draft_context) {
-    const current = await findHuntById(context, user, huntId);
-    if (current && current.hunt_status !== HUNT_STATUS_ACTIVE) {
-      const readiness = await computeHuntReadiness(context, user, mergeHuntEdits(current, normalizedInput));
-      const unmet = readiness.items.find(isUnmetReadinessItem);
-      if (unmet) {
-        throw ValidationError(`This hunt cannot be activated: ${unmet.message}`, 'hunt_status');
+  const updated = await withHuntStateLock(context, user, huntId, async () => {
+    if (activation && (activation.value ?? [])[0] === HUNT_STATUS_ACTIVE && !context.draft_context) {
+      const current = await findHuntById(context, user, huntId);
+      if (current && current.hunt_status !== HUNT_STATUS_ACTIVE) {
+        const readiness = await computeHuntReadiness(context, user, mergeHuntEdits(current, normalizedInput));
+        const unmet = readiness.items.find(isUnmetReadinessItem);
+        if (unmet) {
+          throw ValidationError(`This hunt cannot be activated: ${unmet.message}`, 'hunt_status');
+        }
+        activated = true;
       }
-      activated = true;
     }
-  }
-  const updated = await stixDomainObjectEditField(context, user, huntId, normalizedInput, opts) as BasicStoreEntityHunt;
+    return stixDomainObjectEditField(context, user, huntId, normalizedInput, opts) as Promise<BasicStoreEntityHunt>;
+  });
   if (!context.draft_context && input.some((editInput) => ['hunt_schedule', 'hunt_status'].includes(editInput.key))) {
     await refreshNextRunAt(context, updated);
   }
@@ -373,14 +384,31 @@ const validateHuntRefChange = async (context: AuthContext, user: AuthUser, huntI
   } as HuntValidationState);
 };
 
+// A target, technique or source is validated and written under the state lock of the hunt; other references are not
+const withHuntRefChange = async <T>(
+  context: AuthContext,
+  user: AuthUser,
+  huntId: string,
+  change: { relationshipType: string; toId: string | null | undefined; add: boolean },
+  write: () => Promise<T>,
+) => {
+  if (!change.toId || !HUNT_REF_RELATIONS.includes(change.relationshipType)) {
+    return write();
+  }
+  return withHuntStateLock(context, user, huntId, async () => {
+    await validateHuntRefChange(context, user, huntId, change.relationshipType, change.toId, change.add);
+    return write();
+  });
+};
+
 export const huntAddRelation = async (context: AuthContext, user: AuthUser, huntId: string, input: StixRefRelationshipAddInput) => {
-  await validateHuntRefChange(context, user, huntId, input.relationship_type, input.toId, true);
-  return stixDomainObjectAddRelation(context, user, huntId, input);
+  const change = { relationshipType: input.relationship_type, toId: input.toId, add: true };
+  return withHuntRefChange(context, user, huntId, change, () => stixDomainObjectAddRelation(context, user, huntId, input));
 };
 
 export const huntDeleteRelation = async (context: AuthContext, user: AuthUser, huntId: string, toId: string, relationshipType: string) => {
-  await validateHuntRefChange(context, user, huntId, relationshipType, toId, false);
-  return stixDomainObjectDeleteRelation(context, user, huntId, toId, relationshipType);
+  const change = { relationshipType, toId, add: false };
+  return withHuntRefChange(context, user, huntId, change, () => stixDomainObjectDeleteRelation(context, user, huntId, toId, relationshipType));
 };
 // endregion
 
