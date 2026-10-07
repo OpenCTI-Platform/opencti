@@ -9,8 +9,8 @@ export interface ConnectorInfo {
   buffering: boolean;
   queue_threshold: number;
   queue_messages_size: number;
-  next_run_datetime: Date | string;
-  last_run_datetime: Date | string;
+  next_run_datetime?: Date | string | null;
+  last_run_datetime?: Date | string | null;
 }
 
 type ConnectorManagerContract = CatalogContractEntityFields;
@@ -28,6 +28,7 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity {
   connector_trigger_filters: string;
   connector_user_id: string;
   connector_info: ConnectorInfo;
+  connector_priority_group?: ConnectorPriorityGroup;
   playbook_compatible: boolean;
   xtm_one_intent: string | null;
   version: string | null;
@@ -41,39 +42,14 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity {
   // endregion
 }
 
-export interface StoreEntityConnector extends StoreEntity {
-  active: boolean;
-  auto: boolean;
-  auto_update: boolean;
-  enrichment_resolution: string;
-  only_contextual: boolean;
-  connector_type: string;
-  connector_scope: string;
-  connector_state: string;
-  connector_state_reset: boolean;
-  connector_trigger_filters: string;
-  connector_user_id: string;
-  connector_info: ConnectorInfo;
-  playbook_compatible: boolean;
-  xtm_one_intent: string | null;
-  version: string | null;
-  slug: string | null;
-  // region composer (set only on composer-managed connectors)
-  catalog_id?: string;
-  manager_contract_image?: string;
-  manager_contract_configuration?: ConnectorContractConfiguration[];
-  manager_contract?: ConnectorManagerContract;
-  manager_upgrade_strategy?: string;
-  // endregion
-}
+export interface StoreEntityConnector extends BasicStoreEntityConnector, StoreEntity {}
 
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
   public_key: string;
+  last_sync_execution?: Date | string;
 }
 
-export interface StoreEntityConnectorManager extends StoreEntity {
-  public_key: string;
-}
+export interface StoreEntityConnectorManager extends BasicStoreEntityConnectorManager, StoreEntity {}
 
 export interface ConnectorConfig {
   id: string;

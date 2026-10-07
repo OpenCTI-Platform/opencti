@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-import { ConnectorPriorityGroup } from '../../generated/graphql';
+import { ConnectorPriorityGroup, type EditInput, type Resolvers } from '../../generated/graphql';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorContract,
@@ -44,7 +42,7 @@ import { waitForManagedConnectorAutoUpgrade } from './managed-connector-auto-upg
 
 export const PLATFORM_VERSION = pjson.version;
 
-const connectorResolvers = {
+const connectorResolvers: Resolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
@@ -97,14 +95,14 @@ const connectorResolvers = {
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),
-    registerConnector: (_, { input }, context) => registerConnector(context, context.user, input),
+    registerConnector: (_, { input }, context) => registerConnector(context, context.user, input!),
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
-    updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
-    managedConnectorAdd: (_, { input }, context) => managedConnectorAdd(context, context.user, input),
-    managedConnectorEdit: (_, { input }, context) => managedConnectorEdit(context, context.user, input),
-    updateConnectorManagerStatus: (_, { input }, context) => updateConnectorManagerStatus(context, context.user, input),
-    registerConnectorsManager: (_, { input }, context) => registerConnectorsManager(context, context.user, input),
+    updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input as EditInput[]),
+    managedConnectorAdd: (_, { input }, context) => managedConnectorAdd(context, context.user, input!),
+    managedConnectorEdit: (_, { input }, context) => managedConnectorEdit(context, context.user, input!),
+    updateConnectorManagerStatus: (_, { input }, context) => updateConnectorManagerStatus(context, context.user, input!),
+    registerConnectorsManager: (_, { input }, context) => registerConnectorsManager(context, context.user, input!),
     updateConnectorRequestedStatus: (_, { input }, context) => updateConnectorRequestedStatus(context, context.user, input),
     updateConnectorCurrentStatus: (_, { input }, context) => updateConnectorCurrentStatus(context, context.user, input),
     updateConnectorLogs: (_, { input }, context) => connectorUpdateLogs(context, context.user, input),

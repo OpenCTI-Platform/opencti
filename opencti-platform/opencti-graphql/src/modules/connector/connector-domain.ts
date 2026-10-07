@@ -32,7 +32,8 @@ import { buildConnectorUpdateStatus, compareContractVersions, groupContractVersi
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, ConnectorInfo, StoreEntityConnector } from './connector-types';
+import type { BasicStoreEntityUser } from '../user/user-types';
+import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, ConnectorInfo, StoreEntityConnector, StoreEntityConnectorManager } from './connector-types';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -265,7 +266,7 @@ export const connectorsEnrichment = (instances: any[], scope: string, onlyAlive 
 export const connectorsForImport = (
   context: AuthContext,
   user: AuthUser,
-  scope: string,
+  scope: string | null = null,
   onlyAlive = false,
   onlyAuto = false,
   onlyContextual = false,
@@ -292,7 +293,7 @@ export const connectorsForAnalysis = (
 export const connectorsForNotification = async (
   context: AuthContext,
   user: AuthUser,
-  scope: string,
+  scope: string | null = null,
   onlyAlive = false,
   onlyAuto = false,
   onlyContextual = false,
@@ -442,8 +443,8 @@ export const updateConnectorWithConnectorInfo = async (
   context: AuthContext,
   user: AuthUser,
   connectorEntity: BasicStoreEntityConnector,
-  state: string,
-  connectorInfo: ConnectorInfo,
+  state: string | null | undefined,
+  connectorInfo: ConnectorInfo | null | undefined,
 ) => {
   // Patch the state if needed. Liveness is not tracked here but in redis (see redisSetConnectorHeartbeat)
   let connectorPatch;
@@ -470,7 +471,13 @@ export const updateConnectorWithConnectorInfo = async (
   return element;
 };
 
-export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
+export const pingConnector = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  state: string | null | undefined,
+  connectorInfo: ConnectorInfo | null | undefined,
+) => {
   const connectorEntity = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
   if (!connectorEntity) {
     throw FunctionalError('No connector found with the specified ID', { id });
@@ -521,7 +528,7 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
   const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
   const patch = { name: input.name, last_sync_execution: now(), public_key: input.public_key };
   if (manager) {
-    const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
+    const { element } = await patchAttribute<StoreEntityConnectorManager>(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
   }
   // Multiple connectors managers for one instance are not yet correctly supported.
@@ -536,7 +543,7 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
 
 export const updateConnectorManagerStatus = async (context: AuthContext, user: AuthUser, input: UpdateConnectorManagerStatusInput) => {
   const patch: any = { last_sync_execution: now() };
-  const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
+  const { element } = await patchAttribute<StoreEntityConnectorManager>(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
   return element;
 };
 
@@ -572,7 +579,7 @@ export const managedConnectorEdit = async (
     manager_contract_configuration: contractConfigurations,
   };
 
-  const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+  const { element } = await patchAttribute<StoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
 
   await publishUserAction({
     user,
@@ -898,7 +905,7 @@ export const queueDetails = async (connectorId: string) => {
 
 export const connectorUser = async (context: AuthContext, user: AuthUser, userId: string) => {
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const platformUsers = await getEntitiesMapFromCache<BasicStoreEntityUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     return platformUsers.get(userId);
   }
   return null;
