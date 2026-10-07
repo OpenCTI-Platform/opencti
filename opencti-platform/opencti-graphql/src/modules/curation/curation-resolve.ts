@@ -2,7 +2,9 @@ import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { FunctionalError } from '../../config/errors';
-import { internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { internalFindByIds, pageEntitiesConnection, topEntitiesList } from '../../database/middleware-loader';
+import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { ALIAS_FILTER } from '../../utils/filtering/filtering-constants';
 import { getInputIds } from '../../schema/identifier';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -66,6 +68,13 @@ export const pickUnambiguous = (resolutions: CurationResolution[], threshold: nu
   return top.length === 1 ? top[0] : null;
 };
 
+// Every entity carrying the name as an alias, not only those the capped fuzzy search would hold: an alias decides alone.
+const aliasFilters = (name: string) => ({
+  mode: FilterMode.And,
+  filters: [{ key: [ALIAS_FILTER], values: [name], operator: FilterOperator.Eq, mode: FilterMode.Or }],
+  filterGroups: [],
+});
+
 const exactResolutions = async (context: AuthContext, user: AuthUser, name: string, types: string[]): Promise<CurationResolution[]> => {
   const ids = R.uniq(types.flatMap((type) => {
     try {
@@ -74,8 +83,11 @@ const exactResolutions = async (context: AuthContext, user: AuthUser, name: stri
       return [];
     }
   }));
-  if (ids.length === 0) return [];
-  const found = await internalFindByIds(context, user, ids, { type: types }) as BasicStoreEntity[];
+  const [byIds, byAliases] = await Promise.all([
+    ids.length > 0 ? internalFindByIds(context, user, ids, { type: types }) as Promise<BasicStoreEntity[]> : [],
+    topEntitiesList<BasicStoreEntity>(context, user, types, { filters: aliasFilters(name), first: SEARCH_CANDIDATES }),
+  ]);
+  const found = R.uniqBy((entity) => entity.internal_id, [...byIds, ...byAliases]);
   const lowered = name.trim().toLowerCase();
   return found.flatMap((entity) => {
     const matched = namesOf(entity).find((value) => value.trim().toLowerCase() === lowered);

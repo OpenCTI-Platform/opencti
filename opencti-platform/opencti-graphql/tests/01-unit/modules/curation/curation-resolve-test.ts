@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { curationResolve } from '../../../../src/modules/curation/curation-resolve';
-import { internalFindByIds, pageEntitiesConnection } from '../../../../src/database/middleware-loader';
+import { internalFindByIds, pageEntitiesConnection, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { addCurationResolveCount } from '../../../../src/manager/telemetryManager';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -10,6 +10,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   internalFindByIds: vi.fn(),
   pageEntitiesConnection: vi.fn(),
+  topEntitiesList: vi.fn(async () => []),
 }));
 vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/manager/telemetryManager')>()),
@@ -57,6 +58,28 @@ describe('resolving an importer name', () => {
     const resolution = await curationResolve(context, analyst, 'Shadow Lynx', ENTITY_TYPE_INTRUSION_SET);
     expect(resolution).toEqual(expect.objectContaining({ entity_id: 'set-a', match_type: 'canonical' }));
     expect(addCurationResolveCount).toHaveBeenCalledWith(true);
+  });
+
+  it('binds an alias no identifier carries as an alias, looked up in the aliases of the requested type', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValue([] as never);
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([intrusionSet('set-a', 'Graceful Spider', ['TA505'])] as never);
+    const resolution = await curationResolve(context, analyst, 'ta505', ENTITY_TYPE_INTRUSION_SET);
+    expect(resolution).toEqual(expect.objectContaining({ entity_id: 'set-a', match_type: 'alias', score: 0.98, matched_value: 'TA505' }));
+    expect(topEntitiesList).toHaveBeenCalledWith(context, analyst, [ENTITY_TYPE_INTRUSION_SET], expect.objectContaining({
+      filters: expect.objectContaining({ filters: [expect.objectContaining({ key: ['alias'], values: ['ta505'] })] }),
+    }));
+    expect(pageEntitiesConnection).not.toHaveBeenCalled();
+  });
+
+  it('binds nothing when two entities carry the name as an alias, whatever the fuzzy search would hold', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValue([] as never);
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([
+      intrusionSet('set-a', 'Graceful Spider', ['TA505']),
+      intrusionSet('set-b', 'Evil Corp', ['TA505']),
+    ] as never);
+    vi.mocked(pageEntitiesConnection).mockResolvedValue(page(intrusionSet('set-a', 'Graceful Spider', ['TA505'])) as never);
+    await expect(curationResolve(context, analyst, 'TA505', ENTITY_TYPE_INTRUSION_SET)).resolves.toBeNull();
+    expect(pageEntitiesConnection).not.toHaveBeenCalled();
   });
 
   it('leaves an entity found only through its other STIX identifiers to the other match types', async () => {
