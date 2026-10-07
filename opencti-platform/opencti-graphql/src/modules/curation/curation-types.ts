@@ -187,6 +187,8 @@ export interface AppliedPatchOperation {
 export interface AppliedPatch {
   operations: AppliedPatchOperation[];
   created_ids?: string[];
+  // The version (`updated_at`) of each element the apply created: the revert deletes only an element still at that version.
+  created_versions?: Record<string, string>;
   deleted_ids?: string[];
   // The delete operation each deletion created, by deleted id: the revert restores that one and never a later one.
   delete_operation_ids?: Record<string, string>;

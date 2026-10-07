@@ -211,6 +211,7 @@ const mergePatches = (first: AppliedPatch | null, second: AppliedPatch | null): 
   return {
     operations: [...first.operations, ...second.operations],
     created_ids: R.uniq([...(first.created_ids ?? []), ...(second.created_ids ?? [])]),
+    created_versions: { ...(first.created_versions ?? {}), ...(second.created_versions ?? {}) },
     deleted_ids: R.uniq([...(first.deleted_ids ?? []), ...(second.deleted_ids ?? [])]),
     delete_operation_ids: { ...(first.delete_operation_ids ?? {}), ...(second.delete_operation_ids ?? {}) },
     applied_at: second.applied_at,

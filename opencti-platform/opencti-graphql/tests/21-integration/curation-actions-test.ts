@@ -912,8 +912,10 @@ describe('Knowledge curation actions', () => {
     const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id } });
     expect(accepted.data?.curationProposalAccept.proposal_status).toBe('accepted');
     expect(accepted.data?.curationProposalAccept.applied_patch).toBeTruthy();
+    expect(await storeLoadById(testContext, ADMIN_USER, procedureNoteStixId(id), ENTITY_TYPE_CONTAINER_NOTE)).toBeTruthy();
     const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id } });
     expect(reverted.data?.curationProposalRevert.proposal_status).toBe('reverted');
+    expect(await storeLoadById(testContext, ADMIN_USER, procedureNoteStixId(id), ENTITY_TYPE_CONTAINER_NOTE)).toBeFalsy();
   });
 
   it('should keep the procedure of a relationship shared with an organization in a note shared with it only', async () => {

@@ -11,7 +11,7 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
   storeLoadByIdWithRefs: vi.fn(),
   updateAttribute: vi.fn(async () => ({ element: {} })),
-  createEntity: vi.fn(async () => ({ internal_id: 'note-id' })),
+  createEntity: vi.fn(async () => ({ internal_id: 'note-id', updated_at: '2026-10-01T10:00:00.000Z' })),
 }));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
@@ -198,6 +198,7 @@ describe('curation actions under the entity lock', () => {
     const result = await executeProposalAction(context, user, preserve, settings);
     expect(vi.mocked(createEntity).mock.calls[0][2]).toEqual(expect.objectContaining({ stix_id: procedureNoteStixId('proposal-id') }));
     expect(result.appliedPatch?.created_ids).toEqual(['note-id']);
+    expect(result.appliedPatch?.created_versions).toEqual({ 'note-id': '2026-10-01T10:00:00.000Z' });
     expect(procedureNoteStixId('proposal-id')).not.toEqual(procedureNoteStixId('other-proposal-id'));
   });
 

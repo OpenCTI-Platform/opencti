@@ -536,7 +536,9 @@ const applyPreserveProcedure = async (
   // The note has a stable identifier: an attempt run again finds it instead of creating another one.
   if (opts.onBeforeChange) await opts.onBeforeChange({ appliedPatch: null, mergeRecordId: null });
   const note = await createEntity(context, user, { ...noteInput, stix_id: procedureNoteStixId(proposal.internal_id) }, ENTITY_TYPE_CONTAINER_NOTE);
-  return { appliedPatch: { operations: [], created_ids: [note.internal_id ?? note.id], applied_at: now() }, mergeRecordId: null };
+  const noteId = note.internal_id ?? note.id;
+  const createdVersions = { [noteId]: new Date(note.updated_at).toISOString() };
+  return { appliedPatch: { operations: [], created_ids: [noteId], created_versions: createdVersions, applied_at: now() }, mergeRecordId: null };
 };
 
 const normalizeFieldValue = (attributeType: string, value: unknown): unknown => {
@@ -733,10 +735,27 @@ export const revertAppliedPatch = async (context: AuthContext, user: AuthUser, p
   }
   const createdIds = patch.created_ids ?? [];
   for (let index = 0; index < createdIds.length; index += 1) {
-    const [created] = await internalFindByIds(context, user, [createdIds[index]], { baseData: true }) as BasicStoreBase[];
-    if (created) {
-      await deleteElementById(context, user, created.internal_id, created.entity_type);
-      report.reverted_operations += 1;
+    const [found] = await internalFindByIds(context, user, [createdIds[index]]) as BasicStoreBase[];
+    if (found) {
+      // An update locks every identifier of the element and its deletion only the internal one: holding the others keeps
+      // any edit out between the check and the deletion.
+      const lockIds = getInstanceIds(found, true);
+      let lock;
+      try {
+        lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+        const [created] = await internalFindByIds(context, user, [createdIds[index]]) as BasicStoreBase[];
+        const version = patch.created_versions?.[createdIds[index]];
+        if (created && version && new Date(created.updated_at).getTime() !== Date.parse(version)) {
+          report.skipped_operations.push({ element_id: created.internal_id, key: created.entity_type, reason: 'changed since the apply' });
+        } else if (created) {
+          await deleteElementById(context, user, created.internal_id, created.entity_type);
+          report.reverted_operations += 1;
+        }
+      } finally {
+        if (lock) {
+          await lock.unlock();
+        }
+      }
     }
   }
   const deletedIds = patch.deleted_ids ?? [];
