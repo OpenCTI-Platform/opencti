@@ -458,7 +458,13 @@ describe('Hunt utils', () => {
     expect(isHuntableEntityPath('/dashboard/analyses/groupings/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/events/incidents/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/cases/incidents/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/threats/campaigns/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/threats/threat_actors_group/abc/knowledge')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/threats/threat_actors_individual/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/arsenal/tools/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/observations/observables/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets')).toBe(false);
+    expect(isHuntableEntityPath('/dashboard/threats/campaigns')).toBe(false);
     expect(isHuntableEntityPath('/dashboard/defense/hunts/abc')).toBe(false);
   });
 

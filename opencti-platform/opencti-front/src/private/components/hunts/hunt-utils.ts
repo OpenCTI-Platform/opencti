@@ -1182,19 +1182,28 @@ export const buildHuntSummary = (input: HuntSummaryInput, t_i18n: HuntTranslate)
 // endregion
 
 // region entity pages offering hunts
+// The pages whose header offers Hunt this
 const HUNTABLE_ENTITY_PATHS: RegExp[] = [
   /^\/dashboard\/techniques\/attack_patterns\/[^/]+/,
   /^\/dashboard\/threats\/intrusion_sets\/[^/]+/,
+  /^\/dashboard\/threats\/campaigns\/[^/]+/,
+  /^\/dashboard\/threats\/threat_actors_group\/[^/]+/,
+  /^\/dashboard\/threats\/threat_actors_individual\/[^/]+/,
   /^\/dashboard\/arsenal\/malwares\/[^/]+/,
+  /^\/dashboard\/arsenal\/tools\/[^/]+/,
   /^\/dashboard\/analyses\/reports\/[^/]+/,
   /^\/dashboard\/observations\/indicators\/[^/]+/,
+  /^\/dashboard\/observations\/observables\/[^/]+/,
   /^\/dashboard\/analyses\/groupings\/[^/]+/,
   /^\/dashboard\/events\/incidents\/[^/]+/,
   /^\/dashboard\/cases\/incidents\/[^/]+/,
   /^\/dashboard\/pirs\/[^/]+/,
 ];
 
-/** Entity pages (Attack Pattern, Intrusion Set, Malware, Report, Indicator, Grouping, Incident, Case-Incident, PIR) where a hunt can be planned. */
+/**
+ * Entity pages where a hunt can be planned: Attack Pattern, Intrusion Set, Campaign, Threat Actor (group and individual),
+ * Malware, Tool, Report, Indicator, Observable, Grouping, Incident, Case-Incident and PIR.
+ */
 export const isHuntableEntityPath = (pathname: string) => HUNTABLE_ENTITY_PATHS.some((pattern) => pattern.test(pathname));
 // endregion
 
