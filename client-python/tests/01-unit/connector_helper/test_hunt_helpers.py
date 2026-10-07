@@ -101,6 +101,17 @@ class TestHuntHelpers(TestCase):
         with self.assertRaises(ValueError):
             callback(_event(mode="check", connection_check={}))
 
+    def test_listen_hunt_raises_the_connection_test_error_when_its_report_fails(self):
+        helper = _helper()
+        helper.api.hunt_run.report_connection_check.side_effect = ConnectionError(
+            "OpenCTI unreachable"
+        )
+        callback = _hunt_callback(helper, MagicMock(side_effect=RuntimeError("down")))
+        event = _event(mode="check", hunt_run=None, connection_check={"id": "check-1"})
+        with self.assertRaisesRegex(RuntimeError, "down"):
+            callback(event)
+        helper.connector_logger.warning.assert_called_once()
+
     def test_register_hunt_platform_declares_indicator_lookups(self):
         helper = _helper()
         helper.register_hunt_platform(

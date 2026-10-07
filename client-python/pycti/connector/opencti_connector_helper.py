@@ -3412,7 +3412,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         message (hunt, time window, limits, security platform). A connection
         test (``mode`` ``check``) has no run: the callback answers it with
         :meth:`report_hunt_connection_check`, and an error it raises is
-        reported as the one failed check.
+        reported as the one failed check, then raised again (a report that
+        fails is logged, never raised in its place).
 
         :param message_callback: function processing a hunt run event
         :type message_callback: Callable[[Dict], str]
@@ -3437,16 +3438,23 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     return message_callback(event_data)
                 except Exception as err:
                     if getattr(err, "hunt_run_reported", False) is not True:
-                        self.report_hunt_connection_check(
-                            check_id,
-                            [
-                                {
-                                    "name": "Connection test",
-                                    "ok": False,
-                                    "message": str(err),
-                                }
-                            ],
-                        )
+                        try:
+                            self.report_hunt_connection_check(
+                                check_id,
+                                [
+                                    {
+                                        "name": "Connection test",
+                                        "ok": False,
+                                        "message": str(err),
+                                    }
+                                ],
+                            )
+                        except Exception as error:  # pylint: disable=broad-except
+                            # The test error is raised, never the one of its report
+                            self.connector_logger.warning(
+                                "Hunt connection test failure not reported",
+                                {"check_id": check_id, "reason": str(error)},
+                            )
                     raise
             run_id = (event_data.get("hunt_run") or {}).get("id")
             if not run_id:
