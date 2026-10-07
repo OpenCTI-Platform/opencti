@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import conf, { BUS_TOPICS, booleanConf, logApp } from '../../config/conf';
-import { DatabaseError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { DatabaseError, FUNCTIONAL_ERROR, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreObject, StoreObject, StoreRelation } from '../../types/store';
 import type { MergeCommitInput, MergePreparationInput, MergeRecorder } from '../../database/merge-hooks';
@@ -583,9 +583,19 @@ const describeAttributeFor = (entityType: string) => (key: string) => {
   return attribute ? { multiple: isMultipleAttribute(entityType, key) } : undefined;
 };
 
+// Read as the system user, a file is refused only when it is not found: any other failure is no proof that it is gone.
+const findMergedFile = async (context: AuthContext, fileId: string) => {
+  try {
+    return await loadFile(context, SYSTEM_USER, fileId);
+  } catch (error) {
+    if ((error as { extensions?: { code?: unknown } }).extensions?.code === FUNCTIONAL_ERROR) return undefined;
+    throw error;
+  }
+};
+
 /**
- * A file that cannot be copied back stops the unmerge, after the references of the files already moved are written:
- * the sources stay pending, and resuming the unmerge copies that file again instead of leaving it on the target.
+ * A file that cannot be read or copied back stops the unmerge, after the references of the files already moved are
+ * written: the sources stay pending, and resuming the unmerge copies that file again instead of leaving it on the target.
  */
 export const moveFilesBack = async (
   context: AuthContext,
@@ -602,10 +612,18 @@ export const moveFilesBack = async (
   for (let index = 0; index < movedFileIds.length; index += 1) {
     const fileId = movedFileIds[index];
     const restoredId = fileId.replace(entityFilesPath(target), entityFilesPath(restored));
-    const document = await loadFile(context, SYSTEM_USER, fileId, { dontThrow: true });
+    let document;
+    let alreadyRestored;
+    try {
+      document = await findMergedFile(context, fileId);
+      alreadyRestored = document ? undefined : await findMergedFile(context, restoredId);
+    } catch (error) {
+      logApp.warn('[CURATION] Merged file cannot be read, the unmerge stops', { cause: error, fileId });
+      failedFileId = fileId;
+      break;
+    }
     if (!document) {
       // Already moved back by an interrupted unmerge: only the references are missing.
-      const alreadyRestored = await loadFile(context, SYSTEM_USER, restoredId, { dontThrow: true });
       if (alreadyRestored) {
         restoredFiles.push(storeFileConverter(user, alreadyRestored as any));
         movedSet.add(fileId);

@@ -4,6 +4,7 @@ import { copyFile, deleteFile, loadFile } from '../../../../src/database/file-st
 import { patchAttribute } from '../../../../src/database/middleware';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import type { StoreObject } from '../../../../src/types/store';
+import { DatabaseError, FunctionalError } from '../../../../src/config/errors';
 
 vi.mock('../../../../src/database/file-storage', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/file-storage')>()),
@@ -69,5 +70,27 @@ describe('curation unmerge of the merged files', () => {
     expect(copyFile).toHaveBeenCalledWith(context, expect.objectContaining({ sourceId: SECOND, targetId: restoredPath(SECOND) }));
     expect(filesPatchedOn('source-id')).toEqual([restoredPath(FIRST), restoredPath(SECOND)]);
     expect(filesPatchedOn('target-id')).toEqual([OWN]);
+  });
+
+  it('stops the unmerge on a file it cannot read, which is no proof that the file is gone', async () => {
+    vi.mocked(loadFile).mockImplementation(async (_context, _user, id: string) => {
+      if (id === SECOND) throw DatabaseError('Search engine unavailable');
+      return document(id) as never;
+    });
+    await expect(moveFilesBack(context, user, target, restored, [FIRST, SECOND], ['lock-id']))
+      .rejects.toThrow('A merged file cannot be moved back to the restored entity');
+    expect(copyFile).toHaveBeenCalledTimes(1);
+    expect(filesPatchedOn('source-id')).toEqual([restoredPath(FIRST)]);
+    expect(filesPatchedOn('target-id')).toEqual([SECOND, OWN]);
+  });
+
+  it('goes on past a file that is not found, on the target or on the restored entity', async () => {
+    vi.mocked(loadFile).mockImplementation(async (_context, _user, id: string) => {
+      if (id === FIRST || id === restoredPath(FIRST)) throw FunctionalError('File not found or restricted', { filename: id });
+      return document(id) as never;
+    });
+    await moveFilesBack(context, user, target, restored, [FIRST, SECOND], ['lock-id']);
+    expect(copyFile).toHaveBeenCalledTimes(1);
+    expect(filesPatchedOn('source-id')).toEqual([restoredPath(SECOND)]);
   });
 });
