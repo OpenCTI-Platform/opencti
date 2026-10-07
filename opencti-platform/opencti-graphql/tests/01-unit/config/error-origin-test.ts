@@ -5,8 +5,11 @@ import {
   classifyErrorOrigin,
   isNetworkFailure,
   levelForOrigin,
+  resolveErrorContext,
   resolveErrorModule,
+  runWithErrorContext,
   tagErrorModule,
+  withErrorContext,
   withModuleApi,
   withModuleTag,
 } from '../../../src/config/error-origin';
@@ -114,6 +117,69 @@ describe('error module', () => {
     expect(api.sum(1, 2)).toBe(3);
     await expect(api.sumAsync(1, 2)).resolves.toBe(3);
     expect(api.LIMIT).toBe(10);
+  });
+});
+
+describe('error context', () => {
+  it('should keep the class, message and origin of the error', () => {
+    const rejection = FunctionalError('bad input');
+    const contextual = withErrorContext(rejection, { catalogId: 'c1' });
+    expect(contextual).toBe(rejection);
+    expect(contextual.message).toBe('bad input');
+    expect(classifyErrorOrigin(contextual)).toBe('input');
+    expect(resolveErrorContext(contextual)).toEqual({ catalogId: 'c1' });
+  });
+
+  it('should keep a key set closer to the failure', () => {
+    const e = withErrorContext(new Error('raised'), { contractId: 'inner' });
+    withErrorContext(e, { contractId: 'outer', catalogId: 'c1' });
+    expect(resolveErrorContext(e)).toEqual({ contractId: 'inner', catalogId: 'c1' });
+  });
+
+  it('should merge the context of the whole chain, the innermost winning', () => {
+    const inner = withErrorContext(InfraError('elasticsearch'), { index: 'opencti_internal_objects', catalogId: 'inner' });
+    const outer = withErrorContext(UnknownError('wrapped', { cause: inner }), { catalogId: 'outer', step: 'upsert' });
+    expect(resolveErrorContext(asResolverError(outer))).toEqual({ index: 'opencti_internal_objects', catalogId: 'inner', step: 'upsert' });
+  });
+
+  it('should not send the context to GraphQL clients', () => {
+    const e = withErrorContext(FunctionalError('bad input'), { catalogId: 'c1' });
+    expect(JSON.stringify(e.toJSON())).not.toContain('c1');
+  });
+
+  it('should add context to what a call rejects with', async () => {
+    const caught = await runWithErrorContext({ catalogId: 'c1' }, async () => {
+      throw new Error('write failed');
+    }).catch((e: unknown) => e);
+    expect(resolveErrorContext(caught)).toEqual({ catalogId: 'c1' });
+  });
+
+  it('should leave an error without context undefined', () => {
+    expect(resolveErrorContext(new Error('plain'))).toBeUndefined();
+  });
+
+  it('should record the public API function an error left through', async () => {
+    const api = withModuleApi('catalog', {
+      findContract: async () => {
+        throw new Error('not reachable');
+      },
+    });
+    const caught = await api.findContract().catch((e: unknown) => e);
+    expect(resolveErrorContext(caught)).toEqual({ api: 'catalog.findContract' });
+  });
+
+  it('should keep the innermost API function when an error crosses several modules', async () => {
+    const connectorApi = withModuleApi('connector', {
+      upgrade: async () => {
+        throw new Error('raised in connector');
+      },
+    });
+    const catalogApi = withModuleApi('catalog', {
+      sync: async () => connectorApi.upgrade(),
+    });
+    const caught = await catalogApi.sync().catch((e: unknown) => e);
+    expect(resolveErrorContext(caught)).toEqual({ api: 'connector.upgrade' });
+    expect(resolveErrorModule(caught)).toBe('connector');
   });
 });
 

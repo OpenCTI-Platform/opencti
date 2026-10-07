@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { logApp, prepareLogMetadata } from '../../../src/config/conf';
 import { FunctionalError, InfraError, UnknownError } from '../../../src/config/errors';
-import { tagErrorModule } from '../../../src/config/error-origin';
+import { tagErrorModule, withErrorContext } from '../../../src/config/error-origin';
 import { createModuleLogger, logBoundaryError } from '../../../src/config/module-logger';
 
 describe('module logger', () => {
@@ -52,6 +52,13 @@ describe('boundary logger', () => {
     const log = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
     logBoundaryError('Invalid request', FunctionalError('bad input'), { entryModule: 'catalog' });
     expect(log).toHaveBeenCalledWith('Invalid request', expect.objectContaining({ origin: 'input', module: 'catalog' }));
+  });
+
+  it('should log the context the error picked up under error_context', () => {
+    const log = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    const error = withErrorContext(new TypeError('x is undefined'), { catalogId: 'c1' });
+    logBoundaryError('Sync failed', error, { entryModule: 'catalog' });
+    expect(log).toHaveBeenCalledWith('Sync failed', expect.objectContaining({ error_context: { catalogId: 'c1' }, origin: 'code' }));
   });
 
   // The output format: what reaches the transports.

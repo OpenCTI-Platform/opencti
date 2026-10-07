@@ -1,5 +1,5 @@
 import { logApp } from './conf';
-import { type AppModule, buildErrorScope, type ErrorScope, levelForOrigin } from './error-origin';
+import { type AppModule, buildErrorScope, type ErrorScope, levelForOrigin, resolveErrorContext } from './error-origin';
 
 type LogMeta = Record<string, unknown>;
 
@@ -17,12 +17,19 @@ export type ModuleLogger = ReturnType<typeof createModuleLogger>;
 // manager run loops, stream and queue consumers.
 // `origin`, `module` and the level are derived from the error, not chosen by the caller:
 // ERROR for a code fault, WARN for a dependency failure or rejected input (RFC 0006 §4.6, option A).
+// The context the error picked up on its way (`withErrorContext`) goes under `error_context`.
 export const logBoundaryError = (
   message: string,
   error: unknown,
   { entryModule, ...meta }: LogMeta & { entryModule?: AppModule } = {},
 ): ErrorScope => {
   const scope = buildErrorScope(error, entryModule);
-  logApp[levelForOrigin(scope.origin)](message, { ...meta, ...scope, cause: error });
+  const errorContext = resolveErrorContext(error);
+  logApp[levelForOrigin(scope.origin)](message, {
+    ...meta,
+    ...scope,
+    ...(errorContext ? { error_context: errorContext } : {}),
+    cause: error,
+  });
   return scope;
 };
