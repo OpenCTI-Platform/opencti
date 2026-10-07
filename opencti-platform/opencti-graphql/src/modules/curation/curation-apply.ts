@@ -227,12 +227,11 @@ const applyAliasDecision = async (context: AuthContext, user: AuthUser, proposal
   const target = await loadSubject(context, user, targetId);
   const others = proposal.subject_names.filter((_, index) => proposal.subject_ids[index] !== targetId);
   // An alias names a single entity: the names of subjects that still exist cannot become aliases of another one.
+  // The owners are read as the system user, so the error never names them: the caller may not be allowed to read them.
   const owners = await internalFindByIds(context, SYSTEM_USER, generateAliasesId(others, target), { type: target.entity_type, baseData: true }) as BasicStoreBase[];
-  const ownerIds = R.uniq(owners.map((owner) => owner.internal_id).filter((id) => id !== target.internal_id));
-  if (ownerIds.length > 0) {
+  if (owners.some((owner) => owner.internal_id !== target.internal_id)) {
     throw FunctionalError('These names still belong to other entities and cannot become aliases: merge the entities, or reject the proposal to keep them apart', {
       proposal_id: proposal.internal_id,
-      existing_ids: ownerIds,
     });
   }
   return addAliases(context, user, target, others, opts);

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import conf, { BUS_TOPICS, booleanConf, logApp } from '../../config/conf';
-import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { DatabaseError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreObject, StoreObject, StoreRelation } from '../../types/store';
 import type { MergeCommitInput, MergePreparationInput, MergeRecorder } from '../../database/merge-hooks';
@@ -561,7 +561,11 @@ const describeAttributeFor = (entityType: string) => (key: string) => {
   return attribute ? { multiple: isMultipleAttribute(entityType, key) } : undefined;
 };
 
-const moveFilesBack = async (
+/**
+ * A file that cannot be copied back stops the unmerge, after the references of the files already moved are written:
+ * the sources stay pending, and resuming the unmerge copies that file again instead of leaving it on the target.
+ */
+export const moveFilesBack = async (
   context: AuthContext,
   user: AuthUser,
   target: StoreObject,
@@ -572,6 +576,7 @@ const moveFilesBack = async (
   if (movedFileIds.length === 0) return;
   const restoredFiles = [];
   const movedSet = new Set<string>();
+  let failedFileId: string | null = null;
   for (let index = 0; index < movedFileIds.length; index += 1) {
     const fileId = movedFileIds[index];
     const restoredId = fileId.replace(entityFilesPath(target), entityFilesPath(restored));
@@ -588,11 +593,13 @@ const moveFilesBack = async (
       continue;
     }
     const copied = await copyFile(context, { sourceId: fileId, targetId: restoredId, sourceDocument: document as any, targetEntityId: restored.internal_id });
-    if (copied) {
-      restoredFiles.push(storeFileConverter(user, copied));
-      await deleteFile(context, SYSTEM_USER, fileId);
-      movedSet.add(fileId);
+    if (!copied) {
+      failedFileId = fileId;
+      break;
     }
+    restoredFiles.push(storeFileConverter(user, copied));
+    await deleteFile(context, SYSTEM_USER, fileId);
+    movedSet.add(fileId);
   }
   if (restoredFiles.length > 0) {
     const restoredFileIds = new Set(restoredFiles.map((file) => file.id));
@@ -600,6 +607,9 @@ const moveFilesBack = async (
     await patchAttribute(context, SYSTEM_USER, restored.internal_id, restored.entity_type, { x_opencti_files: [...keptOnRestored, ...restoredFiles] }, { locks });
     const remaining = (target.x_opencti_files ?? []).filter((file) => !movedSet.has(file.id));
     await patchAttribute(context, SYSTEM_USER, target.internal_id, target.entity_type, { x_opencti_files: remaining }, { locks });
+  }
+  if (failedFileId) {
+    throw DatabaseError('A merged file cannot be moved back to the restored entity: undo the merge again to resume the unmerge', { file_id: failedFileId });
   }
 };
 
