@@ -399,8 +399,9 @@ export const sendKnowledgeHealthDigest = async (
   context: AuthContext,
   settings: CurationSettings,
   snapshot: BasicStoreEntityKnowledgeHealthSnapshot,
+  memberIds: string[] = settings.digest_recipient_ids,
 ): Promise<DigestDelivery> => {
-  const recipients = await resolveRecipients(context, settings.digest_recipient_ids);
+  const recipients = await resolveRecipients(context, memberIds);
   if (recipients.length === 0) return { delivered: 0, undelivered: 0, emailPending: false };
   const lines = buildDigestLines(snapshot);
   const title = 'Knowledge health weekly digest';
@@ -468,9 +469,11 @@ export const sendKnowledgeHealthDigest = async (
 
 /**
  * The digest of a manager cycle: first the retry of a digest that missed recipients, on the snapshot it was sent for
- * and for those recipients only, then the digest due this week. A digest that misses recipients stays pending until
- * they all have it or its retry window closes; one that reaches nobody stays pending as a whole, so a delivery failure
- * never stops the rest of the manager cycle. Returns true when the digest due this week was sent or left pending.
+ * and for the users it was sent to only, then the digest due this week. A digest that misses recipients stays pending
+ * until they all have it or its retry window closes; one that reaches nobody stays pending as a whole, so a delivery
+ * failure never stops the rest of the manager cycle. A change of the recipient settings meanwhile never redirects a
+ * pending digest: a recipient added later never receives it, one it missed is not dropped. Returns true when the digest
+ * due this week was sent or left pending.
  */
 export const deliverKnowledgeHealthDigest = async (
   context: AuthContext,
@@ -478,34 +481,37 @@ export const deliverKnowledgeHealthDigest = async (
   latest: BasicStoreEntityKnowledgeHealthSnapshot | null,
   due: boolean,
 ): Promise<boolean> => {
-  const pendingId = await redisCurationGetPendingDigest();
-  if (pendingId) {
+  const pendingDigest = await redisCurationGetPendingDigest();
+  if (pendingDigest) {
+    const { snapshotId, recipientIds } = pendingDigest;
     const pending = settings.digest_enabled
-      ? await storeLoadById<BasicStoreEntityKnowledgeHealthSnapshot>(context, SYSTEM_USER, pendingId, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT)
+      ? await storeLoadById<BasicStoreEntityKnowledgeHealthSnapshot>(context, SYSTEM_USER, snapshotId, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT)
       : undefined;
     if (!pending) {
       await redisCurationClearPendingDigest();
     } else {
       if (await redisCurationAcquireDigestRetry()) {
         try {
-          const retry = await sendKnowledgeHealthDigest(context, settings, pending);
-          logApp.info('[CURATION] Knowledge Health weekly digest sent again to the recipients it missed', { snapshot_id: pendingId, ...retry });
+          const retry = await sendKnowledgeHealthDigest(context, settings, pending, recipientIds ?? settings.digest_recipient_ids);
+          logApp.info('[CURATION] Knowledge Health weekly digest sent again to the recipients it missed', { snapshot_id: snapshotId, ...retry });
           if (!isDigestPending(retry)) await redisCurationClearPendingDigest();
         } catch (error) {
-          logApp.warn('[CURATION] Knowledge Health weekly digest still not delivered, it will be sent again', { cause: error, snapshot_id: pendingId });
+          logApp.warn('[CURATION] Knowledge Health weekly digest still not delivered, it will be sent again', { cause: error, snapshot_id: snapshotId });
         }
       }
       return false;
     }
   }
   if (!due || !latest) return false;
+  let recipientIds: string[] | null = null;
   try {
-    const sent = await sendKnowledgeHealthDigest(context, settings, latest);
+    recipientIds = (await resolveRecipients(context, settings.digest_recipient_ids)).map((user) => user.id);
+    const sent = await sendKnowledgeHealthDigest(context, settings, latest, recipientIds);
     logApp.info('[CURATION] Knowledge Health weekly digest sent', { snapshot_id: latest.internal_id, ...sent });
-    if (isDigestPending(sent)) await redisCurationSetPendingDigest(latest.internal_id);
+    if (isDigestPending(sent)) await redisCurationSetPendingDigest(latest.internal_id, recipientIds);
   } catch (error) {
     logApp.warn('[CURATION] Knowledge Health weekly digest not delivered, it will be sent again', { cause: error, snapshot_id: latest.internal_id });
-    await redisCurationSetPendingDigest(latest.internal_id);
+    await redisCurationSetPendingDigest(latest.internal_id, recipientIds);
   }
   return true;
 };

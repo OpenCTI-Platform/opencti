@@ -1305,22 +1305,35 @@ export const redisCurationAddDigestDelivery = async (snapshotId: string, recipie
   await getClientBase().multi().sadd(key, recipient).expire(key, CURATION_DIGEST_TTL_SECONDS).exec();
 };
 
-// A digest that missed recipients stays pending on its own snapshot, so a newer snapshot never sends it again to the
-// recipients it reached. It is retried for a day, at most once per retry interval.
+// A digest that missed recipients stays pending on its own snapshot and for the users it was sent to, so a newer
+// snapshot never sends it again to the recipients it reached, and a change of the recipients never redirects it. It is
+// retried for a day, at most once per retry interval.
 const CURATION_DIGEST_PENDING_KEY = `${CURATION_KEY_PREFIX}digest_pending`;
 const CURATION_DIGEST_RETRY_KEY = `${CURATION_KEY_PREFIX}digest_retry`;
 const CURATION_DIGEST_PENDING_TTL_SECONDS = 24 * 3600;
 const CURATION_DIGEST_RETRY_INTERVAL_SECONDS = 15 * 60;
 
-export const redisCurationSetPendingDigest = async (snapshotId: string) => {
+export interface CurationPendingDigest {
+  snapshotId: string;
+  /** None when the users could not be resolved at the first send: the retry resolves the recipient settings. */
+  recipientIds: string[] | null;
+}
+
+export const redisCurationSetPendingDigest = async (snapshotId: string, recipientIds: string[] | null) => {
   await getClientBase().multi()
-    .set(CURATION_DIGEST_PENDING_KEY, snapshotId, 'EX', CURATION_DIGEST_PENDING_TTL_SECONDS)
+    .set(CURATION_DIGEST_PENDING_KEY, JSON.stringify({ snapshotId, recipientIds }), 'EX', CURATION_DIGEST_PENDING_TTL_SECONDS)
     .set(CURATION_DIGEST_RETRY_KEY, '1', 'EX', CURATION_DIGEST_RETRY_INTERVAL_SECONDS)
     .exec();
 };
 
-export const redisCurationGetPendingDigest = async (): Promise<string | null> => {
-  return getClientBase().get(CURATION_DIGEST_PENDING_KEY);
+export const redisCurationGetPendingDigest = async (): Promise<CurationPendingDigest | null> => {
+  const raw = await getClientBase().get(CURATION_DIGEST_PENDING_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as CurationPendingDigest;
+  } catch {
+    return null;
+  }
 };
 
 export const redisCurationClearPendingDigest = async () => {

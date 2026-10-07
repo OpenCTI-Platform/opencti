@@ -5,7 +5,7 @@ import { sendMail } from '../../../../src/database/smtp';
 import type { BasicStoreEntityKnowledgeHealthSnapshot, CurationSettings } from '../../../../src/modules/curation/curation-types';
 
 const deliveries = new Map<string, Set<string>>();
-const pending: { snapshotId: string | null; retryAllowed: boolean } = { snapshotId: null, retryAllowed: true };
+const pending: { snapshotId: string | null; recipientIds: string[] | null; retryAllowed: boolean } = { snapshotId: null, recipientIds: null, retryAllowed: true };
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
@@ -13,12 +13,14 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   redisCurationAddDigestDelivery: vi.fn(async (snapshotId: string, recipient: string) => {
     deliveries.set(snapshotId, (deliveries.get(snapshotId) ?? new Set()).add(recipient));
   }),
-  redisCurationGetPendingDigest: vi.fn(async () => pending.snapshotId),
-  redisCurationSetPendingDigest: vi.fn(async (snapshotId: string) => {
+  redisCurationGetPendingDigest: vi.fn(async () => (pending.snapshotId ? { snapshotId: pending.snapshotId, recipientIds: pending.recipientIds } : null)),
+  redisCurationSetPendingDigest: vi.fn(async (snapshotId: string, recipientIds: string[] | null) => {
     pending.snapshotId = snapshotId;
+    pending.recipientIds = recipientIds;
   }),
   redisCurationClearPendingDigest: vi.fn(async () => {
     pending.snapshotId = null;
+    pending.recipientIds = null;
   }),
   redisCurationAcquireDigestRetry: vi.fn(async () => pending.retryAllowed),
 }));
@@ -101,6 +103,7 @@ describe('Knowledge Health weekly digest', () => {
     deliveries.clear();
     storedNotifications.length = 0;
     pending.snapshotId = null;
+    pending.recipientIds = null;
     pending.retryAllowed = true;
     vi.mocked(addNotification).mockReset();
     vi.mocked(sendMail).mockReset();
@@ -199,6 +202,22 @@ describe('Knowledge Health weekly digest', () => {
     vi.mocked(addNotification).mockClear();
     expect(await deliverKnowledgeHealthDigest({} as never, settings, newerSnapshot, false)).toBe(false);
     expect(addNotification).not.toHaveBeenCalled();
+  });
+
+  it('retries a pending digest for the users it was sent to, whatever the recipient settings become meanwhile', async () => {
+    const before = { ...settings, digest_recipient_ids: ['alice-id', 'bob-id', 'analysts-group-id'] } as CurationSettings;
+    failFor(['bob-id']);
+    expect(await deliverKnowledgeHealthDigest({} as never, before, snapshot, true)).toBe(true);
+    // The users resolved at the first send: the member of the group without Access knowledge is not one of them.
+    expect(pending.recipientIds).toEqual(['alice-id', 'bob-id']);
+
+    // Bob is removed from the recipients and Carol added: the retry still reaches Bob, never Carol.
+    vi.mocked(addNotification).mockClear();
+    failFor([]);
+    const after = { ...settings, digest_recipient_ids: ['alice-id', 'carol-id'] } as CurationSettings;
+    expect(await deliverKnowledgeHealthDigest({} as never, after, newerSnapshot, false)).toBe(false);
+    expect(notifiedUsers()).toEqual(['bob-id']);
+    expect(pending.snapshotId).toBeNull();
   });
 
   it('keeps a digest whose email failed pending, and sends only the email again', async () => {
