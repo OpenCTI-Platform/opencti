@@ -52,6 +52,21 @@ describe('Defense telemetry from log sources', () => {
   });
 
   it.each([
+    ['without', [], []],
+    ['with', [{ name: 'SETTINGS_SETCUSTOMIZATION' }], ['Network Traffic Flow']],
+  ])('should name the mapped data components not found only to a user %s the customization capability', async (_, capabilities, unmatched) => {
+    const editor = { capabilities } as unknown as AuthUser;
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1' } as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation', 'Network Traffic Flow'] },
+    ] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
+    const result = await addPlatformProvidesFromLogsources(context, editor, 'platform-1', [{ product: 'windows' }]);
+    expect(result.created_count).toEqual(1);
+    expect(result.unmatched_data_components).toEqual(unmatched);
+  });
+
+  it.each([
     [true, 1, 0],
     [false, 0, 1],
   ])('should declare again a revoked declaration (revoked: %s)', async (revoked, created, existing) => {

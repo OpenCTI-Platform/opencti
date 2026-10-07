@@ -2,11 +2,11 @@ import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, internalFindByIdsMapped, storeLoadById } from '../../database/middleware-loader';
 import { elBulk } from '../../database/engine';
 import { buildEntityData } from '../../database/data-builder';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { isUserHasCapability, SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import { KNOWLEDGE_FRONTEND_EXPORT } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
@@ -1290,7 +1290,8 @@ export const addPlatformProvidesFromLogsources = async (
     byName.set(key, [...(byName.get(key) ?? []), dc]);
   });
   const matchedIds = uniq(names.flatMap((name) => byName.get(name.toLowerCase()) ?? []).map((dc) => dc.internal_id));
-  const unmatched = names.filter((name) => !byName.has(name.toLowerCase()));
+  // The mapped names come from the mappings, which only the users customizing the platform can read
+  const unmatched = isUserHasCapability(user, SETTINGS_SETCUSTOMIZATION) ? names.filter((name) => !byName.has(name.toLowerCase())) : [];
   const existing = matchedIds.length === 0 ? [] : await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
     fromId: platform.internal_id,
     toId: matchedIds,
@@ -1316,6 +1317,25 @@ export const addPlatformProvidesFromLogsources = async (
     dataComponents: dataComponentsOfLogsources,
     unmatched_data_components: unmatched,
   };
+};
+// endregion
+
+// region coverage per platform
+/**
+ * The OpenAEV results per security platform of a `has-covered` relationship reference their platform: an entry only
+ * reaches a reader who can access that platform, designated by any of its ids as the computation resolves it.
+ */
+export const coveragePlatformsInformationForReader = async <T extends { platform_ref?: unknown }>(
+  context: AuthContext,
+  user: AuthUser,
+  information: ReadonlyArray<T | null> | null | undefined,
+): Promise<T[] | null | undefined> => {
+  if (!Array.isArray(information)) return information as null | undefined;
+  const entries = information.filter((entry): entry is T => !!entry && typeof entry.platform_ref === 'string');
+  const refs = uniq(entries.map((entry) => entry.platform_ref as string));
+  if (refs.length === 0) return [];
+  const accessible = await internalFindByIdsMapped<BasicStoreEntity>(context, user, refs, { baseData: true, baseFields: ['x_opencti_stix_ids'], mapWithAllIds: true });
+  return entries.filter((entry) => !!accessible[entry.platform_ref as string]);
 };
 // endregion
 

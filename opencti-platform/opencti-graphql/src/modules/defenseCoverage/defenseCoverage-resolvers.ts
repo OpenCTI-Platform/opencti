@@ -2,6 +2,7 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addPlatformProvidesFromLogsources,
   buildDefenseMatrix,
+  coveragePlatformsInformationForReader,
   defenseGapRequiredDataComponents,
   defenseGapRuleCandidates,
   defenseGapValidationCoverage,
@@ -70,6 +71,13 @@ const defenseCoverageResolvers: Resolvers = {
   DefenseValidationRequest: {
     securityCoverage: (request, _, context) => defenseGapValidationCoverage(context, context.user, request),
     status: (request, _, context) => defenseGapValidationStatus(context, context.user, request),
+  },
+  StixCoreRelationship: {
+    coverage_platforms_information: (relation, _, context) => coveragePlatformsInformationForReader(
+      context,
+      context.user,
+      (relation as unknown as { coverage_platforms_information?: { platform_ref: string; coverage_name: string; coverage_score: number }[] | null }).coverage_platforms_information,
+    ),
   },
   DefenseLogsourceMapping: {
     logsource_category: (mapping) => mapping.x_opencti_rule_logsource?.category ?? null,
