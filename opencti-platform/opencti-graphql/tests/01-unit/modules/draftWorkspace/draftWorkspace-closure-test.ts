@@ -231,11 +231,13 @@ describe('Requests writing into a draft of a forwarding chain', () => {
     expect(leases('draft-2')).toEqual([late.writerId]);
   });
 
-  it('should never make the request closing a draft wait for itself', async () => {
+  it('should never make the request closing a draft wait for itself, and record the draft it closed', async () => {
     await openDraftForwarding('draft-1');
     const own = await enterDraft('draft-1');
-    await runDraftClosureHandlers({ draft_writer_id: own.writerId } as AuthContext, 'draft-1');
+    const closing = { draft_context: 'draft-1', draft_writer_id: own.writerId } as AuthContext;
+    await runDraftClosureHandlers(closing, 'draft-1');
     expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-1'));
+    expect(closing.draft_closed_ids).toEqual(['draft-1']);
   });
 
   it('should refuse to close a draft still written into once the drain delay is over', async () => {

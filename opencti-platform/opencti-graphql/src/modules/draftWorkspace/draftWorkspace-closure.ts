@@ -3,6 +3,7 @@ import type { AuthContext } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import conf, { logApp } from '../../config/conf';
 import { wait } from '../../database/utils';
+import { recordDraftClosedByRequest } from '../../utils/draftContext';
 import { redisAddDraftWriter, redisGetDraftForward, redisListDraftWriters, redisRemoveDraftWriter, redisSetDraftForward, redisSetDraftForwardIfAbsent } from '../../database/redis';
 
 /**
@@ -57,6 +58,8 @@ const waitForDraftWriters = async (draftId: string, ownWriterId: string | null |
 };
 
 export const runDraftClosureHandlers = async (context: AuthContext, draftId: string) => {
+  // The request closing the draft is not waited for: its later mutations must not write into the draft either
+  recordDraftClosedByRequest(context, draftId);
   for (let i = 0; i < draftClosureHandlers.length; i += 1) {
     await draftClosureHandlers[i](context, draftId);
   }
