@@ -721,7 +721,6 @@ const PASSWORD_NUMBER_CHARS = '0123456789';
 const PASSWORD_SYMBOL_CHARS = '!@#$%^&*()+=.?';
 const PASSWORD_WORD_SEPARATOR = '-';
 const GENERATED_PASSWORD_DEFAULT_LENGTH = 32;
-const GENERATED_PASSWORD_MAX_LENGTH = 1024;
 
 const randomCharsFrom = (chars: string, count: number) => {
   return Array.from({ length: count }, () => chars[crypto.randomInt(chars.length)]);
@@ -754,9 +753,6 @@ export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   // Check policy feasibility before allocating anything
   if (maxLength > 0 && maxLength < minLength) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
-  }
-  if (minLength > GENERATED_PASSWORD_MAX_LENGTH) {
-    throw FunctionalError('Unable to generate a password: password policy requires a too long password', { minLength, limit: GENERATED_PASSWORD_MAX_LENGTH });
   }
   let length = Math.max(minLength, GENERATED_PASSWORD_DEFAULT_LENGTH);
   if (maxLength > 0) {
