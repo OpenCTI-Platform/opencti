@@ -144,25 +144,43 @@ const holdLease = (draftId: string, writerId: string) => {
  * holds a lease on that draft from before it reads the forward until it is released: a closure forwards the draft
  * first, then waits for the leases, so a request either is waited for or sees the forward and moves to the draft
  * taking over. A draft enters a chain when it is created to receive routed work, so outside a chain no lease is needed.
+ * When entering fails, the leases it took are released: no request would release them, and a lease that ended
+ * unreleased holds a closure back for as long as a search engine request lasts.
  */
 export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
   if (!(await redisGetDraftForward(draftId))) {
     return { draftId, closed: false, writerId: null, release: noLease };
   }
   const writerId = uuidv4();
-  let target = draftId;
-  await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS, DRAFT_WRITER_LAPSED_KEPT_MS);
-  let forward = await resolveDraftForward(target);
-  for (let hop = 0; !forward.closed && forward.draftId !== target && hop < DRAFT_ENTRY_MAX_HOPS; hop += 1) {
-    const previous = target;
-    target = forward.draftId;
+  // Drafts that may hold a lease of this request
+  const leased = new Set<string>();
+  const addWriter = async (target: string) => {
+    leased.add(target);
     await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS, DRAFT_WRITER_LAPSED_KEPT_MS);
-    await redisRemoveDraftWriter(previous, writerId);
-    forward = await resolveDraftForward(target);
-  }
-  if (forward.closed) {
+  };
+  const removeWriter = async (target: string) => {
     await redisRemoveDraftWriter(target, writerId);
-    return { draftId: forward.draftId, closed: true, writerId: null, release: noLease };
+    leased.delete(target);
+  };
+  try {
+    let target = draftId;
+    await addWriter(target);
+    let forward = await resolveDraftForward(target);
+    for (let hop = 0; !forward.closed && forward.draftId !== target && hop < DRAFT_ENTRY_MAX_HOPS; hop += 1) {
+      const previous = target;
+      target = forward.draftId;
+      await addWriter(target);
+      await removeWriter(previous);
+      forward = await resolveDraftForward(target);
+    }
+    if (forward.closed) {
+      await removeWriter(target);
+      return { draftId: forward.draftId, closed: true, writerId: null, release: noLease };
+    }
+    return { draftId: target, closed: false, writerId, release: holdLease(target, writerId) };
+  } catch (error) {
+    await Promise.all([...leased].map((target) => redisRemoveDraftWriter(target, writerId)
+      .catch((cause) => logApp.warn('[OPENCTI] Draft lease of a request that could not enter its draft could not be released', { cause, draftId: target }))));
+    throw error;
   }
-  return { draftId: target, closed: false, writerId, release: holdLease(target, writerId) };
 };

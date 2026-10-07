@@ -37,6 +37,7 @@ const {
   resolveDraftForward,
   runDraftClosureHandlers,
 } = await import('../../../../src/modules/draftWorkspace/draftWorkspace-closure');
+const { redisGetDraftForward } = await import('../../../../src/database/redis');
 
 const context = {} as AuthContext;
 const open = (draftId: string) => ({ draftId, closed: false });
@@ -178,6 +179,26 @@ describe('Requests writing into a draft of a forwarding chain', () => {
     expect(leases('draft-1')).toEqual([]);
     expect(leases('draft-2')).toEqual([]);
     expect(leases('draft-3')).toEqual([entry.writerId]);
+  });
+
+  it('should release the leases it took when entering the draft fails', async () => {
+    await forwardDraftWork('draft-1', 'draft-2');
+    const lookup = vi.mocked(redisGetDraftForward);
+    const lookupForward = lookup.getMockImplementation() as typeof redisGetDraftForward;
+    const failure = new Error('Redis unavailable');
+    const holders = (draftId: string) => writers.get(draftId)?.size ?? 0;
+    // The forward lookup fails once the request holds a lease on the draft it entered first
+    lookup.mockImplementationOnce(lookupForward).mockRejectedValueOnce(failure);
+    await expect(enterDraft('draft-1')).rejects.toThrow('Redis unavailable');
+    expect([holders('draft-1'), holders('draft-2')]).toEqual([0, 0]);
+    // Then once it holds a lease on the draft taking over, after it left the first one
+    lookup.mockImplementationOnce(lookupForward).mockImplementationOnce(lookupForward).mockImplementationOnce(lookupForward).mockRejectedValueOnce(failure);
+    await expect(enterDraft('draft-1')).rejects.toThrow('Redis unavailable');
+    expect([holders('draft-1'), holders('draft-2')]).toEqual([0, 0]);
+    // The next request enters as usual
+    const entry = await enterDraft('draft-1');
+    expect(entry).toMatchObject({ draftId: 'draft-2', closed: false });
+    expect(leases('draft-2')).toEqual([entry.writerId]);
   });
 
   it('should refuse a request whose chain ended, with no lease', async () => {
