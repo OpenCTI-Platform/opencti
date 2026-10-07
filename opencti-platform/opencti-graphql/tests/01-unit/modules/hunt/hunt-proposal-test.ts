@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEntity } from '../../../../src/database/middleware';
 import { notify } from '../../../../src/database/redis';
 import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import { addHuntProposal, planHunt } from '../../../../src/modules/hunt/hunt-domain';
+import { addHuntProposal, assistHunt, planHunt } from '../../../../src/modules/hunt/hunt-domain';
 import { callHuntAgent } from '../../../../src/modules/hunt/hunt-agents';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
@@ -183,5 +183,12 @@ describe('Hunt proposals of agents', () => {
     expect(callHuntAgent).not.toHaveBeenCalled();
     expect(addDraftWorkspace).not.toHaveBeenCalled();
     expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('should refuse to write a hunt with XTM One from intelligence restricted to authorized members before the agent reads it', async () => {
+    vi.mocked(findByIds).mockResolvedValue([{ ...reference('intrusion-set-1', []), entity_type: 'Intrusion-Set' } as BasicStoreEntity, membersOnly('grouping-1', 'Grouping')]);
+    await expect(assistHunt(testContext, ADMIN_USER, { fields: [], target_ids: ['intrusion-set-1'], source_ids: ['grouping-1'] } as Parameters<typeof assistHunt>[2]))
+      .rejects.toThrow(/cannot be written with XTM One: the intelligence it is written from is restricted to authorized members/);
+    expect(callHuntAgent).not.toHaveBeenCalled();
   });
 });

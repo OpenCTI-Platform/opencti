@@ -625,7 +625,12 @@ export const assistHunt = async (context: AuthContext, user: AuthUser, input: Hu
   }
   const knowledge = entityIds.length > 0
     ? await loadHuntPlanEntities(context, user, entityIds)
-    : { reports: [], threats: [], techniques: [], indicators: [] };
+    : { entities: [], reports: [], threats: [], techniques: [], indicators: [] };
+  // Refused before the agent reads it: what it proposes is accepted into the hunt, which cannot carry the restriction
+  const membersOnly = restrictedToMembers(knowledge.entities);
+  if (membersOnly.length > 0) {
+    throw FunctionalError('This hunt cannot be written with XTM One: the intelligence it is written from is restricted to authorized members, which a hunt cannot be. Write it from intelligence shared without authorized members.', { ids: membersOnly });
+  }
   const plannerRequest = await buildHuntPlannerRequest(context, user, knowledge, scopePlatformIds, draft.benign_patterns);
   const payload = buildHuntAssistRequest(plannerRequest, draft, target);
   const sigmaOnly = payload.task === 'hunt_sigma_generation';
