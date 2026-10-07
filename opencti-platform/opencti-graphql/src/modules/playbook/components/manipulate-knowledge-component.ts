@@ -31,7 +31,7 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
+import { CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
 import { CUSTOM_FIELD_PREFIX } from '../../customField/custom-field-types';
 import { getCustomFieldDefinitionsForEntityType } from '../../customField/custom-field-cache';
 import { buildCustomFieldPlaybookOperations } from '../../customField/custom-field-playbook';
@@ -173,7 +173,8 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
     const eventContext = buildPlaybookEventContext(event);
     const isWorkflowStatusAction = (action: ManipulateConfiguration['actions'][number]) => {
-      return action.attribute === 'x_opencti_workflow_id' && action.op === EditOperation.Replace && action.apply_transition_actions === true;
+      return isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && action.attribute === 'x_opencti_workflow_id'
+        && action.op === EditOperation.Replace && action.apply_transition_actions === true;
     };
     const workflowStatusActions = actions.filter((action) => isWorkflowStatusAction(action));
     const patchActions = actions.filter((action) => !isWorkflowStatusAction(action));
@@ -226,8 +227,12 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
             if (targetStatusId) {
               try {
                 const result = await setWorkflowStatus(context, AUTOMATION_MANAGER_USER, id, targetStatusId, true);
+                const attrPath = computeAttributePath(type, workflowStatusAction.attribute);
                 if (!result.success) {
                   logApp.warn('[OPENCTI-MODULE][PLAYBOOK] Workflow status not applied', { id, reason: result.reason });
+                } else if (attrPath) {
+                  // Keep the bundle aligned with the new status for the next playbook components
+                  patchOperations.push({ op: EditOperation.Replace, path: `/objects/${index}${attrPath}`, value: targetStatusId });
                 }
               } catch (error) {
                 logApp.error('[OPENCTI-MODULE][PLAYBOOK] Workflow status error, skipping element', { cause: error, id });
