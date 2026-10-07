@@ -10,6 +10,7 @@ import type { Theme } from '../../../../../components/Theme';
 import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { HIDDEN_OVERVIEW_WIDGET_WIDTH } from '../../../../../utils/hooks/useOverviewLayoutCustomization';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
@@ -81,7 +82,7 @@ const EntitySettingCustomOverview = () => {
       <Grid size={6}>
         <Card title={t_i18n('Preview')}>
           <Grid container>
-            {layout.map(({ key, width, label }) => (
+            {layout.filter(({ width }) => width !== HIDDEN_OVERVIEW_WIDGET_WIDTH).map(({ key, width, label }) => (
               <Grid size={width} key={key}>
                 <Paper
                   className="paper-for-grid"

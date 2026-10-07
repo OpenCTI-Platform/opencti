@@ -62,6 +62,8 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime! @auth
   refreshed_at: DateTime @auth
   overview_layout_customization: [OverviewWidgetCustomization!] @auth
+  # Overview layout of the type before any customization
+  defaultOverviewLayoutCustomization: [OverviewWidgetCustomization!] @auth
   fintelTemplates(
     first: Int
     after: ID

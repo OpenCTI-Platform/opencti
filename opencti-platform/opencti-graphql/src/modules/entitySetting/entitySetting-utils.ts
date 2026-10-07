@@ -235,3 +235,21 @@ export const fillDefaultValues = (user: any, input: any, entitySetting: any) => 
 
   return { ...input, ...Object.fromEntries(staticDefaultValues), ...Object.fromEntries(filledValues) };
 };
+
+// -- OVERVIEW LAYOUT --
+
+// A layout saved before a widget joined the default layout of its type does not list that widget: it is inserted
+// right after the widget preceding it in the default layout, or first when it is the first default widget.
+// A widget hidden by an administrator stays listed (with a width of 0), so it is never inserted again.
+export const mergeOverviewLayoutCustomization = <T extends { key: string }>(storedLayout: T[], defaultLayout: T[]): T[] => {
+  const merged = [...storedLayout];
+  defaultLayout.forEach((widget, defaultIndex) => {
+    if (merged.some(({ key }) => key === widget.key)) {
+      return;
+    }
+    // The default widgets are merged in order, so the preceding one is already in the merged layout
+    const precedingIndex = defaultIndex === 0 ? -1 : merged.findIndex(({ key }) => key === defaultLayout[defaultIndex - 1].key);
+    merged.splice(precedingIndex + 1, 0, widget);
+  });
+  return merged;
+};

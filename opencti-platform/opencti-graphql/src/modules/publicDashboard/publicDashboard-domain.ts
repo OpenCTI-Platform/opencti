@@ -49,6 +49,7 @@ import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { fromB64, toB64 } from '../../utils/base64';
+import { TIMELINE_WIDGET_TYPE } from '../timeline/timeline-types';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -157,11 +158,20 @@ const createPrivateManifest = async (
   return toB64(parsedManifest ?? '{}');
 };
 
+// Parameters binding a widget to an object only its readers may see: they never reach the public manifest
+const PRIVATE_WIDGET_PARAMETERS: Record<string, string[]> = { [TIMELINE_WIDGET_TYPE]: ['container_id'] };
+
+const publicWidgetParameters = (widget: any) => {
+  const privateParameters = PRIVATE_WIDGET_PARAMETERS[widget.type];
+  if (!privateParameters || !widget.parameters) return widget.parameters;
+  return Object.fromEntries(Object.entries(widget.parameters).filter(([key]) => !privateParameters.includes(key)));
+};
+
 /**
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (parsedManifest: any) => {
+export const createPublicManifest = (parsedManifest: any) => {
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
@@ -177,7 +187,7 @@ const createPublicManifest = (parsedManifest: any) => {
             ...(selection.columns && { columns: selection.columns }),
           };
         });
-        return [widgetId, { ...widget, dataSelection: publicDataSelection }];
+        return [widgetId, { ...widget, dataSelection: publicDataSelection, parameters: publicWidgetParameters(widget) }];
       }),
     );
     const publicManifest = { ...parsedManifest, widgets: publicWidgets };

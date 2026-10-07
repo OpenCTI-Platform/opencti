@@ -2,12 +2,18 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { MESSAGING$ } from '../../../../relay/environment';
-import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from './StixCoreObjectFileExport';
+import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF, BUILT_IN_TIMELINE } from './StixCoreObjectFileExport';
 import StixCoreObjectContentFiles from './StixCoreObjectContentFiles';
 
-const { buildFileFromTemplate, htmlToPdfReport } = vi.hoisted(() => ({
+const { buildFileFromTemplate, htmlToPdfReport, renderStoredTimelineFile } = vi.hoisted(() => ({
   buildFileFromTemplate: vi.fn(),
   htmlToPdfReport: vi.fn(),
+  renderStoredTimelineFile: vi.fn(),
+}));
+
+vi.mock('../timeline/useContainerTimelineExport', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../timeline/useContainerTimelineExport')>()),
+  useTimelineFileRenderer: () => ({ renderStoredTimelineFile }),
 }));
 
 vi.mock('../../../../utils/outcome_template/engine/useFileFromTemplate', () => ({
@@ -206,5 +212,71 @@ describe('FINTEL HTML and PDF export', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(onExportCompleted).not.toHaveBeenCalled();
     notifyError.mockRestore();
+  });
+});
+
+describe('Timeline export', () => {
+  beforeEach(() => {
+    renderStoredTimelineFile.mockReset().mockResolvedValue({
+      blob: new Blob(['time,event'], { type: 'text/csv' }),
+      fileMarkings: { ids: [], raised: [] },
+    });
+  });
+
+  it('reports an upload that fails before reaching the API with the message of the timeline export', async () => {
+    const notifyError = vi.spyOn(MESSAGING$, 'notifyError');
+    const notifyRelayError = vi.spyOn(MESSAGING$, 'notifyRelayError');
+    const onExportCompleted = vi.fn();
+    const onClose = vi.fn();
+    const { relayEnv, user } = testRender(
+      <StixCoreObjectFileExport
+        scoId="case-1"
+        scoEntityType="Case-Incident"
+        scoName="Test case"
+        OpenFormComponent={({ onOpen }) => <button onClick={onOpen}>Export</button>}
+        defaultValues={{ connector: BUILT_IN_TIMELINE.value, format: 'text/csv' }}
+        onExportCompleted={onExportCompleted}
+        onClose={onClose}
+      />,
+      { userContext: createMockUserContext({ me: { capabilities: [{ name: 'BYPASS' }] } }) },
+    );
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: {
+          stixCoreObject: {
+            __typename: 'Case-Incident',
+            __isStixDomainObject: 'Case-Incident',
+            __isContainer: 'Case-Incident',
+            id: 'case-1',
+            entity_type: 'Case-Incident',
+            representative: { main: 'Test case' },
+            objectMarking: [],
+            importFiles: { edges: [] },
+            exportFiles: { edges: [] },
+            filesFromTemplate: { edges: [] },
+            fintelTemplates: [],
+            content: '',
+          },
+          connectorsForExport: [],
+        },
+      });
+    });
+    await user.click(screen.getByRole('button', { name: 'Export' }));
+    await user.clear(screen.getByLabelText('Export file name'));
+    await user.type(screen.getByLabelText('Export file name'), 'timeline');
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
+    expect(renderStoredTimelineFile).toHaveBeenCalledWith('case-1', 'csv', [], []);
+    expect(relayEnv.mock.getMostRecentOperation().request.variables.file.name).toBe('timeline.csv');
+    await act(async () => {
+      relayEnv.mock.rejectMostRecentOperation(new Error('Failed to fetch'));
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Create' })).not.toBeDisabled());
+    expect(notifyError).toHaveBeenCalledExactlyOnceWith('The timeline export failed');
+    expect(notifyRelayError).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(onExportCompleted).not.toHaveBeenCalled();
+    notifyError.mockRestore();
+    notifyRelayError.mockRestore();
   });
 });

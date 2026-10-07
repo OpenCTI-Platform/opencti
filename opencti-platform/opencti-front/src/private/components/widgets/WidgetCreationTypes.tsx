@@ -13,6 +13,7 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
+import { TIMELINE_CONTAINER_TYPES } from '../common/timeline/timelineUtils';
 
 export const getVisualizationTypes = (host: WidgetHost) => {
   return host.kind === 'workspace'
@@ -20,7 +21,8 @@ export const getVisualizationTypes = (host: WidgetHost) => {
     : host.kind === 'fintelTemplate'
       ? fintelTemplatesWidgetVisualizationTypes
       : host.kind === 'custom-view'
-        ? customViewsWidgetVisualizationTypes
+        // The timeline widget of a custom view shows the timeline of the entity: incidents and cases only
+        ? customViewsWidgetVisualizationTypes.filter((type) => type.key !== 'case-timeline' || TIMELINE_CONTAINER_TYPES.includes(host.customViewTargetEntityType))
         : [];
 };
 
@@ -32,7 +34,7 @@ const WidgetCreationTypes = () => {
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });
-    setStep(type === 'text' || type === 'attribute' || type === 'custom-attributes' ? 3 : 1);
+    setStep(type === 'text' || type === 'attribute' || type === 'custom-attributes' || type === 'case-timeline' ? 3 : 1);
   };
 
   return (

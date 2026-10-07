@@ -38,7 +38,10 @@ from pycti.utils.opencti_stix2_utils import (
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
+    STIX_EXT_OCTI_TIMELINE,
     STIX_META_OBJECTS,
+    SUPPORTED_INTERNAL_OBJECTS,
+    TIMELINE_REQUIRED_IDS,
     OpenCTIStix2Utils,
 )
 
@@ -73,6 +76,12 @@ STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
 STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+
+#: STIX Types carrying a timeline (Incident, Case-Incident, Case-Rfi, Case-Rft)
+TIMELINE_CONTAINER_STIX_TYPES = ["incident", "case-incident", "case-rfi", "case-rft"]
+
+#: Required timeline elements resolved per request when a container is imported again
+TIMELINE_REQUIRED_IDS_BATCH_SIZE = 500
 
 #: STIX Extension ID for MITRE ATT&CK framework objects
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
@@ -1482,7 +1491,106 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         stixObjectOrStixRelationshipId=stix_object_result["id"],
                     )
+            # Recreate the analyst contributions to the timeline of incidents and cases
+            self.import_timeline_extension(stix_object, stix_object_result)
         return stix_object_results
+
+    def import_timeline_extension(
+        self, stix_object: Dict, stix_object_result: Dict
+    ) -> None:
+        """Import the timeline extension carried by an incident or a case.
+
+        Manual events and the annotations of derived events travel in the
+        ``STIX_EXT_OCTI_TIMELINE`` extension; derived events are recomputed by
+        the receiving platform. The copy of a container that the bundle splitter
+        sends again after the elements of its timeline that refer back to it
+        waits for them, as a missing reference, so that importing its extension
+        again attaches them.
+
+        :param stix_object: the imported STIX2 object
+        :type stix_object: Dict
+        :param stix_object_result: the OpenCTI object created from it
+        :type stix_object_result: Dict
+        :raises ValueError: a required element of the timeline is not imported yet
+        """
+        if stix_object.get("type") not in TIMELINE_CONTAINER_STIX_TYPES:
+            return
+        extension = (stix_object.get("extensions") or {}).get(STIX_EXT_OCTI_TIMELINE)
+        if not extension:
+            return
+        if len(extension.get("events") or []) == 0 and (
+            len(extension.get("annotations") or []) == 0
+        ):
+            return
+        missing_refs = self.find_missing_timeline_refs(
+            stix_object.get(TIMELINE_REQUIRED_IDS) or []
+        )
+        if len(missing_refs) > 0:
+            raise ValueError(
+                ERROR_TYPE_MISSING_REFERENCE
+                + ": timeline elements of "
+                + stix_object["id"]
+                + " not imported yet: "
+                + ", ".join(missing_refs)
+            )
+        try:
+            self.opencti.timeline_event.import_extension(
+                container_id=stix_object_result["id"], extension=extension
+            )
+        except ValueError as error:
+            # A platform without timelines does not know the mutation: nothing to recreate there
+            if "timelineImport" in str(error) and "Cannot query field" in str(error):
+                self.opencti.app_logger.warning(
+                    "Timeline contributions skipped, the platform does not support timelines",
+                    {"id": stix_object["id"]},
+                )
+                return
+            raise
+
+    def find_missing_timeline_refs(self, refs: List[str]) -> List[str]:
+        """Return the required timeline elements not imported yet.
+
+        The elements are resolved in bulk, by batches of
+        ``TIMELINE_REQUIRED_IDS_BATCH_SIZE`` ids with every page of each batch,
+        instead of one request per element: a timeline can require thousands of
+        them. An element is found by any of its ids (internal id, standard id or
+        one of its other STIX ids). The supported internal objects (users,
+        groups, workspaces...) are not STIX objects and this lookup cannot see
+        them: they are never waited for, the splitter sending them before the
+        container anyway.
+
+        :param refs: the STIX ids of the required elements
+        :type refs: List[str]
+        :return: the ids among ``refs`` that no imported element carries, in order
+        :rtype: List[str]
+        """
+        required = [
+            ref
+            for ref in dict.fromkeys(refs)
+            if ref.split("--")[0] not in SUPPORTED_INTERNAL_OBJECTS
+        ]
+        found = set()
+        for start in range(0, len(required), TIMELINE_REQUIRED_IDS_BATCH_SIZE):
+            batch = required[start : start + TIMELINE_REQUIRED_IDS_BATCH_SIZE]
+            elements = self.opencti.opencti_stix_object_or_stix_relationship.list(
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "ids", "values": batch}],
+                    "filterGroups": [],
+                },
+                first=len(batch),
+                getAll=True,
+                customAttributes="""
+                    ... on StixObject { id standard_id x_opencti_stix_ids }
+                    ... on StixRelationship { id standard_id x_opencti_stix_ids }
+                """,
+            )
+            for element in elements:
+                found.update(
+                    [element.get("id"), element.get("standard_id")]
+                    + (element.get("x_opencti_stix_ids") or [])
+                )
+        return [ref for ref in required if ref not in found]
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None

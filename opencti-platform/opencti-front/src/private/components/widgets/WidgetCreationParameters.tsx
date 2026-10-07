@@ -41,6 +41,7 @@ import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
+import ContainerTimelineWidgetParameters from '@components/common/timeline/ContainerTimelineWidgetParameters';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -399,6 +400,14 @@ const WidgetCreationParameters = () => {
             maxEditorHeight={100}
           />
         </div>
+      )}
+
+      {widgetCategory === 'case-timeline' && (
+        <ContainerTimelineWidgetParameters
+          parameters={parameters}
+          showContainer={host.kind !== 'custom-view'}
+          onChange={(patch) => setConfigWidget({ ...config.widget, parameters: { ...config.widget.parameters, ...patch } })}
+        />
       )}
 
       {widgetCategory === 'timeseries' && (

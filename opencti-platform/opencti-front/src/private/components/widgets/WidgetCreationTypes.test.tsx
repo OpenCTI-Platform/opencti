@@ -21,6 +21,7 @@ const ALL_VISUALIZATION_TYPES = [
   'map',
   'bookmark',
   'wordcloud',
+  'case-timeline',
 ];
 
 describe('getVisualizationTypes', () => {
@@ -51,8 +52,17 @@ describe('getVisualizationTypes', () => {
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
       }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'),
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'case-timeline'),
       );
+    });
+
+    it('the case timeline is only available on the custom views of incidents and cases', () => {
+      ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].forEach((entityType) => {
+        expect(getVisualizationTypes({
+          kind: 'custom-view',
+          customViewTargetEntityType: entityType,
+        }).map(({ key }) => key)).toContain('case-timeline');
+      });
     });
   });
 });

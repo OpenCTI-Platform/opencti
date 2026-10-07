@@ -155,6 +155,10 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_TIMELINE_DERIVED_EVENT = 'timelineDerivedEventCount';
+export const TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT = 'timelineManualEventCount';
+export const TELEMETRY_GAUGE_TIMELINE_EXPORT = 'timelineExportCount';
+export const TELEMETRY_GAUGE_TIMELINE_VIEW = 'timelineViewCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -300,6 +304,22 @@ export const addSharedSavedFiltersPermissionChangesCount = () => {
 export const addWorkflowPublishCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKFLOW_PUBLISH, 1)
     .catch((reason) => logApp.warn('Error adding workflow publish count to telemetry', { reason }));
+};
+export const addTimelineDerivedEventCount = (count: number) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_DERIVED_EVENT, count)
+    .catch((reason) => logApp.warn('Error adding timeline derived event count to telemetry', { reason }));
+};
+export const addTimelineManualEventCount = (count = 1) => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT, count)
+    .catch((reason) => logApp.warn('Error adding timeline manual event count to telemetry', { reason }));
+};
+export const addTimelineExportCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_EXPORT, 1)
+    .catch((reason) => logApp.warn('Error adding timeline export count to telemetry', { reason }));
+};
+export const addTimelineViewCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_TIMELINE_VIEW, 1)
+    .catch((reason) => logApp.warn('Error adding timeline view count to telemetry', { reason }));
 };
 
 // All the counters below are fire-and-forget: they are called from feature
@@ -774,6 +794,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
+    manager.setTimelineDerivedEventCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_DERIVED_EVENT));
+    manager.setTimelineManualEventCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT));
+    manager.setTimelineExportCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_EXPORT));
+    manager.setTimelineViewCount(await redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_VIEW));
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
     manager.setChatbotMessageCount(chatbotMessageCountInRedis);
     const aiInsightItems: DimensionalGaugeItem[] = [];

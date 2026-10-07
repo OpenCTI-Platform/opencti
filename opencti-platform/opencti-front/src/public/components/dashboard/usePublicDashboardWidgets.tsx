@@ -370,6 +370,11 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
             parameters={widget.parameters}
           />
         );
+      case 'case-timeline':
+        // A case timeline is bound to the access of its case: it is never published publicly
+        return (
+          <Card>{t_i18n('Incident and case timelines are not available in public dashboards')}</Card>
+        );
       default:
         return (
           <Card>{t_i18n('Not implemented yet')}</Card>

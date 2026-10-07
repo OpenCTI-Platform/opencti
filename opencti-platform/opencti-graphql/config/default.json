@@ -367,6 +367,26 @@
     "stream_batch_size": 7500,
     "max_concurrency": 5
   },
+  "timeline_manager": {
+    "enabled": true,
+    "lock_key": "timeline_manager_lock",
+    "interval": 10000,
+    "debounce_ms": 10000,
+    "stream_batch_size": 1000,
+    "max_stream_batches_per_run": 20,
+    "regeneration_batch_size": 20,
+    "max_concurrency": 2,
+    "first_use_concurrency": 2,
+    "claim_lease_ms": 900000,
+    "impacted_containers_page_size": 1000,
+    "consistency_hour": 2,
+    "consistency_max_age_days": 30,
+    "max_objects": 5000,
+    "max_related_elements": 1000,
+    "max_history_entries": 5000,
+    "max_events": 10000,
+    "max_manual_events": 1000
+  },
   "data_sanity_manager": {
     "enabled": true,
     "lock_key": "data_sanity_manager_lock",

@@ -288,6 +288,8 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           create: t_i18n('Creation'),
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
+          timeline_anchor_changed: t_i18n('Timeline anchor changed'),
+          timeline_milestone_added: t_i18n('Timeline milestone added'),
           none: t_i18n('Unknown'),
         };
         return (

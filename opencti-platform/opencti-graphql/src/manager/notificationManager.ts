@@ -55,6 +55,9 @@ const MAX_DIGEST_CONTENT_SIZE = conf.get('notification_manager:max_digest_conten
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
+// The triggers generated for every user follow the creation, update and deletion of knowledge only: the timeline events
+// (anchor changed, milestone added) reach the triggers whose owner selected them
+export const DEFAULT_TRIGGER_EVENT_TYPES = [TriggerEventType.Create, TriggerEventType.Update, TriggerEventType.Delete];
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
@@ -142,7 +145,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: DEFAULT_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
@@ -157,7 +160,7 @@ const generatePlatformNotificationTrigger = (user: AuthUser) => {
     name: 'Platform',
     trigger_type: 'live',
     trigger_scope: 'internal',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: DEFAULT_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     instance_trigger: false,
     restricted_members: [],
@@ -494,6 +497,25 @@ export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): Updat
   return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
 };
 
+/** One notification calls a shared webhook once, whatever the number of its recipients (a trigger shared with a group). */
+export const removeWebhookDuplicates = async (context: AuthContext, targets: Array<{ user: NotificationUser }>) => {
+  if (targets.length === 0) return;
+  const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+  const webhookNotifiers = allNotifiers.filter((notifier) => notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK)
+    .map((notifier) => notifier.id);
+  const targetedWebhooks = new Set();
+  for (let i = 0; i < targets.length; i += 1) {
+    const target = targets[i];
+    target.user.notifiers = target.user.notifiers.filter((notifiersId) => {
+      if (webhookNotifiers.includes(notifiersId)) {
+        if (targetedWebhooks.has(notifiersId)) return false;
+        targetedWebhooks.add(notifiersId);
+      }
+      return true;
+    });
+  }
+};
+
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
@@ -589,24 +611,7 @@ export const buildTargetEvents = async (
       }
     }
   }
-  if (targets.length) {
-    // Remove webhook duplicates: Ensure that 1 notification results in only 1 webhook call, regardless of the number of users in the group.
-    const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
-    const webhookNotifiers = allNotifiers.filter((notifier) => notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK)
-      .map((notifier) => notifier.id);
-    const targetedWebhooks = new Set();
-
-    for (let i = 0; i < targets.length; i += 1) {
-      const target = targets[i];
-      target.user.notifiers = target.user.notifiers.filter((notifiersId) => {
-        if (webhookNotifiers.includes(notifiersId)) {
-          if (targetedWebhooks.has(notifiersId)) return false;
-          targetedWebhooks.add(notifiersId);
-        }
-        return true;
-      });
-    }
-  }
+  await removeWebhookDuplicates(context, targets);
   return targets;
 };
 
@@ -690,6 +695,10 @@ export const collectDigestContent = async (
   return acc;
 };
 
+// Event types whose notification carries its own message (which timeline anchor changed, which milestone was added),
+// kept as it is by a digest instead of the generic message of the instance
+const EVENT_TYPES_WITH_OWN_MESSAGE: string[] = [TriggerEventType.TimelineAnchorChanged, TriggerEventType.TimelineMilestoneAdded];
+
 export const handleDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   // Get digest that need to be executed
@@ -716,11 +725,12 @@ export const handleDigestNotifications = async (context: AuthContext) => {
           const target = convertToNotificationUser(user, notifiers);
           const dataPromises = userNotifications.map(async (n) => {
             const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+            const ownMessage = userTarget && EVENT_TYPES_WITH_OWN_MESSAGE.includes(userTarget.type) ? userTarget.message : null;
             return ({
               notification_id: n.notification_id,
               type: userTarget?.type ?? type,
               instance: n.data,
-              message: await generateNotificationMessageForInstance(context, user, n.data),
+              message: ownMessage || await generateNotificationMessageForInstance(context, user, n.data),
               origin: n.origin,
               streamMessage: n.streamMessage,
             });

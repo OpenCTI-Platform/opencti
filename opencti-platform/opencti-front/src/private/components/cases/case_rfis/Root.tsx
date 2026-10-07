@@ -12,6 +12,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import CaseRfi from './CaseRfi';
+import ContainerTimeline from '../../common/timeline/ContainerTimeline';
 import { RootCaseRfiCaseQuery } from './__generated__/RootCaseRfiCaseQuery.graphql';
 import { RootCaseRfiCaseSubscription } from './__generated__/RootCaseRfiCaseSubscription.graphql';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
@@ -157,6 +158,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
               isContainer={true}
             />
           ),
+          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} />,
           entities: (
             <ContainerStixDomainObjects
               container={caseData}

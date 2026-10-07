@@ -9,10 +9,11 @@ import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 const incidentDefaultOverviewLayout: OverviewLayoutCustomization[] = [
   { key: 'details', width: 6, label: 'Entity details' },
   { key: 'basicInformation', width: 6, label: 'Basic information' },
+  { key: 'timeline', width: 6, label: 'Timeline' },
   { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
   { key: 'latestContainers', width: 6, label: 'Latest containers' },
   { key: 'externalReferences', width: 6, label: 'External references' },
-  { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
+  { key: 'mostRecentHistory', width: 12, label: 'Most recent history' },
   { key: 'notes', width: 12, label: 'Notes about this entity' },
 ];
 

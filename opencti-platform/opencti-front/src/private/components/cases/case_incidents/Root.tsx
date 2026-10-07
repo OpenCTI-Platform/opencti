@@ -17,6 +17,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
 import IncidentKnowledge from './IncidentKnowledge';
+import ContainerTimeline from '../../common/timeline/ContainerTimeline';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -165,6 +166,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
               isContainer={true}
             />
           ),
+          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} />,
           entities: (
             <ContainerStixDomainObjects
               container={caseData}

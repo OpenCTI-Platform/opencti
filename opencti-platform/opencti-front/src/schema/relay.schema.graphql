@@ -5741,6 +5741,13 @@ input ToolAddInput {
 }
 
 enum IncidentsOrdering {
+  timeline_first_adversary_activity
+  timeline_first_detection
+  timeline_first_response
+  timeline_containment
+  timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   first_seen
   last_seen
@@ -5839,6 +5846,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
+  x_opencti_timeline_anchors: TimelineAnchors
 }
 
 input IncidentAddInput {
@@ -9487,6 +9495,85 @@ type Query {
   customFieldDefinition(id: String!): CustomFieldDefinition
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
+  containerTimeline(
+    id: String!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+
+    """
+    Ascending (default) from the oldest event, descending from the latest one
+    """
+    orderMode: OrderingMode
+    first: Int
+    after: ID
+  ): TimelineEventConnection
+
+  """
+  Bounds of every event matching the filters, also the ones not loaded yet by the paginated list
+  """
+  containerTimelineBounds(id: String!, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean): TimelineBounds
+  containerTimelineSummary(
+    id: String!
+
+    """Counts and bounds restricted to these lanes (all when empty)"""
+    lanes: [TimelineLane!]
+
+    """Counts and bounds restricted to these kinds (all when empty)"""
+    kinds: [TimelineEventKind!]
+  ): TimelineSummary
+  containerTimelineExport(
+    id: String!
+    format: TimelineExportFormat!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+    labels: [TimelineExportLabelInput!]
+
+    """
+    Content ceiling: events marked above these markings (or above the max shareable markings of the user) are left out
+    """
+    contentMaxMarkings: [String!]
+  ): String
+
+  """
+  Timeline export stored as a file: the content and the file markings covering it, computed from the same events
+  """
+  containerTimelineExportFile(
+    id: String!
+    format: TimelineExportFormat!
+    from: DateTime
+    to: DateTime
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+    labels: [TimelineExportLabelInput!]
+    contentMaxMarkings: [String!]
+
+    """
+    Markings selected for the file, raised to cover the markings of the exported events and of the elements they reference
+    """
+    fileMarkings: [String!]
+  ): TimelineExportFile
+  timelineEvent(id: String!): TimelineEvent
+  timelineAnchors(containerId: String!): TimelineAnchors
+  timelineRules: [TimelineRuleDefinition!]!
 }
 
 type Subscription {
@@ -9518,6 +9605,7 @@ type Subscription {
   newsFeedsNumber: NewsFeedCount
   me: MeUser
   user(id: ID!): User
+  containerTimelineUpdated(id: ID!): TimelineUpdate
 }
 
 type WorkEditMutations {
@@ -10455,6 +10543,23 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  timelineEventAdd(input: TimelineEventAddInput!): TimelineEvent
+  timelineEventEdit(id: ID!, input: TimelineEventEditInput!): TimelineEvent
+  timelineEventDelete(id: ID!): ID
+  timelineEventPin(id: ID!, pinned: Boolean!): TimelineEvent
+  timelineEventHide(id: ID!, hidden: Boolean!): TimelineEvent
+  timelineSettingsUpdate(containerId: ID!, input: TimelineSettingsInput!): TimelineSettings
+  timelineRegenerate(containerId: ID!): TimelineRegenerationResult
+
+  """
+  Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker)
+  """
+  timelineImport(containerId: ID!, extension: String!): TimelineRegenerationResult
+
+  """
+  Record that the Timeline tab of a container was opened (usage telemetry, no data change)
+  """
+  timelineViewed(containerId: ID!): Boolean
 }
 
 enum WorkflowExecutionStatus {
@@ -10532,6 +10637,7 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   overview_layout_customization: [OverviewWidgetCustomization!]
+  defaultOverviewLayoutCustomization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
 }
@@ -11317,6 +11423,8 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  timeline_anchor_changed
+  timeline_milestone_added
   create
   update
   delete
@@ -12314,9 +12422,17 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   severity: String
   priority: String
   customFieldValues: [CustomFieldValue!]
+  x_opencti_timeline_anchors: TimelineAnchors
 }
 
 enum CaseIncidentsOrdering {
+  timeline_first_adversary_activity
+  timeline_first_detection
+  timeline_first_response
+  timeline_containment
+  timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -12463,9 +12579,17 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_request_access: String
   requestAccessConfiguration: RfiRequestAccessConfiguration
   x_opencti_workflow_id: String
+  x_opencti_timeline_anchors: TimelineAnchors
 }
 
 enum CaseRfisOrdering {
+  timeline_first_adversary_activity
+  timeline_first_detection
+  timeline_first_response
+  timeline_containment
+  timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -12603,9 +12727,17 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   takedown_types: [String!]
   severity: String
   priority: String
+  x_opencti_timeline_anchors: TimelineAnchors
 }
 
 enum CaseRftsOrdering {
+  timeline_first_adversary_activity
+  timeline_first_detection
+  timeline_first_response
+  timeline_containment
+  timeline_closure
+  timeline_computed_at
+  timeline_changed_at
   name
   created
   modified
@@ -17485,4 +17617,341 @@ input CustomFieldDefinitionAddInput {
   min_value: Int
   max_value: Int
   select_options: [String!]
+}
+
+enum TimelineLane {
+  adversary
+  evidence
+  response
+  knowledge
+  detection
+  custom
+}
+
+enum TimelinePrecision {
+  exact
+  hour
+  day
+  approximate
+}
+
+enum TimelineEventSource {
+  derived
+  manual
+}
+
+enum TimelineEventKind {
+  technique_used
+  observed_window
+  sighting
+  infrastructure_seen
+  malware_seen
+  threat_seen
+  incident_seen
+  indicator_valid
+  report_published
+  reference_published
+  file_uploaded
+  case_opened
+  task_created
+  task_due
+  task_completed
+  status_changed
+  assigned
+  note_added
+  opinion_added
+  investigation_step
+  object_added
+  relation_created
+  merged
+  coverage_result
+  hunt_run
+  deployment
+  milestone
+  containment
+  eradication
+  recovery
+  notification
+}
+
+enum TimelineGrouping {
+  hour
+  day
+  week
+}
+
+enum TimelineZoomWindow {
+  fit
+  day
+  week
+  month
+  quarter
+  year
+}
+
+enum TimelineExportFormat {
+  csv
+  svg
+  html
+}
+
+enum TimelineUpdateType {
+  derived
+  manual
+  annotation
+  settings
+  anchors
+}
+
+type TimelineAnchors {
+  first_adversary_activity: DateTime
+  first_detection: DateTime
+  first_response: DateTime
+  containment: DateTime
+  closure: DateTime
+  computed_at: DateTime
+  changed_at: DateTime
+}
+
+type TimelineEvent implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  created_at: DateTime!
+  updated_at: DateTime!
+  creators: [Creator!]
+  container_id: String!
+  event_time: DateTime!
+  event_end_time: DateTime
+
+  """
+  Started without a known end (a run still running, a deployment still active): the window stays open
+  """
+  open_ended: Boolean
+  precision: TimelinePrecision!
+  lane: TimelineLane!
+  kind: TimelineEventKind!
+  title: String!
+  description: String
+  source: TimelineEventSource!
+  rule_id: String
+  element_id: String
+  element_type: String
+  element: StixObjectOrStixRelationship
+  pinned: Boolean!
+  hidden: Boolean!
+  annotation: String
+  confidence: Int
+  ordering_hint: Int
+  external_id: String
+  analyst_fields: [String!]!
+  source_state: TimelineSourceState
+  createdBy: Identity
+  objectMarking: [MarkingDefinition!]
+
+  """
+  Whether the current user can edit and delete the event: a manual event of a container the user can update, outside drafts, within the confidence level of the user (derived events can only be pinned, hidden and annotated)
+  """
+  editable: Boolean!
+
+  """
+  Whether the current user can pin, hide and annotate the event: a container the user can update, outside drafts, and an event within the confidence level of the user
+  """
+  annotatable: Boolean!
+}
+
+type TimelineEventEdge {
+  cursor: String!
+  node: TimelineEvent!
+}
+
+type TimelineEventConnection {
+  pageInfo: PageInfo!
+  edges: [TimelineEventEdge!]!
+}
+
+type TimelineSettings implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  container_id: String!
+  enabled_lanes: [TimelineLane!]!
+  default_grouping: TimelineGrouping!
+  default_zoom_window: TimelineZoomWindow!
+  hidden_kinds: [TimelineEventKind!]!
+}
+
+type TimelineLaneDistribution {
+  lane: TimelineLane!
+  count: Int!
+}
+
+type TimelineKindDistribution {
+  kind: TimelineEventKind!
+  count: Int!
+}
+
+type TimelineSummary {
+  container_id: String!
+
+  """Number of events the current user can see"""
+  total: Int!
+  manual_count: Int!
+  pinned_count: Int!
+  hidden_count: Int!
+  first_event_time: DateTime
+  last_event_time: DateTime
+  lanes: [TimelineLaneDistribution!]!
+  kinds: [TimelineKindDistribution!]!
+  anchors: TimelineAnchors
+  settings: TimelineSettings!
+
+  """
+  Whether the current user can add milestones, annotate events and change the settings
+  """
+  can_edit: Boolean!
+
+  """
+  True when the derivation of this container reached one of its bounds (objects, history, events)
+  """
+  truncated: Boolean!
+  generated_at: DateTime
+}
+
+type TimelineBounds {
+  """Earliest start of the matching events"""
+  first_event_time: DateTime
+
+  """Latest start or end of the matching events, whichever is later"""
+  last_event_time: DateTime
+}
+
+type TimelineRegenerationResult {
+  container_id: String!
+  derived_count: Int!
+  manual_count: Int!
+  created_count: Int!
+  updated_count: Int!
+  deleted_count: Int!
+  truncated: Boolean!
+  duration_ms: Int!
+  anchors: TimelineAnchors
+}
+
+type TimelineUpdate {
+  container_id: String!
+  update_type: TimelineUpdateType!
+  changed_event_ids: [String!]!
+  updated_at: DateTime!
+  anchors: TimelineAnchors
+}
+
+type TimelineRuleDefinition {
+  id: String!
+  label: String!
+  kinds: [TimelineEventKind!]!
+
+  """
+  False for soft-check rules whose source type is not registered on this platform
+  """
+  available: Boolean!
+}
+
+input TimelineEventAddInput {
+  container_id: String!
+  event_time: DateTime!
+  event_end_time: DateTime
+  precision: TimelinePrecision
+  lane: TimelineLane
+  kind: TimelineEventKind
+
+  "*Constraints:*\n* Minimal length: `1`\n* Maximal length: `512`\n* Must match format: `not-blank`\n"
+  title: String!
+
+  "*Constraints:*\n* Maximal length: `10000`\n"
+  description: String
+  element_id: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
+  confidence: Int
+  ordering_hint: Int
+
+  "*Constraints:*\n* Maximal length: `10000`\n"
+  annotation: String
+  pinned: Boolean
+  createdBy: String
+  objectMarking: [String!]
+
+  "Idempotency key: adding twice an event with the same external id on the same container updates it\n\n*Constraints:*\n* Maximal length: `256`\n"
+  external_id: String
+}
+
+input TimelineEventEditInput {
+  event_time: DateTime
+  event_end_time: DateTime
+  clear_event_end_time: Boolean
+  precision: TimelinePrecision
+  lane: TimelineLane
+  kind: TimelineEventKind
+
+  "*Constraints:*\n* Minimal length: `1`\n* Maximal length: `512`\n* Must match format: `not-blank`\n"
+  title: String
+
+  "*Constraints:*\n* Maximal length: `10000`\n"
+  description: String
+  element_id: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
+  confidence: Int
+  ordering_hint: Int
+
+  "*Constraints:*\n* Maximal length: `10000`\n"
+  annotation: String
+  createdBy: String
+  objectMarking: [String!]
+}
+
+"""
+Translated label of an export (title, lane.<lane>, kind.<kind>, anchor.<anchor>, column.<column>, ...)
+"""
+input TimelineExportLabelInput {
+  "*Constraints:*\n* Maximal length: `128`\n"
+  key: String!
+
+  "*Constraints:*\n* Maximal length: `256`\n"
+  label: String!
+}
+
+"""
+State of the run, step or deployment a derived event comes from, as its owner stores it (labelled with the owner's vocabulary)
+"""
+type TimelineSourceState {
+  family: String!
+  state: String
+  verdict: String
+  validation: String
+  run_id: String
+  step: String
+}
+
+type TimelineExportFile {
+  content: String!
+
+  """
+  Never weaker than the markings of the exported events and of the elements they reference (highest marking per definition type)
+  """
+  file_markings: [MarkingDefinition!]!
+}
+
+input TimelineSettingsInput {
+  enabled_lanes: [TimelineLane!]
+  default_grouping: TimelineGrouping
+  default_zoom_window: TimelineZoomWindow
+  hidden_kinds: [TimelineEventKind!]
 }

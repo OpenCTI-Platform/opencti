@@ -11,6 +11,8 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Incident_incident$key } from './__generated__/Incident_incident.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ContainerTimelineStrip from '../../common/timeline/ContainerTimelineStrip';
+import { resolveLink } from '../../../../utils/Entity';
 
 const incidentFragment = graphql`
   fragment Incident_incident on Incident {
@@ -99,6 +101,12 @@ const Incident: React.FC<IncidentProps> = ({
         {
           overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
+              case 'timeline':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerTimelineStrip containerId={incident.id} basePath={`${resolveLink(incident.entity_type)}/${incident.id}`} />
+                  </Grid>
+                );
               case 'details':
                 return (
                   <Grid key={key} item xs={width}>

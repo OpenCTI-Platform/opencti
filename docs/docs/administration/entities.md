@@ -128,8 +128,10 @@ Once you have customized your scale, click on "Update" to save your configuratio
 
 ### Overview layout customization
 At the platform level, the Overview layout tab of the containers can be rearranged to fit the users needs.
-The widgets can be reordered or extended to their full width.
+The widgets can be reordered, extended to their full width, or hidden: switch off **Displayed** to remove a widget from the overview while keeping its place in the layout, and switch it on again to bring it back at its default width.
 
 ![Overview layout customization settings](assets/overview-layout-customization.png)
 
 To reset the layout to its default version, click the button next to the section title.
+
+When a new version of OpenCTI adds a widget to the overview of an entity type, a layout customized before the upgrade shows it where the default layout places it, after the widget that precedes it by default. For example, the **Timeline** of incidents and cases comes right after **Basic information**, on half of the row (see [Incident and case timeline](../usage/case-timeline.md#overview-layout)). If the new widget leaves another one alone on its row, switch on **Full width** for that widget.

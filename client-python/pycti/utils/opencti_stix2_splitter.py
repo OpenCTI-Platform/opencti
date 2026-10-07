@@ -1,3 +1,4 @@
+import copy
 import json
 import uuid
 from typing import Tuple
@@ -10,8 +11,10 @@ from pycti.utils.opencti_stix2_identifier import (
 )
 from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
+    STIX_EXT_OCTI_TIMELINE,
     SUPPORTED_INTERNAL_OBJECTS,
     SUPPORTED_STIX_ENTITY_OBJECTS,
+    TIMELINE_REQUIRED_IDS,
 )
 
 OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -57,6 +60,8 @@ class OpenCTIStix2Splitter:
         self.cache_refs = {}
         self.elements = []
         self.incompatible_items = []
+        # Per incident or case, the elements of its timeline imported after it
+        self.timeline_deferred_refs = {}
 
     def get_internal_ids_in_extension(self, item):
         """Get internal IDs from OpenCTI extensions in a STIX object.
@@ -76,6 +81,73 @@ class OpenCTIStix2Splitter:
         ):
             ids.append(item["extensions"][OPENCTI_EXTENSION]["id"])
         return ids
+
+    @staticmethod
+    def get_timeline_extension_refs(item):
+        """Get the refs nested in the timeline extension of an incident or a case.
+
+        The elements, authors and markings of the analyst contributions are
+        dependencies of the container that carries them.
+
+        :param item: the STIX object to extract the refs from
+        :type item: dict
+        :return: list of the distinct refs, in their order of appearance
+        :rtype: list
+        """
+        extension = (item.get("extensions") or {}).get(STIX_EXT_OCTI_TIMELINE)
+        if not isinstance(extension, dict):
+            return []
+        refs = []
+        for event in extension.get("events") or []:
+            if not isinstance(event, dict):
+                continue
+            for key in ("element_ref", "created_by_ref"):
+                if isinstance(event.get(key), str):
+                    refs.append(event[key])
+            for marking_ref in event.get("object_marking_refs") or []:
+                if isinstance(marking_ref, str):
+                    refs.append(marking_ref)
+        for annotation in extension.get("annotations") or []:
+            if isinstance(annotation, dict) and isinstance(
+                annotation.get("element_ref"), str
+            ):
+                refs.append(annotation["element_ref"])
+        return list(dict.fromkeys(refs))
+
+    def refers_to(self, start_id, target_id, raw_data):
+        """Tell whether an object of the bundle refers to another one.
+
+        The reference may be direct or go through the objects it refers to, by
+        their refs or by the refs of their timeline extension.
+
+        :param start_id: the ID of the object to start from
+        :type start_id: str
+        :param target_id: the ID of the object to look for
+        :type target_id: str
+        :param raw_data: the raw data dictionary of all items
+        :type raw_data: dict
+        :return: True if target_id is reachable from start_id
+        :rtype: bool
+        """
+        visited = set()
+        to_visit = [start_id]
+        while to_visit:
+            current_id = to_visit.pop()
+            if current_id == target_id:
+                return True
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+            current = raw_data.get(current_id)
+            if not isinstance(current, dict):
+                continue
+            for key, value in current.items():
+                if key.endswith("_ref") and isinstance(value, str):
+                    to_visit.append(value)
+                elif key.endswith("_refs") and isinstance(value, list):
+                    to_visit.extend(ref for ref in value if isinstance(ref, str))
+            to_visit.extend(self.get_timeline_extension_refs(current))
+        return False
 
     def enlist_element(
         self, item_id, raw_data, cleanup_inconsistent_bundle, parent_acc
@@ -213,6 +285,37 @@ class OpenCTIStix2Splitter:
                         # nb_deps += self.enlist_element(kill_chain_id, raw_data)
                 item[key] = deduplicated_kill_chain
 
+        # The refs nested in a timeline extension are imported before the container,
+        # so that its analyst contributions resolve their elements, authors and markings.
+        # The extension itself is kept as is: a ref missing from the bundle is skipped on import.
+        # An element that refers back to the container (a note about the case) is not waited
+        # for: the cycle would be broken by removing that reference from the element. It is
+        # imported after the container, and the container is sent again after it.
+        for nested_ref in self.get_timeline_extension_refs(item):
+            if (
+                raw_data.get(nested_ref) is None
+                or not is_id_supported(nested_ref)
+                or nested_ref == item_id
+                or nested_ref in self.cache_refs[item_id]
+            ):
+                continue
+            if (
+                nested_ref in parent_acc
+                or item_id in (self.cache_refs.get(nested_ref) or [])
+                or self.refers_to(nested_ref, item_id, raw_data)
+            ):
+                deferred = self.timeline_deferred_refs.setdefault(item_id, [])
+                if nested_ref not in deferred:
+                    deferred.append(nested_ref)
+            else:
+                self.cache_refs[item_id].append(nested_ref)
+                nb_deps += self.enlist_element(
+                    nested_ref,
+                    raw_data,
+                    cleanup_inconsistent_bundle,
+                    parent_acc + [nested_ref],
+                )
+
         # Get the final dep counting and add in cache
         item["nb_deps"] = nb_deps
         # Put in cache
@@ -295,6 +398,45 @@ class OpenCTIStix2Splitter:
             :rtype: int
             """
             return elem["nb_deps"]
+
+        # A container whose timeline names elements imported after it is sent again after
+        # them, so that its timeline extension is imported once they exist
+        compatible_ids = {element["id"] for element in self.elements}
+        for container_id, deferred_refs in self.timeline_deferred_refs.items():
+            container = self.cache_index.get(container_id)
+            required_refs = [
+                ref
+                for ref in deferred_refs
+                if self.cache_index.get(ref) is not None
+                and self.cache_index[ref]["id"] in compatible_ids
+            ]
+            if (
+                container is None
+                or container["id"] not in compatible_ids
+                or len(required_refs) == 0
+            ):
+                continue
+            resent_container = copy.deepcopy(container)
+            resent_container[TIMELINE_REQUIRED_IDS] = required_refs
+            resent_container["nb_deps"] = 1 + max(
+                [container["nb_deps"]]
+                + [self.cache_index[ref]["nb_deps"] for ref in required_refs]
+            )
+            # The first copy creates the container without its timeline: the milestones are
+            # imported once, by the copy sent after the elements they point to
+            first_container = {
+                **container,
+                "extensions": {
+                    key: value
+                    for key, value in (container.get("extensions") or {}).items()
+                    if key != STIX_EXT_OCTI_TIMELINE
+                },
+            }
+            self.elements = [
+                first_container if element is container else element
+                for element in self.elements
+            ]
+            self.elements.append(resent_container)
 
         self.elements.sort(key=by_dep_size)
 

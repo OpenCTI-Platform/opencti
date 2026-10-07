@@ -18,6 +18,7 @@ export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident)
     response_types: instance.response_types,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
+      ...caseIncident.extensions,
       [STIX_EXT_OCTI]: cleanObject({
         ...caseIncident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',

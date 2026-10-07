@@ -26,13 +26,15 @@ As with other objects in OpenCTI, you can also leverage the `Notes` to add some 
 
 You can also use `Opinions` to collect how the Case has been handled, helping you to build Lessons Learned.
 
+Every Case and Incident also has a living timeline, assembled automatically from its knowledge, tasks, notes and history, with analyst milestones and anchors such as the first detection and the containment. See [Incident and case timeline](case-timeline.md).
+
 ![Incident Responses' list](assets/case-opinion.png)
 
 To trace the evolution of your Case and define specific resolution worflows, you can use the `Status` (that can be define in Settings/Taxonomies/Status templates).
 
 At the end of your Case, you will certainly want to report on what has been done. OpenCTI allows you to export the content of the Case in a simple but customizable PDF (currently in refactor). But of course, your company has its own document templates. With OpenCTI, you will be able to include some nice graphics in it. For example, a Matrix view of the attacker attack pattern or even a graph display of how things are connected. 
 
-Also, we are currently working a more meaningful Timeline view that will be possible to export too.
+The timeline of a Case can be exported too, as CSV, PDF, PNG or SVG, from its Timeline tab or from the export dialog of the Case (see [Incident and case timeline](case-timeline.md)).
 
 ## Use case example: A suspicious observable is sighted by a defense system. Is it important?
 

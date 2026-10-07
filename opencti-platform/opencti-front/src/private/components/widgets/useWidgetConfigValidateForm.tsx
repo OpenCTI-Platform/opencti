@@ -63,6 +63,9 @@ const useWidgetConfigValidateForm = () => {
   // Check if the variable name is already used in an other widget
   const isWidgetVarNameAlreadyUsed = !!config.fintelVariableName && isVarNameAlreadyUsed(config.fintelVariableName);
 
+  // Check the incident or case of a timeline widget is selected (a custom view uses the entity it is displayed on)
+  const isCaseTimelineContainerFilled = type !== 'case-timeline' || host.kind === 'custom-view' || !!parameters?.container_id;
+
   return {
     isFormValid: (
       isLastStep
@@ -74,6 +77,7 @@ const useWidgetConfigValidateForm = () => {
       && isTitleFilled
       && isTypeFilled
       && !isWidgetVarNameAlreadyUsed
+      && isCaseTimelineContainerFilled
     ),
     isWidgetVarNameAlreadyUsed,
     isVarNameAlreadyUsed,

@@ -8,7 +8,7 @@ import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
+import { defaultEntitySetting, type EntitySettingSchemaAttribute, getAvailableSettings, mergeOverviewLayoutCustomization, type typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypesPaginated } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
@@ -104,8 +104,17 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
+export const getDefaultOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
+  return schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+};
+
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+  const defaultLayout = getDefaultOverviewLayoutCustomization(entitySetting);
+  const storedLayout = entitySetting.overview_layout_customization;
+  if (!storedLayout?.[0]) {
+    return defaultLayout;
+  }
+  return mergeOverviewLayoutCustomization(storedLayout, defaultLayout ?? []);
 };
 
 export const getTemplatesForSetting = async (
