@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import type { BasicStoreEntitySource } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import type { BasicStoreEntitySource, SourceKindValue } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import {
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
@@ -10,9 +10,10 @@ import {
 import { BUS_TOPICS, getBusTopicForEntityType } from '../../../../src/config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../../src/schema/general';
 
-const { cachedSources, accessibleIdentities } = vi.hoisted(() => ({
+const { cachedSources, accessibleIdentities, listedSources } = vi.hoisted(() => ({
   cachedSources: new Map<string, unknown>(),
   accessibleIdentities: new Set<string>(),
+  listedSources: { calls: 0 },
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -25,9 +26,24 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalFindByIds: vi.fn(async (_context: unknown, _user: unknown, ids: string[]) => ids
     .filter((id) => accessibleIdentities.has(id))
     .map((id) => ({ internal_id: id }))),
+  // The stored author sources, as the query on their kind returns them
+  fullEntitiesList: vi.fn(async () => {
+    listedSources.calls += 1;
+    return [...cachedSources.values()].filter((source) => (source as BasicStoreEntitySource).source_kind === SOURCE_KIND_AUTHOR);
+  }),
 }));
 
-const { maskRestrictedNames, recordNamedAuthors, restrictedRecommendationNames, sourceAuditName } = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain');
+const {
+  maskRestrictedNames,
+  maskRestrictedSources,
+  recordNamedAuthors,
+  restrictedRecommendationNames,
+  sourceAuditName,
+  sourceRestrictions,
+  withoutRestrictedScorecards,
+  withoutRestrictedSourceEntries,
+  withoutRestrictedSources,
+} = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain');
 
 const user = { id: 'analyst' } as AuthUser;
 const authorSource = (id: string, refId: string, name: string) => ({ internal_id: id, source_kind: SOURCE_KIND_AUTHOR, ref_id: refId, name }) as BasicStoreEntitySource;
@@ -85,6 +101,57 @@ describe('Source intelligence recommendation masking', () => {
 
   it('should record nothing for a recommendation without author source', async () => {
     expect(await recordNamedAuthors(newContext(), { source_id: null, payload: '{"collection_gap_id":"gap-1"}' })).toBe('[]');
+  });
+});
+
+describe('Source intelligence authors the user cannot access', () => {
+  const connector = { internal_id: 'source-3', source_kind: SOURCE_KIND_CONNECTOR, ref_id: 'connector-1', name: 'IP reputation feed' } as BasicStoreEntitySource;
+  const share = (sourceId: string) => ({ source_id: sourceId, shared_count: 5, share: 0.5 });
+  const scorecard = (sourceId: string, sourceKind: SourceKindValue, overlap: Array<ReturnType<typeof share>> = []) => ({ source_id: sourceId, source_kind: sourceKind, overlap });
+
+  beforeEach(() => {
+    cachedSources.clear();
+    accessibleIdentities.clear();
+    listedSources.calls = 0;
+    cachedSources.set('source-1', authorSource('source-1', 'identity-1', 'Restricted CERT'));
+    cachedSources.set('source-2', authorSource('source-2', 'identity-2', 'Acme'));
+    cachedSources.set('source-3', connector);
+    accessibleIdentities.add('identity-2');
+  });
+
+  it('should leave out the scorecards of such an author, of a removed author, and the overlap entries naming one', async () => {
+    const readable = await withoutRestrictedScorecards(newContext(), user, [
+      scorecard('source-1', SOURCE_KIND_AUTHOR, [share('source-2')]),
+      scorecard('source-2', SOURCE_KIND_AUTHOR, [share('source-1'), share('source-3')]),
+      scorecard('source-3', SOURCE_KIND_CONNECTOR, [share('source-1')]),
+      scorecard('source-9', SOURCE_KIND_AUTHOR),
+    ]);
+    expect(readable).toEqual([
+      scorecard('source-2', SOURCE_KIND_AUTHOR, [share('source-3')]),
+      scorecard('source-3', SOURCE_KIND_CONNECTOR),
+    ]);
+  });
+
+  it('should list its id among the ids a query leaves out, and resolve them once per request', async () => {
+    const context = newContext();
+    expect((await sourceRestrictions(context, user)).restrictedIds).toEqual(['source-1']);
+    await withoutRestrictedSourceEntries(context, user, [share('source-1')]);
+    expect(listedSources.calls).toBe(1);
+  });
+
+  it('should leave such an author out of the widget sources and of the coverage of a gap', async () => {
+    const sources = [...cachedSources.values()] as BasicStoreEntitySource[];
+    expect((await withoutRestrictedSources(newContext(), user, sources)).map((source) => source.internal_id)).toEqual(['source-2', 'source-3']);
+    const covering = [share('source-1'), share('source-2'), share('source-3')];
+    expect((await withoutRestrictedSourceEntries(newContext(), user, covering)).map((entry) => entry.source_id)).toEqual(['source-2', 'source-3']);
+  });
+
+  it('should name such an author Restricted, without its metrics, when it is reached by its id', async () => {
+    const scored = { ...authorSource('source-1', 'identity-1', 'Restricted CERT'), latest_value_score: 87, latest_volume: 1200, enabled: true };
+    const [masked] = await maskRestrictedSources(newContext(), user, [scored]);
+    expect(masked).toMatchObject({ internal_id: 'source-1', name: 'Restricted', ref_id: '', latest_value_score: null, latest_volume: null, enabled: true });
+    const accessible = { ...authorSource('source-2', 'identity-2', 'Acme'), latest_value_score: 64 };
+    expect(await maskRestrictedSources(newContext(), user, [accessible])).toEqual([accessible]);
   });
 });
 

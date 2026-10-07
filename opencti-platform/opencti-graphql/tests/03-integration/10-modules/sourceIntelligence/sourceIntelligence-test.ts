@@ -739,6 +739,35 @@ describe('Source intelligence', () => {
     }
   });
 
+  it('should leave an author the user cannot access out of the lists, and withhold its metrics', async () => {
+    // An identity no user can read (here one that does not exist) makes its author source count-only
+    const restricted = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'author',
+      ref_id: uuidv4(),
+      ref_type: 'Organization',
+      name: 'Source intelligence restricted author',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+      latest_value_score: 99,
+      latest_volume: 4200,
+      latest_cost_per_actionable: 12,
+    }, ENTITY_TYPE_SOURCE);
+    try {
+      // Ranked first by its value score if it were listed
+      const { data } = await queryAsAdminWithSuccess({ query: SOURCES_QUERY, variables: { first: 500, orderBy: 'latest_value_score', orderMode: 'desc' } });
+      const listedIds = data.sources.edges.map(({ node }: { node: { id: string } }) => node.id);
+      expect(listedIds.length).toBeGreaterThan(0);
+      expect(listedIds).not.toContain(restricted.internal_id);
+      const { data: detail } = await queryAsAdminWithSuccess({ query: SOURCE_QUERY, variables: { id: restricted.internal_id } });
+      expect(detail.source.name).toBe('Restricted');
+      expect(detail.source.latest_cost_per_actionable).toBeNull();
+      expect(detail.source.scorecard).toBeNull();
+    } finally {
+      await deleteElementById(testContext, ADMIN_USER, restricted.internal_id, ENTITY_TYPE_SOURCE);
+    }
+  });
+
   it('should expose the connector and the scorecard details of a scored source', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: SOURCE_DETAIL_QUERY, variables: { id: sourceId } });
     expect(data.source.id).toBe(sourceId);

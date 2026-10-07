@@ -20,8 +20,8 @@ import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { connectorIdFromIngestId } from '../../domain/connector';
-import { ConnectorType, type EditInput, type FilterGroup } from '../../generated/graphql';
-import { extractFilterKeys } from '../../utils/filtering/filtering-utils';
+import { ConnectorType, type EditInput, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
+import { addFilter, extractFilterKeys } from '../../utils/filtering/filtering-utils';
 import { generateStandardId } from '../../schema/identifier';
 import {
   ENTITY_TYPE_INGESTION_CSV,
@@ -223,19 +223,91 @@ const accessibleIdentityIds = async (context: AuthContext, user: AuthUser, ident
 };
 
 const sourceVisibleIds = async (context: AuthContext, user: AuthUser, sources: BasicStoreEntitySource[]) => {
-  // Author sources reference identities that can be restricted by markings or organizations: the source stays visible
-  // (counts only) but its name is masked for users who cannot access the identity.
+  // Author sources reference identities that can be restricted by markings or organizations: for users who cannot
+  // access the identity, the source is count-only (see sourceRestrictions)
   return accessibleIdentityIds(context, user, sources.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.ref_id));
 };
 
+const CLEARED_LATEST_KPIS = {
+  last_computed_at: null,
+  latest_value_score: null,
+  latest_volume: null,
+  latest_unique_contribution: null,
+  latest_corroboration_rate: null,
+  latest_lead_time_hours: null,
+  latest_accuracy: null,
+  latest_relevance: null,
+  latest_impact_score: null,
+  latest_noise: null,
+  latest_freshness_hours: null,
+  latest_cost_per_actionable: null,
+  latest_community_uniqueness: null,
+};
+
+/** A source reached by its id whose author the user cannot access: named Restricted, without its metrics. */
 export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(context: AuthContext, user: AuthUser, sources: T[]): Promise<T[]> => {
   const accessibleAuthors = await sourceVisibleIds(context, user, sources);
   return sources.map((source) => {
     if (source.source_kind === SOURCE_KIND_AUTHOR && !accessibleAuthors.has(source.ref_id)) {
-      return { ...source, name: RESTRICTED_AUTHOR_NAME, description: undefined, ref_id: '' };
+      return { ...source, ...CLEARED_LATEST_KPIS, name: RESTRICTED_AUTHOR_NAME, description: undefined, ref_id: '' };
     }
     return source;
   });
+};
+
+type SourceRestrictions = {
+  restrictedIds: string[];
+  isRestricted: (sourceId: string, sourceKind?: string | null) => boolean;
+};
+
+// One resolution per request and user: the gaps, scorecards and overlap entries of a request share it
+const sourceRestrictionsByContext = new WeakMap<AuthContext, Map<string, Promise<SourceRestrictions>>>();
+
+/**
+ * Whether a source is count-only for the user: an author source whose identity the user cannot access, or an author
+ * source that no longer exists and cannot be checked. Such a source is left out of every list, scorecard, overlap,
+ * coverage and widget the user reads, so no metric, sort or aggregation tells what it wrote; the number of sources
+ * of the status still counts it. The author sources are bounded by the discovery settings.
+ */
+export const sourceRestrictions = (context: AuthContext, user: AuthUser): Promise<SourceRestrictions> => {
+  let memo = sourceRestrictionsByContext.get(context);
+  if (!memo) {
+    memo = new Map();
+    sourceRestrictionsByContext.set(context, memo);
+  }
+  let resolution = memo.get(user.id);
+  if (!resolution) {
+    resolution = (async () => {
+      const authors = await fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE], {
+        filters: { mode: FilterMode.And, filters: [{ key: ['source_kind'], values: [SOURCE_KIND_AUTHOR], operator: FilterOperator.Eq, mode: FilterMode.Or }], filterGroups: [] },
+      });
+      const accessible = await sourceVisibleIds(context, user, authors);
+      const authorIds = new Set(authors.map((source) => source.internal_id));
+      const restrictedIds = authors.filter((source) => !accessible.has(source.ref_id)).map((source) => source.internal_id);
+      const restricted = new Set(restrictedIds);
+      return {
+        restrictedIds,
+        isRestricted: (sourceId: string, sourceKind?: string | null) => restricted.has(sourceId) || (sourceKind === SOURCE_KIND_AUTHOR && !authorIds.has(sourceId)),
+      };
+    })();
+    memo.set(user.id, resolution);
+  }
+  return resolution;
+};
+
+/** Sources the user reads in full: the author sources it cannot access are left out. */
+export const withoutRestrictedSources = async <T extends BasicStoreEntitySource>(context: AuthContext, user: AuthUser, sources: T[]): Promise<T[]> => {
+  const accessibleAuthors = await sourceVisibleIds(context, user, sources);
+  return sources.filter((source) => source.source_kind !== SOURCE_KIND_AUTHOR || accessibleAuthors.has(source.ref_id));
+};
+
+/** Entries naming a source (overlap shares, gap coverage) without those naming a source that is count-only for the user. */
+export const withoutRestrictedSourceEntries = async <T extends { source_id: string }>(context: AuthContext, user: AuthUser, entries: T[]): Promise<T[]> => {
+  if (entries.length === 0) {
+    return entries;
+  }
+  const { isRestricted } = await sourceRestrictions(context, user);
+  return entries.filter((entry) => !isRestricted(entry.source_id));
 };
 
 // One resolution per request and recommendation: the masked fields of a recommendation share it
@@ -363,31 +435,21 @@ export const maskRestrictedNamesInJson = (json: string | null | undefined, names
 };
 
 /**
- * Scorecards persist the source name at computation time: author sources the user cannot access get the same
- * masked name as their Source, whatever query returns them. A source missing from the cache (removed since the
- * computation) cannot be checked, so its author name is masked as well.
+ * Scorecards the user reads: those of a source that is count-only for the user are left out, and so are the overlap
+ * entries naming one, whatever query returns them.
  */
-export const maskRestrictedScorecards = async <T extends Pick<StoreSourceScorecard, 'source_id' | 'source_kind' | 'source_name'>>(
+export const withoutRestrictedScorecards = async <T extends Pick<StoreSourceScorecard, 'source_id' | 'source_kind' | 'overlap'>>(
   context: AuthContext,
   user: AuthUser,
   scorecards: T[],
 ): Promise<T[]> => {
-  const authorSourceIds = [...new Set(scorecards.filter((s) => s.source_kind === SOURCE_KIND_AUTHOR).map((s) => s.source_id))];
-  if (authorSourceIds.length === 0) {
+  if (scorecards.length === 0) {
     return scorecards;
   }
-  const sourcesById = await getEntitiesMapFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
-  const authorSources = authorSourceIds
-    .map((id) => sourcesById.get(id))
-    .filter((source): source is BasicStoreEntitySource => source !== undefined);
-  const accessibleAuthors = await sourceVisibleIds(context, user, authorSources);
-  const visibleSourceIds = new Set(authorSources.filter((source) => accessibleAuthors.has(source.ref_id)).map((source) => source.internal_id));
-  return scorecards.map((scorecard) => {
-    if (scorecard.source_kind === SOURCE_KIND_AUTHOR && !visibleSourceIds.has(scorecard.source_id)) {
-      return { ...scorecard, source_name: RESTRICTED_AUTHOR_NAME };
-    }
-    return scorecard;
-  });
+  const { isRestricted } = await sourceRestrictions(context, user);
+  return scorecards
+    .filter((scorecard) => !isRestricted(scorecard.source_id, scorecard.source_kind))
+    .map((scorecard) => ({ ...scorecard, overlap: (scorecard.overlap ?? []).filter((share) => !isRestricted(share.source_id)) }));
 };
 
 export const findSourceById = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -418,7 +480,10 @@ export const restrictSourceQueryToEdition = async <T extends { orderBy?: string 
 
 export const findSourcesPaginated = async (context: AuthContext, user: AuthUser, args: Record<string, any>) => {
   const allowed = await restrictSourceQueryToEdition(context, args);
-  const connection = await pageEntitiesConnection<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], allowed);
+  // Left out by the query itself: neither a sort nor a filter on a metric ranks a source that is count-only for the user
+  const { restrictedIds } = await sourceRestrictions(context, user);
+  const filters = restrictedIds.length > 0 ? addFilter(allowed.filters, 'internal_id', restrictedIds, 'not_eq', 'and') : allowed.filters;
+  const connection = await pageEntitiesConnection<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], { ...allowed, filters });
   const masked = await maskRestrictedSources(context, user, connection.edges.map((edge) => edge.node));
   return { ...connection, edges: connection.edges.map((edge, index) => ({ ...edge, node: masked[index] })) };
 };
@@ -453,7 +518,7 @@ export const findSourceScorecards = async (
     }),
     reachesToday ? findLiveScorecards(context, period, [args.sourceId]) : Promise.resolve([]),
   ]);
-  return maskRestrictedScorecards(context, user, [...snapshots, ...live]);
+  return withoutRestrictedScorecards(context, user, [...snapshots, ...live]);
 };
 
 export const findLatestScorecard = async (context: AuthContext, user: AuthUser, sourceId: string, period?: ScorecardPeriodValue | null) => {
@@ -461,8 +526,8 @@ export const findLatestScorecard = async (context: AuthContext, user: AuthUser, 
   if (!scorecard) {
     return null;
   }
-  const [masked] = await maskRestrictedScorecards(context, user, [scorecard]);
-  return masked;
+  const [readable] = await withoutRestrictedScorecards(context, user, [scorecard]);
+  return readable ?? null;
 };
 
 export const findSourceOverlap = async (
@@ -472,7 +537,11 @@ export const findSourceOverlap = async (
 ) => {
   const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
   const first = Math.min(Math.max(args.first ?? 20, 2), 50);
-  const scorecards = await findLiveScorecards(context, period, args.sourceIds && args.sourceIds.length > 0 ? args.sourceIds : undefined);
+  const scorecards = await withoutRestrictedScorecards(
+    context,
+    user,
+    await findLiveScorecards(context, period, args.sourceIds && args.sourceIds.length > 0 ? args.sourceIds : undefined),
+  );
   const selected = scorecards
     .filter((scorecard) => scorecard.volume_total > 0)
     .sort((a, b) => b.volume_total - a.volume_total)
@@ -696,22 +765,6 @@ export const writeComputedSourceKpis = async (
       await lock.unlock();
     }
   }
-};
-
-const CLEARED_LATEST_KPIS = {
-  last_computed_at: null,
-  latest_value_score: null,
-  latest_volume: null,
-  latest_unique_contribution: null,
-  latest_corroboration_rate: null,
-  latest_lead_time_hours: null,
-  latest_accuracy: null,
-  latest_relevance: null,
-  latest_impact_score: null,
-  latest_noise: null,
-  latest_freshness_hours: null,
-  latest_cost_per_actionable: null,
-  latest_community_uniqueness: null,
 };
 
 /**

@@ -24,6 +24,7 @@ import {
   restrictedRecommendationNames,
   sourceEditField,
   sourceSetCost,
+  withoutRestrictedSourceEntries,
 } from './sourceIntelligence-domain';
 import {
   applySourceRecommendation,
@@ -112,7 +113,7 @@ const sourceIntelligenceResolvers: Resolvers = {
   CollectionGap: {
     coverage_score: (gap: any) => gap.gap_coverage_score ?? 0,
     pir: (gap: any, _, context) => storeLoadById(context, context.user, gap.pir_id, ENTITY_TYPE_PIR) as any,
-    covering_sources: (gap: any) => gap.covering_sources ?? [],
+    covering_sources: (gap: any, _, context) => withoutRestrictedSourceEntries(context, context.user as AuthUser, gap.covering_sources ?? []),
     recommended_connectors: (gap: any) => gap.recommended_connectors ?? [],
   },
   CollectionGapRecommendedConnector: {

@@ -21,7 +21,7 @@ vi.mock('../../../../src/modules/sourceIntelligence/sourceIntelligence-store', a
 vi.mock('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain')>()),
   restrictSourceQueryToEdition: async (_: AuthContext, args: unknown) => args,
-  maskRestrictedSources: async (_: AuthContext, __: AuthUser, sources: unknown[]) => sources,
+  withoutRestrictedSources: async (_: AuthContext, __: AuthUser, sources: unknown[]) => sources,
 }));
 
 const { sourceScorecardsTimeSeries } = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-widgets');

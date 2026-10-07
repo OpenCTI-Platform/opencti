@@ -87,6 +87,8 @@ The **Leaderboard** tab lists the sources with their value score and their main 
 
 ![Scorecard page of a source](assets/source-intelligence-source-detail.png)
 
+An author you cannot access (because of its markings or organization restrictions) is left out of the leaderboard and of the Sources and Quarantined sources counters, the overlap heatmap, the coverage of the collection gaps and the Sources widgets, and the overlap of the other sources does not name it, so no figure or ranking tells what it wrote: only the number of sources in the status line counts it. Opened from a link, its page reads **Restricted**, without its metrics.
+
 ### Cost
 
 Set a cost on a source (amount, currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. The currency is picked from a list of ISO 4217 currencies (EUR when you do not change it); a cost saved earlier in a currency outside that list stays selectable. Each field of the editor says what it does, gives an example and what happens when it is left empty, and **Learn more** opens this section. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object. A cost set while the daily computation runs is never lost: the computation writes each source with the cost it has when its scorecards are saved.

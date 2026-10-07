@@ -12,7 +12,7 @@ import type { FilterGroup } from '../../generated/graphql';
 import { addSourceIntelligenceDashboardCount } from '../../manager/telemetryManager';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, REFERENCE_SCORECARD_PERIOD, type ScorecardPeriodValue, type StoreSourceScorecard } from './sourceIntelligence-types';
 import { aggregateScorecardSnapshotsByDay, findLiveScorecards, type ScorecardAggregation } from './sourceIntelligence-store';
-import { maskRestrictedSources, restrictSourceQueryToEdition } from './sourceIntelligence-domain';
+import { restrictSourceQueryToEdition, withoutRestrictedSources } from './sourceIntelligence-domain';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export type ScorecardMetricType = 'count' | 'ratio' | 'hours' | 'cost' | 'score';
@@ -129,21 +129,22 @@ const restrictToCostCurrency = (data: WidgetEntry[], metrics: Array<string | nul
 };
 
 /**
- * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...), live scorecard or not.
+ * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...), live scorecard or not,
+ * without the authors the user cannot access: no figure, rank or aggregation includes them.
  * The number of sources is bounded by the source discovery settings (connectors, feeds, top authors and analysts).
  */
 const loadWidgetSources = async (context: AuthContext, user: AuthUser, filters?: FilterGroup | null) => {
   const allowed = await restrictSourceQueryToEdition(context, { filters });
   const sources = await fullEntitiesList<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], { filters: allowed.filters ?? undefined });
-  return maskRestrictedSources(context, user, sources);
+  return withoutRestrictedSources(context, user, sources);
 };
 
 /** Sources matching the widget filters with their live scorecard: a source without one (disabled) is left out. */
 const loadWidgetData = async (context: AuthContext, user: AuthUser, period: ScorecardPeriodValue, filters?: FilterGroup | null) => {
-  const masked = await loadWidgetSources(context, user, filters);
-  const scorecards = await findLiveScorecards(context, period, masked.map((source) => source.internal_id));
+  const sources = await loadWidgetSources(context, user, filters);
+  const scorecards = await findLiveScorecards(context, period, sources.map((source) => source.internal_id));
   const bySource = new Map(scorecards.map((scorecard) => [scorecard.source_id, scorecard]));
-  return masked
+  return sources
     .map((source) => ({ source, scorecard: bySource.get(source.internal_id) }))
     .filter((entry): entry is { source: BasicStoreEntitySource; scorecard: StoreSourceScorecard } => entry.scorecard !== undefined);
 };
