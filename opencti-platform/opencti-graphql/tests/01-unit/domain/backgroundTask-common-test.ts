@@ -1,12 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY, ACTION_TYPE_MERGE } from '../../../src/domain/backgroundTask-common';
-import { buildStandardUser, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
+import { isFeatureEnabled } from '../../../src/config/conf';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { BackgroundTaskScope } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return {
+    ...actual,
+    isFeatureEnabled: vi.fn(() => true),
+  };
+});
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -101,6 +110,53 @@ describe('Background task validity check (checkActionValidity)', () => {
       await expect(async () => {
         await checkActionValidity(testContext, user, input, BackgroundTaskScope.Knowledge, type);
       }).rejects.toThrowError('A single task cannot perform several actions on the same field if one action is a replace.');
+    });
+  });
+
+  describe('Workflow status actions', () => {
+    const type = TASK_TYPE_QUERY;
+    const scope = BackgroundTaskScope.Knowledge;
+    const bypassAction = {
+      type: ACTION_TYPE_REPLACE,
+      context: { field: 'x_opencti_workflow_id', values: ['status-id'], options: { applyTransitionActions: true } },
+    };
+    const buildInput = (actions: object[]) => ({ actions, filters: filterEntityType(ENTITY_TYPE_CONTAINER_REPORT) });
+
+    afterEach(() => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    });
+
+    it('should accept a workflow bypass action for a bypass user', async () => {
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction]), scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should throw an error if the ENTITIES_WORKFLOW feature flag is disabled', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction]), scope, type))
+        .rejects.toThrowError('ENTITIES_WORKFLOW is disabled');
+    });
+
+    it('should throw an error if the task is created in a draft', async () => {
+      const draftContext = { ...testContext, draft_context: 'draft-id' };
+      await expect(checkActionValidity(draftContext, ADMIN_USER, buildInput([bypassAction]), scope, type))
+        .rejects.toThrowError('Cannot change workflow status in draft');
+    });
+
+    it('should throw an error if another action targets the workflow status', async () => {
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['other-status-id'] } };
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction, statusAction]), scope, type))
+        .rejects.toThrowError('A single task cannot perform several actions on the workflow status');
+    });
+
+    it('should throw an error if the user has no BYPASS capability', async () => {
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([bypassAction]), scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should not check workflow rules for a plain status replace', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);
     });
   });
 
