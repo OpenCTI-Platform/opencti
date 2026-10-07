@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createEntity } from '../../../../src/database/middleware';
 import { notify } from '../../../../src/database/redis';
 import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import { addHuntProposal } from '../../../../src/modules/hunt/hunt-domain';
+import { addHuntProposal, planHunt } from '../../../../src/modules/hunt/hunt-domain';
+import { callHuntAgent } from '../../../../src/modules/hunt/hunt-agents';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../../../src/types/store';
@@ -27,6 +28,16 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/redis')>(),
   notify: vi.fn(),
+}));
+
+vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>(),
+  checkEnterpriseEdition: vi.fn(async () => undefined),
+}));
+
+vi.mock('../../../../src/modules/hunt/hunt-agents', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-agents')>(),
+  callHuntAgent: vi.fn(),
 }));
 
 const reference = (id: string, markings: string[], organizations: string[] = []) => ({
@@ -148,6 +159,28 @@ describe('Hunt proposals of agents', () => {
     vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [], ['org-a'])]);
     const caller = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as typeof ADMIN_USER;
     await expect(addHuntProposal(testContext, caller, proposalInput)).rejects.toThrow(/only a user who can restrict access to organizations/);
+    expect(addDraftWorkspace).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  const membersOnly = (id: string, entityType: string) => ({
+    ...reference(id, []),
+    entity_type: entityType,
+    restricted_members: [{ id: 'user-analyst', access_right: 'view' }],
+  } as unknown as BasicStoreEntity);
+
+  it('should refuse a proposal referencing intelligence restricted to authorized members, creating nothing', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', []), membersOnly('report-1', 'Report')]);
+    await expect(addHuntProposal(testContext, ADMIN_USER, proposalInput)).rejects.toThrow(/restricted to authorized members, which a hunt cannot be/);
+    expect(addDraftWorkspace).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('should refuse to plan from intelligence restricted to authorized members before the agent reads it', async () => {
+    vi.mocked(findByIds).mockResolvedValue([{ ...reference('intrusion-set-1', []), entity_type: 'Intrusion-Set' } as BasicStoreEntity, membersOnly('grouping-1', 'Grouping')]);
+    await expect(planHunt(testContext, ADMIN_USER, { entity_ids: ['intrusion-set-1', 'grouping-1'] } as Parameters<typeof planHunt>[2]))
+      .rejects.toThrow(/cannot be planned: the intelligence it is planned from is restricted to authorized members/);
+    expect(callHuntAgent).not.toHaveBeenCalled();
     expect(addDraftWorkspace).not.toHaveBeenCalled();
     expect(createEntity).not.toHaveBeenCalled();
   });

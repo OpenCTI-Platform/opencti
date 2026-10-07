@@ -219,17 +219,27 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
+// A hunt holds no authorized members: the hunt manager, its connectors and every analyst of its runs read it, so
+// intelligence shared with selected members only never passes its content to a hunt made from it
+const restrictedToMembers = (elements: BasicStoreEntity[]) => elements
+  .filter((element) => (element.restricted_members ?? []).length > 0)
+  .map((element) => element.internal_id);
+
 /**
  * Draft-first creation used by agents: a draft workspace is created and the hunt is created inside it, the
  * existing draft approval workflow validates it into the knowledge graph. Like a planned hunt, the proposal carries the
  * markings of the threats, techniques, indicators and reports it references and is shared only with the organizations
  * they all share: a hunt derived from restricted intelligence is never proposed less restricted, whatever the caller
- * asked for.
+ * asked for. Intelligence restricted to authorized members cannot be referenced, a hunt holding no such restriction.
  */
 export const addHuntProposal = async (context: AuthContext, user: AuthUser, input: HuntAddInput, draftName?: string | null) => {
   const techniqueIds = await huntTechniqueIds(context, user, input);
   const referenceIds = [...(input.huntTargets ?? []), ...(input.huntSources ?? []), ...techniqueIds];
   const references = referenceIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, referenceIds) : [];
+  const membersOnly = restrictedToMembers(references);
+  if (membersOnly.length > 0) {
+    throw FunctionalError('This hunt cannot be proposed: the intelligence it references is restricted to authorized members, which a hunt cannot be. Reference intelligence shared without authorized members.', { ids: membersOnly });
+  }
   const inheritedMarkings = references.flatMap((reference) => (reference[RELATION_OBJECT_MARKING] ?? []) as string[]);
   const objectMarking = Array.from(new Set([...(input.objectMarking ?? []), ...inheritedMarkings]));
   const requestedOrganizations = (input.objectOrganization ?? []).filter((id): id is string => !!id);
@@ -504,6 +514,11 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
   }
   const scopePlatformIds = await resolveHuntPlanPlatformIds(context, user, input.security_platform_ids ?? []);
   const { entities: unique, reports, threats, techniques, indicators } = await loadHuntPlanEntities(context, user, input.entity_ids);
+  // Refused before the agent reads it: the proposal would carry its content without the restriction
+  const membersOnly = restrictedToMembers(unique);
+  if (membersOnly.length > 0) {
+    throw FunctionalError('This hunt cannot be planned: the intelligence it is planned from is restricted to authorized members, which a hunt cannot be. Plan it from intelligence shared without authorized members.', { ids: membersOnly });
+  }
   if (threats.length + techniques.length + indicators.length === 0) {
     throw FunctionalError('No threat, technique or indicator to plan a hunt for');
   }
