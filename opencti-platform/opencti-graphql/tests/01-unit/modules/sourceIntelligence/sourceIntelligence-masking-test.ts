@@ -21,6 +21,11 @@ vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   getEntitiesMapFromCache: vi.fn(async () => cachedSources),
 }));
 
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
+  notify: vi.fn(async (_topic: string, instance: unknown) => instance),
+}));
+
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   internalFindByIds: vi.fn(async (_context: unknown, _user: unknown, ids: string[]) => ids
@@ -36,14 +41,18 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 const {
   maskRestrictedNames,
   maskRestrictedSources,
+  notifySourceEdition,
   recordNamedAuthors,
   restrictedRecommendationNames,
   sourceAuditName,
+  sourceCostActivity,
+  sourceEditActivityInput,
   sourceRestrictions,
   withoutRestrictedScorecards,
   withoutRestrictedSourceEntries,
   withoutRestrictedSources,
 } = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain');
+const { notify } = await import('../../../../src/database/redis');
 
 const user = { id: 'analyst' } as AuthUser;
 const authorSource = (id: string, refId: string, name: string) => ({ internal_id: id, source_kind: SOURCE_KIND_AUTHOR, ref_id: refId, name }) as BasicStoreEntitySource;
@@ -181,6 +190,16 @@ describe('Source intelligence authors the user cannot access', () => {
     const accessible = { ...authorSource('source-2', 'identity-2', 'Acme'), latest_value_score: 64 };
     expect(await maskRestrictedSources(newContext(), user, [accessible])).toEqual([accessible]);
   });
+
+  it('should publish an edited author source as stored, and return it Restricted to the user who edited it', async () => {
+    vi.mocked(notify).mockClear();
+    const stored = { ...authorSource('source-1', 'identity-1', 'Restricted CERT'), source_cost: { amount: 12000, currency: 'EUR', period: 'year' as const }, tags: ['premium'] };
+    const returned = await notifySourceEdition(newContext(), user, stored);
+    expect(notify).toHaveBeenCalledWith(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, stored, user);
+    expect(returned).toMatchObject({ internal_id: 'source-1', name: 'Restricted', source_cost: null, tags: [] });
+    const accessible = authorSource('source-2', 'identity-2', 'Acme');
+    expect(await notifySourceEdition(newContext(), user, accessible)).toEqual(accessible);
+  });
 });
 
 describe('Source intelligence activity records', () => {
@@ -192,6 +211,27 @@ describe('Source intelligence activity records', () => {
   it('should name the other sources, whose names are never masked', () => {
     const connector = { internal_id: 'source-3', source_kind: SOURCE_KIND_CONNECTOR, ref_id: 'connector-1', name: 'IP reputation feed' } as BasicStoreEntitySource;
     expect(sourceAuditName('source-3', connector)).toEqual('source `IP reputation feed`');
+  });
+
+  it('should record the cost change of an author source without the cost, and the cost of the other sources', () => {
+    const cost = { amount: 12000, currency: 'EUR', period: 'year' as const };
+    const author = authorSource('source-1', 'identity-1', 'Restricted CERT');
+    const connector = { internal_id: 'source-3', source_kind: SOURCE_KIND_CONNECTOR, ref_id: 'connector-1', name: 'IP reputation feed' } as BasicStoreEntitySource;
+    const authorActivity = sourceCostActivity('source-1', author, cost);
+    expect(authorActivity).toEqual({ message: 'sets the cost of source `source-1`', input: {} });
+    expect(JSON.stringify(authorActivity)).not.toMatch(/12000|EUR|year/);
+    expect(sourceCostActivity('source-1', author, null)).toEqual({ message: 'clears the cost of source `source-1`', input: { source_cost: null } });
+    expect(sourceCostActivity('source-3', connector, cost)).toEqual({
+      message: 'sets the cost of source `IP reputation feed` to 12000 EUR per year',
+      input: { source_cost: cost },
+    });
+  });
+
+  it('should record the edition of an author source with its state change only', () => {
+    const patch = { description: 'Paid feed', tags: ['premium'], owner_id: 'user-2', enabled: false };
+    expect(sourceEditActivityInput(authorSource('source-1', 'identity-1', 'Restricted CERT'), patch)).toEqual({ enabled: false });
+    expect(sourceEditActivityInput(authorSource('source-1', 'identity-1', 'Restricted CERT'), { tags: ['premium'] })).toEqual({});
+    expect(sourceEditActivityInput({ source_kind: SOURCE_KIND_CONNECTOR }, patch)).toEqual(patch);
   });
 });
 

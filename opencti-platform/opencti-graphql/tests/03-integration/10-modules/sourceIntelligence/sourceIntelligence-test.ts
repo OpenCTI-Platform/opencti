@@ -687,9 +687,11 @@ describe('Source intelligence', () => {
   });
 
   it('should edit the description, tags and owner of a source, and nothing else', async () => {
+    // An author the admin can read: the edited source is returned as the user who edits it reads it
+    const author = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence edited author' }, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     const curated = await createEntity(testContext, ADMIN_USER, {
       source_kind: 'author',
-      ref_id: uuidv4(),
+      ref_id: author.internal_id,
       ref_type: 'Organization',
       name: 'Source intelligence edited author',
       source_user_ids: [],
@@ -736,6 +738,7 @@ describe('Source intelligence', () => {
       expect(reset.data.sourceFieldPatch.owner).toBeNull();
     } finally {
       await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
+      await deleteElementById(testContext, ADMIN_USER, author.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     }
   });
 
@@ -765,6 +768,11 @@ describe('Source intelligence', () => {
       expect(detail.source.cost).toBeNull();
       expect(detail.source.latest_cost_per_actionable).toBeNull();
       expect(detail.source.scorecard).toBeNull();
+      // A user who may edit sources still receives the edited source Restricted
+      const { data: costed } = await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: restricted.internal_id, input: { amount: 500, currency: 'USD', period: 'month' } } });
+      expect(costed.sourceSetCost.cost).toBeNull();
+      const { data: patched } = await queryAsAdminWithSuccess({ query: SOURCE_PATCH_MUTATION, variables: { id: restricted.internal_id, input: [{ key: 'tags', value: ['premium'] }] } });
+      expect(patched.sourceFieldPatch.tags).toEqual([]);
     } finally {
       await deleteElementById(testContext, ADMIN_USER, restricted.internal_id, ENTITY_TYPE_SOURCE);
     }

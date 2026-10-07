@@ -87,6 +87,24 @@ const RESTRICTED_AUTHOR_NAME = 'Restricted';
 export const sourceAuditName = (id: string, source: Pick<BasicStoreEntitySource, 'name' | 'source_kind'> | undefined) => {
   return !source || source.source_kind === SOURCE_KIND_AUTHOR ? `source \`${id}\`` : `source \`${source.name}\``;
 };
+// The activity log has its own access: what the page of a restricted author withholds (cost, description, tags, owner)
+// is left out of the activity of every author source
+export const sourceCostActivity = (id: string, source: Pick<BasicStoreEntitySource, 'name' | 'source_kind'> | undefined, cost: SourceCost | null) => {
+  const name = sourceAuditName(id, source);
+  if (!cost) {
+    return { message: `clears the cost of ${name}`, input: { source_cost: null } };
+  }
+  if (!source || source.source_kind === SOURCE_KIND_AUTHOR) {
+    return { message: `sets the cost of ${name}`, input: {} };
+  }
+  return { message: `sets the cost of ${name} to ${cost.amount} ${cost.currency} per ${cost.period}`, input: { source_cost: cost } };
+};
+export const sourceEditActivityInput = (source: Pick<BasicStoreEntitySource, 'source_kind'>, patch: Record<string, unknown>) => {
+  if (source.source_kind !== SOURCE_KIND_AUTHOR) {
+    return patch;
+  }
+  return 'enabled' in patch ? { enabled: patch.enabled } : {};
+};
 const INGESTION_FEED_TYPES = [
   ENTITY_TYPE_INGESTION_RSS,
   ENTITY_TYPE_INGESTION_TAXII,
@@ -649,6 +667,13 @@ const sameSourceCost = (a: SourceCost | null | undefined, b: SourceCost | null |
 
 const sourceCostLockKey = (id: string) => `source-cost:${id}`;
 
+/** Publishes an edited source as stored, and returns it as the user who edited it reads it (`findSourceById`). */
+export const notifySourceEdition = async (context: AuthContext, user: AuthUser, element: unknown) => {
+  const notified: BasicStoreEntitySource = await notify(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, element, user);
+  const [source] = await maskRestrictedSources(context, user, [notified]);
+  return source;
+};
+
 /**
  * Cost changes of one source run one at a time, and never while a full computation writes its latest KPIs (same lock,
  * on the internal id). The source holds the cost and is written first; its live scorecards derive from it and are
@@ -682,20 +707,19 @@ export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: st
       await lock.unlock();
     }
   }
+  const activity = sourceCostActivity(id, source, cost);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: cost ? `sets the cost of ${sourceAuditName(id, source)} to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of ${sourceAuditName(id, source)}`,
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: { source_cost: cost } },
+    message: activity.message,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: activity.input },
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, element, user);
+  return notifySourceEdition(context, user, element);
 };
 
 const EDITABLE_SOURCE_KEYS = ['description', 'tags', 'owner_id', 'enabled'];
-
-const withoutDescription = ({ description: _, ...rest }: Record<string, unknown>) => rest;
 
 export const sourceEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
@@ -738,10 +762,9 @@ export const sourceEditField = async (context: AuthContext, user: AuthUser, id: 
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${Object.keys(patch).join(', ')}\` for ${sourceAuditName(id, source)}`,
-    // The description of an author source is masked like its name
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: source.source_kind === SOURCE_KIND_AUTHOR ? withoutDescription(patch) : patch },
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: sourceEditActivityInput(source, patch) },
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, element, user);
+  return notifySourceEdition(context, user, element);
 };
 
 /**
