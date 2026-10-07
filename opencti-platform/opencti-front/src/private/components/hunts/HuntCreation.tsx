@@ -45,10 +45,8 @@ import { validateHuntSchedule } from './hunt-schedule-utils';
 import useHuntConfiguration from './useHuntConfiguration';
 import HuntIocFields from './HuntIocFields';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
-import { parseIocText } from './hunt-ioc-utils';
 import {
   emptyHuntFormValues,
-  hasHuntLogic,
   HUNT_DEFAULT_MAX_RESULTS,
   HUNT_DOCS,
   HUNT_ENTITY_TYPE,
@@ -59,7 +57,7 @@ import {
   HUNT_TARGET_TYPES,
   HUNT_TECHNIQUE_TYPES,
   type HuntFormValues,
-  normalizeNativeQueries,
+  huntFormHasLogic,
   toHuntAddInput,
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
@@ -97,7 +95,7 @@ detection:
   condition: selection
 level: high`;
 
-export const useHuntFormValidation = () => {
+export const useHuntFormValidation = (iocFilters: string | null = null) => {
   const { t_i18n } = useFormatter();
   const { minScheduleIntervalMinutes: minScheduleInterval, maxTimeWindowHours, maxResultsPerRun } = useHuntConfiguration();
   const { mandatoryAttributes } = useIsMandatoryAttribute(HUNT_ENTITY_TYPE);
@@ -115,14 +113,7 @@ export const useHuntFormValidation = () => {
       .test('hunt-logic', function testLogic(status) {
         if (status !== 'active') return true;
         const values = this.parent as HuntFormValues;
-        const hasLogic = hasHuntLogic({
-          hunt_type: values.hunt_type,
-          sigma_rule: values.sigma_rule,
-          native_queries: normalizeNativeQueries(values.native_queries ?? []),
-          huntSources: [...(values.iocElements ?? []), ...(values.iocEntities ?? []), ...(values.huntSources ?? [])],
-          hunt_ioc_values: parseIocText(values.ioc_values_text ?? '').values,
-        });
-        if (hasLogic) return true;
+        if (huntFormHasLogic(values, iocFilters)) return true;
         let sentence = 'Add a Sigma rule or a native query';
         if (values.hunt_type === 'indicators') sentence = 'Add the indicators or observables to look for';
         if (values.hunt_type === 'infrastructure') sentence = 'Add a native query for the internet platform';
@@ -175,9 +166,9 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { validator, mandatoryAttributes } = useHuntFormValidation();
   const triggerFiltersState = useFiltersState(emptyFilterGroup);
   const iocFiltersState = useFiltersState(emptyFilterGroup);
+  const { validator, mandatoryAttributes } = useHuntFormValidation(serializeFilterGroupForBackend(iocFiltersState[0]));
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const [commit] = useApiMutation<HuntCreationMutation>(huntCreationMutation);
   const initialValues = useDefaultValues<HuntFormValues>(HUNT_ENTITY_TYPE, { ...emptyHuntFormValues(), ...prefill });

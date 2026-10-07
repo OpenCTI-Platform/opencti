@@ -26,6 +26,7 @@ import {
   emptyHuntFormValues,
   formatHuntRunDuration,
   hasHuntLogic,
+  huntFormHasLogic,
   huntIncidentSeverityLabel,
   huntMessageText,
   huntVerdictOffersIncident,
@@ -136,6 +137,15 @@ describe('Hunt utils', () => {
     it('should require an internet native query for infrastructure hunts', () => {
       expect(hasHuntLogic({ hunt_type: 'infrastructure', sigma_rule: 'title: x' })).toBe(false);
       expect(hasHuntLogic({ hunt_type: 'infrastructure', native_queries: [{ platform: 'internet' }] })).toBe(true);
+    });
+
+    it('should let the creation form activate an indicator hunt whose only logic is its filter', () => {
+      const values = { ...emptyHuntFormValues(), hunt_type: 'indicators' as const };
+      const filter = JSON.stringify({ mode: 'and', filters: [{ key: ['objectLabel'], values: ['apt28'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+      expect(huntFormHasLogic(values)).toBe(false);
+      expect(huntFormHasLogic(values, JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }))).toBe(false);
+      expect(huntFormHasLogic(values, filter)).toBe(true);
+      expect(huntFormHasLogic({ ...values, ioc_values_text: '198.51.100.7' })).toBe(true);
     });
   });
 

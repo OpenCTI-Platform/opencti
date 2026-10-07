@@ -838,6 +838,19 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
   };
 };
 
+/**
+ * Whether the creation form holds something an active hunt can run. The filter of an indicator hunt is kept out of the
+ * form values, in its own filter state: it is given serialized, as the mutation sends it.
+ */
+export const huntFormHasLogic = (values: Partial<HuntFormValues>, iocFilters: string | null = null) => hasHuntLogic({
+  hunt_type: values.hunt_type,
+  sigma_rule: values.sigma_rule,
+  native_queries: normalizeNativeQueries(values.native_queries ?? []),
+  huntSources: [...(values.iocElements ?? []), ...(values.iocEntities ?? []), ...(values.huntSources ?? [])],
+  hunt_ioc_values: parseIocText(values.ioc_values_text ?? '').values,
+  hunt_ioc_filters: iocFilters,
+});
+
 /** Attributes of the edition drawer; the status and the logic have their own controls. */
 export const HUNT_EDITABLE_KEYS = [
   'name',
