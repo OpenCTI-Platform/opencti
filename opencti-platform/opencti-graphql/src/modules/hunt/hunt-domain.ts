@@ -192,7 +192,8 @@ const refreshNextRunAt = async (context: AuthContext, hunt: BasicStoreEntityHunt
 export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntAddInput, opts: { upsertedStatus?: string | null } = {}) => {
   const huntInput = await normalizeHuntInput(context, user, input);
   // Creating an active hunt activates it, so its readiness applies as on any activation: an explicitly active hunt that
-  // cannot run is refused with the sentence of the first unmet item, one created without a status starts as a draft.
+  // cannot run is refused with the sentence of the first unmet item, one created without a status is active when it
+  // can run, and starts as a draft otherwise.
   // Upserting a hunt already active (a hunt pack imported again) activates nothing, and a STIX import or a
   // synchronization replicates a hunt that exists elsewhere with its status, the hunt manager only running ready hunts.
   const replicated = !!input.stix_id || context.synchronizedUpsert === true;
