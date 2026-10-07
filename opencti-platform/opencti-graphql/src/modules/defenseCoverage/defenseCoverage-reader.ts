@@ -17,6 +17,7 @@ import { RELATION_KILL_CHAIN_PHASE } from '../../schema/stixRefRelationship';
 import { RELATION_SUBTECHNIQUE_OF, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { bypassDraftContext } from '../../utils/draftContext';
+import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { DEFENSE_THREAT_TYPES, type DefenseCoverage, type DefenseThreatOverlay, type DefenseThreatUsage } from './defenseCoverage-types';
 import { type AccessPredicate, collectCoverageIds } from './defenseCoverage-utils';
@@ -213,6 +214,7 @@ export const getAccessPredicate = async (context: AuthContext, user: AuthUser, s
 // region threat overlay
 const overlayCache = new LRUCache<string, Promise<DefenseThreatOverlay>>({ max: 500, ttl: READER_CACHE_TTL });
 
+// A selection without threats, or a filtered scope without filters, is no threat overlay rather than every threat, as in the interface
 const normalizeScope = (scope: DefenseThreatScope | null | undefined): DefenseThreatScope => {
   if (!scope) return { mode: 'ALL' };
   if (scope.mode === 'SELECTED') {
@@ -220,10 +222,10 @@ const normalizeScope = (scope: DefenseThreatScope | null | undefined): DefenseTh
     if (threatIds.length > MAX_SELECTED_THREATS) {
       throw FunctionalError(`A threat overlay cannot select more than ${MAX_SELECTED_THREATS} threats`, { count: threatIds.length });
     }
-    return { mode: 'SELECTED', threatIds: [...threatIds].sort() };
+    return threatIds.length === 0 ? { mode: 'NONE' } : { mode: 'SELECTED', threatIds: [...threatIds].sort() };
   }
   if (scope.mode === 'FILTERED') {
-    return { mode: 'FILTERED', filters: scope.filters ?? null };
+    return isFilterGroupNotEmpty(scope.filters ?? undefined) ? { mode: 'FILTERED', filters: scope.filters } : { mode: 'NONE' };
   }
   return { mode: scope.mode };
 };

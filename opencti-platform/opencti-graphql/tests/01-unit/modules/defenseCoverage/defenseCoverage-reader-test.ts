@@ -135,6 +135,19 @@ describe('Defense coverage reader caches', () => {
     expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    ['a selection without threats', { mode: 'SELECTED', threatIds: [] }],
+    ['a filtered scope without filters', { mode: 'FILTERED', filters: null }],
+    ['a filtered scope with an empty filter group', { mode: 'FILTERED', filters: { mode: 'and', filters: [], filterGroups: [] } }],
+  ])('should read %s as no threat overlay, without listing any threat', async (_, scope) => {
+    const overlay = await getThreatOverlay(draftContext, reader, scope as never);
+    expect(overlay.threats_count).toEqual(0);
+    expect(overlay.usages.size).toEqual(0);
+    expect(vi.mocked(fullEntitiesList)).not.toHaveBeenCalled();
+    expect(vi.mocked(internalFindByIds)).not.toHaveBeenCalled();
+    expect(vi.mocked(fullRelationsList)).not.toHaveBeenCalled();
+  });
+
   it('should evaluate the access of the reader to the kill chain phases of the snapshot', async () => {
     vi.mocked(fullEntitiesList)
       .mockResolvedValueOnce([{ internal_id: 'attack-pattern-1', name: 'Phishing' }] as never)
