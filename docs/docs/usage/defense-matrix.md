@@ -131,7 +131,7 @@ Validation needs OpenAEV connected to the platform: an OpenAEV platform reads th
 
 A validation request holds at most 200 techniques. In the Gaps section, a selection of more techniques (one by one or with **Select all**) disables the validation button and says why above the list: unselect some of them to validate. From the matrix header, **Validate the gaps** takes the 200 techniques used by the most threats first, and the dialog says how many techniques of the scope the request leaves out, with a link to the Gaps section to validate them next.
 
-A request is also tracked on at most 2,000 gaps: each technique on all platforms and on every security platform of the request, plus the technique and platform pairs selected in the Gaps section. Every platform multiplies the gaps of a request (200 techniques on ten security platforms are 2,200 gaps), so above this limit the dialog says how many gaps the request would be tracked on and disables the validation: validate fewer techniques, or fewer security platforms at a time.
+A request is also tracked on at most 2,000 gaps: each technique on all platforms and on every security platform of the request, plus the technique and platform pairs selected in the Gaps section. Every platform multiplies the gaps of a request (200 techniques on ten security platforms are 2,200 gaps), so above this limit the dialog says how many gaps the request would be tracked on and disables the validation: validate fewer techniques, or fewer security platforms at a time. Through the API, a request listing more than 2,000 technique ids, gaps or security platforms is refused before anything is read.
 
 ![Gaps backlog with more than 200 techniques selected](assets/defense-matrix-gaps-over-limit.png)
 

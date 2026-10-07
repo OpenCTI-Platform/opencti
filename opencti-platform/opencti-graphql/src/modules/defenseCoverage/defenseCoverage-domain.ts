@@ -1129,6 +1129,13 @@ const parseValidationReferenceUrl = (value: string | null | undefined): URL | un
  * An optional external reference URL links the Security Coverage back to what asked for the validation.
  */
 export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, input: DefenseValidationInput): Promise<DefenseValidationResultView> => {
+  // Every entry of these lists is at least one tracked gap once resolved: the gaps limit bounds the raw lists, before
+  // anything is mapped or loaded, so that it also bounds the work done on the request
+  const rawLists = { attackPatternIds: input.attackPatternIds, gaps: input.gaps, platformIds: input.platformIds };
+  const oversized = Object.entries(rawLists).find(([, list]) => (list?.length ?? 0) > MAX_VALIDATION_GAPS);
+  if (oversized) {
+    throw FunctionalError(`A validation request cannot hold more than ${MAX_VALIDATION_GAPS} entries in ${oversized[0]}`, { count: oversized[1]?.length });
+  }
   const gapRefs = input.gaps ?? [];
   const attackPatternIds = uniq([...(input.attackPatternIds ?? []), ...gapRefs.map((gap) => gap.attackPatternId)]);
   if (attackPatternIds.length === 0) {
@@ -1177,7 +1184,8 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   const platforms = await findDefensePlatforms(context, user);
   const requestedPlatforms = uniq(input.platformIds ?? []);
   const gapPlatforms = gapRefs.map((gap) => gap.platformId).filter((id) => id !== DEFENSE_AGGREGATE_PLATFORM);
-  const unknownPlatforms = uniq([...requestedPlatforms, ...gapPlatforms]).filter((id) => !platforms.some((p) => p.id === id));
+  const knownPlatformIds = new Set(platforms.map((p) => p.id));
+  const unknownPlatforms = uniq([...requestedPlatforms, ...gapPlatforms]).filter((id) => !knownPlatformIds.has(id));
   if (unknownPlatforms.length > 0) {
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
