@@ -155,18 +155,18 @@ const SecurityCoverageResultFormDetails = ({
               {t_i18n('Cancel')}
             </Button>
             <Button
-              type="button"
+              type="submit"
               variant="secondary"
+              disabled={!isValid}
+            >
+              {t_i18n('Create')}
+            </Button>
+            <Button
+              type="button"
               disabled={!isValid}
               onClick={() => onNext(values)}
             >
               {t_i18n('Next')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={!isValid}
-            >
-              {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
         </Form>
