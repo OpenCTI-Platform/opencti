@@ -1,6 +1,8 @@
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 
+export const DEFENSE_COVERAGE_MANAGER_ID = 'DEFENSE_COVERAGE_MANAGER';
+
 // region levels
 // The defense level of a technique, for one security platform or aggregated over all of them.
 // Every level is explained by the evidences stored next to it (see DefenseCoverage below).

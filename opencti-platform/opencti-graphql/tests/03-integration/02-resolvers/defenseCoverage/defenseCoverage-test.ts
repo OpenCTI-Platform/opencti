@@ -7,7 +7,12 @@ import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage, defenseGapId } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { trackPendingValidationRequests } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
 import { defenseCoverageStreamHandler, defenseCoverageStreamStartFrom } from '../../../../src/manager/defenseCoverageManager';
-import { consumeFullComputationRequest, listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
+import {
+  consumeFullComputationRequest,
+  listPendingValidationTrackings,
+  queuePendingValidationTracking,
+  requestFullDefenseCoverageComputation,
+} from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { type BasicStoreEntityDefenseGap, ENTITY_TYPE_DEFENSE_GAP } from '../../../../src/modules/defenseCoverage/defenseGap/defenseGap-types';
 import { redisSetDefensePendingValidationTracking } from '../../../../src/database/redis';
 import { fullEntitiesList, internalFindByIds } from '../../../../src/database/middleware-loader';
@@ -219,7 +224,7 @@ const RECOMPUTE = gql`
 `;
 const STATUS = gql`
   query Status {
-    defenseCoverageStatus { computed_at full_computation_requested validation_available }
+    defenseCoverageStatus { computed_at computation_available full_computation_requested validation_available }
   }
 `;
 
@@ -597,17 +602,19 @@ describe('Threat-informed defense matrix', () => {
     await queryAsAdminWithError({ query: PROVIDES_FROM_LOGSOURCES, variables: { id: created.platform, logsources: [] } }, 'Provide between 1 and 200 log sources');
   });
 
-  it('should request a full computation', async () => {
-    const result = await queryAsAdminWithSuccess({ query: RECOMPUTE });
-    expect(result.data?.defenseCoverageRecompute).toBe(true);
+  it('should refuse a full computation while no node runs the defense coverage manager', async () => {
+    // The defense coverage manager is disabled on the test platform (config/test.json)
+    await queryAsAdminWithError({ query: RECOMPUTE }, 'The defense coverage manager is disabled: the defense coverage cannot be recomputed');
+    expect(await consumeFullComputationRequest()).toBe(false);
+    // A request left from before the manager was disabled is never reported as pending
+    await requestFullDefenseCoverageComputation();
     const status = await queryAsAdminWithSuccess({ query: STATUS });
-    expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
+    expect(status.data?.defenseCoverageStatus.computation_available).toBe(false);
+    expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(false);
     expect(typeof status.data?.defenseCoverageStatus.validation_available).toBe('boolean');
     // Read and reset in one step: the manager consumes a request once
     expect(await consumeFullComputationRequest()).toBe(true);
     expect(await consumeFullComputationRequest()).toBe(false);
-    const consumed = await queryAsAdminWithSuccess({ query: STATUS });
-    expect(consumed.data?.defenseCoverageStatus.full_computation_requested).toBe(false);
   });
 
   it('should resume the defense coverage stream after the last handled event when the manager restarts', async () => {

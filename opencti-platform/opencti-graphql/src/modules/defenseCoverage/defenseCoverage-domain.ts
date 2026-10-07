@@ -17,6 +17,7 @@ import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indica
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { connectorsForEnrichment } from '../../database/repository';
+import { isModuleActivated } from '../../database/cluster-module';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { addSecurityCoverage } from '../securityCoverage/securityCoverage-domain';
@@ -32,6 +33,7 @@ import { DefenseValidationRequestStatus, FilterMode } from '../../generated/grap
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import {
   DEFENSE_AGGREGATE_PLATFORM,
+  DEFENSE_COVERAGE_MANAGER_ID,
   DEFENSE_LEVEL_MAX,
   DEFENSE_LEVEL_VALIDATED,
   DEFENSE_THREAT_TYPES,
@@ -1273,7 +1275,13 @@ export const addPlatformProvidesFromLogsources = async (
 // endregion
 
 // region status
+// A requested computation only runs when a node of the cluster runs the defense coverage manager
+const isDefenseComputationAvailable = () => isModuleActivated(DEFENSE_COVERAGE_MANAGER_ID);
+
 export const requestDefenseCoverageRecompute = async () => {
+  if (!(await isDefenseComputationAvailable())) {
+    throw FunctionalError('The defense coverage manager is disabled: the defense coverage cannot be recomputed');
+  }
   await requestFullDefenseCoverageComputation();
   return true;
 };
@@ -1281,11 +1289,14 @@ export const requestDefenseCoverageRecompute = async () => {
 export const getDefenseCoverageStatus = async (context: AuthContext, user: AuthUser) => {
   const snapshot = await getDefenseSnapshot(context);
   const validationConnectors = await connectorsForEnrichment(context, user, ENTITY_TYPE_SECURITY_COVERAGE, true);
+  const computationAvailable = await isDefenseComputationAvailable();
   return {
     computed_at: computedAtOf(snapshot),
     last_full_computation: await getLastFullComputation(),
-    // Pending until the requested computation is done, not only until the manager picks the request up
-    full_computation_requested: (await isFullComputationRequested()) || (await isFullComputationRunning()),
+    computation_available: computationAvailable,
+    // Pending until the requested computation is done, not only until the manager picks the request up; never while
+    // no node runs the manager, so a request left from before it was disabled does not stay pending
+    full_computation_requested: computationAvailable && ((await isFullComputationRequested()) || (await isFullComputationRunning())),
     validation_available: validationConnectors.length > 0,
   };
 };

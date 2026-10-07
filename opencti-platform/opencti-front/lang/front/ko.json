@@ -4990,6 +4990,7 @@
   "the dedicated page": "전용 페이지",
   "The default groups are:": "기본 그룹은 다음과 같습니다:",
   "The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.": "방어 커버리지가 아직 계산되지 않았습니다. 매일 밤과 관련 변경 후에 계산되며, 관리자가 지금 계산을 요청할 수 있습니다.",
+  "The defense coverage manager is disabled on this platform: the defense coverage is not computed.": "이 플랫폼에서 방어 커버리지 관리자가 비활성화되어 있습니다. 방어 커버리지가 계산되지 않습니다.",
   "The defense coverage will be recomputed shortly": "방어 커버리지가 곧 다시 계산됩니다",
   "The defense gaps export failed": "방어 격차 내보내기에 실패했습니다",
   "The defense matrix is not available.": "방어 매트릭스를 사용할 수 없습니다.",

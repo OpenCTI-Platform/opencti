@@ -4990,6 +4990,7 @@
   "the dedicated page": "专用页面",
   "The default groups are:": "默认组别为",
   "The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.": "防御覆盖尚未计算。它会在每晚以及相关更改后计算;管理员可以立即请求计算。",
+  "The defense coverage manager is disabled on this platform: the defense coverage is not computed.": "此平台已禁用防御覆盖管理器:不会计算防御覆盖。",
   "The defense coverage will be recomputed shortly": "防御覆盖即将重新计算",
   "The defense gaps export failed": "防御缺口导出失败",
   "The defense matrix is not available.": "防御矩阵不可用。",

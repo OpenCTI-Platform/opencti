@@ -26,8 +26,8 @@ import {
 import { addDefenseGapClosedCount } from './telemetryManager';
 import { streamEventId } from '../utils/format';
 import type { AuthContext } from '../types/user';
+import { DEFENSE_COVERAGE_MANAGER_ID } from '../modules/defenseCoverage/defenseCoverage-types';
 
-const DEFENSE_COVERAGE_MANAGER_ID = 'DEFENSE_COVERAGE_MANAGER';
 const DEFENSE_COVERAGE_MANAGER_LABEL = 'Defense coverage manager';
 const DEFENSE_COVERAGE_MANAGER_CONTEXT = 'defense_coverage_manager';
 

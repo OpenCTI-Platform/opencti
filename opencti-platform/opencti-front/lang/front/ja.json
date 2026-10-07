@@ -4990,6 +4990,7 @@
   "the dedicated page": "専用ページ",
   "The default groups are:": "デフォルトのグループは以下の通り：",
   "The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.": "防御カバレッジはまだ計算されていません。毎晩および関連する変更の後に計算されます。管理者は今すぐ計算を要求できます。",
+  "The defense coverage manager is disabled on this platform: the defense coverage is not computed.": "このプラットフォームでは防御カバレッジマネージャーが無効になっています。防御カバレッジは計算されません。",
   "The defense coverage will be recomputed shortly": "防御カバレッジはまもなく再計算されます",
   "The defense gaps export failed": "防御ギャップのエクスポートに失敗しました",
   "The defense matrix is not available.": "防御マトリックスは利用できません。",

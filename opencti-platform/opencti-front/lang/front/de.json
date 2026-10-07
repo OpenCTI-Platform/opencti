@@ -4990,6 +4990,7 @@
   "the dedicated page": "der entsprechenden Seite",
   "The default groups are:": "Die Standardgruppen sind:",
   "The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.": "Die Abwehrabdeckung wurde noch nicht berechnet. Sie wird jede Nacht und nach relevanten Änderungen berechnet; ein Administrator kann jetzt eine Berechnung anfordern.",
+  "The defense coverage manager is disabled on this platform: the defense coverage is not computed.": "Der Abwehrabdeckungs-Manager ist auf dieser Plattform deaktiviert: Die Abwehrabdeckung wird nicht berechnet.",
   "The defense coverage will be recomputed shortly": "Die Abwehrabdeckung wird in Kürze neu berechnet",
   "The defense gaps export failed": "Der Export der Abwehrlücken ist fehlgeschlagen",
   "The defense matrix is not available.": "Die Abwehrmatrix ist nicht verfügbar.",

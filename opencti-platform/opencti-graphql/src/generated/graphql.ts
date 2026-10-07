@@ -7414,6 +7414,8 @@ export type DefenseCellPlatform = {
 
 export type DefenseCoverageStatus = {
   __typename?: 'DefenseCoverageStatus';
+  /** A node of the cluster runs the defense coverage manager: a requested computation runs */
+  computation_available: Scalars['Boolean']['output'];
   computed_at?: Maybe<Scalars['DateTime']['output']>;
   full_computation_requested: Scalars['Boolean']['output'];
   last_full_computation?: Maybe<Scalars['DateTime']['output']>;
@@ -45834,6 +45836,7 @@ export type DefenseCellPlatformResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type DefenseCoverageStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseCoverageStatus'] = ResolversParentTypes['DefenseCoverageStatus']> = ResolversObject<{
+  computation_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   full_computation_requested?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_full_computation?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

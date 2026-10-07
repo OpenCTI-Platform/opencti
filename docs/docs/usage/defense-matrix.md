@@ -105,7 +105,7 @@ Below, the drawer lists the evidences per platform: the data components and the 
 
 ![Technique drawer after a failed validation](assets/defense-matrix-drawer-failed.png)
 
-The coverage is computed in the background by the defense coverage manager: a full computation every night and an incremental computation when the knowledge changes. The header shows when it was computed (the exact date on hover). Users allowed to customize the platform can request a full computation with **Recompute**; the header shows the request until the computation is done.
+The coverage is computed in the background by the defense coverage manager: a full computation every night and an incremental computation when the knowledge changes. The header shows when it was computed (the exact date on hover). Users allowed to customize the platform can request a full computation with **Recompute**; the header shows the request until the computation is done. The manager is enabled by default (`defense_coverage_manager:enabled`); when no node of the platform runs it, nothing is computed: the matrix says so, **Recompute** is disabled with that reason and the API refuses the request.
 
 ## Gaps
 

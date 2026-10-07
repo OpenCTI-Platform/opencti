@@ -266,6 +266,8 @@ type DefenseProvidesResult {
 type DefenseCoverageStatus {
   computed_at: DateTime
   last_full_computation: DateTime
+  "A node of the cluster runs the defense coverage manager: a requested computation runs"
+  computation_available: Boolean!
   full_computation_requested: Boolean!
   "An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated"
   validation_available: Boolean!

@@ -28,6 +28,7 @@ import DefenseTechniqueDrawer from './DefenseTechniqueDrawer';
 import DefenseTacticsCoverage from './DefenseTacticsCoverage';
 import DefenseValidationDialog from './DefenseValidationDialog';
 import DefenseCoverageDashboardButton from './DefenseCoverageDashboardButton';
+import DefenseDisabledReason from './DefenseDisabledReason';
 import { DefenseLevelsBar, DefenseLevelsLegend } from './DefenseLevelsBar';
 import useDefenseScope from './useDefenseScope';
 import {
@@ -58,6 +59,7 @@ export const defenseMatrixPlatformsQuery = graphql`
     defenseCoverageStatus {
       computed_at
       last_full_computation
+      computation_available
       full_computation_requested
       validation_available
     }
@@ -71,6 +73,7 @@ export const defenseMatrixQuery = graphql`
       name
     }
     defenseCoverageStatus {
+      computation_available
       validation_available
     }
     defenseMatrix(platformIds: $platformIds, threatScope: $threatScope) {
@@ -226,7 +229,9 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
       {!defenseMatrix.computed_at && (
         <Alert
           severity="warning"
-          content={t_i18n('The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.')}
+          content={defenseCoverageStatus?.computation_available
+            ? t_i18n('The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.')
+            : t_i18n('The defense coverage manager is disabled on this platform: the defense coverage is not computed.')}
         />
       )}
       <Card>
@@ -385,7 +390,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
   );
 };
 
-const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersChange }: {
+export const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersChange }: {
   queryRef: PreloadedQuery<DefenseMatrixPlatformsQuery>;
   scope: DefenseScopeState;
   onScopeChange: (scope: DefenseScopeState) => void;
@@ -396,6 +401,7 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
   const { defensePlatforms, defenseCoverageStatus } = usePreloadedQuery(defenseMatrixPlatformsQuery, queryRef);
   const [recomputeRequested, setRecomputeRequested] = useState(false);
   const [commitRecompute, recomputing] = useApiMutation<DefenseMatrixRecomputeMutation>(defenseMatrixRecomputeMutation);
+  const computationAvailable = !!defenseCoverageStatus?.computation_available;
   const pending = recomputeRequested || !!defenseCoverageStatus?.full_computation_requested;
   useEffect(() => {
     if (!pending) return undefined;
@@ -449,15 +455,17 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
         <Stack direction="row" spacing={1} alignItems="center">
           <DefenseCoverageDashboardButton />
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
-            <Button
-              variant="secondary"
-              startIcon={<RefreshOutlined fontSize="small" />}
-              disabled={recomputing || pending}
-              data-testid="defense-matrix-recompute"
-              onClick={requestRecompute}
-            >
-              {t_i18n('Recompute')}
-            </Button>
+            <DefenseDisabledReason reason={computationAvailable ? undefined : t_i18n('The defense coverage manager is disabled on this platform: the defense coverage is not computed.')}>
+              <Button
+                variant="secondary"
+                startIcon={<RefreshOutlined fontSize="small" />}
+                disabled={!computationAvailable || recomputing || pending}
+                data-testid="defense-matrix-recompute"
+                onClick={requestRecompute}
+              >
+                {t_i18n('Recompute')}
+              </Button>
+            </DefenseDisabledReason>
           </Security>
         </Stack>
       </Stack>

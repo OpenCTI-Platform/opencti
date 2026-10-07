@@ -4990,6 +4990,7 @@
   "the dedicated page": "la página dedicada",
   "The default groups are:": "Los grupos por defecto son:",
   "The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.": "La cobertura de defensa aún no se ha calculado. Se calcula cada noche y tras los cambios relevantes; un administrador puede solicitar un cálculo ahora.",
+  "The defense coverage manager is disabled on this platform: the defense coverage is not computed.": "El gestor de cobertura de defensa está desactivado en esta plataforma: la cobertura de defensa no se calcula.",
   "The defense coverage will be recomputed shortly": "La cobertura de defensa se recalculará en breve",
   "The defense gaps export failed": "La exportación de las brechas de defensa falló",
   "The defense matrix is not available.": "La matriz de defensa no está disponible.",
