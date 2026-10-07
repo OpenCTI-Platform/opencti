@@ -47,6 +47,7 @@ import {
 } from './curation-types';
 import {
   type ApplyResult,
+  checkPlannedRevocation,
   executeProposalAction,
   findLatestMergeRecordForProposal,
   hasInterruptedMergeForProposal,
@@ -228,13 +229,16 @@ const mergeApplications = (first: ProposalApplication | null, second: ProposalAp
  * which names the proposal it applies. Not complete when the previous attempt changed nothing that can be found, or
  * only part of what it planned: the action runs again (it skips what is already changed).
  */
-const findUnrecordedApplication = async (context: AuthContext, proposal: BasicStoreEntityCurationProposal): Promise<UnrecordedApplication> => {
+const findUnrecordedApplication = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal): Promise<UnrecordedApplication> => {
   if (!proposal.application_started_at) return { application: null, complete: false };
   const kept = await redisCurationGetApplicationResult<ProposalApplication>(proposal.internal_id);
   if (kept && !kept.planned) return { application: kept, complete: true };
   if (kept?.planned) {
     const { result, complete } = await reconcilePlannedApplication(context, kept);
-    if (result) return { application: { ...result, targetId: kept.targetId }, complete };
+    if (result) {
+      await checkPlannedRevocation(context, user, proposal, result);
+      return { application: { ...result, targetId: kept.targetId }, complete };
+    }
   }
   let record: BasicStoreEntityMergeRecord | null = await findLatestMergeRecordForProposal(context, proposal.internal_id);
   if (record?.merge_status === MERGE_STATUS_PENDING) {
@@ -284,7 +288,7 @@ const applyAndRecord = async (
     await checkMergeFindingHolds(context, settings, proposal);
   }
   // A retry after a change that could not be recorded records that change, instead of applying the action again.
-  const unrecorded = await findUnrecordedApplication(context, proposal);
+  const unrecorded = await findUnrecordedApplication(context, user, proposal);
   let application = unrecorded.complete ? unrecorded.application : null;
   if (!application) {
     const recovered = unrecorded.application;

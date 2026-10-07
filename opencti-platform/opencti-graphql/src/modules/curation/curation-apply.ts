@@ -478,6 +478,28 @@ const applyRevoke = async (context: AuthContext, user: AuthUser, proposal: Basic
   });
 };
 
+/**
+ * A stale revocation found in the graph by a retry is checked once more before it is recorded: an entity that gained a
+ * relationship within its staleness period was revoked by an attempt that stopped before putting it back. The planned
+ * values found are restored and the acceptance is refused, as that attempt would have done; a restore that fails
+ * leaves the plan in place, and the next retry checks and restores again.
+ */
+export const checkPlannedRevocation = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, found: ApplyResult) => {
+  if (proposal.proposal_kind !== PROPOSAL_KIND_STALE || proposal.recommended_action !== ACTION_REVOKE) return;
+  const months = Number(evidenceDetails(proposal, EVIDENCE_STALENESS)?.months);
+  const operations = found.appliedPatch?.operations ?? [];
+  if (!Number.isFinite(months) || months <= 0 || operations.length === 0) return;
+  const elementId = operations[0].element_id;
+  const cutoff = new Date(Date.now() - months * 30 * 24 * 3600 * 1000).toISOString();
+  if (!await hasRelationshipSince(context, elementId, cutoff)) return;
+  const subject = await loadSubject(context, user, elementId);
+  await withSubjectLock(context, user, subject, async (element, lockIds) => {
+    const restored = Object.fromEntries(operations.map((operation) => [operation.key, operation.previous]));
+    await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs(restored), { locks: lockIds });
+  });
+  throw notStaleAnyMore(elementId, months);
+};
+
 // The note of an application carries an identifier derived from its proposal: an attempt that stopped before recording
 // it upserts the same note when retried, and a matching note written by anyone else is never taken for it.
 export const procedureNoteStixId = (proposalId: string) => `note--${uuidv5(`curation-procedure-note:${proposalId}`, OPENCTI_NAMESPACE)}`;
