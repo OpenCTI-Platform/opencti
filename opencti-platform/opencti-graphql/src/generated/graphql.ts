@@ -1849,6 +1849,7 @@ export type BackgroundTaskContextInput = {
 
 export type BackgroundTaskContextOptionsInput = {
   applyTransitionActions?: InputMaybe<Scalars['Boolean']['input']>;
+  eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
