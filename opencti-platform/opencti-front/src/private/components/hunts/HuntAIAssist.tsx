@@ -210,8 +210,16 @@ export const HuntAIAction = ({ request, label, disabled = false, testId }: HuntA
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          {/* A disabled button receives no pointer or focus events: its wrapper carries the reason */}
-          <span tabIndex={0} aria-label={`${text} - ${reason}`} data-testid={`${testId}-unavailable`}>{button}</span>
+          {/* A disabled button receives no pointer or focus events: its wrapper carries the reason, and the focus ring of
+              the button with its rounded-sm radius */}
+          <span
+            tabIndex={0}
+            aria-label={`${text} - ${reason}`}
+            className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+            data-testid={`${testId}-unavailable`}
+          >
+            {button}
+          </span>
         </TooltipTrigger>
         <TooltipContent>{reason}</TooltipContent>
       </Tooltip>

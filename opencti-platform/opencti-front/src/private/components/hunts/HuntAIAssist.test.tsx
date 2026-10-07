@@ -157,7 +157,9 @@ describe('AI assistance of a hunt form', () => {
     setAI(true, false);
     renderForm(EMPTY, { kind: 'hypothesis' }, { reasonInHeader: true, withPlan: true });
     expect(screen.getByTestId('hunt-ai-plan-reason')).toHaveTextContent('XTM One is not configured on this platform');
-    expect(screen.getByTestId('hunt-field-generate-unavailable')).toHaveAttribute('tabindex', '0');
+    const wrapper = screen.getByTestId('hunt-field-generate-unavailable');
+    expect(wrapper).toHaveAttribute('tabindex', '0');
+    expect(wrapper).toHaveClass('rounded-sm', 'focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-filigran-brand-primary');
     expect(screen.queryByTestId('hunt-field-generate-reason')).not.toBeInTheDocument();
     expect(screen.getByTestId('hunt-field-generate')).toBeDisabled();
   });
