@@ -220,14 +220,14 @@ describe('Standing hunt triggers', () => {
     expect(match.matchedEventId).toEqual('1-0');
   });
 
-  it('should stop matching before the event that would exceed the filter budget, after the first event in any case', async () => {
+  it('should stop matching before the event that would exceed the filter budget', async () => {
     const indexed = indexStandingCandidates([filteredCandidate('hunt-a'), filteredCandidate('hunt-b'), filteredCandidate('hunt-c')]);
     const events = ['1-0', '2-0', '3-0'].map((id) => streamEvent(id, { id: `report--${id}`, type: 'report' }));
-    const options = { budget: 2, isIgnored: () => false, evaluate: async () => false };
-    // The first event is matched in full although it needs more evaluations than the budget
+    const options = { budget: 4, isIgnored: () => false, evaluate: async () => false };
     const first: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
     await matchStandingEvents(indexed, events, first, options);
     expect(first).toMatchObject({ evaluations: 3, budgetSpent: true, matchedEventId: '1-0' });
+    expect(first.partial).toBeUndefined();
     // The next tick resumes from the event after the last one fully matched
     const next: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
     await matchStandingEvents(indexed, events.slice(1), next, { ...options, budget: 6 });
@@ -237,6 +237,34 @@ describe('Standing hunt triggers', () => {
     await matchStandingEvents(indexed, events, triggered, { budget: 100, isIgnored: (event) => event.data.id === 'report--2-0', evaluate: async (candidate) => candidate.hunt.internal_id === 'hunt-a' });
     expect(triggered.evaluations).toEqual(5);
     expect(Array.from(triggered.triggered.keys())).toEqual(['hunt-a']);
+  });
+
+  it('should match an event needing more evaluations than the budget over several ticks, never exceeding it', async () => {
+    const indexed = indexStandingCandidates(['hunt-e', 'hunt-c', 'hunt-a', 'hunt-d', 'hunt-b'].map(filteredCandidate));
+    const events = ['1-0', '2-0'].map((id) => streamEvent(id, { id: `report--${id}`, type: 'report' }));
+    const evaluated: string[] = [];
+    const options = {
+      budget: 2,
+      isIgnored: () => false,
+      evaluate: async (candidate: StandingCandidate, event: DataEvent) => {
+        evaluated.push(`${event.data.id}:${candidate.hunt.internal_id}`);
+        return candidate.hunt.internal_id === 'hunt-d';
+      },
+    };
+    // The first tick evaluates the first event up to the budget and stays before it
+    const first: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    await matchStandingEvents(indexed, events, first, options);
+    expect(first).toMatchObject({ evaluations: 2, budgetSpent: true, matchedEventId: null, partial: { eventId: '1-0', afterHuntId: 'hunt-b' } });
+    // The next ticks resume the event after the last hunt evaluated, then move on
+    const second: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    await matchStandingEvents(indexed, events, second, { ...options, resume: first.partial });
+    expect(second).toMatchObject({ evaluations: 2, budgetSpent: true, matchedEventId: null, partial: { eventId: '1-0', afterHuntId: 'hunt-d' } });
+    expect(Array.from(second.triggered.keys())).toEqual(['hunt-d']);
+    const third: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    await matchStandingEvents(indexed, events, third, { ...options, resume: second.partial });
+    expect(third).toMatchObject({ evaluations: 1, budgetSpent: true, matchedEventId: '1-0' });
+    expect(third.partial).toBeUndefined();
+    expect(evaluated).toEqual(['hunt-a', 'hunt-b', 'hunt-c', 'hunt-d', 'hunt-e'].map((huntId) => `report--1-0:${huntId}`));
   });
 });
 

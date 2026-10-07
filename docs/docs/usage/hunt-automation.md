@@ -63,7 +63,7 @@ Work a tick cannot take is kept for the next tick, never dropped: due scheduled 
 | `hunt_manager:max_retries` | `HUNT_MANAGER__MAX_RETRIES` | `2` | Automatic retries of a failed or timed out run |
 | `hunt_manager:retry_backoff_minutes` | `HUNT_MANAGER__RETRY_BACKOFF_MINUTES` | `10` | Delay before the first retry, doubled at each attempt |
 | `hunt_manager:standing_debounce_minutes` | `HUNT_MANAGER__STANDING_DEBOUNCE_MINUTES` | `15` | Minimum delay between two runs of a standing hunt |
-| `hunt_manager:standing_filter_evaluations_per_tick` | `HUNT_MANAGER__STANDING_FILTER_EVALUATIONS_PER_TICK` | `20000` | Trigger filter evaluations one tick spends matching knowledge events against standing hunts; the next tick resumes after the last event fully matched |
+| `hunt_manager:standing_filter_evaluations_per_tick` | `HUNT_MANAGER__STANDING_FILTER_EVALUATIONS_PER_TICK` | `20000` | Trigger filter evaluations one tick spends matching knowledge events against standing hunts; the next tick resumes after the last event fully matched. An event needing more evaluations than this budget is matched over several ticks, each resuming after the last hunt evaluated |
 | `hunt_manager:min_schedule_interval_minutes` | `HUNT_MANAGER__MIN_SCHEDULE_INTERVAL_MINUTES` | `15` | Minimum interval between two occurrences of a schedule |
 | `hunt_manager:max_time_window_hours` | `HUNT_MANAGER__MAX_TIME_WINDOW_HOURS` | `720` | Maximum time window searched by a run; the hunt forms, Run now and the AI planning of a hunt take it as their limit |
 | `hunt_manager:max_results_per_run` | `HUNT_MANAGER__MAX_RESULTS_PER_RUN` | `10000` | Maximum results a connector returns for a run, and the highest **Maximum results per run** the hunt forms accept |

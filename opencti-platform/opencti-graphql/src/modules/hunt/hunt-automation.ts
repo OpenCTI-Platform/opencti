@@ -68,6 +68,7 @@ import { buildHuntPlaybookResume, executeHuntPlaybookResume, findPlaybookHuntRun
 import { purgeExpiredHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
 
 export const HUNT_MANAGER_STREAM_STATE = 'hunt_manager';
+const HUNT_MANAGER_STANDING_CURSOR_STATE = 'hunt_manager_standing_cursor';
 // Soft coupling with Threat Pulse: entities whose community trend rises make their standing hunts react faster
 export const PULSE_TREND_ATTRIBUTE = 'pulse_trend';
 const PULSE_TREND_RISING = 'rising';
@@ -733,39 +734,61 @@ export const isStandingHuntTriggered = async (context: AuthContext, candidate: S
   return eventTouchedRefs(event).some((ref) => candidate.refIds.has(ref));
 };
 
-/** Standing hunts split for matching: those without trigger filters by the refs that trigger them, the others apart. */
+const compareIds = (a: string, b: string) => (a < b ? -1 : Number(a > b));
+
+/**
+ * Standing hunts split for matching: those without trigger filters by the refs that trigger them, the others apart, in
+ * the order of their ids that an event matched over several ticks resumes from.
+ */
 export const indexStandingCandidates = (candidates: StandingCandidate[]) => {
   const byRef = new Map<string, StandingCandidate[]>();
   candidates.filter((candidate) => !candidate.filters).forEach((candidate) => {
     candidate.refIds.forEach((ref) => byRef.set(ref, [...(byRef.get(ref) ?? []), candidate]));
   });
-  return { byRef, filtered: candidates.filter((candidate) => !!candidate.filters) };
+  const filtered = candidates.filter((candidate) => !!candidate.filters).sort((a, b) => compareIds(a.hunt.internal_id, b.hunt.internal_id));
+  return { byRef, filtered };
 };
+
+/** An event whose trigger filters a tick evaluated in part: the next tick evaluates the hunts after the last one. */
+export interface StandingCursor {
+  eventId: string;
+  afterHuntId: string;
+}
 
 export interface StandingMatch {
   triggered: Map<string, StandingCandidate>;
   evaluations: number;
   budgetSpent: boolean;
   matchedEventId: string | null;
+  partial?: StandingCursor | null;
 }
 
 /**
  * Matches knowledge events against standing hunts. Hunts without trigger filters are found from the refs an event
  * touches, never by trying every hunt; trigger filters are evaluated within a budget. Matching stops before the event
- * that would exceed it, `matchedEventId` being the last event fully matched; the first event is always matched in full,
- * so that every tick moves forward.
+ * that would exceed it, `matchedEventId` being the last event fully matched. The first event needing more evaluations
+ * than the whole budget is evaluated up to the budget, `partial` naming the last hunt evaluated, and resumed from there
+ * by the next tick (`resume`): a tick never exceeds its budget and always moves forward.
  */
 export const matchStandingEvents = async (
   indexed: ReturnType<typeof indexStandingCandidates>,
   streamEvents: Array<SseEvent<DataEvent>>,
   match: StandingMatch,
-  opts: { budget: number; isIgnored: (event: DataEvent) => boolean; evaluate: (candidate: StandingCandidate, event: DataEvent) => Promise<boolean> },
+  opts: {
+    budget: number;
+    resume?: StandingCursor | null;
+    isIgnored: (event: DataEvent) => boolean;
+    evaluate: (candidate: StandingCandidate, event: DataEvent) => Promise<boolean>;
+  },
 ) => {
   for (let eventIndex = 0; eventIndex < streamEvents.length && !match.budgetSpent; eventIndex += 1) {
     const { id, data: event } = streamEvents[eventIndex];
     if ((event.type === EVENT_TYPE_CREATE || event.type === EVENT_TYPE_UPDATE) && !opts.isIgnored(event)) {
-      const toEvaluate = indexed.filtered.filter((candidate) => !match.triggered.has(candidate.hunt.internal_id));
-      if (match.evaluations > 0 && match.evaluations + toEvaluate.length > opts.budget) {
+      const after = opts.resume?.eventId === id ? opts.resume.afterHuntId : null;
+      const toEvaluate = indexed.filtered.filter((candidate) => !match.triggered.has(candidate.hunt.internal_id)
+        && (after === null || compareIds(candidate.hunt.internal_id, after) > 0));
+      const exceeds = match.evaluations + toEvaluate.length > opts.budget;
+      if (exceeds && match.evaluations > 0) {
         match.budgetSpent = true;
         return;
       }
@@ -776,15 +799,30 @@ export const matchStandingEvents = async (
           await doYield();
         }
       }
-      for (let index = 0; index < toEvaluate.length; index += 1) {
+      const evaluated = exceeds ? Math.max(1, opts.budget) : toEvaluate.length;
+      for (let index = 0; index < evaluated; index += 1) {
         match.evaluations += 1;
         if (await opts.evaluate(toEvaluate[index], event)) {
           match.triggered.set(toEvaluate[index].hunt.internal_id, toEvaluate[index]);
         }
       }
+      if (evaluated < toEvaluate.length) {
+        match.partial = { eventId: id, afterHuntId: toEvaluate[evaluated - 1].hunt.internal_id };
+        match.budgetSpent = true;
+        return;
+      }
     }
     match.matchedEventId = id;
     await doYield();
+  }
+};
+
+const parseStandingCursor = (state: string | null): StandingCursor | null => {
+  try {
+    const cursor = state ? JSON.parse(state) : null;
+    return typeof cursor?.eventId === 'string' && typeof cursor?.afterHuntId === 'string' ? cursor : null;
+  } catch {
+    return null;
   }
 };
 
@@ -832,9 +870,11 @@ export const processStandingHunts = async (context: AuthContext, budget: HuntTic
     const originUser = event.origin?.user_id;
     return !!originUser && (originUser === HUNT_MANAGER_USER.id || huntConnectorUsers.has(originUser));
   };
-  const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+  const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null, partial: null };
+  const resume = parseStandingCursor(await redisGetManagerEventState(HUNT_MANAGER_STANDING_CURSOR_STATE));
   const processEvents = (streamEvents: Array<SseEvent<DataEvent>>) => matchStandingEvents(indexed, streamEvents, match, {
     budget: HUNT_CONFIG.standingFilterEvaluationsPerTick,
+    resume,
     isIgnored: isHuntOrigin,
     evaluate: (candidate, event) => isStandingHuntTriggered(context, candidate, event),
   });
@@ -853,6 +893,7 @@ export const processStandingHunts = async (context: AuthContext, budget: HuntTic
     await updateHuntRunInformation(context, newlyTriggered[index], { next_run_at: triggeredAt });
     pending.add(newlyTriggered[index]);
   }
+  await redisSetManagerEventState(HUNT_MANAGER_STANDING_CURSOR_STATE, match.partial ? JSON.stringify(match.partial) : '');
   await redisSetManagerEventState(HUNT_MANAGER_STREAM_STATE, newLastEventId);
   const candidatesById = new Map(candidates.map((candidate) => [candidate.hunt.internal_id, candidate]));
   const ordered = Array.from(pending)
