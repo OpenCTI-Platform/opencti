@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { LRUCache } from 'lru-cache';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import { elAggregationCount, elBulk, elCount, elRawDeleteByQuery, prepareElementForIndexing } from '../../../database/engine';
@@ -304,28 +305,71 @@ export const summarizeHuntHitRecords = async (context: AuthContext, huntId: stri
   };
 };
 
+// The platforms on which a reader reads every run of a hunt, for a short while: the hits of a page of runs are annotated
+// without counting the runs again for each. The short ttl only bounds how long an access change can lag behind
+const everyRunReadableCache = new LRUCache<string, Set<string | null>>({ max: 5000, ttl: 30 * 1000 });
+
+/**
+ * Security platforms (null for the internet) on which the user reads every execution run of a hunt. The records of the
+ * hits of a hunt on a platform aggregate all its runs there, and a run keeps the markings and organizations its hunt and
+ * platform had when it was created: once the hunt is restricted further, or shared with more readers, some of its readers
+ * cannot read all of its runs. Only on these platforms do the records tell nothing of a run hidden from the user.
+ */
+export const findHuntPlatformsWithEveryRunReadable = async (context: AuthContext, user: AuthUser, huntId: string) => {
+  const cacheKey = [user.id, context.draft_context ?? '', huntId].join('|');
+  const cached = everyRunReadableCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+  const options = {
+    types: [ENTITY_TYPE_HUNT_RUN],
+    field: 'security_platform_id',
+    normalizeLabel: false,
+    noFiltersChecking: true,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['hunt_id'], values: [huntId] }, { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] }],
+      filterGroups: [],
+    },
+  };
+  const [runs, readableRuns] = await Promise.all([
+    elAggregationCount(context, HUNT_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, options),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options),
+  ]) as { label: string; count: number }[][];
+  const readableCounts = new Map(readableRuns.map((bucket) => [bucket.label, bucket.count]));
+  const platforms = new Set(runs
+    .filter((bucket) => readableCounts.get(bucket.label) === bucket.count)
+    .map((bucket) => (bucket.label === 'unknown' ? null : bucket.label)));
+  everyRunReadableCache.set(cacheKey, platforms);
+  return platforms;
+};
+
 /**
  * The sampled hits of a run, each telling whether this run found it first (new), how many runs found it so far and since
- * when; a hit without key, of a run whose hits are not identified, or forgotten since, says nothing.
+ * when; a hit without key, of a run whose hits are not identified, or forgotten since, says nothing. How many runs and
+ * since when are only told to a user who reads every run of the hunt on the platform of the run.
  */
-export const annotateHuntRunHits = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+export const annotateHuntRunHits = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
   const hits = run.hits_sample ?? [];
   const keys = run.hits_identified === true ? hits.map((hit) => hit.hit_key).filter((key): key is string => !!key) : [];
   const records = keys.length > 0 ? await findHuntHitRecords(context, run.hunt_id, run.security_platform_id, keys) : new Map();
+  const recurrenceReadable = records.size > 0
+    && (await findHuntPlatformsWithEveryRunReadable(context, user, run.hunt_id)).has(run.security_platform_id ?? null);
   return hits.map((hit) => {
     const record = hit.hit_key ? records.get(hit.hit_key) : undefined;
     return {
       ...hit,
       is_new: record ? record.first_run_id === run.internal_id : null,
-      times_seen: record?.times_seen ?? null,
-      known_since: record?.first_seen ?? null,
+      times_seen: recurrenceReadable ? record?.times_seen ?? null : null,
+      known_since: recurrenceReadable ? record?.first_seen ?? null : null,
     };
   });
 };
 
 /**
- * What a hunt knows of its hits, over the security platforms the user can read (and the internet for an internet hunt):
- * the distinct hits, when the earliest known hit and the latest new hit were found.
+ * What a hunt knows of its hits, over the security platforms the user can read (and the internet for an internet hunt)
+ * on which the user reads every run of the hunt: the distinct hits, when the earliest known hit and the latest new hit
+ * were found.
  */
 export const findHuntKnownHits = async (context: AuthContext, user: AuthUser, huntId: string) => {
   const buckets = await elAggregationCount(context, HUNT_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
@@ -338,9 +382,11 @@ export const findHuntKnownHits = async (context: AuthContext, user: AuthUser, hu
   if (buckets.length === 0) {
     return { distinct_count: 0, first_new_at: null, last_new_at: null };
   }
-  const platformIds = buckets.map((bucket) => bucket.label).filter((label) => label !== 'unknown');
+  const everyRunReadable = await findHuntPlatformsWithEveryRunReadable(context, user, huntId);
+  const platformIds = buckets.map((bucket) => bucket.label).filter((label) => label !== 'unknown' && everyRunReadable.has(label));
   const readable = platformIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM }) : [];
-  const scope: (string | null)[] = [...readable.map((platform) => platform.internal_id), ...(buckets.some((bucket) => bucket.label === 'unknown') ? [null] : [])];
+  const internet = buckets.some((bucket) => bucket.label === 'unknown') && everyRunReadable.has(null);
+  const scope: (string | null)[] = [...readable.map((platform) => platform.internal_id), ...(internet ? [null] : [])];
   if (scope.length === 0) {
     return { distinct_count: 0, first_new_at: null, last_new_at: null };
   }
