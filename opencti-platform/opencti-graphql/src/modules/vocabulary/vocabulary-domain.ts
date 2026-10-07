@@ -11,9 +11,8 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { normalizeName } from '../../schema/identifier';
+import { generateBuiltInExportId, normalizeName } from '../../schema/identifier';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { generateBuiltInExportId } from '../../schema/identifier';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
