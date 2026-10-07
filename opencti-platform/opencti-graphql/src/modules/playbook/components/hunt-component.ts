@@ -187,6 +187,11 @@ const isRecentlyRunByPlaybook = async (context: AuthContext, hunt: BasicStoreEnt
   return count > 0;
 };
 
+// The failure of a step that started no run, read by its executor while the step continues in this process: the step
+// then fails in the execution instead of continuing through no-hunt, which says the step had no hunt to run
+const huntStepStartFailures = new Map<string, unknown>();
+const huntStepKey = (executionId: string, instanceId: string, stepId: string) => `${executionId}_${instanceId}_${stepId}`;
+
 export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfiguration> = {
   id: PLAYBOOK_HUNT_COMPONENT_ID,
   name: 'Run hunts',
@@ -239,6 +244,7 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
     };
     const runs: BasicStoreEntityHuntRun[] = [];
     const waiting = configuration.wait_for_results !== false && isStorableHuntPlaybookContext(playbookContext);
+    let startFailure: unknown = null;
     try {
       const inScope = bundle.objects.filter((object) => isBundleElementInScope(object, configuration.applyToElements, dataInstanceId));
       const elements = await filterBundleElements(context, inScope, configuration.applyWithFilters);
@@ -290,13 +296,30 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
           return;
         }
       }
+      startFailure = error;
     }
-    // Nothing to wait for: continue right away (the executor routes to no-hunt when no run was started)
-    await resumeHuntPlaybookStep(context, { ...playbookContext, include_results: false }, runs);
+    // Nothing to wait for: continue right away (the executor routes to no-hunt when no run was started, and fails when
+    // starting them failed)
+    const key = huntStepKey(executionId, dataInstanceId, playbookNode.id);
+    if (startFailure) {
+      huntStepStartFailures.set(key, startFailure);
+    }
+    try {
+      await resumeHuntPlaybookStep(context, { ...playbookContext, include_results: false }, runs);
+    } finally {
+      huntStepStartFailures.delete(key);
+    }
   },
   executor: async ({ executionId, dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const runs = await findPlaybookHuntRuns(context, { executionId, instanceId: dataInstanceId, stepId: playbookNode.id });
-    return { output_port: runs.length > 0 ? 'out' : 'no-hunt', bundle };
+    if (runs.length > 0) {
+      return { output_port: 'out', bundle };
+    }
+    const startFailure = huntStepStartFailures.get(huntStepKey(executionId, dataInstanceId, playbookNode.id));
+    if (startFailure) {
+      throw startFailure;
+    }
+    return { output_port: 'no-hunt', bundle };
   },
 };
