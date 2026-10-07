@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hashMergeValidation } from '../../../src/database/middleware';
+import { fieldAuthorityLockIds, hashMergeValidation } from '../../../src/database/middleware';
 import {
   buildUpdatePatchForUpsert,
   generateAttributesInputsForUpsert,
@@ -688,6 +688,14 @@ describe('middleware upsertElement test', () => {
       // Without a rule deciding, the attribute is still replaced in full, whatever the confidence.
       const replaced = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: false });
       expect(replaced.find((i) => i.key === 'coverage_information')).toBeDefined();
+    });
+
+    it('should serialize the upserts of one element on its internal id only, never on the input ids of other callers', () => {
+      const element = { internal_id: 'element-id', standard_id: 'intrusion-set--standard', x_opencti_stix_ids: ['intrusion-set--other'] };
+      // Two callers holding the two ids they reached the element through each add the same lock, and only that one.
+      expect(fieldAuthorityLockIds(element, ['intrusion-set--standard'])).toEqual(['element-id']);
+      expect(fieldAuthorityLockIds(element, ['intrusion-set--other'])).toEqual(['element-id']);
+      expect(fieldAuthorityLockIds(element, ['element-id', 'intrusion-set--standard'])).toEqual([]);
     });
 
     it('should drop the upsert operations of an attribute a field authority rule denies', async () => {

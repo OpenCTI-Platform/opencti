@@ -3692,6 +3692,15 @@ const upsertResolvedElement = async (
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
+/**
+ * The lock an upsert governed by field authority adds: the internal id of the element, which every caller reaching it
+ * shares, unless the caller holds it already. A caller holds the ids of its own input: locking the other ids of the
+ * element as well could make two callers that reached it through two different ids wait for each other.
+ */
+export const fieldAuthorityLockIds = (element: Pick<BasicStoreBase, 'internal_id'>, heldLocks: string[]) => {
+  return heldLocks.includes(element.internal_id) ? [] : [element.internal_id];
+};
+
 const upsertElement = async (
   context: AuthContext,
   user: AuthUser,
@@ -3708,7 +3717,7 @@ const upsertElement = async (
     return upsertResolvedElement(context, user, element, type, basePatch, opts);
   }
   const heldLocks = opts.locks ?? [];
-  const lockIds = (getInstanceIds(element) as string[]).filter((id) => !heldLocks.includes(id));
+  const lockIds = fieldAuthorityLockIds(element, heldLocks);
   let lock;
   try {
     if (lockIds.length > 0) {
