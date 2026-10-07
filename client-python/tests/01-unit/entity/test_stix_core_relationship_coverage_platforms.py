@@ -218,6 +218,46 @@ def test_an_older_platform_is_read_without_the_coverage_platforms(local_api_clie
     assert read["coverage_information"] == HAS_COVERED["coverage_information"]
 
 
+STIX_PLATFORM_REF = "identity--fd6bb94b-46b7-5e41-90d0-2a0fcf171ca2"
+
+
+def stix_coverage(**overrides):
+    return {
+        "platform_ref": STIX_PLATFORM_REF,
+        "name": "DETECTION",
+        "score": 75,
+        **overrides,
+    }
+
+
+@pytest.mark.parametrize(
+    "malformed",
+    [
+        stix_coverage(platform_ref=42),
+        stix_coverage(platform_ref=""),
+        stix_coverage(name=12),
+        stix_coverage(name=""),
+        stix_coverage(score="none"),
+        stix_coverage(score=True),
+        stix_coverage(score=float("nan")),
+        stix_coverage(score=float("inf")),
+        {"platform_ref": STIX_PLATFORM_REF, "name": "DETECTION"},
+    ],
+)
+def test_a_malformed_coverage_platform_is_skipped(malformed):
+    converted = StixCoreRelationship.convert_coverage_platforms(
+        [malformed, stix_coverage()]
+    )
+    assert converted == COVERAGE_PLATFORMS
+
+
+def test_a_decimal_coverage_platform_score_is_rounded_half_up():
+    converted = StixCoreRelationship.convert_coverage_platforms(
+        [stix_coverage(score=74.5), stix_coverage(score=60.2)]
+    )
+    assert [c["coverage_score"] for c in converted] == [75, 60]
+
+
 def test_custom_attributes_need_no_detection(local_api_client):
     relationship = relationship_with(
         local_api_client, [{"data": {"stixCoreRelationship": {"id": "relationship-1"}}}]

@@ -29,6 +29,10 @@ const cleanValue = (value?: string | null) => {
   if (cleaned.length > MAX_VALUE_LENGTH) {
     throw FunctionalError('Log source value is too long', { length: cleaned.length });
   }
+  // The key of a mapping, also its identity, joins the three values with |: a value holding one could take the key of another
+  if (cleaned.includes('|')) {
+    throw FunctionalError('A log source value cannot contain |', { value: cleaned });
+  }
   return cleaned.length > 0 ? cleaned : undefined;
 };
 

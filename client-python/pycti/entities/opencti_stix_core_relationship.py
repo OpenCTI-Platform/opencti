@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import datetime
+import math
 import threading
 import time
 import uuid
@@ -550,18 +551,31 @@ class StixCoreRelationship:
         """
         if not isinstance(raw_coverage_platforms, list):
             return []
+        # One malformed entry would fail the whole relationship creation: it is skipped, and a
+        # decimal score is rounded (half up, as the platform does) to the integer the input holds
         return [
             {
                 "platform_ref": coverage["platform_ref"],
                 "coverage_name": coverage["name"],
-                "coverage_score": coverage["score"],
+                "coverage_score": math.floor(coverage["score"] + 0.5),
             }
             for coverage in raw_coverage_platforms
             if isinstance(coverage, dict)
-            and coverage.get("platform_ref")
-            and coverage.get("name")
-            and coverage.get("score") is not None
+            and StixCoreRelationship._is_platform_coverage(coverage)
         ]
+
+    @staticmethod
+    def _is_platform_coverage(coverage):
+        score = coverage.get("score")
+        return (
+            isinstance(coverage.get("platform_ref"), str)
+            and coverage["platform_ref"] != ""
+            and isinstance(coverage.get("name"), str)
+            and coverage["name"] != ""
+            and isinstance(score, (int, float))
+            and not isinstance(score, bool)
+            and math.isfinite(score)
+        )
 
     def list(self, **kwargs):
         """List stix_core_relationship objects.
