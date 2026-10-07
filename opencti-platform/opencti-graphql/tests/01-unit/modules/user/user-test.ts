@@ -10,6 +10,7 @@ import {
   authenticateUserByToken,
   authenticateUserByUserId,
   checkPasswordInlinePolicy,
+  generatePasswordFromPolicy,
   isSensitiveChangesAllowed,
 } from '../../../../src/modules/user/user-domain';
 import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
@@ -134,6 +135,40 @@ describe('password checker', () => {
     };
     expect(checkPasswordInlinePolicy(testContext, policy03, 'julA').length).toBe(1);
     expect(checkPasswordInlinePolicy(testContext, policy03, 'ju!lA').length).toBe(0);
+  });
+});
+
+describe('password generator', () => {
+  it('should generate a password without policy', async () => {
+    const password = generatePasswordFromPolicy({});
+    expect(password.length).toBe(32);
+    expect(checkPasswordInlinePolicy(testContext, {}, password).length).toBe(0);
+  });
+  it('should generate a password matching a complex policy', async () => {
+    const policy = {
+      password_policy_min_length: 10,
+      password_policy_min_symbols: 2,
+      password_policy_min_numbers: 3,
+      password_policy_min_words: 3,
+      password_policy_min_lowercase: 2,
+      password_policy_min_uppercase: 5,
+    };
+    for (let i = 0; i < 50; i += 1) {
+      expect(checkPasswordInlinePolicy(testContext, policy, generatePasswordFromPolicy(policy))).toEqual([]);
+    }
+  });
+  it('should generate a password matching min and max length policy', async () => {
+    const longPolicy = { password_policy_min_length: 64, password_policy_min_symbols: 5, password_policy_min_words: 2 };
+    const longPassword = generatePasswordFromPolicy(longPolicy);
+    expect(longPassword.length).toBe(64);
+    expect(checkPasswordInlinePolicy(testContext, longPolicy, longPassword)).toEqual([]);
+    const shortPolicy = { password_policy_max_length: 8, password_policy_min_uppercase: 2, password_policy_min_numbers: 2 };
+    const shortPassword = generatePasswordFromPolicy(shortPolicy);
+    expect(shortPassword.length).toBe(8);
+    expect(checkPasswordInlinePolicy(testContext, shortPolicy, shortPassword)).toEqual([]);
+  });
+  it('should generate different passwords', async () => {
+    expect(generatePasswordFromPolicy({})).not.toBe(generatePasswordFromPolicy({}));
   });
 });
 
