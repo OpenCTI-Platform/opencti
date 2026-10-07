@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DEFENSE_THREAT_TYPES, type DefenseThreatOption } from './defenseMatrix-utils';
 import { DefenseThreatsFieldSearchQuery$data } from './__generated__/DefenseThreatsFieldSearchQuery.graphql';
@@ -10,6 +11,17 @@ import { DefenseThreatsFieldAccessQuery$data } from './__generated__/DefenseThre
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_SIZE = 25;
+const NO_CONFIRMED_IDS: ReadonlySet<string> = new Set();
+
+interface Confirmations {
+  userId: string;
+  ids: ReadonlySet<string>;
+}
+
+const withConfirmed = (current: Confirmations, userId: string, ids: Iterable<string>): Confirmations => ({
+  userId,
+  ids: new Set([...(current.userId === userId ? current.ids : []), ...ids]),
+});
 
 const defenseThreatsFieldAccessQuery = graphql`
   query DefenseThreatsFieldAccessQuery($types: [String], $filters: FilterGroup, $first: Int) {
@@ -55,8 +67,11 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestId = useRef(0);
   // A threat of the stored scope is shown only once the reader is known to access it: the threats picked from the search
-  // are, the others are confirmed by one query, which also drops the threats no longer accessible and refreshes the names
-  const [confirmedIds, setConfirmedIds] = useState<ReadonlySet<string>>(() => new Set());
+  // are, the others are confirmed by one query, which also drops the threats no longer accessible and refreshes the names.
+  // The confirmations belong to the account: another account confirms its own stored threats.
+  const { me } = useAuth();
+  const [confirmed, setConfirmed] = useState<Confirmations>(() => ({ userId: me.id, ids: NO_CONFIRMED_IDS }));
+  const confirmedIds = confirmed.userId === me.id ? confirmed.ids : NO_CONFIRMED_IDS;
   const latest = useRef({ value, onChange });
   latest.current = { value, onChange };
   const unconfirmedKey = value.filter((threat) => !confirmedIds.has(threat.value)).map((threat) => threat.value).join(',');
@@ -64,6 +79,8 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
   useEffect(() => {
     if (!unconfirmedKey) return undefined;
     const unconfirmedIds = unconfirmedKey.split(',');
+    const userId = me.id;
+    // Cancelled when the account changes too: an answer for the previous account is dropped
     let cancelled = false;
     fetchQuery(defenseThreatsFieldAccessQuery, {
       types: DEFENSE_THREAT_TYPES,
@@ -75,7 +92,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
         if (cancelled) return;
         const edges = (data as DefenseThreatsFieldAccessQuery$data | undefined)?.stixDomainObjects?.edges ?? [];
         const accessible = new Map(edges.map(({ node }) => [node.id, { value: node.id, label: node.representative.main, type: node.entity_type }]));
-        setConfirmedIds((current) => new Set([...current, ...accessible.keys()]));
+        setConfirmed((current) => withConfirmed(current, userId, accessible.keys()));
         const current = latest.current.value;
         const next = current
           .filter((threat) => !unconfirmedIds.includes(threat.value) || accessible.has(threat.value))
@@ -88,7 +105,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
     return () => {
       cancelled = true;
     };
-  }, [unconfirmedKey]);
+  }, [unconfirmedKey, me.id]);
 
   const search = (input: string) => {
     if (timer.current) clearTimeout(timer.current);
@@ -135,7 +152,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
       }}
       onValueChange={(next) => {
         const threats = (next as DefenseThreatOption[] | null) ?? [];
-        setConfirmedIds((current) => new Set([...current, ...threats.map((threat) => threat.value)]));
+        setConfirmed((current) => withConfirmed(current, me.id, threats.map((threat) => threat.value)));
         onChange(threats);
       }}
       renderOption={(option) => (

@@ -11,6 +11,21 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
   fetchQuery: (...args: unknown[]) => mockFetchQuery(...args),
 }));
 
+// The account of the reader, changed without a remount as when another user logs in
+const mockAccount = { id: 'reader-1' };
+vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../utils/hooks/useAuth')>();
+  return {
+    ...original,
+    default: () => {
+      const auth = original.default();
+      return { ...auth, me: { ...auth.me, id: mockAccount.id } };
+    },
+  };
+});
+
+const accessAnswer = (edges: unknown[]) => ({ toPromise: () => Promise.resolve({ stixDomainObjects: { edges } }) });
+
 const STORED: DefenseThreatOption[] = [
   { value: 'threat-renamed', label: 'Stored name', type: 'Intrusion-Set' },
   { value: 'threat-revoked', label: 'Revoked threat', type: 'Malware' },
@@ -57,5 +72,22 @@ describe('Defense threats field', () => {
     expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
     expect(screen.queryByText('Revoked threat')).not.toBeInTheDocument();
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('should confirm the stored threats again for another account', async () => {
+    mockAccount.id = 'reader-1';
+    mockFetchQuery.mockReset();
+    mockFetchQuery.mockReturnValue(accessAnswer([{ node: { id: 'threat-renamed', entity_type: 'Intrusion-Set', representative: { main: 'Stored name' } } }]));
+    const { rerender } = testRender(<DefenseThreatsField value={[STORED[0]]} onChange={vi.fn()} />);
+    expect(await screen.findByText('Stored name')).toBeInTheDocument();
+    expect(mockFetchQuery).toHaveBeenCalledTimes(1);
+    // The next account cannot access the threat: it is not shown before its own answer, then leaves the scope
+    mockFetchQuery.mockReturnValue(accessAnswer([]));
+    mockAccount.id = 'reader-2';
+    const onChange = vi.fn();
+    rerender(<DefenseThreatsField value={[STORED[0]]} onChange={onChange} />);
+    expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith([]));
+    expect(mockFetchQuery).toHaveBeenCalledTimes(2);
   });
 });
