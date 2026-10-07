@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   curationRecordsManagerCronHandler,
   curationRecordsManagerStreamHandler,
+  curationRecordsManagerStreamStartFrom,
   deletedEntityIds,
   reclassifiedEntityIds,
   retryQueuedRestrictionRefreshes,
 } from '../../../src/manager/curationRecordsManager';
 import type { AuthContext } from '../../../src/types/user';
-import { redisSetManagerEventState } from '../../../src/database/redis';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../../../src/database/redis';
 import { completePendingMergeRecords, expireMergeRecords, refreshMergeRecordRestrictions } from '../../../src/modules/curation/curation-merge-record';
 import { refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../../src/modules/curation/curation-proposals';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
@@ -59,6 +60,15 @@ describe('Curation records manager', () => {
     retryQueue.clear();
     (refreshProposalRestrictions as any).mockImplementation(async () => undefined);
     (retireProposalsOfDeletedSubjects as any).mockResolvedValue(0);
+  });
+
+  it('starts the stream from the position saved by any node, without its cron handler having run', async () => {
+    vi.mocked(redisGetManagerEventState).mockResolvedValueOnce('42-0');
+    expect(await curationRecordsManagerStreamStartFrom()).toBe('42-0');
+    expect(redisGetManagerEventState).toHaveBeenCalledWith('curation_records_manager');
+    expect(completePendingMergeRecords).not.toHaveBeenCalled();
+    vi.mocked(redisGetManagerEventState).mockResolvedValueOnce(undefined as never);
+    expect(await curationRecordsManagerStreamStartFrom()).toBe('live');
   });
 
   it('only keeps the entities whose markings or organization sharing changed', () => {

@@ -67,7 +67,6 @@ const CURATION_DEAD_LETTER_MAX_REPLAYS = 10;
 const FIELD_WRITER_TTL_SECONDS = 30 * 24 * 3600;
 const DIGEST_MIN_INTERVAL_MS = 6 * 24 * 3600 * 1000;
 
-let streamStartFrom: string | undefined;
 let failedBatchKey: string | undefined;
 let failedBatchAttempts = 0;
 let lastPolicyRun = 0;
@@ -161,7 +160,6 @@ const runPolicies = async (context: AuthContext) => {
 
 export const curationManagerCronHandler = async () => {
   const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
-  streamStartFrom = (await redisGetManagerEventState(CURATION_STREAM_STATE)) ?? streamStartFrom;
   const settings = await getCurationSettings(context);
   if (settings.curation_enabled && (settings.force_scan || isOlderThan(settings.last_scan_date, CURATION_SCAN_INTERVAL_MS))) {
     await runScans(context, settings);
@@ -499,9 +497,11 @@ export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<
   }
   failedBatchKey = undefined;
   failedBatchAttempts = 0;
-  streamStartFrom = lastEventId;
   await redisSetManagerEventState(CURATION_STREAM_STATE, lastEventId);
 };
+
+// Read by whichever node takes the stream lock, which may never have run the cron handler.
+export const curationManagerStreamStartFrom = async () => (await redisGetManagerEventState(CURATION_STREAM_STATE)) ?? 'live';
 
 /**
  * Stream events kept after repeated failures are tried again at every manager tick; an event failing
@@ -559,7 +559,7 @@ const CURATION_MANAGER_DEFINITION: ManagerDefinition = {
     interval: CURATION_MANAGER_INTERVAL,
     lockKey: CURATION_MANAGER_STREAM_LOCK_KEY,
     streamOpts: { withInternal: false, bufferTime: 5000 },
-    streamProcessorStartFrom: () => streamStartFrom ?? 'live',
+    streamProcessorStartFrom: curationManagerStreamStartFrom,
   },
 };
 

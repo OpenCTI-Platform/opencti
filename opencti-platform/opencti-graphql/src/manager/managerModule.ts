@@ -34,7 +34,8 @@ export interface ManagerStreamScheduler {
   interval: number;
   lockKey: string;
   streamOpts?: { withInternal?: boolean; streamName?: string; bufferTime: number };
-  streamProcessorStartFrom: () => string | undefined;
+  /** Called once the stream lock is taken: it can load the position the previous holder of the lock saved. */
+  streamProcessorStartFrom: () => string | undefined | Promise<string | undefined>;
 }
 
 export interface ManagerDefinition {
@@ -134,7 +135,7 @@ const initManager = (manager: ManagerDefinition) => {
         running = true;
         logApp.info(`[OPENCTI-MODULE] Running ${manager.label} stream handler`);
         streamProcessor = createStreamProcessor(manager.label, manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
-        const startFrom = manager.streamSchedulerHandler.streamProcessorStartFrom();
+        const startFrom = await manager.streamSchedulerHandler.streamProcessorStartFrom();
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();

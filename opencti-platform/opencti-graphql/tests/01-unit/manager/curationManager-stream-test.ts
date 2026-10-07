@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { creatorsBeforeUpdate, curationManagerStreamHandler, isNamePatchPath, replayDeadLetters } from '../../../src/manager/curationManager';
+import { creatorsBeforeUpdate, curationManagerStreamHandler, curationManagerStreamStartFrom, isNamePatchPath, replayDeadLetters } from '../../../src/manager/curationManager';
 import {
   redisCurationClaimDeadLetters,
   redisCurationPushDeadLetters,
   redisCurationSettleDeadLetter,
   redisCurationSwapFieldWriter,
+  redisGetManagerEventState,
   redisSetManagerEventState,
 } from '../../../src/database/redis';
 import type { AuthContext } from '../../../src/types/user';
@@ -95,6 +96,14 @@ describe('Curation manager stream handler', () => {
     expect(persisted).toEqual(['malware-a', POISON_ID, 'malware-b']);
     expect(runIncrementalDuplicateDetection).not.toHaveBeenCalled();
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_manager', '3-0');
+  });
+
+  it('starts the stream from the position saved by any node, read when the stream starts', async () => {
+    vi.mocked(redisGetManagerEventState).mockResolvedValueOnce('42-0');
+    expect(await curationManagerStreamStartFrom()).toBe('42-0');
+    expect(redisGetManagerEventState).toHaveBeenCalledWith('curation_manager');
+    vi.mocked(redisGetManagerEventState).mockResolvedValueOnce(undefined as never);
+    expect(await curationManagerStreamStartFrom()).toBe('live');
   });
 
   it('recognizes the patches that change the names of an entity, wherever its type holds its aliases', () => {

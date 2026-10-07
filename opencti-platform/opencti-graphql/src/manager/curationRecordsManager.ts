@@ -37,14 +37,12 @@ const STREAM_MAX_ATTEMPTS = 5;
 const RESTRICTION_RETRIES_PER_TICK = 50;
 const RESTRICTION_RETRY_LOG_EVERY = 60;
 
-let streamStartFrom: string | undefined;
 let lastExpiryRun = 0;
 let failedBatchKey: string | undefined;
 let failedBatchAttempts = 0;
 
 export const curationRecordsManagerCronHandler = async () => {
   const context = executionContext(CURATION_RECORDS_MANAGER_CONTEXT, CURATION_MANAGER_USER);
-  streamStartFrom = (await redisGetManagerEventState(CURATION_RECORDS_STREAM_STATE)) ?? streamStartFrom;
   const pendingRecords = await completePendingMergeRecords(context);
   if (pendingRecords.completed + pendingRecords.discarded + pendingRecords.irreversible > 0) {
     logApp.warn('[CURATION] Pending merge records completed from the live graph', pendingRecords);
@@ -159,9 +157,11 @@ export const curationRecordsManagerStreamHandler = async (streamEvents: Array<Ss
   }
   failedBatchKey = undefined;
   failedBatchAttempts = 0;
-  streamStartFrom = lastEventId;
   await redisSetManagerEventState(CURATION_RECORDS_STREAM_STATE, lastEventId);
 };
+
+// Read by whichever node takes the stream lock, which may never have run the cron handler.
+export const curationRecordsManagerStreamStartFrom = async () => (await redisGetManagerEventState(CURATION_RECORDS_STREAM_STATE)) ?? 'live';
 
 const CURATION_RECORDS_MANAGER_DEFINITION: ManagerDefinition = {
   id: CURATION_RECORDS_MANAGER_ID,
@@ -185,7 +185,7 @@ const CURATION_RECORDS_MANAGER_DEFINITION: ManagerDefinition = {
     interval: CURATION_RECORDS_MANAGER_INTERVAL,
     lockKey: CURATION_RECORDS_MANAGER_STREAM_LOCK_KEY,
     streamOpts: { withInternal: false, bufferTime: 5000 },
-    streamProcessorStartFrom: () => streamStartFrom ?? 'live',
+    streamProcessorStartFrom: curationRecordsManagerStreamStartFrom,
   },
 };
 
