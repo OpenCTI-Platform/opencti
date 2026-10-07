@@ -367,6 +367,12 @@
     "stream_batch_size": 7500,
     "max_concurrency": 5
   },
+  "source_intelligence_manager": {
+    "enabled": true,
+    "lock_key": "source_intelligence_manager_lock",
+    "interval": 60000,
+    "stream_batch_size": 5000
+  },
   "data_sanity_manager": {
     "enabled": true,
     "lock_key": "data_sanity_manager_lock",

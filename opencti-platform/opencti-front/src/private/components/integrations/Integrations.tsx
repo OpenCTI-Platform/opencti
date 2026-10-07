@@ -228,13 +228,16 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
 };
 
 interface IntegrationsComponentProps {
-  tab: IntegrationsTab;
+  tab: IntegrationsTab | 'sources';
   data: IntegrationsData;
+  /** Content of the Sources tab, rendered under the same header and tab bar */
+  children?: React.ReactNode;
 }
 
-const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
+const IntegrationsComponent = ({ tab, data, children }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
+  const isSourcesReader = useGranted([MODULES, INGESTION]);
   const { deploymentData, feedsData, formsData } = data;
 
   // Feed instances register a technical twin connector: excluded from the
@@ -288,18 +291,33 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
                 {t_i18n('Available')}
               </Link>
             </TabsTrigger>
+            {isSourcesReader && (
+              <TabsTrigger value="sources" asChild>
+                <Link to="/dashboard/integrations/sources" data-testid="integrations-tab-sources">
+                  {t_i18n('Sources')}
+                </Link>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
 
-        {tab === 'deployed' ? (
-          <IntegrationsDeployed data={data} />
-        ) : (
-          <IntegrationsAvailable data={data} />
-        )}
+        {tab === 'sources' && children}
+        {tab === 'deployed' && <IntegrationsDeployed data={data} />}
+        {tab === 'available' && <IntegrationsAvailable data={data} />}
       </PageContainer>
     </div>
   );
 };
+
+export const IntegrationsSourcesChrome = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+    <ConnectorManagerStatusProvider>
+      <IntegrationsDataProvider>
+        {(data) => <IntegrationsComponent tab="sources" data={data}>{children}</IntegrationsComponent>}
+      </IntegrationsDataProvider>
+    </ConnectorManagerStatusProvider>
+  </Suspense>
+);
 
 const Integrations = () => {
   const { tab } = useParams();

@@ -62,6 +62,7 @@ import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '..
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { type BasicStoreEntitySource, ENTITY_TYPE_COLLECTION_GAP, ENTITY_TYPE_SOURCE } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
@@ -155,6 +156,12 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+// Source Intelligence counters
+export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_APPLIED = 'sourceRecommendationAppliedCount';
+export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_AUTONOMOUS = 'sourceRecommendationAutonomousCount';
+export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_REVERTED = 'sourceRecommendationRevertedCount';
+export const TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_DISMISSED = 'sourceRecommendationDismissedCount';
+export const TELEMETRY_GAUGE_SOURCE_INTELLIGENCE_DASHBOARD = 'sourceIntelligenceDashboardCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -214,6 +221,22 @@ export const addRequestAccessCreationCount = async () => {
 };
 export const addDraftCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_CREATION, 1);
+};
+const SOURCE_RECOMMENDATION_OUTCOME_GAUGES = {
+  applied: TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_APPLIED,
+  autonomous: TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_AUTONOMOUS,
+  reverted: TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_REVERTED,
+  dismissed: TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_DISMISSED,
+} as const;
+export type SourceRecommendationOutcome = keyof typeof SOURCE_RECOMMENDATION_OUTCOME_GAUGES;
+// Fire-and-forget: a telemetry failure must never break the recommendation workflow
+export const addSourceRecommendationOutcome = async (outcome: SourceRecommendationOutcome) => {
+  await redisSetTelemetryAdd(SOURCE_RECOMMENDATION_OUTCOME_GAUGES[outcome], 1)
+    .catch((reason) => logApp.warn('Error adding source recommendation outcome to telemetry', { reason, outcome }));
+};
+export const addSourceIntelligenceDashboardCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_SOURCE_INTELLIGENCE_DASHBOARD, 1)
+    .catch((reason) => logApp.warn('Error adding source intelligence dashboard count to telemetry', { reason }));
 };
 export const addDraftValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_VALIDATION, 1);
@@ -523,6 +546,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region Source Intelligence information
+    const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_SOURCE);
+    manager.setSourcesWithScorecardCount(sources.filter((source) => !!source.last_computed_at).length);
+    manager.setSourcesWithCostCount(sources.filter((source) => !!source.source_cost).length);
+    const collectionGapsCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_COLLECTION_GAP],
+      filters: { mode: FilterMode.And, filters: [{ key: ['is_gap'], values: [true] }], filterGroups: [] },
+    });
+    manager.setCollectionGapsCount(collectionGapsCount);
+    // endregion
+
     // region History retention rule status
     const retentionRules = await listRules(context, TELEMETRY_MANAGER_USER);
     const hasActiveHistoryRetentionRule = retentionRules.some((rule) => rule.scope === 'history' && rule.active);
@@ -730,6 +764,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
     const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
     manager.setDraftCreationCount(draftCreationCountInRedis);
+    manager.setSourceRecommendationAppliedCount(await redisGetTelemetry(TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_APPLIED));
+    manager.setSourceRecommendationAutonomousCount(await redisGetTelemetry(TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_AUTONOMOUS));
+    manager.setSourceRecommendationRevertedCount(await redisGetTelemetry(TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_REVERTED));
+    manager.setSourceRecommendationDismissedCount(await redisGetTelemetry(TELEMETRY_GAUGE_SOURCE_RECOMMENDATION_DISMISSED));
+    manager.setSourceIntelligenceDashboardCount(await redisGetTelemetry(TELEMETRY_GAUGE_SOURCE_INTELLIGENCE_DASHBOARD));
     const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
     const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);

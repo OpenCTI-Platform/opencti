@@ -22,6 +22,7 @@ A perspective is the way the platform will count the data to display in your wid
 - **Entities Perspective:** Focuses on entities, allowing observation of simple knowledge based on defined filters and criteria. The count will be based on entities only.
 - **Knowledge Graph Perspective:** Concentrates on relationships, displaying intricate knowledge derived from relationships between entities and specified filters.  The count will be based on relations only.
 - **Activity & History Perspective:** Centers on activities within the platform, not the knowledge content. This perspective is valuable for monitoring user and connector activities, evaluating data sources, and more.
+- **Sources Perspective:** Displays the scorecard metrics of your connectors, feeds and authors (value score, volume, unique contribution, accuracy, cost per actionable object, etc.), see [Source intelligence](source-intelligence.md). It is available in dashboards, but not in public dashboards.
 
 ![Widget perspective](assets/widget-perspective.png)
 

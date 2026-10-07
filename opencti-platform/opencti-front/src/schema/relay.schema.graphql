@@ -875,6 +875,7 @@ enum WidgetPerspective {
   entities
   relationships
   audits
+  sources
 }
 
 type WidgetColumn {
@@ -9438,6 +9439,20 @@ type Query {
   pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  sources(first: Int, after: ID, orderBy: SourcesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SourceConnection
+  source(id: ID!): Source
+  sourceScorecards(sourceId: ID!, period: SourceScorecardPeriod, startDate: DateTime, endDate: DateTime, first: Int): [SourceScorecard!]!
+  sourceOverlap(period: SourceScorecardPeriod, sourceIds: [ID!], first: Int): SourceOverlapMatrix!
+  collectionGaps(pirId: ID, onlyGaps: Boolean, first: Int, after: ID, orderBy: CollectionGapsOrdering, orderMode: OrderingMode): CollectionGapConnection
+  sourceRecommendations(first: Int, after: ID, orderBy: SourceRecommendationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, status: [SourceRecommendationStatus!], kind: [SourceRecommendationKind!], sourceId: ID): SourceRecommendationConnection
+  sourceRecommendation(id: ID!): SourceRecommendation
+  sourceIntelligenceSettings: SourceIntelligenceSettings
+  sourceIntelligenceStatus: SourceIntelligenceStatus!
+  sourceScorecardMetrics: [SourceScorecardMetric!]!
+  sourceScorecardsDistribution(metric: String!, period: SourceScorecardPeriod, filters: FilterGroup, first: Int, orderMode: OrderingMode): [SourceScorecardDistributionItem!]!
+  sourceScorecardsNumber(metric: String!, period: SourceScorecardPeriod, filters: FilterGroup, aggregation: SourceScorecardAggregation): SourceScorecardNumber!
+  sourceScorecardsTimeSeries(metric: String!, period: SourceScorecardPeriod, filters: FilterGroup, startDate: DateTime, endDate: DateTime, aggregation: SourceScorecardAggregation): [SourceScorecardTimePoint!]!
+  sourceScorecardsScatter(xMetric: String!, yMetric: String!, sizeMetric: String, period: SourceScorecardPeriod, filters: FilterGroup, first: Int): [SourceScorecardScatterPoint!]!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -10363,6 +10378,15 @@ type Mutation {
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
+  sourceSetCost(id: ID!, input: SourceCostInput): Source
+  sourceFieldPatch(id: ID!, input: [EditInput!]!): Source
+  applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation
+  revertSourceRecommendation(id: ID!): SourceRecommendation
+  dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation
+  collectionGapDeployConnector(id: ID!, slug: String!, configuration: [ContractConfigInput!]): SourceRecommendation
+  sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings
+  sourceIntelligenceRecompute: Boolean
+  sourceIntelligenceDashboardCreate(name: String): Workspace
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -15716,6 +15740,533 @@ input PirRelationshipsTimeSeriesParameters {
   search: String
   filters: FilterGroup
   dynamicFrom: FilterGroup
+}
+
+enum SourceKind {
+  connector
+  ingestion_feed
+  author
+  manual
+}
+
+enum SourceCostPeriod {
+  month
+  quarter
+  year
+}
+
+enum SourceScorecardPeriod {
+  LAST_7_DAYS
+  LAST_30_DAYS
+  LAST_90_DAYS
+}
+
+enum SourceRecommendationKind {
+  raise_confidence
+  lower_confidence
+  add_decay_rule
+  change_schedule
+  add_deny_list
+  quarantine
+  retire
+  add_connector
+}
+
+enum SourceRecommendationStatus {
+  proposed
+  applying
+  applied
+  reverting
+  dismissed
+  reverted
+  failed
+}
+
+enum SourceScorecardAggregation {
+  sum
+  avg
+  min
+  max
+}
+
+type SourceCost {
+  amount: Float!
+  currency: String!
+  period: SourceCostPeriod!
+}
+
+type SourceOverlapShare {
+  source_id: ID!
+  source: Source
+  shared_count: Int!
+  share: Float!
+}
+
+type SourceScorecard {
+  id: ID!
+  source_id: ID!
+  source_kind: SourceKind!
+  source_name: String
+  period: SourceScorecardPeriod!
+  period_start: DateTime!
+  period_end: DateTime!
+  scorecard_date: String!
+  computed_at: DateTime!
+  is_live: Boolean!
+  volume_total: Int!
+  volume_entities: Int!
+  volume_relationships: Int!
+  volume_indicators: Int!
+  volume_observables: Int!
+  new_objects: Int!
+  volume_last_day: Int!
+  unique_count: Int!
+  unique_contribution: Float!
+  corroborated_count: Int!
+  corroboration_rate: Float!
+  shared_count: Int!
+  lead_time_hours: Float
+  first_reporter_share: Float
+  evaluated_count: Int!
+  revoked_count: Int!
+  negative_sightings_count: Int!
+  false_positive_count: Int!
+  decay_excluded_count: Int!
+  accuracy: Float
+  pir_matched_count: Int
+  relevance: Float
+  sightings_count: Int!
+  security_platform_sightings_count: Int!
+  incidents_count: Int!
+  impact_score: Float!
+  unreferenced_count: Int!
+  unsighted_count: Int!
+  expired_count: Int!
+  noise_count: Int!
+  noise: Float
+  last_asserted_at: DateTime
+  freshness_hours: Float
+  median_latency_hours: Float
+  actionable_count: Int!
+  cost_per_actionable_object: Float
+  cost_currency: String
+  value_score: Float!
+  overlap: [SourceOverlapShare!]!
+}
+
+type Source implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  source_kind: SourceKind!
+  ref_id: String
+  ref_type: String
+  cost: SourceCost
+  tags: [String!]
+  owner: Creator
+  enabled: Boolean!
+  quarantined: Boolean!
+  quarantine_draft_id: String
+  last_computed_at: DateTime
+  latest_value_score: Float
+  latest_volume: Int
+  latest_unique_contribution: Float
+  latest_corroboration_rate: Float
+  latest_lead_time_hours: Float
+  latest_accuracy: Float
+  latest_relevance: Float
+  latest_impact_score: Float
+  latest_noise: Float
+  latest_freshness_hours: Float
+  latest_cost_per_actionable: Float
+  connector: Connector
+  scorecard(period: SourceScorecardPeriod): SourceScorecard
+  recommendationsCount(status: [SourceRecommendationStatus!]): Int!
+}
+
+enum SourcesOrdering {
+  name
+  source_kind
+  enabled
+  last_computed_at
+  latest_value_score
+  latest_volume
+  latest_unique_contribution
+  latest_corroboration_rate
+  latest_lead_time_hours
+  latest_accuracy
+  latest_relevance
+  latest_impact_score
+  latest_noise
+  latest_freshness_hours
+  latest_cost_per_actionable
+  _score
+}
+
+type SourceConnection {
+  pageInfo: PageInfo!
+  edges: [SourceEdge!]!
+}
+
+type SourceEdge {
+  cursor: String!
+  node: Source!
+}
+
+type SourceOverlapCell {
+  source_a: ID!
+  source_b: ID!
+  shared_count: Int!
+  share_a: Float!
+  share_b: Float!
+  jaccard: Float!
+  measured: Boolean!
+}
+
+type SourceOverlapMatrix {
+  period: SourceScorecardPeriod!
+  computed_at: DateTime
+  sources: [Source!]!
+  cells: [SourceOverlapCell!]!
+}
+
+type CollectionGapCoveringSource {
+  source_id: ID!
+  source: Source
+  matched_count: Int!
+  share: Float!
+}
+
+type ConnectorRequiredSetting {
+  key: String!
+  label: String!
+  description: String
+  type: String!
+  secret: Boolean!
+}
+
+type CollectionGapRecommendedConnector {
+  slug: String!
+  title: String!
+  short_description: String
+  origin: String!
+  score: Float!
+  catalog_id: String
+  contract_image: String
+  manager_supported: Boolean!
+  verified: Boolean
+  deployed: Boolean!
+  coverage_inferred: Boolean
+  matched_object_types: [String!]!
+  matched_sectors: [String!]!
+  matched_regions: [String!]!
+  required_settings: [ConnectorRequiredSetting!]!
+}
+
+type CollectionGap implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  pir_id: ID!
+  pir: Pir
+  criterion_index: Int!
+  criterion_filters: String!
+  criterion_weight: Int!
+  criterion_label: String!
+  coverage_score: Int!
+  is_gap: Boolean!
+  matched_relationships: Int!
+  recent_relationships: Int!
+  distinct_sources: Int!
+  covering_sources: [CollectionGapCoveringSource!]!
+  object_types: [String!]!
+  sectors: [String!]!
+  regions: [String!]!
+  recommended_connectors: [CollectionGapRecommendedConnector!]!
+  hub_status: String
+  computed_at: DateTime
+}
+
+enum CollectionGapsOrdering {
+  name
+  gap_coverage_score
+  computed_at
+  _score
+}
+
+type CollectionGapConnection {
+  pageInfo: PageInfo!
+  edges: [CollectionGapEdge!]!
+}
+
+type CollectionGapEdge {
+  cursor: String!
+  node: CollectionGap!
+}
+
+type SourceRecommendation implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  representative: Representative!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  kind: SourceRecommendationKind!
+  status: SourceRecommendationStatus!
+  source_id: ID
+  source: Source
+  rationale: String!
+  payload: String!
+  recommendation_evidence: String
+  apply_result: String
+  error_message: String
+  autonomous: Boolean!
+  collection_gap_id: ID
+  pir_id: ID
+  proposed_at: DateTime!
+  applied_by: Creator
+  applied_at: DateTime
+  reverted_by: Creator
+  reverted_at: DateTime
+  dismissed_by: Creator
+  dismissed_at: DateTime
+  dismiss_reason: String
+  required_settings: [ConnectorRequiredSetting!]!
+}
+
+enum SourceRecommendationsOrdering {
+  name
+  proposed_at
+  applied_at
+  recommendation_kind
+  recommendation_status
+  _score
+}
+
+type SourceRecommendationConnection {
+  pageInfo: PageInfo!
+  edges: [SourceRecommendationEdge!]!
+}
+
+type SourceRecommendationEdge {
+  cursor: String!
+  node: SourceRecommendation!
+}
+
+type SourceIntelligenceValueWeights {
+  uniqueness: Float!
+  lead_time: Float!
+  accuracy: Float!
+  relevance: Float!
+  impact: Float!
+  noise: Float!
+}
+
+type SourceIntelligenceThresholds {
+  min_volume: Int!
+  low_accuracy: Float!
+  quarantine_accuracy: Float!
+  high_accuracy: Float!
+  raise_confidence_corroboration: Float!
+  high_noise: Float!
+  deny_list_min_false_positives: Int!
+  redundant_overlap: Float!
+  retire_max_unique_contribution: Float!
+  stale_feed_hours: Int!
+  gap_coverage: Int!
+}
+
+type SourceIntelligenceTuning {
+  confidence_step: Int!
+  min_confidence: Int!
+  noisy_decay_lifetime_days: Int!
+  deny_list_max_values: Int!
+  dismiss_cooldown_days: Int!
+  min_schedule_minutes: Int!
+}
+
+type SourceIntelligenceAutonomy {
+  auto_apply_kinds: [SourceRecommendationKind!]!
+  max_auto_actions_per_run: Int!
+}
+
+type SourceIntelligenceGapSettings {
+  window_days: Int!
+  recent_days: Int!
+  target_relationships: Int!
+  target_sources: Int!
+  max_recommendations: Int!
+}
+
+type SourceIntelligenceSettings {
+  manager_running: Boolean!
+  manager_enabled: Boolean!
+  recompute_hour_utc: Int!
+  backfill_days: Int!
+  snapshot_retention_days: Int!
+  corroboration_min_other_sources: Int!
+  false_positive_labels: [String!]!
+  max_scan_objects: Int!
+  overlap_top: Int!
+  min_author_volume: Int!
+  max_author_sources: Int!
+  min_manual_volume: Int!
+  max_manual_sources: Int!
+  value_weights: SourceIntelligenceValueWeights!
+  thresholds: SourceIntelligenceThresholds!
+  tuning: SourceIntelligenceTuning!
+  autonomy: SourceIntelligenceAutonomy!
+  gaps: SourceIntelligenceGapSettings!
+}
+
+type SourceIntelligenceStatus {
+  manager_running: Boolean!
+  manager_enabled: Boolean!
+  enterprise_edition: Boolean!
+  sources_count: Int!
+  scored_sources_count: Int!
+  last_full_run_start: DateTime
+  last_full_run_end: DateTime
+  last_run_success: Boolean
+  last_run_message: String
+  last_scanned_objects: Int
+  last_scan_truncated: Boolean!
+  backfill_done: Boolean!
+  backfill_next_day: String
+  backfill_days_done: Int
+  backfill_days_total: Int
+  backfill_held_day: String
+  recompute_requested_at: DateTime
+}
+
+type SourceScorecardMetric {
+  key: String!
+  label: String!
+  type: String!
+  higher_is_better: Boolean!
+  enterprise: Boolean!
+}
+
+type SourceScorecardDistributionItem {
+  label: String!
+  value: Float
+  currency: String
+  entity: Source
+}
+
+type SourceScorecardNumber {
+  value: Float
+  sources_count: Int!
+  currency: String
+}
+
+type SourceScorecardTimePoint {
+  date: DateTime!
+  value: Float
+  currency: String
+}
+
+type SourceScorecardScatterPoint {
+  label: String!
+  x: Float
+  y: Float
+  size: Float
+  currency: String
+  entity: Source
+}
+
+input SourceCostInput {
+  amount: Float!
+
+  "*Constraints:*\n* Minimal length: `3`\n* Maximal length: `3`\n"
+  currency: String!
+  period: SourceCostPeriod!
+}
+
+input SourceRecommendationApplyInput {
+  connector_id: ID
+  configuration: [ContractConfigInput!]
+}
+
+input SourceIntelligenceValueWeightsInput {
+  uniqueness: Float
+  lead_time: Float
+  accuracy: Float
+  relevance: Float
+  impact: Float
+  noise: Float
+}
+
+input SourceIntelligenceThresholdsInput {
+  min_volume: Int
+  low_accuracy: Float
+  quarantine_accuracy: Float
+  high_accuracy: Float
+  raise_confidence_corroboration: Float
+  high_noise: Float
+  deny_list_min_false_positives: Int
+  redundant_overlap: Float
+  retire_max_unique_contribution: Float
+  stale_feed_hours: Int
+  gap_coverage: Int
+}
+
+input SourceIntelligenceTuningInput {
+  confidence_step: Int
+  min_confidence: Int
+  noisy_decay_lifetime_days: Int
+  deny_list_max_values: Int
+  dismiss_cooldown_days: Int
+  min_schedule_minutes: Int
+}
+
+input SourceIntelligenceAutonomyInput {
+  auto_apply_kinds: [SourceRecommendationKind!]
+  max_auto_actions_per_run: Int
+}
+
+input SourceIntelligenceGapSettingsInput {
+  window_days: Int
+  recent_days: Int
+  target_relationships: Int
+  target_sources: Int
+  max_recommendations: Int
+}
+
+input SourceIntelligenceSettingsInput {
+  manager_running: Boolean
+  recompute_hour_utc: Int
+  backfill_days: Int
+  snapshot_retention_days: Int
+  corroboration_min_other_sources: Int
+  false_positive_labels: [String!]
+  max_scan_objects: Int
+  overlap_top: Int
+  min_author_volume: Int
+  max_author_sources: Int
+  min_manual_volume: Int
+  max_manual_sources: Int
+  value_weights: SourceIntelligenceValueWeightsInput
+  thresholds: SourceIntelligenceThresholdsInput
+  tuning: SourceIntelligenceTuningInput
+  autonomy: SourceIntelligenceAutonomyInput
+  gaps: SourceIntelligenceGapSettingsInput
 }
 
 type FintelDesign implements BasicObject & InternalObject {

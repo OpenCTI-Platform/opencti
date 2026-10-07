@@ -22,7 +22,7 @@ type StepContainerProps = {
 const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
   let borderColorKey: 'primary' | 'secondary' = 'secondary';
 
-  if (perspective === 'relationships') {
+  if (perspective === 'relationships' || perspective === 'sources') {
     borderColorKey = 'primary';
   } else if (perspective === 'audits') {
     borderColorKey = 'secondary';
@@ -101,7 +101,8 @@ const WidgetCreationDataSelection = () => {
   // A widget that only allows a single data selection should not display
   // the "add" buttons at all, as they would be permanently disabled and
   // never clickable (e.g. the Number widget). See issue #16360.
-  const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
+  // Source scorecard widgets always plot a single metric selection.
+  const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1 && perspective !== 'sources';
 
   return (
     <div style={{ marginTop: 20 }}>

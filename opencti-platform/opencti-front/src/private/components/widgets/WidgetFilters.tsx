@@ -45,7 +45,8 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
-  const isSavedFiltersAccessible = host.kind === 'workspace' || host.kind === 'custom-view';
+  // Saved filters are scoped to knowledge or history, never to intelligence sources
+  const isSavedFiltersAccessible = (host.kind === 'workspace' || host.kind === 'custom-view') && perspective !== 'sources';
 
   const [isSavedFiltersMode, setIsSavedFiltersMode] = useState(!!dataSelection.filters_id);
   const [isSavedDynamicFromMode, setIsSavedDynamicFromMode] = useState(!!dataSelection.dynamicFrom_id);
@@ -78,6 +79,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
     savedFiltersScope = 'History';
+  } else if (perspective === 'sources') {
+    availableEntityTypes = ['Source'];
+    searchContext = { entityTypes: ['Source'] };
+    savedFiltersScope = 'Stix-Core-Object';
   } else { // perspective = 'entities'
     availableEntityTypes = [
       'Stix-Domain-Object',
@@ -123,7 +128,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   };
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
-  if (perspective !== 'relationships') {
+  if (perspective !== 'relationships' && perspective !== 'sources') {
     availableFilterKeys = availableFilterKeys.concat('entity_type');
   } else {
     availableFilterKeys = availableFilterKeys.filter((key) => key !== 'entity_type'); // for relationships perspective widget, use the relationship_type filter

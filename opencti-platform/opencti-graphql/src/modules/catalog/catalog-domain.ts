@@ -12,7 +12,7 @@ import {
   type GraphqlCatalogRevision,
   type GraphqlCatalogContract,
 } from './catalog-types';
-import { isEmptyField } from '../../database/utils';
+import { isEmptyField, REDACTED_INFORMATION } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
@@ -41,7 +41,7 @@ const normalizeContractConfigSchema = (
   };
 };
 
-const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
+export const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
   const normalizedConfigSchema = normalizeContractConfigSchema(configSchema);
   const filteredProperties = Object.fromEntries(
     Object.entries(normalizedConfigSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
@@ -417,6 +417,25 @@ export const computeConnectorTargetContract = (
   });
 
   return contractConfigurations;
+};
+
+/**
+ * Contract configuration as entered, limited to the settings the deployment stores, with the value of every setting
+ * the contract stores encrypted (password settings) redacted: what an activity log or any other record may keep of a
+ * deployment. A setting the deployment does not store (the platform token and the other settings the platform provides
+ * at run time, or a setting unknown to the contract) is left out, whatever it holds. A setting entered more than once
+ * is kept once, with its last entry, as the deployment resolves it: an earlier entry is ignored by the deployment, so
+ * it is not redacted on what the deployment stored and may hold a password in clear.
+ */
+export const redactContractConfigurationSecrets = (
+  configurations: ContractConfigInput[],
+  resolved: ConnectorContractConfiguration[],
+): ContractConfigInput[] => {
+  const resolvedByKey = new Map(resolved.map((configuration) => [configuration.key, configuration]));
+  const enteredByKey = new Map(configurations.map((configuration) => [configuration.key, configuration]));
+  return [...enteredByKey.values()]
+    .filter((configuration) => resolvedByKey.has(configuration.key))
+    .map((configuration) => (resolvedByKey.get(configuration.key)?.encrypted ? { ...configuration, value: REDACTED_INFORMATION } : configuration));
 };
 
 const mapCatalogToGraphqlCatalog = (

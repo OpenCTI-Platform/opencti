@@ -362,6 +362,13 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
     }
   };
 
+  // Source scorecards are restricted to users with the ingestion or connector capabilities, never exposed anonymously
+  const sourcesWidget = () => (
+    <Card>
+      {t_i18n('Source scorecards are not supported in public dashboards')}
+    </Card>
+  );
+
   const rawWidget = (widget: Widget) => {
     switch (widget.type) {
       case 'text':
@@ -381,6 +388,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
     entityWidget,
     relationshipWidget,
     auditWidget,
+    sourcesWidget,
     rawWidget,
   };
 };

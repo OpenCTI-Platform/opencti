@@ -46,6 +46,7 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
+import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
@@ -815,6 +816,14 @@ export const BUS_TOPICS = {
   },
   [NEWS_FEED_NUMBER]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC`,
+  },
+  // Own topics, out of the generic internal object subscription: reading a source or a recommendation takes the
+  // capabilities of the Sources screens, and an author source is masked from the users who cannot see its author
+  [ENTITY_TYPE_SOURCE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SOURCE_EDIT_TOPIC`,
+  },
+  [ENTITY_TYPE_SOURCE_RECOMMENDATION]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SOURCE_RECOMMENDATION_EDIT_TOPIC`,
   },
 };
 

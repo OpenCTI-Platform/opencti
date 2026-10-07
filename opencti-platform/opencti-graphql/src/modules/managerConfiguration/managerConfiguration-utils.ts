@@ -1,3 +1,6 @@
+import { SOURCE_INTELLIGENCE_MANAGER_ID } from '../sourceIntelligence/sourceIntelligence-types';
+import { DEFAULT_SOURCE_INTELLIGENCE_SETTINGS } from '../sourceIntelligence/sourceIntelligence-settings';
+
 export const supportedMimeTypes = [
   'application/pdf',
   'application/json',
@@ -21,6 +24,11 @@ const defaultManagerConfigurations = [
       max_file_size: 5242880,
     },
   },
+  {
+    manager_id: SOURCE_INTELLIGENCE_MANAGER_ID,
+    manager_running: true,
+    manager_setting: DEFAULT_SOURCE_INTELLIGENCE_SETTINGS,
+  },
 ];
 
 export const getDefaultManagerConfiguration = (managerId: string) => {
@@ -31,3 +39,9 @@ export const getDefaultManagerConfiguration = (managerId: string) => {
 export const getAllDefaultManagerConfigurations = () => {
   return [...defaultManagerConfigurations];
 };
+
+// Configurations edited only through the dedicated mutation of their module, which checks its own capabilities and
+// validates the settings (the Source Intelligence autonomy policy runs actions as the manager)
+const managersWithDedicatedSettings = [SOURCE_INTELLIGENCE_MANAGER_ID];
+
+export const hasDedicatedSettings = (managerId: string) => managersWithDedicatedSettings.includes(managerId);

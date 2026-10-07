@@ -204,7 +204,22 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'bubble',
+    name: 'Bubble',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
 ] as const;
+
+// Visualizations available with the "Intelligence sources" perspective (Source Intelligence scorecards)
+export const SOURCES_WIDGET_TYPES: readonly string[] = ['number', 'list', 'distribution-list', 'horizontal-bar', 'donut', 'line', 'bubble'];
+
+export const getCurrentIsSources = (type: string | null) => !!type && SOURCES_WIDGET_TYPES.includes(type);
 
 const customAttributesVisualizationType = {
   key: 'custom-attributes',
@@ -229,7 +244,7 @@ export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.
 
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
-  ...workspacesWidgetVisualizationTypes,
+  ...workspacesWidgetVisualizationTypes.filter((w) => w.key !== 'bubble'),
 ];
 
 const allVisualizationTypes = [
@@ -298,6 +313,7 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
     case 'text':
       return <FormatShapesOutlined fontSize={fontSize} color="primary" />;
     case 'heatmap':
+    case 'bubble':
       return <ChartBubble fontSize={fontSize} color="primary" />;
     case 'line':
       return <ChartLine fontSize={fontSize} color="primary" />;

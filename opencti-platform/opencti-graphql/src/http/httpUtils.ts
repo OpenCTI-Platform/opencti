@@ -20,6 +20,8 @@ import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 import type { Server } from 'node:http';
 import bytes from 'bytes';
+import { getOperationAST, type GraphQLError, parse } from 'graphql';
+import { FunctionalError } from '../config/errors';
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -432,4 +434,23 @@ export const applyKeepAliveTimeout = (server: Server) => {
   const keepAliveTimeout = getKeepAliveTimeout();
   server.keepAliveTimeout = keepAliveTimeout;
   return keepAliveTimeout;
+};
+
+/**
+ * Errors refusing an operation sent over the WebSocket endpoint, which serves subscriptions only. Queries and mutations
+ * go through the HTTP endpoint, whose request context applies the checks a write needs: the work still alive, the
+ * draft open, and the lease on a draft of a forwarding chain until the execution settled (see settleRequestDraft).
+ * A document that does not parse or names no single operation is left to the WebSocket server, which reports it.
+ */
+export const refuseWebSocketOperation = (payload: { query: string; operationName?: string | null }): GraphQLError[] | undefined => {
+  let operation;
+  try {
+    operation = getOperationAST(parse(payload.query), payload.operationName);
+  } catch {
+    return undefined;
+  }
+  if (operation && operation.operation !== 'subscription') {
+    return [FunctionalError('Only subscriptions are served over WebSocket, send queries and mutations over HTTP', { operation: operation.operation })];
+  }
+  return undefined;
 };

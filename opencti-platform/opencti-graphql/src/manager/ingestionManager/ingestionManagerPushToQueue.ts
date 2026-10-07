@@ -17,6 +17,7 @@ import type { StixBundle } from '../../types/stix-2-1-common';
 import { pushBundleToWorker } from '../../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManagerConfiguration';
+import { resolveFeedQuarantineDraftId } from '../../modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { assertIngestionExecutionIdentityAllowed } from '../../modules/ingestion/ingestion-execution-identity';
 
 /**
@@ -69,12 +70,14 @@ export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion
   const work: any = await createWorkForIngestion(context, ingestion);
   const stixBundle = JSON.stringify(bundle);
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+  const draftId = await resolveFeedQuarantineDraftId(context, ingestion.id);
   await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
     type: 'bundle',
     applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID,
     content,
     work_id: work.id,
     update: true,
+    ...(draftId ? { draft_id: draftId } : {}),
   });
   return work.id;
 };

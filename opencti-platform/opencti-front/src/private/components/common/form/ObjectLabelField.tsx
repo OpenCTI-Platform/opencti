@@ -36,6 +36,10 @@ interface ObjectLabelFieldProps {
   values?: FieldOption[];
   onChange?: (name: string, value: FieldOption[]) => void;
   disabled?: boolean;
+  // Defaults to "Labels"
+  label?: string;
+  // Defaults to comparing the label ids; a field storing label values compares them instead
+  isOptionEqualToValue?: (a: FieldOption, b: FieldOption) => boolean;
 }
 
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
@@ -48,6 +52,8 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   values,
   onChange,
   disabled,
+  label,
+  isOptionEqualToValue,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -88,8 +94,9 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         name={name}
         required={required}
         multiple={true}
-        label={t_i18n('Labels')}
+        label={label ?? t_i18n('Labels')}
         helperText={helpertext}
+        isOptionEqualToValue={isOptionEqualToValue}
 
         noOptionsText={t_i18n('No available options')}
         options={labels}

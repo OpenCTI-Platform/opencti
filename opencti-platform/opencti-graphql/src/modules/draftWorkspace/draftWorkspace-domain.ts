@@ -69,6 +69,7 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types'
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
+import { runDraftClosureHandlers } from './draftWorkspace-closure';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -683,6 +684,7 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   if (!hasEditOrManage || !hasDeleteCapability) {
     throw ForbiddenAccess();
   }
+  await runDraftClosureHandlers(context, id);
   await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
@@ -783,6 +785,7 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
     throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
+  await runDraftClosureHandlers(context, draft_id);
   const stixBundle = await buildDraftValidationBundle(context, user, draft_id);
   const jsonBundle = JSON.stringify(stixBundle);
   const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');

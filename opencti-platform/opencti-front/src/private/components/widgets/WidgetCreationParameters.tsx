@@ -41,6 +41,7 @@ import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
+import WidgetSourcesParameters from './WidgetSourcesParameters';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -259,6 +260,10 @@ const WidgetCreationParameters = () => {
       && !getCurrentAvailableParameters(type).includes('attribute');
   };
   const maxResultCount = getMaxResultCount(type);
+  // Source scorecard widgets select metrics (WidgetSourcesParameters), never an attribute of the knowledge
+  const hasEntityAttributeParameter = (selectionPerspective: WidgetPerspective | null | undefined) => {
+    return selectionPerspective !== 'sources' && getCurrentAvailableParameters(type).includes('attribute');
+  };
 
   const distinctLabel = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -514,6 +519,14 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
+                {perspective === 'sources' && (
+                  <WidgetSourcesParameters
+                    type={type}
+                    selection={selection}
+                    onChange={(key, value) => handleChangeDataValidationParameter(i, key, value)}
+                  />
+                )}
+
                 {widgetCategory === 'list' && perspective === 'entities' && (
                   <div
                     style={{
@@ -584,7 +597,7 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {perspective !== 'audits'
+                {!['audits', 'sources'].includes(perspective ?? '')
                   && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
                   && (
                     <div
@@ -708,7 +721,7 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
-                {(getCurrentAvailableParameters(type).includes('attribute')
+                {(hasEntityAttributeParameter(perspective)
                   || (uniqueParameterEnabled(dataSelection[0].perspective, type)))
                 && (
                   <div
