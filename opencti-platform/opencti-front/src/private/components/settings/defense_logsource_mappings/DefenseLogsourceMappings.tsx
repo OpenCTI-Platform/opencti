@@ -186,7 +186,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                   const resolved = new Set(mapping.resolvedDataComponents.map((dc) => dc.name.toLowerCase()));
                   return (
                     <TableRow key={mapping.id} hover data-testid={`defense-logsource-mapping-${mapping.name}`}>
-                      <TableCell sx={{ fontFamily: 'monospace' }}>{mapping.name}</TableCell>
+                      <TableCell component="th" scope="row" sx={{ fontFamily: 'monospace' }}>{mapping.name}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                           {mapping.data_components.map((name) => (
@@ -211,7 +211,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                       </TableCell>
                       <TableCell>
                         <Switch
-                          aria-label={t_i18n('Active')}
+                          aria-label={`${t_i18n('Active')}: ${mapping.name}`}
                           checked={mapping.active}
                           onCheckedChange={(checked) => commitActive({
                             variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] },
@@ -226,7 +226,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                           <IconButton
                             size="sm"
                             priority="tertiary"
-                            aria-label={t_i18n('Update')}
+                            aria-label={`${t_i18n('Update')}: ${mapping.name}`}
                             icon={<EditOutlined fontSize="small" />}
                             onClick={() => onEdit(mapping)}
                           />
@@ -234,7 +234,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                             <IconButton
                               size="sm"
                               priority="tertiary"
-                              aria-label={t_i18n('Delete')}
+                              aria-label={`${t_i18n('Delete')}: ${mapping.name}`}
                               icon={<DeleteOutlined fontSize="small" />}
                               onClick={() => setToDelete({ id: mapping.id, name: mapping.name })}
                             />
