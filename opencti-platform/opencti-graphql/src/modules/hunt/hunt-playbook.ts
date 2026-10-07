@@ -4,7 +4,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { logApp } from '../../config/conf';
 import { stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { listHuntConnectors } from './hunt-dispatch';
@@ -153,15 +153,18 @@ export const loadHuntRunResultsForPlaybook = async (context: AuthContext, runs: 
   return results;
 };
 
-export const resumeHuntPlaybookStep = async (context: AuthContext, playbookContext: HuntPlaybookContext, runs: BasicStoreEntityHuntRun[]) => {
+/** The playbook step that follows a hunt step, its bundle completed with the results of the runs when the step asks for them. */
+export const buildHuntPlaybookResume = async (
+  context: AuthContext,
+  playbookContext: HuntPlaybookContext,
+  runs: BasicStoreEntityHuntRun[],
+): Promise<MutationPlaybookStepExecutionArgs> => {
   const bundle = JSON.parse(playbookContext.bundle) as StixBundle;
   if (playbookContext.include_results) {
     const knownIds = new Set<string>(bundle.objects.map((object) => object.id));
     bundle.objects.push(...await loadHuntRunResultsForPlaybook(context, runs, knownIds));
   }
-  // Imported lazily: the playbook manager loads the playbook components, this module included
-  const { playbookStepExecution } = await import('../../manager/playbookManager/playbookManager');
-  const resumed = await playbookStepExecution(context, AUTOMATION_MANAGER_USER, {
+  return {
     playbook_id: playbookContext.playbook_id,
     step_id: playbookContext.step_id,
     previous_step_id: playbookContext.previous_step_id,
@@ -171,12 +174,22 @@ export const resumeHuntPlaybookStep = async (context: AuthContext, playbookConte
     execution_start: playbookContext.execution_start,
     previous_bundle: playbookContext.previous_bundle,
     bundle: JSON.stringify(bundle),
-  });
+  };
+};
+
+export const executeHuntPlaybookResume = async (context: AuthContext, step: MutationPlaybookStepExecutionArgs) => {
+  // Imported lazily: the playbook manager loads the playbook components, this module included
+  const { playbookStepExecution } = await import('../../manager/playbookManager/playbookManager');
+  const resumed = await playbookStepExecution(context, AUTOMATION_MANAGER_USER, step);
   if (!resumed) {
     logApp.warn('[OPENCTI-MODULE] Hunt playbook step cannot be resumed, the playbook or its step does not exist anymore', {
-      playbookId: playbookContext.playbook_id,
-      stepId: playbookContext.step_id,
+      playbookId: step.playbook_id,
+      stepId: step.step_id,
     });
   }
   return resumed;
+};
+
+export const resumeHuntPlaybookStep = async (context: AuthContext, playbookContext: HuntPlaybookContext, runs: BasicStoreEntityHuntRun[]) => {
+  return executeHuntPlaybookResume(context, await buildHuntPlaybookResume(context, playbookContext, runs));
 };

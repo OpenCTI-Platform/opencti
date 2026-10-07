@@ -11,7 +11,7 @@ import { elCount } from '../../database/engine';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, offsetToCursor, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { fetchStreamEventsRangeFromEventId } from '../../database/stream/stream-handler';
-import { type FilterGroup, FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { type FilterGroup, FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs, OrderingMode } from '../../generated/graphql';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -64,7 +64,7 @@ import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
-import { findPlaybookHuntRuns, isHuntRunGroupSettled, resumeHuntPlaybookStep } from './hunt-playbook';
+import { buildHuntPlaybookResume, executeHuntPlaybookResume, findPlaybookHuntRuns, isHuntRunGroupSettled } from './hunt-playbook';
 import { purgeExpiredHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
 
 export const HUNT_MANAGER_STREAM_STATE = 'hunt_manager';
@@ -111,30 +111,38 @@ const scanCursors = new Map<string, string | undefined>();
  * process (PIR arming, standing hunts, the check of orphan runs), a bounded first page would read the same oldest elements
  * at every tick and never reach the others. With a scan name, a tick reads at most `automationMaxPagesPerTick` pages and
  * the next tick resumes after the last element read, starting over once the last one was reached: every element is
- * visited within a bounded number of ticks.
+ * visited within a bounded number of ticks. A page handler returning how many elements it processed, fewer than the
+ * page, stops the scan there: the next tick resumes after the last element it processed.
  */
 const forEachPage = async <T extends BasicStoreEntity>(
   context: AuthContext,
   entityType: string,
   filters: FilterGroup,
-  onPage: (elements: T[]) => Promise<void>,
+  onPage: (elements: T[]) => Promise<number | void>,
   opts: { scan?: string; withoutRels?: boolean } = {},
 ) => {
   const { scan, withoutRels } = opts;
   let pages = 0;
+  let position = scan ? scanCursors.get(scan) : undefined;
   let resumeAfter: string | undefined;
   await fullEntitiesList<T>(context, HUNT_MANAGER_USER, [entityType], {
     first: HUNT_CONFIG.automationPageSize,
-    after: scan ? scanCursors.get(scan) : undefined,
+    after: position,
     orderBy: 'created_at',
     orderMode: OrderingMode.Asc,
     filters,
     noFiltersChecking: true,
     withoutRels,
     callback: async (elements: T[]) => {
-      await onPage(elements);
+      const processed = (await onPage(elements)) ?? elements.length;
       pages += 1;
+      if (processed < elements.length) {
+        const lastProcessed = processed > 0 ? elements[processed - 1].sort : undefined;
+        resumeAfter = lastProcessed ? offsetToCursor(lastProcessed) : position;
+        return false;
+      }
       const lastSort = elements[elements.length - 1]?.sort;
+      position = lastSort ? offsetToCursor(lastSort) : position;
       // A page shorter than the page size is the last one: the scan starts over at the next tick
       if (scan && pages >= HUNT_CONFIG.automationMaxPagesPerTick && lastSort && elements.length >= HUNT_CONFIG.automationPageSize) {
         resumeAfter = offsetToCursor(lastSort);
@@ -543,51 +551,44 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
   return purged;
 };
 
-// The manager lock keeps ticks sequential across the cluster: a claim still held after this delay belongs to a tick
-// that stopped with the platform before it could record the handover or release the claim
-export const HUNT_PLAYBOOK_RESUME_LEASE_MINUTES = 15;
-
 /**
- * Continuation of the playbooks waiting on hunt steps: once every run of a step is settled, the step resumes.
- * The resume is claimed first so that a step never resumes twice; the handover ends the leadership of the run, a
- * failed resume releases the claim for the next tick, and a claim left by a stopped platform expires after its lease.
+ * Continuation of the playbooks waiting on hunt steps: once every run of a step is settled, the step resumes, at most
+ * once like any playbook step. The step is built first, then its run hands the continuation over, and only then the
+ * step executes: a step that could not be built or handed over stays with its run for the next tick, and a step that
+ * fails or is interrupted once handed over is never executed again (the playbook execution shows its failure, as for any
+ * step). The runs holding a continuation are scanned from where the previous tick stopped, at most `maxRunsPerTick`
+ * resumes per tick, so that the steps still waiting never keep the settled ones from resuming.
  */
 export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<number> => {
-  const unclaimed: FilterGroup = {
-    mode: FilterMode.Or,
-    filters: [
-      { key: ['playbook_resumed_at'], values: [], operator: FilterOperator.Nil },
-      { key: ['playbook_resumed_at'], values: [minutesAgo(HUNT_PLAYBOOK_RESUME_LEASE_MINUTES)], operator: FilterOperator.Lte },
-    ],
-    filterGroups: [],
-  };
-  const leaders = await listRuns(context, [{ key: ['playbook_leader'], values: ['true'] }], 'created_at', HUNT_CONFIG.maxRunsPerTick, [unclaimed]);
   let resumed = 0;
-  for (let index = 0; index < leaders.length; index += 1) {
-    const leader = leaders[index];
-    let claimed = false;
-    let handedOver = false;
-    try {
-      const group = leader.playbook_execution_id
-        ? await findPlaybookHuntRuns(context, { executionId: leader.playbook_execution_id, instanceId: leader.playbook_instance_id, stepId: leader.playbook_step_id })
-        : [leader];
-      if (isHuntRunGroupSettled(group) && leader.playbook_context) {
-        await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: now() });
-        claimed = true;
-        await resumeHuntPlaybookStep(context, JSON.parse(leader.playbook_context) as HuntPlaybookContext, group);
-        handedOver = true;
-        resumed += 1;
-        await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_leader: false });
+  const resumePage = async (leaders: BasicStoreEntityHuntRun[]) => {
+    for (let index = 0; index < leaders.length; index += 1) {
+      if (resumed >= HUNT_CONFIG.maxRunsPerTick) {
+        return index;
       }
-    } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id, handedOver });
-      // Once handed over, the claim stays: releasing it would resume the step again at the next tick
-      if (claimed && !handedOver) {
-        await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: null })
-          .catch((releaseError) => logApp.error('[OPENCTI-MODULE] Hunt playbook resume release failed', { cause: releaseError, runId: leader.internal_id }));
+      const leader = leaders[index];
+      let handedOver: MutationPlaybookStepExecutionArgs | undefined;
+      try {
+        const group = leader.playbook_execution_id
+          ? await findPlaybookHuntRuns(context, { executionId: leader.playbook_execution_id, instanceId: leader.playbook_instance_id, stepId: leader.playbook_step_id })
+          : [leader];
+        if (isHuntRunGroupSettled(group) && leader.playbook_context) {
+          const step = await buildHuntPlaybookResume(context, JSON.parse(leader.playbook_context) as HuntPlaybookContext, group);
+          await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_leader: false, playbook_resumed_at: now() });
+          handedOver = step;
+        }
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed, the step waits for the next tick', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id });
+      }
+      if (handedOver) {
+        resumed += 1;
+        await executeHuntPlaybookResume(context, handedOver)
+          .catch((error) => logApp.error('[OPENCTI-MODULE] Hunt playbook step failed once handed over', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id }));
       }
     }
-  }
+    return leaders.length;
+  };
+  await forEachPage<BasicStoreEntityHuntRun>(context, ENTITY_TYPE_HUNT_RUN, andFilters([{ key: ['playbook_leader'], values: ['true'] }]), resumePage, { scan: 'playbook-leaders' });
   return resumed;
 };
 // endregion
