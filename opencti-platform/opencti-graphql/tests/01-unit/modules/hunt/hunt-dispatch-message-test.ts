@@ -86,7 +86,11 @@ describe('Hunt run message', () => {
     const run = { internal_id: 'run-2', attempt: 1, hunt_run_trigger: 'manual', hunt_run_mode: 'execute' };
     const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-2');
     expect(message.event.hunt.techniques.map((element) => element.standard_id)).toEqual(['attack-pattern--technique-readable']);
-    expect(message.event.hunt.targets.map((element) => element.standard_id)).toEqual(['intrusion-set--target-readable']);
+    // A hunt shared with no organization is read by the platform organization only, which reads every organization
+    expect(message.event.hunt.targets.map((element) => element.standard_id)).toEqual(['intrusion-set--target-readable', 'malware--target-organization']);
     expect(message.event.hunt.created_by_ref).toBeNull();
+    const sharedHunt = { ...hunt, [RELATION_GRANTED_TO]: ['organization-1'] };
+    const shared = await buildHuntRunMessage(testContext, run as never, sharedHunt as never, { hunt_platform: 'splunk' } as never, null, 'work-2');
+    expect(shared.event.hunt.targets.map((element) => element.standard_id)).toEqual(['malware--target-organization']);
   });
 });

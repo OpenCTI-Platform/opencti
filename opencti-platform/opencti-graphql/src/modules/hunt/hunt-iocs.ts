@@ -220,7 +220,9 @@ export const normalizeHuntIocValues = (rawValues: unknown): HuntIocValue[] => {
 /**
  * Whether every reader of a hunt can read an indicator or an observable, so that a run of the hunt never discloses it:
  * each of its markings is matched by a marking of the hunt of the same type and at least the same level, and it is
- * restricted to no organization the readers of the hunt may not belong to.
+ * shared with every organization the hunt is shared with. With a platform organization, the readers of an element are
+ * the platform organization and the organizations it is shared with: an element shared with none is readable by the
+ * platform organization only, so a hunt shared with an organization never discloses it.
  */
 type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[] };
 
@@ -236,7 +238,7 @@ export const isDisclosableByHunt = (hunt: AccessRestricted, element: AccessRestr
   }
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
   const huntOrganizations = hunt[RELATION_GRANTED_TO] ?? [];
-  return elementOrganizations.length === 0 || (huntOrganizations.length > 0 && huntOrganizations.every((id) => elementOrganizations.includes(id)));
+  return huntOrganizations.every((id) => elementOrganizations.includes(id));
 };
 
 export const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];

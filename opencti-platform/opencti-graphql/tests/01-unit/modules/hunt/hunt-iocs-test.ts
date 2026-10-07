@@ -95,10 +95,12 @@ describe('Indicator hunt values', () => {
     // A marking of a type the hunt does not carry is never covered
     expect(isDisclosableByHunt(amberHunt, { 'object-marking': ['pap-red'] }, MARKINGS)).toBe(false);
     expect(isDisclosableByHunt({}, {}, MARKINGS)).toBe(true);
-    // Organizations: the readers of the hunt must all belong to an organization the element is shared with
-    expect(isDisclosableByHunt({}, { granted: ['org-a'] }, MARKINGS)).toBe(false);
+    // Organizations: every organization the hunt is shared with must be one of the element
     expect(isDisclosableByHunt({ granted: ['org-a'] }, { granted: ['org-a', 'org-b'] }, MARKINGS)).toBe(true);
     expect(isDisclosableByHunt({ granted: ['org-a', 'org-c'] }, { granted: ['org-a'] }, MARKINGS)).toBe(false);
+    // Shared with no organization: readable by the platform organization only
+    expect(isDisclosableByHunt({}, { granted: ['org-a'] }, MARKINGS)).toBe(true);
+    expect(isDisclosableByHunt({ granted: ['org-a'] }, {}, MARKINGS)).toBe(false);
   });
 
   it('should know whether an indicator hunt has something to look for', () => {

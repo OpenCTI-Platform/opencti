@@ -21,7 +21,7 @@ Supported types: IPv4 and IPv6 addresses, domain names, host names, URLs, email 
 
 | Case | Shown as |
 |---|---|
-| An indicator or observable more restricted than the hunt: one of its markings is not covered by a marking of the hunt of the same type and level, or it is restricted to organizations the readers of the hunt may not belong to | "3 indicators or observables are more restricted than the hunt and are left out: raise the markings of the hunt" |
+| An indicator or observable more restricted than the hunt: one of its markings is not covered by a marking of the hunt of the same type and level, or it is not shared with every organization the hunt is shared with (with a platform organization, an object shared with no organization is readable by the platform organization only) | "3 indicators or observables are more restricted than the hunt and are left out: raise the markings of the hunt" |
 | An indicator without a value a lookup can search: a pattern in another language (Sigma, YARA...) or without an equality comparison | "2 indicators have no value a lookup can search: a pattern in another language or without an equality comparison" |
 | More than 1,000 values (`hunt_manager:max_iocs_per_run`) | "Only the first 1000 values are looked for: narrow the list" |
 
