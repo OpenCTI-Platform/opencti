@@ -32,7 +32,7 @@ import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isDuplicateDetectionEnabled, isProcedureConflict } from '../modules/curation/curation-detectors';
-import { decideFieldAuthority, isRankedSource, recordedSources } from '../modules/curation/curation-field-authority';
+import { decideFieldAuthority, isRankedSource, recordedSourcesBefore } from '../modules/curation/curation-field-authority';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isOlderThan } from '../modules/curation/curation-schedule';
 import {
   ACTION_SET_FIELD,
@@ -198,11 +198,11 @@ const connectorSourcesOfUser = async (context: AuthContext, userId: string): Pro
     .map((connector) => ({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id }));
 };
 
-/** Sources of the value an update replaced, when no writer of it is remembered: what the field authority recorded. */
-const recordedSourcesOf = async (context: AuthContext, entityId: string, entityType: string, field: string): Promise<FieldAuthoritySource[]> => {
+/** Sources of the value an update replaced, when its writer does not tell them: what the field authority recorded before the update. */
+const recordedSourcesOf = async (context: AuthContext, entityId: string, entityType: string, field: string, updatedAt?: string): Promise<FieldAuthoritySource[]> => {
   const element = await storeLoadById(context, CURATION_MANAGER_USER, entityId, entityType);
   if (!element) return [];
-  return recordedSources(element, field, await connectorsOf(context));
+  return recordedSourcesBefore(element, field, await connectorsOf(context), updatedAt);
 };
 
 const parsedPayload = (proposal: BasicStoreEntityCurationProposal): Record<string, any> => {
@@ -237,9 +237,10 @@ const openPrecedenceValueOf = async (context: AuthContext, entityId: string, fie
  * Sources overwriting each other on the same field: counted for the Knowledge Health source conflict rate, and, when a
  * field authority rule says the overwritten value came from a more authoritative source, a field precedence proposal
  * suggests to restore it. Writers are remembered for a limited time; past it (or for a value written before this
- * version), the source of the overwritten value is the one the field authority recorded for the attribute. A value an
- * unranked writer (an analyst) put over an authoritative one is not authoritative itself: when it is overwritten in
- * turn, the open proposal of the field is refreshed with the new overwritten value, so it stays acceptable.
+ * version), the source of the overwritten value is the one the field authority recorded for the attribute. The same
+ * record tells the source of a value a remembered connector wrote for a ranked author, since its upsert recorded that
+ * author. A value an unranked writer (an analyst) put over an authoritative one is not authoritative itself: when it is
+ * overwritten in turn, the open proposal of the field is refreshed with the new overwritten value, so it stays acceptable.
  */
 const trackFieldWriters = async (
   context: AuthContext,
@@ -252,6 +253,7 @@ const trackFieldWriters = async (
 ) => {
   const writer = event.origin?.user_id;
   if (!writer || INTERNAL_USERS[writer]) return;
+  const updatedAt = (event.data as any).extensions?.[STIX_EXT_OCTI]?.updated_at as string | undefined;
   const changes = topLevelReplacements(event);
   for (let index = 0; index < changes.length; index += 1) {
     const change = changes[index];
@@ -267,13 +269,19 @@ const trackFieldWriters = async (
     if (!rule || !schemaAttributesDefinition.getAttribute(entityType, change.field)) continue;
     let previousSources = previousWriter
       ? await connectorSourcesOfUser(context, previousWriter)
-      : await recordedSourcesOf(context, entityId, entityType, change.field);
+      : await recordedSourcesOf(context, entityId, entityType, change.field, updatedAt);
     let restoredValue = change.previous;
     if (previousWriter && !isRankedSource(rule, previousSources)) {
       const open = await openPrecedenceValueOf(context, entityId, change.field);
-      if (!open || R.equals(open.value, change.value)) continue;
-      previousSources = await recordedSourcesOf(context, entityId, entityType, change.field);
-      restoredValue = open.value;
+      if (open) {
+        if (R.equals(open.value, change.value)) continue;
+        previousSources = await recordedSourcesOf(context, entityId, entityType, change.field, updatedAt);
+        restoredValue = open.value;
+      } else {
+        // Only a connector: an analyst edit records no source, so the record would be taken for the source of its value.
+        if (previousSources.length === 0 || sameWriter) continue;
+        previousSources = await recordedSourcesOf(context, entityId, entityType, change.field, updatedAt);
+      }
     } else if (sameWriter) {
       continue;
     }

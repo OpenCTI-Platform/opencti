@@ -12,7 +12,7 @@ import type { CurationSettings } from '../../../src/modules/curation/curation-ty
 import { persistProposalDraft } from '../../../src/modules/curation/curation-proposals';
 import { runIncrementalDuplicateDetection } from '../../../src/modules/curation/curation-scan';
 import { getCurationSettings } from '../../../src/modules/curation/curation-settings';
-import { AUTHORITY_SOURCE_CONNECTOR } from '../../../src/modules/curation/curation-types';
+import { AUTHORITY_SOURCE_AUTHOR, AUTHORITY_SOURCE_CONNECTOR } from '../../../src/modules/curation/curation-types';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../../src/types/event';
@@ -209,13 +209,13 @@ describe('Curation manager procedure conflicts', () => {
 const FEED_DESCRIPTION = 'Espionage group tracked by the vendor feed since 2014';
 const EDITED_DESCRIPTION = 'Edited by hand';
 
-const descriptionEdit = (eventId: string, writer: string) => ({
+const descriptionEdit = (eventId: string, writer: string, updatedAt?: string) => ({
   id: eventId,
   event: 'update',
   data: {
     type: 'update',
     origin: { user_id: writer },
-    data: { name: 'APT-X', description: EDITED_DESCRIPTION, extensions: { [EXTENSION]: { id: 'intrusion-set-1', type: 'Intrusion-Set' } } },
+    data: { name: 'APT-X', description: EDITED_DESCRIPTION, extensions: { [EXTENSION]: { id: 'intrusion-set-1', type: 'Intrusion-Set', updated_at: updatedAt } } },
     context: {
       patch: [{ op: 'replace', path: '/description', value: EDITED_DESCRIPTION }],
       reverse_patch: [{ op: 'replace', path: '/description', value: FEED_DESCRIPTION }],
@@ -282,6 +282,59 @@ describe('Curation manager field precedence', () => {
   it('proposes nothing when an analyst value is overwritten and the field has no open proposal', async () => {
     vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'analyst-user', replayed: false });
     await curationManagerStreamHandler([descriptionEdit('24-0', 'second-analyst')], '24-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+
+  it('proposes nothing once the writer is forgotten when the recorded source is the one of the update itself', async () => {
+    await curationManagerStreamHandler([descriptionEdit('25-0', 'analyst-user', '2026-06-30T00:00:00.000Z')], '25-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+});
+
+describe('Curation manager field precedence on an author rule', () => {
+  const ruleRecordedAt = (updatedAt: string) => {
+    vi.mocked(storeLoadById).mockResolvedValue({
+      internal_id: 'intrusion-set-1',
+      i_field_authority: [{ attribute: 'description', source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor', updated_at: updatedAt }],
+    } as never);
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getCurationSettings).mockResolvedValue({
+      curation_enabled: true,
+      curated_entity_types: ['Intrusion-Set'],
+      enabled_detectors: [],
+      field_authority_enabled: true,
+      field_authority_rules: [{ entity_type: 'Intrusion-Set', attribute: 'description', sources: [{ source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor' }] }],
+    } as never);
+    (persistProposalDraft as any).mockResolvedValue({ created: true, suppressed: false });
+    vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ name: 'description' } as never);
+    // The feed, still remembered as the writer, wrote the description for the vendor: its upsert recorded the vendor.
+    vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'feed-user', replayed: false });
+  });
+
+  afterEach(() => {
+    vi.mocked(schemaAttributesDefinition.getAttribute).mockRestore();
+  });
+
+  it('proposes to restore the value a remembered connector wrote for a ranked author when an analyst overwrites it', async () => {
+    ruleRecordedAt('2026-07-01T00:00:00.000Z');
+    await curationManagerStreamHandler([descriptionEdit('30-0', 'analyst-user', '2026-07-02T00:00:00.000Z')], '30-0');
+    const draft = (persistProposalDraft as any).mock.calls[0][2];
+    expect(draft.kind).toBe('field_precedence');
+    expect(draft.action_payload).toEqual({ element_id: 'intrusion-set-1', key: 'description', value: FEED_DESCRIPTION, overwritten_value: EDITED_DESCRIPTION });
+  });
+
+  it('proposes nothing when the source recorded for the field was recorded by the update itself', async () => {
+    ruleRecordedAt('2026-07-02T00:00:00.050Z');
+    await curationManagerStreamHandler([descriptionEdit('31-0', 'vendor-sync-user', '2026-07-02T00:00:00.000Z')], '31-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+
+  it('proposes nothing when the remembered connector overwrites its own value', async () => {
+    ruleRecordedAt('2026-07-01T00:00:00.000Z');
+    await curationManagerStreamHandler([descriptionEdit('32-0', 'feed-user', '2026-07-02T00:00:00.000Z')], '32-0');
     expect(persistProposalDraft).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { creationSources, curationFieldAuthorityResolver, decideFieldAuthority, rankSource } from '../../../../src/modules/curation/curation-field-authority';
+import {
+  creationSources,
+  curationFieldAuthorityResolver,
+  decideFieldAuthority,
+  rankSource,
+  recordedSourcesBefore,
+} from '../../../../src/modules/curation/curation-field-authority';
 import { AUTHORITY_SOURCE_AUTHOR, AUTHORITY_SOURCE_CONNECTOR, type FieldAuthorityRule, type FieldAuthoritySource } from '../../../../src/modules/curation/curation-types';
 import { elUpdate } from '../../../../src/database/engine';
 import { getCurationSettings } from '../../../../src/modules/curation/curation-settings';
@@ -87,6 +93,26 @@ describe('curation field authority', () => {
 
     it('credits nobody for an entity created by a user who is no connector and has no author', () => {
       expect(creationSources({ creator_id: ['user-analyst'] }, connectors)).toEqual([]);
+    });
+  });
+
+  describe('recordedSourcesBefore', () => {
+    const element = (updatedAt: string) => ({
+      createdBy: 'identity-mitre',
+      i_field_authority: [{ attribute: 'description', source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor', updated_at: updatedAt }],
+    }) as unknown as StoreObject;
+
+    it('gives the source recorded before the update', () => {
+      expect(recordedSourcesBefore(element('2026-07-01T00:00:00.000Z'), 'description', [], '2026-07-02T00:00:00.000Z')).toEqual([VENDOR]);
+    });
+
+    it('gives no source when the record is the one of the update itself', () => {
+      expect(recordedSourcesBefore(element('2026-07-02T00:00:00.050Z'), 'description', [], '2026-07-02T00:00:00.000Z')).toEqual([]);
+    });
+
+    it('gives the recorded source when the time of the update is unknown, and the creation sources without a record', () => {
+      expect(recordedSourcesBefore(element('2026-07-02T00:00:00.050Z'), 'description', [])).toEqual([VENDOR]);
+      expect(recordedSourcesBefore(element('2026-07-02T00:00:00.050Z'), 'name', [], '2026-07-02T00:00:00.000Z')).toEqual([MITRE]);
     });
   });
 

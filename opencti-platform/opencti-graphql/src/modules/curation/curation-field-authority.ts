@@ -101,6 +101,18 @@ export const recordedSources = (element: BasicStoreCommon, attribute: string, co
   return creationSources(element as Record<string, any>, connectors);
 };
 
+/**
+ * Sources of the value an update replaced, read once the update is done: an upsert records its own source right after
+ * its write, so a record that is not older than the update is the one of the update itself, and the replaced value has
+ * no known source.
+ */
+export const recordedSourcesBefore = (element: BasicStoreCommon, attribute: string, connectors: ConnectorUser[], updatedAt?: string): FieldAuthoritySource[] => {
+  const entries = ((element as Record<string, any>)[FIELD_AUTHORITY_ATTRIBUTE] ?? []) as FieldAuthorityEntry[];
+  const entry = entries.find((e) => e.attribute === attribute);
+  if (entry && updatedAt && Date.parse(entry.updated_at) >= Date.parse(updatedAt)) return [];
+  return recordedSources(element, attribute, connectors);
+};
+
 const rulesFor = async (context: AuthContext, type: string) => {
   const settings = await getCurationSettings(context);
   if (!settings.field_authority_enabled) return [];
