@@ -1225,25 +1225,34 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   if (status === HUNT_RUN_STATUS_COMPLETED) {
     patch.completed_at = reportedAt;
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
-      patch.hits_count = Math.max(0, Math.round(input.hits_count ?? 0));
+      // Evidence attached while the run was running stays with it: the report adds its hits, samples and results to it.
+      // Only the reported hits are matched against the known hits, the evidence was matched when it was attached.
+      let reportedHits = Math.max(0, Math.round(input.hits_count ?? 0));
       patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
-      const hitsSample = sanitizeHits(input.hits_sample);
+      const reportedSample = sanitizeHits(input.hits_sample);
+      const hitsSample = mergeHits(run.hits_sample ?? [], reportedSample);
       patch.hits_sample = hitsSample;
-      patch.evidence_sample = markMatchedEvidence(sanitizeEvidence(input.evidence_sample), hitsSample);
-      Object.assign(patch, huntHitDates(hitsSample, { first_hit_at: input.first_hit_at, last_hit_at: input.last_hit_at }));
-      const resultIds = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id))));
+      patch.evidence_sample = markMatchedEvidence(mergeEvidence(run.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)), hitsSample);
+      Object.assign(patch, huntHitDates(hitsSample, { first_hit_at: input.first_hit_at, last_hit_at: input.last_hit_at }, run));
+      const reportedIds = (input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id));
+      const resultIds = Array.from(new Set([...(run.result_ids ?? []), ...reportedIds]));
       patch.result_ids = resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX);
       if (Array.isArray(run.ioc_results) && run.ioc_results.length > 0) {
         const iocResults = await linkIocDeployments(context, run, mergeHuntIocResults(run.ioc_results, input.ioc_results ?? []));
         patch.ioc_results = iocResults;
         if (input.hits_count === null || input.hits_count === undefined) {
-          patch.hits_count = countIocHits(iocResults);
+          reportedHits = countIocHits(iocResults);
         }
       }
+      patch.hits_count = (run.hits_count ?? 0) + reportedHits;
       // Results are complete only when the connector says so: a report that omits it leaves the state unknown
       patch.results_truncated = input.truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? true : (input.truncated ?? null);
-      const sampledKeys = hitsSample.map((hit) => hit.hit_key);
-      Object.assign(patch, await recordReportedHits(context, run, input, { count: patch.hits_count as number, sampledKeys }, reportedAt));
+      const sampledKeys = reportedSample.map((hit) => hit.hit_key);
+      const reported = await recordReportedHits(context, run, input, { count: reportedHits, sampledKeys }, reportedAt);
+      Object.assign(patch, reported, {
+        hits_new_count: huntRunNewHits(run) + reported.hits_new_count,
+        hits_recurring_count: (run.hits_recurring_count ?? 0) + reported.hits_recurring_count,
+      });
     }
     if (typeof input.cost_ms === 'number') {
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));

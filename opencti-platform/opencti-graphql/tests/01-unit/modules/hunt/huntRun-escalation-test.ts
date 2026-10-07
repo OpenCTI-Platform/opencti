@@ -7,6 +7,7 @@ import { recordHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntH
 import { upsertHuntSightings } from '../../../../src/modules/hunt/hunt-sightings';
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
 import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
+import { huntHitKey } from '../../../../src/modules/hunt/hunt-utils';
 import { createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -271,6 +272,46 @@ describe('Hits counted once across the runs of a hunt', () => {
       expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
     }
     expect(recordHuntHits).not.toHaveBeenCalled();
+  });
+
+  it('should keep the evidence attached while the run was running and add the report to it', async () => {
+    const earlierId = 'indicator--4e0b2a28-1f0c-4c8e-9d0a-1b2c3d4e5f60';
+    const reportedId = 'observed-data--9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f';
+    const reportedHit = { event_id: 'evt-1', timestamp: '2026-10-06T09:00:00.000Z', host: 'FIN-WS-0007' };
+    const keys = [huntHitKey(reportedHit), ...KEYS.slice(1)];
+    loading({
+      ...autonomous,
+      hits_count: 2,
+      hits_new_count: 2,
+      hits_recurring_count: 0,
+      hits_sample: [{ hit_key: null, event_id: 'alert-1', timestamp: '2026-10-06T08:00:00.000Z', detection: null, matched: [], host: 'FIN-WS-0142', user: null, process: null }],
+      evidence_sample: [{ field: 'host.name', value_hash: 'a'.repeat(64), value_preview: null, count: 2, matched: false }],
+      result_ids: [earlierId],
+      first_hit_at: '2026-10-06T08:00:00.000Z',
+      last_hit_at: '2026-10-06T08:00:00.000Z',
+    } as unknown as BasicStoreEntityHuntRun);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 12, recurringCount: 16 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', {
+      status: 'completed',
+      hits_count: 28,
+      hit_keys: keys,
+      hits_sample: [reportedHit],
+      evidence_sample: [{ field: 'process.command_line', value_hash: 'b'.repeat(64), count: 28 }],
+      result_ids: [reportedId],
+    } as never);
+    // The evidence was matched against the known hits when it was attached: only the reported hits are matched now
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ keys }));
+    const state = finalState();
+    expect(state).toMatchObject({
+      hits_count: 30,
+      hits_new_count: 14,
+      hits_recurring_count: 16,
+      first_hit_at: '2026-10-06T08:00:00.000Z',
+      last_hit_at: '2026-10-06T09:00:00.000Z',
+    });
+    expect((state.hits_sample as { event_id: string }[]).map((hit) => hit.event_id)).toEqual(['alert-1', 'evt-1']);
+    expect((state.evidence_sample as { field: string }[]).map((item) => item.field).sort()).toEqual(['host.name', 'process.command_line']);
+    expect((state.result_ids as string[]).slice(0, 2)).toEqual([earlierId, reportedId]);
   });
 
   it('should never count more new hits than the run found when it reports more keys than hits', async () => {
