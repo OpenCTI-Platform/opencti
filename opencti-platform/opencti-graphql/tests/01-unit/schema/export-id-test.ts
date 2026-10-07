@@ -45,20 +45,25 @@ describe('Configuration entities export_id', () => {
   });
 });
 
+const buildElement = async (input: Record<string, any>) => {
+  const { element } = await buildEntityData(context, SYSTEM_USER, input, input.entity_type);
+  return element as Record<string, any>;
+};
+
 describe('Configuration entities creation export_id', () => {
   it('should use the internal_id as export_id', async () => {
-    const { element } = await buildEntityData(context, SYSTEM_USER, { entity_type: 'Playbook', name: 'My playbook' }, 'Playbook');
+    const element = await buildElement({ entity_type: 'Playbook', name: 'My playbook' });
     expect(element.export_id).toBeDefined();
     expect(element.export_id).toBe(element.internal_id);
   });
 
   it('should keep the export_id given at creation', async () => {
-    const { element } = await buildEntityData(context, SYSTEM_USER, { entity_type: 'StatusTemplate', name: 'NEW', export_id: 'built-in-export-id' }, 'StatusTemplate');
+    const element = await buildElement({ entity_type: 'StatusTemplate', name: 'NEW', export_id: 'built-in-export-id' });
     expect(element.export_id).toBe('built-in-export-id');
   });
 
   it('should not give an export_id to an investigation', async () => {
-    const { element } = await buildEntityData(context, SYSTEM_USER, { entity_type: 'Workspace', name: 'My investigation', type: 'investigation' }, 'Workspace');
+    const element = await buildElement({ entity_type: 'Workspace', name: 'My investigation', type: 'investigation' });
     expect(element.export_id).toBeUndefined();
   });
 });
