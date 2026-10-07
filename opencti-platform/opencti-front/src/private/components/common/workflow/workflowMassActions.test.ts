@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildWorkflowTransitionAction } from './workflowMassActions';
+import { buildWorkflowTransitionAction, withWorkflowBypassOptions } from './workflowMassActions';
 
 describe('buildWorkflowTransitionAction', () => {
   it('should send the selected event as a replace of the workflow status', () => {
@@ -18,5 +18,15 @@ describe('buildWorkflowTransitionAction', () => {
         options: { eventName: 'approve' },
       },
     });
+  });
+});
+
+describe('withWorkflowBypassOptions', () => {
+  it('should apply the transition actions by default', () => {
+    expect(withWorkflowBypassOptions(undefined)).toEqual({ applyTransitionActions: true });
+  });
+
+  it('should keep the choice of the user', () => {
+    expect(withWorkflowBypassOptions({ applyTransitionActions: false })).toEqual({ applyTransitionActions: false });
   });
 });

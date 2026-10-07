@@ -43,6 +43,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
+  Switch as FdsSwitch,
   Tooltip as FdsTooltip,
   TooltipContent,
   TooltipTrigger,
@@ -99,6 +100,7 @@ import {
   EXPLORE_EXUPDATE_EXDELETE,
   EXPLORE_EXUPDATE_PUBLISH,
   INVESTIGATION_INUPDATE_INDELETE,
+  isBypassUser,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMERGE,
@@ -115,7 +117,7 @@ import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectP
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { isWorkflowUiEnabledForType } from '../common/workflow/workflowFeatureFlag';
-import { buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD } from '../common/workflow/workflowMassActions';
+import { buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD, withWorkflowBypassOptions } from '../common/workflow/workflowMassActions';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -377,6 +379,7 @@ class DataTableToolBar extends Component {
       organizations: [],
       statuses: [],
       workflowPublished: false,
+      workflowBypass: false,
       transitionEvents: [],
       externalReferences: [],
       enrichConnectors: [],
@@ -428,14 +431,15 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleOpenUpdate(workflowEntityType) {
-    this.setState({ displayUpdate: true, workflowPublished: false, transitionEvents: [] });
+  handleOpenUpdate(workflowEntityType, canBypassWorkflow) {
+    this.setState({ displayUpdate: true, workflowPublished: false, workflowBypass: false, transitionEvents: [] });
     if (workflowEntityType) {
       fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType })
         .toPromise()
         .then((data) => {
           this.setState({
             workflowPublished: data?.workflowDefinitionPublished === true,
+            workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
             transitionEvents: (data?.workflowTransitionEvents ?? []).map((event) => ({ label: event, value: event })),
           });
         });
@@ -554,7 +558,7 @@ class DataTableToolBar extends Component {
   }
 
   handleLaunchUpdate() {
-    const { actionsInputs } = this.state;
+    const { actionsInputs, workflowBypass } = this.state;
     const categoryAttributeMapping = {
       case_severity_ov: 'severity',
       case_priority_ov: 'priority',
@@ -586,7 +590,7 @@ class DataTableToolBar extends Component {
           field: n.field,
           type: n.fieldType,
           values: n.values,
-          options: n.options,
+          options: n.field === 'x_opencti_workflow_id' && workflowBypass ? withWorkflowBypassOptions(n.options) : n.options,
         },
       };
     });
@@ -2531,7 +2535,7 @@ class DataTableToolBar extends Component {
                                 numberOfSelectedElements === 0
                                 || this.state.processing
                               }
-                              onClick={() => this.handleOpenUpdate(workflowEntityType)}
+                              onClick={() => this.handleOpenUpdate(workflowEntityType, isBypassUser(me))}
                               size="small"
                             >
                               <BrushOutlined />
@@ -3022,6 +3026,15 @@ class DataTableToolBar extends Component {
                               >
                                 {t('The "start time" must be earlier than the "stop time".')}
                               </Alert>
+                            </Grid>
+                          )}
+                          {actionsInputs[i]?.field === 'x_opencti_workflow_id' && this.state.workflowBypass && (
+                            <Grid item xs={12}>
+                              <FdsSwitch
+                                checked={actionsInputs[i]?.options?.applyTransitionActions ?? true}
+                                label={t('Apply transition actions')}
+                                onCheckedChange={(checked) => this.handleChangeActionInputOptions(i, 'applyTransitionActions', checked)}
+                              />
                             </Grid>
                           )}
                         </Grid>
