@@ -94,44 +94,63 @@ export const readerLevelChange = (
   change: DefenseCoverageChange,
   can: AccessPredicate,
   isDefensePlatform?: (platformId: string) => boolean,
+  // The defense platforms of the recipient when the previous coverage was computed, the current ones by default
+  wasDefensePlatform: ((platformId: string) => boolean) | undefined = isDefensePlatform,
 ): DefenseLevelChange | undefined => {
-  const previousLevel = evaluateCoverage(change.attack_pattern_id, change.previous, can, undefined, isDefensePlatform).level;
+  const previousLevel = evaluateCoverage(change.attack_pattern_id, change.previous, can, undefined, wasDefensePlatform).level;
   const level = evaluateCoverage(change.attack_pattern_id, change.coverage, can, undefined, isDefensePlatform).level;
   if (previousLevel === level) return undefined;
   return { attack_pattern_id: change.attack_pattern_id, previous_level: previousLevel, level };
 };
 
+// The provides relationships of a System: the active ones, and the revoked ones with the date of their last update
+export interface DefenseSystemProvides {
+  active: string[];
+  revoked: { id: string; updated_at?: string }[];
+}
+
 /**
  * Whether a recipient sees a platform as a defense platform: a System only through one of its provides relationships
- * they can access, as the matrix lists them. A platform without any provides relationship (a security platform, or a
- * System deleted or emptied since the computation) relies on the access to the platform itself.
+ * they can access, as the matrix lists them, so a System left without any active provides counts for nobody. Only a
+ * platform that is not a known System (a security platform, or a System deleted since) relies on the access to the
+ * platform itself. With `computedAt`, the defense platforms of a coverage computed then: a provides revoked after it
+ * was still active for that coverage.
  */
-export const defensePlatformPredicate = (providesBySystem: ReadonlyMap<string, string[]>, can: AccessPredicate) => (platformId: string) => {
+export const defensePlatformPredicate = (
+  providesBySystem: ReadonlyMap<string, DefenseSystemProvides>,
+  can: AccessPredicate,
+  computedAt?: string,
+) => (platformId: string) => {
   const provides = providesBySystem.get(platformId);
-  return !provides || provides.some((id) => can(id));
+  if (!provides) return true;
+  if (provides.active.some((id) => can(id))) return true;
+  return !!computedAt && provides.revoked.some(({ id, updated_at }) => !!updated_at && updated_at > computedAt && can(id));
 };
 
 const PROVIDES_CHUNK_SIZE = 5000;
 
-// The provides relationships of the Systems among the platforms of the changed coverages
-const loadSystemProvides = async (context: AuthContext, changes: DefenseCoverageChange[]) => {
+// The Systems among the platforms of the changed coverages, each with its provides relationships, even without any
+export const loadSystemProvides = async (context: AuthContext, changes: DefenseCoverageChange[]) => {
   const platformIds = R.uniq(changes
     .flatMap((change) => [change.previous, change.coverage, ...(change.trigger_baselines ?? []).map((baseline) => baseline.previous)])
     .flatMap((coverage) => (coverage?.platforms ?? []).map((platform) => platform.platform_id)));
-  const providesBySystem = new Map<string, string[]>();
+  const providesBySystem = new Map<string, DefenseSystemProvides>();
   const chunks = R.splitEvery(PROVIDES_CHUNK_SIZE, platformIds);
   for (let index = 0; index < chunks.length; index += 1) {
+    const systems = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, chunks[index], { type: ENTITY_TYPE_IDENTITY_SYSTEM, baseData: true }) as BasicStoreEntity[];
+    systems.forEach((system) => providesBySystem.set(system.internal_id, { active: [], revoked: [] }));
     const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_PROVIDES, {
       fromId: chunks[index],
       fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
       baseData: true,
-      baseFields: ['revoked'],
+      baseFields: ['revoked', 'updated_at'],
     });
-    // A revoked provides declares no telemetry, as in the computation
-    relations.filter((relation) => !relation.revoked).forEach((relation) => {
-      const provides = providesBySystem.get(relation.fromId);
-      if (provides) provides.push(relation.id);
-      else providesBySystem.set(relation.fromId, [relation.id]);
+    relations.forEach((relation) => {
+      const provides = providesBySystem.get(relation.fromId) ?? { active: [], revoked: [] };
+      // A revoked provides declares no telemetry, as in the computation
+      if (relation.revoked) provides.revoked.push({ id: relation.id, updated_at: (relation as unknown as { updated_at?: string }).updated_at });
+      else provides.active.push(relation.id);
+      providesBySystem.set(relation.fromId, provides);
     });
   }
   return providesBySystem;
@@ -184,7 +203,7 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
       ...collectCoverageIds(change.coverage),
       ...(change.trigger_baselines ?? []).flatMap((baseline) => collectCoverageIds(baseline.previous)),
     ]),
-    ...Array.from(providesBySystem.values()).flat(),
+    ...Array.from(providesBySystem.values()).flatMap(({ active, revoked }) => [...active, ...revoked.map(({ id }) => id)]),
   ]);
   // One access evaluation per recipient for the whole computation, whatever the number of triggers they are in
   const predicates = new Map<string, Promise<AccessPredicate>>();
@@ -224,7 +243,12 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
           const user: AuthUser = users[userIndex];
           const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
           const can = await predicateOf(userContext, user);
-          const levelChange = readerLevelChange(triggerChange, can, defensePlatformPredicate(providesBySystem, can));
+          const levelChange = readerLevelChange(
+            triggerChange,
+            can,
+            defensePlatformPredicate(providesBySystem, can),
+            defensePlatformPredicate(providesBySystem, can, triggerChange.previous.computed_at),
+          );
           const eventType = levelChange ? defenseLevelEventType(levelChange) : undefined;
           if (levelChange && eventType && eventTypes.includes(eventType)) {
             const instance = await loadStix();

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { fullRelationsList, internalFindByIds } from '../../../../src/database/middleware-loader';
 import {
   buildDefenseLevelMessage,
   collectDefenseCoverageChanges,
@@ -6,6 +7,8 @@ import {
   DEFENSE_TRIGGER_LEVEL_INCREASED,
   defenseLevelEventType,
   defensePlatformPredicate,
+  type DefenseSystemProvides,
+  loadSystemProvides,
   notifyDefenseLevelChanges,
   readerLevelChange,
   reconcileQueuedChanges,
@@ -16,6 +19,12 @@ import type { DefenseCoverage } from '../../../../src/modules/defenseCoverage/de
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthContext } from '../../../../src/types/user';
+
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  internalFindByIds: vi.fn(async () => []),
+  fullRelationsList: vi.fn(async () => []),
+}));
 
 const coverage = (level: number, computedAt: string | null = '2026-10-01T00:00:00.000Z') => {
   return { computed_at: computedAt ?? undefined, level, data_components: [], rules: [], mitigations: [], validations: [], platforms: [] } as unknown as DefenseCoverage;
@@ -100,7 +109,7 @@ describe('Defense level notifications', () => {
   });
 
   it('should count a System only when the recipient can access one of its provides relationships', () => {
-    const providesBySystem = new Map([['system', ['system-provides-1', 'system-provides-2']]]);
+    const providesBySystem = new Map([['system', { active: ['system-provides-1', 'system-provides-2'], revoked: [] }]]);
     const access = ['system', 'rule', 'rule-indicates', 'rule-deployed-on', 'result', 'result-has-covered'];
     const change = { attack_pattern_id: 'ap', previous: validated('system', 'rule'), coverage: withRules(['rule']) };
     const withProvides = only([...access, 'system-provides-2']);
@@ -110,8 +119,56 @@ describe('Defense level notifications', () => {
     const withoutProvides = only(access);
     expect(defensePlatformPredicate(providesBySystem, withoutProvides)('system')).toEqual(false);
     expect(readerLevelChange(change, withoutProvides, defensePlatformPredicate(providesBySystem, withoutProvides))).toBeUndefined();
-    // A platform without provides relationships relies on the access to the platform itself
+    // Only a platform that is not a known System relies on the access to the platform itself
     expect(defensePlatformPredicate(providesBySystem, withoutProvides)('edr')).toEqual(true);
+  });
+
+  describe('of a System left without active provides relationships', () => {
+    const access = ['system', 'rule', 'rule-indicates', 'rule-deployed-on', 'result', 'result-has-covered'];
+    // The previous coverage was computed on 2026-10-01, with the System still declaring its telemetry
+    const change = { attack_pattern_id: 'ap', previous: validated('system', 'rule'), coverage: withRules(['rule']) };
+    const levelChangeOf = (providesBySystem: Map<string, DefenseSystemProvides>, can: (id: string | undefined) => boolean) => readerLevelChange(
+      change,
+      can,
+      defensePlatformPredicate(providesBySystem, can),
+      defensePlatformPredicate(providesBySystem, can, change.previous.computed_at),
+    );
+
+    it('should tell nothing to a recipient who never accessed any of its provides relationships', () => {
+      const emptied = new Map([['system', { active: [], revoked: [] }]]);
+      expect(defensePlatformPredicate(emptied, only(access))('system')).toEqual(false);
+      expect(levelChangeOf(emptied, only(access))).toBeUndefined();
+      const revokedSince = new Map([['system', { active: [], revoked: [{ id: 'system-provides', updated_at: '2026-10-05T00:00:00.000Z' }] }]]);
+      expect(levelChangeOf(revokedSince, only(access))).toBeUndefined();
+    });
+
+    it('should tell the decrease to a recipient who accessed a provides relationship revoked since the previous computation', () => {
+      const revokedSince = new Map([['system', { active: [], revoked: [{ id: 'system-provides', updated_at: '2026-10-05T00:00:00.000Z' }] }]]);
+      expect(levelChangeOf(revokedSince, only([...access, 'system-provides']))).toEqual({ attack_pattern_id: 'ap', previous_level: 4, level: 2 });
+    });
+
+    it('should not count a provides relationship already revoked at the previous computation', () => {
+      const revokedBefore = new Map([['system', { active: [], revoked: [{ id: 'system-provides', updated_at: '2026-09-01T00:00:00.000Z' }] }]]);
+      expect(levelChangeOf(revokedBefore, only([...access, 'system-provides']))).toBeUndefined();
+    });
+
+    it('should keep every System of the changed coverages known, with or without provides relationships', async () => {
+      vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'system' }, { internal_id: 'system-emptied' }] as never);
+      vi.mocked(fullRelationsList).mockResolvedValueOnce([
+        { id: 'system-provides-1', fromId: 'system', revoked: false },
+        { id: 'system-provides-2', fromId: 'system-emptied', revoked: true, updated_at: '2026-10-05T00:00:00.000Z' },
+      ] as never);
+      const changes = [{ attack_pattern_id: 'ap', previous: validated('system-emptied', 'rule'), coverage: validated('system', 'rule') }, { ...change, coverage: validated('edr', 'rule') }];
+      const providesBySystem = await loadSystemProvides({} as AuthContext, changes);
+      expect(vi.mocked(internalFindByIds).mock.calls[0][2]).toEqual(['system-emptied', 'system', 'edr']);
+      expect(providesBySystem).toEqual(new Map([
+        ['system', { active: ['system-provides-1'], revoked: [] }],
+        ['system-emptied', { active: [], revoked: [{ id: 'system-provides-2', updated_at: '2026-10-05T00:00:00.000Z' }] }],
+      ]));
+      // A security platform is not a System: it is not listed and relies on the access to the platform itself
+      expect(defensePlatformPredicate(providesBySystem, only([]))('edr')).toEqual(true);
+      expect(defensePlatformPredicate(providesBySystem, only([]))('system-emptied')).toEqual(false);
+    });
   });
 
   it('should map the direction of a change to its trigger event type', () => {
