@@ -4591,9 +4591,11 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
+  latest_compatible_version?: Maybe<Scalars['String']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
@@ -4614,6 +4616,7 @@ export type Connector = BasicObject & InternalObject & {
   slug?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
+  update_available?: Maybe<Scalars['Boolean']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   version?: Maybe<Scalars['String']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -18324,6 +18327,7 @@ export type Mutation = {
   userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
   userMerge: UserMergeResult;
+  userMergeDeleteSource: Scalars['ID']['output'];
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
@@ -21100,6 +21104,12 @@ export type MutationUserEditArgs = {
 
 export type MutationUserMergeArgs = {
   options?: InputMaybe<UserMergeOptions>;
+  sourceId: Scalars['ID']['input'];
+  targetId: Scalars['ID']['input'];
+};
+
+
+export type MutationUserMergeDeleteSourceArgs = {
   sourceId: Scalars['ID']['input'];
   targetId: Scalars['ID']['input'];
 };
@@ -38882,6 +38892,7 @@ export type VocabularyConnection = {
 
 export type VocabularyDefinition = {
   __typename?: 'VocabularyDefinition';
+  closed: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_types: Array<Scalars['String']['output']>;
   fields: Array<VocabularyFieldDefinition>;
@@ -45125,9 +45136,11 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  latest_compatible_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
@@ -45148,6 +45161,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  update_available?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
@@ -50470,6 +50484,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userMerge?: Resolver<ResolversTypes['UserMergeResult'], ParentType, ContextType, RequireFields<MutationUserMergeArgs, 'sourceId' | 'targetId'>>;
+  userMergeDeleteSource?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUserMergeDeleteSourceArgs, 'sourceId' | 'targetId'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
@@ -55555,6 +55570,7 @@ export type VocabularyConnectionResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type VocabularyDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyDefinition'] = ResolversParentTypes['VocabularyDefinition']> = ResolversObject<{
+  closed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['VocabularyFieldDefinition']>, ParentType, ContextType>;

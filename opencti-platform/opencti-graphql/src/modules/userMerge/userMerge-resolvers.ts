@@ -1,5 +1,5 @@
 import type { AuthContext } from '../../types/user';
-import { userMerge, userMergeCoverage, userMergeJournal, userMergeSourceDeletionReadiness, type UserMergeOptionsInput } from './userMerge-domain';
+import { userMerge, userMergeCoverage, userMergeDeleteSource, userMergeJournal, userMergeSourceDeletionReadiness, type UserMergeOptionsInput } from './userMerge-domain';
 
 const userMergeResolvers = {
   Query: {
@@ -25,6 +25,11 @@ const userMergeResolvers = {
       { sourceId, targetId, options }: { sourceId: string; targetId: string; options?: UserMergeOptionsInput | null },
       context: AuthContext,
     ) => userMerge(context, context.user!, sourceId, targetId, options),
+    userMergeDeleteSource: (
+      _: unknown,
+      { sourceId, targetId }: { sourceId: string; targetId: string },
+      context: AuthContext,
+    ) => userMergeDeleteSource(context, context.user!, sourceId, targetId),
   },
 };
 

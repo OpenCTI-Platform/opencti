@@ -2128,6 +2128,9 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_image: String
   manager_contract_definition: String
   manager_contract_excerpt: ManagerContractExcerpt
+  update_available: Boolean
+  latest_compatible_version: String
+  has_newer_incompatible_version: Boolean
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
@@ -10494,6 +10497,7 @@ type Mutation {
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   userMerge(sourceId: ID!, targetId: ID!, options: UserMergeOptions): UserMergeResult!
+  userMergeDeleteSource(sourceId: ID!, targetId: ID!): ID!
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
@@ -11805,6 +11809,7 @@ type VocabularyFieldDefinition {
 type VocabularyDefinition {
   key: VocabularyCategory!
   description: String
+  closed: Boolean!
   entity_types: [String!]!
   fields: [VocabularyFieldDefinition!]!
 }

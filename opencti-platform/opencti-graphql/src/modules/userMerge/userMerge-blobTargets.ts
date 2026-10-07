@@ -6,7 +6,7 @@ import { ENTITY_TYPE_FORM } from '../form/form-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 
 /**
@@ -129,6 +129,19 @@ export const USER_MERGE_BLOB_TARGETS: UserMergeBlobTarget[] = [
     path: 'actions',
     shape: 'object',
     activity: { path: 'completed', equals: true, negate: true },
+  },
+  {
+    // Both register rows name the same field: `triggeredBy` is the user who fired the
+    // transition, and the action params sit next to it in the very same payload.
+    id: 'workflow-instance-pending-transition',
+    registerRow: 'workflow-instance-pending.transition-triggered-by',
+    alsoCovers: ['workflow-instance-pending.transition-actions'],
+    entityType: ENTITY_TYPE_WORKFLOW_INSTANCE,
+    path: 'pendingTransition',
+    shape: 'json',
+    // `pending` means background actions are still running, which the precondition rules out.
+    // `error` is a settled state waiting on an operator, so it is rewritten like any other.
+    activity: { path: 'pendingStatus', equals: 'pending' },
   },
   {
     // The register splits the row on the state of the request, not on where it is stored: both

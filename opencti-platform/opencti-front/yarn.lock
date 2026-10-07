@@ -7220,10 +7220,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"earcut@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "earcut@npm:3.2.3"
-  checksum: 10c0/38660ec1ce55eecbbbf11d5a0072934c9f33851527bf5e40923c6656c3a0c6b00bb449ae8f4b28f89a0b249fe18568e630a8ea9ee39ce2707a50a89531a2f995
+"earcut@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "earcut@npm:3.2.4"
+  checksum: 10c0/c50c93a6a0b56aadbe9d225322184f93b6b6dff81f2ca6e6bd8bb1141eaefc5116aac4c969f576bc2569d9c6ddd5108d74bf3825b3fd5529ebcc59c9f2b55e5a
   languageName: node
   linkType: hard
 
@@ -9053,10 +9053,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-pdfmake@npm:2.5.34":
-  version: 2.5.34
-  resolution: "html-to-pdfmake@npm:2.5.34"
-  checksum: 10c0/20554b268ae7a13fffcecf7404c103c44c8cbc641445a97900dc9fcaf484b0e29b6e18b4a614dc28b44d11b8bdab945422569bd471e01d3411fbfc1f2d98f172
+"html-to-pdfmake@npm:2.5.35":
+  version: 2.5.35
+  resolution: "html-to-pdfmake@npm:2.5.35"
+  checksum: 10c0/e1c1cd9a73c9dffa53642a6e9b58713bbce85e90d49efce58c07616cdf57d32d36499328e63281cf10b0b48923e2ff96929b01714fc09905376ee4b004397651
   languageName: node
   linkType: hard
 
@@ -10608,9 +10608,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.11.2":
-  version: 6.11.2
-  resolution: "maplibre-gl@npm:6.11.2"
+"maplibre-gl@npm:6.12.0":
+  version: 6.12.0
+  resolution: "maplibre-gl@npm:6.12.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
@@ -10622,7 +10622,7 @@ __metadata:
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
     bidi-js: "npm:^1.1.0"
-    earcut: "npm:^3.2.3"
+    earcut: "npm:^3.2.4"
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
     murmurhash-js: "npm:^1.0.0"
@@ -10630,7 +10630,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/c1fea2904b23ff42b5c4802547c460de40f0ea34eabee8291a922b653de0deffdcafc29862f7834481b5805ab91726382a9892134c752839c6f84bd95886a6d4
+  checksum: 10c0/8d8740656fb2e01dde60e4dd382b366096aa662e9f6dfd2c7bd1e4e576c601279e3f7371dfcc1e9c7bc0fff409502f37b870349fb6f0d1755f77c4fd5694a272
   languageName: node
   linkType: hard
 
@@ -12047,7 +12047,7 @@ __metadata:
     graphql-ws: "npm:6.3.0"
     html-react-parser: "npm:6.1.8"
     html-to-image: "npm:1.11.13"
-    html-to-pdfmake: "npm:2.5.34"
+    html-to-pdfmake: "npm:2.5.35"
     i18n-auto-translation: "npm:2.2.3"
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
@@ -12059,7 +12059,7 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.39.0"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.11.2"
+    maplibre-gl: "npm:6.12.0"
     markdown-to-jsx: "npm:9.10.3"
     marked: "npm:18.0.14"
     mdi-material-ui: "npm:7.9.4"

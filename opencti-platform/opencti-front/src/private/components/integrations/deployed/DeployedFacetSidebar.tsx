@@ -50,11 +50,13 @@ interface DeployedFacetSidebarProps {
   onFiltersChange: Dispatch<SetStateAction<DeployedFilterState>>;
   hasActiveFilters: boolean;
   onClearAll: () => void;
+  showUpdateAvailableFacet: boolean;
   facets: {
     types: string[];
     typeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     kindCounts: Record<string, number>;
+    updateAvailableCount: number;
   };
 }
 
@@ -63,6 +65,7 @@ const DeployedFacetSidebar = ({
   onFiltersChange,
   hasActiveFilters,
   onClearAll,
+  showUpdateAvailableFacet,
   facets,
 }: DeployedFacetSidebarProps) => {
   const { t_i18n } = useFormatter();
@@ -176,6 +179,19 @@ const DeployedFacetSidebar = ({
             />
           ))}
         </Box>
+
+        {showUpdateAvailableFacet && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('Version')}</FacetGroupLabel>
+            <FacetCheckbox
+              checked={filters.updateAvailable}
+              count={facets.updateAvailableCount}
+              icon={AutorenewOutlined}
+              label={t_i18n('Update available')}
+              onToggle={() => onFiltersChange((prev) => ({ ...prev, updateAvailable: !prev.updateAvailable }))}
+            />
+          </Box>
+        )}
       </Box>
     </Box>
   );
