@@ -738,8 +738,14 @@ export const curationSettingsForApi = async (context: AuthContext) => {
   };
 };
 
+// A null clears these settings; for the others, which a null would reset to their default, it leaves them as they are.
+const CLEARABLE_CURATION_SETTINGS = ['adjudication_agent_slug', 'adjudication_run_as_id'];
+
 export const editCurationSettings = async (context: AuthContext, user: AuthUser, input: Partial<CurationSettings>) => {
-  const patch: Partial<CurationSettings> = R.reject(R.isNil, input as Record<string, unknown>) as Partial<CurationSettings>;
+  const patch = R.pickBy(
+    (value, key) => value !== undefined && (value !== null || CLEARABLE_CURATION_SETTINGS.includes(key)),
+    input as Record<string, unknown>,
+  ) as Partial<CurationSettings>;
   if (patch.adjudication_enabled === true) {
     await checkEnterpriseEdition(context);
   }

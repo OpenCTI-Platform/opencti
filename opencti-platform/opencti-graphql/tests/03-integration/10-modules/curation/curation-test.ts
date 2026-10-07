@@ -181,6 +181,7 @@ const SETTINGS_EDIT_MUTATION = gql`
       merge_record_retention_days
       ambiguous_band_min
       ambiguous_band_max
+      adjudication_agent_slug
     }
   }
 `;
@@ -339,6 +340,15 @@ describe('Knowledge curation', () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SETTINGS_EDIT_MUTATION, variables: { input: { merge_record_retention_days: 30 } } });
     // The settings (digest recipients, field authority sources) are read under Settings > Customization only.
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SETTINGS_QUERY, variables: {} });
+  });
+
+  it('should clear the adjudication agent with a null, and leave the other settings a null names as they are', async () => {
+    const edit = (input: Record<string, unknown>) => queryAsAdminWithSuccess({ query: SETTINGS_EDIT_MUTATION, variables: { input } });
+    const chosen = await edit({ adjudication_agent_slug: 'zcuraxor-agent' });
+    expect(chosen.data?.curationSettingsEdit.adjudication_agent_slug).toBe('zcuraxor-agent');
+    const cleared = await edit({ adjudication_agent_slug: null, merge_record_retention_days: null });
+    expect(cleared.data?.curationSettingsEdit.adjudication_agent_slug).toBeNull();
+    expect(cleared.data?.curationSettingsEdit.merge_record_retention_days).toBe(chosen.data?.curationSettingsEdit.merge_record_retention_days);
   });
 
   it('should validate and save curation settings', async () => {
