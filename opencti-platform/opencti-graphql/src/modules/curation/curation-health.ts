@@ -89,9 +89,9 @@ export const computeHealthScore = (metrics: KnowledgeHealthMetrics): { score: nu
 
 /**
  * Number of entities that would disappear if every open merge proposal were accepted: for each connected component
- * of the duplicate graph, its size minus one.
+ * of the duplicate graph, its size minus one. Fed group by group, so the proposals can be read page by page.
  */
-export const estimateDuplicates = (pairs: string[][]): number => {
+export const createDuplicateEstimator = () => {
   const parent = new Map<string, string>();
   const find = (id: string): string => {
     const current = parent.get(id) ?? id;
@@ -100,28 +100,25 @@ export const estimateDuplicates = (pairs: string[][]): number => {
     parent.set(id, root);
     return root;
   };
-  pairs.forEach((ids) => {
-    ids.forEach((id) => {
-      if (!parent.has(id)) parent.set(id, id);
-    });
-    for (let index = 1; index < ids.length; index += 1) {
-      const left = find(ids[0]);
-      const right = find(ids[index]);
-      if (left !== right) parent.set(right, left);
-    }
-  });
-  const components = new Set([...parent.keys()].map((id) => find(id)));
-  return parent.size - components.size;
+  return {
+    add: (ids: string[]) => {
+      ids.forEach((id) => {
+        if (!parent.has(id)) parent.set(id, id);
+      });
+      for (let index = 1; index < ids.length; index += 1) {
+        const left = find(ids[0]);
+        const right = find(ids[index]);
+        if (left !== right) parent.set(right, left);
+      }
+    },
+    estimate: () => parent.size - new Set([...parent.keys()].map((id) => find(id))).size,
+  };
 };
 
-/** estimateDuplicates over the subjects that still exist: a deleted or merged subject is no longer a duplicate. */
-export const estimateExistingDuplicates = (pairs: string[][], existingIds: Set<string>): number => {
-  return estimateDuplicates(pairs.map((ids) => ids.filter((id) => existingIds.has(id))));
-};
-
-/** Distinct subjects that still exist: a subject named by several proposals counts once, a deleted or merged one not at all. */
-export const countExistingSubjects = (subjectIds: string[][], existingIds: Set<string>): number => {
-  return new Set(subjectIds.flat().filter((id) => existingIds.has(id))).size;
+export const estimateDuplicates = (pairs: string[][]): number => {
+  const estimator = createDuplicateEstimator();
+  pairs.forEach((ids) => estimator.add(ids));
+  return estimator.estimate();
 };
 // endregion
 
@@ -147,60 +144,57 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
   // The staleness detector always examines Indicators: the stale share is measured over the curated types and Indicators.
   const stalenessTypes = R.uniq([...types, ENTITY_TYPE_INDICATOR]);
   const stalenessScopeCount = stalenessTypes.length === types.length ? curatedCount : await countKnowledge(stalenessTypes);
-  const openMerges = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: ['proposal_kind'], values: [PROPOSAL_KIND_MERGE], operator: FilterOperator.Eq },
-        { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
-        { key: ['confidence_score'], values: [String(settings.ambiguous_band_min)], operator: FilterOperator.Gte },
-      ],
-      filterGroups: [],
-    },
-    baseData: true,
-    baseFields: ['subject_ids'],
-    noFiltersChecking: true,
+  // Open proposals outlive their subjects: only the subjects still in the knowledge count. The proposals are read page
+  // by page, each page checked against the knowledge as it comes, so only the counted subjects are kept in memory.
+  const forEachOpenProposalPage = async (
+    kind: string,
+    extraFilters: Array<{ key: string[]; values: string[]; operator: FilterOperator }>,
+    idsOf: (proposal: BasicStoreEntityCurationProposal) => string[],
+    onPage: (proposals: BasicStoreEntityCurationProposal[], existingIds: Set<string>) => void,
+  ) => {
+    await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          { key: ['proposal_kind'], values: [kind], operator: FilterOperator.Eq },
+          { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
+          ...extraFilters,
+        ],
+        filterGroups: [],
+      },
+      baseData: true,
+      baseFields: ['subject_ids', 'target_id'],
+      noFiltersChecking: true,
+      callback: async (proposals) => {
+        const existing = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, R.uniq(proposals.flatMap(idsOf)), {
+          indices: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
+          baseData: true,
+          baseFields: ['internal_id'],
+        }) as BasicStoreEntity[];
+        onPage(proposals, new Set(existing.map((subject) => subject.internal_id)));
+        return true;
+      },
+    });
+  };
+  const subjectsOf = (proposal: BasicStoreEntityCurationProposal) => proposal.subject_ids;
+  const duplicates = createDuplicateEstimator();
+  const mergeThreshold = [{ key: ['confidence_score'], values: [String(settings.ambiguous_band_min)], operator: FilterOperator.Gte }];
+  await forEachOpenProposalPage(PROPOSAL_KIND_MERGE, mergeThreshold, subjectsOf, (proposals, existingIds) => {
+    proposals.forEach((proposal) => duplicates.add(proposal.subject_ids.filter((id) => existingIds.has(id))));
   });
-  const openStale = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: ['proposal_kind'], values: [PROPOSAL_KIND_STALE], operator: FilterOperator.Eq },
-        { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
-      ],
-      filterGroups: [],
-    },
-    baseData: true,
-    baseFields: ['subject_ids'],
-    noFiltersChecking: true,
-  });
-  const openContradictions = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: ['proposal_kind'], values: [PROPOSAL_KIND_CONTRADICTION], operator: FilterOperator.Eq },
-        { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
-      ],
-      filterGroups: [],
-    },
-    baseData: true,
-    baseFields: ['subject_ids', 'target_id'],
-    noFiltersChecking: true,
-  });
-  // A contradiction is about its target: the entity, indicator or relationship whose dates or attributions disagree.
-  const contradictionTargets = openContradictions.map((proposal) => proposal.target_id ?? proposal.subject_ids[0]);
-  // Open proposals outlive their subjects: only the subjects still in the knowledge count.
-  const liveIds = R.uniq([...[...openMerges, ...openStale].flatMap((proposal) => proposal.subject_ids), ...contradictionTargets]);
-  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, liveIds, {
-    indices: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
-    baseData: true,
-    baseFields: ['internal_id'],
-  }) as BasicStoreEntity[];
-  const existingSubjectIds = new Set(existingSubjects.map((subject) => subject.internal_id));
-  const duplicateEstimate = estimateExistingDuplicates(openMerges.map((proposal) => proposal.subject_ids), existingSubjectIds);
+  const duplicateEstimate = duplicates.estimate();
   // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
-  const staleCount = countExistingSubjects(openStale.map((proposal) => proposal.subject_ids), existingSubjectIds);
-  const contradictionCount = contradictionTargets.filter((id) => existingSubjectIds.has(id)).length;
+  const staleSubjectIds = new Set<string>();
+  await forEachOpenProposalPage(PROPOSAL_KIND_STALE, [], subjectsOf, (proposals, existingIds) => {
+    proposals.flatMap(subjectsOf).filter((id) => existingIds.has(id)).forEach((id) => staleSubjectIds.add(id));
+  });
+  const staleCount = staleSubjectIds.size;
+  // A contradiction is about its target: the entity, indicator or relationship whose dates or attributions disagree.
+  const contradictionTargetOf = (proposal: BasicStoreEntityCurationProposal) => [proposal.target_id ?? proposal.subject_ids[0]];
+  let contradictionCount = 0;
+  await forEachOpenProposalPage(PROPOSAL_KIND_CONTRADICTION, [], contradictionTargetOf, (proposals, existingIds) => {
+    contradictionCount += proposals.filter((proposal) => existingIds.has(contradictionTargetOf(proposal)[0])).length;
+  });
   const [openCount, autoApplied, accepted, rejected, reverted] = await Promise.all([
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN] }]),
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_AUTO_APPLIED] }, { key: ['decided_at'], values: [since], operator: FilterOperator.Gte }]),
