@@ -551,7 +551,7 @@ export const callHuntAgent = async (intent: string, jwtUser: AgentJwtUser | null
   }
   const refusal = huntAgentRefusalErrors(parsed);
   if (refusal) {
-    logApp.warn('[OPENCTI-MODULE] Hunt agent refused its own answer', { intent, slug, errors: refusal });
+    logApp.warn('[OPENCTI-MODULE] Hunt agent refused its own answer', { intent, slug, errors: refusal.length });
     const reasons = refusal.length > 0 ? refusal.join('; ') : 'no reason given';
     throw huntAgentError(HUNT_AGENT_FAILURE.invalidAnswer, `The XTM One agent ${slug} could not produce a valid answer: ${reasons}`, { intent, errors: refusal });
   }

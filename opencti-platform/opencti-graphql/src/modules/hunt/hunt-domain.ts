@@ -153,7 +153,7 @@ const resolveTechniqueIds = async (context: AuthContext, user: AuthUser, values:
     : [];
   const unresolvedAttackIds = attackIds.filter((attackId) => !byAttackId.some((technique) => technique.x_mitre_id === attackId));
   if (unresolvedAttackIds.length > 0) {
-    logApp.info('[OPENCTI-MODULE] Hunt techniques not found in the knowledge base', { attackIds: unresolvedAttackIds });
+    logApp.info('[OPENCTI-MODULE] Hunt techniques not found in the knowledge base', { count: unresolvedAttackIds.length });
   }
   return [...otherIds, ...byAttackId.map((technique) => technique.internal_id)];
 };
