@@ -614,8 +614,9 @@ const buildGapView = (
 
 const OPEN_LEVELS = [0, 1, 2, 3];
 
-const matchGapFilter = (gap: DefenseGapView, filter: DefenseGapsFilter | null | undefined) => {
-  const levels = filter?.levels && filter.levels.length > 0 ? filter.levels : OPEN_LEVELS;
+export const matchGapFilter = (gap: DefenseGapView, filter: DefenseGapsFilter | null | undefined) => {
+  // A validated technique is no gap: the levels of a filter only narrow the open ones
+  const levels = filter?.levels && filter.levels.length > 0 ? filter.levels.filter((level) => OPEN_LEVELS.includes(level)) : OPEN_LEVELS;
   if (!levels.includes(gap.level)) return false;
   if (filter?.recommended_actions && filter.recommended_actions.length > 0 && !filter.recommended_actions.includes(gap.recommended_action as never)) return false;
   if (filter?.killChainPhaseIds && filter.killChainPhaseIds.length > 0 && !gap.kill_chain_phase_ids.some((k) => filter.killChainPhaseIds?.includes(k))) return false;

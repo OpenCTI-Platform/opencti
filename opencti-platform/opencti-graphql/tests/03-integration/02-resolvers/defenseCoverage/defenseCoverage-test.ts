@@ -425,6 +425,11 @@ describe('Threat-informed defense matrix', () => {
     const usedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, threatScope: { mode: 'NONE' }, filter: { search: MITRE_ID, onlyUsedByThreats: true } } });
     expect(usedOnly.data?.defenseGaps.edges).toEqual([]);
     expect(usedOnly.data?.defenseGaps.threats_count).toEqual(0);
+    // A validated level is no gap: a level filter only narrows the open levels
+    const validatedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, filter: { search: MITRE_ID, levels: [4] } } });
+    expect(validatedOnly.data?.defenseGaps.pageInfo.globalCount).toEqual(0);
+    const withValidated = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, filter: { search: MITRE_ID, levels: [LEVEL_DETECTION_AVAILABLE, 4] } } });
+    expect(withValidated.data?.defenseGaps.pageInfo.globalCount).toEqual(1);
     const csv = await queryAsAdminWithSuccess({ query: DEFENSE_GAP_EXPORT, variables });
     const lines = (csv.data?.defenseGapExport as string).trim().split('\n');
     expect(lines[0]).toContain('technique_id');
