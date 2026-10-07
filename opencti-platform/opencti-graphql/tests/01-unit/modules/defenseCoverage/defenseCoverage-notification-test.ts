@@ -5,6 +5,7 @@ import {
   DEFENSE_TRIGGER_LEVEL_DECREASED,
   DEFENSE_TRIGGER_LEVEL_INCREASED,
   defenseLevelEventType,
+  defensePlatformPredicate,
   notifyDefenseLevelChanges,
   readerLevelChange,
   reconcileQueuedChanges,
@@ -96,6 +97,21 @@ describe('Defense level notifications', () => {
     // Without access to the result, the recipient saw a deployed detection and now sees an available one
     expect(readerLevelChange(change, only(ruleAccess))).toEqual({ attack_pattern_id: 'ap', previous_level: 3, level: 2 });
     expect(readerLevelChange(change, only([...ruleAccess, 'result', 'result-has-covered']))).toEqual({ attack_pattern_id: 'ap', previous_level: 4, level: 2 });
+  });
+
+  it('should count a System only when the recipient can access one of its provides relationships', () => {
+    const providesBySystem = new Map([['system', ['system-provides-1', 'system-provides-2']]]);
+    const access = ['system', 'rule', 'rule-indicates', 'rule-deployed-on', 'result', 'result-has-covered'];
+    const change = { attack_pattern_id: 'ap', previous: validated('system', 'rule'), coverage: withRules(['rule']) };
+    const withProvides = only([...access, 'system-provides-2']);
+    expect(defensePlatformPredicate(providesBySystem, withProvides)('system')).toEqual(true);
+    expect(readerLevelChange(change, withProvides, defensePlatformPredicate(providesBySystem, withProvides))).toEqual({ attack_pattern_id: 'ap', previous_level: 4, level: 2 });
+    // The System is not a defense platform for this recipient: its validation never counted for them
+    const withoutProvides = only(access);
+    expect(defensePlatformPredicate(providesBySystem, withoutProvides)('system')).toEqual(false);
+    expect(readerLevelChange(change, withoutProvides, defensePlatformPredicate(providesBySystem, withoutProvides))).toBeUndefined();
+    // A platform without provides relationships relies on the access to the platform itself
+    expect(defensePlatformPredicate(providesBySystem, withoutProvides)('edr')).toEqual(true);
   });
 
   it('should map the direction of a change to its trigger event type', () => {

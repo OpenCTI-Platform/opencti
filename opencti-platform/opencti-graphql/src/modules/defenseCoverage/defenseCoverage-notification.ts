@@ -3,12 +3,13 @@ import { logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { StixObject } from '../../types/stix-2-1-common';
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { isBypassUser, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { stixLoadById } from '../../database/middleware';
-import { internalFindByIds } from '../../database/middleware-loader';
+import { fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
+import { RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
@@ -86,13 +87,52 @@ export const collectDefenseCoverageChanges = (
 /**
  * The level change of a technique for one recipient: both coverages are evaluated with the evidences the recipient
  * can access, so a change caused only by a rule, a relationship or a result they cannot see is never reported.
+ * Only the platforms the recipient sees as defense platforms count, as in the matrix.
  * Returns undefined when the level the recipient sees did not change.
  */
-export const readerLevelChange = (change: DefenseCoverageChange, can: AccessPredicate): DefenseLevelChange | undefined => {
-  const previousLevel = evaluateCoverage(change.attack_pattern_id, change.previous, can).level;
-  const level = evaluateCoverage(change.attack_pattern_id, change.coverage, can).level;
+export const readerLevelChange = (
+  change: DefenseCoverageChange,
+  can: AccessPredicate,
+  isDefensePlatform?: (platformId: string) => boolean,
+): DefenseLevelChange | undefined => {
+  const previousLevel = evaluateCoverage(change.attack_pattern_id, change.previous, can, undefined, isDefensePlatform).level;
+  const level = evaluateCoverage(change.attack_pattern_id, change.coverage, can, undefined, isDefensePlatform).level;
   if (previousLevel === level) return undefined;
   return { attack_pattern_id: change.attack_pattern_id, previous_level: previousLevel, level };
+};
+
+/**
+ * Whether a recipient sees a platform as a defense platform: a System only through one of its provides relationships
+ * they can access, as the matrix lists them. A platform without any provides relationship (a security platform, or a
+ * System deleted or emptied since the computation) relies on the access to the platform itself.
+ */
+export const defensePlatformPredicate = (providesBySystem: ReadonlyMap<string, string[]>, can: AccessPredicate) => (platformId: string) => {
+  const provides = providesBySystem.get(platformId);
+  return !provides || provides.some((id) => can(id));
+};
+
+const PROVIDES_CHUNK_SIZE = 5000;
+
+// The provides relationships of the Systems among the platforms of the changed coverages
+const loadSystemProvides = async (context: AuthContext, changes: DefenseCoverageChange[]) => {
+  const platformIds = R.uniq(changes
+    .flatMap((change) => [change.previous, change.coverage, ...(change.trigger_baselines ?? []).map((baseline) => baseline.previous)])
+    .flatMap((coverage) => (coverage?.platforms ?? []).map((platform) => platform.platform_id)));
+  const providesBySystem = new Map<string, string[]>();
+  const chunks = R.splitEvery(PROVIDES_CHUNK_SIZE, platformIds);
+  for (let index = 0; index < chunks.length; index += 1) {
+    const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, RELATION_PROVIDES, {
+      fromId: chunks[index],
+      fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
+      baseData: true,
+    });
+    relations.forEach((relation) => {
+      const provides = providesBySystem.get(relation.fromId);
+      if (provides) provides.push(relation.id);
+      else providesBySystem.set(relation.fromId, [relation.id]);
+    });
+  }
+  return providesBySystem;
 };
 
 /**
@@ -135,11 +175,15 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
   });
   if (listening.length === 0) return 0;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const evidenceIds = R.uniq(changes.flatMap((change) => [
-    ...collectCoverageIds(change.previous),
-    ...collectCoverageIds(change.coverage),
-    ...(change.trigger_baselines ?? []).flatMap((baseline) => collectCoverageIds(baseline.previous)),
-  ]));
+  const providesBySystem = await loadSystemProvides(context, changes);
+  const evidenceIds = R.uniq([
+    ...changes.flatMap((change) => [
+      ...collectCoverageIds(change.previous),
+      ...collectCoverageIds(change.coverage),
+      ...(change.trigger_baselines ?? []).flatMap((baseline) => collectCoverageIds(baseline.previous)),
+    ]),
+    ...Array.from(providesBySystem.values()).flat(),
+  ]);
   // One access evaluation per recipient for the whole computation, whatever the number of triggers they are in
   const predicates = new Map<string, Promise<AccessPredicate>>();
   const predicateOf = (userContext: AuthContext, user: AuthUser) => {
@@ -177,7 +221,8 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
         for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
           const user: AuthUser = users[userIndex];
           const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-          const levelChange = readerLevelChange(triggerChange, await predicateOf(userContext, user));
+          const can = await predicateOf(userContext, user);
+          const levelChange = readerLevelChange(triggerChange, can, defensePlatformPredicate(providesBySystem, can));
           const eventType = levelChange ? defenseLevelEventType(levelChange) : undefined;
           if (levelChange && eventType && eventTypes.includes(eventType)) {
             const instance = await loadStix();

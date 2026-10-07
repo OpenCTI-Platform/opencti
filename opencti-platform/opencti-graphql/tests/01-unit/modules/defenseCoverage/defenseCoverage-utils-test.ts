@@ -180,6 +180,21 @@ describe('Defense coverage evaluation for a reader', () => {
     // The OpenAEV result is attributed to the hidden platform, it does not count as unattributed
     expect(cell.level).toEqual(2);
   });
+  it('should ignore a platform the reader does not see as a defense platform, also without selection', () => {
+    const notDefensePlatform = (platformId: string) => platformId !== PLATFORM;
+    const cell = evaluateCoverage('ap-1', buildCoverage(), () => true, undefined, notDefensePlatform);
+    expect(cell.platforms.map((p) => p.platform_id)).toEqual([OTHER_PLATFORM]);
+    expect(cell.level).toEqual(2);
+    expect(cell.coverage_result_ids).toEqual([]);
+    // A result not attributed to any platform still counts in the aggregate view
+    const unattributed: DefenseCoverage = {
+      ...buildCoverage(),
+      validations: [{ id: 'scr-2', rel: 'covered-2', status: 'prevented', last_result_at: '2026-09-02T00:00:00.000Z', scores: [] }],
+    };
+    const aggregate = evaluateCoverage('ap-1', unattributed, () => true, undefined, notDefensePlatform);
+    expect(aggregate.level).toEqual(4);
+    expect(aggregate.coverage_result_ids).toEqual(['scr-2']);
+  });
   it('should restrict the evaluation to the selected platforms', () => {
     const cell = evaluateCoverage('ap-1', buildCoverage(), () => true, [OTHER_PLATFORM]);
     expect(cell.platforms).toHaveLength(1);

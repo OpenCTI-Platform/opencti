@@ -225,6 +225,7 @@ interface Evaluation {
   can: AccessPredicate;
   platforms: DefensePlatformView[];
   platformById: Map<string, DefensePlatformView>;
+  isDefensePlatform: (platformId: string) => boolean;
   selected?: string[];
   overlay: DefenseThreatOverlay;
 }
@@ -310,10 +311,11 @@ const prepareEvaluation = async (
     getThreatOverlay(context, user, threatScope),
   ]);
   const platformById = new Map(platforms.map((p) => [p.id, p]));
+  const isDefensePlatform = (platformId: string) => platformById.has(platformId);
   // A selection left empty by deleted or inaccessible platforms falls back to every platform, as the UI shows it
-  const validIds = uniq((platformIds ?? []).filter((id) => platformById.has(id)));
+  const validIds = uniq((platformIds ?? []).filter(isDefensePlatform));
   const selected = validIds.length > 0 ? validIds : undefined;
-  return { snapshot, can, platforms, platformById, selected, overlay };
+  return { snapshot, can, platforms, platformById, isDefensePlatform, selected, overlay };
 };
 
 const toCellPlatformView = (platform: DefenseCellPlatform): DefenseCellPlatformView => ({
@@ -368,9 +370,9 @@ export const buildDefenseMatrix = async (
   args: { platformIds?: ReadonlyArray<string> | null; threatScope?: DefenseThreatScope | null },
 ): Promise<DefenseMatrixView> => {
   const evaluation = await prepareEvaluation(context, user, args.platformIds, args.threatScope);
-  const { snapshot, can, overlay, selected } = evaluation;
+  const { snapshot, can, overlay, selected, isDefensePlatform } = evaluation;
   const techniques = snapshot.techniques.filter((t) => can(t.id));
-  const cells = techniques.map((technique) => toCellView(technique, evaluateCoverage(technique.id, technique.coverage, can, selected), overlay, can));
+  const cells = techniques.map((technique) => toCellView(technique, evaluateCoverage(technique.id, technique.coverage, can, selected, isDefensePlatform), overlay, can));
   const cellsById = new Map(cells.map((c) => [c.attack_pattern_id, c]));
   const effective = countEffectiveTechniques(cells);
   const levels = emptyLevels();
@@ -437,7 +439,7 @@ export const findDefenseTechnique = async (
     x_mitre_id: (attackPattern as unknown as { x_mitre_id?: string }).x_mitre_id,
     kill_chain_phase_ids: [],
   };
-  const evaluated = evaluateCoverage(technique.id, technique.coverage, evaluation.can, evaluation.selected);
+  const evaluated = evaluateCoverage(technique.id, technique.coverage, evaluation.can, evaluation.selected, evaluation.isDefensePlatform);
   return {
     attackPattern,
     computed_at: technique.coverage?.computed_at,
@@ -655,7 +657,7 @@ const computeGapViews = async (context: AuthContext, user: AuthUser, args: GapsA
   let gaps: DefenseGapView[] = [];
   let total = 0;
   evaluation.snapshot.techniques.filter((t) => evaluation.can(t.id)).forEach((technique) => {
-    const cell = evaluateCoverage(technique.id, technique.coverage, evaluation.can, evaluation.selected);
+    const cell = evaluateCoverage(technique.id, technique.coverage, evaluation.can, evaluation.selected, evaluation.isDefensePlatform);
     platformKeys.forEach((platformId) => {
       const gap = buildGapView(technique, cell, platformId, evaluation);
       if (matchGapFilter(gap, args.filter)) {

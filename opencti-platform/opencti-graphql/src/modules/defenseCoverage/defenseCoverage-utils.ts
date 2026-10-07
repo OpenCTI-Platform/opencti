@@ -326,12 +326,15 @@ const evaluatePlatform = (
  * @param coverage the stored coverage (computed by the manager)
  * @param can access predicate on element and relationship ids
  * @param platformIds selected platforms, undefined for every platform
+ * @param isDefensePlatform whether the reader sees a platform as a defense platform (a System only through a provides
+ *   relationship they can access); the vectors of the other platforms never count, even without selection
  */
 export const evaluateCoverage = (
   attackPatternId: string,
   coverage: DefenseCoverage | undefined,
   can: AccessPredicate,
   platformIds?: string[],
+  isDefensePlatform: (platformId: string) => boolean = () => true,
 ): DefenseCell => {
   const dataComponents = (coverage?.data_components ?? []).filter((e) => isEvidenceAccessible(e, can));
   const rules = (coverage?.rules ?? []).filter((e) => isEvidenceAccessible(e, can));
@@ -339,7 +342,7 @@ export const evaluateCoverage = (
   const ruleIds = uniq(rules.map((r) => r.id));
   const hasDetectingDataComponent = dataComponents.length > 0;
   const selectedVectors = (coverage?.platforms ?? [])
-    .filter((p) => can(p.platform_id))
+    .filter((p) => can(p.platform_id) && isDefensePlatform(p.platform_id))
     .filter((p) => !platformIds || platformIds.includes(p.platform_id));
   const platforms = selectedVectors.map((vector) => evaluatePlatform(vector, can, ruleIds, hasDetectingDataComponent));
   // Results not attributed to a platform only count when no platform is selected
