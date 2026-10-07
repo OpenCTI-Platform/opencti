@@ -471,6 +471,13 @@ export const decideProposal = async (
   if (input.target_id && !proposal.subject_ids.includes(input.target_id)) {
     throw FunctionalError('The target must be one of the proposal subjects', { target_id: input.target_id });
   }
+  // An alias names a single entity: the names of the other subjects of a merge proposal never become aliases of the
+  // target while those subjects exist, and a proposal whose subject is deleted or merged away is retired.
+  if (input.apply && input.decision === DECISION_ALIAS && proposal.proposal_kind === PROPOSAL_KIND_MERGE) {
+    throw FunctionalError('An alias decision on a merge proposal is recorded as advice, never applied: an alias names a single entity. Merge the subjects, or reject the proposal to keep them apart', {
+      id: proposal.internal_id,
+    });
+  }
   const adjudication: CurationAdjudication = {
     decision: input.decision,
     rationale: rationale.slice(0, 2000),

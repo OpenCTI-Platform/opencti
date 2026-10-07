@@ -118,15 +118,27 @@ describe('curation merge of a finding whose subjects changed', () => {
     expect(currentMergeConfidence).not.toHaveBeenCalled();
   });
 
-  it('applies the same check to a merge decision applied through the API, not to an alias decision', async () => {
+  it('applies the same check to a merge decision applied through the API', async () => {
     vi.mocked(storeLoadById).mockResolvedValue(mergeProposal() as never);
     vi.mocked(internalFindByIds).mockResolvedValue(subjectsUpdated(AFTER) as never);
     vi.mocked(currentMergeConfidence).mockResolvedValue(null);
     await expect(decideProposal(context, user, 'proposal-id', { decision: 'merge', rationale: 'Same actor', apply: true }))
       .rejects.toThrow('the detectors no longer find them duplicates');
-    await decideProposal(context, user, 'proposal-id', { decision: 'alias', rationale: 'A sub-group', apply: true, target_id: 'first-id' });
     expect(currentMergeConfidence).toHaveBeenCalledTimes(1);
-    expect(executeProposalAction).toHaveBeenCalledTimes(1);
+    expect(executeProposalAction).not.toHaveBeenCalled();
+  });
+
+  it('records an alias decision on a merge proposal as advice and never applies it', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(mergeProposal() as never);
+    await expect(decideProposal(context, user, 'proposal-id', { decision: 'alias', rationale: 'A sub-group', apply: true, target_id: 'first-id' }))
+      .rejects.toThrow('An alias decision on a merge proposal is recorded as advice, never applied');
+    expect(executeProposalAction).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
+    await decideProposal(context, user, 'proposal-id', { decision: 'alias', rationale: 'A sub-group' });
+    expect(executeProposalAction).not.toHaveBeenCalled();
+    expect(patchAttribute).toHaveBeenCalledWith(context, expect.anything(), 'proposal-id', expect.any(String), {
+      curation_adjudication: expect.objectContaining({ decision: 'alias', rationale: 'A sub-group', applied: false }),
+    });
   });
 
   it('completes a merge whose application already started without checking it again', async () => {

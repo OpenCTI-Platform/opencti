@@ -362,7 +362,7 @@ describe('Knowledge curation actions', () => {
     expect(twice.errors?.[0]?.message).toContain('Only applied curation proposals can be reverted');
   });
 
-  it('should refuse an alias decision while the other subject exists, record a decision without applying it, and reject on distinct', async () => {
+  it('should record an alias decision on a merge proposal without ever applying it, record a decision without applying it, and reject on distinct', async () => {
     const first = await createIntrusionSet(`${PREFIX} Decision One`);
     const second = await createIntrusionSet(`${PREFIX} Decision Two`);
     const third = await createIntrusionSet(`${PREFIX} Decision Three`);
@@ -381,23 +381,23 @@ describe('Knowledge curation actions', () => {
     const foreignTarget = await queryAsAdmin({ query: DECIDE_MUTATION, variables: { id: aliasId, input: { decision: 'alias', rationale: 'Sub-group', target_id: third.id } } });
     expect(foreignTarget.errors?.[0]?.message).toContain('The target must be one of the proposal subjects');
 
-    // An alias names a single entity: the name of a subject that still exists cannot become an alias of another one.
+    // An alias names a single entity: the names of the other subjects of a merge proposal never become aliases of the target.
     const refused = await queryAsAdmin({
       query: DECIDE_MUTATION,
       variables: { id: aliasId, input: { decision: 'alias', rationale: 'A sub-group of the same actor', apply: true, target_id: second.id } },
     });
-    expect(refused.errors?.[0]?.message).toContain('These names still belong to other entities');
+    expect(refused.errors?.[0]?.message).toContain('An alias decision on a merge proposal is recorded as advice, never applied');
     expect((await loadProposal(aliasId)).proposal_status).toBe('open');
     expect((await loadIntrusionSet(second.id)).aliases ?? []).toEqual([]);
-    // Once the other subject is gone, its name is free: the alias decision applies.
-    await deleteElementById(testContext, ADMIN_USER, first.id, ENTITY_TYPE_INTRUSION_SET);
-    const applied = await queryAsAdminWithSuccess({
+    // Recorded as advice, it leaves the proposal open and the entities as they are.
+    const advised = await queryAsAdminWithSuccess({
       query: DECIDE_MUTATION,
-      variables: { id: aliasId, input: { decision: 'alias', rationale: 'A sub-group of the same actor', apply: true, target_id: second.id } },
+      variables: { id: aliasId, input: { decision: 'alias', rationale: 'A sub-group of the same actor', target_id: second.id } },
     });
-    expect(applied.data?.curationProposalDecide.proposal_status).toBe('accepted');
-    expect(applied.data?.curationProposalDecide.adjudication.decision).toBe('alias');
-    expect((await loadIntrusionSet(second.id)).aliases).toEqual([first.name]);
+    expect(advised.data?.curationProposalDecide.proposal_status).toBe('open');
+    expect(advised.data?.curationProposalDecide.adjudication.decision).toBe('alias');
+    expect((await loadIntrusionSet(second.id)).aliases ?? []).toEqual([]);
+    expect(await loadIntrusionSet(first.id)).toBeDefined();
 
     const fourth = await createIntrusionSet(`${PREFIX} Decision Four`);
     const recordedId = await createProposal(mergeDraft(fourth, third));

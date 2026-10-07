@@ -217,7 +217,8 @@ const addAliases = async (context: AuthContext, user: AuthUser, subject: StoreOb
 
 /**
  * The names of the other subjects become aliases of the target, entities stay separate (overlapping clusters,
- * sub-groups): an "alias" decision on a merge proposal, or an alias proposal applied to another target than its own.
+ * sub-groups): an alias proposal applied to another target than its own. An "alias" decision on a merge proposal is
+ * advice only (the decision API never applies it), and is refused here too while the other subjects exist.
  */
 const applyAliasDecision = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions) => {
   const targetId = opts.targetId ?? proposal.target_id ?? proposal.subject_ids[0];
