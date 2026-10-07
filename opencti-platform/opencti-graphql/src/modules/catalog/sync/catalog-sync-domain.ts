@@ -3,11 +3,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, PLATFORM_VERSION } from '../../../config/conf';
 import { logCatalog } from '../catalog-logger';
 import { logBoundaryError } from '../../../config/module-logger';
-import { APP_MODULE } from '../../../config/error-origin';
+import { APP_MODULE, classifyErrorOrigin } from '../../../config/error-origin';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
-import { UnsupportedError } from '../../../config/errors';
+import { FunctionalError, UnknownError, UnsupportedError } from '../../../config/errors';
 import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG } from '../catalog-types';
 import {
   type CatalogContractLogoUploadOperation,
@@ -87,7 +87,7 @@ const computeCatalogLogosSyncOps = (
   for (const sourceContract of sourceCatalog.contracts) {
     const logoOperationResult = computeCatalogContractLogoUploadOperation(sourceContract, plannedLogos);
     if (logoOperationResult.result === 'failed') {
-      throw UnsupportedError(`Error while preparing logo for contract ${sourceContract.id}`, {
+      throw FunctionalError(`Error while preparing logo for contract ${sourceContract.id}`, {
         cause: logoOperationResult.error,
       });
     }
@@ -351,8 +351,12 @@ const synchronizeCatalog = async (
       usedLogos: new Set(usedLogos),
     };
   } catch (exception) {
+    // The embedded manifest ships in our build: when the sync rejects it, the bug is ours, not the input's.
+    const error = sourceConfig.kind === 'embedded' && classifyErrorOrigin(exception) === 'input'
+      ? UnknownError('Embedded catalog manifest rejected', { cause: exception })
+      : exception;
     // The other sources are still synchronized: this catch is the boundary of one source.
-    logBoundaryError('[OPENCTI-MODULE] [catalog] Error while syncing catalog', exception, {
+    logBoundaryError('[OPENCTI-MODULE] [catalog] Error while syncing catalog', error, {
       entryModule: APP_MODULE.CATALOG,
       sourceKind: sourceConfig.kind,
       sourceUri: sourceConfig.uri,
