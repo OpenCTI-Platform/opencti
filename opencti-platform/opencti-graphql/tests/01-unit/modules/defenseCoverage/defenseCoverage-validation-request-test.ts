@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { validateDefenseGaps } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
 import type { DefenseValidationInput } from '../../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -29,6 +29,15 @@ describe('Defense validation request', () => {
   ])('should refuse more than 2000 entries in %s before loading anything', async (field, input) => {
     await expect(validateDefenseGaps(context, user, input)).rejects.toThrow(`A validation request cannot hold more than 2000 entries in ${field}`);
     expect(vi.mocked(internalFindByIds)).not.toHaveBeenCalled();
+  });
+
+  it('should refuse more techniques on more platforms than the gaps limit before loading the platforms', async () => {
+    const techniques = ids(11).map((id) => ({ internal_id: id, standard_id: `${id}-standard`, revoked: false }));
+    vi.mocked(internalFindByIds).mockResolvedValueOnce(techniques as never);
+    const platformIds = Array.from({ length: 199 }, (_, index) => `platform-${index}`);
+    await expect(validateDefenseGaps(context, user, { attackPatternIds: ids(11), platformIds }))
+      .rejects.toThrow('A validation request cannot be tracked on more than 2000 gaps');
+    expect(vi.mocked(fullEntitiesList)).not.toHaveBeenCalled();
   });
 
   it('should refuse a revoked technique', async () => {

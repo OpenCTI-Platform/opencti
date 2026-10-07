@@ -1173,6 +1173,17 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (attackPatterns.length > MAX_VALIDATION_TECHNIQUES) {
     throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatterns.length });
   }
+  const tooManyGaps = (count: number) => FunctionalError(
+    `A validation request cannot be tracked on more than ${MAX_VALIDATION_GAPS} gaps: validate fewer techniques or security platforms`,
+    { count },
+  );
+  // Every technique is tracked on its aggregate gap and on every requested platform, the gaps of the backlog only add
+  // to them: this count is bounded before any target is built
+  const requestedPlatforms = uniq(input.platformIds ?? []);
+  const requestedTargetsCount = attackPatterns.length * (1 + requestedPlatforms.length);
+  if (requestedTargetsCount > MAX_VALIDATION_GAPS) {
+    throw tooManyGaps(requestedTargetsCount);
+  }
   let threat: BasicStoreEntity | undefined;
   if (input.threatId) {
     threat = await storeLoadById<BasicStoreEntity>(context, user, input.threatId, DEFENSE_THREAT_TYPES);
@@ -1185,7 +1196,6 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     }
   }
   const platforms = await findDefensePlatforms(context, user);
-  const requestedPlatforms = uniq(input.platformIds ?? []);
   const gapPlatforms = gapRefs.map((gap) => gap.platformId).filter((id) => id !== DEFENSE_AGGREGATE_PLATFORM);
   const knownPlatformIds = new Set(platforms.map((p) => p.id));
   const unknownPlatforms = uniq([...requestedPlatforms, ...gapPlatforms]).filter((id) => !knownPlatformIds.has(id));
@@ -1198,7 +1208,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     gapRefs.map((gap) => ({ attackPatternId: internalIdOf.get(gap.attackPatternId) ?? gap.attackPatternId, platformId: gap.platformId })),
   );
   if (targets.length > MAX_VALIDATION_GAPS) {
-    throw FunctionalError(`A validation request cannot be tracked on more than ${MAX_VALIDATION_GAPS} gaps: validate fewer techniques or security platforms`, { count: targets.length });
+    throw tooManyGaps(targets.length);
   }
   // A Security Coverage is only enriched by the OpenAEV connectors active when it is created: without one, the request
   // would wait forever
