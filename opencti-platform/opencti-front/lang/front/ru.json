@@ -5583,6 +5583,7 @@
   "Workflow status": "Состояние рабочего процесса",
   "Workflow successfully published": "Рабочий процесс успешно опубликован",
   "Workflow successfully updated": "Рабочий процесс успешно обновлен",
+  "Workflow transition": "Переход рабочего процесса",
   "Workflow transition started in background": "Переход рабочего процесса начался в фоновом режиме",
   "Workflow validation errors": "Ошибки проверки рабочего процесса",
   "workflow_group": "Находится в группе",

@@ -5583,6 +5583,7 @@
   "Workflow status": "工作流程状态",
   "Workflow successfully published": "工作流已成功发布",
   "Workflow successfully updated": "工作流程更新成功",
+  "Workflow transition": "工作流转换",
   "Workflow transition started in background": "工作流程过渡在后台启动",
   "Workflow validation errors": "工作流验证错误",
   "workflow_group": "所在组别",

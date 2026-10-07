@@ -5583,6 +5583,7 @@
   "Workflow status": "ワークフローのステータス",
   "Workflow successfully published": "ワークフローは正常に公開された",
   "Workflow successfully updated": "ワークフローの更新に成功",
+  "Workflow transition": "ワークフロー遷移",
   "Workflow transition started in background": "バックグラウンドでワークフロー移行を開始",
   "Workflow validation errors": "ワークフローの検証エラー",
   "workflow_group": "グループ内",

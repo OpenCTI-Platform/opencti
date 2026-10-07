@@ -5583,6 +5583,7 @@
   "Workflow status": "Workflow status",
   "Workflow successfully published": "Workflow successfully published",
   "Workflow successfully updated": "Workflow successfully updated",
+  "Workflow transition": "Workflow transition",
   "Workflow transition started in background": "Workflow transition started in background",
   "Workflow validation errors": "Workflow validation errors",
   "workflow_group": "Is in group",

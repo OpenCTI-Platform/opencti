@@ -5583,6 +5583,7 @@
   "Workflow status": "워크플로우 상태",
   "Workflow successfully published": "워크플로가 성공적으로 게시되었습니다",
   "Workflow successfully updated": "워크플로우가 성공적으로 업데이트되었습니다",
+  "Workflow transition": "워크플로 전환",
   "Workflow transition started in background": "백그라운드에서 워크플로 전환이 시작됨",
   "Workflow validation errors": "워크플로 검증 오류",
   "workflow_group": "그룹에 있음",

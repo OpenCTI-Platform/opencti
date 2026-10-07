@@ -5583,6 +5583,7 @@
   "Workflow status": "Stato del flusso di lavoro",
   "Workflow successfully published": "Flusso di lavoro pubblicato con successo",
   "Workflow successfully updated": "Flusso di lavoro aggiornato con successo",
+  "Workflow transition": "Transizione del workflow",
   "Workflow transition started in background": "Transizione del flusso di lavoro avviata in background",
   "Workflow validation errors": "Errori di convalida del flusso di lavoro",
   "workflow_group": "È nel gruppo",
