@@ -10,6 +10,8 @@ import { computeHuntPlaybookOutcome } from '../../../../src/modules/hunt/hunt-pl
 import { reportHuntRun, startHuntRuns } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
+import { listHuntConnectors } from '../../../../src/modules/hunt/hunt-dispatch';
+import type { AuthUser } from '../../../../src/types/user';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -126,6 +128,21 @@ describe('Report of a failed hunt run', () => {
     expect(updateHuntRunInformation).not.toHaveBeenCalled();
     await expect(reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'failed', error: 'HuntExecutionError: HTTP 503' } as never))
       .rejects.toThrow('The hunt run is already terminated');
+  });
+
+  it('should check the connector again under the lock of the run, and refuse its former user once it is registered again as another', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ ...running, connector_id: 'connector-1', connector_user_id: 'user-1' } as never);
+    const registeredAs = (userId: string) => [{ internal_id: 'connector-1', connector_user_id: userId }] as never;
+    const connectorUser = { id: 'user-1', capabilities: [] } as unknown as AuthUser;
+    const report = { status: 'completed', hits_count: 4, work_id: 'work-1' } as never;
+    vi.mocked(listHuntConnectors).mockClear();
+    vi.mocked(listHuntConnectors).mockResolvedValueOnce(registeredAs('user-1')).mockResolvedValueOnce(registeredAs('user-2'));
+    await expect(reportHuntRun(testContext, connectorUser, 'run-1', report)).rejects.toThrow('Only the hunt connector the run was dispatched to can report it');
+    expect(listHuntConnectors).toHaveBeenCalledTimes(2);
+    expect(patchAttribute).not.toHaveBeenCalled();
+    // Still its connector under the lock: the report is applied
+    vi.mocked(listHuntConnectors).mockResolvedValueOnce(registeredAs('user-1')).mockResolvedValueOnce(registeredAs('user-1'));
+    expect(await reportHuntRun(testContext, connectorUser, 'run-1', report)).toMatchObject({ hunt_run_status: 'completed' });
   });
 
   it('should still retry a transient failure, inconclusive until its retry', async () => {

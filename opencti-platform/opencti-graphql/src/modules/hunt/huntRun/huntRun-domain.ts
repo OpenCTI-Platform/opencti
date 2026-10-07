@@ -1315,14 +1315,23 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
   if (!reported) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
-  if (!isBypassUser(user) && !await isHuntRunConnectorCall(context, user, reported, input.work_id ?? context.workId)) {
-    throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
-  }
+  const workId = input.work_id ?? context.workId;
+  const assertConnectorCall = async (run: BasicStoreEntityHuntRun) => {
+    if (!isBypassUser(user) && !await isHuntRunConnectorCall(context, user, run, workId)) {
+      throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
+    }
+  };
+  // Checked before the lock, so that another caller never holds it, and again on the run read under it: a run whose
+  // work or connector changed in between is no longer reported by its former connector
+  await assertConnectorCall(reported);
   const status = input.status as string;
   if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED, HUNT_RUN_STATUS_TIMEOUT].includes(status)) {
     throw FunctionalError('A hunt connector can only report a running, completed, failed or timeout status', { runId, status });
   }
-  const updated = await withHuntRunTransition(context, reported.internal_id, (run) => applyHuntRunReport(context, run, status, input));
+  const updated = await withHuntRunTransition(context, reported.internal_id, async (run) => {
+    await assertConnectorCall(run);
+    return applyHuntRunReport(context, run, status, input);
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, user);
 };
 
