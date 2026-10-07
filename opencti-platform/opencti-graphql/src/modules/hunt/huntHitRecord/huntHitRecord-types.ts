@@ -8,7 +8,8 @@ interface HuntHitRecordAttributes {
   // Null for a hunt on the internet (no security platform)
   security_platform_id?: string | null;
   hit_key: string;
-  // first_seen and last_seen (base attributes): when a run first found the hit, and when a run last found it
+  // first_seen and last_seen (base attributes): when a run first found the hit, and when a run last found it, dated by
+  // the observation; updated_at: when a run finding it was last recorded, which the retention reads
   // Runs that found the hit
   times_seen: number;
   first_run_id: string;

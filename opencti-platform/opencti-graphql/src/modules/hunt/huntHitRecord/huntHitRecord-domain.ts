@@ -98,7 +98,8 @@ export const findHuntHitRecords = async (context: AuthContext, huntId: string, s
 // A record found again: one more run, the latest run and date, the values merged. A record that already counted the
 // run is left as it is: a hit reported twice by the same run, or by a run processed again after later runs, counts once.
 // Late evidence can be older than the last sighting of the hit, so last_seen keeps the later instant (both are
-// ISO-8601 UTC strings of the same format, compared as text)
+// ISO-8601 UTC strings of the same format, compared as text). updated_at is when a run was last recorded, whatever
+// the observation date: the retention reads it, so that evidence of an old event is not forgotten at the next purge
 const RECORD_UPDATE_SCRIPT = `
   def runs = new ArrayList();
   def stored = ctx._source.counted_run_ids;
@@ -110,8 +111,8 @@ const RECORD_UPDATE_SCRIPT = `
     ctx._source.times_seen = (ctx._source.times_seen == null ? 1 : ctx._source.times_seen) + 1;
     if (ctx._source.last_seen == null || ctx._source.last_seen.compareTo(params.seen_at) < 0) {
       ctx._source.last_seen = params.seen_at;
-      ctx._source.updated_at = params.seen_at;
     }
+    ctx._source.updated_at = params.recorded_at;
     ctx._source.last_run_id = params.run_id;
     runs.add(params.run_id);
     while (runs.size() > params.counted_runs_max) { runs.remove(0); }
@@ -183,6 +184,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
   }
   const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? HUNT_PLATFORM_INTERNET}`;
   const seenAt = new Date(input.seenAt).toISOString();
+  const recordedAt = new Date().toISOString();
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
     const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown);
@@ -206,13 +208,14 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
         last_run_id: input.runId,
         counted_run_ids: [input.runId],
         ioc_keys: iocKeys,
-        created_at: seenAt,
-        updated_at: seenAt,
+        created_at: recordedAt,
+        updated_at: recordedAt,
       }), ENTITY_TYPE_HUNT_HIT_RECORD);
       const { _index: _ignored, ...upsert } = await prepareElementForIndexing(element);
+      const params = { run_id: input.runId, seen_at: seenAt, recorded_at: recordedAt, ioc_keys: iocKeys, counted_runs_max: COUNTED_RUNS_MAX };
       operations.push(
         { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
-        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params: { run_id: input.runId, seen_at: seenAt, ioc_keys: iocKeys, counted_runs_max: COUNTED_RUNS_MAX } }, upsert },
+        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params }, upsert },
       );
     }
     const groups = R.splitEvery(BULK_SIZE * 2, operations);
@@ -324,8 +327,10 @@ export const findHuntKnownHits = async (context: AuthContext, user: AuthUser, hu
 };
 
 /**
- * Retention of the known hits, the one of the runs: a hit no run found since `before` is forgotten, a later run counts it
- * as new again. The records of a deleted hunt follow the same retention as its runs, kept for a hunt restored from the trash.
+ * Retention of the known hits, the one of the runs: a hit no run was recorded finding since `before` is forgotten, a later
+ * run counts it as new again. The time a run was recorded is read, never the observation date of its hits, which late
+ * evidence can set far in the past. The records of a deleted hunt follow the same retention as its runs, kept for a hunt
+ * restored from the trash.
  */
 export const purgeExpiredHuntHitRecords = async (before: string) => {
   await elRawDeleteByQuery({
@@ -337,7 +342,7 @@ export const purgeExpiredHuntHitRecords = async (before: string) => {
         bool: {
           filter: [
             { term: { 'entity_type.keyword': ENTITY_TYPE_HUNT_HIT_RECORD } },
-            { range: { last_seen: { lt: before } } },
+            { range: { updated_at: { lt: before } } },
           ],
         },
       },
