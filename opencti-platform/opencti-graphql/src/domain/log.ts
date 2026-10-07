@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { elCount, elPaginate, type PaginateOpts, elCardinalityCount } from '../database/engine';
-import { distributionHistory, timeSeriesHistory } from '../database/middleware';
+import { distributionHistory, timeSeriesBreakdownHistory, timeSeriesHistory } from '../database/middleware';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -88,6 +88,11 @@ export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args
     const types = computeAuditTypes(user, timeSeriesParameter.types);
     return { data: timeSeriesHistory(context, user, { ...args, historyFiltering: true, ...timeSeriesParameter, types }) };
   }));
+};
+
+export const auditsTimeSeriesBreakdown = (context: AuthContext, user: AuthUser, args: any) => {
+  const types = computeAuditTypes(user, args.types);
+  return timeSeriesBreakdownHistory(context, user, { ...args, types, historyFiltering: true });
 };
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {

@@ -169,7 +169,7 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string) => {
   // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
   // emitted instants as UTC: everything here must stay anchored on UTC, never on the
   // time zone of the platform process.
@@ -209,16 +209,23 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
   const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
   const elementsOfInterval = formattedEndDate.diff(formattedStartDate, duration);
+  return { startDateParsed, startOfInterval, dateFormat, duration, elementsOfInterval };
+};
+
+export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
+  return computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+};
+
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+  const { startDateParsed, startOfInterval, dateFormat, duration, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
+  // Last value wins on duplicated dates, as the former linear lookup did
+  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
     const workDate = startDateParsed.clone().add(i, duration);
     // Looking for the value
-    let dataValue = 0;
-    for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === workDate.format(dateFormat)) {
-        dataValue = data[j].value;
-      }
-    }
+    const formattedDate = workDate.format(dateFormat);
+    const dataValue = valuesByDate.has(formattedDate) ? valuesByDate.get(formattedDate) : 0;
     // Cloned: startOf() mutates, and workDate is still needed unmodified above.
     const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
     newData[i] = {

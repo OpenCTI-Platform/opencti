@@ -27,6 +27,8 @@ import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import StixCoreObjectsTimeSeriesBreakdown from '../../private/components/common/stix_core_objects/StixCoreObjectsTimeSeriesBreakdown';
+import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -49,6 +51,18 @@ const DashboardEntitiesViz = ({
   refreshRate,
 }: DashboardEntitiesVizProps) => {
   const isDraftWidget = isDraftWorkspaceWidget(widget);
+
+  if (isWidgetBreakdownActive(widget, host)) {
+    return (
+      <StixCoreObjectsTimeSeriesBreakdown
+        widget={widget}
+        popover={popover}
+        host={host}
+        refreshRate={refreshRate}
+        config={config}
+      />
+    );
+  }
 
   switch (widget.type) {
     case 'bookmark':
