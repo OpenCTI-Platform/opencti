@@ -2351,3 +2351,39 @@ search beside it is the library `SearchField` at `md`.
 the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
+
+## 64. No `Alert` and no `Hero` at the pinned version, so status messages and first-use states stay on MUI
+
+**Raised** while applying the UX directive of the knowledge time machine (Changes tab,
+Landscape changes): the info, warning and error messages of a comparison or an as-of
+view, and the first-use state of Landscape changes, are meant to be a library `Alert`
+with a `title` and an action, and a `Hero` with a primary action.
+
+**Today.** The pinned version (1.1.0) ships neither. These surfaces use MUI `Alert`
+with its `action` slot holding a library `Button`, so the next action of every empty
+or failed state is still offered.
+
+**Ask.** An `Alert` (tone, title, description, one action) and a `Hero` (illustration,
+title, description, primary and secondary action) in the library.
+
+**Removal test.** Convert `EntityDiffTab`, `EntityAsOfView`, `EntityAsOfSection`,
+`LandscapeChanges` and `LandscapeChangesResults`: an empty period still offers
+"Compare the last 90 days" and a scope without saved filter still offers "Choose a scope".
+
+## 65. A `Chip` closes any tooltip around it, because its own clipped-label tooltip opens on hover
+
+**Raised** while capturing the "New since your last visit" chip of the knowledge time machine, whose
+tooltip lists what changed since the last visit: the tooltip opened, then closed within a second while
+the pointer stayed on the chip.
+
+**Today.** `Chip` wraps itself in a `Tooltip` that shows its label when it is clipped. Hovering the
+chip requests that tooltip to open, and the request alone closes every other open tooltip (the
+tooltips close each other on opening), even when the label is not clipped and nothing is shown.
+`SinceLastVisitChips` keeps its tooltip open by controlling it from the pointer and the focus of the
+chip.
+
+**Ask.** Only request the clipped-label tooltip when the label is clipped, or let a caller turn it off
+(for example `showLabelTooltip={false}`) when the chip is the trigger of another tooltip.
+
+**Removal test.** Make the tooltip of `SinceLastVisitChips` uncontrolled again, hover the chip for
+two seconds: the breakdown stays visible.

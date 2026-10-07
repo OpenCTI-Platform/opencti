@@ -18,6 +18,7 @@ const RootNote = lazy(() => import('./notes/Root'));
 const RootOpinion = lazy(() => import('./opinions/Root'));
 const ExternalReferences = lazy(() => import('./ExternalReferences'));
 const RootExternalReference = lazy(() => import('./external_references/Root'));
+const LandscapeChanges = lazy(() => import('./landscape_changes/LandscapeChanges'));
 
 const Root = () => {
   let redirect;
@@ -90,6 +91,10 @@ const Root = () => {
         <Route
           path="/external_references/:externalReferenceId/*"
           element={boundaryWrapper(RootExternalReference)}
+        />
+        <Route
+          path="/landscape_changes"
+          element={boundaryWrapper(LandscapeChanges)}
         />
       </Routes>
     </Suspense>

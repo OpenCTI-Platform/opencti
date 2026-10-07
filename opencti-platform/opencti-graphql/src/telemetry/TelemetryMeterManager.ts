@@ -331,6 +331,29 @@ export class TelemetryMeterManager {
   ingestionObjectsProcessedCount = 0;
   // endregion Product adoption
 
+  // region Knowledge time machine
+  // Number of as-of views computed
+  timeMachineAsOfCount = 0;
+
+  // Number of entity diffs computed
+  timeMachineDiffCount = 0;
+
+  // Number of landscape diffs computed
+  landscapeDiffCount = 0;
+
+  // Number of last visit markers recorded
+  timeMachineVisitCount = 0;
+
+  // Number of change digests sent (one per recipient and period, once every notifier of the recipient received it)
+  changeDigestSentCount = 0;
+
+  // Number of change digest triggers
+  changeDigestTriggersCount = 0;
+
+  // Current number of knowledge snapshots
+  knowledgeSnapshotsCount = 0;
+  // endregion Knowledge time machine
+
   // region Stream storage
   // Current total number of stream events offloaded to file storage (events too large for redis)
   offloadedStreamEventsCount = 0;
@@ -671,6 +694,34 @@ export class TelemetryMeterManager {
     this.ingestionObjectsProcessedCount = n;
   }
 
+  setTimeMachineAsOfCount(n: number) {
+    this.timeMachineAsOfCount = n;
+  }
+
+  setTimeMachineDiffCount(n: number) {
+    this.timeMachineDiffCount = n;
+  }
+
+  setLandscapeDiffCount(n: number) {
+    this.landscapeDiffCount = n;
+  }
+
+  setTimeMachineVisitCount(n: number) {
+    this.timeMachineVisitCount = n;
+  }
+
+  setChangeDigestSentCount(n: number) {
+    this.changeDigestSentCount = n;
+  }
+
+  setChangeDigestTriggersCount(n: number) {
+    this.changeDigestTriggersCount = n;
+  }
+
+  setKnowledgeSnapshotsCount(n: number) {
+    this.knowledgeSnapshotsCount = n;
+  }
+
   setOffloadedStreamEventsCount(n: number) {
     this.offloadedStreamEventsCount = n;
   }
@@ -802,6 +853,15 @@ export class TelemetryMeterManager {
     this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
     this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
     this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');
+    // endregion
+    // region Knowledge time machine
+    this.registerGauge('time_machine_as_of_count', 'number of as-of views computed', 'timeMachineAsOfCount');
+    this.registerGauge('time_machine_diff_count', 'number of entity diffs computed', 'timeMachineDiffCount');
+    this.registerGauge('landscape_diff_count', 'number of landscape diffs computed', 'landscapeDiffCount');
+    this.registerGauge('time_machine_visit_count', 'number of last visit markers recorded', 'timeMachineVisitCount');
+    this.registerGauge('change_digest_sent_count', 'number of change digests sent', 'changeDigestSentCount');
+    this.registerGauge('change_digest_triggers_count', 'number of change digest triggers', 'changeDigestTriggersCount');
+    this.registerGauge('knowledge_snapshots_count', 'current number of knowledge snapshots', 'knowledgeSnapshotsCount');
     // endregion
     // region Stream storage
     this.registerGauge('offloaded_stream_events_count', 'current total number of stream events offloaded to file storage (too large for redis)', 'offloadedStreamEventsCount');

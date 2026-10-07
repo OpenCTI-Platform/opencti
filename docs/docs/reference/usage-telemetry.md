@@ -108,7 +108,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of security coverages results
 - The number of 'has covered' relationships
 - The number of activated inference rules
-- The number of notification triggers, broken down by type (`live`, `digest`)
+- The number of notification triggers, broken down by type (`live`, `digest`); change digests are counted on their own, under [Knowledge time machine](#knowledge-time-machine)
 - The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)
 - The number of notifications sent, broken down by channel (`email`, `webhook`, `ui`)
 - The number of export generations requested
@@ -139,6 +139,16 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of security coverages
 - The number of PIRs
 - The number of decay rules created
+
+### Knowledge time machine
+
+- The number of entity views rebuilt at a past date ("View as of")
+- The number of entity diffs computed
+- The number of landscape diffs computed (Landscape changes page and widgets)
+- The number of last visit markers recorded ("new since your last visit")
+- The number of change digests sent (one per recipient and period, counted once every notifier of the recipient received it)
+- The number of change digest triggers
+- The number of knowledge snapshots
 
 ### Retention and activity
 

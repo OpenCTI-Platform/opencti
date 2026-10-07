@@ -11,6 +11,7 @@ Users can select from 15 diverse visualization options to highlight different as
 - Line and Area views: Ideal for visualizing activity volumes over time.
 - Horizontal bar views: Designed to identify top entities that best satisfy applied filters (e.g., top malware targeting the Finance sector).
 - Tree views: Useful for comparing activity volumes.
+- Landscape views (New relationships by type, New techniques by tactic, Top changed entities): show what changed on the entities matching the widget filters over the period of the dashboard. See [Landscape widgets](time-machine.md#landscape-widgets).
 - ...
 
 ![Widget visualization](assets/widget-visualization.png)

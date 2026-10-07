@@ -1,0 +1,316 @@
+# Knowledge time machine: as-of views, entity diffs, landscape diffs, "new since your last visit" and change digests
+
+enum TimeMachineAnchor {
+    current
+    snapshot
+}
+
+enum TimeMachineRelationshipAction {
+    added
+    removed
+    revoked
+    unrevoked
+    confidence_changed
+}
+
+enum TimeMachineContainerObjectAction {
+    added
+    removed
+}
+
+type TimeMachineValue {
+    raw: String!
+    display: String!
+    entity_type: String
+    deleted: Boolean!
+    restricted: Boolean!
+}
+
+type TimeMachineAttribute {
+    key: String!
+    label: String!
+    type: String!
+    multiple: Boolean!
+    values: [TimeMachineValue!]!
+}
+
+type TimeMachineRelationshipCount {
+    relationship_type: String!
+    count: Int!
+}
+
+type EntityAsOf {
+    entity_id: ID!
+    entity_type: String!
+    date: DateTime!
+    representative: String!
+    exists: Boolean!
+    deleted: Boolean!
+    deleted_at: DateTime
+    restricted: Boolean!
+    complete: Boolean!
+    warnings: [String!]!
+    anchor: TimeMachineAnchor!
+    anchor_date: DateTime!
+    replayed_events: Int!
+    history_start: DateTime
+    attributes: [TimeMachineAttribute!]!
+    relationships: [TimeMachineRelationshipCount!]!
+    relationships_total: Int!
+    container_objects_count: Int
+}
+
+type EntityDiffAttributeChange {
+    key: String!
+    label: String!
+    type: String!
+    multiple: Boolean!
+    before: [TimeMachineValue!]!
+    after: [TimeMachineValue!]!
+    added: [TimeMachineValue!]!
+    removed: [TimeMachineValue!]!
+    changed_at: DateTime
+    changed_by: String
+    changes_count: Int!
+}
+
+type EntityDiffRelationshipChange {
+    relationship_id: ID!
+    relationship_type: String!
+    action: TimeMachineRelationshipAction!
+    at: DateTime!
+    is_source: Boolean!
+    target_id: String
+    target_type: String
+    target_name: String!
+    target_deleted: Boolean!
+    target_restricted: Boolean!
+    confidence_before: Int
+    confidence_after: Int
+    changed_by: String
+}
+
+type EntityDiffContainerObjectChange {
+    object_id: String!
+    object_type: String
+    object_name: String!
+    action: TimeMachineContainerObjectAction!
+    at: DateTime
+    deleted: Boolean!
+    restricted: Boolean!
+}
+
+type EntityDiffSummary {
+    attributes_changed: Int!
+    relationships_added: Int!
+    relationships_removed: Int!
+    relationships_revoked: Int!
+    relationships_confidence_changed: Int!
+    container_objects_added: Int!
+    container_objects_removed: Int!
+    confidence_before: Int
+    confidence_after: Int
+    score_before: Int
+    score_after: Int
+    relationships_added_by_type: [TimeMachineRelationshipCount!]!
+    relationships_removed_by_type: [TimeMachineRelationshipCount!]!
+}
+
+type EntityDiff {
+    entity_id: ID!
+    entity_type: String!
+    representative: String!
+    from: DateTime!
+    to: DateTime!
+    existed_at_from: Boolean!
+    exists_at_to: Boolean!
+    restricted: Boolean!
+    complete: Boolean!
+    warnings: [String!]!
+    summary: EntityDiffSummary!
+    attributes: [EntityDiffAttributeChange!]!
+    relationships: [EntityDiffRelationshipChange!]!
+    relationships_truncated: Boolean!
+    container_objects: [EntityDiffContainerObjectChange!]!
+    container_objects_truncated: Boolean!
+}
+
+type TimeMachineTimelineEvent {
+    date: DateTime!
+    event_scope: String!
+}
+
+type TimeMachineTimeline {
+    entity_id: ID!
+    created_at: DateTime
+    history_start: DateTime
+    events: [TimeMachineTimelineEvent!]!
+    events_truncated: Boolean!
+    snapshots: [DateTime!]!
+    max_replay_days: Int!
+}
+
+type SinceLastVisit {
+    entity_id: ID!
+    first_visit: Boolean!
+    reference_date: DateTime
+    last_seen_at: DateTime
+    new_relationships: Int!
+    updates: Int!
+    new_container_objects: Int!
+}
+
+# Landscape diff
+enum LandscapeDiffStatus {
+    pending
+    running
+    complete
+    failed
+}
+
+enum LandscapeDiffGroupBy {
+    entity_type
+    relationship_type
+    tactic
+}
+
+type LandscapeDiffBucket {
+    key: String!
+    label: String!
+    count: Int!
+}
+
+type LandscapeDiffNamedItem {
+    id: ID!
+    standard_id: String
+    entity_type: String!
+    name: String!
+    # ATT&CK external id, techniques only
+    x_mitre_id: String
+    count: Int!
+}
+
+type LandscapeDiffEntity {
+    entity_id: ID!
+    standard_id: String
+    entity_type: String!
+    name: String!
+    created_in_period: Boolean!
+    revoked_in_period: Boolean!
+    attributes_changed: Int!
+    relationships_added: Int!
+    relationships_removed: Int!
+    relationships_revoked: Int!
+    relationships_confidence_changed: Int!
+    confidence_before: Int
+    confidence_after: Int
+    score_before: Int
+    score_after: Int
+    change_score: Int!
+}
+
+type LandscapeDiffAggregates {
+    entities_in_scope: Int!
+    entities_changed: Int!
+    new_entities: Int!
+    new_entities_by_type: [LandscapeDiffBucket!]!
+    new_relationships: Int!
+    new_relationships_by_type: [LandscapeDiffBucket!]!
+    removed_relationships: Int!
+    revocations: Int!
+    confidence_changes: Int!
+    score_changes: Int!
+    new_techniques_by_tactic: [LandscapeDiffBucket!]!
+    new_techniques: [LandscapeDiffNamedItem!]!
+    new_techniques_count: Int!
+    new_malware: [LandscapeDiffNamedItem!]!
+    new_malware_count: Int!
+    new_tools: [LandscapeDiffNamedItem!]!
+    new_tools_count: Int!
+    new_victims_by_sector: [LandscapeDiffBucket!]!
+    new_victims_by_country: [LandscapeDiffBucket!]!
+    new_victims_by_region: [LandscapeDiffBucket!]!
+    new_infrastructure: [LandscapeDiffNamedItem!]!
+    new_infrastructure_count: Int!
+    new_indicators_count: Int!
+    groups: [LandscapeDiffBucket!]!
+}
+
+type LandscapeDiff {
+    id: ID!
+    status: LandscapeDiffStatus!
+    progress: Int!
+    total: Int!
+    from: DateTime!
+    to: DateTime!
+    group_by: LandscapeDiffGroupBy!
+    filters: String
+    saved_filter_id: String
+    custom_view_id: String
+    scope_entity_types: [String!]!
+    created_at: DateTime!
+    updated_at: DateTime!
+    expires_at: DateTime!
+    error: String
+    truncated: Boolean!
+    aggregates: LandscapeDiffAggregates
+    entities: [LandscapeDiffEntity!]!
+}
+
+type LandscapeDiffSummary {
+    from: DateTime!
+    to: DateTime!
+    scope_entity_types: [String!]!
+    computed_at: DateTime!
+    truncated: Boolean!
+    aggregates: LandscapeDiffAggregates!
+    entities: [LandscapeDiffEntity!]!
+}
+
+input LandscapeDiffInput {
+    filters: String
+    saved_filter_id: String
+    custom_view_id: String
+    entity_types: [String!]
+    from: DateTime!
+    to: DateTime!
+    group_by: LandscapeDiffGroupBy
+}
+
+# Change digests (knowledge triggers)
+extend enum TriggerType {
+    change_digest
+}
+
+extend type Trigger {
+    scope_entity_types: [String!]
+}
+
+input TriggerChangeDigestAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    filters: String
+    saved_filter_id: String
+    scope_entity_types: [String!]
+    period: DigestPeriod!
+    trigger_time: String
+    notifiers: [StixRef!]!
+    recipients: [String!]
+}
+
+extend type Query {
+    entityAsOf(id: String!, date: DateTime!): EntityAsOf @auth(for: [KNOWLEDGE])
+    entityDiff(id: String!, from: DateTime!, to: DateTime!): EntityDiff @auth(for: [KNOWLEDGE])
+    entityTimeMachineTimeline(id: String!): TimeMachineTimeline @auth(for: [KNOWLEDGE])
+    entitiesSinceLastVisit(ids: [String!]!): [SinceLastVisit!]! @auth(for: [KNOWLEDGE])
+    landscapeDiff(id: ID!): LandscapeDiff @auth(for: [KNOWLEDGE])
+    landscapeDiffSummary(input: LandscapeDiffInput!): LandscapeDiffSummary @auth(for: [KNOWLEDGE])
+}
+
+extend type Mutation {
+    entityVisitRecord(id: String!): SinceLastVisit @auth(for: [KNOWLEDGE])
+    userVisitsPurge: Int @auth
+    userVisitsPurgeForUser(userId: ID!): Int @auth(for: [SETTINGS_SETACCESSES])
+    landscapeDiffRun(input: LandscapeDiffInput!): LandscapeDiff @auth(for: [KNOWLEDGE])
+    triggerKnowledgeChangeDigestAdd(input: TriggerChangeDigestAddInput!): Trigger @auth
+}

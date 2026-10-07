@@ -132,6 +132,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
           </Security>
         )}
         enableSuggestions={false}
+        enableTimeMachine
         disableSharing={true}
         enableQuickSubscription
         redirectToContent={true}

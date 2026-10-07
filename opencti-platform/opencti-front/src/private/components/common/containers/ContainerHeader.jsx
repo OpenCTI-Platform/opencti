@@ -15,6 +15,7 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { resolveLink } from '../../../../utils/Entity';
+import { CHANGES_SECTION_AS_OF, changesSearch } from '../time_machine/timeMachineUtils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useGranted, {
   AUTOMATION,
@@ -451,6 +452,7 @@ const ContainerHeader = (props) => {
     enableEnrollPlaybook,
     redirectToContent,
     enableEnricher,
+    enableTimeMachine,
   } = props;
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
@@ -492,6 +494,9 @@ const ContainerHeader = (props) => {
     const entityLink = `${resolveLink(container.entity_type)}/${container.id}`;
     const targetTab = redirectToContent ? 'content' : 'files';
     navigate(`${entityLink}/${targetTab}?${urlParams}`);
+  };
+  const handleViewAsOf = () => {
+    navigate(`${resolveLink(container.entity_type)}/${container.id}/changes?${changesSearch(CHANGES_SECTION_AS_OF)}`);
   };
 
   // containerDefault style
@@ -557,7 +562,8 @@ const ContainerHeader = (props) => {
 
   const displayPopoverMenu = (displaySharing && !displaySharingButton && isSharingGranted)
     || (displayAuthorizedMembers && !displayAuthorizedMembersButton && isAuthorizedMembersGranted)
-    || (displayEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) || (!knowledge && canDelete);
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) || (!knowledge && canDelete)
+    || enableTimeMachine;
 
   const title = container.name
     || container.attribute_abstract
@@ -730,6 +736,15 @@ const ContainerHeader = (props) => {
                     <PopoverMenu>
                       {({ closeMenu }) => (
                         <Box>
+                          {enableTimeMachine && (
+                            <MenuItem onClick={() => {
+                              handleViewAsOf();
+                              closeMenu();
+                            }}
+                            >
+                              {t_i18n('View as of')}
+                            </MenuItem>
+                          )}
                           {displaySharing && !displaySharingButton && (
                             <StixCoreObjectMenuItemUnderEE
                               setOpen={setOpenSharing}

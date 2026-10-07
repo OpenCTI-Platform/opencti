@@ -114,6 +114,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           redirectToContent={false}
           disableAuthorizedMembers={true}
           enableEnricher={false}
+          enableTimeMachine
         />
         <StixDomainObjectMain
           entity={observedData}

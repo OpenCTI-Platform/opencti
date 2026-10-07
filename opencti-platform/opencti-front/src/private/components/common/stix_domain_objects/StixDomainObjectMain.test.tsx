@@ -20,6 +20,7 @@ const TABS_TEST_DATA = [
   ['Entities', 'entities'],
   ['Observables', 'observables'],
   ['Data', 'files'],
+  ['Changes', 'changes'],
   ['History', 'history'],
 ] as const satisfies [string, StixDomainObjectTabsBoxTab][];
 
@@ -41,6 +42,24 @@ describe('StixDomainObjectMain', () => {
     );
     await user.click(screen.getByRole('tab', { name: new RegExp(tabName, 'i') }));
     expect(screen.getByText(pageContent)).toBeInTheDocument();
+  });
+
+  it('adds the Changes tab to an entity whose history lives in another tab', () => {
+    testRender(
+      <StixDomainObjectMain
+        entity={{
+          id: '856251e7-f040-4739-8dce-15b90027e4dd',
+          entity_type: 'Report',
+        }}
+        pages={{ overview: 'overview', files: <span>Data and history</span> }}
+        basePath=""
+        enableTimeMachine
+      />,
+      {
+        route: '/',
+      },
+    );
+    expect(screen.getByRole('tab', { name: /Changes/i })).toBeInTheDocument();
   });
 
   it('renders extra routes', () => {

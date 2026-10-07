@@ -513,11 +513,40 @@ Environment variables:
 | garbage_collection_manager:deleted_retention_days    | GARBAGE_COLLECTION_MANAGER__DELETED_RETENTION_DAYS    | 7                                | Days after which elements in trash are deleted                                                                                                 |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
 | telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_KEY                           | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
+| -                                                    | -                                                     | -                                | -                                                                                                                                              |
+| snapshot_manager:enabled                             | SNAPSHOT_MANAGER__ENABLED                             | `true`                           | Enable/disable the knowledge snapshot manager (time machine)                                                                                   |
+| snapshot_manager:lock_key                            | SNAPSHOT_MANAGER__LOCK_KEY                            | snapshot_manager_lock            | Lock key for the manager in Redis                                                                                                              |
+| snapshot_manager:interval                            | SNAPSHOT_MANAGER__INTERVAL                            | 3600000                          | Interval to check if a new snapshot window is reached (in ms)                                                                                  |
+| snapshot_manager:period_days                         | SNAPSHOT_MANAGER__PERIOD_DAYS                         | 7                                | Number of days between two snapshots of a changed entity                                                                                       |
+| snapshot_manager:max_entities_per_run                | SNAPSHOT_MANAGER__MAX_ENTITIES_PER_RUN                | 10000                            | Maximum number of entities snapshotted per run, retries included (the window is resumed at the next run; minimum 100)                         |
+| snapshot_manager:batch_size                          | SNAPSHOT_MANAGER__BATCH_SIZE                          | 100                              | Number of entities snapshotted at once                                                                                                         |
+| snapshot_manager:max_relationship_ids_per_type       | SNAPSHOT_MANAGER__MAX_RELATIONSHIP_IDS_PER_TYPE       | 500                              | Maximum number of relationship identifiers kept per relationship type in a snapshot                                                            |
+| snapshot_manager:retention_days                      | SNAPSHOT_MANAGER__RETENTION_DAYS                      | 0                                | Days after which snapshots are deleted (0: follow the History retention rules only)                                                            |
 
 
 !!! note "Manager's duties"
     
     A description of each manager's duties is available on [a dedicated page](advanced/managers.md).
+
+#### Time machine
+
+These parameters bound the computations of the [knowledge time machine](../usage/time-machine.md).
+
+| Parameter                                  | Environment variable                         | Default value | Description                                                                                          |
+|:-------------------------------------------|:---------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------|
+| time_machine:max_replay_events             | TIME_MACHINE__MAX_REPLAY_EVENTS              | 5000          | Maximum number of history changes replayed to rebuild an entity at a date                            |
+| time_machine:max_replay_days               | TIME_MACHINE__MAX_REPLAY_DAYS                | 90            | Replay window (in days) beyond which the reconstruction is flagged as relying on a long replay       |
+| time_machine:max_diff_relationships        | TIME_MACHINE__MAX_DIFF_RELATIONSHIPS         | 500           | Maximum number of relationship changes listed when comparing two dates in the Changes tab            |
+| time_machine:visit_session_minutes         | TIME_MACHINE__VISIT_SESSION_MINUTES          | 30            | Duration of a visit session for "new since your last visit"                                          |
+| time_machine:visit_retention_days          | TIME_MACHINE__VISIT_RETENTION_DAYS           | 365           | Days after which a last visit marker expires                                                         |
+| time_machine:landscape_max_entities        | TIME_MACHINE__LANDSCAPE_MAX_ENTITIES         | 1000          | Maximum number of entities covered by a landscape diff                                               |
+| time_machine:landscape_batch_size          | TIME_MACHINE__LANDSCAPE_BATCH_SIZE           | 100           | Number of entities processed at once by a landscape diff                                             |
+| time_machine:landscape_max_relationships   | TIME_MACHINE__LANDSCAPE_MAX_RELATIONSHIPS    | 20000         | Maximum number of new relationships read by a landscape diff                                         |
+| time_machine:landscape_cache_ttl           | TIME_MACHINE__LANDSCAPE_CACHE_TTL            | 3600          | Duration (in seconds) during which a landscape diff result is kept                                   |
+| time_machine:landscape_max_running_per_user | TIME_MACHINE__LANDSCAPE_MAX_RUNNING_PER_USER | 1             | Maximum number of landscape diffs computed at the same time for a user, across all platform nodes    |
+| time_machine:landscape_max_running         | TIME_MACHINE__LANDSCAPE_MAX_RUNNING          | 4             | Maximum number of landscape diffs computed at the same time, across all platform nodes               |
+| time_machine:widget_max_entities           | TIME_MACHINE__WIDGET_MAX_ENTITIES            | 200           | Maximum number of entities covered by a landscape widget                                             |
+| time_machine:change_digest_max_entities    | TIME_MACHINE__CHANGE_DIGEST_MAX_ENTITIES     | 500           | Maximum number of entities covered by a change digest                                                |
 
 ## Worker and connector
 

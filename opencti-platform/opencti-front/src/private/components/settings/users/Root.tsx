@@ -11,6 +11,7 @@ import type { RootUserEditionQuery } from './__generated__/RootUserEditionQuery.
 import ConvertUser from './ConvertUser';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
+import UserVisitsPurgeDialog from './UserVisitsPurgeDialog';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -115,6 +116,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
+  const [openPurgeVisits, setOpenPurgeVisits] = useState(false);
 
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
@@ -137,20 +139,38 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
                 userId={userId}
                 onClose={() => {}}
               />
-              {canDelete && (
+              {(canDelete || hasSetAccess) && (
                 <PopoverMenu>
                   {({ closeMenu }) => (
                     <Box>
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
+                      {hasSetAccess && (
+                        <MenuItem onClick={() => {
+                          setOpenPurgeVisits(true);
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Purge the last visit markers')}
+                        </MenuItem>
+                      )}
+                      {canDelete && (
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      )}
                     </Box>
                   )}
                 </PopoverMenu>
+              )}
+              {hasSetAccess && (
+                <UserVisitsPurgeDialog
+                  userId={data.id}
+                  isOpen={openPurgeVisits}
+                  handleClose={() => setOpenPurgeVisits(false)}
+                />
               )}
               {hasSetAccess && (
                 <ConvertUser

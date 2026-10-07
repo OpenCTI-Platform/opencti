@@ -110,6 +110,7 @@ const RootNote = () => {
                         redirectToContent={false}
                         disableAuthorizedMembers={true}
                         enableEnricher={true}
+                        enableTimeMachine
                         enableEnrollPlaybook={true}
                       />
                     )}
@@ -129,6 +130,7 @@ const RootNote = () => {
                       redirectToContent={false}
                       disableAuthorizedMembers={true}
                       enableEnricher={true}
+                      enableTimeMachine
                       enableEnrollPlaybook={true}
                     />
                   </CollaborativeSecurity>

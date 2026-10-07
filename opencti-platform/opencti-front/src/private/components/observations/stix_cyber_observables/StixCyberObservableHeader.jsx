@@ -3,11 +3,14 @@ import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Security from '../../../../utils/Security';
+import { resolveLink } from '../../../../utils/Entity';
+import { CHANGES_SECTION_AS_OF, changesSearch } from '../../common/time_machine/timeMachineUtils';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
@@ -29,6 +32,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const [openDelete, setOpenDelete] = useState(false);
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = !draftContext || currentDraftAccessRight.canEdit;
@@ -47,10 +51,15 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const displayPopoverMenu = (displayEnrollPlaybook && isEnrichPlaybookGranted)
+  // Object actions of the popover, next to the time machine entry every observable has
+  const displayObjectActions = (displayEnrollPlaybook && isEnrichPlaybookGranted)
     || isKnowledgeEnricher
     || isKnowledgeUpdater
     || canDelete;
+
+  const handleViewAsOf = () => {
+    navigate(`${resolveLink(stixCyberObservable.entity_type)}/${stixCyberObservable.id}/changes?${changesSearch(CHANGES_SECTION_AS_OF)}`);
+  };
 
   return (
     <HeaderMainEntityLayout
@@ -72,10 +81,18 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
               />
             )
           }
-          {displayPopoverMenu && (
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
+          {/* Always displayed: every observable has a time machine (View as of) */}
+          <PopoverMenu>
+            {({ closeMenu }) => (
+              <Box>
+                <MenuItem onClick={() => {
+                  handleViewAsOf();
+                  closeMenu();
+                }}
+                >
+                  {t_i18n('View as of')}
+                </MenuItem>
+                {displayObjectActions && (
                   <StixCoreObjectMenuItemUnderEE
                     setOpen={setOpenSharing}
                     title={t_i18n('Share with an organization')}
@@ -83,29 +100,28 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
                     needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                     allowInDraft={true}
                   />
-                  {displayEnrollPlaybook && (
-                    <StixCoreObjectMenuItemUnderEE
-                      title={t_i18n('Enroll in playbook')}
-                      setOpen={setOpenEnrollPlaybook}
-                      handleCloseMenu={closeMenu}
-                      needs={[AUTOMATION]}
-                      matchAll
-                    />
-                  )}
-                  {canDelete && (
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  )}
-                </Box>
-              )}
-            </PopoverMenu>
-
-          )}
+                )}
+                {displayEnrollPlaybook && (
+                  <StixCoreObjectMenuItemUnderEE
+                    title={t_i18n('Enroll in playbook')}
+                    setOpen={setOpenEnrollPlaybook}
+                    handleCloseMenu={closeMenu}
+                    needs={[AUTOMATION]}
+                    matchAll
+                  />
+                )}
+                {canDelete && (
+                  <MenuItem onClick={() => {
+                    handleOpenDelete();
+                    closeMenu();
+                  }}
+                  >
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                )}
+              </Box>
+            )}
+          </PopoverMenu>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
               stixCyberObservableId={stixCyberObservable.id}

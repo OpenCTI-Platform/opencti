@@ -8895,6 +8895,108 @@ export enum EmailTemplateOrdering {
   Name = 'name'
 }
 
+export type EntityAsOf = {
+  __typename?: 'EntityAsOf';
+  anchor: TimeMachineAnchor;
+  anchor_date: Scalars['DateTime']['output'];
+  attributes: Array<TimeMachineAttribute>;
+  complete: Scalars['Boolean']['output'];
+  container_objects_count?: Maybe<Scalars['Int']['output']>;
+  date: Scalars['DateTime']['output'];
+  deleted: Scalars['Boolean']['output'];
+  deleted_at?: Maybe<Scalars['DateTime']['output']>;
+  entity_id: Scalars['ID']['output'];
+  entity_type: Scalars['String']['output'];
+  exists: Scalars['Boolean']['output'];
+  history_start?: Maybe<Scalars['DateTime']['output']>;
+  relationships: Array<TimeMachineRelationshipCount>;
+  relationships_total: Scalars['Int']['output'];
+  replayed_events: Scalars['Int']['output'];
+  representative: Scalars['String']['output'];
+  restricted: Scalars['Boolean']['output'];
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type EntityDiff = {
+  __typename?: 'EntityDiff';
+  attributes: Array<EntityDiffAttributeChange>;
+  complete: Scalars['Boolean']['output'];
+  container_objects: Array<EntityDiffContainerObjectChange>;
+  container_objects_truncated: Scalars['Boolean']['output'];
+  entity_id: Scalars['ID']['output'];
+  entity_type: Scalars['String']['output'];
+  existed_at_from: Scalars['Boolean']['output'];
+  exists_at_to: Scalars['Boolean']['output'];
+  from: Scalars['DateTime']['output'];
+  relationships: Array<EntityDiffRelationshipChange>;
+  relationships_truncated: Scalars['Boolean']['output'];
+  representative: Scalars['String']['output'];
+  restricted: Scalars['Boolean']['output'];
+  summary: EntityDiffSummary;
+  to: Scalars['DateTime']['output'];
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export type EntityDiffAttributeChange = {
+  __typename?: 'EntityDiffAttributeChange';
+  added: Array<TimeMachineValue>;
+  after: Array<TimeMachineValue>;
+  before: Array<TimeMachineValue>;
+  changed_at?: Maybe<Scalars['DateTime']['output']>;
+  changed_by?: Maybe<Scalars['String']['output']>;
+  changes_count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  multiple: Scalars['Boolean']['output'];
+  removed: Array<TimeMachineValue>;
+  type: Scalars['String']['output'];
+};
+
+export type EntityDiffContainerObjectChange = {
+  __typename?: 'EntityDiffContainerObjectChange';
+  action: TimeMachineContainerObjectAction;
+  at?: Maybe<Scalars['DateTime']['output']>;
+  deleted: Scalars['Boolean']['output'];
+  object_id: Scalars['String']['output'];
+  object_name: Scalars['String']['output'];
+  object_type?: Maybe<Scalars['String']['output']>;
+  restricted: Scalars['Boolean']['output'];
+};
+
+export type EntityDiffRelationshipChange = {
+  __typename?: 'EntityDiffRelationshipChange';
+  action: TimeMachineRelationshipAction;
+  at: Scalars['DateTime']['output'];
+  changed_by?: Maybe<Scalars['String']['output']>;
+  confidence_after?: Maybe<Scalars['Int']['output']>;
+  confidence_before?: Maybe<Scalars['Int']['output']>;
+  is_source: Scalars['Boolean']['output'];
+  relationship_id: Scalars['ID']['output'];
+  relationship_type: Scalars['String']['output'];
+  target_deleted: Scalars['Boolean']['output'];
+  target_id?: Maybe<Scalars['String']['output']>;
+  target_name: Scalars['String']['output'];
+  target_restricted: Scalars['Boolean']['output'];
+  target_type?: Maybe<Scalars['String']['output']>;
+};
+
+export type EntityDiffSummary = {
+  __typename?: 'EntityDiffSummary';
+  attributes_changed: Scalars['Int']['output'];
+  confidence_after?: Maybe<Scalars['Int']['output']>;
+  confidence_before?: Maybe<Scalars['Int']['output']>;
+  container_objects_added: Scalars['Int']['output'];
+  container_objects_removed: Scalars['Int']['output'];
+  relationships_added: Scalars['Int']['output'];
+  relationships_added_by_type: Array<TimeMachineRelationshipCount>;
+  relationships_confidence_changed: Scalars['Int']['output'];
+  relationships_removed: Scalars['Int']['output'];
+  relationships_removed_by_type: Array<TimeMachineRelationshipCount>;
+  relationships_revoked: Scalars['Int']['output'];
+  score_after?: Maybe<Scalars['Int']['output']>;
+  score_before?: Maybe<Scalars['Int']['output']>;
+};
+
 export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
   attributesDefinitions: Array<TypeAttribute>;
@@ -15015,6 +15117,127 @@ export enum LabelsOrdering {
   Value = 'value'
 }
 
+export type LandscapeDiff = {
+  __typename?: 'LandscapeDiff';
+  aggregates?: Maybe<LandscapeDiffAggregates>;
+  created_at: Scalars['DateTime']['output'];
+  custom_view_id?: Maybe<Scalars['String']['output']>;
+  entities: Array<LandscapeDiffEntity>;
+  error?: Maybe<Scalars['String']['output']>;
+  expires_at: Scalars['DateTime']['output'];
+  filters?: Maybe<Scalars['String']['output']>;
+  from: Scalars['DateTime']['output'];
+  group_by: LandscapeDiffGroupBy;
+  id: Scalars['ID']['output'];
+  progress: Scalars['Int']['output'];
+  saved_filter_id?: Maybe<Scalars['String']['output']>;
+  scope_entity_types: Array<Scalars['String']['output']>;
+  status: LandscapeDiffStatus;
+  to: Scalars['DateTime']['output'];
+  total: Scalars['Int']['output'];
+  truncated: Scalars['Boolean']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type LandscapeDiffAggregates = {
+  __typename?: 'LandscapeDiffAggregates';
+  confidence_changes: Scalars['Int']['output'];
+  entities_changed: Scalars['Int']['output'];
+  entities_in_scope: Scalars['Int']['output'];
+  groups: Array<LandscapeDiffBucket>;
+  new_entities: Scalars['Int']['output'];
+  new_entities_by_type: Array<LandscapeDiffBucket>;
+  new_indicators_count: Scalars['Int']['output'];
+  new_infrastructure: Array<LandscapeDiffNamedItem>;
+  new_infrastructure_count: Scalars['Int']['output'];
+  new_malware: Array<LandscapeDiffNamedItem>;
+  new_malware_count: Scalars['Int']['output'];
+  new_relationships: Scalars['Int']['output'];
+  new_relationships_by_type: Array<LandscapeDiffBucket>;
+  new_techniques: Array<LandscapeDiffNamedItem>;
+  new_techniques_by_tactic: Array<LandscapeDiffBucket>;
+  new_techniques_count: Scalars['Int']['output'];
+  new_tools: Array<LandscapeDiffNamedItem>;
+  new_tools_count: Scalars['Int']['output'];
+  new_victims_by_country: Array<LandscapeDiffBucket>;
+  new_victims_by_region: Array<LandscapeDiffBucket>;
+  new_victims_by_sector: Array<LandscapeDiffBucket>;
+  removed_relationships: Scalars['Int']['output'];
+  revocations: Scalars['Int']['output'];
+  score_changes: Scalars['Int']['output'];
+};
+
+export type LandscapeDiffBucket = {
+  __typename?: 'LandscapeDiffBucket';
+  count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+};
+
+export type LandscapeDiffEntity = {
+  __typename?: 'LandscapeDiffEntity';
+  attributes_changed: Scalars['Int']['output'];
+  change_score: Scalars['Int']['output'];
+  confidence_after?: Maybe<Scalars['Int']['output']>;
+  confidence_before?: Maybe<Scalars['Int']['output']>;
+  created_in_period: Scalars['Boolean']['output'];
+  entity_id: Scalars['ID']['output'];
+  entity_type: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  relationships_added: Scalars['Int']['output'];
+  relationships_confidence_changed: Scalars['Int']['output'];
+  relationships_removed: Scalars['Int']['output'];
+  relationships_revoked: Scalars['Int']['output'];
+  revoked_in_period: Scalars['Boolean']['output'];
+  score_after?: Maybe<Scalars['Int']['output']>;
+  score_before?: Maybe<Scalars['Int']['output']>;
+  standard_id?: Maybe<Scalars['String']['output']>;
+};
+
+export enum LandscapeDiffGroupBy {
+  EntityType = 'entity_type',
+  RelationshipType = 'relationship_type',
+  Tactic = 'tactic'
+}
+
+export type LandscapeDiffInput = {
+  custom_view_id?: InputMaybe<Scalars['String']['input']>;
+  entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<Scalars['String']['input']>;
+  from: Scalars['DateTime']['input'];
+  group_by?: InputMaybe<LandscapeDiffGroupBy>;
+  saved_filter_id?: InputMaybe<Scalars['String']['input']>;
+  to: Scalars['DateTime']['input'];
+};
+
+export type LandscapeDiffNamedItem = {
+  __typename?: 'LandscapeDiffNamedItem';
+  count: Scalars['Int']['output'];
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  standard_id?: Maybe<Scalars['String']['output']>;
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+export enum LandscapeDiffStatus {
+  Complete = 'complete',
+  Failed = 'failed',
+  Pending = 'pending',
+  Running = 'running'
+}
+
+export type LandscapeDiffSummary = {
+  __typename?: 'LandscapeDiffSummary';
+  aggregates: LandscapeDiffAggregates;
+  computed_at: Scalars['DateTime']['output'];
+  entities: Array<LandscapeDiffEntity>;
+  from: Scalars['DateTime']['output'];
+  scope_entity_types: Array<Scalars['String']['output']>;
+  to: Scalars['DateTime']['output'];
+  truncated: Scalars['Boolean']['output'];
+};
+
 export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Language';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -17382,6 +17605,7 @@ export type Mutation = {
   emailTemplateFieldPatch?: Maybe<EmailTemplate>;
   emailTemplateTestSend?: Maybe<Scalars['Boolean']['output']>;
   entitySettingsFieldPatch?: Maybe<Array<Maybe<EntitySetting>>>;
+  entityVisitRecord?: Maybe<SinceLastVisit>;
   eventAdd?: Maybe<Event>;
   eventContextClean?: Maybe<Event>;
   eventContextPatch?: Maybe<Event>;
@@ -17476,6 +17700,7 @@ export type Mutation = {
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
   labelAdd?: Maybe<Label>;
   labelEdit?: Maybe<LabelEditMutations>;
+  landscapeDiffRun?: Maybe<LandscapeDiff>;
   languageAdd?: Maybe<Language>;
   languageContextClean?: Maybe<Language>;
   languageContextPatch?: Maybe<Language>;
@@ -17699,6 +17924,7 @@ export type Mutation = {
   triggerActivityDigestAdd?: Maybe<Trigger>;
   triggerActivityFieldPatch?: Maybe<Trigger>;
   triggerActivityLiveAdd?: Maybe<Trigger>;
+  triggerKnowledgeChangeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeDelete?: Maybe<Scalars['ID']['output']>;
   triggerKnowledgeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
@@ -17723,6 +17949,8 @@ export type Mutation = {
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
   userTokenAdd: TokenGenerated;
   userTokenRevoke?: Maybe<Scalars['ID']['output']>;
+  userVisitsPurge?: Maybe<Scalars['Int']['output']>;
+  userVisitsPurgeForUser?: Maybe<Scalars['Int']['output']>;
   verifyMfa?: Maybe<Scalars['Boolean']['output']>;
   verifyOtp?: Maybe<VerifyOtp>;
   vocabularyAdd?: Maybe<Vocabulary>;
@@ -18500,6 +18728,11 @@ export type MutationEntitySettingsFieldPatchArgs = {
 };
 
 
+export type MutationEntityVisitRecordArgs = {
+  id: Scalars['String']['input'];
+};
+
+
 export type MutationEventAddArgs = {
   input: EventAddInput;
 };
@@ -19011,6 +19244,11 @@ export type MutationLabelAddArgs = {
 
 export type MutationLabelEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationLandscapeDiffRunArgs = {
+  input: LandscapeDiffInput;
 };
 
 
@@ -20306,6 +20544,11 @@ export type MutationTriggerActivityLiveAddArgs = {
 };
 
 
+export type MutationTriggerKnowledgeChangeDigestAddArgs = {
+  input: TriggerChangeDigestAddInput;
+};
+
+
 export type MutationTriggerKnowledgeDeleteArgs = {
   id: Scalars['ID']['input'];
 };
@@ -20443,6 +20686,11 @@ export type MutationUserTokenAddArgs = {
 
 export type MutationUserTokenRevokeArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationUserVisitsPurgeForUserArgs = {
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -24859,9 +25107,13 @@ export type Query = {
   emailTemplate?: Maybe<EmailTemplate>;
   emailTemplates?: Maybe<EmailTemplateConnection>;
   enrichmentConnectors?: Maybe<Array<Maybe<Connector>>>;
+  entitiesSinceLastVisit: Array<SinceLastVisit>;
+  entityAsOf?: Maybe<EntityAsOf>;
+  entityDiff?: Maybe<EntityDiff>;
   entitySetting?: Maybe<EntitySetting>;
   entitySettingByType?: Maybe<EntitySetting>;
   entitySettings?: Maybe<EntitySettingConnection>;
+  entityTimeMachineTimeline?: Maybe<TimeMachineTimeline>;
   event?: Maybe<Event>;
   events?: Maybe<EventConnection>;
   exclusionList?: Maybe<ExclusionList>;
@@ -24936,6 +25188,8 @@ export type Query = {
   killChainPhases?: Maybe<KillChainPhaseConnection>;
   label?: Maybe<Label>;
   labels?: Maybe<LabelConnection>;
+  landscapeDiff?: Maybe<LandscapeDiff>;
+  landscapeDiffSummary?: Maybe<LandscapeDiffSummary>;
   language?: Maybe<Language>;
   languages?: Maybe<LanguageConnection>;
   location?: Maybe<Location>;
@@ -25934,6 +26188,24 @@ export type QueryEnrichmentConnectorsArgs = {
 };
 
 
+export type QueryEntitiesSinceLastVisitArgs = {
+  ids: Array<Scalars['String']['input']>;
+};
+
+
+export type QueryEntityAsOfArgs = {
+  date: Scalars['DateTime']['input'];
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryEntityDiffArgs = {
+  from: Scalars['DateTime']['input'];
+  id: Scalars['String']['input'];
+  to: Scalars['DateTime']['input'];
+};
+
+
 export type QueryEntitySettingArgs = {
   id: Scalars['String']['input'];
 };
@@ -25952,6 +26224,11 @@ export type QueryEntitySettingsArgs = {
   orderBy?: InputMaybe<EntitySettingsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryEntityTimeMachineTimelineArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -26490,6 +26767,16 @@ export type QueryLabelsArgs = {
   orderBy?: InputMaybe<LabelsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryLandscapeDiffArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryLandscapeDiffSummaryArgs = {
+  input: LandscapeDiffInput;
 };
 
 
@@ -31320,6 +31607,17 @@ export type SettingsMessageInput = {
   id?: InputMaybe<Scalars['ID']['input']>;
   message: Scalars['String']['input'];
   recipients?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export type SinceLastVisit = {
+  __typename?: 'SinceLastVisit';
+  entity_id: Scalars['ID']['output'];
+  first_visit: Scalars['Boolean']['output'];
+  last_seen_at?: Maybe<Scalars['DateTime']['output']>;
+  new_container_objects: Scalars['Int']['output'];
+  new_relationships: Scalars['Int']['output'];
+  reference_date?: Maybe<Scalars['DateTime']['output']>;
+  updates: Scalars['Int']['output'];
 };
 
 export enum SmtpAuthType {
@@ -36291,6 +36589,65 @@ export enum ThreatActorsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum TimeMachineAnchor {
+  Current = 'current',
+  Snapshot = 'snapshot'
+}
+
+export type TimeMachineAttribute = {
+  __typename?: 'TimeMachineAttribute';
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  multiple: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+  values: Array<TimeMachineValue>;
+};
+
+export enum TimeMachineContainerObjectAction {
+  Added = 'added',
+  Removed = 'removed'
+}
+
+export enum TimeMachineRelationshipAction {
+  Added = 'added',
+  ConfidenceChanged = 'confidence_changed',
+  Removed = 'removed',
+  Revoked = 'revoked',
+  Unrevoked = 'unrevoked'
+}
+
+export type TimeMachineRelationshipCount = {
+  __typename?: 'TimeMachineRelationshipCount';
+  count: Scalars['Int']['output'];
+  relationship_type: Scalars['String']['output'];
+};
+
+export type TimeMachineTimeline = {
+  __typename?: 'TimeMachineTimeline';
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  entity_id: Scalars['ID']['output'];
+  events: Array<TimeMachineTimelineEvent>;
+  events_truncated: Scalars['Boolean']['output'];
+  history_start?: Maybe<Scalars['DateTime']['output']>;
+  max_replay_days: Scalars['Int']['output'];
+  snapshots: Array<Scalars['DateTime']['output']>;
+};
+
+export type TimeMachineTimelineEvent = {
+  __typename?: 'TimeMachineTimelineEvent';
+  date: Scalars['DateTime']['output'];
+  event_scope: Scalars['String']['output'];
+};
+
+export type TimeMachineValue = {
+  __typename?: 'TimeMachineValue';
+  deleted: Scalars['Boolean']['output'];
+  display: Scalars['String']['output'];
+  entity_type?: Maybe<Scalars['String']['output']>;
+  raw: Scalars['String']['output'];
+  restricted: Scalars['Boolean']['output'];
+};
+
 export type TimeSeries = {
   __typename?: 'TimeSeries';
   date: Scalars['DateTime']['output'];
@@ -36872,6 +37229,7 @@ export type Trigger = BasicObject & InternalObject & {
   recipients?: Maybe<Array<Member>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
+  scope_entity_types?: Maybe<Array<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   trigger_time?: Maybe<Scalars['String']['output']>;
@@ -36904,6 +37262,18 @@ export type TriggerActivityLiveAddInput = {
   name: Scalars['String']['input'];
   notifiers?: InputMaybe<Array<Scalars['StixRef']['input']>>;
   recipients: Array<Scalars['String']['input']>;
+};
+
+export type TriggerChangeDigestAddInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  filters?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  notifiers: Array<Scalars['StixRef']['input']>;
+  period: DigestPeriod;
+  recipients?: InputMaybe<Array<Scalars['String']['input']>>;
+  saved_filter_id?: InputMaybe<Scalars['String']['input']>;
+  scope_entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  trigger_time?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TriggerConnection = {
@@ -36945,6 +37315,7 @@ export type TriggerLiveAddInput = {
 };
 
 export enum TriggerType {
+  ChangeDigest = 'change_digest',
   Digest = 'digest',
   Live = 'live'
 }
@@ -40874,6 +41245,12 @@ export type ResolversTypes = ResolversObject<{
   EmailTemplateConnection: ResolverTypeWrapper<Omit<EmailTemplateConnection, 'edges'> & { edges: Array<ResolversTypes['EmailTemplateEdge']> }>;
   EmailTemplateEdge: ResolverTypeWrapper<Omit<EmailTemplateEdge, 'node'> & { node: ResolversTypes['EmailTemplate'] }>;
   EmailTemplateOrdering: EmailTemplateOrdering;
+  EntityAsOf: ResolverTypeWrapper<EntityAsOf>;
+  EntityDiff: ResolverTypeWrapper<EntityDiff>;
+  EntityDiffAttributeChange: ResolverTypeWrapper<EntityDiffAttributeChange>;
+  EntityDiffContainerObjectChange: ResolverTypeWrapper<EntityDiffContainerObjectChange>;
+  EntityDiffRelationshipChange: ResolverTypeWrapper<EntityDiffRelationshipChange>;
+  EntityDiffSummary: ResolverTypeWrapper<EntityDiffSummary>;
   EntitySetting: ResolverTypeWrapper<BasicStoreEntityEntitySetting>;
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
@@ -41108,6 +41485,15 @@ export type ResolversTypes = ResolversObject<{
   LabelEdge: ResolverTypeWrapper<Omit<LabelEdge, 'node'> & { node: ResolversTypes['Label'] }>;
   LabelEditMutations: ResolverTypeWrapper<Omit<LabelEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Label']>, contextPatch?: Maybe<ResolversTypes['Label']>, fieldPatch?: Maybe<ResolversTypes['Label']> }>;
   LabelsOrdering: LabelsOrdering;
+  LandscapeDiff: ResolverTypeWrapper<LandscapeDiff>;
+  LandscapeDiffAggregates: ResolverTypeWrapper<LandscapeDiffAggregates>;
+  LandscapeDiffBucket: ResolverTypeWrapper<LandscapeDiffBucket>;
+  LandscapeDiffEntity: ResolverTypeWrapper<LandscapeDiffEntity>;
+  LandscapeDiffGroupBy: LandscapeDiffGroupBy;
+  LandscapeDiffInput: LandscapeDiffInput;
+  LandscapeDiffNamedItem: ResolverTypeWrapper<LandscapeDiffNamedItem>;
+  LandscapeDiffStatus: LandscapeDiffStatus;
+  LandscapeDiffSummary: ResolverTypeWrapper<LandscapeDiffSummary>;
   Language: ResolverTypeWrapper<BasicStoreEntityLanguage>;
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: ResolverTypeWrapper<Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LanguageEdge']>>> }>;
@@ -41436,6 +41822,7 @@ export type ResolversTypes = ResolversObject<{
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
+  SinceLastVisit: ResolverTypeWrapper<SinceLastVisit>;
   SmtpAuthType: SmtpAuthType;
   SmtpConfiguration: ResolverTypeWrapper<SmtpConfiguration>;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
@@ -41609,6 +41996,14 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorIndividualEdge: ResolverTypeWrapper<Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversTypes['ThreatActorIndividual'] }>;
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
+  TimeMachineAnchor: TimeMachineAnchor;
+  TimeMachineAttribute: ResolverTypeWrapper<TimeMachineAttribute>;
+  TimeMachineContainerObjectAction: TimeMachineContainerObjectAction;
+  TimeMachineRelationshipAction: TimeMachineRelationshipAction;
+  TimeMachineRelationshipCount: ResolverTypeWrapper<TimeMachineRelationshipCount>;
+  TimeMachineTimeline: ResolverTypeWrapper<TimeMachineTimeline>;
+  TimeMachineTimelineEvent: ResolverTypeWrapper<TimeMachineTimelineEvent>;
+  TimeMachineValue: ResolverTypeWrapper<TimeMachineValue>;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
@@ -41625,6 +42020,7 @@ export type ResolversTypes = ResolversObject<{
   TriggerActivityDigestAddInput: TriggerActivityDigestAddInput;
   TriggerActivityEventType: TriggerActivityEventType;
   TriggerActivityLiveAddInput: TriggerActivityLiveAddInput;
+  TriggerChangeDigestAddInput: TriggerChangeDigestAddInput;
   TriggerConnection: ResolverTypeWrapper<Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversTypes['TriggerEdge']> }>;
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: ResolverTypeWrapper<Omit<TriggerEdge, 'node'> & { node: ResolversTypes['Trigger'] }>;
@@ -42020,6 +42416,12 @@ export type ResolversParentTypes = ResolversObject<{
   EmailTemplateAddInput: EmailTemplateAddInput;
   EmailTemplateConnection: Omit<EmailTemplateConnection, 'edges'> & { edges: Array<ResolversParentTypes['EmailTemplateEdge']> };
   EmailTemplateEdge: Omit<EmailTemplateEdge, 'node'> & { node: ResolversParentTypes['EmailTemplate'] };
+  EntityAsOf: EntityAsOf;
+  EntityDiff: EntityDiff;
+  EntityDiffAttributeChange: EntityDiffAttributeChange;
+  EntityDiffContainerObjectChange: EntityDiffContainerObjectChange;
+  EntityDiffRelationshipChange: EntityDiffRelationshipChange;
+  EntityDiffSummary: EntityDiffSummary;
   EntitySetting: BasicStoreEntityEntitySetting;
   EntitySettingConnection: Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversParentTypes['EntitySettingEdge']> };
   EntitySettingEdge: Omit<EntitySettingEdge, 'node'> & { node: ResolversParentTypes['EntitySetting'] };
@@ -42217,6 +42619,13 @@ export type ResolversParentTypes = ResolversObject<{
   LabelConnection: Omit<LabelConnection, 'edges'> & { edges: Array<ResolversParentTypes['LabelEdge']> };
   LabelEdge: Omit<LabelEdge, 'node'> & { node: ResolversParentTypes['Label'] };
   LabelEditMutations: Omit<LabelEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Label']>, contextPatch?: Maybe<ResolversParentTypes['Label']>, fieldPatch?: Maybe<ResolversParentTypes['Label']> };
+  LandscapeDiff: LandscapeDiff;
+  LandscapeDiffAggregates: LandscapeDiffAggregates;
+  LandscapeDiffBucket: LandscapeDiffBucket;
+  LandscapeDiffEntity: LandscapeDiffEntity;
+  LandscapeDiffInput: LandscapeDiffInput;
+  LandscapeDiffNamedItem: LandscapeDiffNamedItem;
+  LandscapeDiffSummary: LandscapeDiffSummary;
   Language: BasicStoreEntityLanguage;
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LanguageEdge']>>> };
@@ -42505,6 +42914,7 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
+  SinceLastVisit: SinceLastVisit;
   SmtpConfiguration: SmtpConfiguration;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -42648,6 +43058,11 @@ export type ResolversParentTypes = ResolversObject<{
   ThreatActorIndividualAddInput: ThreatActorIndividualAddInput;
   ThreatActorIndividualConnection: Omit<ThreatActorIndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorIndividualEdge']>>> };
   ThreatActorIndividualEdge: Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversParentTypes['ThreatActorIndividual'] };
+  TimeMachineAttribute: TimeMachineAttribute;
+  TimeMachineRelationshipCount: TimeMachineRelationshipCount;
+  TimeMachineTimeline: TimeMachineTimeline;
+  TimeMachineTimelineEvent: TimeMachineTimelineEvent;
+  TimeMachineValue: TimeMachineValue;
   TimeSeries: TimeSeries;
   TokenGenerated: TokenGenerated;
   Tool: Omit<Tool, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversParentTypes['KillChainPhase']>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, workflowInstance?: Maybe<ResolversParentTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -42660,6 +43075,7 @@ export type ResolversParentTypes = ResolversObject<{
   Trigger: BasicStoreEntityTrigger;
   TriggerActivityDigestAddInput: TriggerActivityDigestAddInput;
   TriggerActivityLiveAddInput: TriggerActivityLiveAddInput;
+  TriggerChangeDigestAddInput: TriggerChangeDigestAddInput;
   TriggerConnection: Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversParentTypes['TriggerEdge']> };
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: Omit<TriggerEdge, 'node'> & { node: ResolversParentTypes['Trigger'] };
@@ -45774,6 +46190,102 @@ export type EmailTemplateEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['EmailTemplate'], ParentType, ContextType>;
 }>;
 
+export type EntityAsOfResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityAsOf'] = ResolversParentTypes['EntityAsOf']> = ResolversObject<{
+  anchor?: Resolver<ResolversTypes['TimeMachineAnchor'], ParentType, ContextType>;
+  anchor_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  attributes?: Resolver<Array<ResolversTypes['TimeMachineAttribute']>, ParentType, ContextType>;
+  complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  container_objects_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  deleted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  history_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  relationships?: Resolver<Array<ResolversTypes['TimeMachineRelationshipCount']>, ParentType, ContextType>;
+  relationships_total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  replayed_events?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  restricted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type EntityDiffResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityDiff'] = ResolversParentTypes['EntityDiff']> = ResolversObject<{
+  attributes?: Resolver<Array<ResolversTypes['EntityDiffAttributeChange']>, ParentType, ContextType>;
+  complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  container_objects?: Resolver<Array<ResolversTypes['EntityDiffContainerObjectChange']>, ParentType, ContextType>;
+  container_objects_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  existed_at_from?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  exists_at_to?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  relationships?: Resolver<Array<ResolversTypes['EntityDiffRelationshipChange']>, ParentType, ContextType>;
+  relationships_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  restricted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  summary?: Resolver<ResolversTypes['EntityDiffSummary'], ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  warnings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type EntityDiffAttributeChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityDiffAttributeChange'] = ResolversParentTypes['EntityDiffAttributeChange']> = ResolversObject<{
+  added?: Resolver<Array<ResolversTypes['TimeMachineValue']>, ParentType, ContextType>;
+  after?: Resolver<Array<ResolversTypes['TimeMachineValue']>, ParentType, ContextType>;
+  before?: Resolver<Array<ResolversTypes['TimeMachineValue']>, ParentType, ContextType>;
+  changed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  changed_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  changes_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  removed?: Resolver<Array<ResolversTypes['TimeMachineValue']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type EntityDiffContainerObjectChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityDiffContainerObjectChange'] = ResolversParentTypes['EntityDiffContainerObjectChange']> = ResolversObject<{
+  action?: Resolver<ResolversTypes['TimeMachineContainerObjectAction'], ParentType, ContextType>;
+  at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  object_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  restricted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type EntityDiffRelationshipChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityDiffRelationshipChange'] = ResolversParentTypes['EntityDiffRelationshipChange']> = ResolversObject<{
+  action?: Resolver<ResolversTypes['TimeMachineRelationshipAction'], ParentType, ContextType>;
+  at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  changed_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  confidence_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  is_source?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  target_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  target_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_restricted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  target_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type EntityDiffSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntityDiffSummary'] = ResolversParentTypes['EntityDiffSummary']> = ResolversObject<{
+  attributes_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  confidence_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  confidence_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  container_objects_added?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  container_objects_removed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_added?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_added_by_type?: Resolver<Array<ResolversTypes['TimeMachineRelationshipCount']>, ParentType, ContextType>;
+  relationships_confidence_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_removed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_removed_by_type?: Resolver<Array<ResolversTypes['TimeMachineRelationshipCount']>, ParentType, ContextType>;
+  relationships_revoked?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  score_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  score_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+}>;
+
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
   attributesDefinitions?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47894,6 +48406,98 @@ export type LabelEditMutationsResolvers<ContextType = any, ParentType extends Re
   fieldPatch?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<LabelEditMutationsFieldPatchArgs, 'input'>>;
 }>;
 
+export type LandscapeDiffResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiff'] = ResolversParentTypes['LandscapeDiff']> = ResolversObject<{
+  aggregates?: Resolver<Maybe<ResolversTypes['LandscapeDiffAggregates']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  custom_view_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entities?: Resolver<Array<ResolversTypes['LandscapeDiffEntity']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  expires_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  group_by?: Resolver<ResolversTypes['LandscapeDiffGroupBy'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  progress?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  saved_filter_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  scope_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['LandscapeDiffStatus'], ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type LandscapeDiffAggregatesResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffAggregates'] = ResolversParentTypes['LandscapeDiffAggregates']> = ResolversObject<{
+  confidence_changes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entities_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entities_in_scope?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  groups?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_entities_by_type?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_indicators_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_infrastructure?: Resolver<Array<ResolversTypes['LandscapeDiffNamedItem']>, ParentType, ContextType>;
+  new_infrastructure_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_malware?: Resolver<Array<ResolversTypes['LandscapeDiffNamedItem']>, ParentType, ContextType>;
+  new_malware_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_relationships_by_type?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_techniques?: Resolver<Array<ResolversTypes['LandscapeDiffNamedItem']>, ParentType, ContextType>;
+  new_techniques_by_tactic?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_techniques_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_tools?: Resolver<Array<ResolversTypes['LandscapeDiffNamedItem']>, ParentType, ContextType>;
+  new_tools_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_victims_by_country?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_victims_by_region?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  new_victims_by_sector?: Resolver<Array<ResolversTypes['LandscapeDiffBucket']>, ParentType, ContextType>;
+  removed_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  revocations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  score_changes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type LandscapeDiffBucketResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffBucket'] = ResolversParentTypes['LandscapeDiffBucket']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type LandscapeDiffEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffEntity'] = ResolversParentTypes['LandscapeDiffEntity']> = ResolversObject<{
+  attributes_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  change_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  confidence_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  confidence_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  created_in_period?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relationships_added?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_confidence_changed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_removed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_revoked?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  revoked_in_period?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  score_after?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  score_before?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type LandscapeDiffNamedItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffNamedItem'] = ResolversParentTypes['LandscapeDiffNamedItem']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type LandscapeDiffSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffSummary'] = ResolversParentTypes['LandscapeDiffSummary']> = ResolversObject<{
+  aggregates?: Resolver<ResolversTypes['LandscapeDiffAggregates'], ParentType, ContextType>;
+  computed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entities?: Resolver<Array<ResolversTypes['LandscapeDiffEntity']>, ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  scope_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type LanguageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Language'] = ResolversParentTypes['Language']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
@@ -48851,6 +49455,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   emailTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<MutationEmailTemplateFieldPatchArgs, 'id' | 'input'>>;
   emailTemplateTestSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationEmailTemplateTestSendArgs, 'id'>>;
   entitySettingsFieldPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['EntitySetting']>>>, ParentType, ContextType, RequireFields<MutationEntitySettingsFieldPatchArgs, 'ids' | 'input'>>;
+  entityVisitRecord?: Resolver<Maybe<ResolversTypes['SinceLastVisit']>, ParentType, ContextType, RequireFields<MutationEntityVisitRecordArgs, 'id'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
   eventContextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextCleanArgs, 'id'>>;
   eventContextPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextPatchArgs, 'id' | 'input'>>;
@@ -48945,6 +49550,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
+  landscapeDiffRun?: Resolver<Maybe<ResolversTypes['LandscapeDiff']>, ParentType, ContextType, RequireFields<MutationLandscapeDiffRunArgs, 'input'>>;
   languageAdd?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageAddArgs, 'input'>>;
   languageContextClean?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageContextCleanArgs, 'id'>>;
   languageContextPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageContextPatchArgs, 'id' | 'input'>>;
@@ -49168,6 +49774,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerActivityDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDigestAddArgs, 'input'>>;
   triggerActivityFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityFieldPatchArgs, 'id' | 'input'>>;
   triggerActivityLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityLiveAddArgs, 'input'>>;
+  triggerKnowledgeChangeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeChangeDigestAddArgs, 'input'>>;
   triggerKnowledgeDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDeleteArgs, 'id'>>;
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
@@ -49192,6 +49799,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
   userTokenAdd?: Resolver<ResolversTypes['TokenGenerated'], ParentType, ContextType, RequireFields<MutationUserTokenAddArgs, 'input'>>;
   userTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserTokenRevokeArgs, 'id'>>;
+  userVisitsPurge?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  userVisitsPurgeForUser?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<MutationUserVisitsPurgeForUserArgs, 'userId'>>;
   verifyMfa?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyMfaArgs, 'input'>>;
   verifyOtp?: Resolver<Maybe<ResolversTypes['VerifyOtp']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
@@ -50743,9 +51352,13 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   emailTemplate?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<QueryEmailTemplateArgs, 'id'>>;
   emailTemplates?: Resolver<Maybe<ResolversTypes['EmailTemplateConnection']>, ParentType, ContextType, Partial<QueryEmailTemplatesArgs>>;
   enrichmentConnectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, RequireFields<QueryEnrichmentConnectorsArgs, 'type'>>;
+  entitiesSinceLastVisit?: Resolver<Array<ResolversTypes['SinceLastVisit']>, ParentType, ContextType, RequireFields<QueryEntitiesSinceLastVisitArgs, 'ids'>>;
+  entityAsOf?: Resolver<Maybe<ResolversTypes['EntityAsOf']>, ParentType, ContextType, RequireFields<QueryEntityAsOfArgs, 'date' | 'id'>>;
+  entityDiff?: Resolver<Maybe<ResolversTypes['EntityDiff']>, ParentType, ContextType, RequireFields<QueryEntityDiffArgs, 'from' | 'id' | 'to'>>;
   entitySetting?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<QueryEntitySettingArgs, 'id'>>;
   entitySettingByType?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<QueryEntitySettingByTypeArgs, 'targetType'>>;
   entitySettings?: Resolver<Maybe<ResolversTypes['EntitySettingConnection']>, ParentType, ContextType, Partial<QueryEntitySettingsArgs>>;
+  entityTimeMachineTimeline?: Resolver<Maybe<ResolversTypes['TimeMachineTimeline']>, ParentType, ContextType, RequireFields<QueryEntityTimeMachineTimelineArgs, 'id'>>;
   event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
   events?: Resolver<Maybe<ResolversTypes['EventConnection']>, ParentType, ContextType, Partial<QueryEventsArgs>>;
   exclusionList?: Resolver<Maybe<ResolversTypes['ExclusionList']>, ParentType, ContextType, RequireFields<QueryExclusionListArgs, 'id'>>;
@@ -50820,6 +51433,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType, Partial<QueryKillChainPhasesArgs>>;
   label?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<QueryLabelArgs, 'id'>>;
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
+  landscapeDiff?: Resolver<Maybe<ResolversTypes['LandscapeDiff']>, ParentType, ContextType, RequireFields<QueryLandscapeDiffArgs, 'id'>>;
+  landscapeDiffSummary?: Resolver<Maybe<ResolversTypes['LandscapeDiffSummary']>, ParentType, ContextType, RequireFields<QueryLandscapeDiffSummaryArgs, 'input'>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;
   languages?: Resolver<Maybe<ResolversTypes['LanguageConnection']>, ParentType, ContextType, Partial<QueryLanguagesArgs>>;
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
@@ -52077,6 +52692,16 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
   recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type SinceLastVisitResolvers<ContextType = any, ParentType extends ResolversParentTypes['SinceLastVisit'] = ResolversParentTypes['SinceLastVisit']> = ResolversObject<{
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  first_visit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_seen_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  new_container_objects?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reference_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  updates?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type SmtpConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['SmtpConfiguration'] = ResolversParentTypes['SmtpConfiguration']> = ResolversObject<{
@@ -53672,6 +54297,42 @@ export type ThreatActorIndividualEdgeResolvers<ContextType = any, ParentType ext
   node?: Resolver<ResolversTypes['ThreatActorIndividual'], ParentType, ContextType>;
 }>;
 
+export type TimeMachineAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeMachineAttribute'] = ResolversParentTypes['TimeMachineAttribute']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['TimeMachineValue']>, ParentType, ContextType>;
+}>;
+
+export type TimeMachineRelationshipCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeMachineRelationshipCount'] = ResolversParentTypes['TimeMachineRelationshipCount']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type TimeMachineTimelineResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeMachineTimeline'] = ResolversParentTypes['TimeMachineTimeline']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  events?: Resolver<Array<ResolversTypes['TimeMachineTimelineEvent']>, ParentType, ContextType>;
+  events_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  history_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  max_replay_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  snapshots?: Resolver<Array<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type TimeMachineTimelineEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeMachineTimelineEvent'] = ResolversParentTypes['TimeMachineTimelineEvent']> = ResolversObject<{
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  event_scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type TimeMachineValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeMachineValue'] = ResolversParentTypes['TimeMachineValue']> = ResolversObject<{
+  deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  display?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  raw?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  restricted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeries'] = ResolversParentTypes['TimeSeries']> = ResolversObject<{
   date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -53841,6 +54502,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  scope_entity_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   trigger_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -55086,6 +55748,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   EmailTemplate?: EmailTemplateResolvers<ContextType>;
   EmailTemplateConnection?: EmailTemplateConnectionResolvers<ContextType>;
   EmailTemplateEdge?: EmailTemplateEdgeResolvers<ContextType>;
+  EntityAsOf?: EntityAsOfResolvers<ContextType>;
+  EntityDiff?: EntityDiffResolvers<ContextType>;
+  EntityDiffAttributeChange?: EntityDiffAttributeChangeResolvers<ContextType>;
+  EntityDiffContainerObjectChange?: EntityDiffContainerObjectChangeResolvers<ContextType>;
+  EntityDiffRelationshipChange?: EntityDiffRelationshipChangeResolvers<ContextType>;
+  EntityDiffSummary?: EntityDiffSummaryResolvers<ContextType>;
   EntitySetting?: EntitySettingResolvers<ContextType>;
   EntitySettingConnection?: EntitySettingConnectionResolvers<ContextType>;
   EntitySettingEdge?: EntitySettingEdgeResolvers<ContextType>;
@@ -55229,6 +55897,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   LabelConnection?: LabelConnectionResolvers<ContextType>;
   LabelEdge?: LabelEdgeResolvers<ContextType>;
   LabelEditMutations?: LabelEditMutationsResolvers<ContextType>;
+  LandscapeDiff?: LandscapeDiffResolvers<ContextType>;
+  LandscapeDiffAggregates?: LandscapeDiffAggregatesResolvers<ContextType>;
+  LandscapeDiffBucket?: LandscapeDiffBucketResolvers<ContextType>;
+  LandscapeDiffEntity?: LandscapeDiffEntityResolvers<ContextType>;
+  LandscapeDiffNamedItem?: LandscapeDiffNamedItemResolvers<ContextType>;
+  LandscapeDiffSummary?: LandscapeDiffSummaryResolvers<ContextType>;
   Language?: LanguageResolvers<ContextType>;
   LanguageConnection?: LanguageConnectionResolvers<ContextType>;
   LanguageEdge?: LanguageEdgeResolvers<ContextType>;
@@ -55442,6 +56116,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Settings?: SettingsResolvers<ContextType>;
   SettingsEditMutations?: SettingsEditMutationsResolvers<ContextType>;
   SettingsMessage?: SettingsMessageResolvers<ContextType>;
+  SinceLastVisit?: SinceLastVisitResolvers<ContextType>;
   SmtpConfiguration?: SmtpConfigurationResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
@@ -55550,6 +56225,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ThreatActorIndividual?: ThreatActorIndividualResolvers<ContextType>;
   ThreatActorIndividualConnection?: ThreatActorIndividualConnectionResolvers<ContextType>;
   ThreatActorIndividualEdge?: ThreatActorIndividualEdgeResolvers<ContextType>;
+  TimeMachineAttribute?: TimeMachineAttributeResolvers<ContextType>;
+  TimeMachineRelationshipCount?: TimeMachineRelationshipCountResolvers<ContextType>;
+  TimeMachineTimeline?: TimeMachineTimelineResolvers<ContextType>;
+  TimeMachineTimelineEvent?: TimeMachineTimelineEventResolvers<ContextType>;
+  TimeMachineValue?: TimeMachineValueResolvers<ContextType>;
   TimeSeries?: TimeSeriesResolvers<ContextType>;
   TokenGenerated?: TokenGeneratedResolvers<ContextType>;
   Tool?: ToolResolvers<ContextType>;

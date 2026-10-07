@@ -55,6 +55,11 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
+  'User-Visit.user_id': {
+    kind: 'excluded',
+    reason: 'another-handler',
+    detail: 'Personal last visit markers, identified by user and entity: never transferred, the retention manager purges them with the source account',
+  },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {
     kind: 'excluded',
     reason: 'not-a-platform-user',

@@ -372,6 +372,31 @@
     "lock_key": "data_sanity_manager_lock",
     "interval": 600000
   },
+  "snapshot_manager": {
+    "enabled": true,
+    "lock_key": "snapshot_manager_lock",
+    "interval": 3600000,
+    "period_days": 7,
+    "max_entities_per_run": 10000,
+    "batch_size": 100,
+    "max_relationship_ids_per_type": 500,
+    "retention_days": 0
+  },
+  "time_machine": {
+    "max_replay_events": 5000,
+    "max_replay_days": 90,
+    "max_diff_relationships": 500,
+    "visit_session_minutes": 30,
+    "visit_retention_days": 365,
+    "landscape_max_entities": 1000,
+    "landscape_batch_size": 100,
+    "landscape_max_relationships": 20000,
+    "landscape_cache_ttl": 3600,
+    "landscape_max_running_per_user": 1,
+    "landscape_max_running": 4,
+    "widget_max_entities": 200,
+    "change_digest_max_entities": 500
+  },
   "exclusion_list_cache_build_manager": {
     "enabled": true,
     "lock_key": "exclusion_list_cache_build_manager_lock",

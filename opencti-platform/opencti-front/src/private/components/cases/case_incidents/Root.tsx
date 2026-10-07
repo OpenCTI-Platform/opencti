@@ -132,6 +132,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
       ]}
       />
       <ContainerHeader
+        enableTimeMachine
         container={caseData}
         EditComponent={(
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
@@ -149,6 +150,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        enableTimeMachine
         entity={caseData}
         basePath={basePath}
         pages={{

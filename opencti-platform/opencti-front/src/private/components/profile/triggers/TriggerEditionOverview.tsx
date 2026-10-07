@@ -3,6 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
+import { Text } from '@filigran/design-system';
 import { Box } from '@mui/material';
 import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
 import ComboboxField, { asMultiValue } from '../../../../components/ComboboxField';
@@ -19,8 +20,10 @@ import {
   deserializeFilterGroupForFrontend,
   emptyFilterGroup,
   getDefaultFilterObject,
+  isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
   stixFilters,
+  useAvailableFilterKeysForEntityTypes,
   useFilterDefinition,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
@@ -30,8 +33,10 @@ import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditi
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
+import { CHANGE_DIGEST_ENTITY_TYPES } from './TriggerChangeDigestCreation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useTheme } from '@mui/material/styles';
 
@@ -63,6 +68,7 @@ const triggerEditionOverviewFragment = graphql`
     period
     trigger_time
     instance_trigger
+    scope_entity_types
     triggers {
       id
       name
@@ -75,6 +81,9 @@ interface TriggerEditionOverviewProps {
   handleClose: () => void;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
+
+// The entity types a change digest was created with from a saved filter, kept until one type is picked
+const SCOPE_ENTITY_TYPES_KEPT = 'auto';
 
 interface TriggerEditionFormValues {
   name: string;
@@ -89,6 +98,7 @@ interface TriggerEditionFormValues {
   }[];
   trigger_ids: { value: string }[];
   period: string;
+  scope_entity_type: string;
 }
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
@@ -104,6 +114,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
     ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
+  const changeDigestFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Domain-Object']);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
@@ -131,13 +142,16 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: values,
       },
-      onCompleted: () => {
+      onCompleted: (_, errors) => {
         setSubmitting(false);
+        if (hasPayloadErrors(errors)) return;
         handleClose();
       },
     });
   };
 
+  // Regular digests and change digests share their scheduling fields
+  const isPeriodicDigest = trigger.trigger_type === 'digest' || trigger.trigger_type === 'change_digest';
   const triggerValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -148,13 +162,13 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
     notifiers:
-      trigger.trigger_type === 'digest'
+      isPeriodicDigest
         ? Yup.array()
             .min(1, t_i18n('Minimum one notifier'))
             .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
     period:
-      trigger.trigger_type === 'digest'
+      isPeriodicDigest
         ? Yup.string().required(t_i18n('This field is required'))
         : Yup.string().nullable(),
     day: Yup.string().nullable(),
@@ -310,8 +324,25 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     dayStartDate().toISOString(),
   ];
 
+  // The scope of a change digest is stored with its entity types: one type of the creation form, or the types of
+  // the list of the saved filter it was created from, kept until another type is picked
+  const scopeEntityTypes = trigger.scope_entity_types ?? [];
+  const initialScopeEntityType = scopeEntityTypes.length === 1 && CHANGE_DIGEST_ENTITY_TYPES.includes(scopeEntityTypes[0])
+    ? scopeEntityTypes[0]
+    : SCOPE_ENTITY_TYPES_KEPT;
+  const handleSubmitScopeEntityType = (_: string, value: string) => {
+    if (value === SCOPE_ENTITY_TYPES_KEPT) return;
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'scope_entity_types', value: [value] },
+      },
+    });
+  };
+
   const initialValues = {
     name: trigger.name,
+    scope_entity_type: initialScopeEntityType,
     instance_trigger: trigger.instance_trigger ?? false,
     description: trigger.description,
     event_types: convertEventTypes(trigger),
@@ -382,7 +413,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               paginationOptions={paginationOptions}
             />
           )}
-          {trigger.trigger_type === 'digest' && (
+          {isPeriodicDigest && (
             <Field
               component={SelectFieldFds}
               variant="outlined"
@@ -398,7 +429,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               <SelectItem value="month">{t_i18n('month')}</SelectItem>
             </Field>
           )}
-          {trigger.trigger_type === 'digest' && values.period === 'week' && (
+          {isPeriodicDigest && values.period === 'week' && (
             <Field
               component={SelectFieldFds}
               variant="outlined"
@@ -417,7 +448,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               <SelectItem value="7">{t_i18n('Sunday')}</SelectItem>
             </Field>
           )}
-          {trigger.trigger_type === 'digest' && values.period === 'month' && (
+          {isPeriodicDigest && values.period === 'month' && (
             <Field
               component={SelectFieldFds}
               variant="outlined"
@@ -434,7 +465,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               ))}
             </Field>
           )}
-          {trigger.trigger_type === 'digest' && values.period !== 'hour' && (
+          {isPeriodicDigest && values.period !== 'hour' && (
             <Field
               component={TimePickerField}
               name="time"
@@ -456,16 +487,49 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             )
             }
           />
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="instance_trigger"
-            label={t_i18n('Subscription to specific object(s)')}
-            tooltip={instanceTriggerDescription}
-            containerstyle={{ marginTop: 20 }}
-            onChange={() => onChangeInstanceTrigger(setFieldValue)}
-            checked={instanceTrigger}
-          />
+          {trigger.trigger_type !== 'change_digest' && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="instance_trigger"
+              label={t_i18n('Subscription to specific object(s)')}
+              tooltip={instanceTriggerDescription}
+              containerstyle={{ marginTop: 20 }}
+              onChange={() => onChangeInstanceTrigger(setFieldValue)}
+              checked={instanceTrigger}
+            />
+          )}
+          {trigger.trigger_type === 'change_digest' && (
+            <Box sx={{ marginTop: '20px' }} data-testid="change-digest-scope">
+              <Text variant="title-md" style={{ marginBottom: 8 }}>{t_i18n('Filter set of the change digest')}</Text>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="scope_entity_type"
+                label={t_i18n('Entity types')}
+                helpertext={values.scope_entity_type === SCOPE_ENTITY_TYPES_KEPT
+                  ? t_i18n('With "Entity types of the scope", the digest compares the entity types of the list of the saved filter.')
+                  : t_i18n('Only the entities of this type are compared.')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitScopeEntityType}
+              >
+                {initialScopeEntityType === SCOPE_ENTITY_TYPES_KEPT && (
+                  <SelectItem value={SCOPE_ENTITY_TYPES_KEPT}>{t_i18n('Entity types of the scope')}</SelectItem>
+                )}
+                {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
+                ))}
+              </Field>
+              <Box sx={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
+                <Filters availableFilterKeys={changeDigestFilterKeys} helpers={helpers} searchContext={{ entityTypes: ['Stix-Domain-Object'] }} />
+                {!isFilterGroupNotEmpty(filters) && (
+                  <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No filters')}</Text>
+                )}
+              </Box>
+              <FilterIconButton filters={filters} helpers={helpers} redirection searchContext={{ entityTypes: ['Stix-Domain-Object'] }} entityTypes={['Stix-Domain-Object']} />
+            </Box>
+          )}
           {trigger.trigger_type === 'live' && (
             <span>
               <Box sx={{

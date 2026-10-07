@@ -130,6 +130,7 @@ const RootGrouping = () => {
                   ]}
                   />
                   <ContainerHeader
+                    enableTimeMachine
                     container={grouping}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
@@ -148,6 +149,7 @@ const RootGrouping = () => {
                     enableEnrollPlaybook={true}
                   />
                   <StixDomainObjectMain
+                    enableTimeMachine
                     entity={grouping}
                     basePath={basePath}
                     pages={{
