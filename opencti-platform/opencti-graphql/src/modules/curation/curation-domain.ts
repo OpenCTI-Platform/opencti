@@ -17,6 +17,7 @@ import { addCurationProposalAcceptedCount, addCurationProposalAutoAppliedCount, 
 import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
+  ACTION_MERGE,
   ACTION_UNMERGE,
   type AppliedPatch,
   type BasicStoreEntityCurationPolicy,
@@ -246,6 +247,24 @@ const findUnrecordedApplication = async (context: AuthContext, proposal: BasicSt
   return { application: null, complete: false };
 };
 
+/**
+ * A merge applies a duplicate finding. When a subject changed since the proposal was raised (renamed, aliases or
+ * identifiers edited), the detectors run again on the subjects as they are now, and the merge is refused when they no
+ * longer find the pair. A subject that is gone is left to the merge, which says what remains to merge.
+ */
+const checkMergeFindingHolds = async (context: AuthContext, settings: CurationSettings, proposal: BasicStoreEntityCurationProposal) => {
+  const subjects = await internalFindByIds(context, SYSTEM_USER, proposal.subject_ids) as BasicStoreBase[];
+  if (subjects.length < 2) return;
+  const raisedAt = new Date(proposal.created_at).getTime();
+  if (!subjects.some((subject) => new Date(subject.updated_at).getTime() > raisedAt)) return;
+  const confidence = await currentMergeConfidence(context, settings, { subject_ids: subjects.map((subject) => subject.internal_id) });
+  if (confidence === null) {
+    throw FunctionalError('These entities changed since the proposal was raised and the detectors no longer find them duplicates: reject the proposal', {
+      id: proposal.internal_id,
+    });
+  }
+};
+
 const applyAndRecord = async (
   context: AuthContext,
   user: AuthUser,
@@ -257,6 +276,11 @@ const applyAndRecord = async (
   checkProposalRevision(proposal, input.expectedUpdatedAt);
   if (!canUserApplyProposal(user, proposal, input.decision)) {
     throw ForbiddenAccess('You are not allowed to apply this curation proposal');
+  }
+  // A policy checks the finding at its own threshold before applying it; a retry completes a merge already started.
+  if (!input.policyId && !proposal.application_started_at && proposal.proposal_kind === PROPOSAL_KIND_MERGE
+    && effectiveProposalAction(proposal, input.decision) === ACTION_MERGE) {
+    await checkMergeFindingHolds(context, settings, proposal);
   }
   // A retry after a change that could not be recorded records that change, instead of applying the action again.
   const unrecorded = await findUnrecordedApplication(context, proposal);

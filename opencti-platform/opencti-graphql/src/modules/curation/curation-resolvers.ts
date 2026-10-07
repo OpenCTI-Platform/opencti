@@ -5,7 +5,7 @@ import { loadCreator } from '../../database/members';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, KNOWLEDGE, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
 import { AUTHORITY_SOURCE_CONNECTOR, ENTITY_TYPE_MERGE_RECORD, KNOWLEDGE_HEALTH_METRIC_KEYS, MERGE_STATUS_REVERTED } from './curation-types';
 import {
   acceptProposal,
@@ -58,7 +58,9 @@ const toJsonString = (value: unknown) => {
   return typeof value === 'string' ? value : JSON.stringify(value);
 };
 
+// Every proposal query requires Access knowledge: without it, a policy manager gets the counts of a dry run only.
 const resolveSampleProposals = async (context: AuthContext, dryRun: CurationPolicyDryRunResult) => {
+  if (!isUserHasCapability(context.user!, KNOWLEDGE)) return [];
   const proposals = await Promise.all((dryRun.sample_proposal_ids ?? []).map((id) => findProposalById(context, context.user!, id)));
   return proposals.filter((proposal) => proposal !== undefined && proposal !== null);
 };

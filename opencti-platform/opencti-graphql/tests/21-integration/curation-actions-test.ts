@@ -1521,6 +1521,25 @@ describe('Knowledge curation actions', () => {
     expect(await storeLoadById(testContext, ADMIN_USER, recordId, ENTITY_TYPE_MERGE_RECORD)).toBeUndefined();
   });
 
+  it('should refuse to merge a subject renamed since the proposal once the detectors no longer find the pair', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Renamed Spider`);
+    const source = await createIntrusionSet(`${PREFIX} Renamed-Spider`);
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_MERGE,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target), subjectOf(source)],
+      target_id: target.id,
+      recommended_action: ACTION_MERGE,
+      evidence: evidenceFor('canonical_collision', 'Same name once normalized'),
+      confidence: 0.95,
+    });
+    await updateAttribute(testContext, ADMIN_USER, source.id, ENTITY_TYPE_INTRUSION_SET, [{ key: 'name', value: [`${PREFIX} Quiet Heron`] }]);
+    const refused = await queryAsAdmin({ query: ACCEPT_MUTATION, variables: { id, input: { target_id: target.id } } });
+    expect(refused.errors?.[0]?.message).toContain('the detectors no longer find them duplicates');
+    expect((await loadProposal(id)).proposal_status).toBe('open');
+    expect(await loadIntrusionSet(source.id)).toBeDefined();
+  });
+
   describe('curation policies (Enterprise Edition)', () => {
     let policyId: string;
 
