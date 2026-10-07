@@ -4,7 +4,8 @@ import { patchAttribute } from '../../../../src/database/middleware';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun } from '../../../../src/modules/hunt/hunt-dispatch';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
-import { findHuntConnectors, registerHuntConnector } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
+import { findHuntConnectors, huntConnectorPlatformLockKey, registerHuntConnector } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import type { BasicStoreEntityConnector } from '../../../../src/types/connector';
@@ -73,6 +74,7 @@ describe('Hunt connectors and their security platforms', () => {
     vi.mocked(storeLoadById).mockReset();
     vi.mocked(patchAttribute).mockReset();
     vi.mocked(addSecurityPlatform).mockReset();
+    vi.mocked(withHuntLock).mockClear();
   });
 
   it('should list the connectors of the internet and of the security platforms the user can read only', async () => {
@@ -89,6 +91,28 @@ describe('Hunt connectors and their security platforms', () => {
     vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-lab' } as never);
     await expect(registering({ security_platform_name: 'Lab' })).rejects.toThrow('The security platform Lab is hunted by the sentinel connector');
     expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should check and bind a connector under a lock per security platform, never an internet connector', async () => {
+    serving([SPLUNK_PROD, TRACKER]);
+    vi.mocked(storeLoadById).mockResolvedValue(SPLUNK_PROD as never);
+    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...SPLUNK_PROD, ...patch } }) as never);
+    // The connectors read for the check and the binding both happen while the lock is held
+    const heldDuring: number[] = [];
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      const result = await action();
+      heldDuring.push(vi.mocked(fullEntitiesList).mock.calls.length, vi.mocked(patchAttribute).mock.calls.length);
+      return result;
+    });
+    await registering({ security_platform_name: 'Prod' });
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey('platform-prod')]);
+    expect(heldDuring).toEqual([1, 1]);
+    vi.mocked(withHuntLock).mockClear();
+    vi.mocked(storeLoadById).mockResolvedValue(TRACKER as never);
+    await registering({ connector_id: TRACKER.internal_id, platform: 'internet', languages: ['url'] });
+    expect(withHuntLock).not.toHaveBeenCalled();
+    expect(addSecurityPlatform).toHaveBeenCalledTimes(1);
   });
 
   it('should let connectors of the same kind share a security platform', async () => {

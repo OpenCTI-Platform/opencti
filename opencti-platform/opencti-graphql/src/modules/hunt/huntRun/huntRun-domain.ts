@@ -29,6 +29,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
 import { isStixCyberObservable } from '../../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../schema/stixDomainObject';
 import { isStixSightingRelationship } from '../../../schema/stixSightingRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import {
   FilterMode,
   FilterOperator,
@@ -87,9 +88,9 @@ import {
   isDeterministicHuntFailure,
   isTerminalHuntRunFailure,
 } from '../hunt-logic';
-import { resolveHuntIocSet } from '../hunt-iocs';
+import { isReadableByReadersOf, resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
-import { updateHuntRunInformation } from '../hunt-stats';
+import { type HuntRunInformationPatch, updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
 import {
   continueHuntIncident,
@@ -406,6 +407,29 @@ const findRunUnresolvedTechniques = async (context: AuthContext, hunt: BasicStor
   }
 };
 
+type HuntRunAccess = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTED_TO]?: string[] };
+
+/**
+ * The run summary of a hunt (last run, its status and hits) is read, sorted and filtered with the access of the hunt: it
+ * only follows the runs every reader of the hunt can read, never a run its security platform restricts further, which
+ * only the readers of that run see among the runs of the hunt. Written when one of the runs is readable so, never over
+ * the summary of a later run.
+ */
+export const recordHuntRunSummary = async (context: AuthContext, hunt: BasicStoreEntityHunt, runs: HuntRunAccess[], patch: HuntRunInformationPatch) => {
+  const huntMarkings = hunt[RELATION_OBJECT_MARKING] ?? [];
+  const huntOrganizations = hunt[RELATION_GRANTED_TO] ?? [];
+  // Restricted as its hunt only: no marking the hunt does not carry, shared with every organization of the hunt
+  const asOpenAsHunt = (run: HuntRunAccess) => (run[RELATION_OBJECT_MARKING] ?? []).every((id) => huntMarkings.includes(id))
+    && huntOrganizations.every((id) => (run[RELATION_GRANTED_TO] ?? []).includes(id));
+  for (let index = 0; index < runs.length; index += 1) {
+    if (asOpenAsHunt(runs[index]) || await isReadableByReadersOf(context, hunt, runs[index])) {
+      await updateHuntRunInformation(context, hunt.internal_id, patch, { onlyIfNewer: true });
+      return true;
+    }
+  }
+  return false;
+};
+
 /**
  * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
  * dispatches the deferred ones). Runs are created by the hunt manager identity with the markings and organizations
@@ -465,6 +489,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   const unresolvedTechniques = targets.length > 0 && mode === HUNT_RUN_MODE_EXECUTE ? await findRunUnresolvedTechniques(context, hunt) : [];
   // Taken before any run is published: a run its connector completes during the dispatch records a later date
   const queuedAt = now();
+  const createdAccess: HuntRunAccess[] = [];
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
   for (let index = 0; index < targets.length; index += 1) {
     const { connector, securityPlatform, restrictions } = targets[index];
@@ -531,6 +556,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       break;
     }
     runs.push(run);
+    createdAccess.push({ [RELATION_OBJECT_MARKING]: restrictions.objectMarking, [RELATION_GRANTED_TO]: restrictions.objectOrganization });
     addHuntRunCount(request.trigger);
     if (request.dispatch !== false && dispatchBudget > 0) {
       dispatchBudget -= 1;
@@ -546,7 +572,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   }
   if (runs.length > 0 && mode === HUNT_RUN_MODE_EXECUTE) {
     // Never written over the statistics of a run finalized meanwhile; the runs exist, a failure here never fails them
-    await updateHuntRunInformation(context, hunt.internal_id, { last_run_at: queuedAt, last_run_status: HUNT_RUN_STATUS_QUEUED }, { onlyIfNewer: true })
+    await recordHuntRunSummary(context, hunt, createdAccess, { last_run_at: queuedAt, last_run_status: HUNT_RUN_STATUS_QUEUED })
       .catch((error) => logApp.warn('[OPENCTI-MODULE] Hunt last run information not recorded', { cause: error, huntId: hunt.internal_id }));
   }
   return runs;
@@ -860,12 +886,12 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     }
   }
   try {
-    await updateHuntRunInformation(context, hunt.internal_id, {
+    await recordHuntRunSummary(context, hunt, [current], {
       last_run_at: current.completed_at ?? now(),
       last_run_status: current.hunt_run_status,
       last_hits_count: current.hits_count ?? 0,
       last_new_hits_count: newHits,
-    }, { onlyIfNewer: true });
+    });
   } catch (error) {
     stepFailed('[OPENCTI-MODULE] Hunt statistics update failed', error);
   }
@@ -1397,12 +1423,12 @@ const EVIDENCE_SOURCES_MAX = 20;
  */
 const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
   try {
-    await updateHuntRunInformation(context, hunt.internal_id, {
+    await recordHuntRunSummary(context, hunt, [run], {
       last_run_at: run.completed_at ?? now(),
       last_run_status: run.hunt_run_status,
       last_hits_count: run.hits_count ?? 0,
       last_new_hits_count: huntRunNewHits(run),
-    }, { onlyIfNewer: true });
+    });
     await writeHuntCoverageResult(context, run);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Hunt run outcome refresh after late evidence failed', { cause: error, runId: run.internal_id });
@@ -1685,6 +1711,9 @@ export const findHuntConnectors = async (context: AuthContext, user: AuthUser, o
     .map(toHuntConnectorView);
 };
 
+const HUNT_CONNECTOR_PLATFORM_LOCK = 'hunt_connector_platform';
+export const huntConnectorPlatformLockKey = (securityPlatformId: string) => `${HUNT_CONNECTOR_PLATFORM_LOCK}_${securityPlatformId}`;
+
 export const registerHuntConnector = async (context: AuthContext, user: AuthUser, input: HuntConnectorRegisterInput) => {
   const connector = await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, input.connector_id, ENTITY_TYPE_CONNECTOR);
   if (!connector) {
@@ -1704,9 +1733,9 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   if (languages.length === 0) {
     throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
   }
+  const name = input.security_platform_name?.trim();
   let securityPlatformId: string | null = null;
   if (platform !== HUNT_PLATFORM_INTERNET) {
-    const name = input.security_platform_name?.trim();
     if (!name) {
       throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
     }
@@ -1716,31 +1745,36 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
       security_platform_type: input.security_platform_type ?? 'SIEM',
     }) as BasicStoreEntitySecurityPlatform;
     securityPlatformId = securityPlatform.internal_id;
+  }
+  const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
+  const bind = async () => {
     // A security platform is one product: connectors of the same kind share it, a connector of another kind never
     // executes its own query language against it
-    const otherKind = (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
-      && other.hunt_security_platform_id === securityPlatformId && huntConnectorPlatform(other) !== platform);
+    const otherKind = securityPlatformId ? (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
+      && other.hunt_security_platform_id === securityPlatformId && huntConnectorPlatform(other) !== platform) : undefined;
     if (otherKind) {
       throw FunctionalError(
         `The security platform ${name} is hunted by the ${huntConnectorPlatform(otherKind)} connector ${otherKind.name}: name another security platform, or delete that connector`,
         { connectorId: input.connector_id, securityPlatformId, otherConnectorId: otherKind.internal_id },
       );
     }
-  }
-  const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
-  const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
-    hunt_platform: platform,
-    hunt_languages: languages,
-    hunt_security_platform_id: securityPlatformId,
-    hunt_supports_preview: input.supports_preview !== false,
-    // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
-    hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
-    hunt_max_concurrent_runs: maxConcurrent,
-    hunt_setup: {
-      documentation_url: sanitizeDocumentationUrl(input.documentation_url),
-      required_permissions: sanitizeRequiredPermissions(input.required_permissions),
-    },
-  });
+    return patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
+      hunt_platform: platform,
+      hunt_languages: languages,
+      hunt_security_platform_id: securityPlatformId,
+      hunt_supports_preview: input.supports_preview !== false,
+      // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
+      hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
+      hunt_max_concurrent_runs: maxConcurrent,
+      hunt_setup: {
+        documentation_url: sanitizeDocumentationUrl(input.documentation_url),
+        required_permissions: sanitizeRequiredPermissions(input.required_permissions),
+      },
+    });
+  };
+  // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
+  // both bind to it
+  const { element } = securityPlatformId ? await withHuntLock(huntConnectorPlatformLockKey(securityPlatformId), bind) : await bind();
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   if ((connector.hunt_security_platform_id ?? null) !== securityPlatformId) {
