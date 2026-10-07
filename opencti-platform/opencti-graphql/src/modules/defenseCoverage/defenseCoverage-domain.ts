@@ -1260,14 +1260,17 @@ export const addPlatformProvidesFromLogsources = async (
     fromId: platform.internal_id,
     toId: matchedIds,
     baseData: true,
+    baseFields: ['revoked'],
   });
-  const declaredIds = new Set(existing.map((relation) => relation.toId));
+  // A revoked declaration provides no telemetry: declaring it again reactivates it through the upsert
+  const declaredIds = new Set(existing.filter((relation) => !relation.revoked).map((relation) => relation.toId));
   const missingIds = matchedIds.filter((id) => !declaredIds.has(id));
   for (let index = 0; index < missingIds.length; index += 1) {
     await addStixCoreRelationship(context, user, {
       fromId: platform.internal_id,
       toId: missingIds[index],
       relationship_type: RELATION_PROVIDES,
+      revoked: false,
       description: 'Declared from log sources through the defense matrix log source mapping',
     });
   }

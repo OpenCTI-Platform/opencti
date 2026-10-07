@@ -290,6 +290,17 @@ describe('Defense coverage stream impact', () => {
     expect(platformProvides.full).toEqual(false);
     expect(Array.from(platformProvides.dataComponentIds)).toEqual(['dc-2']);
   });
+  it.each([['SecurityPlatform', 'identity'], ['System', 'identity']])('should ask for a full computation when a %s is revoked or restored', (type, stixType) => {
+    const updated = (path: string) => ({
+      id: '1-0',
+      event: 'update',
+      data: { type: 'update', data: { type: stixType, extensions: { [STIX_EXT_OCTI]: { id: 'p', type } } }, context: { patch: [{ op: 'replace', path, value: true }] } },
+    } as never);
+    const revoked = collectDefenseImpact([updated('/revoked')]);
+    expect(revoked.full).toEqual(true);
+    expect(revoked.accessChanged).toEqual(true);
+    expect(collectDefenseImpact([updated('/name')]).full).toEqual(false);
+  });
   it.each(['create', 'update', 'merge', 'delete'])('should reload the tactics on a %s of a kill chain phase', (type) => {
     const impact = collectDefenseImpact([event(type, { type: 'kill-chain-phase', extensions: { [STIX_EXT_OCTI]: { id: 'kcp-1', type: 'Kill-Chain-Phase' } } })]);
     expect(impact.phasesChanged).toEqual(true);

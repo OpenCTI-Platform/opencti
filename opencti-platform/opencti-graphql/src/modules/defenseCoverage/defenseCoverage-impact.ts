@@ -34,11 +34,13 @@ const FULL_RECOMPUTE_ENTITY_TYPES = [
 const TECHNIQUE_RELATIONSHIPS = [RELATION_DETECTS, RELATION_INDICATES, RELATION_MITIGATES, RELATION_HAS_COVERED, RELATION_SUBTECHNIQUE_OF];
 // Patch paths of the attributes deciding who may see an element (markings, organizations, authorized members)
 const ACCESS_PATCH_PATH = /object_marking_refs|granted_refs|authorized_members|restricted_members/;
+const REVOKED_PATCH_PATH = /^\/revoked$/;
 
-const isAccessUpdate = (event: SseEvent<DataEvent>) => {
+const isPatchOf = (event: SseEvent<DataEvent>, path: RegExp) => {
   const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
-  return patch.some((operation) => ACCESS_PATCH_PATH.test(operation.path ?? ''));
+  return patch.some((operation) => path.test(operation.path ?? ''));
 };
+const isAccessUpdate = (event: SseEvent<DataEvent>) => isPatchOf(event, ACCESS_PATCH_PATH);
 
 export interface DefenseImpact {
   full: boolean;
@@ -144,6 +146,11 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       // Pattern type, log source or revocation changes move a rule in or out of the detection layer
       impact.ruleIds.add(extension.id);
       return;
+    }
+    if (eventType === EVENT_TYPE_UPDATE && (extension.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || extension.type === ENTITY_TYPE_IDENTITY_SYSTEM)
+      && isPatchOf(event, REVOKED_PATCH_PATH)) {
+      // Revoking a platform removes its column of gaps, restoring it brings the column back
+      impact.full = true;
     }
     if (eventType === EVENT_TYPE_UPDATE && FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) {
       // A marking or organization change on an evidence changes who may see it: readers re-evaluate their access

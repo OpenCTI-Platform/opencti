@@ -102,10 +102,11 @@ export const withoutRevokedRelations = <T extends Pick<BasicStoreRelation, 'revo
 };
 
 export const loadDefensePlatforms = async (context: AuthContext, user: AuthUser): Promise<DefensePlatform[]> => {
-  const securityPlatforms = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
+  // A revoked platform leaves the matrix with its column of gaps, and comes back once restored
+  const securityPlatforms = (await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
     baseData: true,
-    baseFields: ['name', 'x_opencti_stix_ids', 'security_platform_type'],
-  });
+    baseFields: ['name', 'x_opencti_stix_ids', 'security_platform_type', 'revoked'],
+  })).filter((platform) => !platform.revoked);
   const systemProvides = withoutRevokedRelations(await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
     fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
     baseData: true,
@@ -113,7 +114,8 @@ export const loadDefensePlatforms = async (context: AuthContext, user: AuthUser)
   }));
   const systemIds = R.uniq(systemProvides.map((r) => r.fromId));
   const systems = systemIds.length > 0
-    ? await findByIdsChunked<BasicStoreEntity>(context, user, systemIds, { type: ENTITY_TYPE_IDENTITY_SYSTEM, baseData: true, baseFields: ['name', 'x_opencti_stix_ids'] })
+    ? (await findByIdsChunked<BasicStoreEntity>(context, user, systemIds, { type: ENTITY_TYPE_IDENTITY_SYSTEM, baseData: true, baseFields: ['name', 'x_opencti_stix_ids', 'revoked'] }))
+        .filter((system) => !system.revoked)
     : [];
   return [...securityPlatforms, ...systems].map((p) => ({
     id: p.internal_id,
