@@ -90,28 +90,15 @@ const listRuns = (context: AuthContext, filters: FilterGroup['filters'], orderBy
   });
 };
 
-// One page only: for due cron hunts, processing moves their next run, so the next tick reads the next ones
-const listHunts = (context: AuthContext, filters: FilterGroup['filters'], filterGroups: FilterGroup[] = [], orderBy = 'created_at') => {
-  return topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
-    first: HUNT_CONFIG.automationPageSize,
-    orderBy,
-    orderMode: OrderingMode.Asc,
-    filters: andFilters(filters, filterGroups),
-    noFiltersChecking: true,
-    // Runs and standing triggers read the targets, techniques and sources of the hunts
-    withoutRels: false,
-  });
-};
-
 // Where a bounded scan resumes at the next tick; reset once a scan reached the last element, and on a restart of the manager
 const scanCursors = new Map<string, string | undefined>();
 
 /**
  * Every element of a type matching the filters, page by page. For phases whose filters do not drop the elements they
- * process (PIR arming, standing hunts, the check of orphan runs), a bounded first page would read the same oldest elements
- * at every tick and never reach the others. With a scan name, a tick reads at most `automationMaxPagesPerTick` pages and
- * the next tick resumes after the last element read, starting over once the last one was reached: every element is
- * visited within a bounded number of ticks. A page handler returning how many elements it processed, fewer than the
+ * process (PIR arming, due scheduled hunts that started no run, standing hunts, the check of orphan runs), a bounded
+ * first page would read the same oldest elements at every tick and never reach the others. With a scan name, a tick
+ * reads at most `automationMaxPagesPerTick` pages and the next tick resumes after the last element read, starting over
+ * once the last one was reached: every element is visited within a bounded number of ticks. A page handler returning how many elements it processed, fewer than the
  * page, stops the scan there: the next tick resumes after the last element it processed.
  */
 const forEachPage = async <T extends BasicStoreEntity>(
@@ -600,10 +587,12 @@ const isWaitingForPir = (hunt: BasicStoreEntityHunt) => hunt.hunt_pir_activation
  * Cron hunts: due hunts run (unless their PIR activation is not armed) and their next occurrence is computed from now,
  * so that an outage never replays the missed occurrences. An occurrence that started no run (its runs could not be
  * created, or no hunt connector serves the scope yet) stays due for the next tick, as the standing and PIR triggers
- * do. Hunts approved from a draft get their first occurrence here.
+ * do: the due hunts are scanned in turn, so the ones that cannot run never hold back the others. Hunts approved from a
+ * draft get their first occurrence here.
  */
 export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
-  const hunts = await listHunts(context, [
+  let started = 0;
+  const filters = andFilters([
     { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
     { key: ['hunt_schedule'], values: [HUNT_SCHEDULE_MANUAL, HUNT_SCHEDULE_STANDING], operator: FilterOperator.NotEq, mode: FilterMode.And },
   ], [{
@@ -613,21 +602,26 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
       { key: ['next_run_at'], values: [], operator: FilterOperator.Nil },
     ],
     filterGroups: [],
-  }], 'next_run_at');
-  let started = 0;
-  // Once the tick budget is spent the remaining hunts keep their due occurrence for the next tick
-  for (let index = 0; index < hunts.length && budget.remaining > 0; index += 1) {
-    const hunt = hunts[index];
-    // A first occurrence, or one falling while the PIR activation is disarmed, is planned without running
-    const due = !!hunt.next_run_at && !isWaitingForPir(hunt);
-    const runs = due ? await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining) : 0;
-    if (runs !== null && (!due || runs > 0)) {
-      started += runs;
-      budget.remaining -= runs;
-      const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
-      await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
+  }]);
+  await forEachPage<BasicStoreEntityHunt>(context, ENTITY_TYPE_HUNT, filters, async (hunts) => {
+    for (let index = 0; index < hunts.length; index += 1) {
+      // Once the tick budget is spent the remaining hunts keep their due occurrence, the next tick resumes after this one
+      if (budget.remaining <= 0) {
+        return index;
+      }
+      const hunt = hunts[index];
+      // A first occurrence, or one falling while the PIR activation is disarmed, is planned without running
+      const due = !!hunt.next_run_at && !isWaitingForPir(hunt);
+      const runs = due ? await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining) : 0;
+      if (runs !== null && (!due || runs > 0)) {
+        started += runs;
+        budget.remaining -= runs;
+        const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
+        await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
+      }
     }
-  }
+    return hunts.length;
+  }, { scan: 'scheduled-hunts', withoutRels: false });
   return started;
 };
 
