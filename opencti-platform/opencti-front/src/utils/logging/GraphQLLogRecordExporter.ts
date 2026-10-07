@@ -4,6 +4,7 @@ import type { ExportResult } from '@opentelemetry/core';
 import type { LogRecordExporter, ReadableLogRecord } from '@opentelemetry/sdk-logs';
 import { environment } from '../../relay/environment';
 import { SEVERITY_NUMBERS } from './logger';
+import { toAppModule, toErrorDependency, toErrorOrigin } from './errorOrigin';
 import type { LogLevel } from './logger';
 import type { FrontendLogInput, GraphQLLogRecordExporterAddLogsMutation } from './__generated__/GraphQLLogRecordExporterAddLogsMutation.graphql';
 
@@ -31,6 +32,10 @@ export const toFrontendLogInput = (record: ReadableLogRecord): FrontendLogInput 
     eventName: record.eventName ?? 'opencti.frontend.unnamed',
     data: attributes.data ?? null,
     exception: type || message || stacktrace ? { type, message, stacktrace } : null,
+    origin: toErrorOrigin(attributes.origin),
+    module: toAppModule(attributes.module),
+    entryModule: toAppModule(attributes.entry_module),
+    dependency: toErrorDependency(attributes.dependency),
   };
 };
 
