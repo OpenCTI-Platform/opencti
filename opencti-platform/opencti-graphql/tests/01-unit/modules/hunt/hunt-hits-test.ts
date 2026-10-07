@@ -233,6 +233,13 @@ describe('Incident of a hunt run', () => {
     expect(content.description).toContain('reported no single hit');
   });
 
+  it('should count the distinct entities only when the connector reported them', () => {
+    expect(buildHuntIncidentContent(hunt, run, null, null).description).toContain('The hunt matched 28 events (3 distinct entities) between');
+    const uncounted = buildHuntIncidentContent(hunt, { ...run, distinct_entities: null } as unknown as BasicStoreEntityHuntRun, null, null);
+    expect(uncounted.description).toContain('The hunt matched 28 events between');
+    expect(uncounted.description).not.toContain('distinct entities');
+  });
+
   it('should relate the incident to the hunt, its sources, targets and techniques, the platform and the hit observations', () => {
     expect(huntIncidentRelatedIds(hunt, run)).toEqual(['hunt-1', 'indicator-1', 'org-1', 'technique-1', 'platform-1', 'observed-data-1', 'hostname-1']);
   });

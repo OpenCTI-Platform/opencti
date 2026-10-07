@@ -1,3 +1,4 @@
+import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { logApp } from '../../config/conf';
@@ -5,6 +6,7 @@ import { createEntity, createRelation, patchAttribute } from '../../database/mid
 import { internalLoadById, topEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
+import { OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { HUNT_MANAGER_USER, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
@@ -48,12 +50,26 @@ export const parseIncidentProposal = (proposal: string | null | undefined): Hunt
  * The draft workspace an incident proposed by a hunt run is created in (draft-first: an analyst validates it into the
  * knowledge graph). The workspace is restricted to the organizations the run is shared with, if any, and its name and
  * description carry no detail of the hunt: draft workspaces are listed to every user with draft access, the markings
- * of the run only protect the incident inside.
+ * of the run only protect the incident inside. The open draft of the run is reused: an attempt that failed to record
+ * it on the run never leaves the run with two drafts.
  */
 export const createHuntIncidentWorkspace = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<string> => {
+  const name = `Hunt incident - run ${run.internal_id}`;
+  const [existing] = await topEntitiesList<BasicStoreEntity>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    first: 1,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['name'], values: [name] }, { key: ['draft_status'], values: [DRAFT_STATUS_OPEN] }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  if (existing) {
+    return existing.internal_id;
+  }
   const organizations = run[RELATION_GRANTED_TO] ?? [];
   const draft = await addDraftWorkspace(context, HUNT_MANAGER_USER, {
-    name: `Hunt incident - run ${run.internal_id}`,
+    name,
     description: 'Incident proposed by a hunt run. Validate the draft to create the incident.',
     ...(organizations.length > 0 ? { authorized_members: organizations.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_EDIT })) } : {}),
   });
@@ -126,7 +142,8 @@ export const buildHuntIncidentContent = (
   const known = run.hits_identified === true && (run.hits_recurring_count ?? 0) > 0
     ? ` ${run.hits_new_count ?? 0} of them were never seen before, ${run.hits_recurring_count} were seen by earlier runs.`
     : '';
-  sections.push(`The hunt matched ${run.hits_count ?? 0} events (${run.distinct_entities ?? 0} distinct entities)${platform} ${dated}, in its run ${run.internal_id}.${known}`);
+  const entities = typeof run.distinct_entities === 'number' ? ` (${run.distinct_entities} distinct entities)` : '';
+  sections.push(`The hunt matched ${run.hits_count ?? 0} events${entities}${platform} ${dated}, in its run ${run.internal_id}.${known}`);
   if (hits.length > 0) {
     const facts = [
       ['Matched fields', topValues(hits, (hit) => (hit.matched ?? []).map((match) => match.field))],
@@ -162,6 +179,11 @@ export const huntIncidentRelatedIds = (hunt: BasicStoreEntityHunt, run: BasicSto
   ]));
 };
 
+/** The STIX id every attempt at the incident of a run carries, so that a later attempt updates the one created. */
+export const huntIncidentStixId = (run: Pick<BasicStoreEntityHuntRun, 'internal_id'>) => {
+  return `incident--${uuidv5(`hunt-incident|${run.internal_id}`, OPENCTI_NAMESPACE)}`;
+};
+
 /**
  * Creates the Incident of a hunt run in its draft workspace. The incident carries the markings and organizations of
  * the run (those of the hunt and of its security platform), the hunt author, and is related to what the run hunted
@@ -178,6 +200,7 @@ export const createHuntIncidentInWorkspace = async (
   const platform = run.security_platform_id ? await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null;
   const content = buildHuntIncidentContent(hunt, run, proposal, platform?.name ?? null);
   const incidentInput: Record<string, unknown> = {
+    stix_id: huntIncidentStixId(run),
     name: content.name,
     description: content.description,
     incident_type: 'alert',

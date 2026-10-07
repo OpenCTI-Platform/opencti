@@ -2,10 +2,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { createEntity, createRelation, patchAttribute } from '../../../../src/database/middleware';
 import { internalLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
-import { continueHuntIncident, findOpenHuntIncident } from '../../../../src/modules/hunt/hunt-incident';
+import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import {
+  continueHuntIncident,
+  createHuntIncidentInWorkspace,
+  createHuntIncidentWorkspace,
+  findOpenHuntIncident,
+  huntIncidentStixId,
+} from '../../../../src/modules/hunt/hunt-incident';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
-import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INCIDENT } from '../../../../src/schema/stixDomainObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import type { AuthContext } from '../../../../src/types/user';
 
@@ -20,6 +27,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...await importOriginal<typeof import('../../../../src/database/middleware-loader')>(),
   internalLoadById: vi.fn(),
   topEntitiesList: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/draftWorkspace/draftWorkspace-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/draftWorkspace/draftWorkspace-domain')>(),
+  addDraftWorkspace: vi.fn(async () => ({ id: 'draft-new' })),
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -110,5 +122,34 @@ describe('Open hunt incident a later run continues', () => {
     // Without a platform organization, organizations do not restrict reading
     vi.mocked(getEntityFromCache).mockResolvedValue({} as never);
     expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', draftId: null });
+  });
+});
+
+describe('Incident of a run opened again after a failed attempt', () => {
+  beforeEach(() => {
+    vi.mocked(createEntity).mockClear();
+    vi.mocked(addDraftWorkspace).mockClear();
+    vi.mocked(topEntitiesList).mockReset();
+    vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'platform-1', name: 'Splunk prod' } as never);
+  });
+
+  it('should reuse the open draft of the run rather than open another', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ internal_id: 'draft-1' }] as never);
+    expect(await createHuntIncidentWorkspace({} as AuthContext, run)).toEqual('draft-1');
+    expect(addDraftWorkspace).not.toHaveBeenCalled();
+    const filters = (vi.mocked(topEntitiesList).mock.calls[0][3] as { filters: { filters: { key: string[]; values: string[] }[] } }).filters.filters;
+    expect(filters).toEqual([{ key: ['name'], values: ['Hunt incident - run run-2'] }, { key: ['draft_status'], values: ['open'] }]);
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([] as never);
+    expect(await createHuntIncidentWorkspace({} as AuthContext, run)).toEqual('draft-new');
+    expect(addDraftWorkspace).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ name: 'Hunt incident - run run-2' }));
+  });
+
+  it('should give every attempt at the incident of a run the same STIX id, so a later one updates it', async () => {
+    await createHuntIncidentInWorkspace({} as AuthContext, hunt, run, null, 'draft-1');
+    await createHuntIncidentInWorkspace({} as AuthContext, hunt, { ...run, hits_count: 6 } as BasicStoreEntityHuntRun, null, 'draft-1');
+    const stixIds = vi.mocked(createEntity).mock.calls.filter((call) => call[3] === ENTITY_TYPE_INCIDENT).map((call) => (call[2] as { stix_id: string }).stix_id);
+    expect(stixIds).toEqual([huntIncidentStixId(run), huntIncidentStixId(run)]);
+    expect(huntIncidentStixId(run)).toMatch(/^incident--[0-9a-f-]{36}$/);
+    expect(huntIncidentStixId({ internal_id: 'run-3' })).not.toEqual(huntIncidentStixId(run));
   });
 });
