@@ -101,7 +101,7 @@ The **Logic** tab keeps the Sigma rule and the native queries of the hunt, valid
 
 ### Hunt this: start a hunt from a threat, a report or an indicator
 
-**Hunt this** is offered on Intrusion Sets, Threat Actors, Campaigns, Malware, Attack Patterns, Reports, Groupings, Incident Responses, Incidents, Indicators, the observables an indicator hunt can look up, and Priority Intelligence Requirements. **Create a hunt** does not open an empty form: the platform first derives what to hunt from the knowledge it holds, with your access (what you cannot see is never derived), and opens the form with it.
+**Hunt this** is offered on Intrusion Sets, Threat Actors, Campaigns, Malware, Tools, Attack Patterns, Reports, Groupings, Incident Responses, Incidents, Indicators, the observables an indicator hunt can look up, and Priority Intelligence Requirements. **Create a hunt** does not open an empty form: the platform first derives what to hunt from the knowledge it holds, with your access (what you cannot see is never derived), and opens the form with it.
 
 | Started from | What the platform derives | The hunt it opens |
 |---|---|---|

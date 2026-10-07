@@ -4,6 +4,7 @@ import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'rea
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import ToolEdition from '@components/arsenal/tools/ToolEdition';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
@@ -20,6 +21,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import { RootToolQuery } from './__generated__/RootToolQuery.graphql';
 import { RootToolSubscription } from './__generated__/RootToolSubscription.graphql';
 import Security from '../../../../utils/Security';
@@ -103,6 +105,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 
   const basePath = PATH_TOOL(toolId);
   const paddingRight = getPaddingRight(location.pathname, basePath);
+  const isOverview = isPathOverview(location.pathname, basePath);
   const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
@@ -199,6 +202,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   />
                 ),
               }}
+              extraActions={isOverview && <HuntThisMenu entity={tool} />}
             />
           </div>
         </>

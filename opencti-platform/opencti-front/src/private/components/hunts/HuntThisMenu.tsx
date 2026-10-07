@@ -117,7 +117,7 @@ interface HuntThisMenuProps {
   entity: HuntIndicatorPrefillEntity;
 }
 
-/** "Hunt this" quick action of the threat, technique, report, indicator, observable, grouping, case, incident and PIR pages. */
+/** "Hunt this" quick action of the threat, tool, technique, report, indicator, observable, grouping, case, incident and PIR pages. */
 const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
