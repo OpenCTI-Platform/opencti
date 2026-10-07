@@ -119,7 +119,7 @@ The **Gaps** section lists every technique and platform pair below level 4, with
 
 Without a selected security platform, each technique has one **All platforms** row: its missing telemetry is the telemetry that no platform provides, and its rule candidates are the rules deployed on no platform.
 
-The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV** (shown to the users whose role has the capability `Can use web interface export functions`): the export holds the filtered backlog, in its order, up to 10,000 gaps. When the backlog holds more, a message says so after the download: narrow the filters to export the others.
+The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV** (shown to the users whose role has the capability `Can use web interface export functions`): the export holds the filtered backlog, in its order, up to 10,000 gaps. When the backlog holds more, a message says so after the download: narrow the filters to export the others. The list itself loads up to the same first 10,000 gaps of its order, while its count gives the total.
 
 ![Gaps backlog](assets/defense-matrix-gaps.png)
 

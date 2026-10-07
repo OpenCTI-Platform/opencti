@@ -714,9 +714,23 @@ const decodeOffset = (cursor: string | null | undefined) => {
   return offset + 1;
 };
 
+// The gaps before a page are held and sorted to find it: a page starts within the first gaps of the backlog, as many as
+// the export holds, whatever the cursor sent
+const MAX_GAPS_PAGE_START = DEFENSE_GAPS_EXPORT_MAX;
+
+export const gapsPageWindow = (after: string | null | undefined, requested: number | null | undefined) => {
+  const first = Math.min(Math.max(requested ?? DEFAULT_GAPS_PAGE_SIZE, 1), MAX_GAPS_PAGE_SIZE);
+  const start = decodeOffset(after);
+  if (start >= MAX_GAPS_PAGE_START) {
+    throw FunctionalError(`A defense gaps page cannot start after the first ${MAX_GAPS_PAGE_START} gaps: narrow the filters`, { start });
+  }
+  return { start, first };
+};
+
+export const hasNextGapsPage = (start: number, first: number, total: number) => start + first < Math.min(total, MAX_GAPS_PAGE_START);
+
 export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs & { first?: number | null; after?: string | null }) => {
-  const first = Math.min(Math.max(args.first ?? DEFAULT_GAPS_PAGE_SIZE, 1), MAX_GAPS_PAGE_SIZE);
-  const start = decodeOffset(args.after);
+  const { start, first } = gapsPageWindow(args.after, args.first);
   const { gaps, total, evaluation } = await computeGapViews(context, user, args, start + first);
   const page = await attachGapRecords(context, user, gaps.slice(start, start + first));
   const edges = page.map((node, index) => ({ cursor: encodeOffset(start + index), node }));
@@ -726,7 +740,7 @@ export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args
     pageInfo: {
       startCursor: edges.length > 0 ? edges[0].cursor : '',
       endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : '',
-      hasNextPage: start + first < total,
+      hasNextPage: hasNextGapsPage(start, first, total),
       hasPreviousPage: start > 0,
       globalCount: total,
     },
