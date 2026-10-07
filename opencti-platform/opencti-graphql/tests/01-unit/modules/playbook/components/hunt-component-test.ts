@@ -3,11 +3,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../../../../../src/modules/playbook/playbook-components';
 import { storeLoadById, topEntitiesList } from '../../../../../src/database/middleware-loader';
 import { ForbiddenAccess } from '../../../../../src/config/errors';
-import { checkHuntEditAccess } from '../../../../../src/modules/hunt/hunt-access';
+import { checkHuntEditAccess, filterEditableHunts } from '../../../../../src/modules/hunt/hunt-access';
+import { findByIds } from '../../../../../src/modules/hunt/hunt-loaders';
 import { createHuntRuns, designateHuntPlaybookLeader } from '../../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { findPlaybookHuntRuns, resumeHuntPlaybookStep } from '../../../../../src/modules/hunt/hunt-playbook';
-import { checkPlaybookDefinitionHuntAccess, checkPlaybookHuntStepAccess, PLAYBOOK_HUNT_COMPONENT } from '../../../../../src/modules/playbook/components/hunt-component';
-import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
+import {
+  PLAYBOOK_HUNT_COMPONENT,
+  resolvePlaybookHunts,
+  writePlaybookDefinitionHuntSteps,
+  writePlaybookHuntStep,
+} from '../../../../../src/modules/playbook/components/hunt-component';
+import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { HUNT_MANAGER_USER } from '../../../../../src/utils/access';
 
@@ -20,6 +26,17 @@ vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) 
 vi.mock('../../../../../src/modules/hunt/hunt-access', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-access')>(),
   checkHuntEditAccess: vi.fn(async () => undefined),
+  filterEditableHunts: vi.fn(async (_context, _user, hunts) => hunts),
+}));
+
+vi.mock('../../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-loaders')>(),
+  findByIds: vi.fn(),
+}));
+
+vi.mock('../../../../../src/modules/user/user-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../../src/modules/user/user-domain')>(),
+  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => (id === 'user-1' ? { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } : undefined)),
 }));
 
 vi.mock('../../../../../src/database/engine', async (importOriginal) => ({
@@ -65,7 +82,7 @@ const notifyStep = (executionId: string, waiting = false) => {
     playbookId: 'playbook-1',
     dataInstanceId: 'malware--1',
     previousPlaybookNodeId: 'step-0',
-    playbookNode: { id: 'step-hunt', configuration: { applyToElements: 'only-main', hunt_ids: ['hunt-1'], wait_for_results: waiting, include_results: false } },
+    playbookNode: { id: 'step-hunt', configuration: { applyToElements: 'only-main', hunt_ids: ['hunt-1'], wait_for_results: waiting, include_results: false, author_id: 'user-1' } },
     bundle,
     previousStepBundle: bundle,
   } as never);
@@ -130,41 +147,59 @@ describe('Run hunts playbook step access', () => {
     vi.mocked(topEntitiesList).mockReset();
   });
 
-  it('should refuse a hunt step to a user who cannot start hunt runs, and ignore the other steps', async () => {
-    await expect(checkPlaybookHuntStepAccess(context, reader, PLAYBOOK_HUNT_COMPONENT.id, configuration([])))
+  it('should refuse a hunt step to a user who cannot start hunt runs, and leave the other steps as written', async () => {
+    await expect(writePlaybookHuntStep(context, reader, PLAYBOOK_HUNT_COMPONENT.id, configuration([])))
       .rejects.toThrow('Running hunts in a playbook requires the capability to update the knowledge');
-    await expect(checkPlaybookHuntStepAccess(context, reader, 'PLAYBOOK_LOGGER_COMPONENT', configuration(['hunt-1']))).resolves.toBeUndefined();
+    await expect(writePlaybookHuntStep(context, reader, 'PLAYBOOK_LOGGER_COMPONENT', configuration(['hunt-1']))).resolves.toEqual(configuration(['hunt-1']));
     expect(storeLoadById).not.toHaveBeenCalled();
   });
 
   it('should refuse a hunt step naming a hunt its writer cannot read or change', async () => {
     vi.mocked(storeLoadById).mockImplementation((async (_context: AuthContext, user: AuthUser) => (user === HUNT_MANAGER_USER ? hunt : null)) as never);
-    await expect(checkPlaybookHuntStepAccess(context, editor, PLAYBOOK_HUNT_COMPONENT.id, configuration(['hunt-1'])))
+    await expect(writePlaybookHuntStep(context, editor, PLAYBOOK_HUNT_COMPONENT.id, configuration(['hunt-1'])))
       .rejects.toThrow('You cannot read a hunt of this step');
     vi.mocked(storeLoadById).mockResolvedValue(hunt as never);
     vi.mocked(checkHuntEditAccess).mockRejectedValue(ForbiddenAccess('You can read this hunt but not change it or its runs'));
-    await expect(checkPlaybookHuntStepAccess(context, editor, PLAYBOOK_HUNT_COMPONENT.id, configuration(['hunt-1'])))
+    await expect(writePlaybookHuntStep(context, editor, PLAYBOOK_HUNT_COMPONENT.id, configuration(['hunt-1'])))
       .rejects.toThrow('You can read this hunt but not change it or its runs');
   });
 
-  it('should accept the hunts its writer can change, and a hunt that does not exist', async () => {
+  it('should write the step with its writer, whatever writer the client sent, once its hunts are checked', async () => {
     vi.mocked(storeLoadById).mockImplementation((async (_context: AuthContext, _user: AuthUser, id: string) => (id === 'hunt-1' ? hunt : null)) as never);
-    await expect(checkPlaybookHuntStepAccess(context, editor, PLAYBOOK_HUNT_COMPONENT.id, configuration(['hunt-1', 'hunt-unknown']))).resolves.toBeUndefined();
+    const sent = JSON.stringify({ applyToElements: 'only-main', hunt_ids: ['hunt-1', 'hunt-unknown'], author_id: 'user-admin' });
+    const written = JSON.parse(await writePlaybookHuntStep(context, editor, PLAYBOOK_HUNT_COMPONENT.id, sent));
+    expect(written).toEqual({ applyToElements: 'only-main', hunt_ids: ['hunt-1', 'hunt-unknown'], author_id: 'user-1' });
     expect(checkHuntEditAccess).toHaveBeenCalledTimes(1);
     expect(checkHuntEditAccess).toHaveBeenCalledWith(context, editor, hunt);
   });
 
-  it('should check every hunt step of a definition written at once', async () => {
+  it('should write every hunt step of a definition written at once with its writer, and refuse one it cannot start', async () => {
     vi.mocked(storeLoadById).mockResolvedValue(hunt as never);
-    vi.mocked(checkHuntEditAccess).mockRejectedValue(ForbiddenAccess('You can read this hunt but not change it or its runs'));
     const definition = JSON.stringify({
       nodes: [
         { id: 'node-1', component_id: 'PLAYBOOK_LOGGER_COMPONENT', configuration: '{}' },
-        { id: 'node-2', component_id: PLAYBOOK_HUNT_COMPONENT.id, configuration: configuration(['hunt-1']) },
+        { id: 'node-2', component_id: PLAYBOOK_HUNT_COMPONENT.id, configuration: JSON.stringify({ hunt_ids: [], author_id: 'user-admin' }) },
       ],
       links: [],
     });
-    await expect(checkPlaybookDefinitionHuntAccess(context, editor, definition)).rejects.toThrow('You can read this hunt but not change it or its runs');
+    const written = JSON.parse(await writePlaybookDefinitionHuntSteps(context, editor, definition));
+    expect(written.nodes[0].configuration).toEqual('{}');
+    expect(JSON.parse(written.nodes[1].configuration)).toEqual({ hunt_ids: [], author_id: 'user-1' });
+    await expect(writePlaybookDefinitionHuntSteps(context, reader, definition)).rejects.toThrow('requires the capability to update the knowledge');
+  });
+
+  it('should search the hunts of the step as its writer, and run none when its writer can no longer start hunt runs', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValue([hunt] as never);
+    const step = { applyToElements: 'only-main', hunt_ids: [], max_hunts: 10 } as unknown as Parameters<typeof resolvePlaybookHunts>[2];
+    const element = { id: 'malware--1', type: 'malware' } as unknown as StixObject;
+    vi.mocked(findByIds).mockResolvedValue([{ internal_id: 'malware-1' }] as never);
+    await expect(resolvePlaybookHunts(context, [element], { ...step, author_id: 'user-1' })).resolves.toEqual([hunt]);
+    expect(vi.mocked(topEntitiesList).mock.calls[0][1]).toMatchObject({ id: 'user-1' });
+    expect(filterEditableHunts).toHaveBeenCalledWith(context, expect.objectContaining({ id: 'user-1' }), [hunt]);
+    vi.mocked(topEntitiesList).mockClear();
+    await expect(resolvePlaybookHunts(context, [element], { ...step, author_id: 'user-gone' })).resolves.toEqual([]);
+    await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([]);
+    expect(topEntitiesList).not.toHaveBeenCalled();
   });
 
   it('should offer only the hunts and platforms the user configuring the step can read', async () => {

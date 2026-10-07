@@ -18,6 +18,16 @@ vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => (
   findByIds: vi.fn(),
 }));
 
+vi.mock('../../../../src/modules/hunt/hunt-access', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-access')>(),
+  filterEditableHunts: vi.fn(async (_context, _user, hunts) => hunts),
+}));
+
+vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/user/user-domain')>(),
+  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => ({ id, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] })),
+}));
+
 const configuration = {
   applyToElements: 'only-main',
   hunt_ids: [],
@@ -26,6 +36,7 @@ const configuration = {
   max_hunts: 2,
   wait_for_results: true,
   include_results: true,
+  author_id: 'user-1',
 } as HuntComponentConfiguration;
 
 const refs = Array.from({ length: 1200 }, (_, index) => `attack-pattern--ref-${index}`);

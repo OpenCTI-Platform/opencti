@@ -36,7 +36,8 @@ import { createHuntRuns, designateHuntPlaybookLeader } from '../../hunt/huntRun/
 import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
 import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
-import { checkHuntEditAccess } from '../../hunt/hunt-access';
+import { checkHuntEditAccess, filterEditableHunts } from '../../hunt/hunt-access';
+import { resolveUserByIdFromCache } from '../../user/user-domain';
 
 export const PLAYBOOK_HUNT_MAX_HUNTS = 20;
 const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
@@ -90,31 +91,34 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
   required: ['applyToElements', 'hunt_ids', 'security_platform_ids', 'time_window_hours', 'max_hunts', 'wait_for_results', 'include_results'],
 };
 
-const configuredHuntIds = (configuration?: string | null): string[] => {
-  if (!configuration) {
-    return [];
-  }
+// The user who wrote the step: set by the API on every write of the step, never taken from the client
+export const PLAYBOOK_HUNT_AUTHOR = 'author_id';
+type WrittenHuntConfiguration = HuntComponentConfiguration & { [PLAYBOOK_HUNT_AUTHOR]?: string };
+
+const parseHuntConfiguration = (configuration: string): Record<string, unknown> => {
   try {
-    const { hunt_ids: huntIds } = JSON.parse(configuration) as { hunt_ids?: unknown };
-    return Array.isArray(huntIds) ? huntIds.map(String) : [];
+    const parsed = JSON.parse(configuration);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch {
-    return [];
+    return {};
   }
 };
 
 /**
- * The step starts the runs of its hunts with the hunt manager identity: whoever writes it must be allowed to start them,
- * as starting the runs of a hunt requires (the capability to update the knowledge, and the edit access to each hunt it
- * names). A hunt that does not exist is left: the step never finds it, so it runs nothing.
+ * The step starts the runs of its hunts with the hunt manager identity, and only of the hunts its writer can start (see
+ * resolvePlaybookHunts). Writing it requires what starting the runs of a hunt requires: the capability to update the
+ * knowledge, and the edit access to each hunt it names (a hunt that does not exist is left: the step never finds it).
+ * Returns the configuration with its writer.
  */
-export const checkPlaybookHuntStepAccess = async (context: AuthContext, user: AuthUser, componentId: string, configuration?: string | null) => {
+export const writePlaybookHuntStep = async (context: AuthContext, user: AuthUser, componentId: string, configuration: string) => {
   if (componentId !== PLAYBOOK_HUNT_COMPONENT_ID) {
-    return;
+    return configuration;
   }
   if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
     throw ForbiddenAccess('Running hunts in a playbook requires the capability to update the knowledge');
   }
-  const huntIds = configuredHuntIds(configuration);
+  const parsed = parseHuntConfiguration(configuration);
+  const huntIds = Array.isArray(parsed.hunt_ids) ? parsed.hunt_ids.map(String) : [];
   for (let index = 0; index < huntIds.length; index += 1) {
     const huntId = huntIds[index];
     const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
@@ -124,23 +128,33 @@ export const checkPlaybookHuntStepAccess = async (context: AuthContext, user: Au
       throw ForbiddenAccess('You cannot read a hunt of this step', { huntId });
     }
   }
+  return JSON.stringify({ ...parsed, [PLAYBOOK_HUNT_AUTHOR]: user.id });
 };
 
-// A whole definition written at once (field patch, import, duplicate): every hunt step is checked against its writer
-export const checkPlaybookDefinitionHuntAccess = async (context: AuthContext, user: AuthUser, playbookDefinition?: string | null) => {
+// A whole definition written at once (field patch, import, duplicate): every hunt step is written by its writer
+export const writePlaybookDefinitionHuntSteps = async <T extends string | null | undefined>(context: AuthContext, user: AuthUser, playbookDefinition: T) => {
   if (!playbookDefinition) {
-    return;
+    return playbookDefinition;
   }
   let definition: ComponentDefinition;
   try {
     definition = JSON.parse(playbookDefinition) as ComponentDefinition;
   } catch {
-    return;
+    return playbookDefinition;
   }
-  const nodes = definition.nodes ?? [];
+  const nodes = (definition.nodes ?? []).filter((node) => node.component_id === PLAYBOOK_HUNT_COMPONENT_ID);
   for (let index = 0; index < nodes.length; index += 1) {
-    await checkPlaybookHuntStepAccess(context, user, nodes[index].component_id, nodes[index].configuration);
+    nodes[index].configuration = await writePlaybookHuntStep(context, user, nodes[index].component_id, nodes[index].configuration ?? '{}');
   }
+  return nodes.length > 0 ? JSON.stringify(definition) : playbookDefinition;
+};
+
+// The writer of a step, as it searches and changes hunts: outside of any draft, and only while it can start hunt runs
+const resolvePlaybookHuntAuthor = async (context: AuthContext, configuration: WrittenHuntConfiguration) => {
+  const authorId = configuration[PLAYBOOK_HUNT_AUTHOR];
+  const cached = authorId ? await resolveUserByIdFromCache(context, authorId) : undefined;
+  const author = cached ? { ...cached, draft_context: undefined } : null;
+  return author && isUserHasCapability(author, KNOWLEDGE_KNUPDATE) ? author : null;
 };
 
 const elementRefs = (element: StixObject): string[] => {
@@ -158,17 +172,25 @@ const byLastRunAt = (a: BasicStoreEntityHunt, b: BasicStoreEntityHunt) => {
 
 /**
  * Hunts a playbook step runs: the configured hunts, or the active hunts targeting a threat, covering a technique or
- * based on an indicator / report of the elements in scope (containers bring the objects they contain).
+ * based on an indicator / report of the elements in scope (containers bring the objects they contain). Either way only
+ * the hunts the writer of the step can still read and change: a step whose writer is gone or can no longer start hunt
+ * runs runs none.
  */
-export const resolvePlaybookHunts = async (context: AuthContext, elements: StixObject[], configuration: HuntComponentConfiguration) => {
+export const resolvePlaybookHunts = async (context: AuthContext, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
+  const author = await resolvePlaybookHuntAuthor(context, configuration);
+  if (!author) {
+    logApp.warn('[OPENCTI-MODULE] Playbook hunt step runs no hunt, the user who wrote it cannot start hunt runs', { authorId: configuration[PLAYBOOK_HUNT_AUTHOR] });
+    return [];
+  }
   const maxHunts = Math.min(PLAYBOOK_HUNT_MAX_HUNTS, Math.max(1, Math.round(configuration.max_hunts || 10)));
   const activeFilter = { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] };
   if ((configuration.hunt_ids ?? []).length > 0) {
-    return topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+    const configured = await topEntitiesList<BasicStoreEntityHunt>(context, author, [ENTITY_TYPE_HUNT], {
       first: maxHunts,
       filters: { mode: FilterMode.And, filters: [activeFilter, { key: ['id'], values: configuration.hunt_ids }], filterGroups: [] },
       withoutRels: false,
     });
+    return filterEditableHunts(context, author, configured);
   }
   const stixIds = Array.from(new Set(elements.flatMap(elementRefs)));
   if (stixIds.length === 0) {
@@ -179,7 +201,7 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
   const hunts = new Map<string, BasicStoreEntityHunt>();
   for (let start = 0; start < ids.length; start += PLAYBOOK_HUNT_IDS_PER_QUERY) {
     const slice = ids.slice(start, start + PLAYBOOK_HUNT_IDS_PER_QUERY);
-    const found = await topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+    const found = await topEntitiesList<BasicStoreEntityHunt>(context, author, [ENTITY_TYPE_HUNT], {
       first: maxHunts,
       orderBy: 'last_run_at',
       orderMode: OrderingMode.Asc,
@@ -199,7 +221,7 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
       // The dispatched runs carry the techniques, targets and sources of the hunts
       withoutRels: false,
     });
-    found.forEach((hunt) => hunts.set(hunt.internal_id, hunt));
+    (await filterEditableHunts(context, author, found)).forEach((hunt) => hunts.set(hunt.internal_id, hunt));
   }
   return Array.from(hunts.values()).sort(byLastRunAt).slice(0, maxHunts);
 };
