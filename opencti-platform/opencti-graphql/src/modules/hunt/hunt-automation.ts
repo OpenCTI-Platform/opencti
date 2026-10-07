@@ -578,7 +578,7 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
           handedOver = step;
         }
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed, the step waits for the next tick', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt playbook resume failed, the step waits for the next tick', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id });
       }
       if (handedOver) {
         resumed += 1;
