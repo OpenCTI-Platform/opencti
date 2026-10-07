@@ -89,9 +89,17 @@ describe('Retention of the known hits', () => {
 
   it('should forget the hits no run was recorded finding within the retention, never by their observation date', async () => {
     const before = '2025-10-07T10:30:00.000Z';
-    await purgeExpiredHuntHitRecords(before);
+    await purgeExpiredHuntHitRecords(before, 10000);
     const { body } = vi.mocked(elRawDeleteByQuery).mock.calls[0][0] as { body: { query: { bool: { filter: unknown[] } } } };
     expect(body.query.bool.filter).toContainEqual({ range: { updated_at: { lt: before } } });
     expect(JSON.stringify(body.query.bool.filter)).not.toContain('last_seen');
+  });
+
+  it('should forget at most the given number of expired hits per call, leave a hit counted again meanwhile, and return how many it forgot', async () => {
+    vi.mocked(elRawDeleteByQuery).mockResolvedValue({ deleted: 250 });
+    expect(await purgeExpiredHuntHitRecords('2025-10-07T10:30:00.000Z', 250)).toBe(250);
+    expect(vi.mocked(elRawDeleteByQuery).mock.calls[0][0]).toMatchObject({ max_docs: 250, conflicts: 'proceed', wait_for_completion: true });
+    vi.mocked(elRawDeleteByQuery).mockResolvedValue(undefined);
+    expect(await purgeExpiredHuntHitRecords('2025-10-07T10:30:00.000Z', 250)).toBe(0);
   });
 });

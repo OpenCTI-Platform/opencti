@@ -54,6 +54,7 @@ export const HUNT_CONFIG = {
   dispatchRecoveryMinutes: numberConf('hunt_manager:dispatch_recovery_minutes', 5),
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
   previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
+  maxHitRecordsPurgedPerTick: countConf('hunt_manager:max_hit_records_purged_per_tick', 10000),
   scheduleLookbackMinutes: Number.isFinite(Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     ? Math.max(0, Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     : 15,

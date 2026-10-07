@@ -37,7 +37,7 @@ describe('Hunt hit records', () => {
   });
 
   it('should keep a hit sighted recently through the retention of the older hits', async () => {
-    await purgeExpiredHuntHitRecords('2026-01-08T00:00:00.000Z');
+    await purgeExpiredHuntHitRecords('2026-01-08T00:00:00.000Z', 10000);
     expect(await lastSeen()).toEqual({ timesSeen: 2, lastSeen: LATEST });
   });
 

@@ -71,5 +71,6 @@ Work a tick cannot take is kept for the next tick, never dropped: due scheduled 
 | `hunt_manager:evidence_max_value_length` | `HUNT_MANAGER__EVIDENCE_MAX_VALUE_LENGTH` | `256` | Maximum length of an evidence value preview |
 | `hunt_manager:run_retention_days` | `HUNT_MANAGER__RUN_RETENTION_DAYS` | `365` | Retention of the executed runs |
 | `hunt_manager:preview_retention_days` | `HUNT_MANAGER__PREVIEW_RETENTION_DAYS` | `7` | Retention of the query tests |
+| `hunt_manager:max_hit_records_purged_per_tick` | `HUNT_MANAGER__MAX_HIT_RECORDS_PURGED_PER_TICK` | `10000` | Known hits past the retention of the runs forgotten per tick; the next ticks forget the rest |
 
 The settings that count (runs, retries, pages, evaluations, results, values, items and lengths) are whole numbers: a decimal is rounded down. A blank value, a value that is not a number, or a count below one gives the default; the retries accept 0, which disables them. Durations accept decimals.

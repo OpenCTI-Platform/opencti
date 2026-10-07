@@ -397,13 +397,16 @@ export const findHuntKnownHits = async (context: AuthContext, user: AuthUser, hu
  * Retention of the known hits, the one of the runs: a hit no run was recorded finding since `before` is forgotten, a later
  * run counts it as new again. The time a run was recorded is read, never the observation date of its hits, which late
  * evidence can set far in the past. The records of a deleted hunt follow the same retention as its runs, kept for a hunt
- * restored from the trash.
+ * restored from the trash. At most `maxRecords` records are deleted per call, the next calls delete the rest; a record a
+ * run counts again while it is deleted is left in place. Returns the number of records deleted.
  */
-export const purgeExpiredHuntHitRecords = async (before: string) => {
-  await elRawDeleteByQuery({
+export const purgeExpiredHuntHitRecords = async (before: string, maxRecords: number): Promise<number> => {
+  const result = await elRawDeleteByQuery({
     index: READ_INDEX_INTERNAL_OBJECTS,
     refresh: true,
     wait_for_completion: true,
+    max_docs: maxRecords,
+    conflicts: 'proceed',
     body: {
       query: {
         bool: {
@@ -415,4 +418,5 @@ export const purgeExpiredHuntHitRecords = async (before: string) => {
       },
     },
   });
+  return result?.deleted ?? 0;
 };

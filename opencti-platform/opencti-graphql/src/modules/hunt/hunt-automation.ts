@@ -532,9 +532,9 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
       }
     }
   }
-  // The known hits live as long as the runs that found them
+  // The known hits live as long as the runs that found them, a bounded number of them forgotten per tick
   try {
-    await purgeExpiredHuntHitRecords(minutesAgo(HUNT_CONFIG.runRetentionDays * 24 * 60));
+    await purgeExpiredHuntHitRecords(minutesAgo(HUNT_CONFIG.runRetentionDays * 24 * 60), HUNT_CONFIG.maxHitRecordsPurgedPerTick);
   } catch (error) {
     logApp.warn('[OPENCTI-MODULE] Hunt known hits purge failed, retried at the next tick', { cause: error });
   }

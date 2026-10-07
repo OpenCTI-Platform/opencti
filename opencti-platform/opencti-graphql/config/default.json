@@ -394,7 +394,8 @@
     "queue_expiry_hours": 24,
     "dispatch_recovery_minutes": 5,
     "run_retention_days": 365,
-    "preview_retention_days": 7
+    "preview_retention_days": 7,
+    "max_hit_records_purged_per_tick": 10000
   },
   "data_sanity_manager": {
     "enabled": true,
