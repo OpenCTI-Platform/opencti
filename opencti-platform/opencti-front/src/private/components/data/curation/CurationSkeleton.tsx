@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-// FDS-WORKAROUND #64: the design system ships no skeleton; replace with it once it does.
+// FDS-WORKAROUND #65: the design system ships no skeleton; replace with it once it does.
 import Skeleton from '@mui/material/Skeleton';
 
 interface CurationSkeletonProps {
