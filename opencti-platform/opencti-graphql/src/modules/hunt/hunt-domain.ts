@@ -34,8 +34,9 @@ import {
   type InputMaybe,
   OrderingMode,
   PirRelationshipOrdering,
+  type StixRefRelationshipAddInput,
 } from '../../generated/graphql';
-import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
+import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { addHuntPlanCount } from '../../manager/telemetryManager';
 import { HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
@@ -52,6 +53,7 @@ import {
   HUNT_SCHEDULE_MANUAL,
   HUNT_STATUS_ACTIVE,
   HUNT_TYPE_INDICATORS,
+  INPUT_HUNT_SOURCES,
   INPUT_HUNT_TECHNIQUES,
   RELATION_HUNT_SOURCES,
   RELATION_HUNT_TARGETS,
@@ -332,6 +334,42 @@ export const huntEditField = async (
     await startHuntTranslationCheck(context, user, updated);
   }
   return updated;
+};
+
+const HUNT_REF_RELATIONS = [RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES, RELATION_HUNT_SOURCES];
+
+/**
+ * The hunt as it would be stored once a target, technique or source is added or removed, validated as an edit is: the
+ * ref helpers write the reference without the validators of the hunt, so an active indicator hunt could lose its last
+ * source and stay active without anything to look for.
+ */
+const validateHuntRefChange = async (context: AuthContext, user: AuthUser, huntId: string, relationshipType: string, toId: string | null | undefined, add: boolean) => {
+  if (!toId || !HUNT_REF_RELATIONS.includes(relationshipType)) {
+    return;
+  }
+  const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
+  if (!hunt) {
+    throw FunctionalError('Cannot change the relation, the hunt cannot be found.', { id: huntId });
+  }
+  const [element] = await findByIds<BasicStoreEntity>(context, user, [toId]);
+  const elementId = element?.internal_id ?? toId;
+  const current = (hunt as unknown as Record<string, string[] | undefined>)[relationshipType] ?? [];
+  const next = add ? Array.from(new Set([...current, elementId])) : current.filter((id) => id !== elementId);
+  await validateHuntState(context, {
+    ...hunt,
+    [relationshipType]: next,
+    ...(relationshipType === RELATION_HUNT_SOURCES ? { [INPUT_HUNT_SOURCES]: undefined } : {}),
+  } as HuntValidationState);
+};
+
+export const huntAddRelation = async (context: AuthContext, user: AuthUser, huntId: string, input: StixRefRelationshipAddInput) => {
+  await validateHuntRefChange(context, user, huntId, input.relationship_type, input.toId, true);
+  return stixDomainObjectAddRelation(context, user, huntId, input);
+};
+
+export const huntDeleteRelation = async (context: AuthContext, user: AuthUser, huntId: string, toId: string, relationshipType: string) => {
+  await validateHuntRefChange(context, user, huntId, relationshipType, toId, false);
+  return stixDomainObjectDeleteRelation(context, user, huntId, toId, relationshipType);
 };
 // endregion
 

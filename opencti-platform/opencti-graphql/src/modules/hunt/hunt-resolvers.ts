@@ -1,14 +1,16 @@
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
-import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDeleteRelation, stixDomainObjectEditContext } from '../../domain/stixDomainObject';
+import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../../domain/stixDomainObject';
 import {
   addHunt,
   addHuntProposal,
   assistHunt,
   findHuntById,
   findHuntsPaginated,
+  huntAddRelation,
   huntDelete,
+  huntDeleteRelation,
   huntEditField,
   huntSigmaValidation,
   huntValidateFromEmulation,
@@ -71,9 +73,9 @@ const huntResolvers: Resolvers = {
     },
     huntContextPatch: (_, { id, input }, context) => stixDomainObjectEditContext(context, context.user, id, input),
     huntContextClean: (_, { id }, context) => stixDomainObjectCleanContext(context, context.user, id),
-    huntRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
+    huntRelationAdd: (_, { id, input }, context) => huntAddRelation(context, context.user, id, input),
     huntRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
-      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+      return huntDeleteRelation(context, context.user, id, toId, relationshipType);
     },
     huntRunStart: (_, { id, input }, context) => startHuntRuns(context, context.user, id, input),
     huntTestQuery: (_, { id, securityPlatformId }, context) => startHuntPreview(context, context.user, id, securityPlatformId),
