@@ -119,4 +119,22 @@ describe('Run the hunt now', () => {
     expect(screen.getByTestId('hunt-run-start-no-connector')).toBeInTheDocument();
     expect(screen.getByTestId('hunt-run-start-submit')).toBeDisabled();
   });
+
+  it('keeps Run disabled until the hunt connectors of the scope are loaded', async () => {
+    const { user, relayEnv } = testRender(<HuntRunStart hunt={hunt} />);
+    await user.click(screen.getByTestId('hunt-run-start'));
+    expect(screen.getByTestId('hunt-run-start-submit')).toBeDisabled();
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Query: () => ({ huntConnectors: [huntConnector(false)] }),
+      }));
+    });
+    await waitFor(() => expect(screen.getByTestId('hunt-run-start-submit')).toBeEnabled());
+  });
+
+  it('lets an infrastructure hunt run without looking up the connectors of a scope', async () => {
+    const { user } = testRender(<HuntRunStart hunt={{ ...hunt, hunt_type: 'infrastructure' }} />);
+    await user.click(screen.getByTestId('hunt-run-start'));
+    expect(screen.getByTestId('hunt-run-start-submit')).toBeEnabled();
+  });
 });

@@ -157,6 +157,8 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
     setOpen(next);
   };
   const canRun = canStartHuntRun(hunt.hunt_status, !!draftContext);
+  // Until the hunt connectors are loaded, a run could start without knowing whether any platform can execute it
+  const platformsUnavailable = hunt.hunt_type !== 'infrastructure' && (runnablePlatforms === null || runnablePlatforms === 0);
   const scopePlatformIds = (hunt.scopePlatforms ?? []).map((platform) => platform.id);
   const { maxTimeWindowHours } = useHuntConfiguration();
   const validation = Yup.object().shape({
@@ -281,7 +283,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
                   <Button variant="secondary" onClick={() => openDialog(false)} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button onClick={submitForm} disabled={isSubmitting || runnablePlatforms === 0} data-testid="hunt-run-start-submit">
+                  <Button onClick={submitForm} disabled={isSubmitting || platformsUnavailable} data-testid="hunt-run-start-submit">
                     {t_i18n('Run')}
                   </Button>
                 </DialogFooter>
