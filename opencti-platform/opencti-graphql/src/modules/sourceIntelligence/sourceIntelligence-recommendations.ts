@@ -1076,7 +1076,7 @@ export const applyEachCandidate = async (
         applied += 1;
       }
     } catch (err) {
-      logApp.error('[OPENCTI-MODULE] Source intelligence autonomous apply failed', { cause: err, id: candidates[i].internal_id });
+      logApp.warn('[OPENCTI-MODULE] Source intelligence autonomous apply failed', { cause: err, id: candidates[i].internal_id });
     }
   }
   return applied;
