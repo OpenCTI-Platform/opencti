@@ -27,9 +27,12 @@ import { DefenseProvidedDataComponentsLogsourcesMutation } from './__generated__
 const PROVIDES = 'provides';
 const PROVIDED_PAGE_SIZE = 100;
 
+// A revoked declaration provides no telemetry to the levels: the list shows the declarations they count
+const ACTIVE_PROVIDES_FILTERS = { mode: 'and' as const, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] };
+
 const defenseProvidedDataComponentsQuery = graphql`
-  query DefenseProvidedDataComponentsQuery($fromId: [String], $count: Int!, $cursor: ID) {
-    ...DefenseProvidedDataComponents_data @arguments(fromId: $fromId, count: $count, cursor: $cursor)
+  query DefenseProvidedDataComponentsQuery($fromId: [String], $filters: FilterGroup, $count: Int!, $cursor: ID) {
+    ...DefenseProvidedDataComponents_data @arguments(fromId: $fromId, filters: $filters, count: $count, cursor: $cursor)
   }
 `;
 
@@ -37,10 +40,19 @@ const defenseProvidedDataComponentsFragment = graphql`
   fragment DefenseProvidedDataComponents_data on Query
   @argumentDefinitions(
     fromId: { type: "[String]" }
+    filters: { type: "FilterGroup" }
     count: { type: "Int", defaultValue: 100 }
     cursor: { type: "ID" }
   ) @refetchable(queryName: "DefenseProvidedDataComponentsRefetchQuery") {
-    stixCoreRelationships(fromId: $fromId, relationship_type: ["provides"], first: $count, after: $cursor, orderBy: created_at, orderMode: desc)
+    stixCoreRelationships(
+      fromId: $fromId
+      relationship_type: ["provides"]
+      filters: $filters
+      first: $count
+      after: $cursor
+      orderBy: created_at
+      orderMode: desc
+    )
     @connection(key: "Pagination_defenseProvidedDataComponents_stixCoreRelationships") {
       edges {
         node {
@@ -314,7 +326,7 @@ const DefenseProvidedDataComponents = ({ entityId }: DefenseProvidedDataComponen
   const [queryRef, loadQuery] = useQueryLoader<DefenseProvidedDataComponentsQuery>(defenseProvidedDataComponentsQuery);
   const [logsourcesOpen, setLogsourcesOpen] = useState(false);
 
-  const reload = () => loadQuery({ fromId: [entityId], count: PROVIDED_PAGE_SIZE }, { fetchPolicy: 'network-only' });
+  const reload = () => loadQuery({ fromId: [entityId], filters: ACTIVE_PROVIDES_FILTERS, count: PROVIDED_PAGE_SIZE }, { fetchPolicy: 'network-only' });
   React.useEffect(() => {
     reload();
   }, [entityId]);
