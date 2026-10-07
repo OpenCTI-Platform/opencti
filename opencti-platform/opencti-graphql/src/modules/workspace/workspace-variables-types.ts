@@ -1,10 +1,7 @@
 import type { FilterGroup } from '../../generated/graphql';
 
-const DASHBOARD_VARIABLE_TYPES = [
-  'vocabulary', 'killChainPhase', 'entity', 'entityType', 'label', 'user',
-  'marking', 'status', 'group', 'boolean', 'numeric', 'text', 'date',
-] as const;
-export type DashboardVariableTypeName = typeof DASHBOARD_VARIABLE_TYPES[number];
+export type DashboardVariableTypeName = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
+  | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
 export type StoreDashboardVariableRestriction
   = | { mode: 'none' }
