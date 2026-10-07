@@ -138,6 +138,20 @@ describe('Hunt sightings access', () => {
     expect(vi.mocked(patchAttribute).mock.calls[0][4]).not.toHaveProperty('objectOrganization');
   });
 
+  it('should leave a sighting to the platform organization only when its runs are shared with no common organization', async () => {
+    loadWith({
+      internal_id: 'sighting-1',
+      attribute_count: 2,
+      first_seen: '2026-10-04T08:00:00.000Z',
+      last_seen: '2026-10-04T09:00:00.000Z',
+      x_opencti_hunt_run_id: 'run-1',
+      [RELATION_OBJECT_MARKING]: ['marking-red'],
+      [RELATION_GRANTED_TO]: ['organization-2'],
+    });
+    await upsertHuntSightings({} as AuthContext, hunt, run);
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toEqual(expect.objectContaining({ objectOrganization: [] }));
+  });
+
   it('should update the access of a sighting whose counters did not change, and leave unchanged refs out of the patch', async () => {
     loadWith({
       internal_id: 'sighting-1',

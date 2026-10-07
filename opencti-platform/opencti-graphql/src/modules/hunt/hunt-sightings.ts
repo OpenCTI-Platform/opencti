@@ -150,8 +150,9 @@ const sightingDescription = (hunt: BasicStoreEntityHunt, platformName: string, c
 /**
  * The access of a sighting a run updates: a sighting holds what every run that fed it found, so it never becomes readable
  * by a user who could not read one of them. Its markings are those of the sighting and of the run, the highest of each
- * marking type kept; its organizations are those both are shared with (with a platform organization, an element shared
- * with no organization is readable by the platform organization only).
+ * marking type kept; its organizations are those both are shared with. When they share none, the sighting is shared
+ * with no organization: with a platform organization it is then readable by the users of the platform organization
+ * only, who read every element whatever its organizations, and without one organizations restrict no reader.
  */
 export const accumulatedHuntSightingAccess = async (
   context: AuthContext,
