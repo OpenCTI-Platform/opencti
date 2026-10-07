@@ -145,6 +145,16 @@ describe('Report of a failed hunt run', () => {
     expect(await reportHuntRun(testContext, connectorUser, 'run-1', report)).toMatchObject({ hunt_run_status: 'completed' });
   });
 
+  it('should refuse the report of a run once its connector is registered again against another security platform', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ ...running, connector_id: 'connector-1', connector_user_id: 'user-1', security_platform_id: 'platform-secops' } as never);
+    const boundTo = (platformId: string) => [{ internal_id: 'connector-1', connector_user_id: 'user-1', hunt_security_platform_id: platformId }] as never;
+    const connectorUser = { id: 'user-1', capabilities: [] } as unknown as AuthUser;
+    vi.mocked(listHuntConnectors).mockResolvedValueOnce(boundTo('platform-secops')).mockResolvedValueOnce(boundTo('platform-splunk'));
+    await expect(reportHuntRun(testContext, connectorUser, 'run-1', { status: 'completed', hits_count: 4, work_id: 'work-1' } as never))
+      .rejects.toThrow('Only the hunt connector the run was dispatched to can report it');
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
   it('should still retry a transient failure, inconclusive until its retry', async () => {
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'failed', error: 'HuntExecutionError: HTTP 503 service unavailable' } as never);
     const state = finalState();

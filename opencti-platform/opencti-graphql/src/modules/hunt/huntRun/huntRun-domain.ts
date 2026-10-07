@@ -60,7 +60,7 @@ import {
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
-import { dispatchHuntRun, huntConnectorPlatform, listHuntConnectors, resolveHuntConnectorTargets, withConnectorDispatchLock } from '../hunt-dispatch';
+import { dispatchHuntRun, huntConnectorPlatform, isHuntConnectorBoundToRun, listHuntConnectors, resolveHuntConnectorTargets, withConnectorDispatchLock } from '../hunt-dispatch';
 import {
   clampInteger,
   HUNT_CONFIG,
@@ -1243,7 +1243,9 @@ export const resolveHuntRunIocResults = async (context: AuthContext, user: AuthU
  * Whether the user acts as the hunt connector the run was dispatched to. Several hunt connectors can run as the same
  * user: the work of the dispatch, which only the connector that received the run knows, binds the call to that
  * connector. The run stores its work before the connector receives it, so a run without work was never handed to any
- * connector. A connector registered again as another user no longer acts on the runs dispatched to its former user.
+ * connector. A connector registered again as another user no longer acts on the runs dispatched to its former user, nor
+ * one registered again against another security platform on the runs of the former platform, which its registration
+ * cancels.
  */
 export const isHuntRunConnectorCall = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, workId: string | null | undefined) => {
   if (!run.work_id || workId !== run.work_id || !run.connector_user_id || run.connector_user_id !== user.id) {
@@ -1251,7 +1253,7 @@ export const isHuntRunConnectorCall = async (context: AuthContext, user: AuthUse
   }
   const connectors = await listHuntConnectors(context, false);
   const connector = connectors.find((c) => c.internal_id === run.connector_id);
-  return connector?.connector_user_id === user.id;
+  return !!connector && connector.connector_user_id === user.id && isHuntConnectorBoundToRun(connector, run);
 };
 
 /** The keys of the values each hit of an indicator run holds, by hit key, from the keys each value result reports. */

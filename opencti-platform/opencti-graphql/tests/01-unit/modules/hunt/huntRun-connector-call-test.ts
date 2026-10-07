@@ -30,6 +30,16 @@ describe('Hunt connector acting on a run', () => {
     expect(await isHuntRunConnectorCall(testContext, user('user-1'), run, 'work-1')).toBe(false);
   });
 
+  it('should refuse the connector once it is registered again against another security platform than the one of the run', async () => {
+    const onSplunk = { ...run, security_platform_id: 'platform-splunk' } as BasicStoreEntityHuntRun;
+    const boundTo = (platformId: string) => vi.mocked(listHuntConnectors)
+      .mockResolvedValue([{ internal_id: 'connector-1', connector_user_id: 'user-1', hunt_security_platform_id: platformId }] as never);
+    boundTo('platform-splunk');
+    expect(await isHuntRunConnectorCall(testContext, user('user-1'), onSplunk, 'work-1')).toBe(true);
+    boundTo('platform-sentinel');
+    expect(await isHuntRunConnectorCall(testContext, user('user-1'), onSplunk, 'work-1')).toBe(false);
+  });
+
   it('should refuse a call on a run that records no connector user', async () => {
     expect(await isHuntRunConnectorCall(testContext, user('user-1'), { ...run, connector_user_id: null }, 'work-1')).toBe(false);
   });
