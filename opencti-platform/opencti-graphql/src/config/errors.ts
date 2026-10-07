@@ -196,7 +196,7 @@ export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESO
   ...data,
 });
 
-const TYPE_LOCK = 'LOCK_ERROR';
+export const TYPE_LOCK = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
 export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
   http_status: 500,

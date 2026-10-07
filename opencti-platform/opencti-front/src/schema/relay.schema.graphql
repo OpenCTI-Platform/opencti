@@ -5839,6 +5839,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
+  latestInvestigationRun: InvestigationRun
 }
 
 input IncidentAddInput {
@@ -8619,9 +8620,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | InvestigationRun | InvestigationPolicy | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | InvestigationRun | InvestigationPolicy | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -9438,6 +9439,13 @@ type Query {
   pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
   pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  investigationRun(id: ID!): InvestigationRun
+  investigationRuns(first: Int, after: ID, orderBy: InvestigationRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, subjectId: String, caseId: String): InvestigationRunConnection
+  investigationRunEnrichmentWave(id: ID!, waveId: ID!): InvestigationEnrichmentWave
+  investigationPolicy(id: ID!): InvestigationPolicy
+  investigationPolicies(first: Int, after: ID, orderBy: InvestigationPoliciesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): InvestigationPolicyConnection
+  investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]!
+  investigationPacks: InvestigationPackCatalog!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -9511,6 +9519,7 @@ type Subscription {
   workspace(id: ID!): Workspace
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
+  investigationRun(id: ID!): InvestigationRun
   securityCoverage(id: ID!): SecurityCoverage
   newsFeedItemAdded: NewsFeedItem
   newsFeedItem: NewsFeedItem
@@ -10363,6 +10372,16 @@ type Mutation {
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
+  investigationRunAdd(subjectId: ID!, policyId: ID, caseId: ID): InvestigationRun
+  investigationRunCancel(id: ID!): InvestigationRun
+  investigationRunContinue(id: ID!): InvestigationRun
+  investigationRunDelete(id: ID!): ID
+  investigationRunFeedback(id: ID!, input: InvestigationRunFeedbackInput!): InvestigationRun
+  investigationRunRecommendationApply(id: ID!, recommendationId: String!, mode: InvestigationRecommendationApplyMode!): InvestigationRun
+  investigationRunEnrichmentRequest(id: ID!, input: InvestigationRunEnrichmentRequestInput!): InvestigationRunEnrichmentRequestResult
+  investigationPolicyAdd(input: InvestigationPolicyAddInput!): InvestigationPolicy
+  investigationPolicyFieldPatch(id: ID!, input: [EditInput!]!): InvestigationPolicy
+  investigationPolicyDelete(id: ID!): ID
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -11317,6 +11336,9 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  investigation_awaiting_approval
+  investigation_completed
+  investigation_failed
   create
   update
   delete
@@ -12108,7 +12130,7 @@ input TaskTemplateAddInput {
   description: String
 }
 
-interface Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+interface Case {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -12175,6 +12197,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  latestInvestigationRun: InvestigationRun
 }
 
 enum CasesOrdering {
@@ -12314,6 +12337,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   severity: String
   priority: String
   customFieldValues: [CustomFieldValue!]
+  latestInvestigationRun: InvestigationRun
 }
 
 enum CaseIncidentsOrdering {
@@ -12463,6 +12487,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_request_access: String
   requestAccessConfiguration: RfiRequestAccessConfiguration
   x_opencti_workflow_id: String
+  latestInvestigationRun: InvestigationRun
 }
 
 enum CaseRfisOrdering {
@@ -12603,6 +12628,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   takedown_types: [String!]
   severity: String
   priority: String
+  latestInvestigationRun: InvestigationRun
 }
 
 enum CaseRftsOrdering {
@@ -12741,6 +12767,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   content_mapping: String
   tasks: TaskConnection!
   rating: Int
+  latestInvestigationRun: InvestigationRun
 }
 
 enum FeedbacksOrdering {
@@ -15716,6 +15743,570 @@ input PirRelationshipsTimeSeriesParameters {
   search: String
   filters: FilterGroup
   dynamicFrom: FilterGroup
+}
+
+enum InvestigationRunStatus {
+  planned
+  running
+  awaiting_approval
+  completed
+  failed
+  cancelled
+}
+
+enum InvestigationRunTrigger {
+  manual
+  playbook
+  case_rfi_creation
+}
+
+enum InvestigationRunPhase {
+  initializing
+  starting
+  investigating
+  ingesting
+  awaiting_validation
+  validating
+  done
+}
+
+enum InvestigationStepStatus {
+  pending
+  active
+  completed
+  empty
+  degraded
+  error
+  skipped
+}
+
+enum InvestigationEvidenceKind {
+  url
+  document
+  tool_result
+  opencti_object
+}
+
+enum InvestigationEvidenceCategory {
+  infrastructure_overlap
+  tooling
+  ttp_overlap
+  victimology
+  temporal
+  source_reliability
+  language_timezone
+}
+
+enum InvestigationConfidenceLabel {
+  almost_certain
+  very_likely
+  likely
+  roughly_even
+  unlikely
+  very_unlikely
+  remote
+}
+
+enum InvestigationRecommendationActionKind {
+  task
+  course_of_action
+  severity_change
+  sharing
+  notification
+  case_closure
+  other
+}
+
+enum InvestigationRecommendationPriority {
+  P1
+  P2
+  P3
+  P4
+}
+
+enum InvestigationRecommendationStatus {
+  proposed
+  awaiting_approval
+  task_created
+  applied
+  dismissed
+}
+
+enum InvestigationApprovalKind {
+  enrichment
+  recommendation
+  draft_validation
+}
+
+enum InvestigationApprovalStatus {
+  pending
+  approved
+  rejected
+}
+
+enum InvestigationEnrichmentRequestStatus {
+  queued
+  awaiting_approval
+  dispatched
+  completed
+  failed
+  rejected
+  timeout
+  skipped
+}
+
+enum InvestigationEnrichmentWaveStatus {
+  queued
+  running
+  completed
+  partial
+  awaiting_approval
+  rejected
+  timeout
+}
+
+enum InvestigationFeedbackItemType {
+  hypothesis
+  recommendation
+}
+
+enum InvestigationFeedbackDecision {
+  accepted
+  rejected
+}
+
+enum InvestigationAutonomousAction {
+  enrichment
+  create_case
+  add_to_case
+  create_note
+  create_relationship
+}
+
+enum InvestigationRecommendationApplyMode {
+  task
+  course_of_action
+}
+
+type InvestigationStep {
+  id: String!
+  investigation_id: String!
+  position: Int!
+  action: String
+  source_name: String!
+  status: InvestigationStepStatus!
+  detail_code: String
+  detail_params: JSON
+  findings_count: Int!
+  evidence_count: Int!
+  started_at: DateTime
+  completed_at: DateTime
+}
+
+type InvestigationEvidence {
+  id: String!
+  investigation_id: String
+  n: Int
+  kind: InvestigationEvidenceKind!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
+  in_draft: Boolean!
+  step_id: String
+}
+
+type InvestigationEntityReference {
+  id: String!
+  entity_type: String!
+  name: String!
+}
+
+type InvestigationEvidenceCell {
+  evidence_id: String!
+  evidence_standard_id: String
+  evidence_type: String
+  evidence_name: String
+  category: InvestigationEvidenceCategory!
+  consistency: Int!
+  weight: Float!
+  diagnosticity: Float!
+  rationale: String
+}
+
+type InvestigationHypothesis {
+  candidate_id: String!
+  candidate_standard_id: String
+  candidate_name: String
+  candidate_type: String
+  rationale: String
+  evidence: [InvestigationEvidenceCell!]!
+  rank: Int!
+  score: Float!
+  inconsistency: Float!
+  probability: Float!
+  confidence: Int
+  confidence_label: InvestigationConfidenceLabel
+  explanation: String!
+  candidate: StixCoreObject
+}
+
+type InvestigationTimelineEvent {
+  ts: DateTime!
+  entity_id: String!
+  entity_type: String!
+  name: String
+  event: String!
+}
+
+type InvestigationRecommendation {
+  id: String!
+  course_of_action_id: String
+  text: String!
+  priority: InvestigationRecommendationPriority!
+  rationale: String
+  action_kind: InvestigationRecommendationActionKind!
+  severity: String
+  approval_required: Boolean!
+  status: InvestigationRecommendationStatus!
+  task_id: String
+  courseOfAction: CourseOfAction
+}
+
+type InvestigationFeedback {
+  item_type: InvestigationFeedbackItemType!
+  item_ref: String!
+  decision: InvestigationFeedbackDecision!
+  comment: String
+  user_id: String!
+  ts: DateTime!
+  user: Creator
+}
+
+type InvestigationBudget {
+  max_iterations: Int!
+  max_enrichment_jobs: Int!
+  max_minutes: Int!
+  used_iterations: Int!
+  used_enrichment_jobs: Int!
+  used_minutes: Float!
+}
+
+type InvestigationApproval {
+  id: String!
+  kind: InvestigationApprovalKind!
+  status: InvestigationApprovalStatus!
+  description: String!
+  reason: String
+  connector_id: String
+  entity_id: String
+  recommendation_id: String
+  created_at: DateTime!
+  decided_at: DateTime
+  decided_by: String
+  decider: Creator
+  rejection_reason: String
+}
+
+type InvestigationEnrichmentRequest {
+  id: String!
+  wave_id: String
+  entity_id: String!
+  connector_id: String!
+  connector_name: String
+  reason: String
+  status: InvestigationEnrichmentRequestStatus!
+  requested_by: String!
+  work_id: String
+  created_at: DateTime!
+  completed_at: DateTime
+}
+
+type InvestigationEnrichmentJob {
+  connector_id: String!
+  connector_name: String!
+  entity_id: String!
+  work_id: String
+  status: String!
+  error: String
+}
+
+type InvestigationDeltaObject {
+  id: String!
+  standard_id: String
+  entity_type: String!
+  representative: String
+  connector_name: String
+  action: String!
+}
+
+type InvestigationEnrichmentWave {
+  id: ID!
+  status: InvestigationEnrichmentWaveStatus!
+  requested_at: DateTime!
+  completed_at: DateTime
+  jobs: [InvestigationEnrichmentJob!]!
+  delta: [InvestigationDeltaObject!]!
+}
+
+type InvestigationReportSource {
+  n: Int!
+  label: String!
+  href: String
+}
+
+type InvestigationAcceptance {
+  hypotheses_accepted: Int!
+  hypotheses_rejected: Int!
+  recommendations_accepted: Int!
+  recommendations_rejected: Int!
+  rate: Float
+}
+
+type InvestigationRunReport {
+  executive_summary: String!
+  report: String!
+  timeline: String!
+  hypotheses: String!
+  recommendations: String!
+  iocs: String!
+}
+
+type InvestigationRun implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  objectMarking: [MarkingDefinition!]
+  name: String!
+  subject_id: String
+  subject_type: String!
+  subject: StixCoreObject
+  case_id: String
+  case: Case
+  workspace_id: String
+  workspace: Workspace
+  draft_id: String
+  draft: DraftWorkspace
+  policy_id: String
+  policy: InvestigationPolicy
+  agent_slug: String
+  pack_id: String
+  xtm_investigation_id: String
+  xtm_investigation_ids: [String!]!
+  xtm_revision: Int!
+  xtm_status: String
+  run_trigger: InvestigationRunTrigger!
+  run_status: InvestigationRunStatus!
+  run_phase: InvestigationRunPhase!
+  status_reason: String
+  end_reason_code: String
+  started_at: DateTime
+  completed_at: DateTime
+  run_as_id: String!
+  runAs: Creator
+  goal_plan: JSON
+  steps: [InvestigationStep!]!
+  evidence: [InvestigationEvidence!]!
+  hypotheses: [InvestigationHypothesis!]!
+  timeline: [InvestigationTimelineEvent!]!
+  recommendations: [InvestigationRecommendation!]!
+  analyst_feedback: [InvestigationFeedback!]!
+  approvals: [InvestigationApproval!]!
+  enrichment_requests: [InvestigationEnrichmentRequest!]!
+  enrichment_entities: [InvestigationEntityReference!]!
+  budget: InvestigationBudget!
+  summary: String
+  report: String
+  report_sources: [InvestigationReportSource!]!
+  report_id: String
+  can_continue: Boolean!
+  acceptance: InvestigationAcceptance!
+  report_sections: InvestigationRunReport!
+}
+
+type InvestigationPolicy implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  creators: [Creator!]
+  name: String!
+  description: String
+  is_default: Boolean!
+  agent_slug: String
+  pack_id: String
+  pack_options: JSON
+  allowed_actions: [InvestigationAutonomousAction!]!
+  enrichment_connector_ids: [String!]!
+  approval_connector_ids: [String!]!
+  auto_approve_low_risk: Boolean!
+  auto_approve_min_confidence: Int!
+  attribution_min_confidence: Int!
+  max_iterations: Int!
+  max_enrichment_jobs: Int!
+  max_minutes: Int!
+  trigger_on_case_rfi_creation: Boolean!
+  run_as_id: String
+  runAs: Creator
+  runs_count: Int!
+  acceptance: InvestigationAcceptance!
+}
+
+enum InvestigationRunsOrdering {
+  created_at
+  updated_at
+  started_at
+  completed_at
+  run_status
+  _score
+}
+
+enum InvestigationPoliciesOrdering {
+  name
+  created_at
+  updated_at
+  _score
+}
+
+type InvestigationRunConnection {
+  pageInfo: PageInfo!
+  edges: [InvestigationRunEdge!]!
+}
+
+type InvestigationRunEdge {
+  cursor: String!
+  node: InvestigationRun!
+}
+
+type InvestigationPolicyConnection {
+  pageInfo: PageInfo!
+  edges: [InvestigationPolicyEdge!]!
+}
+
+type InvestigationPolicyEdge {
+  cursor: String!
+  node: InvestigationPolicy!
+}
+
+type InvestigationRunEnrichmentAccepted {
+  entity_id: String!
+  connector_id: String!
+  status: InvestigationEnrichmentRequestStatus!
+}
+
+type InvestigationRunEnrichmentRejected {
+  entity_id: String!
+  connector_id: String!
+  reason: String!
+}
+
+type InvestigationRunEnrichmentRequestResult {
+  wave_id: ID
+  accepted: [InvestigationRunEnrichmentAccepted!]!
+  rejected: [InvestigationRunEnrichmentRejected!]!
+}
+
+type InvestigationEnrichmentConnector {
+  id: String!
+  name: String!
+  active: Boolean!
+  connector_scope: [String!]!
+}
+
+type InvestigationPackChoice {
+  value: String!
+  label: String!
+  description: String
+}
+
+type InvestigationPackOption {
+  key: String!
+  label: String!
+  description: String
+  default: String
+  choices: [InvestigationPackChoice!]!
+}
+
+type InvestigationPack {
+  slug: String!
+  label: String!
+  description: String
+  recommended: Boolean!
+  applicable_source_count: Int!
+  total_source_count: Int!
+  max_iterations: Int
+  options: [InvestigationPackOption!]!
+}
+
+type InvestigationPackCatalog {
+  available: Boolean!
+  reason: String
+  packs: [InvestigationPack!]!
+}
+
+input InvestigationRunFeedbackInput {
+  item_type: InvestigationFeedbackItemType!
+  item_ref: String!
+  decision: InvestigationFeedbackDecision!
+
+  "*Constraints:*\n* Maximal length: `2000`\n"
+  comment: String
+}
+
+input InvestigationRunEnrichmentRequestInput {
+  entity_ids: [String!]!
+  connector_ids: [String!]!
+
+  "*Constraints:*\n* Maximal length: `2000`\n"
+  reason: String
+}
+
+input InvestigationPolicyAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  is_default: Boolean
+
+  "*Constraints:*\n* Maximal length: `200`\n"
+  agent_slug: String
+
+  "*Constraints:*\n* Maximal length: `200`\n"
+  pack_id: String
+  pack_options: JSON
+  allowed_actions: [InvestigationAutonomousAction!]
+  enrichment_connector_ids: [String!]
+  approval_connector_ids: [String!]
+  auto_approve_low_risk: Boolean
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
+  auto_approve_min_confidence: Int
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
+  attribution_min_confidence: Int
+
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `50`\n"
+  max_iterations: Int
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `200`\n"
+  max_enrichment_jobs: Int
+
+  "*Constraints:*\n* Minimal value: `1`\n* Maximal value: `1440`\n"
+  max_minutes: Int
+  trigger_on_case_rfi_creation: Boolean
+  run_as_id: String
 }
 
 type FintelDesign implements BasicObject & InternalObject {

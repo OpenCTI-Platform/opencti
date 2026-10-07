@@ -13,11 +13,17 @@ import type { BasicStoreCommon, BasicStoreObject, BasicConnection } from '../typ
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
 import { validateMarking } from '../utils/access';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
+import { INVESTIGATION_ENTERPRISE_EDITION_TYPES } from '../modules/investigationRun/investigationRun-types';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
 export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string): Promise<T> => {
-  return await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
+  const element = await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
+  if (element && INVESTIGATION_ENTERPRISE_EDITION_TYPES.includes(element.entity_type) && !(await isEnterpriseEdition(context))) {
+    return null as unknown as T;
+  }
+  return element;
 };
 
 export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,

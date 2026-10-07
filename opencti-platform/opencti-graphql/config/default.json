@@ -372,6 +372,15 @@
     "lock_key": "data_sanity_manager_lock",
     "interval": 600000
   },
+  "investigation_run_manager": {
+    "enabled": true,
+    "lock_key": "investigation_run_manager_lock",
+    "interval": 10000,
+    "max_concurrency": 3,
+    "max_runs_per_tick": 50,
+    "max_awaiting_runs_per_tick": 10,
+    "stream_batch_size": 2000
+  },
   "exclusion_list_cache_build_manager": {
     "enabled": true,
     "lock_key": "exclusion_list_cache_build_manager_lock",

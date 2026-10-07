@@ -130,6 +130,13 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
   addXtmAgentCallCount: vi.fn(),
 }));
 
+// Case Autopilot approval gates are decided by the investigation domain, which
+// pulls the whole database layer: only its decision entry point is needed.
+const mockDecideInvestigationApprovals = vi.fn();
+vi.mock('../../../src/modules/investigationRun/investigationRun-domain', () => ({
+  decideInvestigationApprovals: (...args: unknown[]) => mockDecideInvestigationApprovals(...args),
+}));
+
 // Mock getHttpClient — the core HTTP abstraction
 const mockPost = vi.fn();
 const mockGet = vi.fn();
@@ -175,6 +182,7 @@ import {
   postChatbotMessageSteer,
 } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { logApp } from '../../../src/config/conf';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1313,6 +1321,117 @@ describe('httpChatbotProxy: postChatbotMessageApprove', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotMessageApprove for Case Autopilot runs', () => {
+  let res: ReturnType<typeof buildRes>;
+  const RUN_ID = '55555555-5555-4555-8555-555555555555';
+  const APPROVAL_ID = '66666666-6666-4666-8666-666666666666';
+  const RUN_BODY = {
+    investigation_run_id: RUN_ID,
+    decisions: [{ tool_call_id: APPROVAL_ID, decision: 'approve' }],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext({ user_with_session: true });
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should decide the run approvals in OpenCTI and never call XTM One', async () => {
+    mockDecideInvestigationApprovals.mockResolvedValue({ decided: 1, run: { id: RUN_ID } });
+
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+
+    expect(mockPost).not.toHaveBeenCalled();
+    expect(mockDecideInvestigationApprovals).toHaveBeenCalledTimes(1);
+    const [, user, runId, decisions] = mockDecideInvestigationApprovals.mock.calls[0];
+    expect(user).toEqual({ id: 'user-1', name: 'Test User' });
+    expect(runId).toEqual(RUN_ID);
+    expect(decisions).toEqual([{ tool_call_id: APPROVAL_ID, decision: 'approve', rejection_reason: null }]);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ status: 'accepted', decided: 1 });
+  });
+
+  it('should still require a browser session', async () => {
+    setupAuthenticatedContext({ user_with_session: false });
+
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(mockDecideInvestigationApprovals).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a malformed run id or decision', async () => {
+    await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, investigation_run_id: 'not-a-uuid' }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid investigation run id' });
+
+    res = buildRes();
+    await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, decisions: [{ tool_call_id: APPROVAL_ID, decision: 'maybe' }] }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid decision' });
+
+    res = buildRes();
+    await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, decisions: [] }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'No decisions supplied' });
+
+    res = buildRes();
+    const tooMany = Array.from({ length: 101 }, () => ({ tool_call_id: APPROVAL_ID, decision: 'approve' }));
+    await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, decisions: tooMany }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: expect.stringContaining('Too many decisions') });
+
+    res = buildRes();
+    await postChatbotMessageApprove(buildSessionReq({
+      ...RUN_BODY,
+      decisions: [{ tool_call_id: APPROVAL_ID, decision: 'approve' }, { tool_call_id: APPROVAL_ID, decision: 'approve_always' }],
+    }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Each approval can be decided once per request' });
+    expect(mockDecideInvestigationApprovals).not.toHaveBeenCalled();
+  });
+
+  it('should answer 409 when nothing is waiting for these decisions', async () => {
+    mockDecideInvestigationApprovals.mockResolvedValue({ decided: 0, run: { id: RUN_ID } });
+
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+  });
+
+  it('should map forbidden and unknown runs to 403 and 404', async () => {
+    mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'You are not allowed to decide this approval', extensions: { code: 'FORBIDDEN_ACCESS' } });
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(403);
+
+    res = buildRes();
+    mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'Investigation run not found' });
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('should answer a business refusal with 400 and a platform failure with 500, logged as a warning and an error', async () => {
+    mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'This investigation has ended', extensions: { code: 'FUNCTIONAL_ERROR' } });
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'This investigation has ended' });
+    expect(logApp.warn).toHaveBeenCalledWith('Investigation approval refused', expect.objectContaining({ runId: RUN_ID }));
+    expect(logApp.error).not.toHaveBeenCalled();
+
+    res = buildRes();
+    mockDecideInvestigationApprovals.mockRejectedValueOnce(new Error('Connection lost'));
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    // The cause of a failure is logged, never sent to the client.
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Approval failed' });
+    expect(logApp.error).toHaveBeenCalledWith('Error in investigation approval', expect.objectContaining({ runId: RUN_ID }));
   });
 });
 

@@ -10,6 +10,7 @@ import {
   getUserAccessRight,
   isMarkingAllowed,
   isOrganizationAllowed,
+  isOrganizationUnrestricted,
   isUserCanAccessStreamUpdateEvent,
   isUserInPlatformOrganization,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
@@ -30,6 +31,9 @@ import type { BasicStoreEntityOrganization } from '../../../src/modules/organiza
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 import type { Group } from '../../../src/types/group';
 import type { UpdateEvent } from '../../../src/types/event';
+import { ENTITY_TYPE_INVESTIGATION_RUN } from '../../../src/modules/investigationRun/investigationRun-types';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../../../src/modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -162,6 +166,38 @@ describe('Check organization access for element.', () => {
     };
     const hasPlatformOrg = !!settings.platform_organization;
     expect(isOrganizationAllowed(inPlatformContext, element as BasicStoreCommon, user as AuthUser, hasPlatformOrg)).toBeTruthy();
+  });
+});
+
+describe('Check organization restrictions of restricted internal types', () => {
+  const userOf = (organizationId: string): AuthUser => ({
+    internal_id: uuid(),
+    organizations: [{ internal_id: organizationId, id: organizationId } as BasicStoreEntityOrganization],
+    allowed_marking: [],
+    capabilities: [],
+    groups: [],
+    roles: [],
+  } as unknown as AuthUser);
+  const runSharedWith = (organizationIds: string[]) => ({
+    internal_id: uuid(),
+    entity_type: ENTITY_TYPE_INVESTIGATION_RUN,
+    [RELATION_GRANTED_TO]: organizationIds,
+  } as unknown as BasicStoreCommon);
+
+  it('should apply organization restrictions to the restricted internal types like the search engine does', () => {
+    expect(isOrganizationUnrestricted({ entity_type: ENTITY_TYPE_INVESTIGATION_RUN } as BasicStoreCommon)).toBeFalsy();
+    expect(isOrganizationUnrestricted({ entity_type: ENTITY_TYPE_DELETE_OPERATION } as BasicStoreCommon)).toBeFalsy();
+    expect(isOrganizationUnrestricted({ entity_type: ENTITY_TYPE_SETTINGS } as BasicStoreCommon)).toBeTruthy();
+  });
+
+  it('should deny an organization removed from the grants of an investigation run', () => {
+    const organizationA = uuid();
+    const organizationB = uuid();
+    const before = runSharedWith([organizationA, organizationB]);
+    const after = runSharedWith([organizationB]);
+    expect(checkUserFilterStoreElements(testContext, userOf(organizationA), before, [], true)).toBeTruthy();
+    expect(checkUserFilterStoreElements(testContext, userOf(organizationA), after, [], true)).toBeFalsy();
+    expect(checkUserFilterStoreElements(testContext, userOf(organizationB), after, [], true)).toBeTruthy();
   });
 });
 

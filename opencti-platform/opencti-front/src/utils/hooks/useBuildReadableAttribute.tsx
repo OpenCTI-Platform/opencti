@@ -16,13 +16,35 @@ const MARKDOWN_ATTRIBUTES = [
   'explanation',
   'contact_information',
   'objective',
+  // Sections of the latest Case Autopilot investigation of a case.
+  ...['executive_summary', 'report', 'timeline', 'hypotheses', 'recommendations', 'iocs']
+    .map((section) => `latestInvestigationRun.report_sections.${section}`),
 ];
 
-const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
+const DATE_ATTRIBUTES = ['latestInvestigationRun.completed_at'];
+
+// What a Case Autopilot investigation copied from its engine is text: only its report sections render, as sanitized
+// Markdown (above), and the investigation as a whole, its sections together or any other value of it are escaped.
+const INVESTIGATION_RUN_ATTRIBUTE = 'latestInvestigationRun';
+const ESCAPED_TEXT = 'escaped-text';
+const isInvestigationRunAttribute = (attribute: string) => attribute === INVESTIGATION_RUN_ATTRIBUTE
+  || attribute.startsWith(`${INVESTIGATION_RUN_ATTRIBUTE}.`);
+const escapeHtml = (text: string) => text
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('\'', '&#39;');
+
+// insertedAsHtml: the attribute outcome inserts the string into the document as is; a table cell or a list item is a
+// React text node, escaped when rendered.
+const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false, insertedAsHtml = !inTable) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
-    value = dateFormat(new Date(value)) ?? '';
+    // A missing date, such as the completion of an investigation still running, exports as an empty value.
+    const date = new Date(value);
+    value = Number.isNaN(date.getTime()) ? '' : dateFormat(date) ?? '';
   } else if (attributeType === 'markdown') {
     const mark = marked.parse(value, {
       async: false,
@@ -39,8 +61,13 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
     const stringHtml = DOMPurify.sanitize(mark, inTable ? { FORBID_TAGS: ['a'] } : undefined);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
-  } else if (inTable) {
-    value = stringWithZeroWidthSpace(value);
+  } else {
+    if (inTable) {
+      value = stringWithZeroWidthSpace(value);
+    }
+    if (attributeType === ESCAPED_TEXT && insertedAsHtml && typeof value === 'string') {
+      value = escapeHtml(value);
+    }
   }
   return value;
 };
@@ -53,7 +80,9 @@ const useBuildReadableAttribute = () => {
     let attributeType: string | undefined;
     if (attribute) {
       attributeType = stixCoreObjectsAttributesMap.get(attribute)?.type;
+      if (isInvestigationRunAttribute(attribute)) attributeType = ESCAPED_TEXT;
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
+      if (DATE_ATTRIBUTES.includes(attribute)) attributeType = 'date';
     }
 
     let readableAttribute;
@@ -62,7 +91,7 @@ const useBuildReadableAttribute = () => {
         readableAttribute = renderToString(
           <ul>
             {attributeData.map((el) => (
-              <li key={el}>{buildStringAttribute(el, attributeType, inTable)}</li>
+              <li key={el}>{buildStringAttribute(el, attributeType, inTable, false)}</li>
             ))}
           </ul>,
         );

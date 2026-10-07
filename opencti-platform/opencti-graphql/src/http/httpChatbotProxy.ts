@@ -9,11 +9,13 @@ import { CguStatus } from '../generated/graphql';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
+import { FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS } from '../config/errors';
 import type { BasicStoreSettings } from '../types/settings';
 import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
+import { decideInvestigationApprovals, type InvestigationApprovalDecisionInput } from '../modules/investigationRun/investigationRun-domain';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
@@ -130,10 +132,18 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * OpenCTI's own license or a verified XTM license, never the ee_enabled of the
  * XTM One registration answer.
  */
-const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
+const authenticate = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
   if (!context.user) {
     res.sendStatus(403);
+    return null;
+  }
+  return context;
+};
+
+const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
+  const context = await authenticate(req, res);
+  if (!context?.user) {
     return null;
   }
 
@@ -330,6 +340,69 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
   }
 };
 
+const INVESTIGATION_DECISIONS = ['approve', 'approve_always', 'reject'];
+const MAX_INVESTIGATION_DECISIONS = 100;
+
+// Decisions on the approval gates of a Case Autopilot run:
+// `{ investigation_run_id, decisions: [{ tool_call_id, decision, rejection_reason? }] }`,
+// `tool_call_id` being the id of the run approval. Answers like XTM One does:
+// 404 for a run the user cannot see, 409 when nothing is waiting any more.
+const answerInvestigationApproval = async (context: AuthContext, req: Express.Request, res: Express.Response) => {
+  const runId = String(req.body.investigation_run_id ?? '');
+  const rawDecisions: unknown = req.body.decisions;
+  if (!UUID_RE.test(runId)) {
+    res.status(400).json({ error: 'Invalid investigation run id' });
+    return;
+  }
+  if (!Array.isArray(rawDecisions) || rawDecisions.length === 0) {
+    res.status(400).json({ error: 'No decisions supplied' });
+    return;
+  }
+  if (rawDecisions.length > MAX_INVESTIGATION_DECISIONS) {
+    res.status(400).json({ error: `Too many decisions: at most ${MAX_INVESTIGATION_DECISIONS} per request` });
+    return;
+  }
+  const decisions: InvestigationApprovalDecisionInput[] = [];
+  for (let index = 0; index < rawDecisions.length; index += 1) {
+    const raw = rawDecisions[index] as { tool_call_id?: unknown; decision?: unknown; rejection_reason?: unknown };
+    if (typeof raw?.tool_call_id !== 'string' || !UUID_RE.test(raw.tool_call_id) || typeof raw.decision !== 'string' || !INVESTIGATION_DECISIONS.includes(raw.decision)) {
+      res.status(400).json({ error: 'Invalid decision' });
+      return;
+    }
+    if (decisions.some((decision) => decision.tool_call_id === raw.tool_call_id)) {
+      res.status(400).json({ error: 'Each approval can be decided once per request' });
+      return;
+    }
+    decisions.push({
+      tool_call_id: raw.tool_call_id,
+      decision: raw.decision as InvestigationApprovalDecisionInput['decision'],
+      rejection_reason: typeof raw.rejection_reason === 'string' ? raw.rejection_reason : null,
+    });
+  }
+  try {
+    const outcome = await decideInvestigationApprovals(context, context.user as AuthUser, runId, decisions);
+    if (outcome.decided === 0) {
+      res.status(409).json({ status: 'error', error: 'No approval of this investigation is waiting for these decisions' });
+      return;
+    }
+    res.status(200).json({ status: 'accepted', decided: outcome.decided });
+  } catch (e: unknown) {
+    const error = e as { message?: string; extensions?: { code?: string } };
+    if (error?.extensions?.code === FORBIDDEN_ACCESS) {
+      res.status(403).json({ status: 'error', error: error.message });
+    } else if (error?.message === 'Investigation run not found') {
+      res.status(404).json({ status: 'error', error: 'Investigation run not found' });
+    } else if (FUNCTIONAL_ERRORS.includes(error?.extensions?.code ?? '')) {
+      // Like the API logs: a business refusal (an ended investigation, an invalid decision) is a warning, a failure an error
+      logApp.warn('Investigation approval refused', { cause: e, runId });
+      res.status(400).json({ status: 'error', error: error?.message ?? 'Approval refused' });
+    } else {
+      logApp.error('Error in investigation approval', { cause: e, runId });
+      res.status(500).json({ status: 'error', error: 'Approval failed' });
+    }
+  }
+};
+
 // ── POST /chatbot/messages/approve ──────────────────────────────────────
 // Human-in-the-loop: answers a turn that XTM One paused because the agent
 // proposed a tool call needing a person's consent. Shaped exactly like the
@@ -343,7 +416,11 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
 // screen with the controls re-armed on anything else.
 export const postChatbotMessageApprove = async (req: Express.Request, res: Express.Response) => {
   try {
-    const context = await authenticateAndVerify(req, res);
+    // Case Autopilot gates are held by OpenCTI and checked against the
+    // Enterprise Edition by the investigation itself: they do not depend on
+    // the chatbot being enabled.
+    const isInvestigationApproval = !!req.body?.investigation_run_id;
+    const context = isInvestigationApproval ? await authenticate(req, res) : await authenticateAndVerify(req, res);
     if (!context?.user) return;
     // An approval is a person's consent, so it must come from a real browser
     // session. Agent and service identities authenticate with an API token
@@ -355,6 +432,13 @@ export const postChatbotMessageApprove = async (req: Express.Request, res: Expre
     }
     if (!req.body) {
       res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    // Case Autopilot gates (paid enrichments, sensitive recommendations, the
+    // investigation draft) are decided on the same route and with the same
+    // payload, but held by OpenCTI: they never reach XTM One.
+    if (isInvestigationApproval) {
+      await answerInvestigationApproval(context, req, res);
       return;
     }
     const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);

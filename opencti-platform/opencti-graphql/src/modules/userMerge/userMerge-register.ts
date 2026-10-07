@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (40) ---------------------------------------------------------------------
+  // --- transfer (42) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -65,6 +65,8 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('history.user-id', TRANSFER, 'History', 'user_id'),
   row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
+  row('investigation-policy.run-as-id', TRANSFER, 'InvestigationPolicy', 'run_as_id'),
+  row('investigation-run.run-as-id', TRANSFER, 'InvestigationRun', 'run_as_id'),
   row('news-feed-item.user-id', TRANSFER, 'NewsFeedItem', 'user_id'),
   row('notification-terminal.user-id', TRANSFER, 'Notification (read or terminal)', 'user_id'),
   row('object-assignee.connections', TRANSFER, 'object-assignee', 'rel_object-assignee.internal_id / connections[].internal_id'),

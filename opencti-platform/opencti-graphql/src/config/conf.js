@@ -41,6 +41,7 @@ import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTem
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_INVESTIGATION_POLICY, ENTITY_TYPE_INVESTIGATION_RUN } from '../modules/investigationRun/investigationRun-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
@@ -792,6 +793,16 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}PIR_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}PIR_ADDED_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}PIR_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_INVESTIGATION_RUN]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_RUN_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_RUN_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_RUN_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_INVESTIGATION_POLICY]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_POLICY_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_POLICY_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}INVESTIGATION_POLICY_DELETE_TOPIC`,
   },
   [ENTITY_TYPE_FINTEL_DESIGN]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}DESIGN_EDIT_TOPIC`,

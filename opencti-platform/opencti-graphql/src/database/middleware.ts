@@ -256,7 +256,8 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import { ENTITY_TYPE_INVESTIGATION_RUN, INVESTIGATION_ENTERPRISE_EDITION_TYPES } from '../modules/investigationRun/investigationRun-types';
 import { pushAll } from '../utils/arrayUtil';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -618,6 +619,18 @@ export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
   return elements.length > 0 ? elements[0] as T : null;
 };
+// A run is served only by its own queries and fields, which withhold what it
+// derived from a reader beyond its live sources: no STIX loader serializes it raw,
+// whatever path asks (exports, workbench refresh, playbooks, TAXII).
+// A policy is serialized only under the Enterprise Edition.
+const servedAsStix = async <T extends { entity_type: string }>(context: AuthContext, elements: T[]): Promise<T[]> => {
+  const servable = elements.filter((element) => element.entity_type !== ENTITY_TYPE_INVESTIGATION_RUN);
+  if (!servable.some((element) => INVESTIGATION_ENTERPRISE_EDITION_TYPES.includes(element.entity_type)) || (await isEnterpriseEdition(context))) {
+    return servable;
+  }
+  return servable.filter((element) => !INVESTIGATION_ENTERPRISE_EDITION_TYPES.includes(element.entity_type));
+};
+
 export const stixLoadById = async (
   context: AuthContext,
   user: AuthUser,
@@ -628,8 +641,9 @@ export const stixLoadById = async (
     return null;
   }
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
+  const [servable] = instance ? await servedAsStix(context, [instance]) : [];
   const { version = Version.Stix_2_1 } = opts;
-  return instance ? convertStoreToStix(instance, version) : null;
+  return servable ? convertStoreToStix(servable, version) : null;
 };
 
 const convertStoreToStixWithResolvedFiles = async (
@@ -676,7 +690,7 @@ export const stixLoadByIds = async (
   opts: { resolveStixFiles?: boolean; version?: Version } & LoadByIdsWithDependeciesOpts = {},
 ): Promise<(S.StixObject | S2.StixObject)[]> => {
   const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
-  const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
+  const elements = await servedAsStix(context, await storeLoadByIdsWithRefs(context, user, ids, opts));
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const elementsMappedToIds = elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }));
   const flatElementsMapped = elementsMappedToIds.flat();
@@ -723,7 +737,7 @@ export const stixLoadByFilters = async (
   args: EntityFilters<BasicStoreCommon> & RepaginateOpts<BasicStoreBase> & { onlyMarking?: boolean },
 ): Promise<S.StixObject[]> => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
-  return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
+  return elements ? (await servedAsStix(context, elements)).map((element) => convertStoreToStix_2_1(element)) : [];
 };
 // endregion
 

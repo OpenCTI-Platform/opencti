@@ -256,6 +256,13 @@ As the main element is always preserved, subsequent components that update your 
 - ***Out***: The bundle now contains only the main entity and the entities that matched the filter. The playbook continues down this route.
 - ***Unmatched***: No entity in the bundle matched the filter conditions. The original bundle passes through unchanged. The playbook continues down this route.
 
+### Run Case Autopilot
+
+This component (Enterprise Edition) starts a [Case Autopilot](case-autopilot.md) investigation for each incident or case of the bundle, once per entity, with the investigation policy you select (the default policy when none is selected) and as the user set in "Run as". When "Run as" is empty, the investigations act as the user the policy sets in "Run automatic investigations as", and as the platform administrator only when the policy sets none; if that user no longer exists or can no longer sign in, no investigation starts. Pair it with a "Listen knowledge events" start component filtered on the incidents your incident connectors create to investigate every new incident as it arrives.
+
+***Routes:***
+- ***Out***: The bundle passes through unchanged; the investigations run in the background and write their results to their own draft.
+
 ## Share and access components
 
 These components manage the access permissions and allow you to share the bundle with organizations.

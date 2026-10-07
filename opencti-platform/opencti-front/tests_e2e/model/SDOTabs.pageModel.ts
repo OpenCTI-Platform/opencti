@@ -22,6 +22,10 @@ export default class SDOTabs {
     return this.page.getByRole('tab', { name: 'Content' }).click();
   }
 
+  goToAutopilotTab() {
+    return this.page.getByRole('tab', { name: 'Autopilot' }).click();
+  }
+
   goToSightingsTab() {
     return this.page.getByRole('tab', { name: 'Sightings' }).click();
   }

@@ -204,6 +204,7 @@ nav:
       - Refine content ✨: usage/refine-content.md
     - Act on knowledge:
       - Case management: usage/case-management.md
+      - Case Autopilot ✨: usage/case-autopilot.md
       - Notifications and alerting: usage/notifications.md
       - Background tasks: usage/background-tasks.md
       - Dashboards:

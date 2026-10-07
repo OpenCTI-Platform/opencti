@@ -27,6 +27,8 @@ describe('workspace duplication', () => {
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue([]);
     vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue(undefined as any);
     vi.spyOn(redis, 'notify').mockResolvedValue({ id: 'duplicated-id' } as any);
+    // No Case Autopilot run holds the investigation graph: none is withheld from its readers.
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([]);
   });
 
   it('creates an investigation with the expected attributes', async () => {

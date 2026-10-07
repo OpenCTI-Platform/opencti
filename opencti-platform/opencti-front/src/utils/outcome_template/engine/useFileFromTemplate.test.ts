@@ -9,14 +9,15 @@ import * as useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import * as filterUtils from '../../filters/filtersUtils';
 
 describe('Hook: useFileFromTemplate', () => {
+  const buildAttributesOutcomeMock = vi.fn(async () => {
+    return [
+      { variableName: 'containerName', attributeData: 'Super report' },
+      { variableName: 'containerType', attributeData: 'Report' },
+    ];
+  });
   beforeAll(() => {
     vi.spyOn(useBuildAttributesOutcome, 'default').mockImplementation(() => ({
-      buildAttributesOutcome: async () => {
-        return [
-          { variableName: 'containerName', attributeData: 'Super report' },
-          { variableName: 'containerType', attributeData: 'Report' },
-        ];
-      },
+      buildAttributesOutcome: buildAttributesOutcomeMock,
     }));
     vi.spyOn(useBuildListOutcome, 'default').mockImplementation(() => ({
       buildListOutcome: async () => {
@@ -26,6 +27,9 @@ describe('Hook: useFileFromTemplate', () => {
     vi.spyOn(filterUtils, 'useBuildFiltersForTemplateWidgets').mockImplementation(() => ({
       buildFiltersForTemplateWidgets() {
         return undefined;
+      },
+      buildNotAllowedMarkingIds(maxContentMarkingsIds: string[]) {
+        return maxContentMarkingsIds.includes('tlp-amber') ? ['tlp-red'] : ['tlp-amber', 'tlp-red'];
       },
     }));
   });
@@ -60,8 +64,10 @@ describe('Hook: useFileFromTemplate', () => {
       });
     });
 
-    const content = await buildFileFromTemplate('aaaID', [], 'testTemplate');
+    const content = await buildFileFromTemplate('aaaID', ['tlp-amber'], 'testTemplate');
     expect(content).toEqual('Hello, I am container Super report of type Report');
+    // the attribute widget receives the markings above the limits of the export
+    expect(buildAttributesOutcomeMock).toHaveBeenLastCalledWith('aaaID', expect.anything(), ['tlp-red']);
   });
 
   it('should replace attribute lists with corresponding data', async () => {

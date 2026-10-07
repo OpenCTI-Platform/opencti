@@ -6,6 +6,9 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
+import RunCaseAutopilotAskAI from '@components/investigation_runs/RunCaseAutopilotAskAI';
+import InvestigationRunsTab from '@components/investigation_runs/InvestigationRunsTab';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -96,6 +99,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   useSubscription(subConfig);
 
   const {
@@ -168,6 +172,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
               enableReferences={enableReferences}
             />
           ),
+          ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Rft" /> } : {}),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}
@@ -179,7 +184,12 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
             />
           ),
         }}
-        extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
+        extraActions={!isKnowledgeOrContent && (
+          <>
+            <RunCaseAutopilotAskAI subjectId={caseData.id} subjectType="Case-Rft" basePath={basePath} />
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+          </>
+        )}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
 import ItemMarkings from '../ItemMarkings';
 import ItemStatus from '../ItemStatus';
+import InvestigationRunBadge from '../../private/components/investigation_runs/InvestigationRunBadge';
 import ItemPriority from '../ItemPriority';
 import RatingField from '../fields/RatingField';
 import ItemConfidence from '../ItemConfidence';
@@ -743,6 +744,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: true,
     render: ({ last_seen }, { nsdt }) => nsdt(last_seen),
+  },
+  latestInvestigationRun: {
+    id: 'latestInvestigationRun',
+    label: 'Autopilot',
+    percentWidth: 8,
+    isSortable: false,
+    render: ({ latestInvestigationRun }) => <InvestigationRunBadge run={latestInvestigationRun} />,
   },
   malware_types: {
     id: 'malware_types',

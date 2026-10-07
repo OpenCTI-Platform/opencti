@@ -2315,6 +2315,16 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   }
 };
 
+/** Whether an account may still use the platform, by the rules applied when it authenticates. */
+export const isUserAccountValid = (user: AuthUser, settings: BasicStoreSettings) => {
+  try {
+    validateUser(user, settings);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const sessionAuthenticateUser = async (context: AuthContext, req: Express.Request, user: Pick<BasicStoreEntityUser, 'id' | 'internal_id'>, provider: string) => {
   let platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   let logged = platformUsers.get(user.internal_id);
