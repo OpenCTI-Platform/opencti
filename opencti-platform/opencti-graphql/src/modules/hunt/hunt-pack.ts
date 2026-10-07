@@ -175,12 +175,14 @@ export const planHuntPackImport = async (
   bundleObjects: Map<string, Record<string, any>>,
 ): Promise<HuntPackImportPlan> => {
   const unresolved: string[] = [];
+  // A reference of the pack names an element by its standard id or by one of its other STIX ids
+  const knownIds = (elements: BasicStoreEntity[]) => new Set<string>(elements.flatMap((element) => [element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
   const resolveIds = async (refs: string[] | undefined) => {
     if (!refs || refs.length === 0) {
       return [];
     }
     const found = await findByIds<BasicStoreEntity>(context, user, refs);
-    const foundIds = new Set<string>(found.flatMap((element) => [element.standard_id, ...(element.x_opencti_stix_ids ?? [])]));
+    const foundIds = knownIds(found);
     refs.filter((ref) => !foundIds.has(ref)).forEach((ref) => unresolved.push(ref));
     return found.map((element) => element.internal_id);
   };
@@ -189,7 +191,7 @@ export const planHuntPackImport = async (
       return [];
     }
     const found = await findByIds<BasicStoreEntity>(context, user, refs, { type: ENTITY_TYPE_ATTACK_PATTERN });
-    const foundIds = new Set<string>(found.map((element) => element.standard_id));
+    const foundIds = knownIds(found);
     const missing = refs.filter((ref) => !foundIds.has(ref));
     const byMitreId = missing
       .map((ref) => ({ ref, mitreId: attackExternalId(bundleObjects.get(ref)) }))
@@ -201,21 +203,20 @@ export const planHuntPackImport = async (
       : [];
     const resolvedMitreIds = new Set(resolvedByMitre.map((element) => element.x_mitre_id));
     missing.filter((ref) => !byMitreId.some((item) => item.ref === ref && resolvedMitreIds.has(item.mitreId))).forEach((ref) => unresolved.push(ref));
-    return [...found.map((element) => element.internal_id), ...resolvedByMitre.map((element) => element.internal_id)];
+    return Array.from(new Set([...found.map((element) => element.internal_id), ...resolvedByMitre.map((element) => element.internal_id)]));
   };
-  const markingRefs = stixHunt.object_marking_refs ?? [];
+  const markingRefs = Array.from(new Set(stixHunt.object_marking_refs ?? []));
   const markings = markingRefs.length > 0 ? await findByIds<BasicStoreEntity>(context, user, markingRefs) : [];
-  const markingsBlocked = markings.length !== markingRefs.length;
-  if (markingsBlocked) {
-    const foundMarkings = new Set(markings.map((marking) => marking.standard_id));
-    markingRefs.filter((ref) => !foundMarkings.has(ref)).forEach((ref) => unresolved.push(ref));
-  }
+  const foundMarkings = knownIds(markings);
+  const missingMarkings = markingRefs.filter((ref) => !foundMarkings.has(ref));
+  missingMarkings.forEach((ref) => unresolved.push(ref));
+  const markingsBlocked = missingMarkings.length > 0;
   const grantedRefs: unknown = stixHunt.extensions?.[STIX_EXT_OCTI]?.granted_refs;
   const organizationRefs = Array.isArray(grantedRefs) ? Array.from(new Set(grantedRefs.filter((ref): ref is string => typeof ref === 'string'))) : [];
   const organizations = organizationRefs.length > 0
     ? await findByIds<BasicStoreEntity>(context, user, organizationRefs, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION })
     : [];
-  const foundOrganizations = new Set<string>(organizations.flatMap((organization) => [organization.standard_id, ...(organization.x_opencti_stix_ids ?? [])]));
+  const foundOrganizations = knownIds(organizations);
   const missingOrganizations = organizationRefs.filter((ref) => !foundOrganizations.has(ref));
   missingOrganizations.forEach((ref) => unresolved.push(ref));
   const blocked = markingsBlocked || missingOrganizations.length > 0;

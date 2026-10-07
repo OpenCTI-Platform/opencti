@@ -56,3 +56,39 @@ describe('Organizations of a pack hunt', () => {
     expect(plan.input.objectOrganization).toBeUndefined();
   });
 });
+
+describe('Techniques and markings of a pack hunt', () => {
+  afterEach(() => {
+    vi.mocked(findByIds).mockReset();
+  });
+
+  it('should take a technique and a marking named by another of their STIX ids as resolved', async () => {
+    const technique = { internal_id: 'technique-1', standard_id: 'attack-pattern--a1', x_opencti_stix_ids: ['attack-pattern--b2'], entity_type: 'Attack-Pattern' };
+    const marking = { internal_id: 'marking-1', standard_id: 'marking-definition--c3', x_opencti_stix_ids: ['marking-definition--d4'], entity_type: 'Marking-Definition' };
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => [technique, marking].filter((element) => (
+      ids.includes(element.standard_id) || element.x_opencti_stix_ids.some((id) => ids.includes(id))
+    )) as never);
+    const hunt = {
+      id: 'hunt--1',
+      type: 'hunt',
+      name: 'Hunt of another platform',
+      sigma_rule: 'title: t',
+      technique_refs: ['attack-pattern--b2'],
+      // The same marking, named twice
+      object_marking_refs: ['marking-definition--d4', 'marking-definition--d4'],
+    } as unknown as StixHunt;
+    const plan = await planHuntPackImport(testContext, ADMIN_USER, hunt, new Map());
+    expect(plan.unresolved).toEqual([]);
+    expect(plan.blocked).toBe(false);
+    expect(plan.input.huntTechniques).toEqual(['technique-1']);
+    expect(plan.input.objectMarking).toEqual(['marking-1']);
+  });
+
+  it('should still skip a hunt with a marking unknown here', async () => {
+    vi.mocked(findByIds).mockResolvedValue([] as never);
+    const hunt = { id: 'hunt--2', type: 'hunt', name: 'Marked hunt', sigma_rule: 'title: t', object_marking_refs: ['marking-definition--e5'] } as unknown as StixHunt;
+    const plan = await planHuntPackImport(testContext, ADMIN_USER, hunt, new Map());
+    expect(plan.blocked).toBe(true);
+    expect(plan.unresolved).toEqual(['marking-definition--e5']);
+  });
+});
