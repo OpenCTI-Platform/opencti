@@ -3678,7 +3678,8 @@ const upsertResolvedElement = async (
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
     const upsertResult = await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
-    if (fieldAuthorityResolver && authorityDecisions && authorityDecisions.size > 0) {
+    // Recorded whether a rule decided or the confidence did: the writer of a ruled attribute is always the one recorded.
+    if (fieldAuthorityResolver && authorityDecisions) {
       const appliedKeys = R.uniq([...inputs.map((input) => input.key), ...assertedKeys]);
       await fieldAuthorityResolver.recordApplied(context, user, resolvedElement, type, updatePatch, appliedKeys);
     }

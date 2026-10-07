@@ -1,6 +1,23 @@
-import { describe, expect, it } from 'vitest';
-import { creationSources, decideFieldAuthority, rankSource } from '../../../../src/modules/curation/curation-field-authority';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { creationSources, curationFieldAuthorityResolver, decideFieldAuthority, rankSource } from '../../../../src/modules/curation/curation-field-authority';
 import { AUTHORITY_SOURCE_AUTHOR, AUTHORITY_SOURCE_CONNECTOR, type FieldAuthorityRule, type FieldAuthoritySource } from '../../../../src/modules/curation/curation-types';
+import { elUpdate } from '../../../../src/database/engine';
+import { getCurationSettings } from '../../../../src/modules/curation/curation-settings';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import type { StoreObject } from '../../../../src/types/store';
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
+  elUpdate: vi.fn(),
+}));
+vi.mock('../../../../src/database/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/cache')>()),
+  getEntitiesListFromCache: vi.fn(async () => []),
+}));
+vi.mock('../../../../src/modules/curation/curation-settings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/curation/curation-settings')>()),
+  getCurationSettings: vi.fn(),
+}));
 
 const MITRE: FieldAuthoritySource = { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-mitre' };
 const VENDOR: FieldAuthoritySource = { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-vendor' };
@@ -70,6 +87,39 @@ describe('curation field authority', () => {
 
     it('credits nobody for an entity created by a user who is no connector and has no author', () => {
       expect(creationSources({ creator_id: ['user-analyst'] }, connectors)).toEqual([]);
+    });
+  });
+
+  describe('recordApplied', () => {
+    const context = {} as AuthContext;
+    const analyst = { id: 'user-analyst' } as AuthUser;
+    const element = { _index: 'index', internal_id: 'element-id' } as unknown as StoreObject;
+    const record = (patch: Record<string, unknown>, keys: string[], ctx = context) => curationFieldAuthorityResolver.recordApplied(ctx, analyst, element, 'Intrusion-Set', patch, keys);
+    const recorded = () => (vi.mocked(elUpdate).mock.calls[0][3] as { script: { params: { entries: unknown[] } } }).script.params.entries;
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      vi.mocked(getCurationSettings).mockResolvedValue({ field_authority_enabled: true, field_authority_rules: [RULE] } as never);
+    });
+
+    it('records the source the rule ranks for an applied attribute', async () => {
+      await record({ createdBy: VENDOR.source_id }, ['description']);
+      expect(recorded()).toEqual([expect.objectContaining({ attribute: 'description', ...VENDOR })]);
+    });
+
+    it('records a writer the rule does not rank, so the source recorded before is never taken for it', async () => {
+      await record({ createdBy: UNKNOWN.source_id }, ['description']);
+      expect(recorded()).toEqual([expect.objectContaining({ attribute: 'description', ...UNKNOWN })]);
+      vi.mocked(elUpdate).mockClear();
+      await record({}, ['description']);
+      expect(recorded()).toEqual([expect.objectContaining({ attribute: 'description', source_type: 'unranked' })]);
+      expect(rankSource(RULE, recorded() as FieldAuthoritySource[])).toBe(Number.MAX_SAFE_INTEGER);
+    });
+
+    it('records nothing for an attribute without a rule, or for a synchronized upsert', async () => {
+      await record({ createdBy: VENDOR.source_id }, ['name']);
+      await record({ createdBy: VENDOR.source_id }, ['description'], { synchronizedUpsert: true } as unknown as AuthContext);
+      expect(elUpdate).not.toHaveBeenCalled();
     });
   });
 });

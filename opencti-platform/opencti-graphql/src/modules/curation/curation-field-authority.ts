@@ -21,6 +21,8 @@ export interface FieldAuthorityEntry {
 }
 
 const UNRANKED = Number.MAX_SAFE_INTEGER;
+// Writer recorded for a value written with neither an author nor a connector: no rule can rank it.
+const UNRANKED_WRITER = { source_type: 'unranked', source_id: 'unranked' };
 
 export const rankSource = (rule: FieldAuthorityRule, sources: FieldAuthoritySource[]): number => {
   let best = UNRANKED;
@@ -137,17 +139,18 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
     return decisions;
   },
   recordApplied: async (context, user, element, type, patch, appliedKeys) => {
-    const rules = await rulesFor(context, type);
+    if (context.synchronizedUpsert) return;
+    const rules = (await rulesFor(context, type)).filter((rule) => appliedKeys.includes(rule.attribute));
+    if (rules.length === 0) return;
     const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const incoming = incomingSources(user, patch, connectors);
-    const entries: FieldAuthorityEntry[] = [];
-    rules.filter((rule) => appliedKeys.includes(rule.attribute)).forEach((rule) => {
+    // The writer of a value is recorded even when the rule does not rank it: the source recorded before, or the creation
+    // sources, would otherwise be taken for the writer of the value once ranked again.
+    const entries: FieldAuthorityEntry[] = rules.map((rule) => {
       const rank = rankSource(rule, incoming);
-      if (rank === UNRANKED) return;
-      const source = rule.sources[rank];
-      entries.push({ attribute: rule.attribute, source_type: source.source_type, source_id: source.source_id, updated_at: now() });
+      const source = rank === UNRANKED ? (incoming[0] ?? UNRANKED_WRITER) : rule.sources[rank];
+      return { attribute: rule.attribute, source_type: source.source_type, source_id: source.source_id, updated_at: now() };
     });
-    if (entries.length === 0) return;
     // A stale record would let a less authoritative source overwrite the value: the write is retried, then the upsert
     // fails, so the bundle is processed again and the replay records the source (see the upsert without change).
     for (let attempt = 1; ; attempt += 1) {

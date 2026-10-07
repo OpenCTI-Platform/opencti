@@ -322,7 +322,10 @@ const completeMergeRecord = async (
     merge_status: irreversibleReason ? MERGE_STATUS_IRREVERSIBLE : MERGE_STATUS_ACTIVE,
     merge_snapshot: snapshot,
   });
-  await addCurationMergeRecordCount();
+  // Counts the merges that can be undone: a merge recorded as not reversible is no reversible merge record.
+  if (!irreversibleReason) {
+    await addCurationMergeRecordCount();
+  }
 };
 
 const commitMergeRecord = async (context: AuthContext, _user: AuthUser, preparation: MergeRecordPreparation | null, input: MergeCommitInput) => {
