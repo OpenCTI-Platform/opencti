@@ -45,6 +45,7 @@ import { DraftChip } from '../draft/DraftChip';
 import CommitMessage from '../form/CommitMessage';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import StixCoreObjectContainer from '../stix_core_objects/StixCoreObjectContainer';
+import StixCoreObjectConnectToDialog from '../graph_analytics/StixCoreObjectConnectToDialog';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -296,9 +297,6 @@ const StixDomainObjectHeader = (props) => {
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
-  const isSharingGranted = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
-  const isEnrichPlaybookGranted = useGranted([AUTOMATION]);
-
   // Remove CRUD button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
@@ -320,6 +318,7 @@ const StixDomainObjectHeader = (props) => {
   const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
   const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
+  const [isConnectToOpen, setIsConnectToOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleExportCompleted = (fileName) => {
@@ -466,11 +465,6 @@ const StixDomainObjectHeader = (props) => {
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
-  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton && isSharingGranted)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted)
-    || (enableEnricher && isKnowledgeEnricher)
-    || isKnowledgeDeleter;
-
   const title = getMainRepresentative(stixDomainObject);
 
   return (
@@ -525,6 +519,12 @@ const StixDomainObjectHeader = (props) => {
                 onExportCompleted={handleExportCompleted}
               />
             </Security>
+            <StixCoreObjectConnectToDialog
+              open={isConnectToOpen}
+              onClose={() => setIsConnectToOpen(false)}
+              stixCoreObjectId={stixDomainObject.id}
+              stixCoreObjectName={title}
+            />
             {isKnowledgeUpdater && (
               <StixCoreObjectContainer elementId={stixDomainObject.id} />
             )}
@@ -565,59 +565,67 @@ const StixDomainObjectHeader = (props) => {
                 canDeactivate={true}
               />
             )}
-            {displayPopoverMenu ? (
-              <PopoverMenu>
-                {({ closeMenu }) => (
-                  <Box>
-                    {disableSharing !== true && !displaySharingButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setIsSharingOpen}
-                        title={t_i18n('Share with an organization')}
-                        handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                        allowInDraft={true}
-                      />
-                    )}
-                    {enableManageAuthorizedMembers && (
-                      <StixCoreObjectMenuItemUnderEE
-                        setOpen={setOpenAccessRestriction}
-                        title={t_i18n('Manage access restriction')}
-                        handleCloseMenu={closeMenu}
-                        isDisabled={!enableManageAuthorizedMembers}
-                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      />
-                    )}
-                    {(enableEnricher && isKnowledgeEnricher) && (
-                      <MenuItem onClick={() => {
-                        handleOpenEnrichment();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Enrichment')}
-                      </MenuItem>
-                    )}
-                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <StixCoreObjectMenuItemUnderEE
-                        title={t_i18n('Enroll in playbook')}
-                        setOpen={setEnrollPlaybookOpen}
-                        handleCloseMenu={closeMenu}
-                        needs={[AUTOMATION]}
-                        matchAll
-                      />
-                    )}
-                    {isKnowledgeDeleter && (
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    )}
-                  </Box>
-                )}
-              </PopoverMenu>
-            ) : null}
+            {/* always displayed: "Connect to..." (graph path finder) is offered on every entity */}
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <Box>
+                  {disableSharing !== true && !displaySharingButton && (
+                    <StixCoreObjectMenuItemUnderEE
+                      setOpen={setIsSharingOpen}
+                      title={t_i18n('Share with an organization')}
+                      handleCloseMenu={closeMenu}
+                      needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                      allowInDraft={true}
+                    />
+                  )}
+                  {enableManageAuthorizedMembers && (
+                    <StixCoreObjectMenuItemUnderEE
+                      setOpen={setOpenAccessRestriction}
+                      title={t_i18n('Manage access restriction')}
+                      handleCloseMenu={closeMenu}
+                      isDisabled={!enableManageAuthorizedMembers}
+                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                    />
+                  )}
+                  {(enableEnricher && isKnowledgeEnricher) && (
+                    <MenuItem onClick={() => {
+                      handleOpenEnrichment();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Enrichment')}
+                    </MenuItem>
+                  )}
+                  <MenuItem
+                    data-testid="graph-connect-to-menu-item"
+                    onClick={() => {
+                      setIsConnectToOpen(true);
+                      closeMenu();
+                    }}
+                  >
+                    {t_i18n('Connect to...')}
+                  </MenuItem>
+                  {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                    <StixCoreObjectMenuItemUnderEE
+                      title={t_i18n('Enroll in playbook')}
+                      setOpen={setEnrollPlaybookOpen}
+                      handleCloseMenu={closeMenu}
+                      needs={[AUTOMATION]}
+                      matchAll
+                    />
+                  )}
+                  {isKnowledgeDeleter && (
+                    <MenuItem onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Delete')}
+                    </MenuItem>
+                  )}
+                </Box>
+              )}
+            </PopoverMenu>
             {RelateComponent}
             {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />

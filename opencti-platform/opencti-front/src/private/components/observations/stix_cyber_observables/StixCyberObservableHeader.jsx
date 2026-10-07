@@ -10,6 +10,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Security from '../../../../utils/Security';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
+import StixCoreObjectConnectToDialog from '../../common/graph_analytics/StixCoreObjectConnectToDialog';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectMenuItemUnderEE from '../../common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
@@ -36,7 +37,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]) && canEdit;
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]) && canEdit;
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
-  const isEnrichPlaybookGranted = useGranted([AUTOMATION]);
+  const [openConnectTo, setOpenConnectTo] = useState(false);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
@@ -47,16 +48,17 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const displayPopoverMenu = (displayEnrollPlaybook && isEnrichPlaybookGranted)
-    || isKnowledgeEnricher
-    || isKnowledgeUpdater
-    || canDelete;
-
   return (
     <HeaderMainEntityLayout
       title={stixCyberObservable.observable_value}
       rightActions={(
         <>
+          <StixCoreObjectConnectToDialog
+            open={openConnectTo}
+            onClose={() => setOpenConnectTo(false)}
+            stixCoreObjectId={stixCyberObservable.id}
+            stixCoreObjectName={stixCyberObservable.observable_value}
+          />
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}
@@ -72,40 +74,47 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
               />
             )
           }
-          {displayPopoverMenu && (
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
+          {/* always displayed: "Connect to..." (graph path finder) is offered on every observable */}
+          <PopoverMenu>
+            {({ closeMenu }) => (
+              <Box>
+                <MenuItem
+                  data-testid="graph-connect-to-menu-item"
+                  onClick={() => {
+                    setOpenConnectTo(true);
+                    closeMenu();
+                  }}
+                >
+                  {t_i18n('Connect to...')}
+                </MenuItem>
+                <StixCoreObjectMenuItemUnderEE
+                  setOpen={setOpenSharing}
+                  title={t_i18n('Share with an organization')}
+                  handleCloseMenu={closeMenu}
+                  needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                  allowInDraft={true}
+                />
+                {displayEnrollPlaybook && (
                   <StixCoreObjectMenuItemUnderEE
-                    setOpen={setOpenSharing}
-                    title={t_i18n('Share with an organization')}
+                    title={t_i18n('Enroll in playbook')}
+                    setOpen={setOpenEnrollPlaybook}
                     handleCloseMenu={closeMenu}
-                    needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                    allowInDraft={true}
+                    needs={[AUTOMATION]}
+                    matchAll
                   />
-                  {displayEnrollPlaybook && (
-                    <StixCoreObjectMenuItemUnderEE
-                      title={t_i18n('Enroll in playbook')}
-                      setOpen={setOpenEnrollPlaybook}
-                      handleCloseMenu={closeMenu}
-                      needs={[AUTOMATION]}
-                      matchAll
-                    />
-                  )}
-                  {canDelete && (
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Delete')}
-                    </MenuItem>
-                  )}
-                </Box>
-              )}
-            </PopoverMenu>
-
-          )}
+                )}
+                {canDelete && (
+                  <MenuItem onClick={() => {
+                    handleOpenDelete();
+                    closeMenu();
+                  }}
+                  >
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                )}
+              </Box>
+            )}
+          </PopoverMenu>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
               stixCyberObservableId={stixCyberObservable.id}

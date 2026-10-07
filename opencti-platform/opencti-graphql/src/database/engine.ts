@@ -136,7 +136,7 @@ import {
   validateDataBeforeIndexing,
 } from '../schema/schema-attributes';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
-import { checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { checkAndConvertFilters, extractFilterKeys, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ID_SUBFILTER,
   IDS_FILTER,
@@ -1000,6 +1000,34 @@ export const buildDataRestrictions = async (
     // endregion
   }
   return { must, must_not };
+};
+
+/**
+ * True when the restrictions of buildDataRestrictions hide no relationship from the user: relationships carry no
+ * authorized members, so only the marking and organization restrictions can hide one.
+ */
+export const isUserWithCompleteRelationshipsView = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
+  if (INTERNAL_USERS[user.id] || isBypassUser(user)) {
+    return true;
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  if (settings.platform_organization && !context.user_inside_platform_organization) {
+    return false;
+  }
+  const allMarkings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const userMarkingsIds = new Set((user.allowed_marking ?? []).map((m) => m.internal_id));
+  return allMarkings.every((marking) => userMarkingsIds.has(marking.internal_id));
+};
+
+// Graph metrics aggregated over every relationship of the platform: filtering, sorting or aggregating on them would
+// disclose relationships the caller cannot read, so they are reserved to callers reading every relationship.
+export const PLATFORM_GRAPH_METRICS_FIELDS = ['x_opencti_graph_metrics.degree', 'x_opencti_graph_metrics.betweenness_approx', 'x_opencti_graph_metrics.cluster_size'];
+const checkPlatformGraphMetricsUsage = async (context: AuthContext, user: AuthUser, filterKeys: string[], sortOrAggregationFields: unknown[]) => {
+  const usedFields = [...filterKeys, ...sortOrAggregationFields.filter((field): field is string => typeof field === 'string')]
+    .filter((field) => PLATFORM_GRAPH_METRICS_FIELDS.includes(field));
+  if (usedFields.length > 0 && !(await isUserWithCompleteRelationshipsView(context, user))) {
+    throw FunctionalError('Graph metrics filtering and sorting require access to every relationship of the platform', { fields: R.uniq(usedFields) });
+  }
 };
 
 export const elIndexExists = async (indexName: string): Promise<boolean> => {
@@ -2910,6 +2938,9 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
   // Handle search
   const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
+  const convertedFilterKeys = convertedFilters && isFilterGroupNotEmpty(convertedFilters) ? extractFilterKeys(convertedFilters as FilterGroup) : [];
+  const { field: aggregationField } = options as { field?: unknown };
+  await checkPlatformGraphMetricsUsage(context, user, convertedFilterKeys, [...orderCriterion, aggregationField]);
   let scoreSearchOrder = orderMode;
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
@@ -3543,6 +3574,26 @@ export const elAggregationRelationsCount = async (
     })
     .catch((e) => {
       throw DatabaseError('Processing aggregation relations count fail', { cause: e });
+    });
+};
+// Run caller-defined aggregations on top of the standard query body, so the marking and organization
+// restrictions of the user are applied exactly as for any listing. Only the aggregations are returned.
+export const elAggregationSearch = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[],
+  searchOptions: QueryBodyBuilderOpts,
+  aggregations: Record<string, any>,
+): Promise<Record<string, any>> => {
+  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = aggregations;
+  const query = { index: getIndicesToQuery(context, user, indexName), body };
+  logApp.debug('[SEARCH] aggregationSearch', { query });
+  return elRawSearch(context, user, searchOptions.types ?? null, query)
+    .then((data) => data.aggregations ?? {})
+    .catch((e) => {
+      throw DatabaseError('Processing aggregation search fail', { cause: e });
     });
 };
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {

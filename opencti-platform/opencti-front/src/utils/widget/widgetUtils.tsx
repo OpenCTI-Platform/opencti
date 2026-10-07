@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Checklist, FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { BubbleChartOutlined, Checklist, FormatShapesOutlined, GridOnOutlined, HubOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -204,6 +204,36 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'graph-similarity-matrix',
+    name: 'Similarity matrix',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
+    key: 'graph-clusters-size',
+    name: 'Cluster size over time',
+    dataSelectionLimit: 1,
+    category: 'timeseries',
+    availableParameters: ['legend'],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
+  {
+    key: 'graph-top-hubs',
+    name: 'Top hubs',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: ['distributed'],
+    isRelationships: false,
+    isEntities: true,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -311,6 +341,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'graph-similarity-matrix':
+      return <GridOnOutlined fontSize={fontSize} color="primary" />;
+    case 'graph-clusters-size':
+      return <BubbleChartOutlined fontSize={fontSize} color="primary" />;
+    case 'graph-top-hubs':
+      return <HubOutlined fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }
@@ -321,6 +357,12 @@ export const getMaxResultCount = (type: string) => {
 
   if (type === 'list') {
     maxResultCount = 500;
+  } else if (type === 'graph-similarity-matrix') {
+    maxResultCount = 25;
+  } else if (type === 'graph-clusters-size') {
+    maxResultCount = 20;
+  } else if (type === 'graph-top-hubs') {
+    maxResultCount = 50;
   }
 
   return maxResultCount;
@@ -337,6 +379,9 @@ export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDa
     || type === 'tree'
     || type === 'map'
     || type === 'wordcloud'
+    || type === 'graph-similarity-matrix'
+    || type === 'graph-clusters-size'
+    || type === 'graph-top-hubs'
   ) {
     return dataSelection.every((selection) => !selection.number || selection.number <= getMaxResultCount(type));
   }

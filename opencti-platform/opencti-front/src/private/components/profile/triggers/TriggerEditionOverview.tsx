@@ -13,7 +13,14 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  filterEventTypesOptions,
+  graphAnalyticsEventTypesOptions,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -358,11 +365,10 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               style={fieldSpacingContainerStyle}
               multiple={true}
               label={t_i18n('Triggering on')}
-              options={
-                trigger.instance_trigger
-                  ? instanceEventTypesOptions
-                  : filterEventTypesOptions
-              }
+              options={[
+                ...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions),
+                ...graphAnalyticsEventTypesOptions.map((option) => ({ ...option, label: t_i18n(option.label) })),
+              ]}
               onChange={asMultiValue<{ value: string; label: string }>((
                 name,
                 value,

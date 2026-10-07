@@ -28,6 +28,7 @@ const ignoredAttributes = [
   'startup_info',
   'creator_id',
   'opinions_metrics',
+  'x_opencti_graph_metrics',
   'metrics',
 ];
 
@@ -62,6 +63,7 @@ const ignoredAttributesInFeeds = [
   'importFiles',
   'content_mapping',
   'opinions_metrics',
+  'x_opencti_graph_metrics',
 ];
 
 const ignoredAttributesInDashboards = [
@@ -85,6 +87,7 @@ const ignoredAttributesInDashboards = [
   'content',
   'content_mapping',
   'opinions_metrics',
+  'x_opencti_graph_metrics',
 ];
 
 // TODO check the attribute type from backend

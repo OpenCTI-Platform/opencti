@@ -15,6 +15,8 @@ import {
   type PublicDashboardAddInput,
   type QueryPublicBookmarksArgs,
   type QueryPublicDashboardsArgs,
+  type QueryPublicGraphClustersSizeTimeSeriesArgs,
+  type QueryPublicGraphSimilarityMatrixArgs,
   type QueryPublicStixCoreObjectsArgs,
   type QueryPublicStixCoreObjectsDistributionArgs,
   type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
@@ -23,6 +25,7 @@ import {
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
   type QueryPublicStixRelationshipsNumberArgs,
+  StixCoreObjectsOrdering,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -33,6 +36,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cach
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
+import { graphClustersSizeTimeSeries, graphSimilarityMatrix } from '../graphAnalytics/graphAnalytics-domain';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -44,7 +48,7 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
 import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
-import { isStixCoreObject } from '../../schema/stixCoreObject';
+import { isStixCoreObject, stixCoreObjectOptions } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -52,6 +56,15 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
+
+// Sorts of public lists: the values of the StixCoreObjectsOrdering enum, mapped to their fields like by the private API
+const STIX_CORE_OBJECTS_ORDERINGS: string[] = Object.values(StixCoreObjectsOrdering);
+const STIX_CORE_OBJECTS_ORDERING_FIELDS: Record<string, string> = stixCoreObjectOptions.StixCoreObjectsOrdering;
+const GRAPH_TOP_HUBS_WIDGET = 'graph-top-hubs';
+const GRAPH_SIMILARITY_MATRIX_WIDGET = 'graph-similarity-matrix';
+const GRAPH_CLUSTERS_SIZE_WIDGET = 'graph-clusters-size';
+const GRAPH_TOP_HUBS_DEFAULT = 10;
+const GRAPH_TOP_HUBS_MAX = 50;
 
 export const findById = (
   context: AuthContext,
@@ -329,12 +342,21 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, type, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  return { user, type, dataSelection, parameters };
+};
+
+// Graph endpoints return entities and clusters: they only serve the widgets the owner published with that visualization
+const ensurePublicGraphWidget = async (context: AuthContext, uriKey: string, widgetId: string, expectedType: string) => {
+  const widget = await ensurePublicContext(context, uriKey, widgetId);
+  if (widget.type !== expectedType) {
+    throw ForbiddenAccess('This widget does not publish this visualization', { widgetId, type: widget.type, expected: expectedType });
+  }
+  return widget;
 };
 
 // heatmap & vertical-bar & line & area
@@ -352,6 +374,30 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// graph-similarity-matrix: the most connected entities of the selection, created in the dashboard period if any
+export const publicGraphSimilarityMatrix = async (context: AuthContext, args: QueryPublicGraphSimilarityMatrixArgs) => {
+  const { user, dataSelection } = await ensurePublicGraphWidget(context, args.uriKey, args.widgetId, GRAPH_SIMILARITY_MATRIX_WIDGET);
+  const [selection] = dataSelection;
+  const dateAttribute = selection.date_attribute || 'created_at';
+  let filters = selection.filters ?? undefined;
+  if (args.startDate) filters = addFilter(filters, dateAttribute, [args.startDate], 'gt');
+  if (args.endDate) filters = addFilter(filters, dateAttribute, [args.endDate], 'lt');
+  return graphSimilarityMatrix(context, user, { filters, first: typeof selection.number === 'number' ? selection.number : 10 });
+};
+
+// graph-clusters-size: member creation dates draw the curves, so the period is not a member filter
+export const publicGraphClustersSizeTimeSeries = async (context: AuthContext, args: QueryPublicGraphClustersSizeTimeSeriesArgs) => {
+  const { user, dataSelection, parameters } = await ensurePublicGraphWidget(context, args.uriKey, args.widgetId, GRAPH_CLUSTERS_SIZE_WIDGET);
+  const [selection] = dataSelection;
+  return graphClustersSizeTimeSeries(context, user, {
+    startDate: args.startDate,
+    endDate: args.endDate,
+    interval: parameters?.interval ?? 'month',
+    limit: typeof selection.number === 'number' ? selection.number : 5,
+    filters: selection.filters,
+  });
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (
@@ -615,19 +661,26 @@ export const publicStixCoreObjectsPaginated = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, type, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
+  // a list keeps its configured sort (a timeline has none), top hubs are ranked by graph degree;
+  // graph metrics sorts are checked by the engine like for any user
+  const isTopHubs = type === GRAPH_TOP_HUBS_WIDGET;
+  const topHubsCount = typeof selection.number === 'number' && selection.number > 0 ? Math.min(selection.number, GRAPH_TOP_HUBS_MAX) : GRAPH_TOP_HUBS_DEFAULT;
+  const configuredSort = selection.sort_by && STIX_CORE_OBJECTS_ORDERINGS.includes(selection.sort_by) ? selection.sort_by : null;
+  const sortBy = isTopHubs ? StixCoreObjectsOrdering.GraphDegree : configuredSort;
+  const sortMode = isTopHubs ? 'desc' : (selection.sort_mode ?? 'asc');
 
   const parameters = {
     startDate: args.startDate,
     endDate: args.endDate,
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
-    orderBy: selection.date_attribute,
-    orderMode: 'desc',
-    first: selection.number ?? 10,
+    orderBy: sortBy ? (STIX_CORE_OBJECTS_ORDERING_FIELDS[sortBy] ?? sortBy) : selection.date_attribute,
+    orderMode: sortBy ? sortMode : 'desc',
+    first: isTopHubs ? topHubsCount : (selection.number ?? 10),
   };
 
   // Use standard API

@@ -1,0 +1,83 @@
+{
+  "name": "opencti-analytics",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-analytics",
+  "projectType": "application",
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
+      "options": {
+        "cwd": "opencti-analytics",
+        "command": "pip install -r requirements.txt"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI analytics process dependencies"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-analytics/src",
+        "command": "python analytics.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI analytics process against a running platform"
+      }
+    },
+    "run-once": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-analytics/src",
+        "command": "python analytics.py --once --force"
+      },
+      "metadata": {
+        "description": "Run a single forced analysis against a running platform and exit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-analytics",
+        "commands": ["pip install -r test-requirements.txt", "python -m pytest -q"],
+        "parallel": false
+      },
+      "metadata": {
+        "description": "Run the OpenCTI analytics process unit tests"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-analytics",
+        "commands": ["black --check .", "isort --check-only .", "flake8 ."],
+        "parallel": false
+      },
+      "metadata": {
+        "description": "Check the OpenCTI analytics process formatting and style"
+      }
+    },
+    "build-ubi9": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-analytics",
+        "command": "podman build -f Dockerfile_ubi9 -t opencti/analytics:{args.ver}-ubi9 ."
+      },
+      "metadata": {
+        "description": "Build the OpenCTI analytics UBI9 Docker image"
+      }
+    },
+    "push-ubi9": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build-ubi9"],
+      "options": {
+        "cwd": "opencti-analytics",
+        "command": "podman push opencti/analytics:{args.ver}-ubi9"
+      },
+      "metadata": {
+        "description": "Push the OpenCTI analytics UBI9 Docker image"
+      }
+    }
+  }
+}

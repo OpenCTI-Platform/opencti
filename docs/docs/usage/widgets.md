@@ -11,6 +11,10 @@ Users can select from 15 diverse visualization options to highlight different as
 - Line and Area views: Ideal for visualizing activity volumes over time.
 - Horizontal bar views: Designed to identify top entities that best satisfy applied filters (e.g., top malware targeting the Finance sector).
 - Tree views: Useful for comparing activity volumes.
+- Similarity matrix view: Compares pairwise the most connected entities of the selection (for instance intrusion sets targeting your sector), using the [graph analytics](graph-analytics.md) similarity.
+- Cluster size over time view: Shows the growth of the largest [graph clusters](graph-analytics.md#clusters) whose members match the selection.
+- Top hubs view: Ranks the most connected entities of the selection by [graph degree](graph-analytics.md#graph-metrics-on-entities), as horizontal bars leading to each entity.
+- List view sorted by graph degree: Lists the hubs of your knowledge graph. Lists can also be sorted by approximate betweenness or cluster size, and display these metrics as columns.
 - ...
 
 ![Widget visualization](assets/widget-visualization.png)

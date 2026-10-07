@@ -36,7 +36,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, graphAnalyticsEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -362,7 +362,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                       style={fieldSpacingContainerStyle}
                       multiple={true}
                       label={t_i18n('Triggering on')}
-                      options={instanceEventTypesOptions}
+                      options={[
+                        ...instanceEventTypesOptions,
+                        ...graphAnalyticsEventTypesOptions.map((option) => ({ ...option, label: t_i18n(option.label) })),
+                      ]}
                       onChange={setFieldValue}
                       renderOption={(option: { value: string; label: string }) => (
                         <>

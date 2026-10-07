@@ -23,6 +23,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  GRAPH_DEGREE_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -43,6 +44,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
+import { isUserWithCompleteRelationshipsView } from '../database/engine';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -536,10 +538,19 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
   }
 };
 
-const handleRemoveSpecialKeysFromFilterDefinitionsMap = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string, isNotEnterpriseEdition: boolean) => {
+const handleRemoveSpecialKeysFromFilterDefinitionsMap = (
+  filterDefinitionsMap: Map<string, FilterDefinition>,
+  type: string,
+  isNotEnterpriseEdition: boolean,
+  withPlatformGraphMetrics: boolean,
+) => {
   // Shared with (remove if not EE)
   if (isNotEnterpriseEdition) {
     filterDefinitionsMap.delete(INPUT_GRANTED_REFS);
+  }
+  // Graph degree counts every relationship of the platform (remove if the user cannot read all of them)
+  if (!withPlatformGraphMetrics) {
+    filterDefinitionsMap.delete(GRAPH_DEGREE_FILTER);
   }
   // Entity type (only available for abstract entity types)
   if (!isAbstract(type) && !isBasicRelationship(type)) {
@@ -558,17 +569,19 @@ const completeFilterDefinitionsMapForTypeAndSubtypes = async (context: AuthConte
   }
 };
 
-export const generateFilterKeysSchema = async () => {
+// Without caller, the schema of a user reading every relationship of the platform is generated.
+export const generateFilterKeysSchema = async (caller?: { context: AuthContext; user: AuthUser }) => {
   const filterKeysSchema: Map<string, Map<string, FilterDefinition>> = new Map();
   const context = executionContext('filterKeysSchema');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isNotEnterpriseEdition = !isEnterpriseEditionFromSettings(settings);
+  const withPlatformGraphMetrics = caller ? await isUserWithCompleteRelationshipsView(caller.context, caller.user) : true;
   // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
   for (const type of registeredTypes) {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
     await completeFilterDefinitionsMapForTypeAndSubtypes(context, SYSTEM_USER, filterDefinitionsMap, type);
-    handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
+    handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition, withPlatformGraphMetrics);
     filterKeysSchema.set(type, filterDefinitionsMap);
   }
   // B. add special types

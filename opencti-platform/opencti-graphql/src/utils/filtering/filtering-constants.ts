@@ -93,6 +93,10 @@ export const OPINIONS_METRICS_MAX_FILTER = 'opinionsMetricsMax';
 export const OPINIONS_METRICS_MIN_FILTER = 'opinionsMetricsMin';
 export const OPINIONS_METRICS_TOTAL_FILTER = 'opinionsMetricsTotal';
 
+// for graph analytics (x_opencti_graph_metrics)
+export const GRAPH_DEGREE_FILTER = 'graph_degree';
+export const GRAPH_CLUSTER_ID_FILTER = 'graph_cluster_id';
+
 // for audit logging (Elastic + Stream)
 export const CONTEXT_ENTITY_ID_FILTER = 'contextEntityId'; // 'context_data.id'
 export const CONTEXT_ENTITY_TYPE_FILTER = 'contextEntityType';
@@ -187,6 +191,8 @@ export const SPECIAL_FILTER_KEYS = [
   OPINIONS_METRICS_MAX_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
+  GRAPH_DEGREE_FILTER,
+  GRAPH_CLUSTER_ID_FILTER,
   CONTEXT_ENTITY_ID_FILTER,
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_CREATOR_FILTER,
@@ -237,6 +243,7 @@ export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   RELATION_TO_FILTER,
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO,
+  GRAPH_CLUSTER_ID_FILTER,
 ];
 
 // special filter values

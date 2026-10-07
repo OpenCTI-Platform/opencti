@@ -100,6 +100,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
+  x_opencti_graph_metrics: GraphMetrics
   # StixDomainObject
   revoked: Boolean!
   confidence: Int

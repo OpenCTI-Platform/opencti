@@ -14,6 +14,7 @@ import {
   ExtensionOutlined,
   FlagOutlined,
   Home,
+  HubOutlined,
   InsertChartOutlinedOutlined,
   LayersOutlined,
   LocalOfferOutlined,
@@ -244,6 +245,7 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: <SecurityOutlined fontSize="small" /> },
             { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: <SubjectOutlined fontSize="small" /> },
             { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: <LocalOfferOutlined fontSize="small" /> },
+            { link: '/dashboard/analyses/clusters', label: t_i18n('Clusters'), icon: <HubOutlined fontSize="small" /> },
           ],
         },
         !hideCases && {
