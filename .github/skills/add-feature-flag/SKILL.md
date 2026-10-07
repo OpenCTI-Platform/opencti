@@ -36,7 +36,8 @@ Add `@ff(flags: ["MY_FEATURE"])` to every new query, mutation and field
 points; `isFeatureEnabled(MY_FEATURE_FEATURE_FLAG)` for conditional branches.
 
 ### Step 5 — Gate managers
-- **New manager:** a `ManagerDefinition` imported from `src/manager/index.ts`, registered with
+- **New manager:** import `ManagerDefinition` and `registerManager` from `src/manager/managerModule.ts`.
+  Import the new manager file for side effects in `src/manager/index.ts`, and register it with
   `if (isFeatureEnabled(MY_FEATURE_FEATURE_FLAG)) { registerManager(DEFINITION); }`.
   Gate the registration, never `enabled()` / `enabledToStart()`: a registered manager shows
   in the platform modules and startup logs even when the flag is off. Keep its own
@@ -53,13 +54,14 @@ menus, routes, tabs and form fields. Run `yarn relay` if GraphQL changed.
 
 ### Step 7 — Verify
 - `grep -rn "featureFlag: MY_FEATURE_FEATURE_FLAG"` lists **every** new attribute and mapping.
-- Start the platform with the flag disabled: new fields are absent from the index mapping
-  and from the schema; flagged endpoints are rejected; the new manager is neither logged
-  at startup nor listed in the platform modules.
+- With fresh test indices, start the platform with the flag disabled: new attributes are absent
+  from the index mapping and attribute registry. GraphQL fields remain in the schema, but
+  flagged resolvers reject access (or return the soft-fail default); the new manager is
+  neither logged at startup nor listed in the platform modules.
 - Start with `APP__ENABLED_DEV_FEATURES='["MY_FEATURE"]'`: the feature works end to end.
 
 ## Removing a flag
 Delete the constant, every `featureFlag: MY_FEATURE_FEATURE_FLAG`, every `@ff(...)` and
 every `enforceEnableFeatureFlag` / `isFeatureEnabled` / `isFeatureEnable` call for it;
 unwrap the `if` around `registerManager`.
-`grep -rn "MY_FEATURE"` in `opencti-graphql` and `opencti-front` must return nothing.
+Search for `MY_FEATURE` in `opencti-graphql` and `opencti-front` and verify that no declarations or guards for this flag remain; retain legitimate feature and manager identifiers.

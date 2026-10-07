@@ -39,7 +39,12 @@ This applies wherever attributes are registered: a module definition's `attribut
 `src/modules/attributes/*-registrationAttributes.ts`, and `mappings` of object attributes.
 
 **Why:** `schemaAttributesDefinition.registerAttributes` (`src/schema/schema-attributes.ts`)
-skips attributes — and filters nested mappings — whose `featureFlag` is not enabled.
+skips top-level attributes whose flags are disabled, excluding all their descendants too.
+The `custom_field_values` reference below demonstrates this parent-level gating; its child
+mappings are not individually flagged. For attributes that remain registered, only their
+immediate mappings are filtered by `featureFlag`; filtering does not recurse.
+A flag on a deeper descendant under enabled parents is insufficient: recursive registration
+filtering must be implemented before relying on that flag.
 The ElasticSearch/OpenSearch index mapping is generated from the registered attributes
 (`engineMappingGenerator` in `src/database/engine-mapping-generator.ts`). Without `featureFlag`, the field is:
 - written into the index mapping at platform start, even with the flag off
