@@ -16,7 +16,7 @@ The **schedule** of a hunt is `manual` (the default), `standing` (see below) or 
 
 When a scheduled hunt is due, the hunt manager runs it on the platforms of its scope and computes its next occurrence from the current date: occurrences missed during an outage are not replayed. The next run date is displayed on the hunt.
 
-Scheduled, standing and PIR armed runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence whose runs could not be created at all (for instance while the search engine is unavailable) stays due and is tried again at the next tick. Manual runs, query tests, playbook steps and validations from OpenAEV, which expect an answer now, only target the connectors that are online.
+Scheduled, standing and PIR armed runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence that started no run, because its runs could not be created at all (for instance while the search engine is unavailable) or no hunt connector serves the scope yet, stays due and is tried again at the next tick, like a standing trigger or a PIR arming. Manual runs, query tests, playbook steps and validations from OpenAEV, which expect an answer now, only target the connectors that are online.
 
 ## Standing hunts
 
@@ -45,7 +45,7 @@ When the runs complete, OpenCTI writes the `hunt_detected` coverage on the secur
 
 The hunt manager runs on one platform node at a time. It dispatches the queued runs within the connector budgets, expires the runs a connector never completed, completes the finalization of runs that were interrupted after their final report (automatic verdict, incident draft, hunt statistics), retries failed runs, resumes the playbooks waiting on hunts, keeps the runs of deleted hunts out of the statistics (and brings back those of a hunt restored from the trash), applies the run retention and, in Enterprise Edition, starts the scheduled, standing and PIR armed hunts. Manual runs rely on it too, the manager is therefore enabled in every edition.
 
-Work a tick cannot take is kept for the next tick, never dropped: due scheduled hunts beyond the tick budget, or whose runs could not be created, keep their occurrence, triggered standing hunts stay pending until a run serves them, a hunt scoped to more security platforms than the budget left in the tick has its other runs queued and dispatched at the next ticks, and the runs queued for a saturated or offline connector never hold back the runs of the other connectors.
+Work a tick cannot take is kept for the next tick, never dropped: due scheduled hunts beyond the tick budget, or that started no run, keep their occurrence, triggered standing hunts stay pending until a run serves them, a hunt scoped to more security platforms than the budget left in the tick has its other runs queued and dispatched at the next ticks, and the runs queued for a saturated or offline connector never hold back the runs of the other connectors.
 
 | Parameter | Environment variable | Default | Description |
 |---|---|---|---|

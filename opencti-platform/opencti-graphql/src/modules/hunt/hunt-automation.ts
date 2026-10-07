@@ -598,8 +598,9 @@ const isWaitingForPir = (hunt: BasicStoreEntityHunt) => hunt.hunt_pir_activation
 
 /**
  * Cron hunts: due hunts run (unless their PIR activation is not armed) and their next occurrence is computed from now,
- * so that an outage never replays the missed occurrences. An occurrence whose runs could not be created stays due for
- * the next tick. Hunts approved from a draft get their first occurrence here.
+ * so that an outage never replays the missed occurrences. An occurrence that started no run (its runs could not be
+ * created, or no hunt connector serves the scope yet) stays due for the next tick, as the standing and PIR triggers
+ * do. Hunts approved from a draft get their first occurrence here.
  */
 export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
   const hunts = await listHunts(context, [
@@ -617,10 +618,10 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
   // Once the tick budget is spent the remaining hunts keep their due occurrence for the next tick
   for (let index = 0; index < hunts.length && budget.remaining > 0; index += 1) {
     const hunt = hunts[index];
-    const runs = hunt.next_run_at && !isWaitingForPir(hunt)
-      ? await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining)
-      : 0;
-    if (runs !== null) {
+    // A first occurrence, or one falling while the PIR activation is disarmed, is planned without running
+    const due = !!hunt.next_run_at && !isWaitingForPir(hunt);
+    const runs = due ? await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining) : 0;
+    if (runs !== null && (!due || runs > 0)) {
       started += runs;
       budget.remaining -= runs;
       const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());

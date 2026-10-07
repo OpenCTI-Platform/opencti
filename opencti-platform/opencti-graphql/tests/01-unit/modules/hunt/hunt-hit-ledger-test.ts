@@ -140,11 +140,17 @@ describe('Known hits ledger', () => {
     expect(await isHuntRunRemembered(testContext, run as never)).toBe(true);
     vi.mocked(elCount).mockResolvedValueOnce(25);
     expect(await isHuntRunRemembered(testContext, run as never)).toBe(false);
-    const [, , , { filters }] = vi.mocked(elCount).mock.calls[0] as unknown as [unknown, unknown, unknown, { filters: { filters: unknown[] } }];
+    type CountFilters = { filters: unknown[]; filterGroups: { filters: unknown[] }[] };
+    const [, , , { filters }] = vi.mocked(elCount).mock.calls[0] as unknown as [unknown, unknown, unknown, { filters: CountFilters }];
+    // The execution runs completed since the run or not completed yet: a translation preview records no hit
     expect(filters.filters).toEqual(expect.arrayContaining([
-      { key: ['completed_at'], values: [run.completed_at], operator: 'gte' },
+      { key: ['hunt_run_mode'], values: ['execute'] },
       { key: ['id'], values: ['run-1'], operator: 'not_eq' },
     ]));
+    expect(filters.filterGroups[0].filters).toEqual([
+      { key: ['completed_at'], values: [run.completed_at], operator: 'gte' },
+      { key: ['completed_at'], values: [], operator: 'nil' },
+    ]);
   });
 
   it('should count every hit of a run whose connector identifies none as new', () => {

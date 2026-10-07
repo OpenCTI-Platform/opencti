@@ -12,7 +12,7 @@ import { doYield } from '../../../utils/eventloop-utils';
 import { withHuntLock } from '../hunt-lock';
 import { findByIds } from '../hunt-loaders';
 import { HUNT_PLATFORM_INTERNET } from '../hunt-types';
-import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN } from '../huntRun/huntRun-types';
+import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_MODE_EXECUTE } from '../huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_HUNT_HIT_RECORD, type BasicStoreEntityHuntHitRecord } from './huntHitRecord-types';
 
@@ -136,7 +136,11 @@ export interface HuntHitsRecordInput {
   keepKnown?: boolean;
 }
 
-/** Whether the records of the hits of a run still tell whether the run counted them, for its late evidence. */
+/**
+ * Whether the records of the hits of a run still tell whether the run counted them, for its late evidence. The later
+ * runs are the execution runs that can have added themselves to a record since: those completed since the run, and
+ * those not completed yet, whose late evidence is recorded as well. Translation previews never record hits.
+ */
 export const isHuntRunRemembered = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
   if (!run.completed_at) {
     return true;
@@ -150,10 +154,17 @@ export const isHuntRunRemembered = async (context: AuthContext, run: BasicStoreE
         run.security_platform_id
           ? { key: ['security_platform_id'], values: [run.security_platform_id] }
           : { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil },
-        { key: ['completed_at'], values: [run.completed_at], operator: FilterOperator.Gte },
+        { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
         { key: ['id'], values: [run.internal_id], operator: FilterOperator.NotEq },
       ],
-      filterGroups: [],
+      filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [
+          { key: ['completed_at'], values: [run.completed_at], operator: FilterOperator.Gte },
+          { key: ['completed_at'], values: [], operator: FilterOperator.Nil },
+        ],
+        filterGroups: [],
+      }],
     },
     noFiltersChecking: true,
   });
