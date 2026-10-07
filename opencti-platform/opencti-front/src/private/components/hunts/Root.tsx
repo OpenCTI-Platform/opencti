@@ -138,7 +138,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
         entityType={HUNT_ENTITY_TYPE}
         stixDomainObject={hunt}
         EditComponent={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
             <HuntEdition huntId={hunt.id} />
           </Security>
         )}
