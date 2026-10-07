@@ -33,3 +33,19 @@ export const logBoundaryError = (
   });
   return scope;
 };
+
+// An operation whose failure the caller accepts: the failure is logged once with its origin
+// (a bug stays ERROR, an unavailable dependency is WARN), then the caller continues.
+// The explicit counterpart of the shared client rule "never swallow": the decision is visible at the call site.
+export const bestEffort = async <T>(
+  operation: string,
+  call: () => Promise<T>,
+  { entryModule, ...meta }: LogMeta & { entryModule?: AppModule } = {},
+): Promise<T | undefined> => {
+  try {
+    return await call();
+  } catch (error) {
+    logBoundaryError('[BEST-EFFORT] Operation failed, continuing', error, { ...meta, operation, entryModule });
+    return undefined;
+  }
+};
