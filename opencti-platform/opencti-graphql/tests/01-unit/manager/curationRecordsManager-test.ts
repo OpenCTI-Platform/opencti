@@ -14,6 +14,8 @@ import { refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '.
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
 const retryQueue = new Map<string, number>();
+// The failed attempts counted in Redis, shared by every node: by manager, then by first event of the batch.
+const streamFailures = new Map<string, Map<string, number>>();
 
 vi.mock('../../../src/manager/managerModule', () => ({ registerManager: vi.fn() }));
 
@@ -31,6 +33,15 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
   redisCurationFailRestrictionRefresh: vi.fn(async (id: string) => {
     retryQueue.set(id, (retryQueue.get(id) ?? 0) + 1);
     return retryQueue.get(id);
+  }),
+  redisCurationCountStreamFailure: vi.fn(async (manager: string, batchKey: string) => {
+    const counts = streamFailures.get(manager) ?? new Map<string, number>();
+    counts.set(batchKey, (counts.get(batchKey) ?? 0) + 1);
+    streamFailures.set(manager, counts);
+    return counts.get(batchKey);
+  }),
+  redisCurationClearStreamFailures: vi.fn(async (manager: string) => {
+    streamFailures.delete(manager);
   }),
 }));
 
@@ -58,6 +69,7 @@ describe('Curation records manager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     retryQueue.clear();
+    streamFailures.clear();
     (refreshProposalRestrictions as any).mockImplementation(async () => undefined);
     (retireProposalsOfDeletedSubjects as any).mockResolvedValue(0);
   });
@@ -156,6 +168,17 @@ describe('Curation records manager', () => {
     expect(refreshProposalRestrictions).toHaveBeenCalledWith(expect.anything(), ['malware-f']);
     expect([...retryQueue.keys()]).toEqual(['malware-poison']);
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '8-0');
+    expect(streamFailures.has('curation_records_manager')).toBe(false);
+  });
+
+  it('goes on with the failed attempts another node counted, so a batch changing node still moves on', async () => {
+    (refreshProposalRestrictions as any).mockRejectedValue(new Error('cannot refresh'));
+    const batch = [update('13-0', 'malware-i', '/object_marking_refs/0')];
+    // Four failures counted while other nodes held the stream lock.
+    streamFailures.set('curation_records_manager', new Map([['13-0', 4]]));
+    await curationRecordsManagerStreamHandler(batch, '13-0');
+    expect([...retryQueue.keys()]).toEqual(['malware-i']);
+    expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '13-0');
   });
 
   it('completes pending merge records at every cycle and closes expired ones once a day', async () => {

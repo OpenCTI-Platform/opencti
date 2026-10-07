@@ -20,8 +20,18 @@ import type { DataEvent, SseEvent, UpdateEvent } from '../../../src/types/event'
 
 vi.mock('../../../src/manager/managerModule', () => ({ registerManager: vi.fn() }));
 
+// The failed attempts counted in Redis, shared by every node: by first event of the batch.
+const streamFailures = new Map<string, number>();
+
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  redisCurationCountStreamFailure: vi.fn(async (_manager: string, batchKey: string) => {
+    streamFailures.set(batchKey, (streamFailures.get(batchKey) ?? 0) + 1);
+    return streamFailures.get(batchKey);
+  }),
+  redisCurationClearStreamFailures: vi.fn(async () => {
+    streamFailures.clear();
+  }),
   redisCurationPushDeadLetters: vi.fn(),
   redisCurationClaimDeadLetters: vi.fn(async () => []),
   redisCurationSettleDeadLetter: vi.fn(),
@@ -78,6 +88,7 @@ const invertedDates = (eventId: string, entityId: string) => ({
 describe('Curation manager stream handler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    streamFailures.clear();
     (persistProposalDraft as any).mockImplementation(async (_context: unknown, _settings: unknown, draft: { subjects: Array<{ id: string }> }) => {
       if (draft.subjects[0].id === POISON_ID) throw new Error('cannot persist');
       return { created: true, suppressed: false };
@@ -96,6 +107,16 @@ describe('Curation manager stream handler', () => {
     expect(persisted).toEqual(['malware-a', POISON_ID, 'malware-b']);
     expect(runIncrementalDuplicateDetection).not.toHaveBeenCalled();
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_manager', '3-0');
+    expect(streamFailures.size).toBe(0);
+  });
+
+  it('goes on with the failed attempts another node counted, so a batch changing node still moves on', async () => {
+    const batch = [invertedDates('5-0', POISON_ID), invertedDates('6-0', 'malware-c')];
+    // Four failures counted while other nodes held the stream lock.
+    streamFailures.set('5-0', 4);
+    await curationManagerStreamHandler(batch, '6-0');
+    expect(redisCurationPushDeadLetters).toHaveBeenCalledWith([{ event: batch[0], replays: 0 }]);
+    expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_manager', '6-0');
   });
 
   it('starts the stream from the position saved by any node, read when the stream starts', async () => {

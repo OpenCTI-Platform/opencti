@@ -1247,6 +1247,23 @@ export const redisCurationFailRestrictionRefresh = async (entityId: string): Pro
   return getClientBase().hincrby(CURATION_RESTRICTION_RETRY_KEY, entityId, 1);
 };
 
+// The failed attempts of the stream batch a curation manager cannot process, by the id of its first event: a failure
+// releases the stream lock, and whichever node takes it next goes on with the same count.
+const CURATION_STREAM_FAILURES_KEY_PREFIX = `${CURATION_KEY_PREFIX}stream_failures:`;
+const CURATION_STREAM_FAILURES_TTL_SECONDS = 24 * 3600;
+
+export const redisCurationCountStreamFailure = async (managerName: string, batchKey: string): Promise<number> => {
+  const key = `${CURATION_STREAM_FAILURES_KEY_PREFIX}${managerName}`;
+  const client = getClientBase();
+  const attempts = await client.hincrby(key, batchKey, 1);
+  await client.expire(key, CURATION_STREAM_FAILURES_TTL_SECONDS);
+  return attempts;
+};
+
+export const redisCurationClearStreamFailures = async (managerName: string) => {
+  await getClientBase().del(`${CURATION_STREAM_FAILURES_KEY_PREFIX}${managerName}`);
+};
+
 // The recipients a Knowledge Health digest was delivered to: a digest sent again never reaches them twice.
 const CURATION_DIGEST_KEY_PREFIX = `${CURATION_KEY_PREFIX}digest:`;
 const CURATION_DIGEST_TTL_SECONDS = 14 * 24 * 3600;

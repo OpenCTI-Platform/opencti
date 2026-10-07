@@ -10,6 +10,8 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../database/utils';
 import {
   redisCurationClaimDeadLetters,
+  redisCurationClearStreamFailures,
+  redisCurationCountStreamFailure,
   redisCurationIncrementCounter,
   redisCurationPushDeadLetters,
   redisCurationSettleDeadLetter,
@@ -67,8 +69,6 @@ const CURATION_DEAD_LETTER_MAX_REPLAYS = 10;
 const FIELD_WRITER_TTL_SECONDS = 30 * 24 * 3600;
 const DIGEST_MIN_INTERVAL_MS = 6 * 24 * 3600 * 1000;
 
-let failedBatchKey: string | undefined;
-let failedBatchAttempts = 0;
 let lastPolicyRun = 0;
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -467,8 +467,9 @@ const processBatchIsolated = async (context: AuthContext, settings: CurationSett
 /**
  * The stream position is saved only once a batch is processed. A failing batch makes the handler throw: the stream
  * processor stops and the manager restarts it from the saved position, so the batch is processed again (every step
- * is idempotent). After CURATION_STREAM_MAX_ATTEMPTS failures in a row, the batch is processed event by event and the
- * events that still fail are kept for replay, so one event that can never be processed does not block the others.
+ * is idempotent). After CURATION_STREAM_MAX_ATTEMPTS failures in a row, counted in Redis whichever node made them, the
+ * batch is processed event by event and the events that still fail are kept for replay, so one event that can never be
+ * processed does not block the others.
  */
 export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const context = executionContext(CURATION_MANAGER_CONTEXT, CURATION_MANAGER_USER);
@@ -481,23 +482,21 @@ export const curationManagerStreamHandler = async (streamEvents: Array<SseEvent<
     }
     await runIncrementalDetection(context, settings, changedEntityIds);
   } catch (error) {
-    failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
-    failedBatchKey = batchKey;
-    if (failedBatchAttempts < CURATION_STREAM_MAX_ATTEMPTS) {
-      logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: failedBatchAttempts, first_event_id: batchKey });
+    const attempts = await redisCurationCountStreamFailure(CURATION_STREAM_STATE, batchKey);
+    if (attempts < CURATION_STREAM_MAX_ATTEMPTS) {
+      logApp.warn('[CURATION] Stream batch failed, it will be processed again', { cause: error, attempt: attempts, first_event_id: batchKey });
       throw error;
     }
     logApp.warn('[CURATION] Stream batch failed repeatedly, processing its events one by one', {
       cause: error,
-      attempts: failedBatchAttempts,
+      attempts,
       first_event_id: batchKey,
       last_event_id: lastEventId,
     });
     await processBatchIsolated(context, settings, streamEvents);
   }
-  failedBatchKey = undefined;
-  failedBatchAttempts = 0;
   await redisSetManagerEventState(CURATION_STREAM_STATE, lastEventId);
+  await redisCurationClearStreamFailures(CURATION_STREAM_STATE);
 };
 
 // Read by whichever node takes the stream lock, which may never have run the cron handler.
