@@ -34,6 +34,7 @@ import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { computeSubjectRestrictions, intersectGrantedOrganizations, markProposalReverted } from './curation-proposals';
+import { withProposalTransitionLock } from './curation-locks';
 import { copyFile, deleteFile, loadFile, storeFileConverter } from '../../database/file-storage';
 import { addCurationMergeRecordCount, addCurationUnmergeCount } from '../../manager/telemetryManager';
 import { now } from '../../utils/format';
@@ -730,7 +731,7 @@ export const selectRevertedSources = (record: BasicStoreEntityMergeRecord, sourc
  * The reverted sources are written on the record before the first change: an unmerge that fails half way is resumed
  * by the next call, every step skipping what was already restored.
  */
-export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, mergeRecordId: string, sourceIds?: string[] | null): Promise<UnmergeResult> => {
+const runUnmerge = async (context: AuthContext, user: AuthUser, mergeRecordId: string, sourceIds?: string[] | null): Promise<UnmergeResult> => {
   const initialRecord = await loadReversibleRecord(context, user, mergeRecordId);
   const lockIds = unmergeLockIds(initialRecord);
   // A merge lists its sources among the deletions of the last seconds, which a lock refuses: the sources still to restore
@@ -905,6 +906,25 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
   } finally {
     if (lock) await lock.unlock();
   }
+};
+
+/**
+ * An unmerge closes the proposal its record names: it runs under the lock of that proposal, taken before the entity
+ * locks as an acceptance does, so it never lands between the merge of an acceptance and the recording of it. The revert
+ * of that proposal already holds the lock and names it in *lockedProposalId*.
+ */
+export const unmergeFromRecord = async (
+  context: AuthContext,
+  user: AuthUser,
+  mergeRecordId: string,
+  sourceIds?: string[] | null,
+  opts: { lockedProposalId?: string } = {},
+): Promise<UnmergeResult> => {
+  const record = await loadReversibleRecord(context, user, mergeRecordId);
+  if (!record.proposal_id || record.proposal_id === opts.lockedProposalId) {
+    return runUnmerge(context, user, mergeRecordId, sourceIds);
+  }
+  return withProposalTransitionLock(record.proposal_id, () => runUnmerge(context, user, mergeRecordId, sourceIds));
 };
 
 /**

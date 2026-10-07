@@ -691,7 +691,7 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
     if (record?.merge_status === MERGE_STATUS_REVERTED) {
       report = { restored_ids: [], skipped_relationship_ids: [], already_reverted: true };
     } else {
-      const result = await unmergeFromRecord(context, user, proposal.merge_record_id);
+      const result = await unmergeFromRecord(context, user, proposal.merge_record_id, null, { lockedProposalId: proposal.internal_id });
       report = { restored_ids: result.restored_ids, skipped_relationship_ids: result.skipped_relationship_ids };
     }
   } else if (proposal.applied_patch) {
