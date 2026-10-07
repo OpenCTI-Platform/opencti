@@ -224,7 +224,7 @@ const CurationPolicyForm = ({ open, onClose, onSaved, policy, curatedEntityTypes
               type="number"
               name="max_applies_per_run"
               label={t_i18n('Maximum applies per run')}
-              helperText={t_i18n('The most proposals one run applies, from 1 to 1,000 (100 by default). The others wait for the next run, 15 minutes later.')}
+              helperText={t_i18n('The most proposals one run applies, from 1 to 1,000 (100 by default). The others wait for the next scheduled policy run (every 15 minutes by default).')}
               inputProps={{ min: 1, max: 1000, step: 1 }}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
@@ -250,7 +250,7 @@ const CurationPolicyForm = ({ open, onClose, onSaved, policy, curatedEntityTypes
               type="checkbox"
               name="policy_enabled"
               label={t_i18n('Enabled')}
-              helpertext={t_i18n('An enabled policy runs every 15 minutes. Run a dry run before enabling it.')}
+              helpertext={t_i18n('An enabled policy is applied at every scheduled policy run (every 15 minutes by default). Run a dry run before enabling it.')}
               containerstyle={{ marginTop: 10 }}
             />
             <FormButtonContainer>

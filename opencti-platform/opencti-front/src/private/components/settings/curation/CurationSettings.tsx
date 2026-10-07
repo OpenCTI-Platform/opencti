@@ -510,7 +510,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="checkbox"
                 name="adjudication_enabled"
                 label={t_i18n('Enable adjudication')}
-                helpertext={t_i18n('Sends up to 5 proposals of the ambiguous band per manager cycle. Off by default.')}
+                helpertext={t_i18n('Sends proposals of the ambiguous band for adjudication, up to a number per manager cycle set in the platform configuration (5 by default). Off by default.')}
                 disabled={!isEnterpriseEdition || !settings.adjudication_available}
               />
               <Field
