@@ -100,6 +100,7 @@ describe('defenseMatrix-utils', () => {
     });
 
     it('treats the levels below a deployed detection as uncovered', () => {
+      // A deployed detection not validated yet (level 3) is an open gap but not an uncovered technique
       expect(DEFENSE_UNCOVERED_LEVELS).toEqual([0, 1, 2]);
     });
   });
