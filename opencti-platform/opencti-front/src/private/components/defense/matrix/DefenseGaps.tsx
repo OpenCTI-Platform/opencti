@@ -99,10 +99,12 @@ const PlatformsToolbar = ({ queryRef, scope, onScopeChange }: {
   return <DefenseScopeToolbar platforms={defensePlatforms} scope={scope} onScopeChange={onScopeChange} />;
 };
 
-const DefenseGaps = () => {
+const DefenseGapsPage = ({ scope, setScope }: {
+  scope: ReturnType<typeof useDefenseScope>[0];
+  setScope: ReturnType<typeof useDefenseScope>[1];
+}) => {
   const { t_i18n } = useFormatter();
   const intl = useIntl();
-  const [scope, setScope] = useDefenseScope();
   const [total, setTotal] = useState(0);
   const [levels, setLevels] = useState<number[]>([]);
   const [actions, setActions] = useState<DefenseAction[]>([]);
@@ -267,6 +269,12 @@ const DefenseGaps = () => {
       )}
     </Stack>
   );
+};
+
+const DefenseGaps = () => {
+  const [scope, setScope, scopeReady] = useDefenseScope();
+  if (!scopeReady) return <Loader variant={LoaderVariant.inElement} />;
+  return <DefenseGapsPage scope={scope} setScope={setScope} />;
 };
 
 export default DefenseGaps;

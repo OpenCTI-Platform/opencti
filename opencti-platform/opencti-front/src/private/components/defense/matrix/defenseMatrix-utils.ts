@@ -272,6 +272,8 @@ export interface DefenseScopeState {
   threatFilters: FilterGroup | null;
 }
 export const DEFAULT_DEFENSE_SCOPE: DefenseScopeState = { platformIds: [], threatMode: 'ALL', threats: [], threatFilters: null };
+// The most threats a scope selects, the limit the API applies
+export const DEFENSE_MAX_SELECTED_THREATS = 500;
 
 /**
  * GraphQL threat scope of a scope state. A selection without threats, or a filtered scope

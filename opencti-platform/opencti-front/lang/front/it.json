@@ -490,6 +490,7 @@
   "At least one option is required": "È richiesta almeno un'opzione",
   "At least one organization is required": "È richiesta almeno un'organizzazione",
   "At least one platform affinity is required": "È richiesta almeno un'affinità con una piattaforma",
+  "At most {count} threats can be selected: remove one to select another": "È possibile selezionare al massimo {count} minacce: rimuovine una per selezionarne un'altra",
   "At risk": "A rischio",
   "Attached entity name": "Nome dell'entità associata",
   "Attached entity type": "Tipo di entità associata",

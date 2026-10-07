@@ -490,6 +490,7 @@
   "At least one option is required": "少なくとも1つのオプションが必要です",
   "At least one organization is required": "少なくとも1つの組織が必要",
   "At least one platform affinity is required": "少なくとも1つのプラットフォームアフィニティが必要です",
+  "At most {count} threats can be selected: remove one to select another": "選択できる脅威は最大 {count} 件です。別の脅威を選択するには、いずれかを削除してください",
   "At risk": "危険時",
   "Attached entity name": "付属エンティティ名",
   "Attached entity type": "添付エンティティタイプ",

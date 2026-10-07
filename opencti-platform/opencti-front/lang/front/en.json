@@ -490,6 +490,7 @@
   "At least one option is required": "At least one option is required",
   "At least one organization is required": "At least one organization is required",
   "At least one platform affinity is required": "At least one platform affinity is required",
+  "At most {count} threats can be selected: remove one to select another": "At most {count} threats can be selected: remove one to select another",
   "At risk": "At risk",
   "Attached entity name": "Attached entity name",
   "Attached entity type": "Attached entity type",

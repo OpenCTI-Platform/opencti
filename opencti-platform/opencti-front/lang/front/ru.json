@@ -490,6 +490,7 @@
   "At least one option is required": "Необходимо выбрать хотя бы один вариант",
   "At least one organization is required": "Требуется хотя бы одна организация",
   "At least one platform affinity is required": "Требуется указать хотя бы одну платформу",
+  "At most {count} threats can be selected: remove one to select another": "Можно выбрать не более {count} угроз: удалите одну, чтобы выбрать другую",
   "At risk": "На риск",
   "Attached entity name": "Имя прикрепленной сущности",
   "Attached entity type": "Прикрепленный тип сущности",

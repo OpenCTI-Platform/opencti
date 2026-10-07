@@ -1,49 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
+import {
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxHelperText,
+  ComboboxInput,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
-import { DEFENSE_THREAT_TYPES, type DefenseThreatOption } from './defenseMatrix-utils';
+import { DEFENSE_MAX_SELECTED_THREATS, DEFENSE_THREAT_TYPES, type DefenseThreatOption } from './defenseMatrix-utils';
 import { DefenseThreatsFieldSearchQuery$data } from './__generated__/DefenseThreatsFieldSearchQuery.graphql';
-import { DefenseThreatsFieldAccessQuery$data } from './__generated__/DefenseThreatsFieldAccessQuery.graphql';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_SIZE = 25;
-const NO_CONFIRMED_IDS: ReadonlySet<string> = new Set();
 const NO_OPTIONS: DefenseThreatOption[] = [];
-
-interface Confirmations {
-  userId: string;
-  ids: ReadonlySet<string>;
-}
 
 interface SearchResults {
   userId: string;
   options: DefenseThreatOption[];
 }
-
-const withConfirmed = (current: Confirmations, userId: string, ids: Iterable<string>): Confirmations => ({
-  userId,
-  ids: new Set([...(current.userId === userId ? current.ids : []), ...ids]),
-});
-
-const defenseThreatsFieldAccessQuery = graphql`
-  query DefenseThreatsFieldAccessQuery($types: [String], $filters: FilterGroup, $first: Int) {
-    stixDomainObjects(types: $types, filters: $filters, first: $first) {
-      edges {
-        node {
-          id
-          entity_type
-          representative {
-            main
-          }
-        }
-      }
-    }
-  }
-`;
 
 const defenseThreatsFieldSearchQuery = graphql`
   query DefenseThreatsFieldSearchQuery($types: [String], $search: String, $first: Int) {
@@ -62,6 +44,7 @@ const defenseThreatsFieldSearchQuery = graphql`
 `;
 
 interface DefenseThreatsFieldProps {
+  // The threats of the scope in use, all known to be accessible to the reader (see useDefenseScope)
   value: DefenseThreatOption[];
   onChange: (threats: DefenseThreatOption[]) => void;
 }
@@ -75,45 +58,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
   const [loading, setLoading] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const requestId = useRef(0);
-  // A threat of the stored scope is shown only once the reader is known to access it: the threats picked from the search
-  // are, the others are confirmed by one query, which also drops the threats no longer accessible and refreshes the names.
-  // The confirmations belong to the account: another account confirms its own stored threats.
-  const [confirmed, setConfirmed] = useState<Confirmations>(() => ({ userId: me.id, ids: NO_CONFIRMED_IDS }));
-  const confirmedIds = confirmed.userId === me.id ? confirmed.ids : NO_CONFIRMED_IDS;
-  const latest = useRef({ value, onChange });
-  latest.current = { value, onChange };
-  const unconfirmedKey = value.filter((threat) => !confirmedIds.has(threat.value)).map((threat) => threat.value).join(',');
-
-  useEffect(() => {
-    if (!unconfirmedKey) return undefined;
-    const unconfirmedIds = unconfirmedKey.split(',');
-    const userId = me.id;
-    // Cancelled when the account changes too: an answer for the previous account is dropped
-    let cancelled = false;
-    fetchQuery(defenseThreatsFieldAccessQuery, {
-      types: DEFENSE_THREAT_TYPES,
-      filters: { mode: 'and' as const, filters: [{ key: ['ids'], values: unconfirmedIds }], filterGroups: [] },
-      first: unconfirmedIds.length,
-    })
-      .toPromise()
-      .then((data) => {
-        if (cancelled) return;
-        const edges = (data as DefenseThreatsFieldAccessQuery$data | undefined)?.stixDomainObjects?.edges ?? [];
-        const accessible = new Map(edges.map(({ node }) => [node.id, { value: node.id, label: node.representative.main, type: node.entity_type }]));
-        setConfirmed((current) => withConfirmed(current, userId, accessible.keys()));
-        const current = latest.current.value;
-        const next = current
-          .filter((threat) => !unconfirmedIds.includes(threat.value) || accessible.has(threat.value))
-          .map((threat) => accessible.get(threat.value) ?? threat);
-        if (JSON.stringify(next) !== JSON.stringify(current)) latest.current.onChange(next);
-      })
-      .catch(() => {
-        // The threats stay hidden: they are asked again the next time the field is shown
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [unconfirmedKey, me.id]);
+  const atLimit = value.length >= DEFENSE_MAX_SELECTED_THREATS;
 
   const search = (input: string) => {
     if (timer.current) clearTimeout(timer.current);
@@ -157,20 +102,17 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
       labelPosition="none"
       className="w-full"
       options={options}
-      value={value.filter((threat) => confirmedIds.has(threat.value))}
+      value={value}
       loading={loading}
       getOptionLabel={(option) => option.label}
       isOptionEqualToValue={(option, other) => option.value === other.value}
+      isOptionDisabled={(option) => atLimit && !value.some((threat) => threat.value === option.value)}
       filterOptions={(all) => all}
       onInputChange={(input) => search(input)}
       onOpenChange={(open) => {
         if (open && options.length === 0) search('');
       }}
-      onValueChange={(next) => {
-        const threats = (next as DefenseThreatOption[] | null) ?? [];
-        setConfirmed((current) => withConfirmed(current, me.id, threats.map((threat) => threat.value)));
-        onChange(threats);
-      }}
+      onValueChange={(next) => onChange((next as DefenseThreatOption[] | null) ?? [])}
       renderOption={(option) => (
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           <ItemIcon type={option.type} />
@@ -186,6 +128,11 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>
+      {atLimit && (
+        <ComboboxHelperText data-testid="defense-threats-limit">
+          {t_i18n('At most {count} threats can be selected: remove one to select another', { values: { count: DEFENSE_MAX_SELECTED_THREATS } })}
+        </ComboboxHelperText>
+      )}
       <ComboboxContent
         emptyMessage={t_i18n('No available options')}
         loadingMessage={t_i18n('Loading')}

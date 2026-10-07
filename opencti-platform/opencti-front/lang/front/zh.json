@@ -490,6 +490,7 @@
   "At least one option is required": "至少需选择一项",
   "At least one organization is required": "至少需要一个组织",
   "At least one platform affinity is required": "至少需要一个平台亲和度",
+  "At most {count} threats can be selected: remove one to select another": "最多可选择 {count} 个威胁：请移除一个后再选择其他威胁",
   "At risk": "有风险",
   "Attached entity name": "附加实体名称",
   "Attached entity type": "附加实体类型",

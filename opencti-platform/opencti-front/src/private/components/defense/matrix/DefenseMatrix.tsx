@@ -480,8 +480,7 @@ export const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, on
   );
 };
 
-const DefenseMatrix = () => {
-  const [scope, setScope] = useDefenseScope();
+const DefenseMatrixPage = ({ scope, onScopeChange }: { scope: DefenseScopeState; onScopeChange: (scope: DefenseScopeState) => void }) => {
   const [layers, setLayers] = useState<DefenseLayersState>(ALL_DEFENSE_LAYERS);
   const platformsQueryRef = useQueryLoading<DefenseMatrixPlatformsQuery>(defenseMatrixPlatformsQuery, {});
   const matrixQueryRef = useQueryLoading<DefenseMatrixQuery>(defenseMatrixQuery, {
@@ -495,7 +494,7 @@ const DefenseMatrix = () => {
           <DefenseMatrixStatus
             queryRef={platformsQueryRef}
             scope={scope}
-            onScopeChange={setScope}
+            onScopeChange={onScopeChange}
             layers={layers}
             onLayersChange={setLayers}
           />
@@ -508,6 +507,12 @@ const DefenseMatrix = () => {
       )}
     </Stack>
   );
+};
+
+const DefenseMatrix = () => {
+  const [scope, setScope, scopeReady] = useDefenseScope();
+  if (!scopeReady) return <Loader variant={LoaderVariant.inElement} />;
+  return <DefenseMatrixPage scope={scope} onScopeChange={setScope} />;
 };
 
 export default DefenseMatrix;

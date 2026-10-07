@@ -18,14 +18,14 @@ interface SecurityPlatformDefenseCoverageProps {
   securityPlatformId: string;
 }
 
-/**
- * Defense posture of one security platform: the telemetry it provides, and the defense matrix
- * restricted to its telemetry, deployed rules and OpenAEV results, with the shared threat overlay.
- */
-const SecurityPlatformDefenseCoverage = ({ securityPlatformId }: SecurityPlatformDefenseCoverageProps) => {
+interface SecurityPlatformThreatCoverageProps extends SecurityPlatformDefenseCoverageProps {
+  sharedScope: DefenseScopeState;
+  setSharedScope: (scope: DefenseScopeState) => void;
+}
+
+const SecurityPlatformThreatCoverage = ({ securityPlatformId, sharedScope, setSharedScope }: SecurityPlatformThreatCoverageProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [sharedScope, setSharedScope] = useDefenseScope();
   const [layers, setLayers] = useState<DefenseLayersState>(ALL_DEFENSE_LAYERS);
   const scope: DefenseScopeState = { ...sharedScope, platformIds: [securityPlatformId] };
   const queryRef = useQueryLoading<DefenseMatrixQuery>(defenseMatrixQuery, {
@@ -39,8 +39,7 @@ const SecurityPlatformDefenseCoverage = ({ securityPlatformId }: SecurityPlatfor
   };
 
   return (
-    <Stack spacing={3} data-testid="security-platform-defense-coverage">
-      <DefenseProvidedDataComponents entityId={securityPlatformId} />
+    <>
       <Card
         title={t_i18n('Threat overlay and layers')}
         action={(
@@ -63,6 +62,22 @@ const SecurityPlatformDefenseCoverage = ({ securityPlatformId }: SecurityPlatfor
           <DefenseMatrixContent queryRef={queryRef} scope={scope} layers={layers} />
         </Suspense>
       )}
+    </>
+  );
+};
+
+/**
+ * Defense posture of one security platform: the telemetry it provides, and the defense matrix
+ * restricted to its telemetry, deployed rules and OpenAEV results, with the shared threat overlay.
+ */
+const SecurityPlatformDefenseCoverage = ({ securityPlatformId }: SecurityPlatformDefenseCoverageProps) => {
+  const [sharedScope, setSharedScope, scopeReady] = useDefenseScope();
+  return (
+    <Stack spacing={3} data-testid="security-platform-defense-coverage">
+      <DefenseProvidedDataComponents entityId={securityPlatformId} />
+      {scopeReady
+        ? <SecurityPlatformThreatCoverage securityPlatformId={securityPlatformId} sharedScope={sharedScope} setSharedScope={setSharedScope} />
+        : <Loader variant={LoaderVariant.inElement} />}
     </Stack>
   );
 };

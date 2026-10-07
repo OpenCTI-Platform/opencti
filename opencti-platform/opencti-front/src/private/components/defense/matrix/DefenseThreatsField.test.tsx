@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import DefenseThreatsField from './DefenseThreatsField';
-import type { DefenseThreatOption } from './defenseMatrix-utils';
+import { DEFENSE_MAX_SELECTED_THREATS } from './defenseMatrix-utils';
 
 const mockFetchQuery = vi.fn();
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
@@ -24,81 +24,17 @@ vi.mock('../../../../utils/hooks/useAuth', async (importOriginal) => {
   };
 });
 
-const accessAnswer = (edges: unknown[]) => ({ toPromise: () => Promise.resolve({ stixDomainObjects: { edges } }) });
-
-const STORED: DefenseThreatOption[] = [
-  { value: 'threat-renamed', label: 'Stored name', type: 'Intrusion-Set' },
-  { value: 'threat-revoked', label: 'Revoked threat', type: 'Malware' },
-];
-
-const Field = ({ onChange }: { onChange: (threats: DefenseThreatOption[]) => void }) => {
-  const [value, setValue] = useState(STORED);
-  const handleChange = (next: DefenseThreatOption[]) => {
-    onChange(next);
-    setValue(next);
-  };
-  return <DefenseThreatsField value={value} onChange={handleChange} />;
-};
+const searchAnswer = (edges: unknown[]) => ({ toPromise: () => Promise.resolve({ stixDomainObjects: { edges } }) });
 
 describe('Defense threats field', () => {
-  it('should show a stored threat only once the reader can access it, with its current name', async () => {
-    mockFetchQuery.mockReturnValue({
-      toPromise: () => Promise.resolve({
-        stixDomainObjects: { edges: [{ node: { id: 'threat-renamed', entity_type: 'Intrusion-Set', representative: { main: 'Current name' } } }] },
-      }),
-    });
-    const onChange = vi.fn();
-    testRender(<Field onChange={onChange} />);
-    // Nothing of the stored scope is shown before the answer
-    expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
-    expect(screen.queryByText('Revoked threat')).not.toBeInTheDocument();
-    expect(await screen.findByText('Current name')).toBeInTheDocument();
-    expect(mockFetchQuery).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      filters: { mode: 'and', filters: [{ key: ['ids'], values: ['threat-renamed', 'threat-revoked'] }], filterGroups: [] },
-      first: 2,
-    }));
-    // The threat the reader can no longer access leaves the scope, the other one keeps its current name
-    expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith([{ value: 'threat-renamed', label: 'Current name', type: 'Intrusion-Set' }]);
-    expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
-    expect(screen.queryByText('Revoked threat')).not.toBeInTheDocument();
-  });
-
-  it('should keep the stored threats hidden when their access cannot be checked', async () => {
-    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.reject(new Error('unavailable')) });
-    const onChange = vi.fn();
-    testRender(<Field onChange={onChange} />);
-    await waitFor(() => expect(mockFetchQuery).toHaveBeenCalled());
-    expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
-    expect(screen.queryByText('Revoked threat')).not.toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('should confirm the stored threats again for another account', async () => {
-    mockAccount.id = 'reader-1';
-    mockFetchQuery.mockReset();
-    mockFetchQuery.mockReturnValue(accessAnswer([{ node: { id: 'threat-renamed', entity_type: 'Intrusion-Set', representative: { main: 'Stored name' } } }]));
-    const { rerender } = testRender(<DefenseThreatsField value={[STORED[0]]} onChange={vi.fn()} />);
-    expect(await screen.findByText('Stored name')).toBeInTheDocument();
-    expect(mockFetchQuery).toHaveBeenCalledTimes(1);
-    // The next account cannot access the threat: it is not shown before its own answer, then leaves the scope
-    mockFetchQuery.mockReturnValue(accessAnswer([]));
-    mockAccount.id = 'reader-2';
-    const onChange = vi.fn();
-    rerender(<DefenseThreatsField value={[STORED[0]]} onChange={onChange} />);
-    expect(screen.queryByText('Stored name')).not.toBeInTheDocument();
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith([]));
-    expect(mockFetchQuery).toHaveBeenCalledTimes(2);
-  });
-
   it('should never show the search results of another account', async () => {
     mockAccount.id = 'reader-1';
     mockFetchQuery.mockReset();
-    mockFetchQuery.mockReturnValue(accessAnswer([{ node: { id: 'threat-1', entity_type: 'Intrusion-Set', representative: { main: 'Threat of reader 1' } } }]));
+    mockFetchQuery.mockReturnValue(searchAnswer([{ node: { id: 'threat-1', entity_type: 'Intrusion-Set', representative: { main: 'Threat of reader 1' } } }]));
     const { user, rerender } = testRender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
     await user.type(screen.getByTestId('defense-threats-input'), 'a');
     expect(await screen.findByText('Threat of reader 1')).toBeInTheDocument();
-    mockFetchQuery.mockReturnValue(accessAnswer([]));
+    mockFetchQuery.mockReturnValue(searchAnswer([]));
     mockAccount.id = 'reader-2';
     rerender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
     expect(screen.queryByText('Threat of reader 1')).not.toBeInTheDocument();
@@ -113,7 +49,7 @@ describe('Defense threats field', () => {
         answerFirstReader = resolve;
       }),
     });
-    mockFetchQuery.mockReturnValue(accessAnswer([]));
+    mockFetchQuery.mockReturnValue(searchAnswer([]));
     const { user, rerender } = testRender(<DefenseThreatsField value={[]} onChange={vi.fn()} />);
     await user.type(screen.getByTestId('defense-threats-input'), 'a');
     await waitFor(() => expect(mockFetchQuery).toHaveBeenCalledTimes(1));
@@ -124,5 +60,28 @@ describe('Defense threats field', () => {
       setTimeout(resolve, 50);
     });
     expect(screen.queryByText('Threat of reader 1')).not.toBeInTheDocument();
+  });
+
+  it('should stop the selection at the limit the API applies, and say why', async () => {
+    mockAccount.id = 'reader-1';
+    mockFetchQuery.mockReset();
+    mockFetchQuery.mockReturnValue(searchAnswer([
+      { node: { id: 'threat-0', entity_type: 'Malware', representative: { main: 'Threat 0' } } },
+      { node: { id: 'threat-other', entity_type: 'Malware', representative: { main: 'Other threat' } } },
+    ]));
+    const selected = Array.from({ length: DEFENSE_MAX_SELECTED_THREATS }, (_, index) => ({ value: `threat-${index}`, label: `Threat ${index}`, type: 'Malware' }));
+    const { user } = testRender(<DefenseThreatsField value={selected} onChange={vi.fn()} />);
+    expect(screen.getByTestId('defense-threats-limit')).toBeInTheDocument();
+    await user.type(screen.getByTestId('defense-threats-input'), 't');
+    // A selected threat can still be removed, no other one can be added
+    expect((await screen.findByText('Other threat')).closest('[role="option"]')).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('option', { name: /Threat 0/ })).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('should not mention the limit below it', () => {
+    mockFetchQuery.mockReset();
+    const selected = [{ value: 'threat-1', label: 'Threat 1', type: 'Malware' }];
+    testRender(<DefenseThreatsField value={selected} onChange={vi.fn()} />);
+    expect(screen.queryByTestId('defense-threats-limit')).not.toBeInTheDocument();
   });
 });

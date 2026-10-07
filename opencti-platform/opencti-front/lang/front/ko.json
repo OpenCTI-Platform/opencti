@@ -490,6 +490,7 @@
   "At least one option is required": "적어도 하나의 옵션을 선택해야 합니다",
   "At least one organization is required": "하나 이상의 조직이 필요합니다",
   "At least one platform affinity is required": "최소 하나의 플랫폼 친화성이 필요합니다.",
+  "At most {count} threats can be selected: remove one to select another": "위협은 최대 {count}개까지 선택할 수 있습니다. 다른 위협을 선택하려면 하나를 제거하세요",
   "At risk": "위험에 처함",
   "Attached entity name": "첨부된 엔터티 이름",
   "Attached entity type": "첨부된 엔터티 유형",
