@@ -276,8 +276,8 @@ export const findOpenHuntIncident = async (context: AuthContext, run: BasicStore
 
 /**
  * Adds the hits of a run to an incident still open from a previous run of the hunt, in its draft when it has one: the
- * incident is related to the observed data and observables of the run, gets a note with the run summary, and its last
- * seen date moves to the last hit. Relations already there are kept.
+ * incident is related to the observed data and observables of the run, gets a note with the run summary (restricted
+ * like the run), and its last seen date moves to the last hit. Relations already there are kept.
  */
 export const continueHuntIncident = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun, open: OpenHuntIncident) => {
   const targetContext: AuthContext = open.draftId ? { ...context, draft_context: open.draftId } : context;
@@ -304,6 +304,7 @@ export const continueHuntIncident = async (context: AuthContext, hunt: BasicStor
     note_types: ['analysis'],
     objects: [open.incidentId],
     objectMarking: markings,
+    objectOrganization: run[RELATION_GRANTED_TO] ?? [],
     ...(hunt[RELATION_CREATED_BY] ? { createdBy: hunt[RELATION_CREATED_BY] } : {}),
   }, ENTITY_TYPE_CONTAINER_NOTE);
   const incident = await internalLoadById<BasicStoreEntity & { last_seen?: string }>(targetContext, HUNT_MANAGER_USER, open.incidentId, { type: ENTITY_TYPE_INCIDENT });
