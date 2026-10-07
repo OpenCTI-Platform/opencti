@@ -7,7 +7,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { BYPASS } from '../../../utils/hooks/useGranted';
 import HuntStatusHeader, { HuntReadinessChecklist, huntPrimaryStatusAction } from './HuntStatusHeader';
 import { huntLogicMissingSentence } from './HuntLogic';
-import { HUNT_STATUS_MEANINGS, HUNT_STATUS_MEANINGS_READ_ONLY, HUNT_STATUSES } from './hunt-utils';
+import { HUNT_READINESS_READ_ONLY_TEMPLATES, HUNT_STATUS_MEANINGS, HUNT_STATUS_MEANINGS_READ_ONLY, HUNT_STATUSES } from './hunt-utils';
 
 vi.mock('react-relay', async (importOriginal) => {
   const original = await importOriginal<typeof import('react-relay')>();
@@ -79,6 +79,27 @@ describe('Hunt status header', () => {
     unmount();
     testRender(<HuntReadinessChecklist huntId="hunt-id" items={[manual]} canEdit={false} />);
     expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user who can edit the hunt runs it');
+  });
+
+  it('never asks a user who can only view the hunt for a change they cannot make', () => {
+    const items = [
+      item('connector', 'unmet', 'No hunt connector can run it on the platforms of its scope: deploy a hunt connector or widen the scope'),
+      item('scope', 'unmet', 'The scope matches no security platform: edit the scope'),
+      item('logic', 'warning', 'Only the first {max} values are looked for: narrow the list', { max: '500' }),
+    ];
+    const { unmount } = testRender(<HuntReadinessChecklist huntId="hunt-id" items={items} />);
+    expect(screen.getByTestId('hunt-readiness-scope')).toHaveTextContent('The scope matches no security platform: edit the scope');
+    unmount();
+    testRender(<HuntReadinessChecklist huntId="hunt-id" items={items} canEdit={false} />);
+    expect(screen.getByTestId('hunt-readiness-connector'))
+      .toHaveTextContent('No hunt connector can run it on the platforms of its scope yet; a user who can edit the hunt can widen the scope');
+    expect(screen.getByTestId('hunt-readiness-scope')).toHaveTextContent('The scope matches no security platform yet; a user who can edit the hunt can change it');
+    expect(screen.getByTestId('hunt-readiness-logic')).toHaveTextContent('Only the first 500 values are looked for; a user who can edit the hunt can narrow the list');
+    // Each reader sentence keeps the values of the platform sentence it replaces, and asks this user for nothing
+    Object.entries(HUNT_READINESS_READ_ONLY_TEMPLATES).forEach(([template, readOnly]) => {
+      expect(readOnly.match(/\{\w+\}/g) ?? []).toEqual(template.match(/\{\w+\}/g) ?? []);
+      expect(readOnly).not.toMatch(/Run now|: (add|edit|deploy|narrow|raise|set|widen)\b/);
+    });
   });
 
   it('words a missing logic as the platform does', () => {

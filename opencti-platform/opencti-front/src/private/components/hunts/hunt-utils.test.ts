@@ -48,6 +48,7 @@ import {
   parseBenignPatterns,
   parseHuntScopePlatformIds,
   toHuntAddInput,
+  huntRunOutcomeSentence,
   huntRunPartialResultsSentence,
   huntConnectorSetupDocumentation,
   huntHitRecurrence,
@@ -525,6 +526,23 @@ describe('Hunt utils', () => {
       .toBe('Splunk prod returned partial results for this run, so the hit count is a lower bound.');
     expect(huntRunPartialResultsSentence({ hits_count: 0 }, 'Splunk prod', t, n))
       .toBe('Splunk prod returned partial results for this run, so the hit count is a lower bound.');
+  });
+
+  it('should say what a completed run found, without an entity count the connector did not report', () => {
+    const t = (message: string, options?: { values: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message);
+    const n = (value: number) => String(value);
+    expect(huntRunOutcomeSentence({ hits_count: 12, distinct_entities: 3, verdict: 'pending' }, 'Splunk prod', t, n))
+      .toBe('12 hits on 3 entities in Splunk prod - verdict pending');
+    expect(huntRunOutcomeSentence({ hits_count: 1, distinct_entities: 1, results_truncated: true, verdict: 'true_positive' }, 'Splunk prod', t, n))
+      .toBe('1 hit on 1 entity in Splunk prod - partial results');
+    // A connector that does not count the entities of its hits reports none
+    expect(huntRunOutcomeSentence({ hits_count: 12, distinct_entities: 0, verdict: 'pending' }, 'Splunk prod', t, n))
+      .toBe('12 hits in Splunk prod - verdict pending');
+    expect(huntRunOutcomeSentence({ hits_count: 12, results_truncated: true, verdict: 'pending' }, 'Splunk prod', t, n))
+      .toBe('12 hits in Splunk prod - partial results, verdict pending');
+    expect(huntRunOutcomeSentence({ hits_count: 0, distinct_entities: 0, verdict: 'false_positive' }, 'Splunk prod', t, n))
+      .toBe('0 hits in Splunk prod');
   });
 });
 

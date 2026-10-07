@@ -57,7 +57,7 @@ Next to the status, the header always shows the primary action of the status: **
 
 Some items are warnings: they do not block the activation but deserve a look, for example "Splunk hunt has not answered recently: runs wait in the queue until it is back", or the indicators left out because they are more restricted than the hunt. In a draft workspace, the checklist reminds that the hunt runs once the draft is validated.
 
-A user who cannot change the hunt (without the knowledge update capability, or with only view access to the draft workspace that holds it) sees the status and the checklist without these actions and without **Edit the schedule** and **Edit the scope**.
+A user who cannot change the hunt (without the knowledge update capability, or with only view access to the draft workspace that holds it) sees the status and the checklist without these actions and without **Edit the schedule** and **Edit the scope**. The items that ask for a change state the fact and who can act instead, for example "The scope matches no security platform yet; a user who can edit the hunt can change it".
 
 ![The status header of a draft hunt: the statuses explained, Activate with "1 item to complete" and the checklist naming the missing logic](assets/first-hunt-activation-blocked.png)
 
@@ -202,7 +202,7 @@ Run statuses and verdicts read the same everywhere (run drawer, lists, widgets),
 
 ![Runs tab of a hunt: one run per verdict, each with the colour of its verdict](assets/hunt-runs-verdicts.png)
 
-The run drawer opens with a status header: the status and verdict, one sentence that says where the run stands (for example "12 hits on 3 entities in Splunk prod - verdict pending") and the next action ("Set the verdict", "Retry" or "Open the incident draft"). A failed run explains why instead of showing the raw error: the connector timed out, the platform refused the query, or the Sigma rule could not be translated, each with its own next action (retry, check the connector, edit the rule); the message reported by the connector stays available under "Show details".
+The run drawer opens with a status header: the status and verdict, one sentence that says where the run stands (for example "12 hits on 3 entities in Splunk prod - verdict pending", or "12 hits in Splunk prod - verdict pending" when the connector does not count the entities of its hits) and the next action ("Set the verdict", "Retry" or "Open the incident draft"). A failed run explains why instead of showing the raw error: the connector timed out, the platform refused the query, or the Sigma rule could not be translated, each with its own next action (retry, check the connector, edit the rule); the message reported by the connector stays available under "Show details".
 
 ![A completed run: status header, verdict, AI triage proposal with its confidence and rationale, then the evidence](assets/hunt-run-completed-triage.png)
 

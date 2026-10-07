@@ -178,6 +178,42 @@ export const huntRunPartialResultsSentence = (
   return t_i18n('{platform} returned partial results for this run, so the hit count is a lower bound.', { values: { platform } });
 };
 
+/**
+ * What a completed run found, in one sentence. A connector that does not count the entities of its hits reports none:
+ * the sentence then leaves the count out rather than state hits on no entity.
+ */
+export const huntRunOutcomeSentence = (
+  run: { hits_count?: number | null; distinct_entities?: number | null; results_truncated?: boolean | null; verdict?: string | null },
+  platform: string,
+  t_i18n: HuntTranslate,
+  n: (value: number) => string,
+) => {
+  const hits = run.hits_count ?? 0;
+  const entities = run.distinct_entities ?? 0;
+  const pending = run.verdict === 'pending';
+  const values = {
+    hits: hits === 1 ? t_i18n('1 hit') : t_i18n('{count} hits', { values: { count: n(hits) } }),
+    entities: entities === 1 ? t_i18n('1 entity') : t_i18n('{count} entities', { values: { count: n(entities) } }),
+    platform,
+  };
+  if (entities === 0 && run.results_truncated) {
+    return pending
+      ? t_i18n('{hits} in {platform} - partial results, verdict pending', { values })
+      : t_i18n('{hits} in {platform} - partial results', { values });
+  }
+  if (entities === 0) {
+    return pending ? t_i18n('{hits} in {platform} - verdict pending', { values }) : t_i18n('{hits} in {platform}', { values });
+  }
+  if (run.results_truncated) {
+    return pending
+      ? t_i18n('{hits} on {entities} in {platform} - partial results, verdict pending', { values })
+      : t_i18n('{hits} on {entities} in {platform} - partial results', { values });
+  }
+  return pending
+    ? t_i18n('{hits} on {entities} in {platform} - verdict pending', { values })
+    : t_i18n('{hits} on {entities} in {platform}', { values });
+};
+
 // Documentation of the hunting surfaces, linked from their help texts
 const HUNT_DOCS_BASE = 'https://docs.opencti.io/latest/usage';
 export const HUNT_DOCS = {
@@ -351,9 +387,29 @@ export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
   paused: 'The schedule and the triggers are stopped; a user who can edit the hunt can still run it.',
 };
 
-/** The readiness sentences of the platform that name a control, as a user who can only view the hunt reads them. */
+/**
+ * The readiness sentences of the platform that name a control or ask for a change, as a user who can only view the hunt
+ * reads them: the fact, then who can act on it.
+ */
 export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
   'Manual: it runs when you click Run now': 'Manual: it runs when a user who can edit the hunt runs it',
+  'Add a Sigma rule or a native query': 'No Sigma rule or native query yet; a user who can edit the hunt can add one',
+  'Add a native query for the internet platform': 'No native query for the internet platform yet; a user who can edit the hunt can add one',
+  'Add the indicators or observables to look for': 'No indicators or observables to look for yet; a user who can edit the hunt can add them',
+  'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators':
+    'None of the indicators and observables of this hunt has a value a lookup can search; a user who can edit the hunt can add values or other indicators',
+  'Only the first {max} values are looked for: narrow the list': 'Only the first {max} values are looked for; a user who can edit the hunt can narrow the list',
+  '{count} indicators or observables are more restricted than the hunt and are left out: raise the markings of the hunt':
+    '{count} indicators or observables are more restricted than the hunt and are left out; a user who can edit the hunt can raise its markings',
+  'No hunt connector can run it on the platforms of its scope: deploy a hunt connector or widen the scope':
+    'No hunt connector can run it on the platforms of its scope yet; a user who can edit the hunt can widen the scope',
+  'No hunt connector of its scope supports indicator lookups: deploy one that does, such as the Splunk hunt connector':
+    'No hunt connector of its scope supports indicator lookups yet; it runs once one that does is deployed, such as the Splunk hunt connector',
+  'No internet hunt connector is deployed: deploy the infrastructure tracker connector':
+    'No internet hunt connector is deployed yet; it runs once the infrastructure tracker connector is deployed',
+  'Scheduled, standing and PIR-activated hunts need the Enterprise Edition: set the schedule to manual':
+    'Scheduled, standing and PIR-activated hunts need the Enterprise Edition; a user who can edit the hunt can set its schedule to manual',
+  'The scope matches no security platform: edit the scope': 'The scope matches no security platform yet; a user who can edit the hunt can change it',
 };
 
 export const huntSourceKindLabel = (sourceKind?: string | null) => {

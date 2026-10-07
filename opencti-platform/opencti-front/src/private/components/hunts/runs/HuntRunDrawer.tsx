@@ -48,6 +48,7 @@ import {
   huntQueryLanguageLabel,
   huntRunFailure,
   huntRunHitsBreakdown,
+  huntRunOutcomeSentence,
   huntRunPartialResultsSentence,
   huntRunTriggerLabel,
   huntRunUnresolvedTechniquesSentence,
@@ -762,22 +763,7 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
   if (run.hunt_run_status === 'completed' && !isExecution) {
     sentence = t_i18n('The translation for {platform} is ready', { values: { platform } });
   } else if (run.hunt_run_status === 'completed') {
-    const hits = run.hits_count ?? 0;
-    const entities = run.distinct_entities ?? 0;
-    const values = {
-      hits: hits === 1 ? t_i18n('1 hit') : t_i18n('{count} hits', { values: { count: n(hits) } }),
-      entities: entities === 1 ? t_i18n('1 entity') : t_i18n('{count} entities', { values: { count: n(entities) } }),
-      platform,
-    };
-    if (run.results_truncated) {
-      sentence = run.verdict === 'pending'
-        ? t_i18n('{hits} on {entities} in {platform} - partial results, verdict pending', { values })
-        : t_i18n('{hits} on {entities} in {platform} - partial results', { values });
-    } else {
-      sentence = run.verdict === 'pending'
-        ? t_i18n('{hits} on {entities} in {platform} - verdict pending', { values })
-        : t_i18n('{hits} on {entities} in {platform}', { values });
-    }
+    sentence = huntRunOutcomeSentence(run, platform, t_i18n, n);
   } else if (run.hunt_run_status === 'running') {
     const since = run.started_at ?? run.dispatched_at ?? run.created_at;
     const elapsed = formatHuntRunDuration(Math.max(0, Date.now() - new Date(since).getTime()));
