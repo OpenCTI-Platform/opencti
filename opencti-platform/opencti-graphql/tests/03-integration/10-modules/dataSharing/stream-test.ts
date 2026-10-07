@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsAuthUser, queryAsUser, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { type StreamCollectionAddInput } from '../../../../src/generated/graphql';
 import { getBaseUrl, logApp } from '../../../../src/config/conf';
 import { getGroupEntity } from '../../../utils/domainQueryHelper';
@@ -516,5 +516,21 @@ describe('Stream object refs filtering', () => {
     expect(objectRefs).toContain(unmarkedMalwareStandardId);
     expect(objectRefs).toContain(amberMalwareStandardId);
     expect(objectRefs).toContain(redMalwareStandardId);
+  }, ONE_MINUTE);
+
+  it('Should only publish the stream origin attributes', async () => {
+    const fromEventId = `${Date.now() - 1000}-0`;
+    const userWithOrigin = {
+      ...ADMIN_USER,
+      origin: { socket: 'query', ip: 'value', user_id: ADMIN_USER.id, user_metadata: { key: 'value' }, referer: 'value' },
+    };
+    await queryAsAuthUser(userWithOrigin, {
+      query: EDIT_DOMAIN_QUERY,
+      variables: { id: reportId, input: [{ key: 'description', value: ['Stream-Refs-Report origin'] }] },
+    });
+    const messages = await readStreamUntil(`${getBaseUrl()}/stream/${unrestrictedStreamId}?from=${fromEventId}`, isReportUpdate);
+
+    const { origin } = messages[messages.length - 1].data;
+    expect(origin).toEqual({ socket: 'query', user_id: ADMIN_USER.id });
   }, ONE_MINUTE);
 });
