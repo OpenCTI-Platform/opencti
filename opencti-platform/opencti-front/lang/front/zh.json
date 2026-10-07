@@ -5410,6 +5410,7 @@
   "The last 24 hours": "最近 24 小时",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "您在配置中设置的许可证无效，请更改或删除该许可证，以便在此屏幕中直接配置",
   "The logic is saved, the hunt is still a draft": "逻辑已保存，狩猎仍是草稿",
+  "The logic of the hunt changed before this run was sent to its connector": "此运行发送到其连接器之前，狩猎逻辑已更改",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "将永久删除主对象及其链接的 {count} 关系/引用。",
   "The main object and the {count} relationships/references linked to it will be restored.": "将还原主对象和与之关联的 {count} 关系/引用。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "最大置信度目前是在用户级别定义的。它覆盖用户组的最大置信度。",

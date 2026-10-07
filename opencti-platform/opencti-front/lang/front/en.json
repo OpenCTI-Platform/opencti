@@ -5410,6 +5410,7 @@
   "The last 24 hours": "The last 24 hours",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen",
   "The logic is saved, the hunt is still a draft": "The logic is saved, the hunt is still a draft",
+  "The logic of the hunt changed before this run was sent to its connector": "The logic of the hunt changed before this run was sent to its connector",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "The main object and the {count} relationships/references linked to it will be deleted permanently.",
   "The main object and the {count} relationships/references linked to it will be restored.": "The main object and the {count} relationships/references linked to it will be restored.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",

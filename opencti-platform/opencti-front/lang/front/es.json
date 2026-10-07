@@ -5410,6 +5410,7 @@
   "The last 24 hours": "Las últimas 24 horas",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "La licencia que configuró en configuración no es válida, por favor cámbiela o elimínela para permitir la configuración directa en esta pantalla",
   "The logic is saved, the hunt is still a draft": "La lógica está guardada, la búsqueda sigue siendo un borrador",
+  "The logic of the hunt changed before this run was sent to its connector": "La lógica de la caza cambió antes de que esta ejecución se enviara a su conector",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "El objeto principal además de sus {count} relaciones/referencias serán eliminados definitivamente.",
   "The main object and the {count} relationships/references linked to it will be restored.": "Se restaurará el objeto principal además de sus {count} relaciones/referencias.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "El Nivel de Confianza Máximo se define actualmente a nivel de usuario. Anula el Nivel de Confianza Máximo de los grupos de usuarios.",

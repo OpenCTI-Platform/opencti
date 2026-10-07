@@ -19,6 +19,7 @@ import { HUNT_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { HUNT_MESSAGES } from './hunt-messages';
+import { huntLogicFingerprint } from './hunt-logic';
 import { doYield } from '../../utils/eventloop-utils';
 import { now } from '../../utils/format';
 import { findByIds } from './hunt-loaders';
@@ -451,6 +452,10 @@ export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntT
         try {
           if (!hunt) {
             await cancelHuntRun(context, run.internal_id, HUNT_MESSAGES.runCancelledHuntDeleted);
+          } else if (run.hunt_logic_fingerprint && run.hunt_logic_fingerprint !== huntLogicFingerprint(hunt)) {
+            // Its time window continues the runs of the logic it was created from: sent with the logic of the hunt now,
+            // its results would count as those of that earlier logic
+            await cancelHuntRun(context, run.internal_id, HUNT_MESSAGES.runCancelledLogicChanged);
           } else if (await dispatchHuntRun(context, run, hunt)) {
             dispatched += 1;
           } else if (run.connector_id) {

@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalLoadById } from '../../../../src/database/middleware-loader';
 import { dispatchQueuedHuntRuns, newHuntTickBudget } from '../../../../src/modules/hunt/hunt-automation';
 import { dispatchHuntRun } from '../../../../src/modules/hunt/hunt-dispatch';
+import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
+import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
+import { cancelHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -16,6 +19,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/modules/hunt/hunt-dispatch', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-dispatch')>(),
   dispatchHuntRun: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/hunt/huntRun/huntRun-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/huntRun/huntRun-domain')>(),
+  cancelHuntRun: vi.fn(async () => null),
 }));
 
 const queuedRun = (index: number, connectorId: string): BasicStoreEntityHuntRun => ({
@@ -125,5 +133,18 @@ describe('Hunt run dispatch budget of a manager tick', () => {
     const reads = vi.mocked(fullEntitiesList).mock.calls.filter(([, , , opts]) => opts?.filters?.filters.some((filter) => filter.values.includes('execute')));
     expect(reads.length).toEqual(2);
     expect(reads[1][3]?.filters?.filters.find((filter) => filter.key.includes('connector_id'))?.values).toEqual(['offline']);
+  });
+
+  it('should cancel, never send, a queued run whose hunt logic changed after it was created', async () => {
+    HUNT_CONFIG.maxRunsPerTick = 10;
+    const hunt = { internal_id: 'hunt-1', name: 'Hunt', hunt_type: 'telemetry', sigma_rule: 'title: current' } as BasicStoreEntityHunt;
+    vi.mocked(internalLoadById).mockResolvedValue(hunt as never);
+    const earlier = { ...queuedRun(0, 'up'), hunt_logic_fingerprint: huntLogicFingerprint({ ...hunt, sigma_rule: 'title: earlier' }) };
+    const current = { ...queuedRun(1, 'up'), hunt_logic_fingerprint: huntLogicFingerprint(hunt) };
+    serveQueue([earlier, current]);
+    vi.mocked(dispatchHuntRun).mockResolvedValue(true);
+    expect(await dispatchQueuedHuntRuns(testContext)).toEqual(1);
+    expect(vi.mocked(dispatchHuntRun).mock.calls.map(([, run]) => run.internal_id)).toEqual([current.internal_id]);
+    expect(cancelHuntRun).toHaveBeenCalledWith(testContext, earlier.internal_id, HUNT_MESSAGES.runCancelledLogicChanged);
   });
 });

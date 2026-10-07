@@ -5410,6 +5410,7 @@
   "The last 24 hours": "過去 24 時間",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "コンフィギュレーションで設定したライセンスは無効です。この画面で直接コンフィギュレーションできるように、ライセンスを変更するか、削除してください。",
   "The logic is saved, the hunt is still a draft": "ロジックは保存されました。ハントはまだ下書きです",
+  "The logic of the hunt changed before this run was sent to its connector": "この実行がコネクターに送信される前に、ハントのロジックが変更されました",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "メインオブジェクトとそれにリンクされた {count} リレーションシップ/参照は永久に削除されます。",
   "The main object and the {count} relationships/references linked to it will be restored.": "メインオブジェクトとそれにリンクされた{count}リレーションシップ/参照がリストアされます。",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "現在、最大信頼度はユーザーレベルで定義されています。これはユーザーグループのMax Confidence Levelを上書きします。",

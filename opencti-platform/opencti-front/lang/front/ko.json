@@ -5410,6 +5410,7 @@
   "The last 24 hours": "최근 24시간",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "구성에서 설정한 라이선스가 유효하지 않습니다. 이 화면에서 직접 구성할 수 있도록 변경하거나 제거해 주세요",
   "The logic is saved, the hunt is still a draft": "로직이 저장되었고 헌트는 아직 초안입니다",
+  "The logic of the hunt changed before this run was sent to its connector": "이 실행이 커넥터로 전송되기 전에 헌트 로직이 변경되었습니다",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "주 객체와 해당 객체와 연결된 {count} 관계/참조가 영구적으로 삭제됩니다.",
   "The main object and the {count} relationships/references linked to it will be restored.": "주 객체와 해당 객체와 연결된 {count} 관계/참조가 복원됩니다.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "최대 신뢰 수준이 현재 사용자 수준에서 정의되어 있습니다. 사용자 그룹의 최대 신뢰 수준을 재정의합니다.",

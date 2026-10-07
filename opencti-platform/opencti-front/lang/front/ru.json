@@ -5410,6 +5410,7 @@
   "The last 24 hours": "Последние 24 часа",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "Лицензия, установленная в конфигурации, недействительна, пожалуйста, измените ее или удалите, чтобы разрешить прямую настройку в этом окне",
   "The logic is saved, the hunt is still a draft": "Логика сохранена, охота всё ещё черновик",
+  "The logic of the hunt changed before this run was sent to its connector": "Логика охоты изменилась до отправки этого запуска коннектору",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "Основной объект и связанные с ним ... отношения/ссылки будут удалены навсегда.",
   "The main object and the {count} relationships/references linked to it will be restored.": "Основной объект и связанные с ним ... отношения/ссылки будут восстановлены.",
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "Максимальный уровень доверия в настоящее время определяется на уровне пользователя. Он отменяет значение Max Confidence Level из групп пользователей.",
