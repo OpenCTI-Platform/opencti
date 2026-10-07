@@ -297,5 +297,18 @@ describe('catalog-sync-domain', () => {
       warn.mockRestore();
       error.mockRestore();
     });
+
+    it('should say which catalog, revision and step a failed write stopped at', async () => {
+      const error = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+      mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
+      mockUpsertCatalog.mockRejectedValue(new TypeError('Cannot read properties of undefined'));
+      await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+      expect(mockInsertCatalogContracts).toHaveBeenCalled();
+      expect(error).toHaveBeenCalledWith('[OPENCTI-MODULE] [catalog] Error while syncing catalog', expect.objectContaining({
+        origin: 'code',
+        error_context: { catalogId: 'embedded-catalog', revision: expect.any(String), step: 'upsert_catalog', count: 1 },
+      }));
+      error.mockRestore();
+    });
   });
 });
