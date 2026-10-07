@@ -1027,7 +1027,7 @@ const trackValidationRequest = async (
  * Keep a validation request that could not be tracked on its gaps for the defense coverage manager, which tracks it
  * at its next run. Returns the number of gaps it will be tracked on.
  */
-const queueValidationTracking = async (
+export const queueValidationTracking = async (
   attackPatterns: BasicStoreEntity[],
   targets: DefenseValidationTarget[],
   request: DefenseGapValidationRequest,
@@ -1040,11 +1040,13 @@ const queueValidationTracking = async (
     logApp.warn('[DEFENSE-COVERAGE] Validation request created, its tracking on the gaps is queued', { cause, security_coverage_id: request.security_coverage_id });
     return trackedTargets.length;
   } catch (queueError) {
+    // Neither the requester nor the targets (up to MAX_VALIDATION_GAPS) are logged: the security coverage and its grouping identify the request
     logApp.error('[DEFENSE-COVERAGE] Validation request created but neither tracked on its gaps nor queued', {
       cause,
       queue_cause: queueError,
-      request,
-      targets: trackedTargets,
+      security_coverage_id: request.security_coverage_id,
+      grouping_id: request.grouping_id,
+      targets: trackedTargets.length,
     });
     return 0;
   }
