@@ -48,7 +48,7 @@ With deployment records (see **Deployment records** above), telemetry is also in
 
 ### Telemetry mappings
 
-The mapping from log sources to MITRE data components is managed in **Settings > Customization > Telemetry mappings**. A mapping links a log source, described by its category (what the events describe, for example `process_creation`), its product (the system the events come from, for example `windows`) and its service (the tool or channel that collects them, for example `sysmon`), to the data components it feeds. It applies to every log source matching all the fields it defines.
+The mapping from log sources to MITRE data components is managed in **Settings > Customization > Telemetry mappings**. A mapping links a log source, described by its category (what the events describe, for example `process_creation`), its product (the system the events come from, for example `windows`) and its service (the tool or channel that collects them, for example `sysmon`), to the data components it feeds. It applies to every log source matching all the fields it defines. The mappings are read by the users who can customize the platform: elsewhere, for example in the telemetry a rule needs, other users only see the mapped data components they can access.
 
 OpenCTI ships built-in mappings covering the Sigma taxonomy, which you can edit or deactivate. Until you add a mapping of your own, the page opens with an explanation and an **Add a mapping** action. **Restore built-in mappings** gives the built-in entries back their shipped data components and reactivates them; custom mappings are kept, including a custom mapping of the same log source as a built-in entry shipped by a later release, which keeps its place.
 
