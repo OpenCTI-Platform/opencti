@@ -58,4 +58,12 @@ describe('resolving an importer name', () => {
     expect(resolution).toEqual(expect.objectContaining({ entity_id: 'set-a', match_type: 'canonical' }));
     expect(addCurationResolveCount).toHaveBeenCalledWith(true);
   });
+
+  it('leaves an entity found only through its other STIX identifiers to the other match types', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValue([intrusionSet('set-renamed', 'Amber Heron')] as never);
+    vi.mocked(pageEntitiesConnection).mockResolvedValue(page(intrusionSet('set-a', 'Shadow-Lynx')) as never);
+    const resolution = await curationResolve(context, analyst, 'Shadow Lynx', ENTITY_TYPE_INTRUSION_SET);
+    expect(resolution).toEqual(expect.objectContaining({ entity_id: 'set-a', match_type: 'canonical', matched_value: 'Shadow-Lynx' }));
+    expect(pageEntitiesConnection).toHaveBeenCalled();
+  });
 });

@@ -77,10 +77,12 @@ const exactResolutions = async (context: AuthContext, user: AuthUser, name: stri
   if (ids.length === 0) return [];
   const found = await internalFindByIds(context, user, ids, { type: types }) as BasicStoreEntity[];
   const lowered = name.trim().toLowerCase();
-  return found.map((entity) => {
+  return found.flatMap((entity) => {
+    const matched = namesOf(entity).find((value) => value.trim().toLowerCase() === lowered);
+    // Found through one of its other STIX identifiers only: the entity does not carry the name.
+    if (!matched) return [];
     const isName = (entity.name ?? '').trim().toLowerCase() === lowered;
-    const matched = namesOf(entity).find((value) => value.trim().toLowerCase() === lowered) ?? entity.name;
-    return toResolution(entity, isName ? 'exact' : 'alias', isName ? 1 : 0.98, matched);
+    return [toResolution(entity, isName ? 'exact' : 'alias', isName ? 1 : 0.98, matched)];
   });
 };
 
