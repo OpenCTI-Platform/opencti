@@ -330,49 +330,24 @@ export const buildHuntRunMessage = async (
 
 const HUNT_CONNECTOR_DISPATCH_LOCK = 'hunt_connector_dispatch';
 
-// Budget checks and slot reservations of a connector are serialized: concurrent starts and manager dispatches cannot
-// all see the same free slot, and a run is dispatched only once
-const withConnectorDispatchLock = <T>(connectorId: string, reservation: () => Promise<T>): Promise<T> => {
-  return withHuntLock(`${HUNT_CONNECTOR_DISPATCH_LOCK}_${connectorId}`, reservation);
+// Budget checks, slot reservations and publications of a connector are serialized with its binding to a security
+// platform: concurrent starts and manager dispatches cannot all see the same free slot, a run is dispatched only once,
+// and never published to a connector registered meanwhile against another platform
+export const withConnectorDispatchLock = <T>(connectorId: string, action: () => Promise<T>): Promise<T> => {
+  return withHuntLock(`${HUNT_CONNECTOR_DISPATCH_LOCK}_${connectorId}`, action);
 };
 
 /**
- * Pushes a queued run to its connector queue, tracked by a work. Returns false when the budget defers the run.
- * The run occupies its budget slot from the reservation of its dispatch date, before its message is published.
+ * Publishes a reserved run to its connector queue, tracked by a work. On a failure the reservation is released and the
+ * run stays queued for the next dispatch.
  */
-export const dispatchHuntRun = async (
+const publishHuntRun = async (
   context: AuthContext,
   run: BasicStoreEntityHuntRun,
   hunt: BasicStoreEntityHunt,
-): Promise<boolean> => {
-  const connectors = await listHuntConnectors(context, false);
-  const connector = connectors.find((c) => c.internal_id === run.connector_id);
-  if (!connector || connector.active !== true) {
-    logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, connector is not alive', { runId: run.internal_id, connectorId: run.connector_id });
-    return false;
-  }
-  // Never sent to another platform than its own: the hunt manager cancels the run (cancelOrphanRunsOfPage)
-  if (!isHuntConnectorBoundToRun(connector, run)) {
-    logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector executes against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
-    return false;
-  }
-  const reserved = await withConnectorDispatchLock(connector.internal_id, async () => {
-    const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
-    if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
-      logApp.debug('[OPENCTI-MODULE] Hunt run already dispatched or settled', { runId: run.internal_id });
-      return null;
-    }
-    const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
-    if (!budget.canDispatch) {
-      logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
-      return null;
-    }
-    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
-    return current;
-  });
-  if (!reserved) {
-    return false;
-  }
+  connector: BasicStoreEntityConnector,
+  reserved: BasicStoreEntityHuntRun,
+) => {
   // A run released because its publication was never recorded keeps the work of that publication: it is published
   // again under it, so the report of a message that did reach the connector is still bound to the run
   const heldWorkId = reserved.work_id ?? null;
@@ -426,8 +401,55 @@ export const dispatchHuntRun = async (
     }
     throw error;
   }
-  // Published: the hunt manager never releases this reservation (requeueUnpublishedHuntRuns). Outside the try, a failure
-  // to record the date never undoes a publication: the run is published again under the same work after the grace
+  return workId;
+};
+
+/**
+ * Pushes a queued run to its connector queue, tracked by a work. Returns false when the budget defers the run.
+ * The run occupies its budget slot from the reservation of its dispatch date, before its message is published.
+ */
+export const dispatchHuntRun = async (
+  context: AuthContext,
+  run: BasicStoreEntityHuntRun,
+  hunt: BasicStoreEntityHunt,
+): Promise<boolean> => {
+  const connectors = await listHuntConnectors(context, false);
+  const connector = connectors.find((c) => c.internal_id === run.connector_id);
+  if (!connector || connector.active !== true) {
+    logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, connector is not alive', { runId: run.internal_id, connectorId: run.connector_id });
+    return false;
+  }
+  // Never sent to another platform than its own: the hunt manager cancels the run (cancelOrphanRunsOfPage)
+  if (!isHuntConnectorBoundToRun(connector, run)) {
+    logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector executes against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
+    return false;
+  }
+  // Reserved and published under the dispatch lock, which a registration of the connector takes to bind it: the binding
+  // read under the lock still holds when the message is published
+  const workId = await withConnectorDispatchLock(connector.internal_id, async () => {
+    const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
+    if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run already dispatched or settled', { runId: run.internal_id });
+      return null;
+    }
+    const bound = (await listHuntConnectors(context, false)).find((candidate) => candidate.internal_id === connector.internal_id);
+    if (!bound || !isHuntConnectorBoundToRun(bound, current)) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector was registered against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
+      return null;
+    }
+    const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
+    if (!budget.canDispatch) {
+      logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
+      return null;
+    }
+    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
+    return publishHuntRun(context, run, hunt, connector, current);
+  });
+  if (!workId) {
+    return false;
+  }
+  // Published: the hunt manager never releases this reservation (requeueUnpublishedHuntRuns). Outside the publication, a
+  // failure to record the date never undoes it: the run is published again under the same work after the grace
   await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { published_at: now() })
     .catch((error: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt run publication date cannot be recorded, the run is published again under its work after the grace', { cause: error, runId: run.internal_id, workId }));
   return true;

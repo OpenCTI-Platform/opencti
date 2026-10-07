@@ -93,7 +93,7 @@ describe('Hunt connectors and their security platforms', () => {
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
-  it('should check and bind a connector under a lock per security platform, never an internet connector', async () => {
+  it('should check and bind a connector under a lock per security platform, never an internet connector, and bind every connector under its dispatch lock', async () => {
     serving([SPLUNK_PROD, TRACKER]);
     vi.mocked(storeLoadById).mockResolvedValue(SPLUNK_PROD as never);
     vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
@@ -106,13 +106,27 @@ describe('Hunt connectors and their security platforms', () => {
       return result;
     });
     await registering({ security_platform_name: 'Prod' });
-    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey('platform-prod')]);
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey('platform-prod'), 'hunt_connector_dispatch_connector-splunk']);
     expect(heldDuring).toEqual([1, 1]);
     vi.mocked(withHuntLock).mockClear();
     vi.mocked(storeLoadById).mockResolvedValue(TRACKER as never);
     await registering({ connector_id: TRACKER.internal_id, platform: 'internet', languages: ['url'] });
-    expect(withHuntLock).not.toHaveBeenCalled();
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-tracker']);
     expect(addSecurityPlatform).toHaveBeenCalledTimes(1);
+  });
+
+  it('should read the binding again under the dispatch lock, so a connector registered meanwhile against another platform gets no run of the former', async () => {
+    const run = { internal_id: 'run-1', hunt_id: 'hunt-1', connector_id: SPLUNK_PROD.internal_id, security_platform_id: 'platform-prod', hunt_run_status: 'queued', hunt_run_mode: 'execute' };
+    serving([SPLUNK_PROD]);
+    vi.mocked(internalFindByIds).mockResolvedValue([run] as never);
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      // The registration against another platform held the lock first
+      serving([{ ...SPLUNK_PROD, hunt_security_platform_id: 'platform-dr' }]);
+      return action();
+    });
+    expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-splunk']);
+    expect(patchAttribute).not.toHaveBeenCalled();
   });
 
   it('should let connectors of the same kind share a security platform', async () => {

@@ -60,7 +60,7 @@ import {
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
-import { dispatchHuntRun, huntConnectorPlatform, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
+import { dispatchHuntRun, huntConnectorPlatform, listHuntConnectors, resolveHuntConnectorTargets, withConnectorDispatchLock } from '../hunt-dispatch';
 import {
   clampInteger,
   HUNT_CONFIG,
@@ -1757,7 +1757,9 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         { connectorId: input.connector_id, securityPlatformId, otherConnectorId: otherKind.internal_id },
       );
     }
-    return patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
+    // Bound under the dispatch lock of the connector: a run being published completes first, and a run dispatched after
+    // reads the new binding
+    return withConnectorDispatchLock(connector.internal_id, () => patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
       hunt_platform: platform,
       hunt_languages: languages,
       hunt_security_platform_id: securityPlatformId,
@@ -1769,7 +1771,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         documentation_url: sanitizeDocumentationUrl(input.documentation_url),
         required_permissions: sanitizeRequiredPermissions(input.required_permissions),
       },
-    });
+    }));
   };
   // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
   // both bind to it
