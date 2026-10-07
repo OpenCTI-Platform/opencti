@@ -17,3 +17,9 @@ export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => ({
     options: { eventName: input.values[0]?.value },
   },
 });
+
+// For a bypass user, a status update goes through the workflow engine, with the transition actions by default
+export const withWorkflowBypassOptions = (options?: { applyTransitionActions?: boolean }) => ({
+  ...options,
+  applyTransitionActions: options?.applyTransitionActions ?? true,
+});
