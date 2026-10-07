@@ -115,14 +115,17 @@ describe('Defense coverage of the current OpenAEV results', () => {
 });
 
 describe('Defense coverage of platform-scoped OpenAEV results', () => {
-  const coverageWith = (platformsInformation: { platform_ref: string; coverage_name: string; coverage_score: number }[]) => {
+  // Stored values are taken as unknown: the per-platform attribute is raw and its shape is not checked on write
+  const coverageWith = (platformsInformation: unknown, information: unknown = [{ coverage_name: 'DETECTION', coverage_score: 100 }]) => {
     const graph = buildGraph();
     graph.hasCoveredByTechnique = new Map([[AP, [relation('covered-1', 'scr-1', AP, {
-      coverage_information: [{ coverage_name: 'DETECTION', coverage_score: 100 }],
+      coverage_information: information,
       coverage_platforms_information: platformsInformation,
     })]]]);
     return buildTechniqueCoverage(AP, graph, '2026-10-01T00:00:00.000Z');
   };
+  const platformValidations = (coverage: ReturnType<typeof coverageWith>) => coverage.platforms
+    .flatMap((p) => p.validations.map((v) => ({ platform: p.platform_id, scores: v.scores })));
 
   it('should never count a result scoped to unresolved platforms technique-wide', () => {
     const coverage = coverageWith([{ platform_ref: 'identity--deleted', coverage_name: 'DETECTION', coverage_score: 100 }]);
@@ -134,6 +137,32 @@ describe('Defense coverage of platform-scoped OpenAEV results', () => {
     const coverage = coverageWith([]);
     expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: false });
     expect(coverage.level).toEqual(4);
+  });
+  it.each([
+    ['a scalar', 'identity--edr'],
+    ['a single object', { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 100 }],
+  ])('should read %s stored as the per-platform results as no attribution', (_, stored) => {
+    const coverage = coverageWith(stored);
+    expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: false });
+    expect(platformValidations(coverage)).toEqual([]);
+    expect(coverage.level).toEqual(4);
+  });
+  it('should skip the per-platform entries that are not objects or name no platform', () => {
+    const coverage = coverageWith([
+      null,
+      'identity--siem',
+      ['identity--siem'],
+      { coverage_name: 'DETECTION', coverage_score: 100 },
+      { platform_ref: 42, coverage_name: 'DETECTION', coverage_score: 100 },
+      { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 90 },
+    ]);
+    expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: true });
+    expect(platformValidations(coverage)).toEqual([{ platform: EDR, scores: [{ name: 'DETECTION', score: 90 }] }]);
+  });
+  it('should skip the entries of the technique-wide results that are not objects', () => {
+    const coverage = coverageWith([], [null, 'DETECTION', { coverage_name: 'DETECTION', coverage_score: 100 }]);
+    expect(coverage.validations[0]).toMatchObject({ status: 'detected', scores: [{ name: 'DETECTION', score: 100 }] });
+    expect(coverageWith([], 'DETECTION').validations[0]).toMatchObject({ scores: [] });
   });
 });
 

@@ -233,14 +233,23 @@ const evidenceAccessKey = (graph: ComputationGraph) => {
     .join('|');
 };
 
+type CoverageEntry = { coverage_name: string; coverage_score: number };
+type PlatformCoverageEntry = CoverageEntry & { platform_ref: string };
+
+// Nothing guarantees the stored shape of a coverage attribute: the per-platform one is raw, out of the index mapping, and a
+// nested list keeps its null entries. A value that is not a list or an entry that is not an object is skipped, never thrown on.
+const coverageEntries = <T extends object>(value: unknown): T[] => (Array.isArray(value)
+  ? value.filter((entry): entry is T => !!entry && typeof entry === 'object' && !Array.isArray(entry))
+  : []);
+
 const relationScores = (relation: BasicStoreRelation): DefenseScore[] => {
-  const information = (relation as unknown as { coverage_information?: { coverage_name: string; coverage_score: number }[] }).coverage_information ?? [];
+  const information = coverageEntries<CoverageEntry>((relation as unknown as { coverage_information?: unknown }).coverage_information);
   return information.map((c) => ({ name: c.coverage_name, score: c.coverage_score }));
 };
 
 const relationPlatformScores = (relation: BasicStoreRelation) => {
-  const information = (relation as unknown as { coverage_platforms_information?: { platform_ref: string; coverage_name: string; coverage_score: number }[] })
-    .coverage_platforms_information ?? [];
+  const information = coverageEntries<PlatformCoverageEntry>((relation as unknown as { coverage_platforms_information?: unknown }).coverage_platforms_information)
+    .filter((c) => typeof c.platform_ref === 'string');
   return groupBy(information, (c) => c.platform_ref);
 };
 
