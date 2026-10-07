@@ -318,8 +318,10 @@ export const parseDefenseScope = (raw: string | null): DefenseScopeState => {
     const threats = Array.isArray(parsed.threats)
       ? parsed.threats.filter((t): t is DefenseThreatOption => !!t && isString(t.value) && isString(t.label) && isString(t.type))
       : [];
+    // Stored data can be stale or edited: a threat is kept once, and never more than the API accepts
+    const uniqueThreats = Array.from(new Map(threats.map((threat) => [threat.value, threat])).values()).slice(0, DEFENSE_MAX_SELECTED_THREATS);
     const threatFilters = isFilterGroupShape(parsed.threatFilters) ? parsed.threatFilters : null;
-    return { platformIds, threatMode, threats, threatFilters };
+    return { platformIds, threatMode, threats: uniqueThreats, threatFilters };
   } catch {
     return DEFAULT_DEFENSE_SCOPE;
   }

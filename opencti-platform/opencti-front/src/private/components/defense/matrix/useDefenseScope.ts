@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { fetchQuery } from '../../../../relay/environment';
-import { DEFENSE_THREAT_TYPES, type DefenseScopeState, type DefenseThreatOption, parseDefenseScope } from './defenseMatrix-utils';
+import { DEFENSE_MAX_SELECTED_THREATS, DEFENSE_THREAT_TYPES, type DefenseScopeState, type DefenseThreatOption, parseDefenseScope } from './defenseMatrix-utils';
 import { useDefenseScopeThreatsQuery$data } from './__generated__/useDefenseScopeThreatsQuery.graphql';
 
 // Unscoped key of the first releases, removed on read: it was shared by every user of the browser.
@@ -123,7 +123,7 @@ const useDefenseScope = (): [DefenseScopeState, (scope: DefenseScopeState) => vo
     // not confirmed are hidden from the reader, who cannot have removed them: they stay stored.
     const nextIds = new Set(next.threats.map((threat) => threat.value));
     const hidden = previous.scope.threats.filter((threat) => !previous.confirmedIds.has(threat.value) && !nextIds.has(threat.value));
-    const scope = { ...next, threats: [...next.threats, ...hidden] };
+    const scope = { ...next, threats: [...next.threats, ...hidden].slice(0, DEFENSE_MAX_SELECTED_THREATS) };
     setState({ storageKey, scope, confirmedIds: new Set([...previous.confirmedIds, ...nextIds]), checked: previous.checked });
     writeStoredScope(storageKey, scope);
   }, [storageKey]);

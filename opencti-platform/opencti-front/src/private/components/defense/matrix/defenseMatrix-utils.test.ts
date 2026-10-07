@@ -8,6 +8,7 @@ import {
   computeLayerLevel,
   DEFAULT_DEFENSE_SCOPE,
   DEFENSE_AGGREGATE_PLATFORM,
+  DEFENSE_MAX_SELECTED_THREATS,
   DEFENSE_UNCOVERED_LEVELS,
   defenseFailedColor,
   defenseGapsExportFileName,
@@ -184,6 +185,14 @@ describe('defenseMatrix-utils', () => {
       expect(parseDefenseScope('{not json')).toEqual(DEFAULT_DEFENSE_SCOPE);
       expect(parseDefenseScope(JSON.stringify({ platformIds: [1, 'p2'], threatMode: 'EVERYTHING', threats: [{ value: 1 }], threatFilters: 'x' })))
         .toEqual({ platformIds: ['p2'], threatMode: 'ALL', threats: [], threatFilters: null });
+    });
+
+    it('keeps a stored threat once and no more threats than the API accepts', () => {
+      const threat = (index: number) => ({ value: `t${index}`, label: `T${index}`, type: 'Campaign' });
+      const stored = [threat(0), threat(0), ...Array.from({ length: 600 }, (_, index) => threat(index + 1))];
+      const { threats } = parseDefenseScope(JSON.stringify({ ...DEFAULT_DEFENSE_SCOPE, threatMode: 'SELECTED', threats: stored }));
+      expect(threats).toHaveLength(DEFENSE_MAX_SELECTED_THREATS);
+      expect(threats.slice(0, 2)).toEqual([threat(0), threat(1)]);
     });
   });
 
