@@ -63,7 +63,7 @@ import {
 } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt, isCronSchedule } from './hunt-schedule';
-import { updateHuntRunInformation } from './hunt-stats';
+import { type HuntRunInformationPatch, updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
 import { buildHuntPlaybookResume, executeHuntPlaybookResume, findPlaybookHuntRuns, isHuntRunGroupSettled } from './hunt-playbook';
 import { purgeExpiredHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
@@ -180,6 +180,18 @@ const startAutomaticRuns = async (context: AuthContext, hunt: BasicStoreEntityHu
     logApp.warn('[OPENCTI-MODULE] Hunt automatic run failed to start', { cause: error, huntId: hunt.internal_id, trigger });
     // A refusal of the hunt itself (its status, its logic) is the same at the next tick
     return (error as GraphQLError)?.extensions?.code === FUNCTIONAL_ERROR ? 0 : null;
+  }
+};
+
+/**
+ * Restores the trigger of a hunt recorded before its automatic runs, once none started. A failure leaves the trigger
+ * recorded as served: the occurrence or the arming is skipped, never run twice.
+ */
+const restoreHuntInformation = async (context: AuthContext, hunt: BasicStoreEntityHunt, patch: HuntRunInformationPatch) => {
+  try {
+    await updateHuntRunInformation(context, hunt.internal_id, patch);
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Hunt trigger not restored after its automatic runs did not start', { cause: error, huntId: hunt.internal_id });
   }
 };
 
@@ -590,8 +602,10 @@ const isWaitingForPir = (hunt: BasicStoreEntityHunt) => hunt.hunt_pir_activation
  * Cron hunts: due hunts run (unless their PIR activation is not armed) and their next occurrence is computed from now,
  * so that an outage never replays the missed occurrences. An occurrence that started no run (its runs could not be
  * created, or no hunt connector serves the scope yet) stays due for the next tick, as the standing and PIR triggers
- * do: the due hunts are scanned in turn, so the ones that cannot run never hold back the others. Hunts approved from a
- * draft get their first occurrence here.
+ * do: the due hunts are scanned in turn, so the ones that cannot run never hold back the others. The next occurrence is
+ * recorded before the runs of the due one are created, and the due one restored only when no run started: a failure to
+ * record it once its runs started can never run the same occurrence twice. Hunts approved from a draft get their first
+ * occurrence here.
  */
 export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
   let started = 0;
@@ -615,12 +629,16 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
       const hunt = hunts[index];
       // A first occurrence, or one falling while the PIR activation is disarmed, is planned without running
       const due = !!hunt.next_run_at && !isWaitingForPir(hunt);
-      const runs = due ? await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining) : 0;
-      if (runs !== null && (!due || runs > 0)) {
-        started += runs;
-        budget.remaining -= runs;
-        const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
-        await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
+      const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
+      await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
+      if (due) {
+        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_SCHEDULE, budget.remaining);
+        if (runs) {
+          started += runs;
+          budget.remaining -= runs;
+        } else {
+          await restoreHuntInformation(context, hunt, { next_run_at: hunt.next_run_at });
+        }
       }
     }
     return hunts.length;
@@ -651,15 +669,21 @@ export const reconcilePirActivatedHunts = async (context: AuthContext, budget: H
         await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: false, hunt_pir_armed_at: null, ...pendingTrigger });
         logApp.info('[OPENCTI-MODULE] Hunt disarmed by its PIR targets', { huntId: hunt.internal_id });
       } else if (armed && hunt.hunt_pir_armed !== true && budget.remaining > 0) {
-        // Armed once its arming run started: a run the tick budget or a missing connector refused is tried at the next tick
-        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_PIR, budget.remaining) ?? 0;
-        if (runs > 0) {
+        // Armed before its arming run starts, so that a failure to record it never starts a second arming run, and
+        // disarmed again when no run started: a run the tick budget, a missing connector or a failure refused is tried
+        // at the next tick. The arming run covers the occurrence of a cron hunt due meanwhile: its schedule resumes at
+        // the next one
+        const cron = isCronSchedule(hunt.hunt_schedule);
+        const nextRunAt = cron ? { next_run_at: computeNextRunAt(hunt.hunt_schedule, new Date())?.toISOString() ?? null } : {};
+        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now(), ...nextRunAt });
+        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_PIR, budget.remaining);
+        if (runs) {
           started += runs;
           budget.remaining -= runs;
-          // The arming run covers the occurrence of a cron hunt due meanwhile: its schedule resumes at the next one
-          const nextRunAt = isCronSchedule(hunt.hunt_schedule) ? { next_run_at: computeNextRunAt(hunt.hunt_schedule, new Date())?.toISOString() ?? null } : {};
-          await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now(), ...nextRunAt });
           logApp.info('[OPENCTI-MODULE] Hunt armed by its PIR targets', { huntId: hunt.internal_id });
+        } else {
+          const previousRunAt = cron ? { next_run_at: hunt.next_run_at } : {};
+          await restoreHuntInformation(context, hunt, { hunt_pir_armed: false, hunt_pir_armed_at: null, ...previousRunAt });
         }
       }
     }

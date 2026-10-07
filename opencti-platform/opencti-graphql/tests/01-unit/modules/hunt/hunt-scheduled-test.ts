@@ -43,7 +43,13 @@ const serveHunts = (hunts: BasicStoreEntityHunt[]) => {
 const connectorsServe = () => vi.mocked(createHuntRuns).mockImplementation(async (_context, hunt) => (
   hunt.internal_id.startsWith('ready') ? [{ internal_id: `run-of-${hunt.internal_id}` }] : []
 ) as never);
-const planned = () => vi.mocked(updateHuntRunInformation).mock.calls.filter(([, , patch]) => 'next_run_at' in (patch as object)).map(([, huntId]) => huntId);
+// The hunts left with another occurrence than the due one, from the last occurrence the tick wrote for each
+const planned = () => {
+  const nextRuns = new Map(vi.mocked(updateHuntRunInformation).mock.calls
+    .filter(([, , patch]) => 'next_run_at' in (patch as object))
+    .map(([, huntId, patch]) => [huntId, (patch as { next_run_at?: string | null }).next_run_at]));
+  return Array.from(nextRuns.entries()).filter(([, next]) => next !== due).map(([huntId]) => huntId);
+};
 
 describe('Scheduled hunts of a manager tick', () => {
   const { automationPageSize, automationMaxPagesPerTick } = HUNT_CONFIG;
@@ -63,6 +69,29 @@ describe('Scheduled hunts of a manager tick', () => {
     serveHunts([cronHunt('ready-1', 0)]);
     expect(await runScheduledHunts(testContext)).toEqual(1);
     expect(planned()).toEqual(['ready-1']);
+  });
+
+  it('should record the next occurrence before the runs of the due one start, and restore the due one when none started', async () => {
+    const order: string[] = [];
+    vi.mocked(updateHuntRunInformation).mockImplementation(async (_context, huntId, patch) => {
+      order.push(`${huntId} ${patch.next_run_at === due ? 'due' : 'next'}`);
+    });
+    vi.mocked(createHuntRuns).mockImplementation(async (_context, hunt) => {
+      order.push(`${hunt.internal_id} runs`);
+      if (hunt.internal_id === 'failing-2') {
+        throw new Error('engine unavailable');
+      }
+      return [{ internal_id: 'run-1' }] as never;
+    });
+    serveHunts([cronHunt('ready-1', 0), cronHunt('failing-2', 1)]);
+    expect(await runScheduledHunts(testContext)).toEqual(1);
+    expect(order).toEqual(['ready-1 next', 'ready-1 runs', 'failing-2 next', 'failing-2 runs', 'failing-2 due']);
+    // An occurrence that cannot be recorded starts no run: it stays due for the next tick
+    vi.mocked(createHuntRuns).mockClear();
+    vi.mocked(updateHuntRunInformation).mockRejectedValueOnce(new Error('engine unavailable'));
+    serveHunts([cronHunt('ready-3', 0)]);
+    await expect(runScheduledHunts(testContext)).rejects.toThrow('engine unavailable');
+    expect(createHuntRuns).not.toHaveBeenCalled();
   });
 
   it('should keep the occurrence due when no hunt connector serves the scope yet', async () => {

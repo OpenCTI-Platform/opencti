@@ -65,4 +65,24 @@ describe('PIR activation arming of a manager tick', () => {
     expect(standing).toMatchObject({ hunt_pir_armed: true });
     expect(standing).not.toHaveProperty('next_run_at');
   });
+
+  it('should record the arming before its run starts, and disarm the hunt again with its occurrence when no run started', async () => {
+    const hunts = [pirHunt('hunt-cron', '0 */6 * * *', 0)];
+    vi.mocked(fullEntitiesList).mockImplementation(async (_context, _user, _types, opts) => {
+      await opts?.callback?.(hunts as never);
+      return [];
+    });
+    vi.mocked(findByIds).mockResolvedValue([{ internal_id: 'malware-1', [RELATION_IN_PIR]: ['pir-1'] }] as never);
+    const order: string[] = [];
+    vi.mocked(updateHuntRunInformation).mockImplementation(async (_context, _huntId, patch) => {
+      order.push(`armed ${patch.hunt_pir_armed}`);
+    });
+    vi.mocked(createHuntRuns).mockImplementation(async () => {
+      order.push('runs');
+      throw new Error('engine unavailable');
+    });
+    expect(await reconcilePirActivatedHunts(testContext)).toBe(0);
+    expect(order).toEqual(['armed true', 'runs', 'armed false']);
+    expect(vi.mocked(updateHuntRunInformation).mock.calls[1][2]).toEqual({ hunt_pir_armed: false, hunt_pir_armed_at: null, next_run_at: '2026-10-07T10:00:00.000Z' });
+  });
 });
