@@ -72,6 +72,7 @@ import {
   type PairSignals,
   pairKey,
   selectMergeTarget,
+  type StaleElement,
   toCuratedEntity,
 } from './curation-detectors';
 import { getTaxonomyFamily } from './curation-normalization';
@@ -849,7 +850,7 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
   const stats = emptyStats();
   if (!isEnabled(settings, DETECTOR_STALENESS)) return stats;
   const types = R.uniq([...settings.curated_entity_types, ENTITY_TYPE_INDICATOR]);
-  const drafts: ProposalDraft[] = [];
+  const elements = new Map<string, StaleElement>();
   const cursors = rotationCursors();
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
@@ -890,15 +891,14 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
     }
     candidates.filter((candidate) => !alive.has(candidate.internal_id)).forEach((candidate) => {
       const record = candidate as Record<string, any>;
-      drafts.push(buildStaleDraft({
+      elements.set(candidate.internal_id, {
         internal_id: candidate.internal_id,
         entity_type: candidate.entity_type,
         name: candidate.name ?? record.pattern ?? candidate.standard_id,
-        last_activity: new Date(record.updated_at).toISOString(),
-        months,
+        inactivity: { last_activity: new Date(record.updated_at).toISOString(), months },
         revoked: false,
         decayed: null,
-      }));
+      });
     });
   }
   // Decayed indicators: live score at or below the revoke score of their decay rule (the decay manager revokes there
@@ -921,17 +921,17 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
   const decayed = decayCandidates.filter((indicator) => isDecayedToRevocation(indicator as Record<string, any>));
   decayed.forEach((indicator) => {
     const record = indicator as Record<string, any>;
-    if (drafts.some((draft) => draft.subjects[0].id === indicator.internal_id)) return;
-    drafts.push(buildStaleDraft({
+    // Found inactive too, the indicator keeps that evidence; found by its decay alone, it has none of inactivity.
+    elements.set(indicator.internal_id, {
       internal_id: indicator.internal_id,
       entity_type: indicator.entity_type,
       name: indicator.name ?? record.pattern ?? indicator.standard_id,
-      last_activity: new Date(record.updated_at).toISOString(),
-      months: getStalenessMonths(settings, ENTITY_TYPE_INDICATOR),
+      inactivity: elements.get(indicator.internal_id)?.inactivity ?? null,
       revoked: false,
       decayed: { score: record.x_opencti_score, revoke_score: record.decay_applied_rule?.decay_revoke_score },
-    }));
+    });
   });
+  const drafts = [...elements.values()].map(buildStaleDraft);
   await persistDrafts(context, settings, drafts, stats);
   await commitRotationCursors(cursors);
   return stats;

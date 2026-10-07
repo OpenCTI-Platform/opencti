@@ -709,18 +709,20 @@ export interface StaleElement {
   internal_id: string;
   entity_type: string;
   name: string;
-  last_activity: string;
-  months: number;
+  /** No update and no new relationship over the staleness period: none for an indicator found by its decay alone. */
+  inactivity?: { last_activity: string; months: number } | null;
   revoked: boolean;
   decayed?: { score: number; revoke_score: number } | null;
 }
 
 export const buildStaleDraft = (element: StaleElement): ProposalDraft => {
-  const items: CurationEvidence[] = [
-    evidence(EVIDENCE_STALENESS, Math.min(1, 0.6 + element.months / 120), 0.7,
-      `No update and no new relationship since ${element.last_activity.slice(0, 10)} (more than ${element.months} months)`,
-      { last_activity: element.last_activity, months: element.months }),
-  ];
+  const items: CurationEvidence[] = [];
+  if (element.inactivity) {
+    const { last_activity: lastActivity, months } = element.inactivity;
+    items.push(evidence(EVIDENCE_STALENESS, Math.min(1, 0.6 + months / 120), 0.7,
+      `No update and no new relationship since ${lastActivity.slice(0, 10)} (more than ${months} months)`,
+      { last_activity: lastActivity, months }));
+  }
   if (element.decayed) {
     items.push(evidence(EVIDENCE_DECAYED_INDICATOR, 1, 0.6,
       `The decayed score (${element.decayed.score}) is at or below the revoke score (${element.decayed.revoke_score}) but the indicator is still active`,
