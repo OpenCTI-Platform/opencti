@@ -296,10 +296,9 @@ describe('Defense validation targets', () => {
 });
 
 describe('Defense validation name', () => {
-  it('should name a request without a name by its threat, else by the number of its techniques', () => {
-    expect(defaultValidationName(1, undefined, '2026-10-06T19:53:15.000Z')).toBe('Defense validation - 1 technique - 2026-10-06');
-    expect(defaultValidationName(3, null, '2026-10-06T19:53:15.000Z')).toBe('Defense validation - 3 techniques - 2026-10-06');
-    expect(defaultValidationName(3, 'APT28', '2026-10-06T19:53:15.000Z')).toBe('Defense validation - APT28 - 2026-10-06');
+  it('should name a request without a name by the number of its techniques', () => {
+    expect(defaultValidationName(1, '2026-10-06T19:53:15.000Z')).toBe('Defense validation - 1 technique - 2026-10-06');
+    expect(defaultValidationName(3, '2026-10-06T19:53:15.000Z')).toBe('Defense validation - 3 techniques - 2026-10-06');
   });
 });
 

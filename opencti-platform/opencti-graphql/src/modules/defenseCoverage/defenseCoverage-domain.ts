@@ -99,6 +99,8 @@ const TRACKING_ATTEMPTS = 3;
 const TRACKING_RETRY_DELAY = 500;
 const MAX_PENDING_TRACKINGS_PER_RUN = 100;
 const MAX_LOGSOURCES = 200;
+// The mappings can turn one log source into many data components, each declared by its own relationship write
+const MAX_DECLARED_DATA_COMPONENTS = 200;
 // Same bound as the log source values of the rules and of the telemetry mappings
 const MAX_LOGSOURCE_VALUE_LENGTH = 256;
 const DEFAULT_RULE_CANDIDATES = 5;
@@ -1231,17 +1233,16 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('No active OpenAEV connector can validate techniques: connect OpenAEV to this platform first');
   }
   const requestedAt = now();
-  const name = requestedName || defaultValidationName(attackPatterns.length, threat?.name, requestedAt);
-  // The name and the scenario derive from the threat and the techniques: the Grouping and the Security Coverage carry
-  // their markings, so a reader who cannot access them cannot read what derives from them either
+  const name = requestedName || defaultValidationName(attackPatterns.length, requestedAt);
+  // The scenario derives from the techniques and the threat: the Grouping and the Security Coverage carry their markings
   const objectMarking = uniq([...attackPatterns, ...(threat ? [threat] : [])].flatMap((element) => element[RELATION_OBJECT_MARKING] ?? []));
   // An external reference is shared by every element with the same URL: it is resolved first and never removed
   const externalReference = referenceUrl
     ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })
     : undefined;
-  // OpenAEV generates the scenario from the techniques; the threat, when given, names the request and stays in the Grouping
-  // for the analysts; the security platforms record the gaps the request is tracked on. OpenAEV runs the scenario on
-  // endpoints and attributes each result to the platform that produced it.
+  // OpenAEV generates the scenario from the techniques; the threat, when given, stays in the Grouping for the analysts;
+  // the security platforms record the gaps the request is tracked on. OpenAEV runs the scenario on endpoints and
+  // attributes each result to the platform that produced it.
   const trackedPlatformIds = uniq([...requestedPlatforms, ...gapPlatforms]);
   const grouping = await addGrouping(context, user, {
     name,
@@ -1349,6 +1350,14 @@ export const addPlatformProvidesFromLogsources = async (
   // A revoked declaration provides no telemetry: declaring it again reactivates it through the upsert
   const declaredIds = new Set(existing.filter((relation) => !relation.revoked).map((relation) => relation.toId));
   const missingIds = matchedIds.filter((id) => !declaredIds.has(id));
+  // Bounded before any write; a declaration interrupted by a failure is sent again, the data components it already
+  // declared then count as existing
+  if (missingIds.length > MAX_DECLARED_DATA_COMPONENTS) {
+    throw FunctionalError(
+      `A declaration cannot declare more than ${MAX_DECLARED_DATA_COMPONENTS} data components: declare fewer log sources at a time`,
+      { count: missingIds.length },
+    );
+  }
   for (let index = 0; index < missingIds.length; index += 1) {
     await addStixCoreRelationship(context, user, {
       fromId: platform.internal_id,

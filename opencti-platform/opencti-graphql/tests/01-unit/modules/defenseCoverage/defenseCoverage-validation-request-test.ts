@@ -76,7 +76,7 @@ describe('Defense validation request', () => {
       .rejects.toThrow('The threat of the validation request is revoked');
   });
 
-  it('should mark the grouping and the security coverage with the markings of the threat and the techniques', async () => {
+  it('should mark the grouping and the security coverage with the markings of the threat and the techniques, and name them without the threat', async () => {
     vi.mocked(internalFindByIds).mockResolvedValueOnce([
       { ...technique, revoked: false, 'object-marking': ['marking-amber'] },
       { internal_id: 'attack-pattern-2', standard_id: 'attack-pattern--2', revoked: false, 'object-marking': ['marking-amber', 'marking-red'] },
@@ -86,8 +86,10 @@ describe('Defense validation request', () => {
     await expect(validateDefenseGaps(context, user, { attackPatternIds: ['attack-pattern-1', 'attack-pattern-2'], threatId: 'intrusion-set-1' }))
       .rejects.toThrow('Security coverage not created');
     const objectMarking = ['marking-amber', 'marking-red', 'marking-clear'];
-    expect(vi.mocked(addGrouping)).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: expect.stringContaining('Restricted threat'), objectMarking }));
-    expect(vi.mocked(addSecurityCoverage)).toHaveBeenCalledWith(context, user, expect.objectContaining({ objectCovered: 'grouping-1', objectMarking }));
+    // The default name never holds the threat name: its organizations cannot be carried to the generated entities
+    const name = expect.stringMatching(/^Defense validation - 2 techniques - \d{4}-\d{2}-\d{2}$/);
+    expect(vi.mocked(addGrouping)).toHaveBeenCalledWith(context, user, expect.objectContaining({ name, objectMarking }));
+    expect(vi.mocked(addSecurityCoverage)).toHaveBeenCalledWith(context, user, expect.objectContaining({ name, objectCovered: 'grouping-1', objectMarking }));
     expect(vi.mocked(deleteElementById)).toHaveBeenCalledWith(context, user, 'grouping-1', expect.any(String));
   });
 });

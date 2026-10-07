@@ -94,6 +94,23 @@ describe('Defense telemetry from log sources', () => {
       expect(vi.mocked(addStixCoreRelationship)).not.toHaveBeenCalled();
     }
   });
+
+  it.each([
+    [200, 200],
+    [201, 0],
+  ])('should bound the data components a declaration declares before any write (%s mapped)', async (count, created) => {
+    const names = Array.from({ length: count }, (_, index) => `Data component ${index}`);
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1' } as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([{ active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: names }] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce(names.map((dcName, index) => ({ internal_id: `dc-${index}`, name: dcName })) as never);
+    const declaration = addPlatformProvidesFromLogsources(context, user, 'platform-1', [{ product: 'windows' }]);
+    if (created > 0) {
+      expect((await declaration).created_count).toEqual(created);
+    } else {
+      await expect(declaration).rejects.toThrow('A declaration cannot declare more than 200 data components: declare fewer log sources at a time');
+    }
+    expect(vi.mocked(addStixCoreRelationship)).toHaveBeenCalledTimes(created);
+  });
 });
 
 describe('Defense rule evidence', () => {

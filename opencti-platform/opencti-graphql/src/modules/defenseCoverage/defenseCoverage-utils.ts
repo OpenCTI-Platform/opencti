@@ -244,12 +244,12 @@ export const buildValidationTargets = (
 };
 
 /**
- * Name of a validation request created without one: the threat it emulates, else the number of its techniques,
- * then the day of the request.
+ * Name of a validation request created without one: the number of its techniques, then the day of the request.
+ * It never holds the name of a source entity: the organizations restricting a threat cannot be carried to the
+ * generated Grouping and Security Coverage, so such a name could reach readers who cannot access the threat.
  */
-export const defaultValidationName = (techniquesCount: number, threatName: string | null | undefined, requestedAt: string) => {
-  const subject = threatName ?? `${techniquesCount} ${techniquesCount === 1 ? 'technique' : 'techniques'}`;
-  return `Defense validation - ${subject} - ${requestedAt.substring(0, 10)}`;
+export const defaultValidationName = (techniquesCount: number, requestedAt: string) => {
+  return `Defense validation - ${techniquesCount} ${techniquesCount === 1 ? 'technique' : 'techniques'} - ${requestedAt.substring(0, 10)}`;
 };
 
 /**
