@@ -112,9 +112,33 @@ describe('Defense rule evidence', () => {
     ] as never);
     // The data components the reader can access
     vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
-    const view = { evaluated: { rule_ids: ['indicator-1'] }, coverage: undefined, evaluation: {} } as unknown as DefenseTechniqueView;
+    const view = { evaluated: { rule_ids: ['indicator-1'], platforms: [] }, coverage: undefined, evaluation: {} } as unknown as DefenseTechniqueView;
     const rules = await defenseTechniqueRules({} as AuthContext, reader, view);
     expect(rules.map((rule) => rule.required_data_components)).toEqual([required]);
+  });
+
+  it('should list the deployed rules first, then the rules the telemetry in view supports, then by maturity', async () => {
+    const reader = { id: 'reader-order', capabilities: [] } as unknown as AuthUser;
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([
+      { internal_id: 'rule-deployed', x_opencti_rule_status: 'experimental', x_opencti_rule_logsource: { product: 'linux' } },
+      { internal_id: 'rule-stable', x_opencti_rule_status: 'stable', x_opencti_rule_logsource: { product: 'linux' } },
+      { internal_id: 'rule-compatible', x_opencti_rule_status: 'test', x_opencti_rule_logsource: { product: 'windows' } },
+    ] as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation'] },
+      { active: true, x_opencti_rule_logsource: { product: 'linux' }, data_components: ['Linux Audit'] },
+    ] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }, { internal_id: 'dc-2', name: 'Linux Audit' }] as never);
+    const view = {
+      evaluated: {
+        rule_ids: ['rule-deployed', 'rule-stable', 'rule-compatible'],
+        platforms: [{ platform_id: 'platform-1', data_component_ids: ['dc-1'], inferred_data_component_ids: [] }],
+      },
+      coverage: { platforms: [{ platform_id: 'platform-1', deployments: [{ id: 'rule-deployed', rel: 'rel-1', indicates: 'indicates-1', status: 'deployed' }] }] },
+      evaluation: { platformById: new Map([['platform-1', { id: 'platform-1' }]]), can: () => true },
+    } as unknown as DefenseTechniqueView;
+    const rules = await defenseTechniqueRules({} as AuthContext, reader, view);
+    expect(rules.map((rule) => rule.indicator.internal_id)).toEqual(['rule-deployed', 'rule-compatible', 'rule-stable']);
   });
 });
 

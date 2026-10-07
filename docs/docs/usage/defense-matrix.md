@@ -99,7 +99,7 @@ Click a technique to open its drawer. It starts with the level and one sentence 
 | Detection deployed | **Validate in OpenAEV** |
 | Failed validation | **Open the validation**: the security coverage of the failed validation |
 
-Below, the drawer lists the evidences per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
+Below, the drawer lists the evidences per platform: the data components and the platforms providing them, the detection rules and their deployments (the deployed rules first, then the rules whose log source the security platforms in view collect, then by status and level), the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
 
 ![Technique drawer when no OpenAEV platform is connected](assets/defense-matrix-drawer-no-openaev.png)
 

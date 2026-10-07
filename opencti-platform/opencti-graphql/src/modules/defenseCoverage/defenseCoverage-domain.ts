@@ -498,20 +498,32 @@ export const defenseTechniqueRules = async (context: AuthContext, user: AuthUser
   const [indicators, mappings, readableDataComponents] = await Promise.all([
     findByIdsChunked<BasicStoreEntityIndicator>(context, user, ids, { type: ENTITY_TYPE_INDICATOR }),
     listAllDefenseLogsourceMappings(context, SYSTEM_USER),
-    readsMappings ? Promise.resolve(undefined) : listDataComponentNames(context, user),
+    listDataComponentNames(context, user),
   ]);
   const activeMappings = mappings.filter((m) => m.active);
-  const readableNames = readableDataComponents && new Set(readableDataComponents.map((dc) => (dc.name ?? '').toLowerCase()));
-  const requiredDataComponents = (indicator: BasicStoreEntityIndicator) => mapLogsourceToDataComponents(indicator.x_opencti_rule_logsource, activeMappings)
+  const readableNames = readsMappings ? undefined : new Set(readableDataComponents.map((dc) => (dc.name ?? '').toLowerCase()));
+  const mappedDataComponents = (indicator: BasicStoreEntityIndicator) => mapLogsourceToDataComponents(indicator.x_opencti_rule_logsource, activeMappings);
+  const requiredDataComponents = (indicator: BasicStoreEntityIndicator) => mappedDataComponents(indicator)
     .filter((name) => !readableNames || readableNames.has(name.toLowerCase()));
+  // As for the rule candidates of a gap, a rule is compatible when the platforms in view collect a data component its
+  // log source requires, or when its log source requires none
+  const telemetryIds = new Set(view.evaluated.platforms.flatMap((p) => [...p.data_component_ids, ...p.inferred_data_component_ids]));
+  const telemetryNames = new Set(readableDataComponents.filter((dc) => telemetryIds.has(dc.internal_id)).map((dc) => (dc.name ?? '').toLowerCase()));
+  const isCompatible = (indicator: BasicStoreEntityIndicator) => {
+    const required = mappedDataComponents(indicator);
+    return required.length === 0 || required.some((name) => telemetryNames.has(name.toLowerCase()));
+  };
   const ranked = rankRuleCandidates(indicators.map((indicator) => ({
     id: indicator.internal_id,
     x_opencti_rule_status: indicator.x_opencti_rule_status,
     x_opencti_rule_level: indicator.x_opencti_rule_level,
-    compatible: (deployments.get(indicator.internal_id) ?? []).length > 0,
+    compatible: isCompatible(indicator),
     indicator,
   })));
-  return ranked.map(({ indicator }) => ({
+  // The deployed rules first, then the others in their order as candidates
+  const isDeployed = (indicator: BasicStoreEntityIndicator) => (deployments.get(indicator.internal_id) ?? []).length > 0;
+  const ordered = [...ranked.filter(({ indicator }) => isDeployed(indicator)), ...ranked.filter(({ indicator }) => !isDeployed(indicator))];
+  return ordered.map(({ indicator }) => ({
     indicator,
     deployments: deployments.get(indicator.internal_id) ?? [],
     required_data_components: requiredDataComponents(indicator),
