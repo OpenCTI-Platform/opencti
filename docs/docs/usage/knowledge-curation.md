@@ -29,7 +29,7 @@ Every source names threats its own way. When one connector imports the malware `
 Knowledge curation addresses these problems on the stored graph:
 
 - **Analysts work an inbox instead of hunting duplicates.** Each proposal explains why it exists, with the evidence that produced its confidence.
-- **Merges are no longer final.** Every merge is recorded and, unless it is recorded as not reversible (very large merges, files with the same name), can be reverted, entirely or for some of the merged entities, during a retention window.
+- **Merges are no longer final.** Every merge is recorded and, unless it is recorded as not reversible (very large merges, files with the same name, a file that could not be moved), can be reverted, entirely or for some of the merged entities, during a retention window.
 - **Automation stays safe.** Policies only apply proposals above their thresholds, never merge or add aliases across markings or organizations, and every automatic action is reversible.
 - **Managers get a measure.** The Knowledge health score and its trend show whether the graph gets cleaner.
 - **Agents get a graph they can reason over.** XTM One agents and importers bind names to existing entities instead of creating new duplicates.
@@ -255,6 +255,7 @@ The reason a merge cannot be undone is exposed by the API in the `irreversible_r
 | `too_many_removed_relationships` | The merge removed more duplicated relationships than a merge record can keep.                    |
 | `too_many_moved_relationships`   | The merge moved more relationships than a merge record can keep.                                 |
 | `file_name_collision`            | A file of a merged entity had the name of a file of the surviving entity, or of another merged entity, and was not kept. |
+| `file_not_moved`                 | A file of a merged entity could not be copied to the surviving entity (for example while the file storage was unavailable) and was deleted with the merged entity. |
 | `merge_interrupted`              | The merge was interrupted before all the entities were merged.                                   |
 | `merge_rerun_after_interruption` | The merge completed, on a new acceptance, a merge that had been interrupted, whose changes it cannot restore. |
 | `merged_entity_deleted`          | The merged entity was deleted before the merge record was completed.                            |

@@ -5437,6 +5437,7 @@
   "This merge can no longer be undone: {reason}": "Cette fusion ne peut plus être annulée : {reason}",
   "This merge can no longer be undone: its retention window ended on {date}.": "Cette fusion ne peut plus être annulée : sa période de conservation a pris fin le {date}.",
   "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.": "Cette fusion ne peut plus être annulée : l'entité fusionnée a été supprimée avant la finalisation de l'enregistrement de fusion.",
+  "This merge cannot be undone: a file of a merged entity could not be copied to the surviving entity and was deleted with it.": "Cette fusion ne peut pas être annulée : un fichier d'une entité fusionnée n'a pas pu être copié vers l'entité conservée et a été supprimé avec elle.",
   "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.": "Cette fusion ne peut pas être annulée : un fichier d'une entité fusionnée portait le nom d'un fichier de l'entité conservée et n'a pas été gardé.",
   "This merge cannot be undone: it completed a merge that had been interrupted, whose changes it cannot restore.": "Cette fusion ne peut pas être annulée : elle a terminé une fusion interrompue, dont elle ne peut pas restaurer les modifications.",
   "This merge cannot be undone: it moved more relationships than a merge record can keep.": "Cette fusion ne peut pas être annulée : elle a déplacé plus de relations qu'un enregistrement de fusion ne peut en conserver.",

@@ -42,6 +42,7 @@ import {
   type BasicStoreEntityMergeRecord,
   ENTITY_TYPE_MERGE_RECORD,
   IRREVERSIBLE_FILE_NAME_COLLISION,
+  IRREVERSIBLE_FILE_NOT_MOVED,
   IRREVERSIBLE_MERGE_INTERRUPTED,
   IRREVERSIBLE_MERGED_ENTITY_DELETED,
   IRREVERSIBLE_RETENTION_OVER,
@@ -320,12 +321,30 @@ const completeMergeRecord = async (
     name: `${mergedName} <- ${sources.map((s) => s.name).join(', ')}`,
     merge_target_name: mergedName,
     merge_status: irreversibleReason ? MERGE_STATUS_IRREVERSIBLE : MERGE_STATUS_ACTIVE,
+    irreversible_reason: irreversibleReason,
     merge_snapshot: snapshot,
   });
   // Counts the merges that can be undone: a merge recorded as not reversible is no reversible merge record.
   if (!irreversibleReason) {
     await addCurationMergeRecordCount();
   }
+};
+
+/**
+ * A merge that could not copy a file of a source deletes it with the source, and no unmerge can bring it back: a file
+ * planned to move that is not under the merged entity makes the record not reversible.
+ */
+const completedIrreversibleReason = (
+  reason: string | null,
+  planned: MergeSourceSnapshot[],
+  moved: MergeSourceSnapshot[],
+  mergedInstance: StoreObject,
+): string | null => {
+  if (reason) return reason;
+  const lostFile = planned.some((snapshot, index) => snapshot.moved_file_ids.some((fileId) => !moved[index].moved_file_ids.includes(fileId)));
+  if (!lostFile) return null;
+  logApp.warn('[CURATION] Merge recorded as not reversible: a merged file could not be moved to the target', { target_id: mergedInstance.internal_id });
+  return IRREVERSIBLE_FILE_NOT_MOVED;
 };
 
 const commitMergeRecord = async (context: AuthContext, _user: AuthUser, preparation: MergeRecordPreparation | null, input: MergeCommitInput) => {
@@ -340,7 +359,8 @@ const commitMergeRecord = async (context: AuthContext, _user: AuthUser, preparat
     const movedFileIds = (mutated?.x_opencti_files ?? []).map((file) => file.id).filter((id) => id.includes(targetPathMarker));
     return { ...snapshot, moved_file_ids: movedFileIds };
   });
-  await completeMergeRecord(context, preparation.recordId, preparation.target, sourceSnapshots, mergedInstance, preparation.irreversibleReason);
+  const irreversibleReason = completedIrreversibleReason(preparation.irreversibleReason, preparation.sources, sourceSnapshots, mergedInstance);
+  await completeMergeRecord(context, preparation.recordId, preparation.target, sourceSnapshots, mergedInstance, irreversibleReason);
 };
 
 /** Marks the record right before the first write of the merge: from then on, the graph may differ from the snapshot. */
@@ -445,7 +465,8 @@ export const settlePendingMergeRecord = async (
     }
     const liveFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
     const sources = record.merge_snapshot.sources.map((source) => ({ ...source, moved_file_ids: source.moved_file_ids.filter((id) => liveFileIds.has(id)) }));
-    await completeMergeRecord(context, record.internal_id, record.merge_snapshot.target, sources, target, record.irreversible_reason ?? null);
+    const irreversibleReason = completedIrreversibleReason(record.irreversible_reason ?? null, record.merge_snapshot.sources, sources, target);
+    await completeMergeRecord(context, record.internal_id, record.merge_snapshot.target, sources, target, irreversibleReason);
     return 'completed';
   } finally {
     if (lock) await lock.unlock();

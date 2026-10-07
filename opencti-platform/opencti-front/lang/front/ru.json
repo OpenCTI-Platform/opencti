@@ -5437,6 +5437,7 @@
   "This merge can no longer be undone: {reason}": "Это объединение больше нельзя отменить: {reason}",
   "This merge can no longer be undone: its retention window ended on {date}.": "Это объединение больше нельзя отменить: срок его хранения истёк {date}.",
   "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.": "Это объединение больше нельзя отменить: объединённая сущность была удалена до завершения записи слияния.",
+  "This merge cannot be undone: a file of a merged entity could not be copied to the surviving entity and was deleted with it.": "Это объединение нельзя отменить: файл объединенной сущности не удалось скопировать в сохраненную сущность, и он был удален вместе с ней.",
   "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.": "Это объединение нельзя отменить: файл объединенной сущности носил имя файла сохраненной сущности и не был сохранен.",
   "This merge cannot be undone: it completed a merge that had been interrupted, whose changes it cannot restore.": "Это объединение нельзя отменить: оно завершило прерванное объединение, изменения которого нельзя восстановить.",
   "This merge cannot be undone: it moved more relationships than a merge record can keep.": "Это объединение нельзя отменить: оно переместило больше связей, чем может сохранить запись слияния.",

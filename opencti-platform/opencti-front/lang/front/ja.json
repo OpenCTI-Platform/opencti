@@ -5437,6 +5437,7 @@
   "This merge can no longer be undone: {reason}": "このマージはもう元に戻せません: {reason}",
   "This merge can no longer be undone: its retention window ended on {date}.": "このマージはもう元に戻せません: 保持期間は {date} に終了しました。",
   "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.": "このマージはもう元に戻せません: マージ記録が完了する前に、マージされたエンティティが削除されました。",
+  "This merge cannot be undone: a file of a merged entity could not be copied to the surviving entity and was deleted with it.": "このマージは元に戻せません: マージされたエンティティのファイルを残ったエンティティにコピーできず、エンティティとともに削除されました。",
   "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.": "このマージは元に戻せません: マージされたエンティティのファイルが残ったエンティティのファイルと同じ名前だったため、保持されませんでした。",
   "This merge cannot be undone: it completed a merge that had been interrupted, whose changes it cannot restore.": "このマージは元に戻せません: 中断されたマージを完了したもので、その変更を復元できません。",
   "This merge cannot be undone: it moved more relationships than a merge record can keep.": "このマージは元に戻せません: マージ記録に保持できる数を超える関係が移動されました。",
