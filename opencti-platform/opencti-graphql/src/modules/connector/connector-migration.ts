@@ -136,7 +136,13 @@ const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>):
   return ignored;
 };
 
-export const assessConnectorMigration = async (context: AuthContext, user: AuthUser, connectorId: string, containerImage: string, configuration: ConfigInput[]) => {
+export const assessConnectorMigration = async (
+  context: AuthContext,
+  user: AuthUser,
+  connectorId: string,
+  containerImage: string,
+  configuration: ConfigInput[] | null | undefined,
+) => {
   const existingConnector = await connector(context, user, connectorId);
 
   if (!existingConnector) {
@@ -251,9 +257,9 @@ export const migrateConnectorToManaged = async (
   user: AuthUser,
   connectorId: string,
   containerImage: string,
-  configuration: ConfigInput[] | null,
-  convertUserToServiceAccount: boolean = true,
-  resetConnectorState: boolean = false,
+  configuration: ConfigInput[] | null | undefined,
+  convertUserToServiceAccount: boolean | null = true,
+  resetConnectorState: boolean | null = false,
 ) => {
   const contractData = await findLatestCompatibleCatalogContractByImageName(context, user, containerImage);
   if (!contractData) {
