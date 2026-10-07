@@ -1012,6 +1012,20 @@ describe('User has no settings capability and is organization admin query behavi
       variables: USER_TO_CREATE_WRONG_GROUP,
     });
   });
+  it('should not create service account', async () => {
+    const SERVICE_ACCOUNT_TO_CREATE = {
+      input: {
+        name: 'Service account',
+        user_service_account: true,
+        objectOrganization: [testOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: SERVICE_ACCOUNT_TO_CREATE,
+    });
+  });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_QUERY,
