@@ -55,6 +55,15 @@ describe('preserveServerOwnedManifestKeys', () => {
     const [result] = preserveServerOwnedManifestKeys(manifestInput({ widgets: {}, variables: [{ id: 'injected' }], presets: [{ id: 'p' }] }), toB64({ widgets: {} }));
     expect(fromB64(result.value[0])).toEqual({ widgets: {} });
   });
+  it.each([
+    ['an empty string', ['']],
+    ['a null value', [null]],
+    ['no value', []],
+  ])('should refuse %s that would erase stored variables', (_, value) => {
+    expect(() => preserveServerOwnedManifestKeys([{ key: 'manifest', value }], stored)).toThrow('Invalid dashboard manifest');
+    const passthrough = [{ key: 'manifest', value }];
+    expect(preserveServerOwnedManifestKeys(passthrough, toB64({ widgets: {} }))).toEqual(passthrough);
+  });
   it('should refuse an unreadable manifest that would erase stored variables', () => {
     expect(() => preserveServerOwnedManifestKeys([{ key: 'manifest', value: ['%%%not-base64-json'] }], stored)).toThrow('Invalid dashboard manifest');
     const passthrough = [{ key: 'manifest', value: ['%%%not-base64-json'] }];

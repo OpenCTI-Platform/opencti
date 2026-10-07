@@ -55,9 +55,9 @@ export const preserveServerOwnedManifestKeys = (inputs: EditInput[], storedManif
   const stored = (storedManifest ? parseManifestObject(storedManifest) : null) ?? {};
   const storedHasServerKeys = DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in stored);
   return inputs.map((input) => {
+    if (input.key !== 'manifest') return input;
     const encoded = input.value?.[0];
-    if (input.key !== 'manifest' || typeof encoded !== 'string' || encoded === '') return input;
-    const incoming = parseManifestObject(encoded);
+    const incoming = typeof encoded === 'string' && encoded !== '' ? parseManifestObject(encoded) : null;
     if (!incoming) {
       if (storedHasServerKeys) throw FunctionalError('Invalid dashboard manifest');
       return input;
