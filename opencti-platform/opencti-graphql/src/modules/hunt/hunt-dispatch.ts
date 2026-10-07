@@ -16,7 +16,7 @@ import { createWork, deleteWork } from '../../domain/work';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { CONNECTOR_INTERNAL_HUNT } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { HUNT_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
@@ -242,11 +242,15 @@ export const buildHuntRunMessage = async (
   const platform = huntConnectorPlatform(connector);
   const nativeQuery = normalizeNativeQueries(hunt.native_queries).find((query) => query.platform === platform) ?? null;
   const authorId = hunt[RELATION_CREATED_BY];
-  const [loadedTechniques, loadedTargets, sources, markings, loadedAuthor, markingDefinitions] = await Promise.all([
+  // The evidence of a run is restricted like the run: the markings of the hunt and of its security platform, and the
+  // organizations both are shared with. The attribution of an object to the run refuses a less restricted one
+  const runMarkings = Array.from(new Set([...(hunt[RELATION_OBJECT_MARKING] ?? []), ...(run[RELATION_OBJECT_MARKING] ?? [])]));
+  const [loadedTechniques, loadedTargets, sources, markings, organizations, loadedAuthor, markingDefinitions] = await Promise.all([
     loadRefs(context, hunt[RELATION_HUNT_TECHNIQUES], ENTITY_TYPE_ATTACK_PATTERN),
     loadRefs(context, hunt[RELATION_HUNT_TARGETS]),
     loadRefs(context, hunt[RELATION_HUNT_SOURCES]),
-    markingStandardIds(context, hunt[RELATION_OBJECT_MARKING]),
+    markingStandardIds(context, runMarkings),
+    loadRefs(context, run[RELATION_GRANTED_TO]),
     authorId ? loadRefs(context, [authorId]) : Promise.resolve([]),
     getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
   ]);
@@ -282,6 +286,7 @@ export const buildHuntRunMessage = async (
         benign_patterns: hunt.benign_patterns ?? [],
         escalation_threshold: hunt.escalation_threshold,
         object_marking_refs: markings,
+        granted_refs: organizations.map((organization) => organization.standard_id),
         created_by_ref: author.length > 0 ? author[0].standard_id : null,
         techniques: techniques.map((technique) => ({
           standard_id: technique.standard_id,

@@ -45,6 +45,7 @@ const elements = new Map<string, unknown>([
   ['target-restricted', reference('target-restricted', 'Intrusion-Set', { [RELATION_OBJECT_MARKING]: ['marking-red'] })],
   ['target-organization', reference('target-organization', 'Malware', { [RELATION_GRANTED_TO]: ['organization-1'] })],
   ['author-restricted', reference('author-restricted', 'Organization', { [RELATION_OBJECT_MARKING]: ['marking-red'] })],
+  ['organization-1', reference('organization-1', 'Organization', {})],
   ...Array.from(markings.entries()),
 ]);
 
@@ -66,6 +67,33 @@ describe('Hunt run message', () => {
     const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-1');
     expect(message.event.hunt.indicators.map((element) => element.standard_id)).toEqual(['indicator--readable']);
     expect(message.event.hunt.object_marking_refs).toEqual(['marking-definition--green']);
+    expect(message.event.hunt.granted_refs).toEqual([]);
+  });
+
+  it('should give the connector the markings and organizations of the run for its evidence', async () => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(markings as never);
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => ids.map((id) => elements.get(id)).filter((element) => !!element) as never);
+    const hunt = {
+      internal_id: 'hunt-3',
+      standard_id: 'hunt--3',
+      name: 'Restricted platform',
+      hunt_type: 'telemetry',
+      native_queries: [],
+      escalation_threshold: 1,
+      [RELATION_OBJECT_MARKING]: ['marking-green'],
+    };
+    // The run carries the markings of the hunt and of its security platform, and the organizations both share
+    const run = {
+      internal_id: 'run-3',
+      attempt: 1,
+      hunt_run_trigger: 'manual',
+      hunt_run_mode: 'execute',
+      [RELATION_OBJECT_MARKING]: ['marking-green', 'marking-red'],
+      [RELATION_GRANTED_TO]: ['organization-1'],
+    };
+    const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-3');
+    expect(message.event.hunt.object_marking_refs).toEqual(['marking-definition--green', 'marking-definition--red']);
+    expect(message.event.hunt.granted_refs).toEqual(['organization--organization-1']);
   });
 
   it('should name to the connector no technique, target or author more restricted than the hunt', async () => {
