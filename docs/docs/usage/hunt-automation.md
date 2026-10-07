@@ -26,7 +26,7 @@ Standing hunts are debounced: a hunt runs at most once per debounce period (15 m
 
 ## Activation by Priority Intelligence Requirements
 
-With **PIR activation**, a hunt is **armed** while at least one of its targets is flagged by a [Priority Intelligence Requirement](pir.md). Arming runs the hunt once (the run is listed with the trigger **PIR activation**), and the hunt counts as armed once that run has started (when no hunt connector serves its scope yet, arming is tried again at the next tick); while armed, its schedule and standing triggers apply. When no PIR flags its targets anymore, the hunt is disarmed and waits. Arming never changes the status of the hunt, which remains the analyst's decision.
+With **PIR activation**, a hunt is **armed** while at least one of its targets is flagged by a [Priority Intelligence Requirement](pir.md). Arming runs the hunt once (the run is listed with the trigger **PIR activation**), and the hunt counts as armed once that run has started (when no hunt connector serves its scope yet, arming is tried again at the next tick); while armed, its schedule and standing triggers apply. The arming run stands for the occurrence of a scheduled hunt due at that time: the schedule resumes at its next occurrence, so arming never runs the hunt twice. When no PIR flags its targets anymore, the hunt is disarmed and waits. Arming never changes the status of the hunt, which remains the analyst's decision.
 
 ## Playbooks
 

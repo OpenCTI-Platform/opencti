@@ -61,7 +61,7 @@ import {
   replaceHuntRun,
 } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun, listHuntConnectors } from './hunt-dispatch';
-import { computeNextRunAt } from './hunt-schedule';
+import { computeNextRunAt, isCronSchedule } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
 import { buildHuntPlaybookResume, executeHuntPlaybookResume, findPlaybookHuntRuns, isHuntRunGroupSettled } from './hunt-playbook';
@@ -651,7 +651,9 @@ export const reconcilePirActivatedHunts = async (context: AuthContext, budget: H
         if (runs > 0) {
           started += runs;
           budget.remaining -= runs;
-          await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now() });
+          // The arming run covers the occurrence of a cron hunt due meanwhile: its schedule resumes at the next one
+          const nextRunAt = isCronSchedule(hunt.hunt_schedule) ? { next_run_at: computeNextRunAt(hunt.hunt_schedule, new Date())?.toISOString() ?? null } : {};
+          await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now(), ...nextRunAt });
           logApp.info('[OPENCTI-MODULE] Hunt armed by its PIR targets', { huntId: hunt.internal_id });
         }
       }
