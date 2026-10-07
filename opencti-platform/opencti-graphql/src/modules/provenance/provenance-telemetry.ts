@@ -11,6 +11,7 @@ import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { TELEMETRY_MANAGER_USER } from '../../utils/access';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { PROVENANCE_ENABLED } from './provenance-config';
+import { listProvenanceTrackedTypes } from './provenance-tracking';
 
 export interface ProvenanceTelemetryGauges {
   setActiveKnowledgeDecayRulesCount: (n: number) => void;
@@ -27,8 +28,9 @@ const provenanceFilter = (key: string, values: string[], operator = FilterOperat
 });
 
 /**
- * Provenance and knowledge freshness gauges. While provenance is switched off nothing is read
- * (neither the decay rule cache nor the indices) and every gauge stays at zero.
+ * Provenance and knowledge freshness gauges, over the types whose provenance is tracked, as the provenance statistics:
+ * an element of an untracked type keeps the flags it got while it was tracked. While provenance is switched off
+ * nothing is read (neither the decay rule cache nor the indices) and every gauge stays at zero.
  */
 export const fetchProvenanceTelemetry = async (context: AuthContext, gauges: ProvenanceTelemetryGauges, enabled = PROVENANCE_ENABLED) => {
   if (!enabled) {
@@ -36,12 +38,17 @@ export const fetchProvenanceTelemetry = async (context: AuthContext, gauges: Pro
   }
   const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DECAY_RULE);
   gauges.setActiveKnowledgeDecayRulesCount(decayRules.filter((rule) => rule.active && (rule.target_scope ?? 'indicator') !== 'indicator').length);
+  const trackedTypes = await listProvenanceTrackedTypes(context);
   const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+  // No type filter would count every type: no tracked type counts nothing
+  const count = async (indices: string | string[], filters: ReturnType<typeof provenanceFilter>) => {
+    return trackedTypes.length > 0 ? elCount(context, TELEMETRY_MANAGER_USER, indices, { types: trackedTypes, filters }) : 0;
+  };
   const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
-    elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
-    elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),
-    elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('freshness_stale', ['true']) }),
-    elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('has_conflicts', ['true']) }),
+    count(READ_INDEX_STIX_CORE_RELATIONSHIPS, provenanceFilter('corroboration_count', [], FilterOperator.NotNil)),
+    count(READ_INDEX_STIX_CORE_RELATIONSHIPS, provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte)),
+    count(provenanceIndices, provenanceFilter('freshness_stale', ['true'])),
+    count(provenanceIndices, provenanceFilter('has_conflicts', ['true'])),
   ]);
   gauges.setProvenanceTrackedRelationshipsCount(trackedRelationships);
   gauges.setProvenanceCorroboratedRelationshipsCount(corroboratedRelationships);
