@@ -537,7 +537,9 @@ const applyPreserveProcedure = async (
   if (opts.onBeforeChange) await opts.onBeforeChange({ appliedPatch: null, mergeRecordId: null });
   const note = await createEntity(context, user, { ...noteInput, stix_id: procedureNoteStixId(proposal.internal_id) }, ENTITY_TYPE_CONTAINER_NOTE);
   const noteId = note.internal_id ?? note.id;
-  const createdVersions = { [noteId]: new Date(note.updated_at).toISOString() };
+  // Indexing the references of the note writes it again after the creation: its version is the stored one.
+  const [stored] = await internalFindByIds(context, user, [noteId]) as BasicStoreBase[];
+  const createdVersions = { [noteId]: new Date((stored ?? note).updated_at).toISOString() };
   return { appliedPatch: { operations: [], created_ids: [noteId], created_versions: createdVersions, applied_at: now() }, mergeRecordId: null };
 };
 

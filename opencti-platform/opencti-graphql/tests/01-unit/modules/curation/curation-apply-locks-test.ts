@@ -202,6 +202,14 @@ describe('curation actions under the entity lock', () => {
     expect(procedureNoteStixId('proposal-id')).not.toEqual(procedureNoteStixId('other-proposal-id'));
   });
 
+  it('records the version of the note as stored, written again by the indexing of its references', async () => {
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(conflicting as never);
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'note-id', updated_at: '2026-10-01T10:00:00.020Z' }] as never);
+    const result = await executeProposalAction(context, user, preserve, settings);
+    expect(vi.mocked(internalFindByIds).mock.calls[0][2]).toEqual(['note-id']);
+    expect(result.appliedPatch?.created_versions).toEqual({ 'note-id': '2026-10-01T10:00:00.020Z' });
+  });
+
   const shared = { ...conflicting, objectMarking: [{ internal_id: 'marking-id' }], granted: ['org-id'] };
 
   it('gives the note of a procedure the markings and the organizations of its relationship', async () => {
