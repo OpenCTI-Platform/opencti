@@ -142,6 +142,18 @@ describe('Known hits ledger', () => {
     expect(classifyHuntHits('run-1', ['k1', 'k2', 'k3'], known)).toEqual({ newCount: 2, recurringCount: 1, toWrite: ['k1', 'k3'] });
   });
 
+  it('should leave out the hits a run already counted from its late evidence', () => {
+    const known = new Map([
+      ['k1', { first_run_id: 'run-1', last_run_id: 'run-1', counted_run_ids: ['run-1'] }],
+      ['k2', { first_run_id: 'run-0', last_run_id: 'run-1', counted_run_ids: ['run-0', 'run-1'] }],
+      ['k4', { first_run_id: 'run-0', last_run_id: 'run-0', counted_run_ids: ['run-0'] }],
+    ]);
+    // k1 and k2 are hits of the run already, k3 was never seen, k4 was seen by another run only
+    expect(classifyHuntHits('run-1', ['k1', 'k2', 'k3', 'k4'], known, false, true)).toEqual({ newCount: 1, recurringCount: 1, toWrite: ['k3', 'k4'] });
+    // Its report sent again counts them all, as when it was first processed
+    expect(classifyHuntHits('run-1', ['k1', 'k2', 'k3', 'k4'], known)).toEqual({ newCount: 2, recurringCount: 2, toWrite: ['k3', 'k4'] });
+  });
+
   it('should take the records to remember a run while fewer than 25 later runs of the hunt on the platform completed', async () => {
     const run = { internal_id: 'run-1', hunt_id: 'hunt-1', security_platform_id: 'platform-1', completed_at: '2026-10-05T10:00:00.000Z' };
     expect(await isHuntRunRemembered(testContext, { ...run, completed_at: null } as never)).toBe(true);

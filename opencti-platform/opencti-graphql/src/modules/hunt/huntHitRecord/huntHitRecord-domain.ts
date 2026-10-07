@@ -55,9 +55,16 @@ export interface HuntHitClassification {
  * platform. A hit first recorded by this very run stays new and a record that already counted the run is not updated
  * again, whatever runs were recorded since, so that processing the same run again (its completion report sent again
  * after an interruption) gives the same counts and leaves the records as they are. With keepKnown, for a run the
- * records may have forgotten, only the hits never recorded get a record.
+ * records may have forgotten, only the hits never recorded get a record. With uncountedOnly, for the late evidence of a
+ * run, a hit the run already counted is neither new nor recurring: it is in the hits of the run already.
  */
-export const classifyHuntHits = (runId: string, keys: string[], known: Map<string, KnownHit>, keepKnown = false): HuntHitClassification => {
+export const classifyHuntHits = (
+  runId: string,
+  keys: string[],
+  known: Map<string, KnownHit>,
+  keepKnown = false,
+  uncountedOnly = false,
+): HuntHitClassification => {
   let newCount = 0;
   let recurringCount = 0;
   const toWrite: string[] = [];
@@ -66,6 +73,8 @@ export const classifyHuntHits = (runId: string, keys: string[], known: Map<strin
     if (!record) {
       newCount += 1;
       toWrite.push(key);
+    } else if (uncountedOnly && (record.first_run_id === runId || countedRuns(record).includes(runId))) {
+      // Reported again: the record already counted the run
     } else if (record.first_run_id === runId) {
       newCount += 1;
     } else {
@@ -135,6 +144,8 @@ export interface HuntHitsRecordInput {
   seenAt: string;
   // Late evidence of a run the records may have forgotten (isHuntRunRemembered): the known records are left as they are
   keepKnown?: boolean;
+  // Late evidence of a run: the hits the run already counted are not counted again
+  uncountedOnly?: boolean;
 }
 
 /**
@@ -187,7 +198,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
   const recordedAt = new Date().toISOString();
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
-    const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown);
+    const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown, input.uncountedOnly);
     const operations: unknown[] = [];
     for (let index = 0; index < toWrite.length; index += 1) {
       await doYield();

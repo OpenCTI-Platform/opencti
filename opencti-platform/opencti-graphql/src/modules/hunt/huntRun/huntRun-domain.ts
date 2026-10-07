@@ -1485,12 +1485,11 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     // Late evidence can arrive out of order: the most recent observation is kept
     const previousEvidenceAt = current.last_evidence_at ? new Date(current.last_evidence_at).getTime() : Number.NEGATIVE_INFINITY;
     const lastEvidenceAt = new Date(Math.max(previousEvidenceAt, observedAt.getTime()));
-    const outcomeChanges = addedHits > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE
-      && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
-    const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
     const hitsSample = mergeHits(current.hits_sample ?? [], sanitizeHits(input.hits_sample));
-    // Evidence with hit keys tells its new hits from the known ones; without keys identifying them, its hits count as new
+    // Evidence with hit keys tells its new hits from the known ones and leaves out the hits its run already counted;
+    // without keys identifying them, its hits count as new
+    let countedHits = addedHits;
     let addedNew = addedHits;
     let addedRecurring = 0;
     const evidenceKeys = identifyingHitKeys(input.hit_keys, { hitsCount: addedHits, sampledKeys: sanitizeHits(input.hits_sample).map((hit) => hit.hit_key) });
@@ -1504,21 +1503,28 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           // The hits of this evidence were seen when it was observed, an earlier observation than the last one included
           seenAt: observedAt.toISOString(),
           keepKnown: !await isHuntRunRemembered(context, current),
+          uncountedOnly: true,
         });
-        const { newHits, recurringHits } = splitHitsByKeys(addedHits, matched.newCount, matched.recurringCount);
+        // A key can stand for several hits: the hits of the keys left out are left out like the keys
+        const uncountedKeys = matched.newCount + matched.recurringCount;
+        countedHits = uncountedKeys >= evidenceKeys.length ? addedHits : Math.round((addedHits * uncountedKeys) / evidenceKeys.length);
+        const { newHits, recurringHits } = splitHitsByKeys(countedHits, matched.newCount, matched.recurringCount);
         addedNew = newHits;
         addedRecurring = recurringHits;
       } catch (error) {
         logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
       }
     }
+    const outcomeChanges = countedHits > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE
+      && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
+    const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
       hits_sample: hitsSample,
       ...huntHitDates(hitsSample, {}, current),
       result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
       ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
-      hits_count: (current.hits_count ?? 0) + addedHits,
-      ...(addedHits > 0 || addedNew > 0 || addedRecurring > 0 ? {
+      hits_count: (current.hits_count ?? 0) + countedHits,
+      ...(countedHits > 0 || addedNew > 0 || addedRecurring > 0 ? {
         hits_new_count: huntRunNewHits(current) + addedNew,
         hits_recurring_count: (current.hits_recurring_count ?? 0) + addedRecurring,
       } : {}),

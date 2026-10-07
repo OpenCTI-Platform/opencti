@@ -12,13 +12,18 @@ vi.mock('../../../utils/hooks/useEntitySettings', async (importOriginal) => ({
 
 // A hunt never run, a hunt whose latest execution is visible (with or without a verdict), or a hunt run by an
 // execution the user cannot see
-const huntNode = (id: string, verdict: string | null, run: 'none' | 'visible' | 'hidden' = verdict ? 'visible' : 'none') => ({
+const huntNode = (
+  id: string,
+  verdict: string | null,
+  run: 'none' | 'visible' | 'hidden' = verdict ? 'visible' : 'none',
+  latest: { hunt_run_status: string; completed_at: string | null; hits_count: number } = { hunt_run_status: 'completed', completed_at: '2026-10-05T10:00:00.000Z', hits_count: 1 },
+) => ({
   id,
   name: `Hunt ${id}`,
   hunt_status: 'active',
   last_run_at: run === 'none' ? null : '2026-10-05T10:00:00.000Z',
   last_hits_count: run === 'none' ? null : 1,
-  runs: { edges: run === 'visible' ? [{ node: { id: `${id}-run`, verdict } }] : [] },
+  runs: { edges: run === 'visible' ? [{ node: { id: `${id}-run`, verdict, ...latest } }] : [] },
 });
 
 const resolveHunts = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], nodes: ReturnType<typeof huntNode>[], globalCount = nodes.length) => {
@@ -70,6 +75,21 @@ describe('Hunts of an entity', () => {
     expect(within(rows[1]).queryByText('Never run')).not.toBeInTheDocument();
     expect(within(rows[1]).getByText(/^Last run /)).toBeInTheDocument();
     expect(within(rows[2]).getByText('Never run')).toBeInTheDocument();
+  });
+
+  it('describes one run only: the date and hits of the latest execution, never those of another run', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" />);
+    // The summary of each hunt describes an earlier run with 1 hit
+    await resolveHunts(relayEnv, [
+      huntNode('a', 'false_positive', 'visible', { hunt_run_status: 'completed', completed_at: '2026-10-06T10:00:00.000Z', hits_count: 7 }),
+      huntNode('b', null, 'visible', { hunt_run_status: 'running', completed_at: null, hits_count: 0 }),
+    ]);
+    const rows = screen.getAllByTestId('hunts-of-entity-row');
+    expect(within(rows[0]).getByText(/7 hits$/)).toBeInTheDocument();
+    // Still running: its status, and no date or hits of the run before it
+    expect(within(rows[1]).getByTestId('hunt-run-status-chip')).toHaveTextContent('Running');
+    expect(within(rows[1]).queryByTestId('hunt-verdict-chip')).not.toBeInTheDocument();
+    expect(within(rows[1]).queryByText(/^Last run /)).not.toBeInTheDocument();
   });
 
   it('shows nothing when no hunt uses the entity', async () => {

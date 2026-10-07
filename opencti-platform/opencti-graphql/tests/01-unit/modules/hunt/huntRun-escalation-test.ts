@@ -287,6 +287,27 @@ describe('Hits counted once across the runs of a hunt', () => {
     expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
   });
 
+  it('should never count again the hits of a run its late evidence reports again', async () => {
+    const reported = { ...autonomous, hunt_run_status: 'completed', hits_count: 28, hits_new_count: 12, hits_recurring_count: 16, verdict_source: 'analyst' } as BasicStoreEntityHuntRun;
+    const evidence = [{ internal_id: 'result-1', standard_id: 'indicator--result-1', entity_type: 'Indicator' }];
+    loading(reported);
+    vi.mocked(findByIds).mockResolvedValueOnce(evidence as never).mockResolvedValueOnce(evidence as never);
+    // Two hits of the run reported again and one hit never seen
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 1, recurringCount: 0 });
+    await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 3, hit_keys: KEYS.slice(0, 3) } as never);
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 3), uncountedOnly: true }));
+    expect(finalState()).toMatchObject({ hits_count: 29, hits_new_count: 13, hits_recurring_count: 16 });
+    // Evidence of hits the run counted already changes nothing
+    vi.mocked(patchAttribute).mockReset();
+    loading(reported);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 0 });
+    vi.mocked(updateHuntRunInformation).mockClear();
+    await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 2, hit_keys: KEYS.slice(0, 2) } as never);
+    expect(finalState()).toMatchObject({ hits_count: 28 });
+    expect(finalState().hits_new_count).toBeUndefined();
+    expect(updateHuntRunInformation).not.toHaveBeenCalled();
+  });
+
   it('should find, open and record the incident under the lock of the hunt on its platform, so runs escalated together share one', async () => {
     const lock = 'hunt_incident_hunt-1_platform-1';
     const held: string[] = [];

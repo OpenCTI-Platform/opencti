@@ -8,7 +8,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
-import { HuntStatusChip, HuntVerdictChip } from './HuntChips';
+import { HuntRunStatusChip, HuntStatusChip, HuntVerdictChip } from './HuntChips';
 import { HuntsOfEntityQuery } from './__generated__/HuntsOfEntityQuery.graphql';
 
 const HUNTS_OF_ENTITY_LIMIT = 10;
@@ -36,6 +36,9 @@ const huntsOfEntityQuery = graphql`
               node {
                 id
                 verdict
+                hunt_run_status
+                completed_at
+                hits_count
               }
             }
           }
@@ -73,24 +76,33 @@ const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
       <Card title={`${t_i18n('Hunts')} (${n(total)})`}>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
           {edges.map(({ node }) => {
-            // The latest execution, which the last run date describes; a run the user cannot see has no chip
+            // The latest execution the user can read gives the chip, the date and the hits, all of one run; the summary
+            // of the hunt only stands in for a run the user cannot read
             const latestRun = node.runs?.edges?.[0]?.node;
+            let lastRun: { at: string; hits: number } | null = null;
+            if (latestRun) {
+              lastRun = latestRun.completed_at ? { at: latestRun.completed_at, hits: latestRun.hits_count ?? 0 } : null;
+            } else if (node.last_run_at) {
+              lastRun = { at: node.last_run_at, hits: node.last_hits_count ?? 0 };
+            }
             return (
               <li key={node.id} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid="hunts-of-entity-row">
                 <Link to={PATH_HUNT(node.id)} style={{ flex: '1 1 240px', minWidth: 0 }}>
                   <Text variant="content-compact">{node.name}</Text>
                 </Link>
                 <HuntStatusChip value={node.hunt_status} />
-                {latestRun && <HuntVerdictChip value={latestRun.verdict} />}
+                {latestRun && (latestRun.hunt_run_status === 'completed'
+                  ? <HuntVerdictChip value={latestRun.verdict} />
+                  : <HuntRunStatusChip value={latestRun.hunt_run_status} />)}
                 {!latestRun && !node.last_run_at && (
                   <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Never run')}</Text>
                 )}
-                {node.last_run_at && (
+                {lastRun && (
                   <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
                     {t_i18n('Last run {date}, {hits}', {
                       values: {
-                        date: fldt(node.last_run_at),
-                        hits: t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: node.last_hits_count ?? 0 } }),
+                        date: fldt(lastRun.at),
+                        hits: t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: lastRun.hits } }),
                       },
                     })}
                   </Text>
