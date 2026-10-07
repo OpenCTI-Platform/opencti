@@ -137,7 +137,7 @@ A request is also tracked on at most 2,000 gaps: each technique on all platforms
 
 ![Validation dialog leaving techniques of the scope out](assets/defense-matrix-validation-deferred.png)
 
-Each request listed in the technique drawer tells where OpenAEV stands: **Waiting for OpenAEV** while no OpenAEV platform has read its security coverage, then **Read by OpenAEV, waiting for the first results** until the scenario sends results.
+Each request listed in the technique drawer tells where OpenAEV stands: **Waiting for OpenAEV** while no OpenAEV platform has read its security coverage, then **Read by OpenAEV, waiting for the first results** until the scenario sends results. Each gap keeps its 20 latest validation requests.
 
 ![Validation requests waiting for OpenAEV](assets/defense-matrix-drawer-requests.png)
 
