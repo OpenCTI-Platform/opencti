@@ -3,6 +3,7 @@ import { ClearOutlined } from '@mui/icons-material';
 import { IconButton } from '@filigran/design-system';
 import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import { useFormatter } from '../i18n';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -21,6 +22,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   label,
   type,
 }) => {
+  const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [value, setValue] = useState(filterValues[0] ?? '');
 
@@ -79,7 +81,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
               priority="tertiary"
               size="sm"
               onClick={handleClear}
-              aria-label="clear"
+              aria-label={t_i18n('Clear')}
               icon={<ClearOutlined fontSize="small" />}
             />
           ),
