@@ -336,6 +336,26 @@ const useSearchEntities = ({
     value: 'object-label',
     type: 'stix-meta-relationship',
   };
+  // Ref relationships only offered in the relationship_type subfilter of regardingOf / dynamicRegardingOf
+  const regardingOfRefRelationshipTypes = [
+    labelRelationshipType,
+    objectRelationshipType,
+    {
+      label: t_i18n('relationship_external-reference'),
+      value: 'external-reference',
+      type: 'stix-meta-relationship',
+    },
+    {
+      label: t_i18n('relationship_object-covered'),
+      value: 'object-covered',
+      type: 'stix-ref-relationship',
+    },
+    {
+      label: t_i18n('relationship_result-of'),
+      value: 'result-of',
+      type: 'stix-ref-relationship',
+    },
+  ];
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -960,8 +980,7 @@ const useSearchEntities = ({
             relationshipsTypes = [
               ...scrTypes,
               abstractTypeFilterValue('stix-sighting-relationship'),
-              objectRelationshipType,
-              labelRelationshipType,
+              ...(isSubKey ? regardingOfRefRelationshipTypes : []),
             ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;

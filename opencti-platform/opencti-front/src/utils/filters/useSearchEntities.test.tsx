@@ -330,6 +330,51 @@ describe('useSearchEntities', () => {
     expect(relOptions.some((e) => e.value === 'object-label')).toBe(true);
   });
 
+  it('should include some ref relationship types in the relationship_type subfilter of regardingOf', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''), true);
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).toEqual(expect.arrayContaining(['object-label', 'external-reference', 'object-covered', 'result-of']));
+  });
+
+  it('should not include the marking ref relationship type in the relationship_type subfilter of regardingOf', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''), true);
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).not.toContain('object-marking');
+  });
+
+  it('should not include regardingOf-only ref relationship types in the relationship_type filter', () => {
+    const options = {
+      ...defaultOptions,
+      searchContext: {} as { entityTypes: string[]; elementType?: string },
+    };
+    const { result } = renderHook(() => useSearchEntities(options));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''));
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).not.toContain('external-reference');
+    expect(relOptions).not.toContain('object-covered');
+    expect(relOptions).not.toContain('result-of');
+  });
+
   it('should not execute search when event is falsy', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;
