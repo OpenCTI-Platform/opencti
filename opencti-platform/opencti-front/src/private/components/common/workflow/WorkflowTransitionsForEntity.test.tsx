@@ -24,7 +24,7 @@ const instance = (pendingStatus: string | null, name = 'A') => ({
   id: 'instance-1', currentState: name, currentStatus: status(name), lastHistoryEntry: null,
   pendingStatus, pendingError: pendingStatus === 'error' ? 'Action failed' : null,
   pendingTransition: pendingStatus === 'pending' ? { event: 'approve', toState: 'B', triggeredAt: null, syncActions: [], asyncActions: [] } : null,
-  allowedTransitions: [{ event: 'approve', toState: 'B', actions: [], comment: null, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, toStatus: status('B') }],
+  allowedTransitions: [{ event: 'approve', toState: 'B', actions: [], comment: null, closingReason: null, requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, toStatus: status('B') }],
 });
 
 const Harness = () => {

@@ -3,6 +3,7 @@ import { Icon, Text } from '@filigran/design-system';
 import { Field } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
+import OpenVocabField from '../form/OpenVocabField';
 import TextareaField from '../../../../components/TextareaField';
 import { useFormatter } from '../../../../components/i18n';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
@@ -13,17 +14,19 @@ export const WORKFLOW_TRANSITION_COMMENT_FIELD_ID = 'workflow-transition-comment
 // What a transition asks from the user who triggers it, on one entity or on many
 export interface TransitionInputRequirements {
   commentMode?: string | null;
+  closingReasonMode?: string | null;
   requiresShareOrg: boolean;
   requiresUnshareOrg: boolean;
 }
 
 export interface TransitionInputValues {
   comment: string;
+  closingReason?: string | null;
   shareOrganizations: Array<{ value: string; label?: string }>;
   unshareOrganizations: Array<{ value: string; label?: string }>;
 }
 
-export const EMPTY_TRANSITION_INPUT_VALUES: TransitionInputValues = { comment: '', shareOrganizations: [], unshareOrganizations: [] };
+export const EMPTY_TRANSITION_INPUT_VALUES: TransitionInputValues = { comment: '', closingReason: '', shareOrganizations: [], unshareOrganizations: [] };
 
 export const hasTransitionComment = (commentMode?: string | null) => commentMode === CommentMode.allowed || commentMode === CommentMode.required;
 
@@ -37,6 +40,9 @@ export const buildTransitionInputsSchema = (
     comment: requirements.commentMode === CommentMode.required && !canBypassMandatoryFields
       ? Yup.string().trim().required(t_i18n('This field is required')).max(COMMENT_MAX_LENGTH)
       : Yup.string().trim().max(COMMENT_MAX_LENGTH),
+    closingReason: requirements.closingReasonMode === CommentMode.required && !canBypassMandatoryFields
+      ? Yup.string().nullable().required(t_i18n('This field is required'))
+      : Yup.string().nullable(),
     shareOrganizations: organizations(requirements.requiresShareOrg),
     unshareOrganizations: organizations(requirements.requiresUnshareOrg),
   });
@@ -55,19 +61,25 @@ interface WorkflowTransitionInputsProps {
   canBypassMandatoryFields: boolean;
   commentLength: number;
   disabled?: boolean;
-  // Inside a dialog, the comment prompt is the dialog description
+  // Inside a dialog, the first prompt (comment, else closing reason) is the dialog description
   renderCommentPrompt?: (prompt: ReactNode) => ReactNode;
+  // Needed to render the closing reason field
+  setFieldValue?: (field: string, value: unknown) => void;
 }
 
-// Comment and organization fields of a transition, inside a Formik form of TransitionInputValues
+// Comment, closing reason and organization fields of a transition, inside a Formik form of TransitionInputValues
 const WorkflowTransitionInputs = ({
   requirements,
   canBypassMandatoryFields,
   commentLength,
   disabled = false,
-  renderCommentPrompt = (prompt) => <div className="flex flex-col gap-2">{prompt}</div>,
+  renderCommentPrompt,
+  setFieldValue,
 }: WorkflowTransitionInputsProps) => {
   const { t_i18n } = useFormatter();
+  const renderPlainPrompt = (prompt: ReactNode) => <div className="flex flex-col gap-2">{prompt}</div>;
+  const showComment = hasTransitionComment(requirements.commentMode);
+  const showClosingReason = hasTransitionComment(requirements.closingReasonMode) && !!setFieldValue;
   const organizationsField = (name: string, title: string, label: string) => (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
@@ -86,9 +98,9 @@ const WorkflowTransitionInputs = ({
   );
   return (
     <>
-      {hasTransitionComment(requirements.commentMode) && (
+      {showComment && (
         <div className="flex flex-col gap-4">
-          {renderCommentPrompt(
+          {(renderCommentPrompt ?? renderPlainPrompt)(
             <>
               <Text variant="title-sm">{t_i18n('Add a comment')}</Text>
               <Text variant="content-compact">
@@ -108,6 +120,29 @@ const WorkflowTransitionInputs = ({
             rows={3}
             maxLength={COMMENT_MAX_LENGTH}
             helperText={`${commentLength} / ${COMMENT_MAX_LENGTH}`}
+          />
+        </div>
+      )}
+      {showClosingReason && (
+        <div className="flex flex-col gap-4">
+          {(!showComment && renderCommentPrompt ? renderCommentPrompt : renderPlainPrompt)(
+            <>
+              <Text variant="title-sm">{t_i18n('Closing reason')}</Text>
+              <Text variant="content-compact">
+                {requirements.closingReasonMode === CommentMode.required
+                  ? t_i18n('A closing reason is required before changing the status.')
+                  : t_i18n('You can optionally select a closing reason before changing the status.')}
+              </Text>
+            </>,
+          )}
+          <OpenVocabField
+            type="closing_reason_ov"
+            name="closingReason"
+            label={t_i18n('Closing reason')}
+            required={requirements.closingReasonMode === CommentMode.required && !canBypassMandatoryFields}
+            disabled={disabled}
+            multiple={false}
+            onChange={setFieldValue}
           />
         </div>
       )}

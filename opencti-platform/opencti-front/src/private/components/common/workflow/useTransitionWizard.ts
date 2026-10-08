@@ -19,6 +19,7 @@ export interface TransitionWizard {
   requiresShareOrg: boolean;
   requiresUnshareOrg: boolean;
   commentMode?: string;
+  closingReasonMode?: string;
 }
 
 export type TransitionFormValues = TransitionInputValues;
@@ -62,6 +63,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     actions: readonly string[],
     runtimeParams?: Record<string, unknown>,
     comment?: string,
+    closingReason?: string,
   ): Promise<void> => {
     if (inFlight.current || approving || clearing || isPending) return Promise.resolve();
     inFlight.current = true;
@@ -73,7 +75,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
         resolve();
       };
       commit({
-        variables: { entityId, eventName, runtimeParams, comment },
+        variables: { entityId, eventName, runtimeParams, comment, closingReason },
         onCompleted: (response) => {
           finish();
           const result = response.triggerWorkflowEvent;
@@ -108,11 +110,13 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     comment?: string | null,
     requiresShareOrg?: boolean | null,
     requiresUnshareOrg?: boolean | null,
+    closingReason?: string | null,
   ) => {
     if (inFlight.current || approving || clearing || isPending) return;
     const requiresValidation = !!draftId && actions.includes('validateDraft');
     const hasComment = hasTransitionComment(comment);
-    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation) {
+    const hasClosingReason = hasTransitionComment(closingReason);
+    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !hasClosingReason && !requiresValidation) {
       fireTransition(eventName, actions);
       return;
     }
@@ -123,12 +127,13 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
       requiresShareOrg: !!requiresShareOrg,
       requiresUnshareOrg: !!requiresUnshareOrg,
       commentMode: comment ?? undefined,
+      closingReasonMode: hasClosingReason ? closingReason : undefined,
     });
   };
 
   const handleApplyWizard = (values: TransitionFormValues): Promise<void> => {
     if (!wizard) return Promise.resolve();
-    return fireTransition(wizard.event, wizard.actions, buildTransitionRuntimeParams(wizard, values), values.comment.trim() || undefined);
+    return fireTransition(wizard.event, wizard.actions, buildTransitionRuntimeParams(wizard, values), values.comment.trim() || undefined, values.closingReason || undefined);
   };
 
   const handleClear = () => {
