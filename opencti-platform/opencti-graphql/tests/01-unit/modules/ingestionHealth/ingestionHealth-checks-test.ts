@@ -7,6 +7,7 @@ import {
   isPingingRegularly,
   nextHeartbeatObservation,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
+import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS } from '../../../../src/database/connector-liveness';
 import type { HeartbeatObservation, IngestionHealthInput } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
 const NOW = new Date('2026-10-07T12:00:00.000Z');
@@ -22,11 +23,11 @@ const input = (overrides: Partial<IngestionHealthInput> = {}): IngestionHealthIn
 
 describe('Ingestion health evaluator - heartbeat', () => {
   it('should not fire before 5 minutes without ping, like Active/Inactive', () => {
-    expect(computeNoHeartbeatCheck(input({ last_seen_at: secondsAgo(299) }), NOW)).toBeUndefined();
+    expect(computeNoHeartbeatCheck(input({ last_seen_at: secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS - 1) }), NOW)).toBeUndefined();
   });
 
   it('should fire from 5 minutes without ping, exactly when Active/Inactive turns inactive', () => {
-    const lastSeen = secondsAgo(300);
+    const lastSeen = secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS);
     expect(computeNoHeartbeatCheck(input({ last_seen_at: lastSeen }), NOW)).toEqual({
       kind: 'runtime',
       code: 'NO_HEARTBEAT',

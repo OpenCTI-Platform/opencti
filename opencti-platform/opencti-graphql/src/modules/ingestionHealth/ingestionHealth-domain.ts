@@ -1,5 +1,6 @@
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { fullEntitiesList } from '../../database/middleware-loader';
+import { redisGetConnectorsHeartbeats } from '../../database/redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -20,8 +21,6 @@ export interface IngestionHealthConnector {
   catalog_id?: string | null;
   manager_requested_status?: string | null;
   manager_current_status?: string | null;
-  // Refreshed by every ping: the connector heartbeat
-  updated_at?: string | Date | null;
   connector_info?: { run_and_terminate?: boolean } | null;
   // Cached health, written by the ingestion health manager on change only
   ingestion_health_status?: IngestionHealthStatus;
@@ -44,15 +43,17 @@ export const isIngestionConnector = (connector: Pick<IngestionHealthConnector, '
   return connector.built_in !== true && connector.connector_type !== 'internal';
 };
 
-// Switched off by a person: same rule as isConnectorActive (database/repository.js).
+// Switched off by a person: only the requested status counts.
+// Unlike isConnectorActive (database/repository.js), manager_current_status is ignored: xtm-composer reports
+// 'stopped' for any container that is not running (crashed, exited, restarting) while the requested status
+// stays 'starting', and a crash must not be painted as a person's decision. It goes through the heartbeat check.
 // A self-hosted connector cannot be switched off from the platform.
 const isStoppedByUser = (connector: IngestionHealthConnector) => {
   if (!connector.catalog_id) {
     return false;
   }
   return connector.manager_requested_status === 'stopping'
-    || connector.manager_requested_status === 'stopped'
-    || connector.manager_current_status === 'stopped';
+    || connector.manager_requested_status === 'stopped';
 };
 
 const toDate = (value: string | Date | null | undefined): Date | null => {
@@ -63,14 +64,11 @@ const toDate = (value: string | Date | null | undefined): Date | null => {
   return Number.isNaN(date.getTime()) ? null : date;
 };
 
-const observeHeartbeat = (connector: IngestionHealthConnector, previous: HeartbeatObservation | null, options: ObservationOptions) => {
-  return nextHeartbeatObservation(previous, toDate(connector.updated_at), options);
-};
-
-export const buildIngestionHealthInput = (connector: IngestionHealthConnector, heartbeat: HeartbeatObservation): IngestionHealthInput => ({
+// lastPing: the connector heartbeat, read from the Redis connector heartbeats (updated_at is not moved by pings anymore)
+export const buildIngestionHealthInput = (connector: IngestionHealthConnector, lastPing: Date | null, heartbeat: HeartbeatObservation): IngestionHealthInput => ({
   running: !isStoppedByUser(connector),
   run_and_terminate: connector.connector_info?.run_and_terminate === true,
-  last_seen_at: toDate(connector.updated_at),
+  last_seen_at: lastPing,
   pings_regularly: isPingingRegularly(heartbeat),
 });
 
@@ -124,11 +122,15 @@ export const resolveIngestionWarnings = async (context: AuthContext, connector: 
 // options: the close-pings bound of the manager period, and whether the manager was blind since its last cycle
 export const collectIngestionSources = async (context: AuthContext, options: ObservationOptions): Promise<IngestionSourceSnapshot[]> => {
   const connectors = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
+  // One Redis call per cycle, before the loop. A failure fails the collection on purpose, no fallback to an empty map:
+  // the handler then does not record the cycle, and the next one is blind and keeps the regular-pinger counts
+  const heartbeats = await redisGetConnectorsHeartbeats();
   const ingestionConnectors = connectors.filter((connector) => isIngestionConnector(connector as unknown as IngestionHealthConnector));
   return Promise.all(ingestionConnectors.map(async (connector) => {
     const connectorTyped = connector as unknown as IngestionHealthConnector;
     const previousHeartbeat = await redisGetIngestionHealthObservation(connectorTyped.internal_id);
-    const heartbeat = observeHeartbeat(connectorTyped, previousHeartbeat, options);
-    return { connector: connectorTyped, input: buildIngestionHealthInput(connectorTyped, heartbeat), previous_heartbeat: previousHeartbeat, heartbeat };
+    const lastPing = toDate(heartbeats.get(connectorTyped.internal_id));
+    const heartbeat = nextHeartbeatObservation(previousHeartbeat, lastPing, options);
+    return { connector: connectorTyped, input: buildIngestionHealthInput(connectorTyped, lastPing, heartbeat), previous_heartbeat: previousHeartbeat, heartbeat };
   }));
 };

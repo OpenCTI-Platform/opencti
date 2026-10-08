@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
+import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS } from '../../../src/database/connector-liveness';
 import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
@@ -89,6 +90,19 @@ describe('isConnectorActive', () => {
 
   it('should not be active with a heartbeat older than 5 minutes', () => {
     expect(isConnectorActive(baseConnector, minutesAgo(6))).toBe(false);
+  });
+
+  it('should be active just under the heartbeat timeout and inactive from it', () => {
+    vi.useFakeTimers();
+    try {
+      const nowMs = new Date('2026-10-07T12:00:00.000Z').getTime();
+      vi.setSystemTime(nowMs);
+      const secondsAgo = (seconds: number) => new Date(nowMs - seconds * 1000).toISOString();
+      expect(isConnectorActive(baseConnector, secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS - 1))).toBe(true);
+      expect(isConnectorActive(baseConnector, secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS))).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('should not be active when a managed connector is stopped, whatever its heartbeat', () => {

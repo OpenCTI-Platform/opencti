@@ -462,10 +462,10 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
   await unregisterConnector(connectorId);
   if (isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG)) {
     try {
-      // The ingestion health observation has no TTL, it lives as long as its connector
+      // Best effort: the observation has no TTL, but an orphan one is never read
       await redisDeleteIngestionHealthObservation(connectorId);
     } catch (err) {
-      logApp.warn('[OPENCTI-MODULE] Unable to delete ingestion health observation', { cause: err, connectorId });
+      logApp.warn('[OPENCTI-MODULE] Unable to delete the ingestion health observation', { cause: err, connectorId });
     }
   }
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);

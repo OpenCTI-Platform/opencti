@@ -1,7 +1,6 @@
+import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS } from '../../database/connector-liveness';
 import type { HeartbeatObservation, IngestionActingUser, IngestionCheck, IngestionHealth, IngestionHealthInput } from './ingestionHealth-types';
 
-// Same timeout as isConnectorActive (database/repository.js: Math.floor(minutes) < 5)
-export const HEARTBEAT_TIMEOUT_SECONDS = 300;
 // pycti pings every 40 seconds. With the default 60 seconds manager period, a live connector shows
 // a new ping 40 to 80 seconds after the previous one; with a period P, up to P + 40 seconds after it.
 // Hence a bound of 2 periods, never below 120 seconds.
@@ -60,7 +59,7 @@ export const computeNoHeartbeatCheck = (input: IngestionHealthInput, now: Date):
   if (input.run_and_terminate || !input.pings_regularly || !input.last_seen_at) {
     return undefined;
   }
-  if (secondsBetween(input.last_seen_at, now) < HEARTBEAT_TIMEOUT_SECONDS) {
+  if (secondsBetween(input.last_seen_at, now) < CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS) {
     return undefined;
   }
   const lastSeen = input.last_seen_at.toISOString();

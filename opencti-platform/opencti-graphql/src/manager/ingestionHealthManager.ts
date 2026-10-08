@@ -19,8 +19,8 @@ const CLOSE_PINGS_BOUND_SECONDS = closePingsBoundSeconds(SCHEDULE_TIME / 1000);
 
 // Evaluate one source: remember its heartbeat, then, on a change only, refresh its cached health (RFC 0001 §4.4).
 // This is the only place the health is evaluated: the UI reads this cache.
-// The cache is written directly in the index on purpose: an entity update would move updated_at,
-// which is the very heartbeat NO_HEARTBEAT measures, and would emit a stream event.
+// The cache is written directly in the index on purpose (elReplace, not an entity update):
+// an update would emit a stream event for every health change, and move updated_at of the connector.
 export const evaluateIngestionSource = async (context: AuthContext, source: IngestionSourceSnapshot, now: Date): Promise<boolean> => {
   const { connector, input, previous_heartbeat: previousHeartbeat, heartbeat } = source;
   if (JSON.stringify(previousHeartbeat) !== JSON.stringify(heartbeat)) {

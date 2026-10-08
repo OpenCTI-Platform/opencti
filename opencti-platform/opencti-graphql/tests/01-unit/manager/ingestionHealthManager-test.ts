@@ -111,5 +111,36 @@ describe('Ingestion health manager', () => {
       await expect(ingestionHealthHandler()).rejects.toThrow('index unavailable');
       expect(redisSetIngestionHealthLastRun).toHaveBeenCalledTimes(1);
     });
+
+    it('should record the start time of the cycle, not its end', async () => {
+      vi.useFakeTimers();
+      try {
+        const start = new Date('2026-10-07T12:00:00.000Z');
+        vi.setSystemTime(start);
+        (collectIngestionSources as any).mockImplementationOnce(async () => {
+          // The cycle takes 30 seconds
+          vi.setSystemTime(new Date(start.getTime() + 30 * 1000));
+          return [];
+        });
+        await ingestionHealthHandler();
+        expect(redisSetIngestionHealthLastRun).toHaveBeenCalledTimes(1);
+        expect(redisSetIngestionHealthLastRun).toHaveBeenCalledWith(start);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('should record the cycle even when one evaluation fails', async () => {
+      (elReplace as any).mockRejectedValueOnce(new Error('index unavailable'));
+      (collectIngestionSources as any).mockResolvedValue([source('a'), source('b')]);
+      const warnSpy = vi.spyOn(logApp, 'warn');
+      const before = Date.now();
+      await ingestionHealthHandler();
+      expect(elReplace).toHaveBeenCalledTimes(2); // the second source is still evaluated
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(redisSetIngestionHealthLastRun).toHaveBeenCalledTimes(1);
+      const recorded = (redisSetIngestionHealthLastRun as any).mock.calls[0][0] as Date;
+      expect(recorded.getTime()).toBeGreaterThanOrEqual(before);
+    });
   });
 });
