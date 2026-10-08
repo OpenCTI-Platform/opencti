@@ -177,6 +177,7 @@ const platformResolvedFilters = (context: AuthContext) => {
   return { values: null, fn: reloadFilters, refresh: refreshFilter };
 };
 const platformConnectors = (context: AuthContext) => {
+  // Only reloaded on connectors events: `active` is a snapshot, use refreshConnectorsLiveness before relying on it
   const reloadConnectors = () => {
     return findConnectors(context, SYSTEM_USER);
   };

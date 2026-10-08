@@ -149,6 +149,19 @@ const loadConnectorsHeartbeats = async () => {
   }
 };
 
+// Liveness changes with the pings, or their absence, without any connector event: it is stale in the connectors cache.
+// Consumers of the cache must refresh it before relying on `active`.
+export const refreshConnectorsLiveness = async <T extends { internal_id: string }>(cachedConnectors: T[]) => {
+  if (cachedConnectors.length === 0) {
+    return [];
+  }
+  const heartbeats = await loadConnectorsHeartbeats();
+  return cachedConnectors.map((conn) => {
+    const lastSeenAt = heartbeats.get(conn.internal_id) ?? null;
+    return { ...conn, last_seen_at: lastSeenAt, active: isConnectorActive(conn, lastSeenAt) };
+  });
+};
+
 export const completeConnector = (connector: any, lastSeenAt?: string | null) => {
   if (!connector) {
     return null;
