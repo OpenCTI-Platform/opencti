@@ -2694,6 +2694,7 @@
   "instance_trigger": "Déclencheur d’instance",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instances sont déjà déployées avec le gestionnaire. Si vous avez déjà déployé ce connecteur sans le gestionnaire, il ne sera pas pris en compte.",
   "instances deployed": "instances déployées",
+  "Integer": "Entier",
   "Integration documentation and code": "Documentation et code d'intégration",
   "Integration Manager": "Gestionnaire d'intégration",
   "Integrations": "Intégrations",

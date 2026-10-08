@@ -2694,6 +2694,7 @@
   "instance_trigger": "Instanz-Trigger",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instanzen bereits mit dem Manager bereitgestellt werden. Wenn Sie diesen Connector bereits ohne den Manager bereitgestellt haben, wird er nicht gezählt.",
   "instances deployed": "eingesetzte Instanzen",
+  "Integer": "Ganzzahl",
   "Integration documentation and code": "Dokumentation und Code zur Integration",
   "Integration Manager": "Integrationsmanager",
   "Integrations": "Integrationen",
