@@ -6,6 +6,7 @@ import { IngestionCatalogConnectorQuery } from '@components/integrations/catalog
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
 import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import createDeploymentCountMap from '@components/integrations/catalog/utils/createDeploymentCountMap';
+import parseIngestionConnector from '@components/integrations/catalog/utils/parseIngestionConnector';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import { Stack } from '@mui/material';
@@ -59,7 +60,7 @@ const IngestionCatalogConnectorComponent = ({
   );
 
   setTitle(t_i18n('Available | Integrations'));
-  const connector = contract ? JSON.parse(contract.contract) : null;
+  const connector = contract ? parseIngestionConnector(contract.contract) : null;
   const deploymentCounts = createDeploymentCountMap(connectors);
   const deploymentCount = connector
     ? (deploymentCounts.get(connector.container_image) ?? 0)

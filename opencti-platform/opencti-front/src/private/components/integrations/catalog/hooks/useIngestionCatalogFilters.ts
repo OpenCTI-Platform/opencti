@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import parseIngestionConnector from '@components/integrations/catalog/utils/parseIngestionConnector';
 import { BuiltInIntegrationDefinition } from '@components/integrations/available/builtInIntegrations';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
@@ -245,11 +246,10 @@ const useIngestionCatalogFilters = ({
     for (const catalog of catalogs) {
       for (const contract of catalog.contracts) {
         try {
-          const connector: IngestionConnector = JSON.parse(contract);
+          const connector = parseIngestionConnector(contract);
           parsedItems.push({
             key: `${catalog.id}-${connector.slug}`,
-            // Catalog manifests are external JSON: a contract may come without a title.
-            title: connector.title ?? connector.slug ?? '',
+            title: connector.title,
             searchText: [
               connector.title,
               connector.description,
