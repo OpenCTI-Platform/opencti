@@ -34,7 +34,7 @@ const EETooltip = ({
   title,
   forAi,
 }: {
-  children: ReactElement;
+  children: ReactElement<{ tabIndex?: number }>;
   title?: string;
   forAi?: boolean;
 }) => {
