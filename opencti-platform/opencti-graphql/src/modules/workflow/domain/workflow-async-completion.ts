@@ -8,6 +8,7 @@
  * - work.js and workflow-domain.ts can safely import from here.
  */
 import { logApp } from '../../../config/conf';
+import { FunctionalError } from '../../../config/errors';
 import { updateAttribute } from '../../../database/middleware';
 import { storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -253,6 +254,10 @@ export const reportWorkflowAsyncActionResult = async (
   status: 'success' | 'failed',
   error?: string,
 ): Promise<void> => {
+  // Any non-'pending' value would mark the slot as done, so only accept the two terminal statuses.
+  if (status !== 'success' && status !== 'failed') {
+    throw FunctionalError('Invalid workflow async action status', { status });
+  }
   const instance = await storeLoadById<any>(bypassDraftContext(context), { ...user, draft_context: undefined }, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
   if (!instance) {
     logApp.warn('[workflow-async-completion] WorkflowInstance not found', { workflowInstanceId });

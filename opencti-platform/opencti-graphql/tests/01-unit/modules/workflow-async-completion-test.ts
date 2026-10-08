@@ -80,6 +80,15 @@ describe('reportWorkflowAsyncActionResult', () => {
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
   });
 
+  it('rejects a status other than success / failed without touching the instance', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(makeInstance({ pendingTransition: JSON.stringify(makePendingTransition({ event: 'event_bypass' })) }) as any);
+
+    await expect(reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'done' as any)).rejects.toThrow('Invalid workflow async action status');
+
+    expect(lockResources).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
   it.each(['event_bypass', 'submit', null])('waits beyond bounded lock retries and reloads registered slots after initial event %s', async (event) => {
     const registered = makeInstance({ pendingTransition: JSON.stringify(makePendingTransition({ event: event ?? 'event_bypass' })) });
     const beforeRegistration = makeInstance({ pendingTransition: event ? JSON.stringify(makePendingTransition({ event, asyncActions: [] })) : null });
