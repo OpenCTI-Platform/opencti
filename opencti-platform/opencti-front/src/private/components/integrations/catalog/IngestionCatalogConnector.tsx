@@ -74,7 +74,7 @@ const IngestionCatalogConnectorComponent = ({
     }
   }, [openConfig, contract, canDeploy]);
 
-  if (!contract) return <ErrorNotFound />;
+  if (!contract || !connector) return <ErrorNotFound />;
 
   return (
     <>
