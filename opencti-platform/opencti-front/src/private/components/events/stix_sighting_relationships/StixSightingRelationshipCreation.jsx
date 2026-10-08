@@ -20,6 +20,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -412,12 +413,7 @@ class StixSightingRelationshipCreation extends Component {
               onClick={this.handleSelectSighting.bind(this, sighting.node)}
               role="button"
               tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  this.handleSelectSighting(sighting.node);
-                }
-              }}
+              onKeyDown={onActivationKey(() => this.handleSelectSighting(sighting.node))}
             >
               <div
                 className={classes.item}
@@ -527,12 +523,7 @@ class StixSightingRelationshipCreation extends Component {
             onClick={this.handleChangeStep.bind(this)}
             role="button"
             tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                this.handleChangeStep();
-              }
-            }}
+            onKeyDown={onActivationKey(() => this.handleChangeStep())}
           >
             <div
               className={classes.item}

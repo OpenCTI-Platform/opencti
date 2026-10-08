@@ -15,6 +15,7 @@ import { useFilterEditorContext } from './FilterEditorContext';
 import FilterEntityOption from './FilterEntityOption';
 import useFilterEntityOptions from './useFilterEntityOptions';
 import { applyValueChange, AUTOCOMPLETE_KEY_ACTIONS, computeValueChange, getEditedValues, isChangeBlocked } from './filterEntityValueActions';
+import { onActivationKey } from '../../../utils/domEvent';
 
 export interface FilterEntityAutocompleteProps {
   filter?: Filter;
@@ -144,9 +145,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
                 role="button"
                 tabIndex={0}
                 onClick={() => helpers?.handleSwitchLocalMode?.(filter)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') helpers?.handleSwitchLocalMode?.(filter);
-                }}
+                onKeyDown={onActivationKey(() => helpers?.handleSwitchLocalMode?.(filter))}
                 style={{
                   display: 'inline-block',
                   cursor: 'pointer',

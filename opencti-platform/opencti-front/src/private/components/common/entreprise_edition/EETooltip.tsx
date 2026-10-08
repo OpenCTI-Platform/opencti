@@ -11,6 +11,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import FeedbackCreation from '../../cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   return (
@@ -70,13 +71,10 @@ const EETooltip = ({
               e.preventDefault();
               e.stopPropagation();
             }}
-            onKeyDownCapture={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.stopPropagation();
-                setOpenConfigAI(true);
-              }
-            }}
+            onKeyDownCapture={onActivationKey((e) => {
+              e.stopPropagation();
+              setOpenConfigAI(true);
+            })}
           >
             {/*
               The wrapping span is the single interactive control here (it
@@ -117,13 +115,10 @@ const EETooltip = ({
             e.preventDefault();
             e.stopPropagation();
           }}
-          onKeyDownCapture={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.stopPropagation();
-              setFeedbackCreation(true);
-            }
-          }}
+          onKeyDownCapture={onActivationKey((e) => {
+            e.stopPropagation();
+            setFeedbackCreation(true);
+          })}
         >
           {/*
             The wrapping span is the single interactive control here (it

@@ -29,6 +29,7 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -484,12 +485,7 @@ const StixCoreRelationshipCreation = ({
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
               role="button"
               tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleSelectRelation(relation.node as unknown as ObjectToParse);
-                }
-              }}
+              onKeyDown={onActivationKey(() => handleSelectRelation(relation.node as unknown as ObjectToParse))}
             >
               <div
                 className={classes.item}
@@ -599,12 +595,7 @@ const StixCoreRelationshipCreation = ({
             onClick={handleChangeStep}
             role="button"
             tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                handleChangeStep();
-              }
-            }}
+            onKeyDown={onActivationKey(() => handleChangeStep())}
           >
             <div
               className={classes.item}

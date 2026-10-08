@@ -60,6 +60,7 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { onActivationKey } from '../../../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -1695,12 +1696,7 @@ const WorkbenchFileContentComponent = ({
           onClick={() => reverseBy(field)}
           role="button"
           tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              reverseBy(field);
-            }
-          }}
+          onKeyDown={onActivationKey(() => reverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
@@ -1730,12 +1726,7 @@ const WorkbenchFileContentComponent = ({
           onClick={() => containerReverseBy(field)}
           role="button"
           tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              containerReverseBy(field);
-            }
-          }}
+          onKeyDown={onActivationKey(() => containerReverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}
