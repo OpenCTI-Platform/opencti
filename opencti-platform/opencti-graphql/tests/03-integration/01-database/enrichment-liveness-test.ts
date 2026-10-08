@@ -18,8 +18,8 @@ import type { BasicStoreEntityConnector } from '../../../src/types/connector';
 // ---------------------------------------------------------------------------
 // Regression tests for OpenCTI-Platform/opencti#18853: the connectors cache is
 // only reloaded on connectors events, while liveness changes with the pings
-// (or their absence). Automatic enrichment must rely on the current liveness,
-// not on the `active` snapshot taken when the cache was loaded.
+// (or their absence). The cache holds no liveness, automatic enrichment must
+// rely on the current one.
 // ---------------------------------------------------------------------------
 
 const CONNECTOR_ID = '33333333-3333-3333-3333-333333333333';
@@ -66,7 +66,9 @@ describe('Automatic enrichment and connectors liveness', () => {
 
   it('should not enrich with a connector that died after the connectors cache was loaded', async () => {
     await pingConnector(testContext, ADMIN_USER, CONNECTOR_ID, '{}', undefined as never);
-    expect((await loadConnectorsCache())?.active).toBe(true);
+    const cached = await loadConnectorsCache();
+    expect(cached).toBeDefined();
+    expect(cached).not.toHaveProperty('active');
     // The connector stops pinging: no connector event, the cache is not reloaded
     await redisDeleteConnectorHeartbeat(CONNECTOR_ID);
 
@@ -77,7 +79,7 @@ describe('Automatic enrichment and connectors liveness', () => {
 
   it('should enrich with a connector that came back after the connectors cache was loaded', async () => {
     await redisDeleteConnectorHeartbeat(CONNECTOR_ID);
-    expect((await loadConnectorsCache())?.active).toBe(false);
+    expect(await loadConnectorsCache()).toBeDefined();
     // The connector pings again without registering: no connector event, the cache is not reloaded
     await pingConnector(testContext, ADMIN_USER, CONNECTOR_ID, '{}', undefined as never);
 

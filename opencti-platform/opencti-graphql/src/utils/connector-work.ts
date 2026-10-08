@@ -1,6 +1,6 @@
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { CachedConnector } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from './access';
 
@@ -13,6 +13,6 @@ export const isFromConnectorWork = async (context: AuthContext, user: AuthUser) 
   if (!context.workId) {
     return false;
   }
-  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+  const connectors = await getEntitiesListFromCache<CachedConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
   return connectors.some((connector) => connector.connector_user_id === user.id);
 };

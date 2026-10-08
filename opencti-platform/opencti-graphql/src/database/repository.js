@@ -81,8 +81,8 @@ const loadConnectorsHeartbeats = async () => {
   }
 };
 
-// Liveness changes with the pings, or their absence, without any connector event: it is stale in the connectors cache.
-// Consumers of the cache must refresh it before relying on `active`.
+// Liveness is not part of the connectors cache (see connectorsForCache):
+// consumers of the cache must compute it before relying on `active`.
 export const refreshConnectorsLiveness = async (connectors) => {
   if (connectors.length === 0) {
     return connectors;
@@ -246,6 +246,17 @@ export const connectors = async (context, user) => {
   const builtInElements = await builtInConnectorsRuntime(context, user);
   const heartbeats = await loadConnectorsHeartbeats();
   return map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)), [...elements, ...builtInElements]);
+};
+
+// The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
+// it holds connectors without liveness, see refreshConnectorsLiveness. Built-in connectors keep their configured `active`.
+export const connectorsForCache = async (context, user) => {
+  const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
+  const builtInElements = await builtInConnectorsRuntime(context, user);
+  return [...elements, ...builtInElements].map((conn) => {
+    const { active, last_seen_at: _, ...completed } = completeConnector(conn);
+    return completed.built_in ? { ...completed, active } : completed;
+  });
 };
 
 export const connectorManager = async (context, user, managerId) => {

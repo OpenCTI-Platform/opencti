@@ -10,7 +10,7 @@ import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/no
 import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
-import { connectors as findConnectors } from '../database/repository';
+import { connectorsForCache } from '../database/repository';
 import { buildCompleteUsers, resolveUserById } from '../modules/user/user-domain';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
@@ -177,9 +177,8 @@ const platformResolvedFilters = (context: AuthContext) => {
   return { values: null, fn: reloadFilters, refresh: refreshFilter };
 };
 const platformConnectors = (context: AuthContext) => {
-  // Only reloaded on connectors events: `active` is a snapshot, use refreshConnectorsLiveness before relying on it
   const reloadConnectors = () => {
-    return findConnectors(context, SYSTEM_USER);
+    return connectorsForCache(context, SYSTEM_USER);
   };
   return { values: null, fn: reloadConnectors };
 };
