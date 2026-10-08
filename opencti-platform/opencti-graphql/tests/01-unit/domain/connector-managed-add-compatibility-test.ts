@@ -69,7 +69,9 @@ vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
 }));
 
 import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
-import { managedConnectorAdd } from '../../../src/modules/connector/connector-domain';
+import { managedConnectorAdd, managedConnectorEdit } from '../../../src/modules/connector/connector-domain';
+import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
+import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
 
 const fakeContext = {} as any;
 const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
@@ -105,5 +107,84 @@ describe('connector-domain.ts — managedConnectorAdd contract compatibility', (
 
     await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('You have not chosen a connector supported by the manager');
     expect(findCatalogContractsByImageName).not.toHaveBeenCalled();
+  });
+});
+
+describe('connector-domain.ts — managedConnectorAdd input validation', () => {
+  const manager = { id: 'manager-1', public_key: 'manager-public-key' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({ contract_id: 'test-1.0.0', manager_supported: true } as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([manager] as never);
+  });
+
+  it('should reject a connector when no connector manager is registered', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('There is no connector manager configured');
+  });
+
+  it('should reject a connector without a user responsible for data creation', async () => {
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, user_id: 'u' })).rejects.toThrow('You have not chosen a user responsible for data creation');
+  });
+
+  it('should create the connector user on the fly when asked to', async () => {
+    vi.mocked(createOnTheFlyUser).mockResolvedValue({ id: 'created-user-id' } as never);
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, automatic_user: true, confidence_level: '80' }))
+      .rejects.toThrow('Connector user not found');
+    expect(createOnTheFlyUser).toHaveBeenCalledWith(fakeContext, fakeUser, { userName: 'user-connector', serviceAccount: true, confidenceLevel: 80 });
+    expect(storeLoadById).toHaveBeenCalledWith(fakeContext, fakeUser, 'created-user-id', 'User');
+  });
+
+  it('should reject a connector whose user does not exist', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('Connector user not found');
+    expect(createOnTheFlyUser).not.toHaveBeenCalled();
+  });
+
+  it('should reject a name too short to be a container name', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'user-connector' } as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, name: 'a' })).rejects.toThrow('Invalid connector name');
+  });
+});
+
+describe('connector-domain.ts — managedConnectorEdit input validation', () => {
+  const editInput = {
+    id: 'connector-1',
+    name: 'my-connector',
+    title: 'My connector',
+    connector_user_id: 'user-connector',
+    manager_contract_configuration: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(fullEntitiesList).mockResolvedValue([{ id: 'manager-1', public_key: 'manager-public-key' }] as never);
+  });
+
+  it('should reject an unknown connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('Connector not found');
+  });
+
+  it('should reject a connector that is not managed', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'connector-1', name: 'my-connector' } as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('Target contract not found');
+  });
+
+  it('should reject the edition when no connector manager is registered', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'connector-1', name: 'my-connector', manager_contract: { connector_type: 'EXTERNAL_IMPORT' } } as never);
+    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
+
+    await expect(managedConnectorEdit(fakeContext, fakeUser, editInput)).rejects.toThrow('There is no connector manager configured');
   });
 });
