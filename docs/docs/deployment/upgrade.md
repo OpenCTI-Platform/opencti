@@ -28,8 +28,20 @@ $ sudo docker service update --force service_name
 
 ## Manual installation
 
-When upgrading the platform, you have to replace all files and restart the platform, the database migrations will be done automatically:
+When upgrading the platform, you have to replace all files, install the dependencies of the new version and restart the platform, the database migrations will be done automatically.
+
+From the `opencti/opencti-platform/opencti-graphql` folder (`yarn build` also installs the Python modules in `opencti/.venv`):
 
 ```bash
+$ yarn install
+$ yarn build
 $ yarn serv
 ```
+
+From the `opencti/opencti-worker/src` folder, for each worker (`uv run` installs its Python modules in `opencti/.venv`):
+
+```bash
+$ uv run --locked worker.py
+```
+
+The platform loads its Python modules from `app:python_execution_venv`. If your `config/production.json` sets it, it must be `../../.venv/site-packages`, the virtual environment created by `yarn build`; at startup, the platform logs a warning when this path does not exist.
