@@ -14,7 +14,10 @@ const DisabledReasonTooltip = ({ reason, children }: DisabledReasonTooltipProps)
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        {/* A disabled button receives no pointer or focus events: the wrapper takes them */}
+        {/* A disabled button receives no pointer or focus events: the wrapper takes them.
+            Known gap: the fix is an aria-disabled button with no wrapper (WAI-ARIA APG,
+            "Focusability of disabled controls"), which the library Button does not offer yet. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} style={{ display: 'inline-flex' }}>{children}</span>
       </TooltipTrigger>
       <TooltipContent>{reason}</TooltipContent>

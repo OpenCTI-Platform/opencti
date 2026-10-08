@@ -249,6 +249,7 @@ const MarkdownFieldBase = ({
           // (e.g. StixCoreObjectMappableContent.tsx), since the native
           // `select` event only fires on form elements (the write-mode
           // textarea), not on a generic rendered `<div>`.
+          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
           <div onMouseUp={() => internalOnSelect()}>
             <MarkdownDisplay
               content={markdown}
