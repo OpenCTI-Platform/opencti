@@ -356,7 +356,7 @@ describe('useSearchEntities', () => {
     expect(relOptions).not.toContain('object-marking');
   });
 
-  it('should not include the external-reference relationship type in the relationship_type subfilter of dynamicRegardingOf', () => {
+  it('should include the external-reference relationship type in the relationship_type subfilter of dynamicRegardingOf', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;
 
@@ -366,8 +366,7 @@ describe('useSearchEntities', () => {
 
     const [entities] = result.current;
     const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
-    expect(relOptions).toEqual(expect.arrayContaining(['object-label', 'object-covered', 'result-of']));
-    expect(relOptions).not.toContain('external-reference');
+    expect(relOptions).toEqual(expect.arrayContaining(['object-label', 'external-reference', 'object-covered', 'result-of']));
   });
 
   it('should fetch external references in the id subfilter of regardingOf', async () => {
@@ -434,7 +433,7 @@ describe('useSearchEntities', () => {
   it('should not include regardingOf-only ref relationship types in the relationship_type filter', () => {
     const options = {
       ...defaultOptions,
-      searchContext: {} as { entityTypes: string[]; elementType?: string },
+      searchContext: { entityTypes: ['stix-core-relationship', 'contains', 'object-label'] } as { entityTypes: string[]; elementType?: string },
     };
     const { result } = renderHook(() => useSearchEntities(options));
     const [, searchEntities] = result.current;

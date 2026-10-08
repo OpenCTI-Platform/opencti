@@ -336,14 +336,13 @@ const useSearchEntities = ({
     value: 'object-label',
     type: 'stix-meta-relationship',
   };
-  const externalReferenceRelationshipType = {
-    label: t_i18n('relationship_external-reference'),
-    value: 'external-reference',
-    type: 'stix-meta-relationship',
-  };
   // Ref relationships only offered in the relationship_type subfilter of regardingOf / dynamicRegardingOf
-  // (external-reference is only offered for regardingOf, see the relationship_type case)
   const regardingOfRefRelationshipTypes = [
+    {
+      label: t_i18n('relationship_external-reference'),
+      value: 'external-reference',
+      type: 'stix-meta-relationship',
+    },
     {
       label: t_i18n('relationship_object-covered'),
       value: 'object-covered',
@@ -999,8 +998,6 @@ const useSearchEntities = ({
               objectRelationshipType,
               labelRelationshipType,
               ...(isSubKey ? regardingOfRefRelationshipTypes : []),
-              // dynamicRegardingOf only resolves its dynamic filters against stix core objects, so no external reference can match
-              ...(parentFilterKey === 'regardingOf' ? [externalReferenceRelationshipType] : []),
             ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;
