@@ -1022,6 +1022,7 @@ enum BackgroundTaskActionType {
   SEND_EMAIL
   ENROLL_PLAYBOOK
   ADD_RELATED_COVERED_ENTITIES
+  CURATION_APPLY
 }
 
 enum BackgroundTaskContextType {
@@ -9479,6 +9480,38 @@ type Query {
   dataSanityOperations: [DataSanityOperation!]!
   dataSanityExecutions: [DataSanityExecution!]!
   dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
+  curationProposal(id: ID!): CurationProposal
+  curationProposals(first: Int, after: ID, orderBy: CurationProposalOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CurationProposalConnection
+
+  """
+  The 50 most confident proposals of the entity, open ones unless statuses are given: for a total, count with curationProposals.
+  """
+  curationProposalsForEntity(id: ID!, status: [CurationProposalStatus!], kind: [CurationProposalKind!]): [CurationProposal!]!
+  curationStatistics: CurationStatistics!
+  curationResolve(name: String!, type: String!): CurationResolution
+  mergeRecord(id: ID!): MergeRecord
+  mergeRecords(first: Int, after: ID, orderBy: MergeRecordOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): MergeRecordConnection
+  curationPolicy(id: ID!): CurationPolicy
+  curationPolicies(first: Int, after: ID, orderBy: CurationPolicyOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CurationPolicyConnection
+  curationPolicyDryRun(id: ID!): CurationPolicyDryRun
+  knowledgeHealth: KnowledgeHealthSnapshot
+  knowledgeHealthSnapshots(first: Int, after: ID, orderBy: KnowledgeHealthSnapshotOrdering, orderMode: OrderingMode, filters: FilterGroup): KnowledgeHealthSnapshotConnection
+  curationSettings: CurationSettings!
+
+  """
+  Whether the OpenCTI Curator can be asked to adjudicate a proposal (adjudication enabled and XTM One reachable).
+  """
+  curationAdjudicationAvailable: Boolean!
+
+  """
+  What adjudication by XTM One needs on this platform, and the XTM One agents bound to curation adjudication.
+  """
+  curationAdjudicationSetup: CurationAdjudicationSetup!
+
+  """
+  The attributes a field authority rule can target, per curated entity type.
+  """
+  curationAuthorityAttributes: [CurationAuthorityAttributes!]!
   me: MeUser!
   otpGeneration: OtpElement
   user(id: String!): User
@@ -10436,6 +10469,22 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
   dataSanityOperationStop(operation_name: String!): ID
+  curationProposalAccept(id: ID!, input: CurationProposalAcceptInput): CurationProposal
+  curationProposalReject(id: ID!, rationale: String): CurationProposal
+  curationProposalDecide(id: ID!, input: CurationProposalDecideInput!): CurationProposal
+  curationProposalApply(id: ID!, policy_id: ID, expected_updated_at: DateTime): CurationProposal
+  curationProposalAdjudicate(id: ID!): CurationProposal
+  curationProposalsBulkAccept(ids: [ID!]!): ID
+  curationProposalsBulkReject(ids: [ID!]!, rationale: String): [ID!]!
+  curationProposalRevert(id: ID!): CurationProposal
+  unmergeEntity(mergeRecordId: ID!, sourceIds: [ID!]): MergeRecord
+  curationPolicyAdd(input: CurationPolicyAddInput!): CurationPolicy
+  curationPolicyFieldPatch(id: ID!, input: [EditInput!]!): CurationPolicy
+  curationPolicyDelete(id: ID!): ID
+  curationPolicyApply(id: ID!): ID
+  curationSettingsEdit(input: CurationSettingsInput!): CurationSettings
+  curationScanRequest: CurationSettings
+  knowledgeHealthRefresh: KnowledgeHealthSnapshot
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): MeUser
   otpDeactivation: MeUser
@@ -17085,6 +17134,579 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum CurationProposalKind {
+  merge
+  alias
+  split
+  contradiction
+  stale
+  relationship_conflict
+  type_mismatch
+  field_precedence
+}
+
+enum CurationProposalStatus {
+  open
+  accepted
+  rejected
+  auto_applied
+  reverted
+}
+
+enum CurationDecision {
+  alias
+  merge
+  distinct
+  skip
+}
+
+enum MergeRecordStatus {
+  pending
+  active
+  reverted
+  partially_reverted
+  irreversible
+}
+
+enum CurationPolicySourceClass {
+  any
+  connector
+  manual
+}
+
+enum CurationRelationshipConflictMode {
+  note
+  detect_only
+}
+
+enum CurationAuthoritySourceType {
+  author
+  connector
+}
+
+type CurationEvidence {
+  evidence_type: String!
+  score: Float!
+  weight: Float!
+  description: String!
+  details: String
+}
+
+type CurationAdjudication {
+  decision: CurationDecision!
+  rationale: String!
+  agent_slug: String
+  model: String
+  adjudicated_at: DateTime!
+  applied: Boolean!
+
+  """
+  True when OpenCTI itself obtained the adjudication from the agent bound to cti.curation_adjudicate.
+  """
+  verified: Boolean!
+}
+
+type CurationProposal implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  objectMarking: [MarkingDefinition!]
+  name: String!
+  proposal_kind: CurationProposalKind!
+  proposal_status: CurationProposalStatus!
+  confidence_score: Float!
+  in_ambiguous_band: Boolean!
+  detector: String!
+  subject_ids: [String!]!
+  subject_types: [String!]!
+  subject_names: [String!]!
+  subjects: [StixObjectOrStixRelationship!]!
+  restricted_subjects_count: Int!
+  target_id: String
+  recommended_action: String!
+  action_payload: String
+  evidence: [CurationEvidence!]!
+  adjudication: CurationAdjudication
+  adjudication_requested_at: DateTime
+  policy_id: String
+  policy: CurationPolicy
+  decided_at: DateTime
+  decidedBy: Creator
+  decision_rationale: String
+  merge_record_id: String
+  mergeRecord: MergeRecord
+  applied_patch: String
+  can_apply: Boolean!
+
+  """
+  True when the proposal was applied, can be reverted, and the user holds the capability of the revert (an unmerge for a recorded merge).
+  """
+  can_revert: Boolean!
+  adjudicable: Boolean!
+
+  """
+  True when accepting takes a choice made on this proposal alone (the attribution to keep): it is accepted one at a time, never in a bulk accept nor by a policy.
+  """
+  choice_required: Boolean!
+
+  """
+  What the proposal changes, the evidence behind it, why, what its confidence means and what each decision does, in plain language.
+  """
+  explanation: CurationProposalExplanation!
+}
+
+"""
+One sentence of an explanation: the English text, and the template and values a client translates it from.
+"""
+type CurationExplanationMessage {
+  """Translation key, with {placeholders} filled from the values."""
+  template: String!
+
+  """JSON object of the placeholder values."""
+  values: String!
+  text: String!
+}
+
+type CurationExplanationEntity {
+  id: String!
+  name: String!
+  entity_type: String!
+}
+
+type CurationExplanationSource {
+  name: String!
+  reference: String
+  url: String
+}
+
+type CurationExplanationChange {
+  field: CurationExplanationMessage!
+  before: [String!]!
+  after: [String!]!
+}
+
+type CurationExplanationEvidence {
+  message: CurationExplanationMessage!
+  entities: [CurationExplanationEntity!]!
+  sources: [CurationExplanationSource!]!
+}
+
+type CurationExplanationConfidence {
+  score: Float!
+
+  """high, medium or low."""
+  level: String!
+  meaning: CurationExplanationMessage!
+}
+
+type CurationProposalExplanation {
+  title: CurationExplanationMessage!
+  changes: [CurationExplanationChange!]!
+  evidence: [CurationExplanationEvidence!]!
+  why: CurationExplanationMessage!
+  confidence: CurationExplanationConfidence!
+  on_accept: CurationExplanationMessage!
+  on_reject: CurationExplanationMessage!
+  on_later: CurationExplanationMessage!
+
+  """False when an accepted proposal cannot be reverted from the proposal."""
+  reversible: Boolean!
+
+  """The whole explanation as plain text."""
+  text: String!
+}
+
+enum CurationProposalOrdering {
+  created_at
+  updated_at
+  confidence_score
+  proposal_kind
+  proposal_status
+  name
+  decided_at
+  _score
+}
+
+type CurationProposalConnection {
+  pageInfo: PageInfo!
+  edges: [CurationProposalEdge!]!
+}
+
+type CurationProposalEdge {
+  cursor: String!
+  node: CurationProposal!
+}
+
+type CurationStatisticsEntry {
+  key: String!
+  count: Int!
+}
+
+type CurationStatistics {
+  open_count: Int!
+  ambiguous_count: Int!
+  open_by_kind: [CurationStatisticsEntry!]!
+  decided_by_status: [CurationStatisticsEntry!]!
+  active_merge_records_count: Int!
+  latest_health_score: Int
+  last_scan_date: DateTime
+  curation_enabled: Boolean!
+
+  """When the next scheduled scan is due; null when curation is turned off."""
+  next_scan_date: DateTime
+
+  """
+  When the next Knowledge health snapshot is due; null when the curation manager is turned off.
+  """
+  next_snapshot_date: DateTime
+}
+
+type MergeRecordSource {
+  id: String!
+  standard_id: String!
+  name: String!
+  entity_type: String!
+  aliases: [String!]!
+  redirected_relationships_count: Int!
+  recreatable_relationships_count: Int!
+  contributed_aliases: [String!]!
+  reverted_at: DateTime
+}
+
+type MergeRecordAliasProvenance {
+  alias: String!
+  source_id: String!
+  source_aliases: [String!]!
+  relationships_count: Int!
+}
+
+type MergeRecord implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  objectMarking: [MarkingDefinition!]
+  name: String!
+  merge_target_id: String!
+  merge_target_type: String!
+  merge_target_name: String!
+  target: StixCoreObject
+  merge_source_ids: [String!]!
+  merge_source_names: [String!]!
+  sources: [MergeRecordSource!]!
+  alias_provenance: [MergeRecordAliasProvenance!]!
+  merge_status: MergeRecordStatus!
+  reversible_until: DateTime!
+  is_reversible: Boolean!
+  irreversible_reason: String
+  relationships_redirected_count: Int!
+  relationships_recreatable_count: Int!
+  mergedBy: Creator
+  proposal_id: String
+  unmerged_at: DateTime
+  unmergedBy: Creator
+  unmerge_pending_source_ids: [String!]
+}
+
+enum MergeRecordOrdering {
+  created_at
+  merge_target_name
+  merge_status
+  reversible_until
+  _score
+}
+
+type MergeRecordConnection {
+  pageInfo: PageInfo!
+  edges: [MergeRecordEdge!]!
+}
+
+type MergeRecordEdge {
+  cursor: String!
+  node: MergeRecord!
+}
+
+type CurationImpactEntry {
+  key: String!
+  count: Int!
+}
+
+type CurationPolicyDryRun {
+  computed_at: DateTime!
+  eligible_count: Int!
+  excluded_count: Int!
+  estimated_impact: [CurationImpactEntry!]!
+  exclusions: [CurationImpactEntry!]!
+  sample_proposals: [CurationProposal!]!
+}
+
+type CurationPolicy implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  policy_enabled: Boolean!
+  policy_entity_types: [String!]!
+  policy_kinds: [CurationProposalKind!]!
+  policy_source_class: CurationPolicySourceClass!
+  auto_apply_threshold: Float!
+  forbid_open_contradiction: Boolean!
+  require_adjudication: Boolean!
+  max_applies_per_run: Int!
+  last_applied_at: DateTime
+  applied_count: Int!
+}
+
+enum CurationPolicyOrdering {
+  name
+  created_at
+  updated_at
+  auto_apply_threshold
+  _score
+}
+
+type CurationPolicyConnection {
+  pageInfo: PageInfo!
+  edges: [CurationPolicyEdge!]!
+}
+
+type CurationPolicyEdge {
+  cursor: String!
+  node: CurationPolicy!
+}
+
+type KnowledgeHealthComponent {
+  component: String!
+  value: Float!
+  weight: Float!
+  score: Float!
+}
+
+type KnowledgeHealthSnapshot implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  snapshot_date: DateTime!
+  health_score: Int!
+  score_trend: Float
+  curated_entities_count: Int!
+  duplicate_estimate: Int!
+  duplicate_rate: Float!
+  contradiction_count: Int!
+  stale_count: Int!
+  stale_share: Float!
+  alias_coverage: Float!
+  source_conflict_rate: Float!
+  open_proposals_count: Int!
+  auto_applied_count: Int!
+  accepted_count: Int!
+  rejected_count: Int!
+  reverted_count: Int!
+  merges_count: Int!
+  unmerges_count: Int!
+  score_breakdown: [KnowledgeHealthComponent!]!
+  digest_sent_at: DateTime
+}
+
+enum KnowledgeHealthSnapshotOrdering {
+  snapshot_date
+  health_score
+  created_at
+}
+
+type KnowledgeHealthSnapshotConnection {
+  pageInfo: PageInfo!
+  edges: [KnowledgeHealthSnapshotEdge!]!
+}
+
+type KnowledgeHealthSnapshotEdge {
+  cursor: String!
+  node: KnowledgeHealthSnapshot!
+}
+
+type CurationResolution {
+  entity_id: ID!
+  standard_id: String!
+  entity_type: String!
+  name: String!
+  match_type: String!
+  score: Float!
+  matched_value: String!
+  entity: StixCoreObject
+}
+
+type CurationAuthoritySource {
+  source_type: CurationAuthoritySourceType!
+  source_id: String!
+  source_name: String
+}
+
+type CurationFieldAuthorityRule {
+  entity_type: String!
+  attribute: String!
+  sources: [CurationAuthoritySource!]!
+}
+
+type CurationStalenessOverride {
+  entity_type: String!
+  months: Int!
+}
+
+type CurationSettings {
+  id: ID!
+  curation_enabled: Boolean!
+  enabled_detectors: [String!]!
+  available_detectors: [String!]!
+  curated_entity_types: [String!]!
+  similarity_threshold: Float!
+  description_similarity_enabled: Boolean!
+  description_similarity_threshold: Float!
+  graph_similarity_available: Boolean!
+  behavior_threshold: Float!
+  proposal_min_confidence: Float!
+  ambiguous_band_min: Float!
+  ambiguous_band_max: Float!
+  adjudication_enabled: Boolean!
+  adjudication_available: Boolean!
+  adjudication_agent_slug: String
+  adjudication_run_as_id: String
+  adjudication_run_as: Member
+  adjudication_daily_limit: Int!
+  stale_default_months: Int!
+  stale_overrides: [CurationStalenessOverride!]!
+  relationship_conflict_mode: CurationRelationshipConflictMode!
+  merge_record_retention_days: Int!
+  digest_enabled: Boolean!
+  digest_day: Int!
+  digest_recipient_ids: [String!]!
+  digest_recipients: [Member!]!
+  field_authority_enabled: Boolean!
+  field_authority_rules: [CurationFieldAuthorityRule!]!
+  authority_connector_sources: [CurationAuthoritySource!]!
+  scan_max_entities_per_type: Int!
+  force_scan: Boolean!
+  last_scan_date: DateTime
+  last_snapshot_date: DateTime
+  last_digest_date: DateTime
+  taxonomy_version: String!
+  taxonomy_clusters_count: Int!
+}
+
+input CurationProposalAcceptInput {
+  target_id: String
+  rationale: String
+  action_payload: String
+  expected_updated_at: DateTime
+}
+
+input CurationProposalDecideInput {
+  decision: CurationDecision!
+  rationale: String!
+  apply: Boolean
+  agent_slug: String
+  model: String
+  target_id: String
+  expected_updated_at: DateTime
+}
+
+input CurationPolicyAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  policy_enabled: Boolean
+  policy_entity_types: [String!]!
+  policy_kinds: [CurationProposalKind!]!
+  policy_source_class: CurationPolicySourceClass
+  auto_apply_threshold: Float!
+  forbid_open_contradiction: Boolean
+  require_adjudication: Boolean
+  max_applies_per_run: Int
+}
+
+input CurationAuthoritySourceInput {
+  source_type: CurationAuthoritySourceType!
+  source_id: String!
+}
+
+input CurationFieldAuthorityRuleInput {
+  entity_type: String!
+  attribute: String!
+  sources: [CurationAuthoritySourceInput!]!
+}
+
+input CurationStalenessOverrideInput {
+  entity_type: String!
+  months: Int!
+}
+
+input CurationSettingsInput {
+  curation_enabled: Boolean
+  enabled_detectors: [String!]
+  curated_entity_types: [String!]
+  similarity_threshold: Float
+  description_similarity_enabled: Boolean
+  description_similarity_threshold: Float
+  behavior_threshold: Float
+  proposal_min_confidence: Float
+  ambiguous_band_min: Float
+  ambiguous_band_max: Float
+  adjudication_enabled: Boolean
+  adjudication_agent_slug: String
+  adjudication_run_as_id: String
+  adjudication_daily_limit: Int
+  stale_default_months: Int
+  stale_overrides: [CurationStalenessOverrideInput!]
+  relationship_conflict_mode: CurationRelationshipConflictMode
+  merge_record_retention_days: Int
+  digest_enabled: Boolean
+  digest_day: Int
+  digest_recipient_ids: [String!]
+  field_authority_enabled: Boolean
+  field_authority_rules: [CurationFieldAuthorityRuleInput!]
+  scan_max_entities_per_type: Int
+}
+
+type CurationAdjudicationAgent {
+  agent_slug: String!
+  agent_name: String!
+}
+
+type CurationAdjudicationSetup {
+  enterprise_edition: Boolean!
+  xtm_one_configured: Boolean!
+  agents: [CurationAdjudicationAgent!]!
+}
+
+type CurationAuthorityAttribute {
+  name: String!
+  label: String!
+}
+
+type CurationAuthorityAttributes {
+  entity_type: String!
+  attributes: [CurationAuthorityAttribute!]!
 }
 
 enum UsersOrdering {

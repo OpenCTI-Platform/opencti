@@ -3397,6 +3397,42 @@ class OpenCTIStix2:
                 playbook_id=playbook_id, entity_id=entity_id
             )
 
+    def curation_apply(self, item):
+        """Apply a knowledge curation proposal (background task operation).
+
+        The request runs as the task initiator (the bundle's applicant, sent in
+        the ``opencti-applicant-id`` header). The platform re-checks the proposal
+        (status, policy eligibility, rights of the initiator) before applying it,
+        and refuses a bulk acceptance of a proposal refreshed since the task was
+        queued (``curation_expected_updated_at``).
+
+        :param item: Bundle item targeting the curation proposal
+        :type item: dict
+        """
+        proposal_id = self.opencti.get_attribute_in_extension("id", item)
+        if proposal_id is None:
+            proposal_id = item["id"]
+        policy_id = self.opencti.get_attribute_in_extension("curation_policy_id", item)
+        expected_updated_at = self.opencti.get_attribute_in_extension(
+            "curation_expected_updated_at", item
+        )
+        query = """
+            mutation CurationProposalApply($id: ID!, $policy_id: ID, $expected_updated_at: DateTime) {
+                curationProposalApply(id: $id, policy_id: $policy_id, expected_updated_at: $expected_updated_at) {
+                    id
+                    proposal_status
+                }
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": proposal_id,
+                "policy_id": policy_id,
+                "expected_updated_at": expected_updated_at,
+            },
+        )
+
     def element_operation_delete(self, item, operation):
         """Delete an element.
 
@@ -3525,6 +3561,8 @@ class OpenCTIStix2:
             self.element_remove_groups(item)
         elif operation == "send_email":
             self.send_email(item=item)
+        elif operation == "curation_apply":
+            self.curation_apply(item=item)
         else:
             raise ValueError(
                 "Not supported opencti_operation",

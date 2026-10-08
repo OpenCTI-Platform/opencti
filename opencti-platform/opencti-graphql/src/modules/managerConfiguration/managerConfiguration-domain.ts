@@ -10,6 +10,7 @@ import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { ForbiddenAccess } from '../../config/errors';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityManagerConfiguration> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION);
@@ -37,7 +38,19 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
   }, findByTypeFn);
 };
 
+// The generic edition is authorized for file indexing: any other manager configuration is written through the API of its
+// manager, with its own capability and validation.
+const GENERICALLY_EDITABLE_MANAGERS = ['FILE_INDEX_MANAGER'];
+
+export const isGenericallyEditable = (managerConfiguration?: Pick<BasicStoreEntityManagerConfiguration, 'manager_id'> | null) => {
+  return !!managerConfiguration && GENERICALLY_EDITABLE_MANAGERS.includes(managerConfiguration.manager_id);
+};
+
 export const managerConfigurationEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  const managerConfiguration = await findById(context, user, id);
+  if (!isGenericallyEditable(managerConfiguration)) {
+    throw ForbiddenAccess('This manager configuration is not edited through this API', { id });
+  }
   const { element } = await updateAttribute<StoreEntityManagerConfiguration>(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION, input);
   await publishUserAction({
     user,

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { hashMergeValidation } from '../../../src/database/middleware';
-import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, generateRefsInputsForUpsert, mergeUpsertInput, mergeUpsertInputs } from '../../../src/utils/upsert-utils';
+import { fieldAuthorityLockIds, hashMergeValidation } from '../../../src/database/middleware';
+import {
+  buildUpdatePatchForUpsert,
+  generateAttributesInputsForUpsert,
+  generateInputsForUpsert,
+  generateRefsInputsForUpsert,
+  mergeUpsertInput,
+  mergeUpsertInputs,
+} from '../../../src/utils/upsert-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 
@@ -668,6 +675,37 @@ describe('middleware upsertElement test', () => {
       const legacyInputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, legacyElement, type, legacyPatch, lowerConfidence);
       expect(legacyInputs.find((i) => i.key === 'number_seen')).toEqual({ key: 'number_seen', value: [3] }); // already seen once + 2
       expect(legacyInputs.find((i) => i.key === 'max_distinct_count')).toEqual({ key: 'max_distinct_count', value: [60000] });
+    });
+  });
+
+  describe('middleware generateAttributesInputsForUpsert with field authority', () => {
+    const type = 'Security-Coverage';
+    const element = { id: 'coverage-id', internal_id: 'coverage-id', entity_type: type, coverage_information: [{ coverage_name: 'Detection', coverage_score: 80 }] };
+    const updatePatch = { coverage_information: [{ coverage_name: 'Detection', coverage_score: 20 }] };
+    it('should keep a value replaced in full on upsert when a field authority rule denies the incoming source', () => {
+      const denied = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: true }, new Map([['coverage_information', 'deny']]));
+      expect(denied.find((i) => i.key === 'coverage_information')).toBeUndefined();
+      // Without a rule deciding, the attribute is still replaced in full, whatever the confidence.
+      const replaced = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: false });
+      expect(replaced.find((i) => i.key === 'coverage_information')).toBeDefined();
+    });
+
+    it('should serialize the upserts of one element on its internal id only, never on the input ids of other callers', () => {
+      const element = { internal_id: 'element-id', standard_id: 'intrusion-set--standard', x_opencti_stix_ids: ['intrusion-set--other'] };
+      // Two callers holding the two ids they reached the element through each add the same lock, and only that one.
+      expect(fieldAuthorityLockIds(element, ['intrusion-set--standard'])).toEqual(['element-id']);
+      expect(fieldAuthorityLockIds(element, ['intrusion-set--other'])).toEqual(['element-id']);
+      expect(fieldAuthorityLockIds(element, ['element-id', 'intrusion-set--standard'])).toEqual([]);
+    });
+
+    it('should drop the upsert operations of an attribute a field authority rule denies', async () => {
+      const indicator = { id: 'indicator-id', internal_id: 'indicator-id', entity_type: 'Indicator', description: 'Kept' };
+      const patch = { upsertOperations: [{ key: 'description', value: ['Rewritten'], operation: 'replace' }] };
+      const confidence = { isConfidenceMatch: true, isConfidenceUpper: true };
+      const denied = await generateInputsForUpsert(testContext, ADMIN_USER, indicator, 'Indicator', patch, confidence, true, new Map([['description', 'deny']]));
+      expect(denied.find((i) => i.key === 'description')).toBeUndefined();
+      const allowed = await generateInputsForUpsert(testContext, ADMIN_USER, indicator, 'Indicator', patch, confidence, true, new Map([['description', 'allow']]));
+      expect(allowed.find((i) => i.key === 'description')).toEqual(expect.objectContaining({ key: 'description', value: ['Rewritten'] }));
     });
   });
 });

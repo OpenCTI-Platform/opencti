@@ -1,3 +1,6 @@
+import { CURATION_MANAGER_ID } from '../curation/curation-types';
+import { getDefaultCurationManagerSetting } from '../curation/curation-defaults';
+
 export const supportedMimeTypes = [
   'application/pdf',
   'application/json',
@@ -20,6 +23,11 @@ const defaultManagerConfigurations = [
       entity_types: [],
       max_file_size: 5242880,
     },
+  },
+  {
+    manager_id: CURATION_MANAGER_ID,
+    manager_running: false,
+    manager_setting: getDefaultCurationManagerSetting(),
   },
 ];
 

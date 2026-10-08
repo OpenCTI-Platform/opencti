@@ -475,7 +475,7 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
-export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
+export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert, authorityDecisions) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
   const inputs = [];
@@ -488,14 +488,18 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       const inputData = updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
-      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
+      const authorityDecision = authorityDecisions?.get(attributeKey);
+      // In case of full synchronization or force full upsert, just update the data; a field authority denial still stands
+      // against a forced replacement (synchronized upserts never consult the field authority rules)
+      const isFullSync = context.synchronizedUpsert || (attribute.upsert_force_replace && authorityDecision !== 'deny');
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
-      // 1. Confidence is correct
+      // 1. The field authority rule allows the incoming source, or confidence is correct when no rule decides
       // 2. Attribute is declared upsert=true in the schema
       // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      const isSourceAllowed = authorityDecision ? authorityDecision === 'allow' : isConfidenceMatch;
+      const canBeUpsert = isSourceAllowed && attribute.upsert && isInputWithData;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
@@ -507,6 +511,18 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
     }
   }
   return inputs;
+};
+
+/**
+ * The governed fields a more authoritative source asserted with the value the element already holds: the source becomes
+ * their recorded source whether or not the upsert changes other fields, so a bundle replayed after a failed bookkeeping
+ * write repairs it. Only a value it actually sent, equal to the one the element holds, counts.
+ */
+export const assertedAuthorityKeys = (authorityDecisions, updatePatch, element) => {
+  if (!authorityDecisions) return [];
+  return Array.from(authorityDecisions.entries())
+    .filter(([key, decision]) => decision === 'allow' && isNotEmptyField(updatePatch[key]) && R.equals(updatePatch[key], element[key]))
+    .map(([key]) => key);
 };
 
 export const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
@@ -577,14 +593,14 @@ export const generateRefsInputsForUpsert = (context, user, resolvedElement, _typ
   return inputs;
 };
 
-export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition, authorityDecisions) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
   // if file(s) in updatePatch, we need to upload them and update x_opencti_files
   // Files follow the same confidence-based conflict resolution as other fields
   const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
   pushAll(inputs, fileInputs);
   // -- Upsert attributes
-  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
+  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, authorityDecisions);
   pushAll(inputs, attributesInputs);
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
@@ -593,5 +609,7 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   if (updatePatch.upsertOperations?.length > 0 && !isBypassUser(user)) {
     throw FunctionalError('User has insufficient rights to use upsertOperations', { user_id: user.id, element_id: resolvedElement.id });
   }
-  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
+  // A field authority denial stands against the upsert operations of the attribute as well
+  const upsertOperations = updatePatch.upsertOperations?.filter((operation) => authorityDecisions?.get(operation.key) !== 'deny');
+  return mergeUpsertInputs(resolvedElement, updatePatch, inputs, upsertOperations);
 };

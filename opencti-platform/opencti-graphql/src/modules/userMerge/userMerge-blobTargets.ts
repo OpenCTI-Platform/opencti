@@ -2,6 +2,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK } from '../../schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../customView/customView-types';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
@@ -16,8 +17,9 @@ import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
  * - `base64`: a Base64 of a JSON, declared `format: 'short'`. The id never appears in clear in
  *   the indexed value, so nothing can pre-select and every document of the type is read.
  * - `object`: the platform stores the payload as an object rather than a string, under
- *   `format: 'flat'`, whose leaves are indexed as whole unanalyzed keywords. A phrase match on a
- *   substring can never hit, so here too every document of the type is read.
+ *   `format: 'flat'`, whose leaves are indexed as whole unanalyzed keywords, or `format: 'raw'`,
+ *   which is not indexed at all. A phrase match on a substring can never hit, so here too every
+ *   document of the type is read.
  * - `nested-json`: a serialized JSON field carried by a `nested` sub-document, which a top-level
  *   phrase match cannot reach.
  */
@@ -149,6 +151,15 @@ export const USER_MERGE_BLOB_TARGETS: UserMergeBlobTarget[] = [
     entityType: ENTITY_TYPE_CONTAINER_CASE_RFI,
     path: 'x_opencti_request_access',
     shape: 'json',
+  },
+  {
+    // The curation manager names users in its setting (the adjudication Run as account, the digest recipients); the
+    // settings of the other managers name nobody, so they are read and left untouched.
+    id: 'curation-settings-users',
+    registerRow: 'curation-settings.user-ids',
+    entityType: ENTITY_TYPE_MANAGER_CONFIGURATION,
+    path: 'manager_setting',
+    shape: 'object',
   },
 ];
 

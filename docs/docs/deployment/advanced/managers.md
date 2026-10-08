@@ -90,6 +90,18 @@ The trash manager is responsible to delete permanently elements stored in the [t
 The data sanity manager runs periodic or on demand operations to improve data consistency.
 There is no UI yet, but some GraphQL operations can be found in the dedicated page: [Data sanity manager](../../usage/dataSanityManager.md).
 
+## Curation manager
+
+The curation manager runs the knowledge curation detectors, on stream events and in a daily scan, and turns their findings into curation proposals. It also takes the daily Knowledge health snapshot and sends the weekly digest, sends ambiguous proposals to XTM One for adjudication, and runs the enabled curation policies.
+
+More information can be found [here](../../usage/knowledge-curation.md).
+
+## Curation records manager
+
+The curation records manager keeps what knowledge curation stores consistent, whether the curation manager runs or not: it completes the merge records an interrupted merge left pending, closes once a day the merge records whose retention window is over, and gives the merge records and the open curation proposals the new markings and organization sharing of an entity when the entity is reclassified (a merge included), and removes the open curation proposals about an entity when the entity is deleted or merged into another one. Disabling it on every node leaves the merges recorded but stops this upkeep.
+
+More information can be found [here](../../usage/knowledge-curation.md#reversible-merges-and-unmerge).
+
 ## Filigran telemetry manager
 
 The telemetry manager collects periodically statistical data about platform usage.

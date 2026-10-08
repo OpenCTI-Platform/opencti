@@ -49,6 +49,7 @@ import {
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
   ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+  ACTION_TYPE_CURATION_APPLY,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
@@ -143,7 +144,8 @@ const throwErrorInDraftContext = (context, user, actionType) => {
     || actionType === ACTION_TYPE_RULE_CLEAR
     || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
     || actionType === ACTION_TYPE_SEND_EMAIL
-    || actionType === ACTION_TYPE_ENROLL_PLAYBOOK) {
+    || actionType === ACTION_TYPE_ENROLL_PLAYBOOK
+    || actionType === ACTION_TYPE_CURATION_APPLY) {
     throw FunctionalError('Cannot execute this task type in draft', { actionType });
   }
 };
@@ -255,6 +257,13 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'enroll_playbook';
     const playbookRef = operations[0].context.values[0];
     baseOperationObject.playbook_id = playbookRef?.id ?? playbookRef;
+  }
+  // Knowledge curation: apply a curation proposal (optionally on behalf of a curation policy), as it was when a bulk
+  // accept was queued
+  if (actionType === ACTION_TYPE_CURATION_APPLY) {
+    baseOperationObject.opencti_operation = 'curation_apply';
+    baseOperationObject.curation_policy_id = operations[0].context?.values?.[0] ?? null;
+    baseOperationObject.curation_expected_updated_at = operations[0].context?.revisions?.[element.internal_id] ?? null;
   }
   return baseOperationObject;
 };

@@ -2374,3 +2374,26 @@ the hover state, named like the button family's.
 **Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
 the tone, remove its `style` colour, the icon's `color` prop and the marker, and
 confirm the row text and icon render in the library's destructive colour.
+
+## 65. No skeleton, so a loading surface falls back to MUI `Skeleton`
+
+**Needed.** The program UX charter asks every surface to show its shape while it
+loads, never the platform spinner. The curation surfaces (Inbox, proposal page,
+merge record drawer, Knowledge health page and widgets, the Merges view of the
+Changes tab) load through Relay `Suspense` boundaries and need a placeholder
+with the page's blocks.
+
+**Today.** The library ships `Spinner` and `ProgressBar` but no skeleton
+component or skeleton token.
+
+**Workaround.** FDS-WORKAROUND #65 in `CurationSkeleton.tsx`: one shared
+component renders MUI `Skeleton` blocks (`variant="rounded"`) of the given
+heights; every curation surface goes through it, so MUI `Skeleton` is imported
+in that file only.
+
+**Ask.** A `Skeleton` (block, text line, circle) on the elevation and radius
+tokens, with a reduced-motion variant.
+
+**Removal test.** At a pin that ships it: swap the import in
+`CurationSkeleton.tsx`, delete the marker, and confirm no file under
+`private/components/data/curation` imports `@mui/material/Skeleton`.
