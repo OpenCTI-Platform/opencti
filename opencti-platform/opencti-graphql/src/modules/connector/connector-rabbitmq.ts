@@ -37,13 +37,16 @@ export const BACKGROUND_TASK_QUEUES = parseInt(conf.get('app:task_scheduler:max_
 const listenRouting = (connectorId: string) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
 const pushRouting = (connectorId: string) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
 
+const pushQueue = (id: string) => `${RABBIT_QUEUE_PREFIX}push_${id}`;
+const listenQueue = (id: string) => `${RABBIT_QUEUE_PREFIX}listen_${id}`;
+
 export const connectorConfig = (id: string, listen_callback_uri: string | undefined = undefined) => ({
   connection: rabbitmqConnectionConfig(),
   s3: s3ConnectionConfig(),
-  push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
+  push: pushQueue(id),
   push_routing: pushRouting(id),
   push_exchange: WORKER_EXCHANGE,
-  listen: `${RABBIT_QUEUE_PREFIX}listen_${id}`,
+  listen: listenQueue(id),
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
   listen_callback_uri,
@@ -78,7 +81,9 @@ export const getConnectorQueueDetails = async (connectorId: string) => {
 
 export const getConnectorQueueSize = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   const stats = await getCachedRabbitmqMetrics(context, user) as { queues: RabbitmqQueueMetric[] };
-  const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
+  // Exact names: a substring match would also count the queues of a connector whose id contains this one
+  const connectorQueues = [pushQueue(connectorId), listenQueue(connectorId)];
+  const targetQueues = stats.queues.filter((queue) => connectorQueues.includes(queue.name));
   return targetQueues.reduce((total, queue) => total + (queue.messages ?? 0), 0);
 };
 

@@ -326,6 +326,29 @@ describe('rabbitmq: getConnectorQueueSize', () => {
     const result = await getConnectorQueueSize(context, user, 'connector-abc');
     expect(result).toBe(15);
   });
+
+  it('should not count the queues of a connector whose id contains the requested one', async () => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({
+          data: [
+            { name: 'opencti_push_connector-1', messages: 10, consumers: 1 },
+            { name: 'opencti_listen_connector-1', messages: 5, consumers: 0 },
+            { name: 'opencti_push_connector-10', messages: 100, consumers: 1 },
+            { name: 'opencti_listen_connector-10', messages: 50, consumers: 0 },
+            { name: 'opencti_push_connector-1-replica', messages: 1000, consumers: 1 },
+          ],
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    const result = await getConnectorQueueSize(context, user, 'connector-1');
+    expect(result).toBe(15);
+  });
 });
 
 describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)', () => {
