@@ -9418,12 +9418,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:18.0.14":
-  version: 18.0.14
-  resolution: "marked@npm:18.0.14"
+"marked@npm:18.1.0":
+  version: 18.1.0
+  resolution: "marked@npm:18.1.0"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/1214c7553fdcb1db6c5adad29a7d019f9350f861bc9783ed41a2d177f021551fb22884de012ea26be446af8650d8abbf76d822b9ad5b0c5d592628f66663c42e
+  checksum: 10c0/6022a30a15d25fe0eb2958f84ebb45518290e512b61afbf9a0b9452297b30cb5f1af8289fc0057a83fa8232e6115d902d85546aba5036063a97f93be88f4df70
   languageName: node
   linkType: hard
 
@@ -10396,7 +10396,7 @@ __metadata:
     license-checker-rseidelsohn: "npm:5.0.1"
     lru-cache: "npm:11.5.3"
     luxon: "npm:3.7.2"
-    marked: "npm:18.0.14"
+    marked: "npm:18.1.0"
     migrate: "npm:2.1.0"
     mime-types: "npm:3.0.2"
     moment: "npm:2.31.0"
