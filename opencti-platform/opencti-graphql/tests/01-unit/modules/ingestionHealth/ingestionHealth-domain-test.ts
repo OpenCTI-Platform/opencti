@@ -135,6 +135,14 @@ describe('Ingestion health domain', () => {
       expect((await resolveIngestionWarnings({} as any, personal))?.map((warning) => warning.code)).toEqual(['USER_NOT_SERVICE_ACCOUNT']);
     });
 
+    it('should warn that the user is missing when the connector has no user or a deleted one, and only that', async () => {
+      const codesOf = async (overrides: Record<string, unknown>) => (await resolveIngestionWarnings({} as any, connector(overrides)))?.map((warning) => warning.code);
+      expect(await codesOf({ connector_user_id: null })).toEqual(['USER_MISSING']);
+      expect(await codesOf({ connector_user_id: 'deleted-user' })).toEqual(['USER_MISSING']);
+      expect(await codesOf({ connector_user_id: 'service-user' })).toEqual([]);
+      expect(await codesOf({ connector_user_id: 'personal-user' })).toEqual(['USER_NOT_SERVICE_ACCOUNT']);
+    });
+
     it('should resolve nothing for a connector that is not an ingestion source', async () => {
       const builtIn = connector({ connector_type: 'internal' });
       expect(resolveIngestionHealth(builtIn)).toBeNull();

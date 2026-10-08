@@ -13928,6 +13928,7 @@ export type IngestionCheck = {
 
 export enum IngestionCheckCode {
   NoHeartbeat = 'NO_HEARTBEAT',
+  UserMissing = 'USER_MISSING',
   UserNotServiceAccount = 'USER_NOT_SERVICE_ACCOUNT'
 }
 

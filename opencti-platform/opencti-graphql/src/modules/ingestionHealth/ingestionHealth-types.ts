@@ -9,7 +9,7 @@ export type IngestionHealthStatus = typeof INGESTION_HEALTH_STATUSES[number];
 // runtime checks decide the status, configuration warnings never do (RFC 0001 §4.1, §5.1)
 export type IngestionCheckKind = 'runtime' | 'configuration';
 export type IngestionCheckSeverity = 'advisory' | 'blocking';
-export type IngestionCheckCode = 'NO_HEARTBEAT' | 'USER_NOT_SERVICE_ACCOUNT';
+export type IngestionCheckCode = 'NO_HEARTBEAT' | 'USER_MISSING' | 'USER_NOT_SERVICE_ACCOUNT';
 
 export interface IngestionCheck {
   kind: IngestionCheckKind;
@@ -31,7 +31,8 @@ export interface IngestionHealth {
   since?: Date | null;
 }
 
-// The user the source acts as. No name: the warning must not leak it (see computeIngestionWarnings)
+// The user the source acts as. No name: the warning must not leak it (see computeIngestionWarnings).
+// Undefined, instead of this object, when the source has no user (see buildActingUser)
 export interface IngestionActingUser {
   service_account: boolean;
 }

@@ -102,8 +102,19 @@ export const computeIngestionHealth = (input: IngestionHealthInput, now: Date): 
 // Configuration warnings (RFC 0001 §4.1): a second axis, shown on the source detail page only.
 // They never change the runtime status, are never cached and never notified.
 export const computeIngestionWarnings = (actingUser: IngestionActingUser | undefined): IngestionCheck[] => {
-  // A missing user is USER_MISSING, deferred by the RFC: saying "not a service account" would be wrong
-  if (!actingUser || actingUser.service_account) {
+  // No user at all, or a deleted one. Blocking, since a connector without a user cannot authenticate,
+  // yet still no effect on the status. It excludes USER_NOT_SERVICE_ACCOUNT: a missing user cannot be a service account.
+  // Neither the id nor the name of the user is given (see below)
+  if (!actingUser) {
+    return [{
+      kind: 'configuration',
+      code: 'USER_MISSING',
+      severity: 'blocking',
+      params: {},
+      message: 'User is missing',
+    }];
+  }
+  if (actingUser.service_account) {
     return [];
   }
   // Never the user name: reading a connector only needs MODULES, while the name of its user

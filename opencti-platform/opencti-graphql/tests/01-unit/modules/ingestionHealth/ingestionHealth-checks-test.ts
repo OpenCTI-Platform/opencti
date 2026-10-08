@@ -202,7 +202,19 @@ describe('Ingestion health evaluator - configuration warnings', () => {
     expect(computeIngestionWarnings({ service_account: true })).toEqual([]);
   });
 
-  it('should not warn when the connector user is missing, that is another check', () => {
-    expect(computeIngestionWarnings(undefined)).toEqual([]);
+  it('should warn, as blocking, when the connector user is missing', () => {
+    // Blocking since a connector without a user cannot authenticate, but still never changing the status.
+    // No user id or name either: the identity of a user is reserved to SETTINGS_SETACCESSES
+    expect(computeIngestionWarnings(undefined)).toEqual([{
+      kind: 'configuration',
+      code: 'USER_MISSING',
+      severity: 'blocking',
+      params: {},
+      message: 'User is missing',
+    }]);
+  });
+
+  it('should never add USER_NOT_SERVICE_ACCOUNT to a missing user, which cannot be a service account', () => {
+    expect(computeIngestionWarnings(undefined).map((warning) => warning.code)).toEqual(['USER_MISSING']);
   });
 });

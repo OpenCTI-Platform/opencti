@@ -22,6 +22,7 @@ enum IngestionCheckSeverity {
 
 enum IngestionCheckCode {
   NO_HEARTBEAT
+  USER_MISSING
   USER_NOT_SERVICE_ACCOUNT
 }
 
