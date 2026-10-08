@@ -160,6 +160,48 @@ describe('connector writes and the connectors cache', () => {
   });
 });
 
+// Built-in connectors (e.g. the connectors representing built-in feeds) are registered by the platform
+// and never ping: their liveness is their configured `active`.
+describe('built-in connectors liveness', () => {
+  const input = { id: 'connector-1', name: '[FEED - CSV] Feed', type: ConnectorType.ExternalImport, scope: ['Report'] };
+  const builtInConnector = { ...baseConnector, built_in: true, active: false };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should not record a heartbeat when registering an existing built-in connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(builtInConnector as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: builtInConnector } as never);
+
+    const result = await registerConnector(testContext, testUser, input, { built_in: true, active: false });
+
+    expect(redisSetConnectorHeartbeat).not.toHaveBeenCalled();
+    expect(result?.last_seen_at).toBeNull();
+    expect(result?.active).toBe(false);
+  });
+
+  it('should not record a heartbeat when registering a new built-in connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce(undefined as never);
+    vi.mocked(createEntity).mockResolvedValueOnce(builtInConnector as never);
+
+    const result = await registerConnector(testContext, testUser, input, { built_in: true, active: false });
+
+    expect(redisSetConnectorHeartbeat).not.toHaveBeenCalled();
+    expect(result?.last_seen_at).toBeNull();
+  });
+
+  it('should ignore any heartbeat of a built-in connector', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([builtInConnector] as never);
+    vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValueOnce(new Map([['connector-1', minutesAgo(0)]]));
+
+    const [result] = await connectors(testContext, testUser);
+
+    expect(result.last_seen_at).toBeNull();
+    expect(result.active).toBe(false);
+  });
+});
+
 describe('heartbeat storage failures', () => {
   const redisError = new Error('OOM command not allowed when used memory > maxmemory');
 

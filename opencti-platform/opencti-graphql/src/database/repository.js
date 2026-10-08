@@ -96,7 +96,8 @@ export const completeConnector = (connector, lastSeenAt) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.last_seen_at = lastSeenAt ?? null;
+    // Built-in connectors do not send heartbeats
+    completed.last_seen_at = connector.built_in ? null : (lastSeenAt ?? null);
     completed.active = isConnectorActive(connector, lastSeenAt);
     return completed;
   }

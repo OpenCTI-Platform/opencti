@@ -381,8 +381,9 @@ export const registerConnector = async (
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
-  // A registration comes from the running connector itself: it is a heartbeat
-  const lastSeenAt = now();
+  // A registration comes from the running connector itself: it is a heartbeat. Except for built-in connectors,
+  // registered by the platform, whose liveness is their configured `active` (see isConnectorActive)
+  const lastSeenAt = opts.built_in ? null : now();
   if (conn) {
     // Simple connector update
     const patch: any = {
@@ -406,7 +407,9 @@ export const registerConnector = async (
     }
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Before notifying: the connectors cache must not reload the connector without its heartbeat
-    await recordRegistrationHeartbeat(id, lastSeenAt);
+    if (lastSeenAt) {
+      await recordRegistrationHeartbeat(id, lastSeenAt);
+    }
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
     return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, lastSeenAt));
@@ -444,7 +447,9 @@ export const registerConnector = async (
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData },
   });
   // Before notifying: the connectors cache must not load the connector without its heartbeat
-  await recordRegistrationHeartbeat(id, lastSeenAt);
+  if (lastSeenAt) {
+    await recordRegistrationHeartbeat(id, lastSeenAt);
+  }
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
   // Return the connector
