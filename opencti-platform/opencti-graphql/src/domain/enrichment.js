@@ -88,7 +88,7 @@ const isConnectorInScope = (conn, scope) => {
 
 const findConnectorsForElementEnrichment = async (context, user, element, scope, opts = {}) => {
   const connectors = await getEntitiesListFromCache(context, user, ENTITY_TYPE_CONNECTOR);
-  // Liveness is stale in the connectors cache: refresh it, only for the connectors that could enrich the element
+  // Liveness is not part of the connectors cache: compute it, only for the connectors that could enrich the element
   const candidates = connectors.filter((conn) => conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT && isConnectorInScope(conn, scope));
   const liveCandidates = await refreshConnectorsLiveness(candidates);
   return filterConnectorsForElementEnrichment(context, liveCandidates, element, scope, opts);

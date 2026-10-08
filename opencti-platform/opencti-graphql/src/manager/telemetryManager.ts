@@ -32,7 +32,7 @@ import {
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
-import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
+import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
@@ -487,8 +487,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Connectors information
-    const cachedConnectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
-    // Liveness is stale in the connectors cache
+    const cachedConnectors = await getEntitiesListFromCache<CachedConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const connectors: BasicStoreEntityConnector[] = await refreshConnectorsLiveness(cachedConnectors);
     const activeConnectors = connectors.filter((c) => c.active);
     const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));

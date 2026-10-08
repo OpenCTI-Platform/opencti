@@ -3,12 +3,14 @@ import {
   connector,
   connectorDelete,
   connectors,
+  connectorsForCache,
   isConnectorActive,
   pingConnector,
   refreshConnectorsLiveness,
   registerConnector,
   updateConnectorRequestedStatus,
 } from '../../../src/modules/connector/connector-domain';
+import { builtInConnectorsRuntime } from '../../../src/modules/connector/connector-built-in-domain';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
 import { notify } from '../../../src/database/redis';
@@ -250,6 +252,25 @@ describe('refreshConnectorsLiveness', () => {
 
   it('should not read heartbeats without connectors', async () => {
     expect(await refreshConnectorsLiveness([])).toEqual([]);
+    expect(redisGetConnectorsHeartbeats).not.toHaveBeenCalled();
+  });
+});
+
+describe('connectorsForCache', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should hold no liveness, except the configured active flag of built-in connectors', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ ...baseConnector, active: true }] as never);
+    vi.mocked(builtInConnectorsRuntime).mockResolvedValueOnce([{ ...baseConnector, id: 'built-in', internal_id: 'built-in', built_in: true, active: true }] as never);
+
+    const [cached, builtIn] = await connectorsForCache(testContext, testUser);
+
+    expect(cached).not.toHaveProperty('active');
+    expect(cached).not.toHaveProperty('last_seen_at');
+    expect(cached.connector_scope).toEqual(['Report']);
+    expect(builtIn).toHaveProperty('active', true);
     expect(redisGetConnectorsHeartbeats).not.toHaveBeenCalled();
   });
 });
