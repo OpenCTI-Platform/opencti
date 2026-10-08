@@ -223,12 +223,13 @@ describe('refreshConnectorsLiveness', () => {
     expect(back.last_seen_at).toBe(recentHeartbeat);
   });
 
-  it('should keep the active flag of built-in connectors', async () => {
-    vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValueOnce(new Map());
+  it('should keep the active flag of built-in connectors, and ignore any heartbeat', async () => {
+    vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValueOnce(new Map([['connector-1', minutesAgo(0)]]));
 
-    const [builtIn] = await refreshConnectorsLiveness([{ ...baseConnector, built_in: true, active: true }]);
+    const [builtIn] = await refreshConnectorsLiveness([{ ...baseConnector, built_in: true, active: false }]);
 
-    expect(builtIn.active).toBe(true);
+    expect(builtIn.active).toBe(false);
+    expect(builtIn.last_seen_at).toBeNull();
   });
 
   it('should not read heartbeats without connectors', async () => {

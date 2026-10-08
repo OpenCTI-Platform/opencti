@@ -89,7 +89,8 @@ export const refreshConnectorsLiveness = async (connectors) => {
   }
   const heartbeats = await loadConnectorsHeartbeats();
   return connectors.map((conn) => {
-    const lastSeenAt = heartbeats.get(conn.internal_id) ?? null;
+    // Built-in connectors do not send heartbeats
+    const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
     return { ...conn, last_seen_at: lastSeenAt, active: isConnectorActive(conn, lastSeenAt) };
   });
 };
