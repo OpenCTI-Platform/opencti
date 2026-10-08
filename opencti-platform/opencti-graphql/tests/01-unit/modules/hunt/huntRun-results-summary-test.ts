@@ -45,10 +45,18 @@ describe('Hunt run results summary', () => {
 
   it('should count the results a reader can read by kind, with the access resolved once for the results', async () => {
     const user = { id: 'user-summary', internal_id: 'user-summary' } as AuthUser;
-    const summary = await findHuntRunResultsSummary(testContext, user, run);
+    const [summary, resultIds] = await Promise.all([findHuntRunResultsSummary(testContext, user, run), findHuntRunResultIds(testContext, user, run)]);
     expect(summary).toEqual({ sightings: 2, observed_data: 2, observables: 2, others: 1 });
-    expect(await findHuntRunResultIds(testContext, user, run)).not.toContain('indicator--hidden');
+    expect(resultIds).not.toContain('indicator--hidden');
     expect(internalFindByIds).toHaveBeenCalledTimes(1);
+  });
+
+  it('should resolve the access to the results again once resolved, so that an access change applies to the next call', async () => {
+    const user = { id: 'user-revoked', internal_id: 'user-revoked' } as AuthUser;
+    expect(await findHuntRunResultIds(testContext, user, run)).toContain('sighting--1');
+    vi.mocked(internalFindByIds).mockResolvedValue(readable.filter((element) => element.internal_id !== 'sighting-1') as never);
+    expect(await findHuntRunResultIds(testContext, user, run)).not.toContain('sighting--1');
+    expect(await findHuntRunResultsSummary(testContext, user, run)).toEqual({ sightings: 1, observed_data: 2, observables: 2, others: 1 });
   });
 
   it('should count an object once, whatever the number of ids it is recorded with', () => {

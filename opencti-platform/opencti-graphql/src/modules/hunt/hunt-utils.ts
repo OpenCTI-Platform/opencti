@@ -94,6 +94,22 @@ export const huntSigmaRule = (hunt: { hunt_type?: string | null; sigma_rule?: st
   return typeof hunt.sigma_rule === 'string' && hunt.sigma_rule.trim().length > 0 ? hunt.sigma_rule : null;
 };
 
+const accessDecisionsInFlight = new Map<string, Promise<unknown>>();
+
+/**
+ * An access decision computed once for the calls that need it while it is computed (the fields of a page of runs
+ * resolved together), never kept once computed: an access change applies to every later call.
+ */
+export const shareAccessDecision = <T>(key: string, compute: () => Promise<T>): Promise<T> => {
+  const pending = accessDecisionsInFlight.get(key) as Promise<T> | undefined;
+  if (pending) {
+    return pending;
+  }
+  const computed = compute().finally(() => accessDecisionsInFlight.delete(key));
+  accessDecisionsInFlight.set(key, computed);
+  return computed;
+};
+
 export const sha256 = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
 
 export const truncate = (value: string, maxLength: number) => {

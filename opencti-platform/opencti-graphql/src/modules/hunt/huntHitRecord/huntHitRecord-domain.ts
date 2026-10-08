@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { LRUCache } from 'lru-cache';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import { elAggregationCount, elBulk, elCount, elRawDeleteByQuery, prepareElementForIndexing } from '../../../database/engine';
@@ -13,6 +12,7 @@ import { doYield } from '../../../utils/eventloop-utils';
 import { withHuntLock } from '../hunt-lock';
 import { findByIds } from '../hunt-loaders';
 import { HUNT_PLATFORM_INTERNET } from '../hunt-types';
+import { shareAccessDecision } from '../hunt-utils';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_MODE_EXECUTE } from '../huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_HUNT_HIT_RECORD, type BasicStoreEntityHuntHitRecord } from './huntHitRecord-types';
@@ -305,22 +305,7 @@ export const summarizeHuntHitRecords = async (context: AuthContext, huntId: stri
   };
 };
 
-// The platforms on which a reader reads every run of a hunt, for a short while: the hits of a page of runs are annotated
-// without counting the runs again for each. The short ttl only bounds how long an access change can lag behind
-const everyRunReadableCache = new LRUCache<string, Set<string | null>>({ max: 5000, ttl: 30 * 1000 });
-
-/**
- * Security platforms (null for the internet) on which the user reads every execution run of a hunt. The records of the
- * hits of a hunt on a platform aggregate all its runs there, and a run keeps the markings and organizations its hunt and
- * platform had when it was created: once the hunt is restricted further, or shared with more readers, some of its readers
- * cannot read all of its runs. Only on these platforms do the records tell nothing of a run hidden from the user.
- */
-export const findHuntPlatformsWithEveryRunReadable = async (context: AuthContext, user: AuthUser, huntId: string) => {
-  const cacheKey = [user.id, context.draft_context ?? '', huntId].join('|');
-  const cached = everyRunReadableCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
+const countHuntPlatformsWithEveryRunReadable = async (context: AuthContext, user: AuthUser, huntId: string) => {
   const options = {
     types: [ENTITY_TYPE_HUNT_RUN],
     field: 'security_platform_id',
@@ -337,11 +322,21 @@ export const findHuntPlatformsWithEveryRunReadable = async (context: AuthContext
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options),
   ]) as { label: string; count: number }[][];
   const readableCounts = new Map(readableRuns.map((bucket) => [bucket.label, bucket.count]));
-  const platforms = new Set(runs
+  return new Set(runs
     .filter((bucket) => readableCounts.get(bucket.label) === bucket.count)
     .map((bucket) => (bucket.label === 'unknown' ? null : bucket.label)));
-  everyRunReadableCache.set(cacheKey, platforms);
-  return platforms;
+};
+
+/**
+ * Security platforms (null for the internet) on which the user reads every execution run of a hunt. The records of the
+ * hits of a hunt on a platform aggregate all its runs there, and a run keeps the markings and organizations its hunt and
+ * platform had when it was created: once the hunt is restricted further, or shared with more readers, some of its readers
+ * cannot read all of its runs. Only on these platforms do the records tell nothing of a run hidden from the user. The
+ * hits of a page of runs share one count of the runs.
+ */
+export const findHuntPlatformsWithEveryRunReadable = async (context: AuthContext, user: AuthUser, huntId: string) => {
+  const key = ['every_run_readable', user.id, context.draft_context ?? '', huntId].join('|');
+  return shareAccessDecision(key, () => countHuntPlatformsWithEveryRunReadable(context, user, huntId));
 };
 
 /**

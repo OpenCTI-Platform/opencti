@@ -39,7 +39,7 @@ describe('Hunt run results paging', () => {
     vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => ids.map((id) => ({ internal_id: id }) as BasicStoreObject) as never);
   });
 
-  it('should resolve the access to the results once for every page a reader reads', async () => {
+  it('should resolve the access to the results again for every page a reader reads', async () => {
     const user = reader('user-paging');
     const current = run('2026-10-05T03:00:00.000Z');
     const pages = [];
@@ -53,8 +53,9 @@ describe('Hunt run results paging', () => {
     expect(pages[0].pageInfo.globalCount).toBe(readable.length);
     expect(pages.flatMap((page) => page.edges.map((edge) => edge.node.internal_id))).toEqual(readable.map((element) => element.internal_id));
     expect(await findHuntRunResultIds(testContext, user, current)).toEqual(readable.map((element) => element.standard_id));
-    expect(internalFindByIds).toHaveBeenCalledTimes(1);
-    // Every page still loads its own objects with the access of the reader
+    // An access change applies to the next page: no access resolution outlives the call that made it
+    expect(internalFindByIds).toHaveBeenCalledTimes(pages.length + 1);
+    // Every page loads its own objects with the access of the reader
     expect(findByIds).toHaveBeenCalledTimes(5);
   });
 

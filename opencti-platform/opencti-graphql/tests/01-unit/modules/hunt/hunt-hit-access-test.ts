@@ -65,6 +65,17 @@ describe('Known hits told only over the runs the reader can read', () => {
     expect(JSON.stringify(options?.filters)).toContain('"hunt_run_mode"');
   });
 
+  it('should count the runs once for the calls made meanwhile, and again for a later call after an access change', async () => {
+    const user = reader();
+    counting([{ label: 'platform-1', count: 3 }], [{ label: 'platform-1', count: 3 }]);
+    const together = await Promise.all([1, 2, 3].map(() => findHuntPlatformsWithEveryRunReadable(testContext, user, 'hunt-1')));
+    together.forEach((platforms) => expect(Array.from(platforms)).toEqual(['platform-1']));
+    expect(elAggregationCount).toHaveBeenCalledTimes(2);
+    // A run on the platform is no longer readable by the reader
+    counting([{ label: 'platform-1', count: 3 }], [{ label: 'platform-1', count: 2 }]);
+    expect(Array.from(await findHuntPlatformsWithEveryRunReadable(testContext, user, 'hunt-1'))).toEqual([]);
+  });
+
   it('should tell how often and since when a hit was found only to a reader of every run of the hunt on the platform', async () => {
     const run = {
       internal_id: 'run-2',

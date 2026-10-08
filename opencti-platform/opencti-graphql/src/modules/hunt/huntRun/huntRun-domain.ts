@@ -1,4 +1,3 @@
-import { LRUCache } from 'lru-cache';
 import { v4 as uuidv4 } from 'uuid';
 import { findByIds } from '../hunt-loaders';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -74,6 +73,7 @@ import {
   sanitizeEvidence,
   sanitizeHitKeys,
   sanitizeHits,
+  shareAccessDecision,
   splitHitsByKeys,
   techniqueValidationStatus,
   truncate,
@@ -200,34 +200,23 @@ interface ReadableHuntRunResults {
 // The results of a run the user can read, as internal ids in the order the run recorded them (markings and
 // organizations of every object apply), with their summary by kind. Access is resolved over every recorded id before any
 // pagination, reading their identifiers and types only, so counts never include the objects the user cannot read and no
-// object is loaded in full. Paging through thousands of results resolves the readable ids once per reader and version of
-// the run, not on every page. Every page still loads its objects with the access of the reader, so the short ttl only
-// bounds how long a count can lag behind an access change; the size bound counts ids, a run holding thousands of them
-const readableResultIdsCache = new LRUCache<string, ReadableHuntRunResults>({
-  maxSize: 200_000,
-  sizeCalculation: (value) => value.internalIds.length + value.visibleIds.length + 1,
-  ttl: 30 * 1000,
-});
-
+// object is loaded in full. The results, their ids and their summary of a run resolved together share one resolution;
+// every later call resolves the access again, so an access change applies to the next page
 const readableHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun): Promise<ReadableHuntRunResults> => {
   const ids = run.result_ids ?? [];
   if (ids.length === 0) {
     return { internalIds: [], visibleIds: [], summary: summarizeHuntRunResults([]) };
   }
-  const cacheKey = [user.id, context.draft_context ?? '', run.internal_id, String(run.updated_at), ids.length].join('|');
-  const cached = readableResultIdsCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-  const readable = await internalFindByIds<BasicStoreObject>(context, user, ids, { baseData: true, baseFields: ['x_opencti_stix_ids'] }) as BasicStoreObject[];
-  const internalIdOf = new Map<string, string>();
-  readable.forEach((element) => {
-    [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])].forEach((id) => internalIdOf.set(id, element.internal_id));
+  const key = ['readable_run_results', user.id, context.draft_context ?? '', run.internal_id, String(run.updated_at), ids.length].join('|');
+  return shareAccessDecision(key, async () => {
+    const readable = await internalFindByIds<BasicStoreObject>(context, user, ids, { baseData: true, baseFields: ['x_opencti_stix_ids'] }) as BasicStoreObject[];
+    const internalIdOf = new Map<string, string>();
+    readable.forEach((element) => {
+      [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])].forEach((id) => internalIdOf.set(id, element.internal_id));
+    });
+    const internalIds = Array.from(new Set(ids.map((id) => internalIdOf.get(id)).filter((id): id is string => !!id)));
+    return { internalIds, visibleIds: ids.filter((id) => internalIdOf.has(id)), summary: summarizeHuntRunResults(readable) };
   });
-  const internalIds = Array.from(new Set(ids.map((id) => internalIdOf.get(id)).filter((id): id is string => !!id)));
-  const resolved = { internalIds, visibleIds: ids.filter((id) => internalIdOf.has(id)), summary: summarizeHuntRunResults(readable) };
-  readableResultIdsCache.set(cacheKey, resolved);
-  return resolved;
 };
 
 /**
