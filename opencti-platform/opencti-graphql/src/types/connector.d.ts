@@ -38,6 +38,9 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   manager_upgrade_strategy?: string;
   // endregion
 }
+// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness
+export type CachedConnector = Omit<BasicStoreEntityConnector, 'active'>;
+
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
   public_key: string;
 }
