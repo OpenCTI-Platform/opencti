@@ -445,8 +445,11 @@ describe('Hunt resolvers', () => {
     expect(run.hunt_run_status).toEqual('completed');
     expect(run.verdict).toEqual('benign');
     expect(run.verdict_source).toEqual('auto');
-    const again = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed' } } });
-    expect(again.errors?.[0].message).toContain('already terminated');
+    // The same outcome sent again (the connector lost the answer to its report) changes nothing, another one is refused
+    const again = await queryAsAdminWithSuccess({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed' } } });
+    expect(again.data?.huntRunReport).toMatchObject({ hunt_run_status: 'completed', verdict: 'benign' });
+    const other = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'failed' } } });
+    expect(other.errors?.[0].message).toContain('already terminated');
     const hunt = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
     expect(hunt.data?.hunt.last_run_status).toEqual('completed');
     expect(hunt.data?.hunt.last_hits_count).toEqual(0);
@@ -463,7 +466,7 @@ describe('Hunt resolvers', () => {
     await interrupt();
     const recovered = await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'failed', error: 'late' } } });
     expect(recovered.data?.huntRunReport).toMatchObject({ hunt_run_status: 'completed', verdict: 'benign', verdict_source: 'auto' });
-    const again = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed' } } });
+    const again = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'failed' } } });
     expect(again.errors?.[0].message).toContain('already terminated');
   });
 

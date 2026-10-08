@@ -117,14 +117,20 @@ describe('Connection test of a hunt connector', () => {
     expect(storedCheck().status).toEqual('failed');
   });
 
-  it('should only take the answer given in the work the test was dispatched with', async () => {
+  it('should only take the answer of a connector given in the work the test was dispatched with', async () => {
+    const connectorUser = { ...ADMIN_USER, id: 'connector-user-1', capabilities: [{ name: 'CONNECTORAPI' }] } as AuthUser;
+    store.connector.connector_user_id = connectorUser.id;
     const view = await testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
     const answer = { connector_id: 'connector-1', check_id: view.connection_check?.id as string, checks: [{ name: 'Search', ok: true, message: 'Allowed' }] };
-    await expect(reportHuntConnectorCheck(testContext, ADMIN_USER, { ...answer, work_id: 'work-2' })).rejects.toThrow('A hunt connector can only report the connection test it received');
-    await expect(reportHuntConnectorCheck(testContext, ADMIN_USER, answer)).rejects.toThrow('A hunt connector can only report the connection test it received');
+    await expect(reportHuntConnectorCheck(testContext, connectorUser, { ...answer, work_id: 'work-2' })).rejects.toThrow('A hunt connector can only report the connection test it received');
+    await expect(reportHuntConnectorCheck(testContext, connectorUser, answer)).rejects.toThrow('A hunt connector can only report the connection test it received');
     expect(storedCheck().status).toEqual('pending');
     // The work of the message being processed, given by the call
-    expect((await reportHuntConnectorCheck({ ...testContext, workId: 'work-1' }, ADMIN_USER, answer)).connection_check?.status).toEqual('passed');
+    expect((await reportHuntConnectorCheck({ ...testContext, workId: 'work-1' }, connectorUser, answer)).connection_check?.status).toEqual('passed');
+    // The platform itself is bound to no work, as for the report of a run
+    const again = await testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
+    const adminAnswer = { ...answer, check_id: again.connection_check?.id as string };
+    expect((await reportHuntConnectorCheck(testContext, ADMIN_USER, adminAnswer)).connection_check?.status).toEqual('passed');
   });
 
   it('should refuse the answer of the former user of a connector registered again with another user while the answer waited for the lock', async () => {

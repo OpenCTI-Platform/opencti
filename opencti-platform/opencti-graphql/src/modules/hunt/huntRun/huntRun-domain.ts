@@ -1977,7 +1977,7 @@ export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthU
     if (current.hunt_connection_check?.id !== input.check_id) {
       throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
     }
-    if (!workId || current.hunt_connection_check.work_id !== workId) {
+    if (!isBypassUser(user) && (!workId || current.hunt_connection_check.work_id !== workId)) {
       throw ForbiddenAccess('A hunt connector can only report the connection test it received', { connectorId: input.connector_id });
     }
     const result = {
