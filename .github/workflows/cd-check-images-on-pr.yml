@@ -31,7 +31,6 @@ jobs:
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
@@ -57,5 +56,4 @@ jobs:
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
