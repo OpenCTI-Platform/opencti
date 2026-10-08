@@ -547,7 +547,31 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
+// Circuit breaking exceptions always come with a 429 status, but their durability tells whether the condition
+// clears by itself (TRANSIENT: request / in_flight_requests breakers) or requires manual intervention
+// (PERMANENT: fielddata / accounting breakers). Retrying a permanent one is pointless and adds pressure on the engine.
+const isPermanentCircuitBreakingError = (error: any): boolean => {
+  return collectErrorFieldValues(error, 'durability').some((durability) => durability.toUpperCase() === 'PERMANENT');
+};
+
+const collectErrorText = (error: any): string => {
+  return [
+    ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
+    ...collectErrorFieldValues(error, 'type'),
+    ...collectErrorFieldValues(error, 'name'),
+    ...collectErrorFieldValues(error, 'stack'),
+  ].join(' ');
+};
+
+const isCircuitBreakingError = (error: any): boolean => {
+  return /circuit_breaking_exception/i.test(collectErrorText(error));
+};
+
 export const isTransitoryError = (error: any): boolean => {
+  if (isPermanentCircuitBreakingError(error)) {
+    return false;
+  }
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status
@@ -570,19 +594,18 @@ export const isTransitoryError = (error: any): boolean => {
     return true;
   }
 
-  const errorText = [
-    ...collectErrorFieldValues(error, 'message'),
-    ...collectErrorFieldValues(error, 'reason'),
-    ...collectErrorFieldValues(error, 'type'),
-    ...collectErrorFieldValues(error, 'name'),
-    ...collectErrorFieldValues(error, 'stack'),
-  ].join(' ');
-
+  const errorText = collectErrorText(error);
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
   if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
     return true;
   }
   return false;
+};
+
+// Same as isTransitoryError, except that circuit breaking exceptions are not retried. Meant for requests whose
+// payload itself may trip the breaker (e.g. large attachments): replaying them would only add memory pressure.
+export const isTransitoryNonCircuitBreakingError = (error: any): boolean => {
+  return !isCircuitBreakingError(error) && isTransitoryError(error);
 };
 
 // covers both engine clients: node-fetch's AbortError (ElkClient) and
@@ -601,14 +624,17 @@ export const wrapEngineError = (reason: string, err: any, data: Record<string, a
   return DatabaseError(reason, { cause: err, ...data });
 };
 
-export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
+export const retryElOperations = async (
+  operation: () => Promise<any>,
+  isRetryableError: (error: any) => boolean = isTransitoryError,
+): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
       return await operation();
     } catch (error) {
-      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
+      if (attempt < BULK_MAX_RETRIES && isRetryableError(error)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
-        logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
+        logApp.warn(`[SEARCH] Engine transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
       } else {
         throw error;
@@ -3816,6 +3842,9 @@ const BULK_ITEM_TRANSIENT_ERRORS = [
   'version_conflict_engine_exception', // only after retry_on_conflict is exhausted
 ];
 const isTransientBulkItemError = (itemResult: any): boolean => {
+  if (isPermanentCircuitBreakingError(itemResult.error)) {
+    return false;
+  }
   return itemResult.status === 429 || BULK_ITEM_TRANSIENT_ERRORS.includes(itemResult.error?.type);
 };
 const bulkItemResult = (item: any) => item.index ?? item.update ?? item.delete ?? item.create;
@@ -3907,9 +3936,9 @@ export const elBulk = async (context: AuthContext, args: any) => {
 export const elIndex = async (
   indexName: string[] | string | undefined,
   documentBody: Record<string, any>,
-  opts: { refresh?: boolean; pipeline?: any } = {},
+  opts: { refresh?: boolean; pipeline?: any; isRetryableError?: (error: any) => boolean } = {},
 ) => {
-  const { refresh = true, pipeline } = opts;
+  const { refresh = true, pipeline, isRetryableError = isTransitoryError } = opts;
   const documentId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${documentId} in ${indexName}`, { documentBody });
@@ -3923,15 +3952,17 @@ export const elIndex = async (
   if (pipeline) {
     indexParams = { ...indexParams, pipeline };
   }
-  if (engine instanceof ElkClient) {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  } else {
-    await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  }
+  const indexOperation = async () => {
+    // Branching kept to please tsc
+    if (engine instanceof ElkClient) {
+      return await engine.index(indexParams);
+    } else {
+      return await engine.index(indexParams);
+    }
+  };
+  await retryElOperations(indexOperation, isRetryableError).catch((err: any) => {
+    throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+  });
 
   return documentBody;
 };
@@ -3943,27 +3974,25 @@ export const elUpdate = async (
   documentBody: any,
   retry = ES_RETRY_ON_CONFLICT,
 ) => {
-  const updateOperation = async () => {
-    const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-    const updateRequest = {
-      id: documentId,
-      index: indexName,
-      retry_on_conflict: retry,
-      timeout: BULK_TIMEOUT,
-      refresh: true,
-      body: documentBody,
-    };
-    try {
-      return await elExecuteWithAbortSignal(
-        context?.requestAbortSignal,
-        (opts) => (engine as ElkClient).update(updateRequest, opts),
-        () => (engine as OpenClient).update(updateRequest),
-      );
-    } catch (err: any) {
-      throw wrapEngineError('Update indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
-    }
+  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
+  const updateRequest = {
+    id: documentId,
+    index: indexName,
+    retry_on_conflict: retry,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
+    body: documentBody,
   };
-  return retryElOperations(updateOperation);
+  const updateOperation = async () => {
+    return await elExecuteWithAbortSignal(
+      context?.requestAbortSignal,
+      (opts) => (engine as ElkClient).update(updateRequest, opts),
+      () => (engine as OpenClient).update(updateRequest),
+    );
+  };
+  return retryElOperations(updateOperation).catch((err: any) => {
+    throw wrapEngineError('Update indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
+  });
 };
 // Field names are passed as script parameters and never interpolated in the source.
 // Interpolating them would create one script per field combination, and every distinct
@@ -3997,23 +4026,21 @@ export const elReplace = async (
   });
 };
 export const elDelete = (indexName: string, documentId: string) => {
-  const deleteOperation = async () => {
-    const deleteRequest = {
-      id: documentId,
-      index: indexName,
-      timeout: BULK_TIMEOUT,
-      refresh: true,
-    };
-    try {
-      if (engine instanceof ElkClient) {
-        return await engine.delete(deleteRequest);
-      }
-      return await engine.delete(deleteRequest);
-    } catch (err: any) {
-      throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
-    }
+  const deleteRequest = {
+    id: documentId,
+    index: indexName,
+    timeout: BULK_TIMEOUT,
+    refresh: true,
   };
-  return retryElOperations(deleteOperation);
+  const deleteOperation = async () => {
+    if (engine instanceof ElkClient) {
+      return await engine.delete(deleteRequest);
+    }
+    return await engine.delete(deleteRequest);
+  };
+  return retryElOperations(deleteOperation).catch((err: any) => {
+    throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
+  });
 };
 const getRelatedRelations = async (
   context: AuthContext,
@@ -4226,54 +4253,52 @@ export const elReindexElements = async (
   destIndex: string,
   opts: { dbId?: string; sourceUpdate?: any } = {},
 ) => {
-  const reindexOperation = async () => {
-    const { dbId, sourceUpdate = {} } = opts;
-    const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
-      + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
-      + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
-      + "ctx._source.remove('i_valid_from_day'); ctx._source.remove('i_valid_until_day'); "
-      + "ctx._source.remove('i_valid_from_month'); ctx._source.remove('i_valid_until_month'); "
-      + "ctx._source.remove('i_valid_from_year'); ctx._source.remove('i_valid_until_year'); "
-      + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
-      + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
-      + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
-      + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
-      + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');"
-      + "ctx._source.remove('x_opencti_cvss_vector'); ctx._source.remove('x_opencti_cvss_v2_vector'); ctx._source.remove('x_opencti_cvss_v4_vector');"
-      + "ctx._source.remove('authorized_members');"; // after renaming authorized_members to restricted_members
-    const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
-    const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
-    const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
-    const reindexParams = {
-      body: {
-        source: {
-          index: sourceIndex,
-          query: {
-            ids: {
-              values: ids,
-            },
+  const { dbId, sourceUpdate = {} } = opts;
+  const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
+    + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
+    + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
+    + "ctx._source.remove('i_valid_from_day'); ctx._source.remove('i_valid_until_day'); "
+    + "ctx._source.remove('i_valid_from_month'); ctx._source.remove('i_valid_until_month'); "
+    + "ctx._source.remove('i_valid_from_year'); ctx._source.remove('i_valid_until_year'); "
+    + "ctx._source.remove('i_stop_time_year'); ctx._source.remove('i_start_time_year'); "
+    + "ctx._source.remove('i_start_time_month'); ctx._source.remove('i_stop_time_month'); "
+    + "ctx._source.remove('i_start_time_day'); ctx._source.remove('i_stop_time_day'); "
+    + "ctx._source.remove('i_created_at_year'); ctx._source.remove('i_created_at_month'); ctx._source.remove('i_created_at_day'); "
+    + "ctx._source.remove('rel_can-share'); ctx._source.remove('rel_can-share.internal_id');"
+    + "ctx._source.remove('x_opencti_cvss_vector'); ctx._source.remove('x_opencti_cvss_v2_vector'); ctx._source.remove('x_opencti_cvss_v4_vector');"
+    + "ctx._source.remove('authorized_members');"; // after renaming authorized_members to restricted_members
+  const idReplaceScript = 'if (params.replaceId) { ctx._id = params.newId }';
+  const sourceUpdateScript = 'for (change in params.changes.entrySet()) { ctx._source[change.getKey()] = change.getValue() }';
+  const source = `${sourceCleanupScript} ${idReplaceScript} ${sourceUpdateScript}`;
+  const reindexParams = {
+    body: {
+      source: {
+        index: sourceIndex,
+        query: {
+          ids: {
+            values: ids,
           },
         },
-        dest: {
-          index: destIndex,
-        },
-        script: { // remove old fields that are not mapped anymore but can be present in DB
-          params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
-          source,
-        },
       },
-      refresh: true,
-    };
-    try {
-      if (engine instanceof ElkClient) {
-        return await engine.reindex(reindexParams);
-      }
-      return await engine.reindex(reindexParams);
-    } catch (err: any) {
-      throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
-    }
+      dest: {
+        index: destIndex,
+      },
+      script: { // remove old fields that are not mapped anymore but can be present in DB
+        params: { changes: sourceUpdate, replaceId: !!dbId, newId: dbId },
+        source,
+      },
+    },
+    refresh: true,
   };
-  return retryElOperations(reindexOperation);
+  const reindexOperation = async () => {
+    if (engine instanceof ElkClient) {
+      return await engine.reindex(reindexParams);
+    }
+    return await engine.reindex(reindexParams);
+  };
+  return retryElOperations(reindexOperation).catch((err: any) => {
+    throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+  });
 };
 
 export const elRemoveDraftIdFromElements = async (
