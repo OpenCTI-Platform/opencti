@@ -38091,6 +38091,7 @@ export enum VocabularyCategory {
   CasePriorityOv = 'case_priority_ov',
   CaseSeverityOv = 'case_severity_ov',
   ChannelTypesOv = 'channel_types_ov',
+  ClosingReasonOv = 'closing_reason_ov',
   CollectionLayersOv = 'collection_layers_ov',
   CoverageOv = 'coverage_ov',
   EventTypeOv = 'event_type_ov',

@@ -11725,6 +11725,7 @@ enum VocabularyCategory {
   case_severity_ov
   case_priority_ov
   channel_types_ov
+  closing_reason_ov
   collection_layers_ov
   event_type_ov
   grouping_context_ov
