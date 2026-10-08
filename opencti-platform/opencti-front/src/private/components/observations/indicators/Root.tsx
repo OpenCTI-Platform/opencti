@@ -159,7 +159,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               ),
               sightings: (
                 <EntityStixSightingRelationships
-                  entityId={indicatorId}
+                  entityId={indicator.id}
                   entityLink={link}
                   noPadding={true}
                   isTo={false}
