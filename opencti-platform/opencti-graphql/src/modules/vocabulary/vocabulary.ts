@@ -6,7 +6,13 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const generateInputDependencyKeys = () => {
   return Object.values(vocabularyDefinitions)
-    .flatMap(({ entity_types, fields }) => fields.map(({ key }) => ({ src: key, types: entity_types })));
+    .flatMap((definition) => definition.fields.map(({ key }) => ({
+      src: key,
+      // Read on use: some categories resolve their entity types once every module is registered
+      get types() {
+        return definition.entity_types;
+      },
+    })));
 };
 
 const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabulary> = {
