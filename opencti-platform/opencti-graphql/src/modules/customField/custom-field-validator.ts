@@ -1,6 +1,7 @@
 import * as R from 'ramda';
+import { GRAPHQL_MAX_INT, GRAPHQL_MIN_INT } from 'graphql';
 import { GraphQLDateTime } from 'graphql-scalars';
-import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_INT_MAX, CUSTOM_FIELD_INT_MIN, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
+import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -19,8 +20,9 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
   }
 };
 
+// int_value is a GraphQL Int (and an Elasticsearch integer): a 32-bit signed integer
 const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
-  && (value as number) >= CUSTOM_FIELD_INT_MIN && (value as number) <= CUSTOM_FIELD_INT_MAX;
+  && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
 
 // Normalize the date values of stored-format entries (edit path); invalid dates are left as is for validation to reject.
 export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
@@ -382,7 +384,7 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
     throw FunctionalError('int_value must be an integer', { field_name: value.field_name, value: value.int_value });
   }
   if (!isCustomFieldInteger(value.int_value)) {
-    throw FunctionalError('int_value must be a 32-bit integer', { field_name: value.field_name, value: value.int_value, min: CUSTOM_FIELD_INT_MIN, max: CUSTOM_FIELD_INT_MAX });
+    throw FunctionalError('int_value must be a 32-bit integer', { field_name: value.field_name, value: value.int_value, min: GRAPHQL_MIN_INT, max: GRAPHQL_MAX_INT });
   }
   if (definition.min_value != null && value.int_value < definition.min_value) {
     throw FunctionalError('int_value is below minimum', { field_name: value.field_name, value: value.int_value, min: definition.min_value });
