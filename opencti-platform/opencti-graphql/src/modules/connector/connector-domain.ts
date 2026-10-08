@@ -158,13 +158,14 @@ const loadConnectorsHeartbeats = async () => {
 
 // Liveness is not part of the connectors cache (see connectorsForCache):
 // consumers of the cache must compute it before relying on `active`.
-export const refreshConnectorsLiveness = async <T extends { internal_id: string }>(cachedConnectors: T[]) => {
+export const refreshConnectorsLiveness = async <T extends { internal_id: string; built_in?: boolean }>(cachedConnectors: T[]) => {
   if (cachedConnectors.length === 0) {
     return [];
   }
   const heartbeats = await loadConnectorsHeartbeats();
   return cachedConnectors.map((conn) => {
-    const lastSeenAt = heartbeats.get(conn.internal_id) ?? null;
+    // Built-in connectors do not send heartbeats
+    const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
     return { ...conn, last_seen_at: lastSeenAt, active: isConnectorActive(conn, lastSeenAt) };
   });
 };
