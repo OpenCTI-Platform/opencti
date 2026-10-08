@@ -13,9 +13,10 @@ import {
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
+  setWorkflowStatus,
+  getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-
-const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
+import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
 const workflowResolvers = {
   Query: {
@@ -30,6 +31,9 @@ const workflowResolvers = {
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);
+    },
+    workflowBypassStatuses: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
+      return getWorkflowBypassStatuses(context, context.user!, entityId);
     },
   },
   Mutation: {
@@ -60,6 +64,25 @@ const workflowResolvers = {
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
     },
+    setWorkflowStatus: (_: any, {
+      entityId,
+      targetStatusId,
+      applyTransitionActions,
+      comment,
+      runtimeParams,
+    }: {
+      entityId: string;
+      targetStatusId: string;
+      applyTransitionActions: boolean;
+      comment?: string | null;
+      runtimeParams?: Record<string, unknown> | null;
+    }, context: AuthContext) => {
+      const normalizedComment = comment?.trim() || undefined;
+      if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
+        throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment, runtimeParams ?? {});
+    },
     reportWorkflowAsyncActionResult: async (_: any, args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string }, context: AuthContext) => {
       await reportWorkflowAsyncActionResult(
         context,
@@ -75,7 +98,7 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
-    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
+    currentStatus: (instance: any) => instance.currentStatus ?? null,
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
@@ -94,7 +117,7 @@ const workflowResolvers = {
     to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
-    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
@@ -118,7 +141,7 @@ const workflowResolvers = {
     asyncActions: (pt: any) => pt.asyncActions ?? [],
   },
   WorkflowTriggerResult: {
-    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    status: (result: any) => (result.newState ? result.instance?.currentStatus ?? null : null),
     instance: (result: any) => result.instance,
     entity: (result: any) => result.entity,
     executionStatus: (result: any) => result.executionStatus ?? null,

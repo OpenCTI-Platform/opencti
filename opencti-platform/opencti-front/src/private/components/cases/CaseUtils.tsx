@@ -208,6 +208,7 @@ export const caseFragment = graphql`
     }
     workflowEnabled
     ...CaseIncidentDetails_case
+    ...WorkflowStatusStixDomainObject_data
     ...FeedbackDetails_case
     ...CaseRftDetails_case
     ...CaseRfiDetails_case

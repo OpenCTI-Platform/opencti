@@ -10,6 +10,11 @@ import {
   getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { readFileSync } from 'node:fs';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { graphql } from 'graphql';
+import { authDirectiveBuilder } from '../../../src/graphql/authDirective';
+import type { BasicWorkflowStatus } from '../../../src/types/store';
 
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
@@ -24,6 +29,8 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   triggerWorkflowEvent: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
   getWorkflowPublishedVersionId: vi.fn(),
+  setWorkflowStatus: vi.fn(),
+  getWorkflowBypassStatuses: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', () => ({
@@ -34,6 +41,101 @@ const mockContext = { user: { id: 'user-id' } } as any;
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe('Workflow bypass API', () => {
+  const schema = () => authDirectiveBuilder('auth').authDirectiveTransformer(makeExecutableSchema({
+    typeDefs: [
+      `
+        enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+        directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
+        directive @public on FIELD_DEFINITION
+        scalar JSON
+        scalar DateTime
+        scalar BasicObject
+        type Status { id: ID! }
+        type EntitySetting { id: ID! }
+        type DraftWorkspace { id: ID! }
+        type Query { health: Boolean @public }
+        type Mutation { health: Boolean @public }
+      `,
+      readFileSync(new URL('../../../src/modules/workflow/api/workflow.graphql', import.meta.url), 'utf8'),
+    ],
+    resolvers: { Query: workflowResolvers.Query, Mutation: workflowResolvers.Mutation },
+  }));
+
+  it.each([
+    ['mutation { setWorkflowStatus(entityId: "entity-id", targetStatusId: "status-id", applyTransitionActions: false) { success } }', 'setWorkflowStatus'],
+    ['{ workflowBypassStatuses(entityId: "entity-id") { status { id } onExit { type } onEnter { type } requiresShareOrganizationInput requiresUnshareOrganizationInput } }', 'workflowBypassStatuses'],
+  ])('requires actual BYPASS through the schema for %s', async (source, field) => {
+    vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true });
+    const statuses = [{ status: { id: 'status-id' } as BasicWorkflowStatus, onExit: [], onEnter: [], requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false }];
+    vi.mocked(workflowDomain.getWorkflowBypassStatuses).mockResolvedValue(statuses);
+    const executableSchema = schema();
+    const denied = await graphql({ schema: executableSchema, source, contextValue: { user: { id: 'editor', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } } });
+    expect(denied.errors?.[0].message).toBe('You are not allowed to do this.');
+    expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
+    expect(workflowDomain.getWorkflowBypassStatuses).not.toHaveBeenCalled();
+    const allowed = await graphql({ schema: executableSchema, source, contextValue: { user: { id: 'admin', capabilities: [{ name: 'BYPASS' }] } } });
+    expect(allowed.errors).toBeUndefined();
+    expect(allowed.data?.[field]).toEqual(field === 'setWorkflowStatus' ? { success: true } : statuses);
+  });
+
+  it('forwards bypass options, normalized comment and runtime params', async () => {
+    const runtimeParams = { shareOrganizationIds: ['org-id'] };
+    await workflowResolvers.Mutation.setWorkflowStatus({}, { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: true, comment: '  override  ', runtimeParams }, mockContext);
+    expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'status-id', true, 'override', runtimeParams);
+  });
+
+  it('rejects oversized bypass comments before invoking the domain', () => {
+    expect(() => workflowResolvers.Mutation.setWorkflowStatus({}, { entityId: 'entity-id', targetStatusId: 'status-id', applyTransitionActions: false, comment: 'a'.repeat(1001) }, mockContext)).toThrow('1000');
+    expect(workflowDomain.setWorkflowStatus).not.toHaveBeenCalled();
+  });
+});
+
+describe('Workflow status GraphQL contract', () => {
+  it.each(['destination', 'result'])('returns mapped identity and order for %s status', async (field) => {
+    const status = { id: 'report-status-approved', template_id: 'template-approved', order: 1 };
+    const schema = makeExecutableSchema({
+      typeDefs: `
+        type Status { id: ID!, order: Int! }
+        type WorkflowTransition { toStatus: Status }
+        type WorkflowTriggerResult { status: Status }
+        type Query { destination: WorkflowTransition, result: WorkflowTriggerResult }
+      `,
+      resolvers: {
+        Query: {
+          destination: () => ({ toState: 'template-approved', toStatus: status }),
+          result: () => ({ newState: 'template-approved', instance: { currentState: 'template-approved', currentStatus: status } }),
+        },
+        WorkflowTransition: { toStatus: workflowResolvers.WorkflowTransition.toStatus },
+        WorkflowTriggerResult: { status: workflowResolvers.WorkflowTriggerResult.status },
+      },
+    });
+    const statusField = field === 'destination' ? 'toStatus' : 'status';
+    const result = await graphql({ schema, source: `{ ${field} { ${statusField} { id order } } }` });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.[field]).toEqual({ [statusField]: { id: status.id, order: 1 } });
+  });
+
+  it('returns the mapped Status identity and required order for the current state', async () => {
+    const currentStatus = { id: 'report-status-new', template_id: 'template-new', order: 0 };
+    const schema = makeExecutableSchema({
+      typeDefs: `
+        type Status { id: ID!, order: Int! }
+        type WorkflowInstance { currentStatus: Status }
+        type Report { workflowInstance: WorkflowInstance }
+        type Query { report: Report }
+      `,
+      resolvers: {
+        Query: { report: () => ({ workflowInstance: { currentState: 'template-new', currentStatus } }) },
+        WorkflowInstance: { currentStatus: workflowResolvers.WorkflowInstance.currentStatus },
+      },
+    });
+    const result = await graphql({ schema, source: '{ report { workflowInstance { currentStatus { id order } } } }' });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.report).toEqual({ workflowInstance: { currentStatus: { id: 'report-status-new', order: 0 } } });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -185,10 +287,11 @@ describe('Query.allowedTransitions resolver – comment field', () => {
 // ---------------------------------------------------------------------------
 
 describe('WorkflowTriggerResult resolver – status field', () => {
-  it('should return a status object derived from newState when present', () => {
-    const triggerResult = { newState: 'reviewed', instance: {}, entity: {} };
+  it('should return the mapped status of the resulting instance', () => {
+    const currentStatus = { id: 'mapped-reviewed', template_id: 'reviewed', order: 1 };
+    const triggerResult = { newState: 'reviewed', instance: { currentStatus }, entity: {} };
     const status = workflowResolvers.WorkflowTriggerResult.status(triggerResult);
-    expect(status).toEqual({ id: 'reviewed', template_id: 'reviewed' });
+    expect(status).toEqual(currentStatus);
   });
 
   it('should return null when newState is absent', () => {
@@ -366,7 +469,7 @@ describe('workflow-resolvers', () => {
 
     describe('allowedTransitions', () => {
       it('should call getAllowedTransitions with correct arguments', async () => {
-        const mockTransitions = [{ event: 'close', toState: 'closed', actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
+        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
         vi.mocked(workflowDomain.getAllowedTransitions).mockResolvedValue(mockTransitions);
 
         const result = await workflowResolvers.Query.allowedTransitions(
@@ -537,10 +640,11 @@ describe('workflow-resolvers', () => {
     });
 
     describe('currentStatus', () => {
-      it('should return status object with id and template_id', () => {
-        const instance = { currentState: 'open' };
+      it('should return the complete mapped status', () => {
+        const currentStatus = { id: 'mapped-open', template_id: 'open', order: 0 };
+        const instance = { currentState: 'open', currentStatus };
         const result = workflowResolvers.WorkflowInstance.currentStatus(instance);
-        expect(result).toEqual({ id: 'open', template_id: 'open' });
+        expect(result).toEqual(currentStatus);
       });
     });
 
@@ -556,10 +660,11 @@ describe('workflow-resolvers', () => {
 
   describe('WorkflowTransition type resolvers', () => {
     describe('toStatus', () => {
-      it('should return status object from toState', () => {
-        const transition = { toState: 'closed' };
+      it('should return the complete mapped destination status', () => {
+        const toStatus = { id: 'mapped-closed', template_id: 'closed', order: 2 };
+        const transition = { toState: 'closed', toStatus };
         const result = workflowResolvers.WorkflowTransition.toStatus(transition);
-        expect(result).toEqual({ id: 'closed', template_id: 'closed' });
+        expect(result).toEqual(toStatus);
       });
     });
 
@@ -587,10 +692,10 @@ describe('workflow-resolvers', () => {
 
   describe('WorkflowTriggerResult type resolvers', () => {
     describe('status', () => {
-      it('should return status object when newState is present', () => {
+      it('should return null when the resulting state has no mapped status', () => {
         const result = { newState: 'completed' };
         const status = workflowResolvers.WorkflowTriggerResult.status(result);
-        expect(status).toEqual({ id: 'completed', template_id: 'completed' });
+        expect(status).toBeNull();
       });
 
       it('should return null when newState is not present', () => {

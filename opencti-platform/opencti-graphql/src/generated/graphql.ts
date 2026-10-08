@@ -17624,6 +17624,7 @@ export type Mutation = {
   securityPlatformRelationDelete?: Maybe<SecurityPlatform>;
   sendUserMail?: Maybe<Scalars['Boolean']['output']>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
+  setWorkflowStatus: WorkflowTriggerResult;
   settingsEdit?: Maybe<SettingsEditMutations>;
   setupEnterpriseLicense?: Maybe<Settings>;
   smtpConfigurationDelete?: Maybe<Scalars['Boolean']['output']>;
@@ -19819,6 +19820,15 @@ export type MutationSendUserMailArgs = {
 
 export type MutationSessionKillArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSetWorkflowStatusArgs = {
+  applyTransitionActions: Scalars['Boolean']['input'];
+  comment?: InputMaybe<Scalars['String']['input']>;
+  entityId: Scalars['String']['input'];
+  runtimeParams?: InputMaybe<Scalars['JSON']['input']>;
+  targetStatusId: Scalars['String']['input'];
 };
 
 
@@ -25177,6 +25187,7 @@ export type Query = {
   vulnerabilities?: Maybe<VulnerabilityConnection>;
   vulnerability?: Maybe<Vulnerability>;
   work?: Maybe<Work>;
+  workflowBypassStatuses: Array<WorkflowBypassStatus>;
   workflowDefinition?: Maybe<WorkflowSchema>;
   workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
@@ -28401,6 +28412,11 @@ export type QueryVulnerabilityArgs = {
 
 export type QueryWorkArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryWorkflowBypassStatusesArgs = {
+  entityId: Scalars['String']['input'];
 };
 
 
@@ -39193,6 +39209,15 @@ export type WorkflowActionError = {
   timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
 
+export type WorkflowBypassStatus = {
+  __typename?: 'WorkflowBypassStatus';
+  onEnter: Array<WorkflowActionConfig>;
+  onExit: Array<WorkflowActionConfig>;
+  requiresShareOrganizationInput: Scalars['Boolean']['output'];
+  requiresUnshareOrganizationInput: Scalars['Boolean']['output'];
+  status: Status;
+};
+
 export type WorkflowDefinitionMutationResult = {
   __typename?: 'WorkflowDefinitionMutationResult';
   errors: Array<WorkflowValidationError>;
@@ -41728,6 +41753,7 @@ export type ResolversTypes = ResolversObject<{
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionError: ResolverTypeWrapper<WorkflowActionError>;
+  WorkflowBypassStatus: ResolverTypeWrapper<Omit<WorkflowBypassStatus, 'status'> & { status: ResolversTypes['Status'] }>;
   WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowExecutionStatus: WorkflowExecutionStatus;
@@ -42748,6 +42774,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
   WorkflowActionError: WorkflowActionError;
+  WorkflowBypassStatus: Omit<WorkflowBypassStatus, 'status'> & { status: ResolversParentTypes['Status'] };
   WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
   WorkflowEntityRef: WorkflowEntityRef;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
@@ -49111,6 +49138,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityPlatformRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   sendUserMail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendUserMailArgs, 'input'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
+  setWorkflowStatus?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationSetWorkflowStatusArgs, 'applyTransitionActions' | 'entityId' | 'targetStatusId'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
   setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
   smtpConfigurationDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -51073,6 +51101,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType, Partial<QueryVulnerabilitiesArgs>>;
   vulnerability?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<QueryVulnerabilityArgs>>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<QueryWorkArgs, 'id'>>;
+  workflowBypassStatuses?: Resolver<Array<ResolversTypes['WorkflowBypassStatus']>, ParentType, ContextType, RequireFields<QueryWorkflowBypassStatusesArgs, 'entityId'>>;
   workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
   workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
@@ -54670,6 +54699,14 @@ export type WorkflowActionErrorResolvers<ContextType = any, ParentType extends R
   timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type WorkflowBypassStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowBypassStatus'] = ResolversParentTypes['WorkflowBypassStatus']> = ResolversObject<{
+  onEnter?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
+  onExit?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
+  requiresShareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  requiresUnshareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
+}>;
+
 export type WorkflowDefinitionMutationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowDefinitionMutationResult'] = ResolversParentTypes['WorkflowDefinitionMutationResult']> = ResolversObject<{
   errors?: Resolver<Array<ResolversTypes['WorkflowValidationError']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -55633,6 +55670,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkTracking?: WorkTrackingResolvers<ContextType>;
   WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
   WorkflowActionError?: WorkflowActionErrorResolvers<ContextType>;
+  WorkflowBypassStatus?: WorkflowBypassStatusResolvers<ContextType>;
   WorkflowDefinitionMutationResult?: WorkflowDefinitionMutationResultResolvers<ContextType>;
   WorkflowEntityRef?: WorkflowEntityRefResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;

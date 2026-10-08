@@ -79,6 +79,7 @@ const caseRfiFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     revoked
     x_opencti_request_access
     requestAccessConfiguration {

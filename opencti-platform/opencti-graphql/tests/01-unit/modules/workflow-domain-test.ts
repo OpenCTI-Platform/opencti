@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { booleanConf } from '../../../src/config/conf';
+import { booleanConf, isFeatureEnabled } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
-import { createStatus } from '../../../src/domain/status';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
+import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
 import { lockResources } from '../../../src/lock/master-lock';
@@ -30,6 +30,8 @@ import {
   setWorkflowDefinition,
   triggerWorkflowEvent,
   cleanupEntityWorkflow,
+  setWorkflowStatus,
+  getWorkflowBypassStatuses,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
@@ -39,6 +41,11 @@ import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/wo
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
+import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { createListTask } from '../../../src/domain/backgroundTask-common';
+import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+
+vi.mock('../../../src/domain/backgroundTask-common', () => ({ createListTask: vi.fn() }));
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -115,6 +122,7 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
 
 vi.mock('../../../src/domain/status', () => ({
   createStatus: vi.fn(),
+  findByType: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
@@ -133,6 +141,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       warn: vi.fn(),
     },
     booleanConf: vi.fn(actual.booleanConf),
+    isFeatureEnabled: vi.fn().mockReturnValue(true),
   };
 });
 
@@ -147,9 +156,437 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
 const mockUser = { id: 'user-id' } as any;
 
+describe('Workflow bypass', () => {
+  const user = { id: 'admin', capabilities: [{ name: 'BYPASS' }], draft_context: 'draft-id' } as any;
+  const context = {} as any;
+  let entity: any;
+  let instance: any;
+  let definition: any;
+  let target: any;
+  let legacy: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
+    entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'status-open' };
+    instance = { id: 'instance-id', internal_id: 'instance-id', entity_id: entity.id, currentState: 'open', scope: 'standard', history: '[]' };
+    definition = {
+      initialState: 'open',
+      states: [
+        { statusId: 'open', onExit: [{ type: 'log', params: { message: 'exit' } }] },
+        { statusId: 'closed', onEnter: [{ type: 'log', params: { message: 'enter' } }] },
+      ],
+      transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'log', params: { message: 'edge' } }] }],
+    };
+    target = { id: 'status-closed', entity_type: ENTITY_TYPE_STATUS, type: 'Incident', scope: StatusScope.Global, template_id: 'closed', order: 2 };
+    legacy = { ...target, id: 'status-open', template_id: 'open', order: 1 };
+    vi.mocked(findByType).mockResolvedValue({ id: 'setting-id', workflow_id: 'definition-id' } as any);
+    vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => {
+      if (id === 'entity-id') return entity;
+      if (id === 'instance-id') return structuredClone(instance);
+      if (id === 'status-closed') return target;
+      if (id === 'status-open') return legacy;
+      if (id === 'definition-id') return { id, published_version: { content: JSON.stringify(definition) } } as any;
+      return null;
+    });
+    vi.mocked(internalLoadById).mockResolvedValue(entity);
+    vi.mocked(loadEntity).mockImplementation(async () => instance);
+    vi.mocked(createEntity).mockImplementation(async (_context, _user, input) => {
+      instance = { ...input, id: 'instance-id', internal_id: 'instance-id' };
+      return instance;
+    });
+    vi.mocked(updateAttribute).mockImplementation(async (_context, _user, _id, _type, patches) => {
+      for (const patch of patches) instance[patch.key] = patch.value[0];
+      return { element: instance } as any;
+    });
+    vi.mocked(resolveMappedStatusId).mockImplementation(async (_context, _user, _type, _scope, state) => `status-${state}`);
+    vi.mocked(fullEntitiesList).mockResolvedValue([legacy, target]);
+    vi.spyOn(ActionRegistry, 'log').mockResolvedValue(undefined);
+    vi.mocked(createListTask).mockResolvedValue({ work_id: 'work-id' } as any);
+  });
+
+  it('projects a status-only bypass with explicit user and normalized history, without hooks or edge actions', async () => {
+    const result = await setWorkflowStatus(context, user, entity.id, target.id, false, '  override  ');
+    expect(result).toMatchObject({ success: true, newState: 'closed', executionStatus: 'completed' });
+    expect(projectWorkflowState).toHaveBeenCalledWith(context, { ...user, draft_context: undefined }, entity, 'closed', StatusScope.Global);
+    expect(JSON.parse(instance.history)).toEqual([expect.objectContaining({ state: 'closed', event: 'event_bypass', user_id: 'admin', comment: 'override' })]);
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+    expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+  });
+
+  it('runs onExit before onEnter and never transition-edge actions', async () => {
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ success: true });
+    expect(vi.mocked(ActionRegistry.log).mock.calls.map((call) => call[1].message)).toEqual(['exit', 'enter']);
+  });
+
+  it.each(['SHARE', 'UNSHARE'])('validates %s runtime input before any hook or pending write', async (type) => {
+    definition.states[1].onEnter.push({ type: 'asyncBulkAction', params: JSON.stringify({ actions: [{ type, context: { values: [] } }] }) });
+    const key = type === 'SHARE' ? 'shareOrganizationIds' : 'unshareOrganizationIds';
+    for (const value of [undefined, [], '', [''], [42]]) {
+      expect(await setWorkflowStatus(context, user, entity.id, target.id, true, null, { [key]: value }))
+        .toMatchObject({ success: false, reason: expect.stringContaining(key) });
+    }
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+    expect(createListTask).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
+  });
+
+  it('allows static organizations without runtime input', async () => {
+    definition.states[1].onEnter.push({ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } });
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ success: true, executionStatus: 'pending' });
+    expect(createListTask).toHaveBeenCalledWith(context, WORKFLOW_MANAGER_USER, expect.objectContaining({ actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] }));
+  });
+
+  it.each(['instance', 'supplied-status', 'initial-state'])('returns target hook input requirements from %s without writes', async (source) => {
+    if (source !== 'instance') instance = null;
+    if (source === 'initial-state') delete entity.x_opencti_workflow_id;
+    definition.states[0].onExit.push({ type: 'asyncBulkAction', params: JSON.stringify({ actions: [{ type: 'SHARE', context: { values: [] } }] }) });
+    definition.states[1].onEnter.push({ type: 'asyncBulkAction', params: { actions: [{ type: 'UNSHARE', context: { values: [] } }] } });
+    definition.states[0].onEnter = [{ type: 'asyncBulkAction', params: { actions: [{ type: 'UNSHARE', context: { values: ['static-org'] } }] } }];
+    expect(await getWorkflowBypassStatuses(context, user, entity.id)).toEqual([
+      { status: legacy, onExit: definition.states[0].onExit, onEnter: definition.states[0].onEnter, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: false },
+      { status: target, onExit: definition.states[0].onExit, onEnter: definition.states[1].onEnter, requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true },
+    ]);
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it.each(['status-only', 'with-hooks', 'hydrate-failure'])('notifies bypass comments only after commit: %s', async (mode) => {
+    const unlock = vi.fn();
+    vi.mocked(lockResources).mockResolvedValue({ unlock });
+    vi.mocked(loadAssignees).mockResolvedValue([{ id: 'recipient' }, { id: user.id }] as any);
+    vi.mocked(loadParticipants).mockResolvedValue([{ id: 'recipient' }] as any);
+    vi.mocked(resolveUserById).mockResolvedValue({ id: 'recipient' } as any);
+    let stateAtNotification: any;
+    vi.mocked(addNotification).mockImplementationOnce(async () => {
+      stateAtNotification = { ...instance, unlocked: unlock.mock.calls.length === 1 };
+      return {} as any;
+    });
+    if (mode === 'hydrate-failure') {
+      const load = vi.mocked(storeLoadById).getMockImplementation()!;
+      vi.mocked(storeLoadById).mockImplementation(async (...args) => {
+        if (args[2] === entity.id && instance.currentState === 'closed') throw new Error('response hydration failed');
+        return load(...args);
+      });
+    }
+    const result = setWorkflowStatus(context, user, entity.id, target.id, mode === 'with-hooks', '  override  ');
+    if (mode === 'hydrate-failure') await expect(result).rejects.toThrow('response hydration failed');
+    else expect(await result).toMatchObject({ success: true, executionStatus: 'completed' });
+    expect(addNotification).toHaveBeenCalledOnce();
+    expect(stateAtNotification).toMatchObject({ currentState: 'closed', pendingTransition: null, unlocked: true });
+    expect(JSON.parse(stateAtNotification.history)).toEqual([expect.objectContaining({ event: 'event_bypass', comment: 'override' })]);
+    expect(addNotification).toHaveBeenCalledWith(context, expect.anything(), expect.objectContaining({
+      user_id: 'recipient',
+      notification_content: [expect.objectContaining({ events: [expect.objectContaining({ message: '[event_bypass] override' })] })],
+    }));
+  });
+
+  it.each(['hook-failure', 'commit-failure', 'pending', 'blank'])('does not notify a bypass comment for %s', async (mode) => {
+    vi.mocked(loadAssignees).mockResolvedValue([{ id: 'recipient' }] as any);
+    vi.mocked(loadParticipants).mockResolvedValue([]);
+    vi.mocked(resolveUserById).mockResolvedValue({ id: 'recipient' } as any);
+    if (mode === 'hook-failure') vi.mocked(ActionRegistry.log).mockRejectedValueOnce(new Error('hook failed'));
+    if (mode === 'commit-failure') vi.mocked(updateAttribute).mockRejectedValueOnce(new Error('commit failed'));
+    if (mode === 'pending') definition.states[0].onExit = [{ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } }];
+
+    await setWorkflowStatus(context, user, entity.id, target.id, mode !== 'commit-failure', mode === 'blank' ? '   ' : 'override');
+
+    expect(addNotification).not.toHaveBeenCalled();
+  });
+
+  it('lazily initializes from legacy status without running initialization hooks', async () => {
+    instance = null;
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
+    expect(createEntity).toHaveBeenCalledWith(context, expect.objectContaining({ id: 'admin', draft_context: undefined }), expect.objectContaining({ currentState: 'open', scope: StatusScope.Global }), ENTITY_TYPE_WORKFLOW_INSTANCE);
+    expect(createRelation).toHaveBeenCalledTimes(1);
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+    expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+  });
+
+  it.each(['missing', 'template', 'type', 'scope', 'mapping', 'not-status'])('rejects invalid target %s before lazy initialization or actions', async (invalid) => {
+    instance = null;
+    if (invalid === 'missing') target = null;
+    if (invalid === 'template') target.template_id = 'unpublished';
+    if (invalid === 'type') target.type = 'Report';
+    if (invalid === 'scope') target.scope = StatusScope.RequestAccess;
+    if (invalid === 'mapping') vi.mocked(resolveMappedStatusId).mockResolvedValue('another-status');
+    if (invalid === 'not-status') target.entity_type = 'StatusTemplate';
+    expect(await setWorkflowStatus(context, user, entity.id, 'status-closed', true)).toMatchObject({ success: false });
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(ActionRegistry.log).not.toHaveBeenCalled();
+  });
+
+  it('does not write when no published definition exists', async () => {
+    vi.mocked(findByType).mockResolvedValue({ id: 'setting-id' } as any);
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ success: false });
+    expect(await getWorkflowBypassStatuses(context, user, entity.id)).toEqual([]);
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it.each(['pending', 'error'])('blocks an instance with %s work', async (pendingStatus) => {
+    instance.pendingStatus = pendingStatus;
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: false });
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('checks entity access on mutation and picker', async () => {
+    entity = null;
+    vi.mocked(internalLoadById).mockResolvedValue(null as any);
+    await expect(setWorkflowStatus(context, user, 'entity-id', 'status-closed', false)).rejects.toThrow('Entity not found');
+    await expect(getWorkflowBypassStatuses(context, user, 'entity-id')).rejects.toThrow('Entity not found');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('gates non-draft mutation and picker with ENTITIES_WORKFLOW', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    await expect(setWorkflowStatus(context, user, entity.id, target.id, false)).rejects.toThrow('ENTITIES_WORKFLOW');
+    await expect(getWorkflowBypassStatuses(context, user, entity.id)).rejects.toThrow('ENTITIES_WORKFLOW');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('keeps DraftWorkspace bypass and picker available with flag off', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    entity.entity_type = 'DraftWorkspace';
+    target.type = 'DraftWorkspace';
+    legacy.type = 'DraftWorkspace';
+    expect(await getWorkflowBypassStatuses(context, user, entity.id)).toHaveLength(2);
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
+  });
+
+  it.each(['entity', 'instance', 'legacy'])('rejects RequestAccess detected through %s for mutation and picker', async (source) => {
+    if (source === 'entity') entity.x_opencti_request_access = true;
+    if (source === 'instance') instance.scope = StatusScope.RequestAccess;
+    if (source === 'legacy') {
+      instance = null;
+      legacy.scope = StatusScope.RequestAccess;
+    }
+    await expect(setWorkflowStatus(context, user, entity.id, target.id, false)).rejects.toThrow('RequestAccess');
+    await expect(getWorkflowBypassStatuses(context, user, entity.id)).rejects.toThrow('RequestAccess');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('limits comments before any write', async () => {
+    await expect(setWorkflowStatus(context, user, entity.id, target.id, false, 'a'.repeat(1001))).rejects.toThrow('1000');
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('surfaces hook failure without advancing or projecting the state', async () => {
+    vi.mocked(ActionRegistry.log).mockRejectedValueOnce(new Error('hook failed'));
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ success: false, executionStatus: 'error', reason: expect.stringContaining('hook failed') });
+    expect(instance.currentState).toBe('open');
+    expect(instance.pendingStatus).toBe('error');
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it.each(['pending', 'completed'])('preserves %s bypass state when response hydration fails', async (executionStatus) => {
+    if (executionStatus === 'pending') {
+      definition.states[0].onExit = [{ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } }];
+    }
+    const load = vi.mocked(storeLoadById).getMockImplementation()!;
+    vi.mocked(storeLoadById).mockImplementation(async (...args) => {
+      if (args[2] === entity.id && (instance.pendingStatus === 'pending' || instance.currentState === 'closed')) {
+        throw new Error('response hydration failed');
+      }
+      return load(...args);
+    });
+
+    await expect(setWorkflowStatus(context, user, entity.id, target.id, true)).rejects.toThrow('response hydration failed');
+
+    expect(instance.pendingStatus).toBe(executionStatus === 'pending' ? 'pending' : null);
+    expect(instance.pendingError).toBeNull();
+    expect(instance.currentState).toBe(executionStatus === 'pending' ? 'open' : 'closed');
+    if (executionStatus === 'pending') {
+      expect(JSON.parse(instance.pendingTransition).asyncActions).toHaveLength(1);
+    } else {
+      expect(instance.pendingTransition).toBeNull();
+      expect(JSON.parse(instance.history)).toHaveLength(1);
+    }
+    expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), expect.arrayContaining([
+      { key: 'pendingStatus', value: ['error'] },
+    ]));
+  });
+
+  it('collects real registry async slots and defers remaining hooks with runtime params', async () => {
+    const action = { type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: [] } }] } };
+    definition.states[0].onExit.push(action, { type: 'log', params: { message: 'after async' } });
+    const runtimeParams = { shareOrganizationIds: ['org-id'] };
+    vi.mocked(createListTask).mockImplementationOnce(async () => {
+      expect(instance.pendingStatus).toBe('pending');
+      expect(JSON.parse(instance.pendingTransition).event).toBe('event_bypass');
+      expect(lockResources).toHaveBeenCalledWith(['workflow-mutation-entity-id']);
+      return { work_id: 'work-id' } as any;
+    });
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true, 'queued', runtimeParams)).toMatchObject({ success: true, executionStatus: 'pending' });
+    expect(instance.currentState).toBe('open');
+    const pending = JSON.parse(instance.pendingTransition);
+    expect(pending).toMatchObject({ event: 'event_bypass', toState: 'closed', runtimeParams, comment: 'queued', syncActions: [definition.states[0].onExit[2], definition.states[1].onEnter[0]] });
+    expect(pending.asyncActions).toEqual([expect.objectContaining({ workId: 'work-id', status: 'pending' })]);
+    expect(createListTask).toHaveBeenCalledWith(context, WORKFLOW_MANAGER_USER, expect.objectContaining({ ids: ['entity-id'], workflow_instance_id: 'instance-id', workflow_action_id: pending.asyncActions[0].id, actions: [{ type: 'SHARE', context: { values: ['org-id'] } }] }));
+    expect(vi.mocked(ActionRegistry.log).mock.calls.map((call) => call[1].message)).toEqual(['exit']);
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['completed', 'bypass', 'event'],
+    ['pending', 'bypass', 'event'],
+    ['completed', 'bypass', 'clear'],
+    ['pending', 'bypass', 'clear'],
+    ['completed', 'event', 'bypass'],
+    ['pending', 'event', 'bypass'],
+    ['completed', 'callback', 'clear'],
+  ])('serializes %s %s with a concurrent %s mutation', async (executionStatus, first, mutation) => {
+    let enterHook!: () => void;
+    let releaseHook!: () => void;
+    let requestLock!: () => void;
+    const hookEntered = new Promise<void>((resolve) => {
+      enterHook = resolve;
+    });
+    const hookReleased = new Promise<void>((resolve) => {
+      releaseHook = resolve;
+    });
+    const lockRequested = new Promise<void>((resolve) => {
+      requestLock = resolve;
+    });
+    const locks = new Map<string, Promise<void>>();
+    vi.mocked(lockResources).mockImplementation(async ([key]) => {
+      const previous = locks.get(key);
+      let unlock!: () => void;
+      locks.set(key, new Promise<void>((resolve) => {
+        unlock = resolve;
+      }));
+      if (vi.mocked(lockResources).mock.calls.length > 1) requestLock();
+      await previous;
+      return { unlock } as any;
+    });
+    vi.mocked(loadEntity).mockImplementation(async () => structuredClone(instance));
+    if (first !== 'event') {
+      vi.mocked(ActionRegistry.log).mockImplementationOnce(async () => {
+        enterHook();
+        await hookReleased;
+      });
+      if (first === 'callback') {
+        instance.pendingStatus = 'pending';
+        instance.pendingTransition = JSON.stringify({
+          event: 'event_bypass', toState: 'closed', triggeredBy: user.id, triggeredAt: new Date().toISOString(),
+          asyncActions: [{ id: 'slot-1', workId: 'work-id', type: 'asyncBulkAction', status: 'pending' }],
+          syncActions: [{ type: 'log', params: { message: 'remaining hook' } }],
+        });
+      }
+      if (executionStatus === 'pending') {
+        definition.states[0].onExit.push({ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } });
+      }
+    } else {
+      vi.mocked(WorkflowFactory.getInstance).mockReturnValueOnce({
+        trigger: async () => {
+          enterHook();
+          await hookReleased;
+          return { success: true, executionStatus, asyncActionSlots: executionStatus === 'pending' ? [{ id: 'slot-1', workId: 'work-id', type: 'asyncBulkAction' }] : [] };
+        },
+        getCurrentState: () => 'closed',
+      } as any);
+    }
+    const firstMutation = first === 'bypass'
+      ? setWorkflowStatus(context, user, entity.id, target.id, true)
+      : first === 'event'
+        ? triggerWorkflowEvent(context, user, entity.id, 'close')
+        : reportWorkflowAsyncActionResult(context, user, instance.id, 'slot-1', 'success');
+    await hookEntered;
+    const writesBefore = vi.mocked(updateAttribute).mock.calls.length;
+    const triggersBefore = vi.mocked(WorkflowFactory.getInstance).mock.calls.length;
+    const concurrent = mutation === 'event'
+      ? triggerWorkflowEvent(context, user, entity.id, 'close')
+      : mutation === 'bypass'
+        ? setWorkflowStatus(context, user, entity.id, target.id, false)
+        : clearWorkflowPendingState(context, user, entity.id);
+    await Promise.race([lockRequested, concurrent]);
+    const writesWhileHeld = vi.mocked(updateAttribute).mock.calls.length - writesBefore;
+    const triggeredWhileHeld = vi.mocked(WorkflowFactory.getInstance).mock.calls.length - triggersBefore;
+    releaseHook();
+    const [, result] = await Promise.all([firstMutation, concurrent]);
+
+    expect(writesWhileHeld).toBe(0);
+    expect(triggeredWhileHeld).toBe(0);
+    const firstEvent = first === 'event' ? 'close' : 'event_bypass';
+    if (mutation !== 'clear' && executionStatus === 'pending') {
+      expect(result).toMatchObject({ success: false, reason: expect.stringContaining('pending') });
+      expect(JSON.parse(instance.pendingTransition).event).toBe(firstEvent);
+    } else {
+      expect(JSON.parse(instance.history).map((entry: any) => entry.event)).toEqual([
+        ...(executionStatus === 'completed' ? [firstEvent] : []),
+        mutation === 'event' ? 'close' : mutation === 'bypass' ? 'event_bypass' : 'admin_clear_pending_state',
+      ]);
+    }
+    if (first === 'callback') {
+      vi.mocked(updateAttribute).mockClear();
+      await reportWorkflowAsyncActionResult(context, user, instance.id, 'slot-1', 'success');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    }
+  });
+
+  it.each(['bypass', 'event'])('releases the %s mutation lock before hydrating a pending response', async (mutation) => {
+    const unlock = vi.fn();
+    vi.mocked(lockResources).mockResolvedValue({ unlock });
+    definition.states[0].onExit = [{ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } }];
+    if (mutation === 'event') {
+      vi.mocked(WorkflowFactory.getInstance).mockReturnValueOnce({
+        trigger: async () => ({ success: true, executionStatus: 'pending', asyncActionSlots: [{ id: 'slot-1', workId: 'work-id', type: 'asyncBulkAction' }] }),
+        getCurrentState: () => 'closed',
+      } as any);
+    }
+    let unlockedAtHydration = false;
+    const load = vi.mocked(storeLoadById).getMockImplementation()!;
+    vi.mocked(storeLoadById).mockImplementation(async (...args) => {
+      if (args[2] === entity.id && instance.pendingStatus === 'pending') unlockedAtHydration = unlock.mock.calls.length === 1;
+      return load(...args);
+    });
+
+    const result = mutation === 'bypass'
+      ? await setWorkflowStatus(context, user, entity.id, target.id, true)
+      : await triggerWorkflowEvent(context, user, entity.id, 'close');
+
+    expect(result).toMatchObject({ success: true, executionStatus: 'pending' });
+    expect(unlockedAtHydration).toBe(true);
+    expect(unlock).toHaveBeenCalledOnce();
+  });
+
+  it('targets only draft contents and persists draft ids for continuation', async () => {
+    entity.entity_type = 'DraftWorkspace';
+    target.type = 'DraftWorkspace';
+    definition.states[0].onExit = [{ type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } }];
+    vi.mocked(fullEntitiesList).mockResolvedValue([{ internal_id: 'draft-object' }, { internal_id: 'linked', draft_change: { draft_operation: 'update_linked' } }] as any);
+    expect(await setWorkflowStatus(context, user, entity.id, target.id, true)).toMatchObject({ executionStatus: 'pending' });
+    expect(createListTask).toHaveBeenCalledWith(expect.objectContaining({ draft_context: 'entity-id' }), WORKFLOW_MANAGER_USER, expect.objectContaining({ ids: ['draft-object'] }));
+    expect(JSON.parse(instance.pendingTransition).draftEntityIds).toEqual(['draft-object']);
+  });
+
+  it('returns only published mapped statuses in projection order without a 100-item limit or writes', async () => {
+    const statuses = Array.from({ length: 105 }, (_, index) => ({ ...target, id: `status-${index}`, template_id: `state-${index}`, order: index }));
+    definition.states = statuses.map((status) => ({ statusId: status.template_id }));
+    vi.mocked(fullEntitiesList).mockResolvedValue([...statuses].reverse().concat({ ...target, template_id: 'stale' }));
+    expect(await getWorkflowBypassStatuses(context, user, entity.id)).toEqual(statuses.map((status) => ({
+      status, onExit: [], onEnter: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false,
+    })));
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+});
+
 describe('Workflow Domain', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('denies workflow bypass without BYPASS before accessing or changing an entity', async () => {
+    await expect(setWorkflowStatus({} as any, { id: 'editor', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as any, 'entity-id', 'status-id', false))
+      .rejects.toThrow('BYPASS');
+    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it('should fail when definition JSON is invalid', async () => {
@@ -2574,6 +3011,8 @@ describe('Transition comments – Domain', () => {
 describe('getWorkflowInstance', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findStatusesByType).mockResolvedValue([]);
+    vi.mocked(WorkflowFactory.createDefinition).mockReset();
   });
 
   const makeBaseSetup = () => {
@@ -2589,6 +3028,31 @@ describe('getWorkflowInstance', () => {
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (loadEntity as any).mockResolvedValue(null); // no instance
   };
+
+  it.each(['standard', StatusScope.RequestAccess])('hydrates current and destination statuses in scope %s', async (scope) => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]', scope });
+    const currentStatus = { id: 'mapped-draft', template_id: 'draft', order: 0, type: 'Incident', scope: scope === 'standard' ? StatusScope.Global : scope };
+    const toStatus = { ...currentStatus, id: 'mapped-closed', template_id: 'closed', order: 1 };
+    vi.mocked(findStatusesByType).mockResolvedValue([
+      { ...currentStatus, id: 'wrong-scope', scope: scope === 'standard' ? StatusScope.RequestAccess : StatusScope.Global },
+      currentStatus,
+      toStatus,
+    ] as any);
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    expect(result.currentStatus).toEqual(currentStatus);
+    expect(result.allowedTransitions[0].toStatus).toEqual(toStatus);
+    expect(findStatusesByType).toHaveBeenCalledOnce();
+    expect(findStatusesByType).toHaveBeenCalledWith(mockContext, { ...mockUser, draft_context: undefined }, 'Incident');
+  });
+
+  it('returns null status mappings when no Status exists', async () => {
+    makeBaseSetup();
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]' });
+    const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+    expect(result.currentStatus).toBeNull();
+    expect(result.allowedTransitions[0].toStatus).toBeNull();
+  });
 
   it('returns pendingTransition: null when instance has no pendingTransition', async () => {
     makeBaseSetup();

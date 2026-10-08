@@ -17,6 +17,7 @@ export const taskFragment = graphql`
     due_date
     description
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     revoked
     created_at
     updated_at

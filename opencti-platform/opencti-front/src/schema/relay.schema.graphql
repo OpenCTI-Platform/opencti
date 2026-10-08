@@ -9274,6 +9274,7 @@ type Query {
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
+  workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
@@ -10108,6 +10109,7 @@ type Mutation {
   workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
+  setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
   reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
   channelAdd(input: ChannelAddInput!): Channel
@@ -10596,6 +10598,14 @@ type WorkflowTransition {
   actions: [String!]
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
+}
+
+type WorkflowBypassStatus {
+  status: Status!
+  onExit: [WorkflowActionConfig!]!
+  onEnter: [WorkflowActionConfig!]!
+  requiresShareOrganizationInput: Boolean!
+  requiresUnshareOrganizationInput: Boolean!
 }
 
 type WorkflowLastHistoryEntry {
