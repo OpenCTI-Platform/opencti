@@ -28,6 +28,9 @@ describe('Hunt schedules', () => {
 
   it('should refuse invalid expressions with the faulty field', () => {
     expect(() => parseCron('* * * *')).toThrow('5 fields');
+    // Refused before it is parsed, however long its lists
+    expect(() => parseCron(`${'0,'.repeat(200)}0 * * * *`)).toThrow('at most 256 characters');
+    expect(validateHuntSchedule(`${'1,'.repeat(100000)}1 * * * *`, 60)).toEqual({ valid: false, error: 'Invalid cron expression: a cron expression is at most 256 characters' });
     expect(() => parseCron('61 * * * *')).toThrow('field 1');
     expect(() => parseCron('* 5-2 * * *')).toThrow('field 2: invalid range');
     expect(() => parseCron('*/0 * * * *')).toThrow('invalid step');

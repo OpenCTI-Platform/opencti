@@ -1,6 +1,9 @@
+import type { FileHandle } from 'fs/promises';
+import { Readable } from 'node:stream';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { addLabel } from '../../../../src/domain/label';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
-import { planHuntPackImport } from '../../../../src/modules/hunt/hunt-pack';
+import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from '../../../../src/modules/hunt/hunt-pack';
 import type { StixHunt } from '../../../../src/modules/hunt/hunt-types';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthUser } from '../../../../src/types/user';
@@ -9,6 +12,11 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-loaders')>(),
   findByIds: vi.fn(),
+}));
+
+vi.mock('../../../../src/domain/label', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/domain/label')>(),
+  addLabel: vi.fn(),
 }));
 
 const ORGANIZATION = 'identity--7b82b010-b1c0-4dae-981f-7756374a17df';
@@ -90,5 +98,49 @@ describe('Techniques and markings of a pack hunt', () => {
     const plan = await planHuntPackImport(testContext, ADMIN_USER, hunt, new Map());
     expect(plan.blocked).toBe(true);
     expect(plan.unresolved).toEqual(['marking-definition--e5']);
+  });
+});
+
+const packOf = (hunts: Record<string, unknown>[]) => Promise.resolve({
+  createReadStream: () => Readable.from([Buffer.from(JSON.stringify({ type: 'bundle', id: 'bundle--1', objects: hunts }))]),
+} as unknown as FileHandle);
+const labelledHunt = (index: number, labels: string[]) => ({ id: `hunt--${index}`, type: 'hunt', name: `Hunt ${index}`, sigma_rule: 'title: t', labels });
+
+describe('Labels of a pack hunt', () => {
+  afterEach(() => {
+    vi.mocked(addLabel).mockReset();
+  });
+
+  it('should refuse a pack whose labels are too many or too long before anything is written', async () => {
+    const many = Array.from({ length: 51 }, (_, index) => `label-${index}`);
+    await expect(parseHuntPack(packOf([labelledHunt(1, many)]))).rejects.toThrow('has more than 50 labels or a label longer than 256 characters');
+    await expect(parseHuntPack(packOf([labelledHunt(1, ['x'.repeat(257)])]))).rejects.toThrow('has more than 50 labels or a label longer than 256 characters');
+    const spread = Array.from({ length: 11 }, (_, hunt) => labelledHunt(hunt, Array.from({ length: 50 }, (__, index) => `label-${hunt}-${index}`)));
+    await expect(parseHuntPack(packOf(spread))).rejects.toThrow('limited to 500 distinct labels');
+    const { hunts } = await parseHuntPack(packOf([labelledHunt(1, many.slice(0, 50)), labelledHunt(2, many.slice(0, 50))]));
+    expect(hunts).toHaveLength(2);
+    expect(addLabel).not.toHaveBeenCalled();
+  });
+
+  it('should write the labels a few at a time, each label once for the whole pack', async () => {
+    let writing = 0;
+    let mostAtOnce = 0;
+    vi.mocked(addLabel).mockImplementation((async (_context: unknown, _user: unknown, { value }: { value: string }) => {
+      writing += 1;
+      mostAtOnce = Math.max(mostAtOnce, writing);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1);
+      });
+      writing -= 1;
+      return { internal_id: `id-${value}` };
+    }) as never);
+    const labels = Array.from({ length: 35 }, (_, index) => `label-${index}`);
+    const resolved = new Map<string, string>();
+    expect(await resolveHuntPackLabels(testContext, ADMIN_USER, [...labels, labels[0]], resolved)).toEqual(labels.map((label) => `id-${label}`));
+    expect(addLabel).toHaveBeenCalledTimes(35);
+    expect(mostAtOnce).toBeLessThanOrEqual(10);
+    // A later hunt of the pack reuses the labels already written
+    expect(await resolveHuntPackLabels(testContext, ADMIN_USER, ['label-3', 'label-new'], resolved)).toEqual(['id-label-3', 'id-label-new']);
+    expect(addLabel).toHaveBeenCalledTimes(36);
   });
 });

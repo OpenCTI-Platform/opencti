@@ -15,6 +15,7 @@ const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 // A schedule that fires repeats within 8 years: February 29th skips the century years that are not leap years
 // (2096 to 2104), every other day of the calendar comes back within a year
 const MAX_SEARCH_DAYS = 366 * 8;
+export const CRON_MAX_LENGTH = 256;
 
 interface FieldSpec {
   min: number;
@@ -103,6 +104,10 @@ const parseField = (field: string, spec: FieldSpec): { values: Set<number>; rest
 };
 
 export const parseCron = (expression: string): ParsedCron => {
+  // Parsing reads every list element: a bounded expression keeps it short, whatever a pack or an API call sends
+  if (expression.length > CRON_MAX_LENGTH) {
+    throw new Error(`a cron expression is at most ${CRON_MAX_LENGTH} characters`);
+  }
   const normalized = MACROS[expression.trim().toLowerCase()] ?? expression.trim();
   const parts = normalized.split(/\s+/);
   if (parts.length !== 5) {

@@ -35,6 +35,11 @@ import {
 export const HUNT_PACK_MAX_HUNTS = 200;
 // Far above a pack of the maximum number of hunts with their references; the upload is refused as soon as it is larger
 export const HUNT_PACK_MAX_BYTES = 20 * 1024 * 1024;
+// The bytes of a pack do not bound its labels: each one is a write of the import
+export const HUNT_PACK_MAX_LABELS_PER_HUNT = 50;
+export const HUNT_PACK_MAX_LABELS = 500;
+export const HUNT_PACK_MAX_LABEL_LENGTH = 256;
+const HUNT_PACK_LABEL_WRITE_BATCH = 10;
 const HUNT_STIX_TYPES = ['hunt', 'x-opencti-hunt'];
 const HUNT_EXTENSION_CREATED = '2026-10-03T00:00:00.000Z';
 // The JSON Schema of the hunt SDO, kept in this repository at config/schema/hunt-extension.json
@@ -148,11 +153,19 @@ const attackExternalId = (stixObject: Record<string, any> | undefined): string |
   return reference?.external_id ?? null;
 };
 
-/** Creates the missing labels of a pack hunt: only called once the hunt is known to be imported. */
-export const resolveHuntPackLabels = async (context: AuthContext, user: AuthUser, labels: string[]) => {
+/**
+ * Creates the missing labels of a pack hunt: only called once the hunt is known to be imported. The labels are written
+ * a few at a time, and a label already resolved for an earlier hunt of the pack (`resolved`) is not written again.
+ */
+export const resolveHuntPackLabels = async (context: AuthContext, user: AuthUser, labels: string[], resolved = new Map<string, string>()) => {
   const values = Array.from(new Set(labels.filter((label) => typeof label === 'string' && label.trim().length > 0)));
-  const resolved = await Promise.all(values.map((value) => addLabel(context, user, { value })));
-  return resolved.map((label: BasicStoreEntity) => label.internal_id);
+  const missing = values.filter((value) => !resolved.has(value));
+  for (let start = 0; start < missing.length; start += HUNT_PACK_LABEL_WRITE_BATCH) {
+    const batch = missing.slice(start, start + HUNT_PACK_LABEL_WRITE_BATCH);
+    const written = await Promise.all(batch.map((value) => addLabel(context, user, { value })));
+    written.forEach((label: BasicStoreEntity, index) => resolved.set(batch[index], label.internal_id));
+  }
+  return values.map((value) => resolved.get(value) as string);
 };
 
 export interface HuntPackImportPlan {
@@ -341,6 +354,20 @@ export const parseHuntPack = async (file: Promise<FileHandle>) => {
   }
   if (hunts.length > HUNT_PACK_MAX_HUNTS) {
     throw FunctionalError(`A hunt pack is limited to ${HUNT_PACK_MAX_HUNTS} hunts`, { count: hunts.length });
+  }
+  const packLabels = new Set<string>();
+  hunts.forEach((hunt) => {
+    const labels = hunt.labels ?? [];
+    if (labels.length > HUNT_PACK_MAX_LABELS_PER_HUNT || labels.some((label) => label.length > HUNT_PACK_MAX_LABEL_LENGTH)) {
+      throw FunctionalError(
+        `The hunt ${hunt.id} of the pack has more than ${HUNT_PACK_MAX_LABELS_PER_HUNT} labels or a label longer than ${HUNT_PACK_MAX_LABEL_LENGTH} characters`,
+        { hunt: hunt.id, field: 'labels' },
+      );
+    }
+    labels.forEach((label) => packLabels.add(label));
+  });
+  if (packLabels.size > HUNT_PACK_MAX_LABELS) {
+    throw FunctionalError(`A hunt pack is limited to ${HUNT_PACK_MAX_LABELS} distinct labels`, { count: packLabels.size });
   }
   return { hunts, objects: objects as Map<string, Record<string, any>> & Map<string, StixObject> };
 };

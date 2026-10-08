@@ -856,10 +856,11 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
     }
   }
   const imported: BasicStoreEntityHunt[] = [];
+  const resolvedLabels = new Map<string, string>();
   let updatedCount = 0;
   for (let index = 0; index < prepared.length; index += 1) {
     const { input, labels, existing, existingStatus } = prepared[index];
-    input.objectLabel = await resolveHuntPackLabels(context, user, labels);
+    input.objectLabel = await resolveHuntPackLabels(context, user, labels, resolvedLabels);
     imported.push(await addHunt(context, user, input as unknown as HuntAddInput, { upsertedStatus: existingStatus }));
     if (existing) {
       updatedCount += 1;
