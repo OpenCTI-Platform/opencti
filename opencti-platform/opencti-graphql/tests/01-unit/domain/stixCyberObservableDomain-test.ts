@@ -5,6 +5,7 @@ import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyVal
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { RESOURCE_NOT_FOUND_ERROR } from '../../../src/config/errors';
+import type { BasicStoreCommon } from '../../../src/types/store';
 
 // Keep the real loader, only stub it in tests that need a missing element
 vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
@@ -143,7 +144,8 @@ describe('SCO utils', () => {
   });
   describe('stixCyberObservableEditField', () => {
     it('should reject the edit when the observable cannot be found', async () => {
-      vi.mocked(storeLoadById).mockResolvedValueOnce(undefined);
+      // storeLoadById is typed Promise<T> but resolves undefined when the element is not found
+      vi.mocked(storeLoadById).mockResolvedValueOnce(undefined as unknown as BasicStoreCommon);
       const input = [{ key: 'x_opencti_description', value: ['description'] }];
       await expect(() => stixCyberObservableEditField(testContext, ADMIN_USER, 'unknown-id', input))
         .rejects.toMatchObject({
