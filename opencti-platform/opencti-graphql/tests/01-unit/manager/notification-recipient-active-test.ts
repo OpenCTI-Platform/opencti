@@ -18,7 +18,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-import { getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
+import { canReceiveNotifications, getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
 
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
@@ -36,6 +36,20 @@ const buildUser = (over: Partial<AuthUser>): AuthUser => ({
   personal_notifiers: [],
   ...over,
 } as unknown as AuthUser);
+
+describe('canReceiveNotifications', () => {
+  it('accepts an active regular user', () => {
+    expect(canReceiveNotifications(buildUser({}))).toBe(true);
+  });
+
+  it('rejects a service account, even when active', () => {
+    expect(canReceiveNotifications(buildUser({ user_service_account: true }))).toBe(false);
+  });
+
+  it('rejects an inactive account', () => {
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
+  });
+});
 
 describe('isNotificationRecipientActive', () => {
   it('accepts an active, non-expired account', () => {
