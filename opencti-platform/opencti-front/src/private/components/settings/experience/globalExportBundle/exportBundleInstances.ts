@@ -30,14 +30,14 @@ export const EXPORT_INSTANCE_CONFIGS: ExportInstanceConfig[] = [
   {
     entityType: 'Playbook',
     label: 'Playbooks',
-    group: 'Automation',
+    group: 'Automation & Rules',
     query: playbooksQuery,
     extractData: (data) => (data as ExportBundlePlaybooksQuery$data)?.playbooks,
   },
   {
     entityType: 'Workspace',
     label: 'Custom dashboards',
-    group: 'Visualization',
+    group: 'Dashboards & Reports',
     query: workspacesQuery,
     extraVariables: { filters: dashboardsFilters },
     extractData: (data) => (data as ExportBundleWorkspacesQuery$data)?.workspaces,
@@ -45,14 +45,14 @@ export const EXPORT_INSTANCE_CONFIGS: ExportInstanceConfig[] = [
   {
     entityType: 'CustomView',
     label: 'Custom Views',
-    group: 'Visualization',
+    group: 'Dashboards & Reports',
     query: customViewsQuery,
     extractData: (data) => (data as ExportBundleCustomViewsQuery$data)?.customViews,
   },
   {
     entityType: 'FintelTemplate',
     label: 'FINTEL Templates',
-    group: 'Visualization',
+    group: 'Dashboards & Reports',
     query: fintelTemplatesQuery,
     extractData: (data) => (data as ExportBundleFintelTemplatesQuery$data)?.fintelTemplates,
   },
