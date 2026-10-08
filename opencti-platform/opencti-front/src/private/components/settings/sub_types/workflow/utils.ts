@@ -30,6 +30,7 @@ export type Transition = {
   syncActions?: Action[];
   conditions?: { filters: FilterGroup };
   comment?: CommentModeType;
+  closingReason?: CommentModeType;
 };
 
 export const FEATURE_NAME = 'Workflow';
@@ -149,7 +150,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, comment, asyncActions = [], syncActions = [] } = node.data;
+      const { event, conditions = {}, comment, closingReason, asyncActions = [], syncActions = [] } = node.data;
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -166,6 +167,7 @@ const transformToWorkflowDefinition = (
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
         comment,
+        closingReason,
       };
 
       // Fan out: one SerializedTransition per (from, to) pair.
