@@ -16,7 +16,6 @@ import { APP_BASE_PATH } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
 import ExportBundleInstancesAccordion, { InstanceSelectionMode } from './ExportBundleInstancesAccordion';
-import ExportBundleCategoryFlat from './ExportBundleCategoryFlat';
 import ExportBundleCategoryPlaceholder from './ExportBundleCategoryPlaceholder';
 import ExportBundleCategoryChecklist from './ExportBundleCategoryChecklist';
 import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
@@ -64,10 +63,6 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
         : current.filter((existingId) => existingId !== id);
       return { ...prev, [entityType]: next };
     });
-  };
-
-  const handleToggleFlatCategory = (categoryKey: string) => (checked: boolean | 'indeterminate') => {
-    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: checked === true ? [categoryKey] : [] }));
   };
 
   const handleToggleCategoryAll = (categoryKey: string, allKeys: string[]) => (checked: boolean | 'indeterminate') => {
@@ -161,19 +156,6 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                   <ExportBundleCategoryPlaceholder
                     key={category.key}
                     category={category}
-                    accordionSx={accordionSx}
-                  />
-                );
-              }
-
-              if (category.kind === 'flat') {
-                const checked = checkedCategoryItems[category.key]?.includes(category.key) ?? false;
-                return (
-                  <ExportBundleCategoryFlat
-                    key={category.key}
-                    category={category}
-                    checked={checked}
-                    onToggle={handleToggleFlatCategory(category.key)}
                     accordionSx={accordionSx}
                   />
                 );

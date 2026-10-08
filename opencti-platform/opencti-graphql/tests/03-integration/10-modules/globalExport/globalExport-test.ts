@@ -14,13 +14,11 @@ import {
   exportIngestionRssCategory,
   exportIngestionTaxiiCategory,
   exportPlaybooksCategory,
-  exportSettingsBrandingCategory,
   exportSettingsLanguageCategory,
   exportSettingsMessagesCategory,
   exportSettingsThemeCategory,
   deleteGlobalExportsNotModifiedSince,
   generateGlobalConfigurationExport,
-  SETTINGS_BRANDING,
   SETTINGS_HIDDEN_ENTITY_TYPES,
   SETTINGS_LANGUAGE,
   SETTINGS_MESSAGES,
@@ -176,15 +174,15 @@ describe('Global configuration export', () => {
       }
     });
 
-    it('should export platform branding settings as a single settings/branding.json entry', async () => {
+    it('should export platform branding settings as settings/theme/branding.json within the theme category', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext) as any;
-      const count = await exportSettingsBrandingCategory(testContext, ADMIN_USER, archive);
+      const count = await exportSettingsThemeCategory(testContext, ADMIN_USER, archive);
 
-      expect(count).toBe(1);
-      expect(archive.append).toHaveBeenCalledTimes(1);
-      const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('settings/branding.json');
+      expect(count).toBe(2);
+      expect(archive.append).toHaveBeenCalledTimes(2);
+      const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[1];
+      expect(options.name).toBe('settings/theme/branding.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsBranding');
       expect(parsed).toHaveProperty('openCTI_version');
@@ -202,15 +200,15 @@ describe('Global configuration export', () => {
       expect(parsed.configuration).not.toHaveProperty('headers_auth');
     });
 
-    it('should export the platform theme as a single settings/theme.json entry with flattened Theme fields', async () => {
+    it('should export the platform theme as settings/theme/theme.json with flattened Theme fields', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext);
       const count = await exportSettingsThemeCategory(testContext, ADMIN_USER, archive);
 
-      expect(count).toBe(1);
-      expect(archive.append).toHaveBeenCalledTimes(1);
+      expect(count).toBe(2);
+      expect(archive.append).toHaveBeenCalledTimes(2);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('settings/theme.json');
+      expect(options.name).toBe('settings/theme/theme.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsTheme');
 
@@ -343,16 +341,10 @@ describe('Global configuration export', () => {
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
-    it('should route SETTINGS_BRANDING to the settings branding category export', async () => {
-      const archive = createFakeArchive();
-      const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_BRANDING, archive);
-      expect(count).toBe(1);
-    });
-
-    it('should route SETTINGS_THEME to the settings theme category export', async () => {
+    it('should route SETTINGS_THEME to the settings theme category export (theme and branding)', async () => {
       const archive = createFakeArchive();
       const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_THEME, archive);
-      expect(count).toBe(1);
+      expect(count).toBe(2);
     });
 
     it('should route SETTINGS_LANGUAGE to the settings language category export', async () => {
@@ -454,7 +446,6 @@ describe('Global configuration export', () => {
 
     it('should include all settings categories in a single bundle', async () => {
       const file = await runGlobalExport(testContext, ADMIN_USER, [
-        SETTINGS_BRANDING,
         SETTINGS_THEME,
         SETTINGS_LANGUAGE,
         SETTINGS_MESSAGES,
@@ -464,8 +455,8 @@ describe('Global configuration export', () => {
       expect(file).toBeDefined();
       const buffer = await readExportedZip(file);
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
-      expect(buffer.includes(Buffer.from('settings/branding.json'))).toBe(true);
-      expect(buffer.includes(Buffer.from('settings/theme.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('settings/theme/branding.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('settings/theme/theme.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('settings/language.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('settings/messages.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('entity_settings/hidden_entity_types.json'))).toBe(true);
@@ -724,12 +715,10 @@ describe('Global configuration export', () => {
 
     it('should add the export_id of the settings and of the theme', async () => {
       const settings = await getSettings(testContext) as any;
-      const brandingArchive = createFakeArchive();
-      await exportSettingsBrandingCategory(testContext, ADMIN_USER, brandingArchive);
       const themeArchive = createFakeArchive();
       await exportSettingsThemeCategory(testContext, ADMIN_USER, themeArchive);
 
-      const [branding] = (brandingArchive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      const [branding] = (themeArchive.append as ReturnType<typeof vi.fn>).mock.calls[1];
       const parsedBranding = JSON.parse(branding);
       expect(parsedBranding.export_id).toBe(settings.export_id);
       expect(parsedBranding).not.toHaveProperty('internal_id');

@@ -71,3 +71,12 @@ export const ingestionTaxiisQuery = graphql`
     }
   }
 `;
+
+export const fintelTemplatesQuery = graphql`
+  query ExportBundleFintelTemplatesQuery($search: String, $count: Int!, $cursor: ID) {
+    fintelTemplates(search: $search, first: $count, after: $cursor, orderBy: name, orderMode: asc) {
+      edges { node { id name } }
+      pageInfo { endCursor hasNextPage globalCount }
+    }
+  }
+`;

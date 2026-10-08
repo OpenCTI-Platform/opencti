@@ -55,7 +55,6 @@ const buildIdFilterGroup = (ids?: string[]): FilterGroup | undefined => {
   };
 };
 
-export const SETTINGS_BRANDING = 'SettingsBranding';
 export const SETTINGS_THEME = 'SettingsTheme';
 export const SETTINGS_LANGUAGE = 'SettingsLanguage';
 export const SETTINGS_MESSAGES = 'SettingsMessages';
@@ -163,16 +162,12 @@ export const exportIngestionTaxiiCategory = async (context: AuthContext, user: A
   );
 };
 
-export const exportSettingsBrandingCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
-  const exported = await generateSettingsBrandingExportConfiguration(context);
-  archive.append(exported, { name: 'settings/branding.json' });
-  return 1;
-};
-
 export const exportSettingsThemeCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
-  const exported = await generateSettingsThemeExportConfiguration(context);
-  archive.append(exported, { name: 'settings/theme.json' });
-  return 1;
+  const exportedTheme = await generateSettingsThemeExportConfiguration(context);
+  archive.append(exportedTheme, { name: 'settings/theme/theme.json' });
+  const exportedBranding = await generateSettingsBrandingExportConfiguration(context);
+  archive.append(exportedBranding, { name: 'settings/theme/branding.json' });
+  return 2;
 };
 
 export const exportSettingsLanguageCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
@@ -210,7 +205,6 @@ export const exportCategory = async (
     case ENTITY_TYPE_INGESTION_JSON: return exportIngestionJsonCategory(context, user, archive, ids);
     case ENTITY_TYPE_INGESTION_RSS: return exportIngestionRssCategory(context, user, archive, ids);
     case ENTITY_TYPE_INGESTION_TAXII: return exportIngestionTaxiiCategory(context, user, archive, ids);
-    case SETTINGS_BRANDING: return exportSettingsBrandingCategory(context, user, archive);
     case SETTINGS_THEME: return exportSettingsThemeCategory(context, user, archive);
     case SETTINGS_LANGUAGE: return exportSettingsLanguageCategory(context, user, archive);
     case SETTINGS_MESSAGES: return exportSettingsMessagesCategory(context, user, archive);
