@@ -81,12 +81,12 @@ const exportEntitiesToZip = async <T extends { id: string; export_id?: string; n
 
 export const exportPlaybooksCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
   const playbooks = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_PLAYBOOK], { filters: buildIdFilterGroup(ids) });
-  return exportEntitiesToZip(archive, playbooks, playbookExport, (p) => `playbooks/playbook-${slugify(p.name)}-${p.id}.json`);
+  return exportEntitiesToZip(archive, playbooks, playbookExport, (p) => `automation/playbooks/playbook-${slugify(p.name)}-${p.id}.json`);
 };
 
 export const exportFormsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
   const forms = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_FORM], { filters: buildIdFilterGroup(ids) });
-  return exportEntitiesToZip(archive, forms, generateFormExportConfiguration, (f) => `form_intakes/form-${slugify(f.name)}-${f.id}.json`);
+  return exportEntitiesToZip(archive, forms, generateFormExportConfiguration, (f) => `ingestion/forms/form-${slugify(f.name)}-${f.id}.json`);
 };
 
 export const exportDashboardsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
@@ -98,7 +98,7 @@ export const exportDashboardsCategory = async (context: AuthContext, user: AuthU
     archive,
     dashboards,
     (d) => generateWorkspaceExportConfiguration(context, user, d),
-    (d) => `dashboards/dash-${slugify(d.name)}-${d.id}.json`,
+    (d) => `visualization/custom_dashboards/dash-${slugify(d.name)}-${d.id}.json`,
   );
 };
 
@@ -108,7 +108,7 @@ export const exportCustomViewsCategory = async (context: AuthContext, user: Auth
     archive,
     customViews,
     (cv) => exportCustomView(context, user, cv),
-    (cv) => `custom_views/custom-view-${slugify(cv.name)}-${cv.id}.json`,
+    (cv) => `visualization/custom_views/custom-view-${slugify(cv.name)}-${cv.id}.json`,
   );
 };
 
@@ -118,7 +118,7 @@ export const exportFintelTemplatesCategory = async (context: AuthContext, user: 
     archive,
     templates,
     (t) => fintelTemplateExport(context, user, t),
-    (t) => `fintel_templates/fintel-template-${slugify(t.name)}-${t.id}.json`,
+    (t) => `visualization/fintel_templates/fintel-template-${slugify(t.name)}-${t.id}.json`,
   );
 };
 
@@ -128,7 +128,7 @@ export const exportIngestionCsvCategory = async (context: AuthContext, user: Aut
     archive,
     feeds,
     (f) => csvFeedMapperExport(context, user, f),
-    (f) => `ingestion/feeds/feed-csv/feed-csv-${slugify(f.name)}-${f.id}.json`,
+    (f) => `ingestion/csv_feeds/feed-csv-${slugify(f.name)}-${f.id}.json`,
   );
 };
 
@@ -138,7 +138,7 @@ export const exportIngestionJsonCategory = async (context: AuthContext, user: Au
     archive,
     feeds,
     (f) => jsonFeedExport(context, user, f),
-    (f) => `ingestion/feeds/feed-json/feed-json-${slugify(f.name)}-${f.id}.json`,
+    (f) => `ingestion/json_feeds/feed-json-${slugify(f.name)}-${f.id}.json`,
   );
 };
 
@@ -148,7 +148,7 @@ export const exportIngestionRssCategory = async (context: AuthContext, user: Aut
     archive,
     feeds,
     (f) => rssFeedExport(context, user, f),
-    (f) => `ingestion/feeds/feed-rss/feed-rss-${slugify(f.name)}-${f.id}.json`,
+    (f) => `ingestion/rss_feeds/feed-rss-${slugify(f.name)}-${f.id}.json`,
   );
 };
 
@@ -158,33 +158,33 @@ export const exportIngestionTaxiiCategory = async (context: AuthContext, user: A
     archive,
     feeds,
     taxiiFeedExport,
-    (f) => `ingestion/feeds/feed-taxii/feed-taxii-${slugify(f.name)}-${f.id}.json`,
+    (f) => `ingestion/taxii_feeds/feed-taxii-${slugify(f.name)}-${f.id}.json`,
   );
 };
 
 export const exportSettingsThemeCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exportedTheme = await generateSettingsThemeExportConfiguration(context);
-  archive.append(exportedTheme, { name: 'settings/theme/theme.json' });
+  archive.append(exportedTheme, { name: 'parameters/theme/theme.json' });
   const exportedBranding = await generateSettingsBrandingExportConfiguration(context);
-  archive.append(exportedBranding, { name: 'settings/theme/branding.json' });
+  archive.append(exportedBranding, { name: 'parameters/theme/branding.json' });
   return 2;
 };
 
 export const exportSettingsLanguageCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exported = await generateSettingsLanguageExportConfiguration(context);
-  archive.append(exported, { name: 'settings/language.json' });
+  archive.append(exported, { name: 'parameters/language.json' });
   return 1;
 };
 
 export const exportSettingsMessagesCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exported = await generateSettingsMessagesExportConfiguration(context);
-  archive.append(exported, { name: 'settings/messages.json' });
+  archive.append(exported, { name: 'parameters/messages.json' });
   return 1;
 };
 
 export const exportHiddenEntityTypesCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exported = await generateHiddenEntityTypesExportConfiguration(context, user);
-  archive.append(exported, { name: 'entity_settings/hidden_entity_types.json' });
+  archive.append(exported, { name: 'parameters/hidden_entity_types.json' });
   return JSON.parse(exported).configuration.hidden_entity_types.length;
 };
 
