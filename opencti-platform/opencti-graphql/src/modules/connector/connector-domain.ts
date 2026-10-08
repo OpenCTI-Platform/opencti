@@ -990,7 +990,9 @@ const autoUpgradeManagedConnector = async (
       manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(latestCompatibleContract),
       manager_contract_image: latestCompatibleContract.image,
     };
-    await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
+    const { element } = await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
+    // Notify configuration change for caching system
+    await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
     if (versionComparison < 0) {
       logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
         module: 'connector',
