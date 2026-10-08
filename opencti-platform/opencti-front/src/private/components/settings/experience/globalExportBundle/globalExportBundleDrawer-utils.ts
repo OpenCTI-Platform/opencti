@@ -15,10 +15,10 @@ export interface GlobalExportBundleCategory {
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
     key: 'Settings',
-    label: 'Parameters',
+    label: 'Platform settings',
     kind: 'children',
     items: [
-      { key: 'SettingsTheme', label: 'Theme (colors, logos)' },
+      { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name, favicon...)' },
       { key: 'SettingsLanguage', label: 'Language' },
       { key: 'SettingsMessages', label: 'Messages (banner)' },
       { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
