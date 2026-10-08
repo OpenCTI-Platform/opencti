@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import semver from 'semver';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
-import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
+import { completeConnector, connector, connectors, connectorsFor, loadConnectorHeartbeat } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -19,7 +19,6 @@ import {
   notify,
   redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
-  redisGetConnectorHeartbeat,
   redisGetWork,
   redisSetConnectorHealthMetrics,
   redisSetConnectorHeartbeat,
@@ -158,6 +157,8 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
 
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   const lastSeenAt = now();
+  // Not best effort: recording the heartbeat is the purpose of the ping, the connector must know it failed
+  // (the state is already saved and the connector retries on its next ping)
   await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
   return completeConnector(updatedConnector, lastSeenAt);
 };
@@ -173,7 +174,16 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return completeConnector(element, await redisGetConnectorHeartbeat(element.internal_id));
+  return completeConnector(element, await loadConnectorHeartbeat(element.internal_id));
+};
+// Best effort: the next ping of the connector records its heartbeat anyway,
+// and a failed registration would prevent the connector from starting.
+const recordRegistrationHeartbeat = async (connectorId: string, lastSeenAt: string) => {
+  try {
+    await redisSetConnectorHeartbeat(connectorId, lastSeenAt);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to record connector heartbeat on registration', { cause: err, connectorId });
+  }
 };
 interface RegisterOptions {
   built_in?: boolean;
@@ -396,7 +406,7 @@ export const registerConnector = async (
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-    await redisSetConnectorHeartbeat(id, lastSeenAt);
+    await recordRegistrationHeartbeat(id, lastSeenAt);
     return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, lastSeenAt));
   }
   // Need to create the connector
@@ -433,7 +443,7 @@ export const registerConnector = async (
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
-  await redisSetConnectorHeartbeat(id, lastSeenAt);
+  await recordRegistrationHeartbeat(id, lastSeenAt);
   // Return the connector
   return completeConnector(createdConnector, lastSeenAt);
 };
@@ -442,7 +452,12 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
-  await redisDeleteConnectorHeartbeat(element.internal_id);
+  try {
+    await redisDeleteConnectorHeartbeat(element.internal_id);
+  } catch (err) {
+    // Best effort: the connector is already deleted, an orphan heartbeat is never read
+    logApp.warn('[OPENCTI-MODULE] Unable to delete connector heartbeat', { cause: err, connectorId });
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

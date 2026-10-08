@@ -61,6 +61,26 @@ export const isConnectorActive = (connector, lastSeenAt) => {
   return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
 };
 
+// Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors
+// (workers configuration, connectors selection, cache...). Connectors are then considered inactive.
+export const loadConnectorHeartbeat = async (connectorId) => {
+  try {
+    return await redisGetConnectorHeartbeat(connectorId);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to read connector heartbeat, connector considered inactive', { cause: err, connectorId });
+    return null;
+  }
+};
+
+const loadConnectorsHeartbeats = async () => {
+  try {
+    return await redisGetConnectorsHeartbeats();
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
+    return new Map();
+  }
+};
+
 export const completeConnector = (connector, lastSeenAt) => {
   if (connector) {
     const completed = { ...connector };
@@ -86,7 +106,7 @@ export const completeConnector = (connector, lastSeenAt) => {
 export const connector = async (context, user, id) => {
   // Database connector
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
-  const element = conn ? completeConnector(conn, await redisGetConnectorHeartbeat(conn.internal_id)) : null;
+  const element = conn ? completeConnector(conn, await loadConnectorHeartbeat(conn.internal_id)) : null;
   if (isEmptyField(element)) {
     // Built in connector
     const builtIn = await builtInConnector(context, user, id);
@@ -210,7 +230,7 @@ export const computeManagerContractHash = async (context, user, cn) => {
 export const connectors = async (context, user) => {
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
-  const heartbeats = await redisGetConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats();
   return map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)), [...elements, ...builtInElements]);
 };
 
@@ -232,7 +252,7 @@ export const connectorsForManagers = async (context, user) => {
     noFiltersChecking: true,
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
-  const heartbeats = await redisGetConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats();
   return elements.map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)));
 };
 

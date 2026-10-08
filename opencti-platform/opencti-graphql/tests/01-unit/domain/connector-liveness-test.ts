@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pingConnector } from '../../../src/domain/connector';
-import { isConnectorActive } from '../../../src/database/repository';
-import { patchAttribute } from '../../../src/database/middleware';
-import { storeLoadById } from '../../../src/database/middleware-loader';
-import { redisSetConnectorHeartbeat } from '../../../src/database/redis';
+import { connectorDelete, pingConnector, registerConnector } from '../../../src/domain/connector';
+import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
+import { internalDeleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
+import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats, redisSetConnectorHeartbeat } from '../../../src/database/redis';
+import { ConnectorType } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
   internalLoadById: vi.fn(),
   pageEntitiesConnection: vi.fn(),
+  topEntitiesList: vi.fn(),
 }));
 
 vi.mock('../../../src/database/rabbitmq', () => ({
@@ -40,7 +42,26 @@ vi.mock('../../../src/database/rabbitmq', () => ({
 
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  notify: vi.fn(),
   redisSetConnectorHeartbeat: vi.fn(),
+  redisGetConnectorHeartbeat: vi.fn(),
+  redisGetConnectorsHeartbeats: vi.fn(),
+  redisDeleteConnectorHeartbeat: vi.fn(),
+}));
+
+vi.mock('../../../src/connector/connector-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/connector/connector-domain')>()),
+  builtInConnectorsRuntime: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock('../../../src/domain/work', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/domain/work')>()),
+  deleteWorkForConnector: vi.fn(),
+}));
+
+vi.mock('../../../src/listener/UserActionListener', () => ({
+  publishUserAction: vi.fn(),
+  completeContextDataForEntity: vi.fn(),
 }));
 
 const testContext = { source: 'test' } as unknown as AuthContext;
@@ -97,5 +118,60 @@ describe('pingConnector liveness', () => {
     const [, recordedLastSeenAt] = vi.mocked(redisSetConnectorHeartbeat).mock.calls[0];
     expect(result.last_seen_at).toBe(recordedLastSeenAt);
     expect(result.active).toBe(true);
+  });
+});
+
+describe('heartbeat storage failures', () => {
+  const redisError = new Error('OOM command not allowed when used memory > maxmemory');
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should fail the ping, as recording the heartbeat is its purpose', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, connector_state: 'state' } as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...baseConnector, connector_state: 'state' } } as never);
+    vi.mocked(redisSetConnectorHeartbeat).mockRejectedValueOnce(redisError);
+
+    await expect(pingConnector(testContext, testUser, 'connector-1', 'state', undefined as never)).rejects.toThrow(redisError);
+  });
+
+  it('should still register the connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(baseConnector as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: baseConnector } as never);
+    vi.mocked(redisSetConnectorHeartbeat).mockRejectedValueOnce(redisError);
+
+    const input = { id: 'connector-1', name: 'Test Connector', type: ConnectorType.ExternalImport, scope: ['Report'] };
+    const result = await registerConnector(testContext, testUser, input);
+
+    expect(result?.id).toBe('connector-1');
+  });
+
+  it('should still delete the connector', async () => {
+    vi.mocked(internalDeleteElementById).mockResolvedValueOnce({ element: baseConnector } as never);
+    vi.mocked(redisDeleteConnectorHeartbeat).mockRejectedValueOnce(redisError);
+
+    expect(await connectorDelete(testContext, testUser, 'connector-1')).toBe('connector-1');
+  });
+
+  it('should still load a connector, considered inactive', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, updated_at: minutesAgo(0) } as never);
+    vi.mocked(redisGetConnectorHeartbeat).mockRejectedValueOnce(redisError);
+
+    const result = await connector(testContext, testUser, 'connector-1');
+
+    expect(result.active).toBe(false);
+    expect(result.last_seen_at).toBeNull();
+  });
+
+  it('should still list connectors, considered inactive', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ ...baseConnector, updated_at: minutesAgo(0) }] as never);
+    vi.mocked(redisGetConnectorsHeartbeats).mockRejectedValueOnce(redisError);
+
+    const result = await connectors(testContext, testUser);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].active).toBe(false);
+    expect(result[0].last_seen_at).toBeNull();
   });
 });

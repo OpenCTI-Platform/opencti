@@ -2,8 +2,8 @@ import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { notify, redisGetConnectorHeartbeat } from '../database/redis';
-import { completeConnector, connector, connectors } from '../database/repository';
+import { notify } from '../database/redis';
+import { completeConnector, connector, connectors, loadConnectorHeartbeat } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
@@ -388,7 +388,7 @@ export const migrateConnectorToManaged = async (
     managedConnectorData,
   );
 
-  const completedConnector = completeConnector(element, await redisGetConnectorHeartbeat(existingConnector.internal_id));
+  const completedConnector = completeConnector(element, await loadConnectorHeartbeat(existingConnector.internal_id));
 
   await addConnectorDeployedCount();
 
