@@ -283,11 +283,9 @@ const SearchInput = (props) => {
   const hasCaret = useXtmOne && nlqAgents.length > 0;
 
   // Same focus-visible ring color the MuiToggleButtonGroup theme override
-  // gives every ToggleButton in this bar (mode-dependent, defined in
-  // ThemeDark/ThemeLight) — reproduced here for the caret <button>, which
-  // isn't a ToggleButton so doesn't get it for free (see .nlq-split-caret
-  // in index.css).
-  const nlqCaretFocusRingColor = theme.palette.mode === 'dark' ? '#BDFFED' : '#74E9CA';
+  // gives every ToggleButton in this bar, for the caret <button>, which isn't
+  // a ToggleButton so doesn't get it for free (see .nlq-split-caret in index.css).
+  const nlqCaretFocusRingColor = theme.palette.border.focus;
 
   const aiColor = theme.palette.ai?.main;
   // Single source of truth for the split-button's background: both the
