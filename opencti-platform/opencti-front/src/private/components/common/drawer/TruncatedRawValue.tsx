@@ -93,6 +93,7 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   return (
     <>
       <Tooltip title={t_i18n('Click to view full value')}>
+        {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
         <button
           type="button"
           onClick={() => setOpen(true)}

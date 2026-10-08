@@ -2541,3 +2541,39 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+---
+
+## 67. `Button` and `IconButton` always paint a box, so a control whose content *is* the target stays a bare `<button>`
+
+**Needed.** Fixing the `jsx-a11y` click-handler violations (#16818) turned
+three clickable non-interactive elements into real buttons. In each, the
+control's content is the visual, and the button must add no box of its own:
+- `TruncatedRawValue` — a truncated raw value in the Audit / History / draft
+  diff tables, shown as pre-wrapped code; clicking it opens the full value.
+- `MarkdownDisplay` — a markdown image, clicking it opens the preview.
+- `SearchInput` — the caret half of the AI search split control: a narrow
+  zone sharing one pill with the MUI `ToggleButton` beside it (hover tint,
+  focus ring, divider), and opening the agent picker.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`):
+`Button` fixes its height per size (`h-6` / `h-9`) with horizontal padding,
+and every priority paints a fill or a border; `asChild` keeps those classes
+on the child. `IconButton` is a fixed square (24 or 36 px) with its own fill
+and focus ring. None has an unstyled variant.
+
+**Workaround.** FDS-WORKAROUND #67 at the three sites: a native
+`<button type="button">` reset to no border, padding or background, keeping
+the content's own layout. Each is a real, focusable, keyboard-operable
+control.
+
+**Ask.** A bare variant of `Button` (or a `ButtonBase` / `Pressable`
+primitive) that owns only the semantics and the focus ring: no height, no
+padding, no fill. That would cover content-as-control cases like these, and
+split controls built from two halves of one pill.
+
+**Removal test.** At a pin with that variant: replace the three
+`<button>`s, delete their reset styles and the markers, and check that the
+truncated value keeps its whitespace and wrapping, the image keeps its size,
+and the caret still reads as one pill with the AI toggle (idle, hover, focus).

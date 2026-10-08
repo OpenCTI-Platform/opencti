@@ -432,6 +432,7 @@ const SearchInput = (props) => {
               </Tooltip>
               {hasCaret && (
                 <Tooltip title={t_i18n('Choose AI agent')}>
+                  {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
                   <button
                     type="button"
                     aria-label={t_i18n('Choose AI agent')}
