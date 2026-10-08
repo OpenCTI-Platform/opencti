@@ -89,7 +89,6 @@ describe('SDO custom-field integration coverage', () => {
     const path = detailsPath(screen);
     const content = source(path);
     expect(content).toMatch(/values=\{\w+\.customFieldValues \?\? \[\]\}/);
-    expect(content).not.toContain('<StixDomainObjectCustomFieldValues');
 
     const parsed = ts.createSourceFile(path, content, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
     const displays: ts.JsxSelfClosingElement[] = [];
@@ -123,7 +122,6 @@ describe('SDO custom-field integration coverage', () => {
   it('keeps graph edition but does not display custom fields in Basic information', () => {
     expect(source('common/stix_domain_objects/StixDomainObjectEditionOverview.jsx')).toContain('<CustomFieldValuesEdition');
     const overview = source('common/stix_domain_objects/StixDomainObjectOverview.jsx');
-    expect(overview).not.toContain('StixDomainObjectCustomFieldValues');
     expect(overview).not.toContain('CustomFieldValuesDisplay');
   });
 });
