@@ -81,7 +81,7 @@ describe('Global configuration export', () => {
       if (count > 0) {
         const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
         expect(typeof content).toBe('string');
-        expect(options.name).toMatch(/^playbooks\/playbook-.+\.json$/);
+        expect(options.name).toMatch(/^automation\/playbooks\/playbook-.+\.json$/);
       }
     });
 
@@ -104,7 +104,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^dashboards\/dash-.+\.json$/);
+        expect(options.name).toMatch(/^visualization\/custom_dashboards\/dash-.+\.json$/);
       }
     });
 
@@ -115,7 +115,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^custom_views\/custom-view-.+\.json$/);
+        expect(options.name).toMatch(/^visualization\/custom_views\/custom-view-.+\.json$/);
       }
     });
 
@@ -126,7 +126,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^fintel_templates\/fintel-template-.+\.json$/);
+        expect(options.name).toMatch(/^visualization\/fintel_templates\/fintel-template-.+\.json$/);
       }
     });
 
@@ -137,7 +137,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^ingestion\/feeds\/feed-csv\/feed-csv-.+\.json$/);
+        expect(options.name).toMatch(/^ingestion\/csv_feeds\/feed-csv-.+\.json$/);
       }
     });
 
@@ -148,7 +148,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^ingestion\/feeds\/feed-json\/feed-json-.+\.json$/);
+        expect(options.name).toMatch(/^ingestion\/json_feeds\/feed-json-.+\.json$/);
       }
     });
 
@@ -159,7 +159,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^ingestion\/feeds\/feed-rss\/feed-rss-.+\.json$/);
+        expect(options.name).toMatch(/^ingestion\/rss_feeds\/feed-rss-.+\.json$/);
       }
     });
 
@@ -170,7 +170,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^ingestion\/feeds\/feed-taxii\/feed-taxii-.+\.json$/);
+        expect(options.name).toMatch(/^ingestion\/taxii_feeds\/feed-taxii-.+\.json$/);
       }
     });
 
