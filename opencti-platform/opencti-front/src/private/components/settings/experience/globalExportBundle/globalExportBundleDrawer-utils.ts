@@ -15,7 +15,7 @@ export interface GlobalExportBundleCategory {
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
     key: 'Settings',
-    label: 'Platform settings',
+    label: 'Platform Settings',
     kind: 'children',
     items: [
       { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name...)' },
