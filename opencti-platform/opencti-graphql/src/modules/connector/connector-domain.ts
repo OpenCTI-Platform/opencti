@@ -1,4 +1,4 @@
-import { logApp, PLATFORM_VERSION } from '../../config/conf';
+import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findLatestCompatibleCatalogContractBySlug } from '../catalog/catalog-repository';
@@ -7,6 +7,7 @@ import { compareContractVersions } from '../catalog/catalog-version-utils';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { patchAttribute } from '../../database/middleware';
+import { notify } from '../../database/redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { redisGetManagedConnectorAutoUpgradeStatus, redisSetManagedConnectorAutoUpgradeStatus } from './connector-redis';
 
@@ -55,7 +56,9 @@ const autoUpgradeManagedConnector = async (
       manager_contract: mapContractEntityFieldsToEmbeddedConnectorManagerContract(latestCompatibleContract),
       manager_contract_image: latestCompatibleContract.image,
     };
-    await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
+    const { element } = await patchAttribute(context, user, managedConnector.id, ENTITY_TYPE_CONNECTOR, patch);
+    // Notify configuration change for caching system
+    await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
     if (versionComparison < 0) {
       logApp.info('[OPENCTI-MODULE] Upgraded connector to latest compatible version', {
         module: 'connector',
