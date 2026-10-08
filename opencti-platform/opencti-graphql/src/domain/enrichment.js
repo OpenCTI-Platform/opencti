@@ -12,6 +12,7 @@ import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { refreshConnectorsLiveness } from '../database/repository';
 
 const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
   const draftContext = getDraftContext(context, user);
@@ -81,9 +82,16 @@ export const createEntityAutoEnrichment = async (context, user, element, scope, 
   return publishEventToConnectors(context, user, element, targetConnectors, 'create', stixLoaders);
 };
 
+const isConnectorInScope = (conn, scope) => {
+  return scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+};
+
 const findConnectorsForElementEnrichment = async (context, user, element, scope, opts = {}) => {
   const connectors = await getEntitiesListFromCache(context, user, ENTITY_TYPE_CONNECTOR);
-  return filterConnectorsForElementEnrichment(context, connectors, element, scope, opts);
+  // Liveness is stale in the connectors cache: refresh it, only for the connectors that could enrich the element
+  const candidates = connectors.filter((conn) => conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT && isConnectorInScope(conn, scope));
+  const liveCandidates = await refreshConnectorsLiveness(candidates);
+  return filterConnectorsForElementEnrichment(context, liveCandidates, element, scope, opts);
 };
 
 export const filterConnectorsForElementEnrichment = async (context, connectors, element, scope, opts = {}) => {
@@ -93,7 +101,7 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
   const targetConnectors = [];
   for (let i = 0; i < activeConnectors.length; i += 1) {
     const conn = activeConnectors[i];
-    const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
+    const scopeMatch = isConnectorInScope(conn, scope);
     let hasAccessToElement = false;
     let autoTrigger = false;
     if (mode === 'creation') {
