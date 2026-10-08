@@ -6,6 +6,7 @@ import { graphql, useFragment } from 'react-relay';
 import ReportDetails from './ReportDetails';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import HuntsOfEntity from '../../hunts/HuntsOfEntity';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
@@ -141,6 +142,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
           })
         }
       </Grid>
+      <HuntsOfEntity entityId={report.id} />
     </>
   );
 };

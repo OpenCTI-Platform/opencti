@@ -23,6 +23,7 @@ import buildContractConfiguration from '@components/data/connectors/utils/buildC
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
+import { HuntConnectorDeploymentNotice } from '@components/hunts/HuntConnectorSetup';
 import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
 import TextField from '../../../../components/TextField';
@@ -225,6 +226,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                   </ul>
                 </Alert>
               )}
+              {contract.container_type === 'INTERNAL_HUNT' && <HuntConnectorDeploymentNotice slug={contract.slug} />}
 
               <Field
                 component={TextField}

@@ -15,6 +15,8 @@ import {
   getWidgetInterval,
   useGetNumberWidgetTitle,
   checkIfDateAttributeValid,
+  customViewsWidgetVisualizationTypes,
+  isWidgetWithoutDataSelection,
 } from './widgetUtils';
 import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
@@ -26,6 +28,31 @@ vi.mock('src/utils/hooks/useEntityTranslation', () => ({
 }));
 
 describe('widgetUtils', () => {
+  describe('hunt widgets', () => {
+    const huntTypes = ['hunt-hits-over-time', 'hunt-runs-per-platform', 'hunt-verdict-distribution'];
+
+    it('should be offered in workspaces, without a data selection step', () => {
+      const workspaceKeys = workspacesWidgetVisualizationTypes.map((w) => w.key as string);
+      huntTypes.forEach((type) => {
+        expect(workspaceKeys).toContain(type);
+        expect(getCurrentCategory(type)).toBe('hunt');
+        expect(isWidgetWithoutDataSelection(type)).toBe(true);
+      });
+    });
+
+    it('should stay out of the entity custom views', () => {
+      const customViewKeys = customViewsWidgetVisualizationTypes.map((w) => w.key as string);
+      huntTypes.forEach((type) => expect(customViewKeys).not.toContain(type));
+    });
+
+    it('should keep the data selection step of the knowledge widgets', () => {
+      expect(isWidgetWithoutDataSelection('text')).toBe(true);
+      expect(isWidgetWithoutDataSelection('custom-attributes')).toBe(true);
+      expect(isWidgetWithoutDataSelection('list')).toBe(false);
+      expect(isWidgetWithoutDataSelection(null)).toBe(false);
+    });
+  });
+
   describe('getCurrentCategory', () => {
     it('should return "none" for null type', () => {
       expect(getCurrentCategory(null)).toBe('none');

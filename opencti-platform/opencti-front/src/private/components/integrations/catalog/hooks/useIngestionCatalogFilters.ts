@@ -85,6 +85,7 @@ const CONNECTOR_TYPE_ORDER: string[] = [
   'INTERNAL_IMPORT_FILE',
   'INTERNAL_EXPORT_FILE',
   'INTERNAL_INGESTION',
+  'INTERNAL_HUNT',
 ];
 
 // Deduplicated so hand-crafted URLs with repeated values (type=STREAM,STREAM)

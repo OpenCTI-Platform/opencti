@@ -1,4 +1,5 @@
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_HUNT_RUN } from '../hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../notification/notification-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
@@ -55,6 +56,7 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'IngestionTaxii.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionTaxiiCollection.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
+  'Hunt-Run.triggered_by': { kind: 'covered', registerRow: 'hunt-run.triggered-by' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {
@@ -97,6 +99,14 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     path: 'connector_user_id',
     shape: 'single',
     missingBecause: "declared with format 'short'",
+  },
+  {
+    id: 'hunt-run-connector-user-id',
+    registerRow: 'hunt-run.connector-user-id',
+    entityTypes: [ENTITY_TYPE_HUNT_RUN],
+    path: 'connector_user_id',
+    shape: 'single',
+    missingBecause: "declared with format 'short', as on the connector it copies",
   },
   {
     id: 'news-feed-item-user-id',

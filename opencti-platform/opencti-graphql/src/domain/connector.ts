@@ -11,7 +11,7 @@ import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_HUNT, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import {
   type ConnectorHealthMetrics,
@@ -434,6 +434,12 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  if (element.connector_type === CONNECTOR_INTERNAL_HUNT) {
+    // Its runs end with it: a connector registered again under the same id inherits none of them. Loaded on use, the
+    // hunt module depends on the connector domain
+    const { cancelDeletedHuntConnectorRuns } = await import('../modules/hunt/huntRun/huntRun-domain');
+    await cancelDeletedHuntConnectorRuns(context, element.internal_id);
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

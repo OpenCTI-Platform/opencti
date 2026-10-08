@@ -28,6 +28,7 @@ import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import AIInsights from '@components/common/ai/AIInsights';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import { PATH_REPORT, PATH_REPORTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
@@ -191,6 +192,7 @@ const RootReport = () => {
                     }}
                     extraActions={!isKnowledgeOrContent && (
                       <>
+                        <HuntThisMenu entity={report} />
                         <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </>

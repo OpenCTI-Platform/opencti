@@ -10,7 +10,7 @@ import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMe
  * `history.context-data-payload` into a retained row of its own.
  */
 const V6_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 41,
+  [UserMergeDisposition.Transfer]: 43,
   [UserMergeDisposition.Invalidate]: 20,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 12,
@@ -25,7 +25,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 100 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 102 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V6_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });

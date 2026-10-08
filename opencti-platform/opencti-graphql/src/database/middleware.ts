@@ -159,7 +159,7 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
@@ -3346,12 +3346,18 @@ export const getExistingRelations = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
-  opts: { fromRule?: string } = {},
+  opts: { fromRule?: string; idsOnly?: boolean } = {},
 ) => {
   const { from, to, relationship_type: relationshipType } = input;
-  const { fromRule } = opts;
+  const { fromRule, idsOnly } = opts;
   const existingRelationships: StoreProxyRelation[] = [];
-  if (fromRule) {
+  if (idsOnly && !fromRule) {
+    const idsArgs = {
+      indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+      filters: { mode: FilterMode.And, filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }], filterGroups: [] },
+    };
+    pushAll(existingRelationships, await topRelationsList(context, SYSTEM_USER, relationshipType, idsArgs));
+  } else if (fromRule) {
     // In case inferred rule, try to find the relation with basic filters
     // Only in inferred indices.
     const fromRuleArgs = {
@@ -3482,7 +3488,16 @@ export const createRelationRaw = async (
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
-    const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
+    // The sighting a hunt keeps of an object on a platform (x_opencti_hunt_id, set by the platform only) is identified
+    // by its deterministic id only: ordinary sightings sharing its endpoints and time window never merge into it
+    const claimsHuntSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && isNotEmptyField(resolvedInput.x_opencti_hunt_id);
+    const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsHuntSighting });
+    const windowMatched = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsHuntSighting && !fromRule;
+    const requestedIds = windowMatched ? new Set(getInputIds(relationshipType, resolvedInput, false)) : new Set<string>();
+    const existingRelationships = windowMatched
+      ? matchedRelationships.filter((relation) => isEmptyField((relation as { x_opencti_hunt_id?: string }).x_opencti_hunt_id)
+        || [relation.internal_id, relation.standard_id, ...(relation.x_opencti_stix_ids ?? [])].some((id) => requestedIds.has(id)))
+      : matchedRelationships;
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights

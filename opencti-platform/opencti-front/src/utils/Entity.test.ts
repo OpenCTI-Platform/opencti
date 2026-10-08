@@ -28,6 +28,10 @@ describe('Function: resolveLink', () => {
   });
 
   // Threats
+  it('should return URL to hunts for Hunt type', () => {
+    expect(resolveLink('Hunt')).toEqual('/dashboard/defense/hunts');
+  });
+
   it('should return URL to campaigns for Campaign type', () => {
     expect(resolveLink('Campaign')).toEqual('/dashboard/threats/campaigns');
   });

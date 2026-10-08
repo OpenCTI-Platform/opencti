@@ -70,6 +70,9 @@ import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { ENTITY_TYPE_HUNT, HUNT_STATUSES } from '../modules/hunt/hunt-types';
+import { HUNT_RUN_TRIGGERS, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE, HUNT_VERDICT_TRUE_POSITIVE } from '../modules/hunt/huntRun/huntRun-types';
+import { listHuntConnectors } from '../modules/hunt/hunt-dispatch';
 import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
@@ -170,6 +173,11 @@ export const TELEMETRY_GAUGE_PLAYBOOK_EXECUTION = 'playbookExecutionCount';
 export const TELEMETRY_GAUGE_NOTIFICATION_SENT = 'notificationSentCount';
 export const TELEMETRY_GAUGE_EXPORT_GENERATED = 'exportGeneratedCount';
 export const TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED = 'ingestionObjectsProcessedCount';
+// Hunts
+export const TELEMETRY_GAUGE_HUNT_RUN = 'huntRunCount';
+export const TELEMETRY_GAUGE_HUNT_VERDICT = 'huntVerdictCount';
+export const TELEMETRY_GAUGE_HUNT_PLAN = 'huntPlanCount';
+export const TELEMETRY_GAUGE_HUNT_TRIAGE = 'huntTriageCount';
 
 // Bounded enums for dimensional counters (cardinality discipline: every
 // dimension value set is a closed list, mirrored by the warehouse models).
@@ -195,6 +203,10 @@ export const XTM_AGENT_CHANNELS = ['direct', 'direct_files'] as const;
 export type XtmAgentChannel = typeof XTM_AGENT_CHANNELS[number];
 export const NOTIFICATION_CHANNELS = ['email', 'webhook', 'ui'] as const;
 export type NotificationChannel = typeof NOTIFICATION_CHANNELS[number];
+// Hunt runs are counted by trigger (manual, schedule, standing, playbook, emulation, preview, retry)
+// and hunt verdicts by value, both bounded by the hunt run enumerations.
+export const HUNT_RUN_TELEMETRY_TRIGGERS = HUNT_RUN_TRIGGERS;
+export const HUNT_VERDICT_TELEMETRY_VALUES = [HUNT_VERDICT_TRUE_POSITIVE, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE];
 // Providers supported by the built-in LLM configuration (see database/ai-llm.ts).
 // Any other configured value is exported as 'other' to keep the is_ai_enabled
 // type dimension bounded.
@@ -337,6 +349,33 @@ export const addPlaybookAiAgentRunCount = () => {
 export const addPlaybookExecutionCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION, 1)
     .catch((reason) => logApp.warn('Error adding playbook execution count to telemetry', { reason }));
+};
+
+// Fire-and-forget: a telemetry failure must never break a hunt run.
+export const addHuntRunCount = (trigger: string) => {
+  if (!HUNT_RUN_TELEMETRY_TRIGGERS.includes(trigger)) {
+    return;
+  }
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_HUNT_RUN}:${trigger}`, 1)
+    .catch((reason) => logApp.warn('Error adding hunt run count to telemetry', { reason }));
+};
+
+export const addHuntVerdictCount = (verdict: string) => {
+  if (!HUNT_VERDICT_TELEMETRY_VALUES.includes(verdict)) {
+    return;
+  }
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_HUNT_VERDICT}:${verdict}`, 1)
+    .catch((reason) => logApp.warn('Error adding hunt verdict count to telemetry', { reason }));
+};
+
+export const addHuntPlanCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_HUNT_PLAN, 1)
+    .catch((reason) => logApp.warn('Error adding hunt plan count to telemetry', { reason }));
+};
+
+export const addHuntTriageCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_HUNT_TRIAGE, 1)
+    .catch((reason) => logApp.warn('Error adding hunt triage count to telemetry', { reason }));
 };
 
 export const addNotificationSentCount = (channel: NotificationChannel) => {
@@ -562,6 +601,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSecurityCoveragesCount(securityCoveragesCount);
     manager.setSecurityCoverageResultsCount(securityCoverageResultsCount);
     manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
+    // endregion
+
+    // region Hunts
+    const huntsByStatusItems: DimensionalGaugeItem[] = await Promise.all(HUNT_STATUSES.map(async (status) => {
+      const filters = { mode: FilterMode.And, filters: [{ key: ['hunt_status'], values: [status] }], filterGroups: [] };
+      const value = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: [ENTITY_TYPE_HUNT], filters });
+      return { value, attributes: { status } };
+    }));
+    manager.setHuntsByStatusItems(huntsByStatusItems);
+    const liveHuntConnectors = await listHuntConnectors(context, true);
+    manager.setHuntConnectorsCount(liveHuntConnectors.length);
     // endregion
 
     // region Shared saved filters
@@ -812,6 +862,24 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setExportGeneratedCount(exportGeneratedCountInRedis);
     const ingestionObjectsProcessedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INGESTION_OBJECTS_PROCESSED);
     manager.setIngestionObjectsProcessedCount(ingestionObjectsProcessedCountInRedis);
+    const huntRunItems: DimensionalGaugeItem[] = [];
+    for (let triggerIndex = 0; triggerIndex < HUNT_RUN_TELEMETRY_TRIGGERS.length; triggerIndex += 1) {
+      const trigger = HUNT_RUN_TELEMETRY_TRIGGERS[triggerIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_HUNT_RUN}:${trigger}`);
+      huntRunItems.push({ value, attributes: { trigger } });
+    }
+    manager.setHuntRunItems(huntRunItems);
+    const huntVerdictItems: DimensionalGaugeItem[] = [];
+    for (let verdictIndex = 0; verdictIndex < HUNT_VERDICT_TELEMETRY_VALUES.length; verdictIndex += 1) {
+      const verdict = HUNT_VERDICT_TELEMETRY_VALUES[verdictIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_HUNT_VERDICT}:${verdict}`);
+      huntVerdictItems.push({ value, attributes: { verdict } });
+    }
+    manager.setHuntVerdictItems(huntVerdictItems);
+    const huntPlanCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_HUNT_PLAN);
+    manager.setHuntPlanCount(huntPlanCountInRedis);
+    const huntTriageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_HUNT_TRIAGE);
+    manager.setHuntTriageCount(huntTriageCountInRedis);
     // end region Telemetry user events
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/OpenCTI-Platform/opencti/master/opencti-platform/opencti-graphql/config/schema/hunt-extension.json",
+  "title": "OpenCTI Hunt",
+  "description": "The hunt SDO of the extension definition extension-definition--1c445ca2-6982-5163-9107-7e89bc1693d1: a threat hunt, its falsifiable hypothesis, its canonical Sigma rule with per-platform native queries, the threats and techniques it targets and its execution guardrails. Common STIX 2.1 SDO properties (labels, confidence, external_references, object_marking_refs, created_by_ref...) apply as well.",
+  "type": "object",
+  "required": ["type", "spec_version", "id", "created", "modified", "name", "hunt_type", "extensions"],
+  "if": { "properties": { "type": { "const": "hunt" } } },
+  "then": { "properties": { "id": { "pattern": "^hunt--" } } },
+  "else": { "properties": { "id": { "pattern": "^x-opencti-hunt--" } } },
+  "properties": {
+    "type": { "enum": ["hunt", "x-opencti-hunt"] },
+    "spec_version": { "const": "2.1" },
+    "id": { "type": "string", "pattern": "^(x-opencti-)?hunt--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
+    "created": { "type": "string" },
+    "modified": { "type": "string" },
+    "name": { "type": "string", "minLength": 1, "description": "Name of the hunt." },
+    "description": { "type": "string" },
+    "hypothesis": { "type": "string", "description": "The falsifiable hypothesis the hunt tests." },
+    "hunt_type": {
+      "enum": ["telemetry", "indicators", "infrastructure"],
+      "description": "telemetry: a detection rule searched in the telemetry of a security platform; indicators: indicator and observable values looked up; infrastructure: internet-facing infrastructure searched."
+    },
+    "hunt_status": { "enum": ["draft", "active", "paused", "retired"] },
+    "hunt_source_kind": { "enum": ["analyst", "agent", "hub"], "description": "Who wrote the hunt: an analyst, an agent or the XTM Hub." },
+    "sigma_rule": { "type": "string", "description": "The canonical logic of the hunt, as a Sigma rule in YAML." },
+    "native_queries": {
+      "type": "array",
+      "description": "The logic of the hunt translated for each platform it runs on.",
+      "items": {
+        "type": "object",
+        "required": ["platform", "language", "query"],
+        "properties": {
+          "platform": { "type": "string" },
+          "language": { "type": "string" },
+          "query": { "type": "string" },
+          "pipeline": { "type": "string", "description": "The Sigma processing pipeline the query was translated with." }
+        }
+      }
+    },
+    "hunt_ioc_filters": { "type": "string", "description": "Filter group, as JSON, selecting the indicators and observables an indicator hunt looks for." },
+    "hunt_ioc_values": {
+      "type": "array",
+      "description": "Values pasted into an indicator hunt.",
+      "items": {
+        "type": "object",
+        "required": ["observable_type", "value"],
+        "properties": {
+          "observable_type": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    },
+    "hunt_scope": { "type": "string", "description": "Filter group, as JSON, over the security platforms the hunt runs on; empty in a hunt pack." },
+    "hunt_schedule": { "type": "string", "description": "manual, standing, or the interval of a scheduled hunt." },
+    "trigger_filters": { "type": "string", "description": "Filter group, as JSON, of the knowledge events that trigger a standing hunt; empty in a hunt pack." },
+    "hunt_pir_activation": { "type": "boolean" },
+    "time_window_hours": { "type": "integer", "minimum": 1, "description": "Time window a run searches, in hours." },
+    "expected_observables": { "type": "array", "items": { "type": "string" } },
+    "benign_patterns": { "type": "array", "items": { "type": "string" } },
+    "escalation_threshold": { "type": "integer", "minimum": 1, "description": "New hits from which an autonomous run opens an incident." },
+    "escalate_manual_runs": { "type": "boolean" },
+    "hunt_max_results": { "type": "integer", "minimum": 1, "description": "Results a run asks the platform for." },
+    "target_refs": { "$ref": "#/definitions/refs", "description": "The threats the hunt targets." },
+    "technique_refs": { "$ref": "#/definitions/refs", "description": "The attack patterns the hunt covers." },
+    "source_refs": { "$ref": "#/definitions/refs", "description": "The intelligence the hunt is based on." },
+    "extensions": {
+      "type": "object",
+      "required": ["extension-definition--1c445ca2-6982-5163-9107-7e89bc1693d1"],
+      "properties": {
+        "extension-definition--1c445ca2-6982-5163-9107-7e89bc1693d1": {
+          "type": "object",
+          "required": ["extension_type"],
+          "properties": { "extension_type": { "const": "new-sdo" } }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "refs": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" }
+    }
+  }
+}

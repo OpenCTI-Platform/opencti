@@ -221,6 +221,12 @@ nav:
         - Playbook creation: usage/playbook-creation.md
         - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
+      - Hunts:
+        - Introduction: usage/hunts.md
+        - Your first hunt: usage/your-first-hunt.md
+        - Indicator hunts: usage/hunt-indicators.md
+        - Hunt automation: usage/hunt-automation.md
+        - Hunt connectors: usage/hunt-connectors.md
       - Data consistency: usage/dataSanityManager.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:

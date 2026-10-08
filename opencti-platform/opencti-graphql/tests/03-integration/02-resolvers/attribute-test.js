@@ -161,8 +161,10 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: STIX_SIGHTING_RELATIONSHIP },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(29);
+    expect(attributes.length).toEqual(31);
     expect(attributes.map((node) => node.value).includes('creator_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_negative')).toBeTruthy(); // Direct attribute
+    expect(attributes.map((node) => node.value).includes('x_opencti_hunt_run_id')).toBeTruthy(); // Direct attribute
+    expect(attributes.map((node) => node.value).includes('x_opencti_hunt_id')).toBeTruthy(); // Direct attribute
   });
 });

@@ -31,6 +31,10 @@ Information from an uploaded file can be extracted and ingested into OpenCTI. Ex
 
 Information stored in OpenCTI can be extracted into different file formats like .csv or .json (STIX 2.1).
 
+### Internal hunt
+
+These connectors (type `INTERNAL_HUNT`) execute [hunts](../usage/hunts.md) against exactly one hunted platform: a SIEM, an EDR, a data lake, or internet scanning services. Like enrichment connectors, they only act on the runs OpenCTI puts on their queue. They translate the Sigma rule of a hunt with pySigma (or run its native query), execute it on the platform within the run limits, and send back the observables and observed data found in the hits; OpenCTI then creates and updates the sightings of the hunt itself. Raw events never leave the hunted platform. They need read-only search access to the platform. Their connector page shows the hunted platform, its query languages, the maximum number of concurrent runs and the latest hunt runs. See [Hunt connectors](../usage/hunt-connectors.md).
+
 ## Connector configuration
 
 ### Connector users and tokens

@@ -1,7 +1,7 @@
 import { DraftContext } from './useDraftContext';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import useAuth from './useAuth';
-import useGranted, { SETTINGS, BYPASS, KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from './useGranted';
+import useGranted, { isGrantedTo, SETTINGS, BYPASS, KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from './useGranted';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 vi.mock('./useAuth', () => ({ default: vi.fn() }));
@@ -131,5 +131,30 @@ describe('useGranted', () => {
     // @ts-expect-error Testing invalid input
     mockAuthMe({ capabilities: null, capabilitiesInDraft: undefined });
     expect(useGranted([KNOWLEDGE])).toBe(false);
+  });
+});
+
+describe('isGrantedTo', () => {
+  const user = (names: string[], draft: string[] = [], inDraft = false) => ({
+    id: 'user-id',
+    capabilities: names.map((name) => ({ name })),
+    capabilitiesInDraft: draft.map((name) => ({ name })),
+    draftContext: inDraft ? { id: 'draft-test' } : null,
+  });
+
+  it('applies the rule of useGranted to a user already in hand', () => {
+    expect(isGrantedTo(user([BYPASS]), [KNOWLEDGE_KNUPDATE])).toBe(true);
+    expect(isGrantedTo(user([KNOWLEDGE]), [KNOWLEDGE])).toBe(true);
+    expect(isGrantedTo(user([KNOWLEDGE]), [KNOWLEDGE_KNUPDATE])).toBe(false);
+    expect(isGrantedTo(user([KNOWLEDGE]), [KNOWLEDGE, KNOWLEDGE_KNUPDATE], true)).toBe(false);
+  });
+
+  it('refuses the legacy SETTINGS capability, as useGranted does', () => {
+    expect(() => isGrantedTo(user([BYPASS]), [SETTINGS])).toThrow('The SETTINGS capability should not be used');
+  });
+
+  it('adds the draft capabilities only inside a draft', () => {
+    expect(isGrantedTo(user([KNOWLEDGE], [KNOWLEDGE_KNUPDATE]), [KNOWLEDGE_KNUPDATE])).toBe(false);
+    expect(isGrantedTo(user([KNOWLEDGE], [KNOWLEDGE_KNUPDATE], true), [KNOWLEDGE_KNUPDATE])).toBe(true);
   });
 });

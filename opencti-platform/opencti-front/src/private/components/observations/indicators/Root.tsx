@@ -21,12 +21,14 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
 import IndicatorKnowledge from './IndicatorKnowledge';
 import { PATH_INDICATOR, PATH_INDICATORS } from '@components/common/routes/paths';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -55,6 +57,7 @@ const indicatorQuery = graphql`
       entity_type
       name
       pattern
+      pattern_type
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Indicator_indicator
@@ -100,6 +103,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   const basePath = PATH_INDICATOR(indicatorId);
   const link = `${basePath}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const isOverview = isPathOverview(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {indicator ? (
@@ -189,6 +193,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                 />
               ),
             }}
+            extraActions={isOverview && <HuntThisMenu entity={indicator} />}
           />
         </div>
       ) : (

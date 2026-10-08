@@ -216,6 +216,22 @@ This component allows the playbook to continue only if the data matches the filt
 - ***Out***: If at least one entity or observable in the bundle passes the matching condition, the bundle follows the ***Out*** route.
 - ***No-match***: If no entity or observable in the bundle passes the matching condition, the bundle follows the ***No-match*** route.
 
+### Match hunt results
+
+This component routes the bundle on the outcome of the hunts run earlier in the same execution by a ***Run hunts*** component. Placed right after a ***Run hunts*** step, it reads the runs of that step only (none when the step ran no hunt); placed anywhere else, it reads every hunt run of the execution. In both cases it reads only the runs started for the entity the execution processes. See [Hunt automation](hunt-automation.md).
+
+***Component details***
+
+- ***Verdicts***: the bundle matches when a run has one of the selected verdicts (any verdict when empty).
+- ***Use the verdicts proposed by the triage agent***: for the runs still pending, the verdict proposed by the triage agent is used.
+- ***Minimum number of hits***: over the runs of the execution.
+- ***Only when an incident draft was opened***.
+
+***Routes:***
+
+- ***Out***: The outcome of the hunts matches the conditions.
+- ***No-match***: The outcome of the hunts does not match the conditions, or no hunt ran.
+
 ### Promote observable to indicator
 
 This component generates indicators based on observables in the received STIX 2.1 bundle.
@@ -255,6 +271,40 @@ As the main element is always preserved, subsequent components that update your 
 ***Routes:***
 - ***Out***: The bundle now contains only the main entity and the entities that matched the filter. The playbook continues down this route.
 - ***Unmatched***: No entity in the bundle matched the filter conditions. The original bundle passes through unchanged. The playbook continues down this route.
+
+### Run hunts
+
+!!! tip "Enterprise edition"
+
+    This component is available under the **OpenCTI Enterprise Edition** licence.
+
+This component runs hunts for the elements of the bundle on the security platforms, through their hunt connectors. See [Hunts](hunts.md).
+
+***Scope controls***
+
+Choose to apply this component to:
+
+- All elements in the bundle
+- Main element in the bundle [default]
+- All except the main element in the bundle
+
+Add filters to control which elements in your bundle the action defined in the component is applied to.
+
+***Component details***
+
+- ***Hunts to run***: a fixed list of hunts. When empty, the active hunts targeting the threats, techniques and indicators of the elements are run.
+- ***Security platforms***: when empty, each hunt runs on its own scope.
+- ***Time window***: in hours, 0 to use the window of each hunt.
+- ***Maximum number of hunts per execution***.
+- ***Wait for the hunt results***: the execution is suspended until every run is settled (completed, failed or timed out with no retry left), then continues. Otherwise it continues as soon as the runs are started.
+- ***Add the sightings and observables found to the bundle***: when waiting for the results.
+
+***Routes:***
+
+- ***Out***: At least one hunt run was started. The playbook continues down this route, once the runs are settled when waiting for the results.
+- ***No-hunt***: No hunt could run for the elements (no matching hunt, or no hunt connector serving their scope).
+
+When the runs of a hunt cannot all be created, the step starts no further run and logs the security platforms left without one. When waiting for the results, it waits on the runs already started; otherwise, or when none was started, the step fails.
 
 ## Share and access components
 

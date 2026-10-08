@@ -2374,3 +2374,102 @@ the hover state, named like the button family's.
 **Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
 the tone, remove its `style` colour, the icon's `color` prop and the marker, and
 confirm the row text and icon render in the library's destructive colour.
+
+
+## 65. No code editor, so a product writing Sigma or queries layers its own highlighter over a textarea
+
+**Raised** by the Hunts screens (#18671): a hunt carries a Sigma rule (YAML) and
+native queries (KQL, SPL, EQL, ...) that analysts write and read back.
+
+**Today.** `Textarea` is a plain field: no syntax highlighting, no line numbers,
+no monospace mode, and `Tab` leaves the field. `CodeBlock` in the product is
+read-only.
+
+**Workaround.** `hunts/HuntCodeEditor.tsx` stacks a transparent native
+`<textarea>` over a `react-syntax-highlighter` (Prism) rendering of the same text,
+with a line-number gutter. `Tab` indents the selection, `Shift+Tab` outdents it,
+and `Escape` then `Tab` leaves the editor so keyboard users are never trapped.
+Colours come from the theme palette, not from the Prism theme's background.
+
+**Ask.** A `CodeEditor` (or a `Textarea` `code` variant) with a language prop,
+line numbers, the indent / escape keyboard model above, and the field anatomy
+(label, helper text, error) of `Textarea`.
+
+**Removal test.** Replace `HuntCodeEditor` by the library component in the hunt
+creation drawer and the Logic tab: the Sigma rule is highlighted, `Tab` indents,
+`Escape` then `Tab` reaches the next field.
+
+
+## 66. No inline alert or callout, so status banners stay on the MUI wrapper
+
+**Raised** by the Hunts screens (#18671): the hunt detail shows a banner when an
+agent or XTM Hub proposed the hunt, when the user works in a draft workspace, and
+when the Logic tab cannot preview a translation.
+
+**Today.** The library ships no inline alert / callout (severity, icon, title,
+body, optional action). `components/Alert` — a MUI `Alert` wrapper — is the only
+option, so these banners are not on the design system.
+
+**Ask.** An `Alert` (or `Callout`) with the `Chip` severities (`info`, `low` ...
+`critical`) mapped to the alert tones, an optional title and an action slot.
+
+**Workaround.** `hunts/HuntAlert.tsx` renders the MUI `Alert` (outlined, with
+`AlertTitle` and its `action` slot) behind the props such a component would take:
+`severity`, `title`, `description`, `action`. `HuntDraftBanner`, the translation
+preview notices of the Logic tab and the failure of a hunt run use it. The
+platform's `components/Alert` does not fit: it puts its content in a paragraph,
+which cannot hold the list of what a draft still needs or a "Show details" block.
+
+**Removal test.** `HuntDraftBanner` and the Logic tab notices render with the
+library component, `hunts/HuntAlert.tsx` is deleted and no hunt file imports
+`@mui/material/Alert`.
+
+**Resolved by 1.2.0.** The pin moved to 1.2.0, which exports `Alert`:
+`HuntDraftBanner`, the Logic tab notices and the failure of a hunt run render the
+design-system `Alert`, and `hunts/HuntAlert.tsx` is deleted. The `Alert`
+description is a paragraph, so the list of what a draft still needs is built from
+phrasing content (`role="list"` / `role="listitem"` spans).
+
+
+## 67. `SelectContent` does not take its name from its trigger
+
+**Raised** by `check-accessible-names.mjs` on the Hunts screens (#18671): four
+selects with a named `SelectTrigger` were flagged `listbox-unnamed`.
+
+**Today.** The trigger's `aria-label` names the combobox only; the listbox it
+opens is announced unnamed unless `SelectContent` gets its own `aria-label`. Every
+call site has to repeat the same label twice, and forgetting the second one is
+silent in the UI.
+
+**Workaround.** Each hunt select passes the same `t_i18n(...)` label to
+`SelectTrigger` and `SelectContent`.
+
+**Ask.** `SelectContent` defaults its accessible name to the trigger's (for
+example `aria-labelledby` pointing at the trigger) when it has none of its own.
+
+**Removal test.** Drop the `aria-label` of `SelectContent` in `HuntStatistics.tsx`:
+`check-accessible-names.mjs` stays clean and a screen reader announces the
+listbox as "Period".
+
+## 68. No hero or first-use layout, so a first-use screen is assembled by hand
+
+**Raised** by the Hunts screens (#18671): Defense > Hunts opens on a first-use
+screen when the platform has no hunt yet (what a hunt does, then "Create a hunt",
+"Plan a hunt with AI", "Import from XTM Hub" and the documentation).
+
+**Today.** The library ships no hero / empty-state layout (icon, title, body,
+action row), so every first-use screen picks its own spacing and hierarchy.
+
+**Workaround.** `hunts/HuntsFirstUse.tsx` composes the platform `Card` with the
+library `Thumbnail` and `Text` (`title-sm` heading, `content-compact` body) and a
+row of library-wrapped `Button`s.
+
+**Ask.** A `Hero` with an icon slot, a title, a body and an action row, using
+the `Thumbnail` of the library for the icon.
+
+**Removal test.** `HuntsFirstUse` renders with the library component and no
+longer imports `components/common/card/Card`.
+
+**Resolved by 1.2.0.** `HuntsFirstUse` renders the design-system `Hero` /
+`HeroHeader` / `HeroBody` composition and no longer imports
+`components/common/card/Card`.

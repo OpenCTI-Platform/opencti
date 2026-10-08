@@ -31,6 +31,8 @@ type MarkdownFieldProps = {
   registerMarkdownImagesController?: (controller: MarkdownImagesController) => void;
   formikSyncMode?: 'immediate' | 'deferred';
   formikSyncDelayMs?: number;
+  /** A secondary action at the end of the label row, outside the editor */
+  labelAction?: React.ReactNode;
 };
 
 const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
@@ -54,6 +56,7 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
     registerMarkdownImagesController,
     formikSyncMode,
     formikSyncDelayMs,
+    labelAction,
   } = props;
 
   const [field, meta] = useField<string>(name);
@@ -122,6 +125,7 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
       uploadFileMarkings={uploadFileMarkings}
       autoPersistOnBlur={autoPersistOnBlur}
       registerMarkdownImagesController={registerMarkdownImagesController}
+      labelAction={labelAction}
     />
   );
 };
