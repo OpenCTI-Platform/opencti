@@ -1088,6 +1088,11 @@ export const getWorkflowInstance = async (
   if (!entity) {
     return null;
   }
+  // With ENTITIES_WORKFLOW disabled, the legacy x_opencti_workflow_id is the source of truth:
+  // no instance must be exposed, backfilled, or used to read-repair (it would revert edits).
+  if (entity.entity_type !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    return null;
+  }
 
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = await getDefinitionData(context, user, entitySetting);
