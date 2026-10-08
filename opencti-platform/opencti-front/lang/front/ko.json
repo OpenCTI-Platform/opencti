@@ -2677,6 +2677,7 @@
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "수집 관리자가 비활성화되었거나 구성되지 않은 경우 플랫폼 설정으로 이동하여 활성화하세요.",
   "Ingestion monitoring": "수집 모니터링",
   "Ingestion monitoring | Ingestion | Data": "수집 모니터링 | 수집 | 데이터",
+  "INGESTION_HEALTH_MANAGER": "수집 상태 관리자",
   "INGESTION_MANAGER": "수집 관리자",
   "Initial score": "초기 점수",
   "Initiator": "발기인",

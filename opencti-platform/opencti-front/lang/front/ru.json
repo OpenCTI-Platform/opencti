@@ -2677,6 +2677,7 @@
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "Менеджер переполнения отключен или не настроен, пожалуйста, перейдите в настройки платформы, чтобы включить его.",
   "Ingestion monitoring": "Мониторинг перегрузок",
   "Ingestion monitoring | Ingestion | Data": "Мониторинг переполнения | Переполнение | Данные",
+  "INGESTION_HEALTH_MANAGER": "Менеджер состояния загрузки",
   "INGESTION_MANAGER": "МЕНЕДЖЕР ПРИЁМА ДАННЫХ",
   "Initial score": "Начальная оценка",
   "Initiator": "Инициатор",

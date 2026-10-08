@@ -2677,6 +2677,7 @@
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "Il gestore dell'ingestione è disabilitato o non configurato, andare nelle impostazioni della piattaforma per abilitarlo.",
   "Ingestion monitoring": "Monitoraggio dell'ingestione",
   "Ingestion monitoring | Ingestion | Data": "Monitoraggio dell'ingestione | Ingestione | Dati",
+  "INGESTION_HEALTH_MANAGER": "Gestore dello stato di salute dell'ingestione",
   "INGESTION_MANAGER": "Gestione dell'ingestione",
   "Initial score": "Punteggio iniziale",
   "Initiator": "Iniziatore",

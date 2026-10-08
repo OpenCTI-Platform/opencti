@@ -2677,6 +2677,7 @@
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "インジェストマネージャーが無効になっているか、設定されていません。",
   "Ingestion monitoring": "インジェストモニタリング",
   "Ingestion monitoring | Ingestion | Data": "インジェスト・モニタリング｜インジェスト｜データ",
+  "INGESTION_HEALTH_MANAGER": "取り込みヘルスマネージャー",
   "INGESTION_MANAGER": "インジェストマネージャー",
   "Initial score": "初期スコア",
   "Initiator": "イニシエータ",
