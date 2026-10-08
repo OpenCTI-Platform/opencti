@@ -1,5 +1,8 @@
 import { ForbiddenAccess } from '../../../config/errors';
+import { getExistingRelations } from '../../../database/middleware';
+import { internalFindByIds } from '../../../database/middleware-loader';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
+import { getInputIds } from '../../../schema/identifier';
 import { registerEntityValidator, type ValidatorFn } from '../../../schema/validator-register';
 import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../../schema/general';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../schema/stixDomainObject';
@@ -44,18 +47,34 @@ const createdOrganizations = async (context: AuthContext, user: AuthUser, reques
 };
 
 /**
+ * The stored objects a creation upserts into, found as the creation finds them. An ordinary sighting never merges into
+ * the sighting a hunt keeps, unless it names its id.
+ */
+const upsertedObjects = async (context: AuthContext, user: AuthUser, type: string, instance: Record<string, unknown>): Promise<BasicStoreObject[]> => {
+  if (type === STIX_SIGHTING_RELATIONSHIP) {
+    const requestedIds = new Set<string>(getInputIds(type, instance, false));
+    const matched = await getExistingRelations(context, user, instance) as (BasicStoreObject & { x_opencti_hunt_id?: string })[];
+    return matched.filter((relation) => isEmptyField(relation.x_opencti_hunt_id)
+      || [relation.internal_id, relation.standard_id, ...(relation.x_opencti_stix_ids ?? [])].some((id) => requestedIds.has(id)));
+  }
+  const ids = [...getInputIds(type, instance, undefined), ...(context.previousStandard ? [context.previousStandard] : [])];
+  return await internalFindByIds(context, SYSTEM_USER, ids, { type }) as BasicStoreObject[];
+};
+
+/**
  * The evidence of a run is at least as restricted as the run: every marking of the run is covered by a marking of the
  * evidence of the same type and at least the same level and, with a platform organization, the evidence is shared with
  * no organization the run is not shared with. Otherwise a user who cannot read the run could read what it found.
  */
-const validateEvidenceAccess = async (context: AuthContext, run: BasicStoreEntityHuntRun, evidence: () => Promise<EvidenceAccess>) => {
-  if (!await isReadableByReadersOf(context, await evidence(), run)) {
+const validateEvidenceAccess = async (context: AuthContext, run: BasicStoreEntityHuntRun, evidence: () => Promise<EvidenceAccess[]>) => {
+  const readable = await Promise.all((await evidence()).map((access) => isReadableByReadersOf(context, access, run)));
+  if (readable.some((isReadable) => !isReadable)) {
     throw ForbiddenAccess('The evidence of a run carries at least the markings of the run and no organization the run is not shared with', { runId: run.internal_id });
   }
 };
 
 /** Only the hunt connector a run was dispatched to, in the work of the dispatch, attributes an object to the run. */
-const validateHuntRunAttribution = async (context: AuthContext, user: AuthUser, runId: string | null, evidence: (() => Promise<EvidenceAccess>) | null) => {
+const validateHuntRunAttribution = async (context: AuthContext, user: AuthUser, runId: string | null, evidence: (() => Promise<EvidenceAccess[]>) | null) => {
   if (!runId || isBypassUser(user)) {
     return true;
   }
@@ -69,11 +88,24 @@ const validateHuntRunAttribution = async (context: AuthContext, user: AuthUser, 
   return true;
 };
 
-const validatorCreation: ValidatorFn = async (context, user, instance) => {
-  return validateHuntRunAttribution(context, user, attributedRunId(instance[ATTRIBUTE_HUNT_RUN_ID]), async () => ({
-    [RELATION_OBJECT_MARKING]: referenceIds(instance[INPUT_MARKINGS]),
-    [RELATION_GRANTED_TO]: await createdOrganizations(context, user, instance[INPUT_GRANTED_REFS]),
-  }));
+// A creation that upserts into stored objects keeps their markings and organizations, the incoming ones being added
+// only when the confidence allows it or to fill an empty field: as for an update, each stored object attributed to a
+// run has to be as restricted as the run, its empty markings filled by the incoming ones
+const validatorCreationOf = (type: string): ValidatorFn => async (context, user, instance) => {
+  return validateHuntRunAttribution(context, user, attributedRunId(instance[ATTRIBUTE_HUNT_RUN_ID]), async () => {
+    const incoming: EvidenceAccess = {
+      [RELATION_OBJECT_MARKING]: referenceIds(instance[INPUT_MARKINGS]),
+      [RELATION_GRANTED_TO]: await createdOrganizations(context, user, instance[INPUT_GRANTED_REFS]),
+    };
+    const stored = (await upsertedObjects(context, user, type, instance)).map((element): EvidenceAccess => {
+      const markings = referenceIds(element[RELATION_OBJECT_MARKING]);
+      return {
+        [RELATION_OBJECT_MARKING]: markings.length > 0 ? markings : incoming[RELATION_OBJECT_MARKING],
+        [RELATION_GRANTED_TO]: referenceIds(element[RELATION_GRANTED_TO]),
+      };
+    });
+    return [incoming, ...stored];
+  });
 };
 
 // Clearing the attribution of an object takes the connector of the run it was attributed to; attributing an object
@@ -91,10 +123,10 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial) =>
   if (!isBypassUser(user) && (INPUT_MARKINGS in instance || INPUT_GRANTED_REFS in instance)) {
     throw ForbiddenAccess('An object is attributed to a run in a change of its own: set its markings and organizations first', { runId: attributed });
   }
-  return validateHuntRunAttribution(context, user, attributed, async () => ({
+  return validateHuntRunAttribution(context, user, attributed, async () => [{
     [RELATION_OBJECT_MARKING]: referenceIds(initial?.[RELATION_OBJECT_MARKING]),
     [RELATION_GRANTED_TO]: referenceIds(initial?.[RELATION_GRANTED_TO]),
-  }));
+  }]);
 };
 
 // A sighting names the hunt that keeps it only when the platform writes it: a connector or a user never sets, changes
@@ -105,9 +137,12 @@ const validateSightingHunt = (user: AuthUser, touched: boolean) => {
   }
 };
 
+const validatorCreation = validatorCreationOf(ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+const sightingEvidenceValidatorCreation = validatorCreationOf(STIX_SIGHTING_RELATIONSHIP);
+
 const sightingValidatorCreation: ValidatorFn = async (context, user, instance) => {
   validateSightingHunt(user, !isEmptyField(instance[ATTRIBUTE_SIGHTING_HUNT_ID]));
-  return validatorCreation(context, user, instance);
+  return sightingEvidenceValidatorCreation(context, user, instance);
 };
 
 const sightingValidatorUpdate: ValidatorFn = async (context, user, instance, initial) => {

@@ -1,16 +1,35 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
+import { getExistingRelations } from '../../../../src/database/middleware';
+import { internalFindByIds } from '../../../../src/database/middleware-loader';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { findHuntRunById, isHuntRunConnectorCall } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import '../../../../src/modules/hunt/huntRun/huntRun-attribution';
+import { getInputIds } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../../src/schema/stixDomainObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/modules/hunt/huntRun/huntRun-domain', () => ({
   findHuntRunById: vi.fn(),
   isHuntRunConnectorCall: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
+  getExistingRelations: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware-loader')>(),
+  internalFindByIds: vi.fn(),
+}));
+
+vi.mock('../../../../src/schema/identifier', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/schema/identifier')>(),
+  getInputIds: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -46,6 +65,16 @@ const validateCreation = (user: AuthUser, instance: Record<string, unknown>) => 
 const validateUpdate = (instance: Record<string, unknown>, initial: Record<string, unknown>) => {
   return (getEntityValidatorUpdate(ENTITY_TYPE_CONTAINER_OBSERVED_DATA) as ValidatorFn)(context, restricting, instance, initial);
 };
+const validateSightingCreation = (instance: Record<string, unknown>) => {
+  return (getEntityValidatorCreation(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn)(context, restricting, instance);
+};
+const storedObject = (internalId: string, objectMarking: string[], granted: string[] = [], huntId?: string) => ({
+  internal_id: internalId,
+  standard_id: `${internalId}-standard`,
+  [RELATION_OBJECT_MARKING]: objectMarking,
+  [RELATION_GRANTED_TO]: granted,
+  ...(huntId ? { x_opencti_hunt_id: huntId } : {}),
+});
 
 describe('Evidence attributed to a hunt run', () => {
   beforeEach(() => {
@@ -54,6 +83,9 @@ describe('Evidence attributed to a hunt run', () => {
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'platform-organization' } as never);
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(markings as never);
     vi.mocked(findByIds).mockImplementation((async (_context: unknown, _user: unknown, ids: string[]) => ids.map((id) => ({ internal_id: id.replace('organization--', '') }))) as never);
+    vi.mocked(getInputIds).mockReturnValue(['evidence-standard']);
+    vi.mocked(internalFindByIds).mockResolvedValue([]);
+    vi.mocked(getExistingRelations).mockResolvedValue([]);
   });
 
   it('should accept evidence at least as restricted as the run', async () => {
@@ -75,6 +107,33 @@ describe('Evidence attributed to a hunt run', () => {
     await expect(validateCreation(shared, evidence([{ internal_id: 'marking-amber' }], [{ internal_id: 'organization-1' }]))).rejects.toThrow(/no organization the run is not shared with/);
     vi.mocked(getEntityFromCache).mockResolvedValue({} as never);
     expect(await validateCreation(shared, evidence([{ internal_id: 'marking-amber' }]))).toBe(true);
+  });
+
+  it('should check the access a stored object keeps once the evidence upserts into it', async () => {
+    const amberShared = evidence([{ internal_id: 'marking-amber' }], [{ internal_id: 'organization-1' }]);
+    vi.mocked(internalFindByIds).mockResolvedValue([storedObject('observed-1', ['marking-amber'], ['organization-2'])] as never);
+    await expect(validateCreation(restricting, amberShared)).rejects.toThrow(/no organization the run is not shared with/);
+    expect(internalFindByIds).toHaveBeenCalledWith(context, expect.anything(), ['evidence-standard'], { type: ENTITY_TYPE_CONTAINER_OBSERVED_DATA });
+    // An incoming marking is not added to a stored one of lower confidence
+    vi.mocked(internalFindByIds).mockResolvedValue([storedObject('observed-1', ['marking-green'])] as never);
+    await expect(validateCreation(restricting, amberShared)).rejects.toThrow(/carries at least the markings of the run/);
+    // Empty stored markings are filled by the incoming ones
+    vi.mocked(internalFindByIds).mockResolvedValue([storedObject('observed-1', [])] as never);
+    expect(await validateCreation(restricting, amberShared)).toBe(true);
+    vi.mocked(internalFindByIds).mockResolvedValue([storedObject('observed-1', ['marking-red'], ['organization-1'])] as never);
+    expect(await validateCreation(restricting, amberShared)).toBe(true);
+  });
+
+  it('should check the access of the sightings a sighting upserts into, never of the sighting a hunt keeps', async () => {
+    const sighting = evidence([{ internal_id: 'marking-amber' }], [{ internal_id: 'organization-1' }]);
+    vi.mocked(getExistingRelations).mockResolvedValue([storedObject('sighting-1', ['marking-amber'], ['organization-2'])] as never);
+    await expect(validateSightingCreation(sighting)).rejects.toThrow(/no organization the run is not shared with/);
+    const huntSighting = storedObject('sighting-hunt', ['marking-green'], ['organization-2'], 'hunt-1');
+    vi.mocked(getExistingRelations).mockResolvedValue([huntSighting] as never);
+    expect(await validateSightingCreation(sighting)).toBe(true);
+    // Naming its id merges into it
+    vi.mocked(getInputIds).mockReturnValue(['evidence-standard', 'sighting-hunt-standard']);
+    await expect(validateSightingCreation(sighting)).rejects.toThrow(/carries at least the markings of the run/);
   });
 
   it('should check the stored access of an object attributed to a run, never the clearing of an attribution', async () => {
