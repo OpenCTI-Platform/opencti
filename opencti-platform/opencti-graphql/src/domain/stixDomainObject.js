@@ -47,6 +47,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { entityLocationType, identityClass, xOpenctiType } from '../schema/attribute-definition';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { normalizeIndicatorRuleEditInputs } from '../modules/indicator/indicator-rule-utils';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
@@ -312,11 +313,13 @@ const verifyGrantableGroupInput = (user, input) => {
   }
 };
 
-export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
+export const stixDomainObjectEditField = async (context, user, stixObjectId, rawInput, opts = {}) => {
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.', { stixObjectId });
   }
+  // The rule metadata of an indicator is bounded and normalized whatever the mutation that patches it
+  const input = stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR ? normalizeIndicatorRuleEditInputs(rawInput) : rawInput;
   verifyGrantableGroupInput(user, input);
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {

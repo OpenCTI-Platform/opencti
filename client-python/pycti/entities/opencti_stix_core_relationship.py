@@ -1,9 +1,53 @@
 # coding: utf-8
 
 import datetime
+import math
+import threading
+import time
 import uuid
+from typing import Optional
 
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from .opencti_indicator import FEATURE_DETECTION_RETRY_DELAY
+
+_RELATIONSHIP_INPUT_FIELDS_QUERY = """
+    query StixCoreRelationshipInputFeatureDetection {
+        __type(name: "StixCoreRelationshipAddInput") {
+            inputFields {
+                name
+            }
+        }
+    }
+"""
+
+_RELATIONSHIP_OUTPUT_FIELDS_QUERY = """
+    query StixCoreRelationshipOutputFeatureDetection {
+        __type(name: "StixCoreRelationship") {
+            fields {
+                name
+            }
+        }
+    }
+"""
+
+# Schema feature detections of the relationship: the creation input and the relationship type
+_RELATIONSHIP_FIELDS_DETECTIONS = {
+    "input": (_RELATIONSHIP_INPUT_FIELDS_QUERY, "inputFields"),
+    "output": (_RELATIONSHIP_OUTPUT_FIELDS_QUERY, "fields"),
+}
+
+COVERAGE_PLATFORMS_PROPERTIES = """
+            coverage_platforms_information {
+                platform_ref
+                coverage_name
+                coverage_score
+            }
+"""
+
+# The coverage score of the GraphQL input is an Int, a signed 32-bit integer
+_GRAPHQL_INT_MIN = -(2**31)
+_GRAPHQL_INT_MAX = 2**31 - 1
 
 
 class StixCoreRelationship:
@@ -22,7 +66,12 @@ class StixCoreRelationship:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
-        self.properties = """
+        self._input_fields: Optional[set] = None
+        self._input_fields_retry_at = 0.0
+        self._output_fields: Optional[set] = None
+        self._output_fields_retry_at = 0.0
+        self._detection_lock = threading.Lock()
+        self._properties = """
             id
             entity_type
             parent_types
@@ -423,6 +472,124 @@ class StixCoreRelationship:
             data.get("stop_time"),
         )
 
+    def supports_input_field(self, field: str) -> bool:
+        """Tell if the relationship creation input of the platform has a field (schema feature detection, cached).
+
+        A field found is kept for the life of the client. A missing field, or a detection that fails (platform
+        unavailable, introspection disabled), is checked again after ``FEATURE_DETECTION_RETRY_DELAY`` seconds, so a
+        long-running client follows an upgrade of the platform.
+
+        :param field: name of the input field
+        :type field: str
+        :return: True when ``StixCoreRelationshipAddInput`` has the field
+        :rtype: bool
+        """
+        return self._supports_schema_field("input", field)
+
+    def supports_output_field(self, field: str) -> bool:
+        """Tell if the relationship type of the platform has a field (schema feature detection, cached).
+
+        Cached and checked again like :py:meth:`supports_input_field`.
+
+        :param field: name of the field
+        :type field: str
+        :return: True when ``StixCoreRelationship`` has the field
+        :rtype: bool
+        """
+        return self._supports_schema_field("output", field)
+
+    def _supports_schema_field(self, kind: str, field: str) -> bool:
+        fields_attribute = f"_{kind}_fields"
+        retry_attribute = f"_{kind}_fields_retry_at"
+        known = getattr(self, fields_attribute)
+        if known is not None and (
+            field in known or time.monotonic() < getattr(self, retry_attribute)
+        ):
+            return field in known
+        with self._detection_lock:
+            known = getattr(self, fields_attribute)
+            if known is None or (
+                field not in known
+                and time.monotonic() >= getattr(self, retry_attribute)
+            ):
+                query, fields_key = _RELATIONSHIP_FIELDS_DETECTIONS[kind]
+                try:
+                    result = self.opencti.query(query)
+                    fields = ((result.get("data") or {}).get("__type") or {}).get(
+                        fields_key
+                    ) or []
+                    setattr(self, fields_attribute, {item["name"] for item in fields})
+                except Exception as err:  # pylint: disable=broad-except
+                    self.opencti.app_logger.warning(
+                        f"Cannot detect the relationship {kind} fields of the platform",
+                        {"error": str(err)},
+                    )
+                    setattr(self, fields_attribute, set())
+                setattr(
+                    self,
+                    retry_attribute,
+                    time.monotonic() + FEATURE_DETECTION_RETRY_DELAY,
+                )
+        return field in getattr(self, fields_attribute)
+
+    @property
+    def properties(self):
+        """Default selection of a relationship, with the coverage per security platform when the platform knows it."""
+        return self._properties + (
+            COVERAGE_PLATFORMS_PROPERTIES
+            if self.supports_output_field("coverage_platforms_information")
+            else ""
+        )
+
+    @staticmethod
+    def convert_coverage_platforms(raw_coverage_platforms):
+        """Convert the STIX coverage_platforms property of a has-covered relationship.
+
+        OpenAEV attributes each coverage score to the security platform that produced it:
+        ``[{"platform_ref": "identity--...", "name": "DETECTION", "score": 75}]``.
+
+        :param raw_coverage_platforms: the coverage_platforms property
+        :type raw_coverage_platforms: list
+        :return: the coverage_platforms_information input
+        :rtype: list
+        """
+        if not isinstance(raw_coverage_platforms, list):
+            return []
+        # One malformed entry would fail the whole relationship creation: it is skipped, and a
+        # decimal score is rounded (half up, as the platform does) to the integer the input holds
+        return [
+            {
+                "platform_ref": coverage["platform_ref"],
+                "coverage_name": coverage["name"],
+                "coverage_score": StixCoreRelationship._rounded_score(
+                    coverage["score"]
+                ),
+            }
+            for coverage in raw_coverage_platforms
+            if isinstance(coverage, dict)
+            and StixCoreRelationship._is_platform_coverage(coverage)
+        ]
+
+    @staticmethod
+    def _rounded_score(score):
+        return math.floor(score + 0.5)
+
+    @staticmethod
+    def _is_platform_coverage(coverage):
+        score = coverage.get("score")
+        return (
+            isinstance(coverage.get("platform_ref"), str)
+            and coverage["platform_ref"] != ""
+            and isinstance(coverage.get("name"), str)
+            and coverage["name"] != ""
+            and isinstance(score, (int, float))
+            and not isinstance(score, bool)
+            and math.isfinite(score)
+            and _GRAPHQL_INT_MIN
+            <= StixCoreRelationship._rounded_score(score)
+            <= _GRAPHQL_INT_MAX
+        )
+
     def list(self, **kwargs):
         """List stix_core_relationship objects.
 
@@ -724,6 +891,9 @@ class StixCoreRelationship:
         :type external_uri: str
         :param coverage_information: (optional) coverage information
         :type coverage_information: list
+        :param coverage_platforms_information: (optional) coverage information per security platform
+            ([{"platform_ref", "coverage_name", "coverage_score"}])
+        :type coverage_platforms_information: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
         :return: stix_core_relationship object
@@ -752,6 +922,9 @@ class StixCoreRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
+        coverage_platforms_information = kwargs.get(
+            "coverage_platforms_information", None
+        )
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
 
@@ -773,38 +946,46 @@ class StixCoreRelationship:
                     }
                 }
             """
-        result = self.opencti.query(
-            query,
-            {
-                "input": {
-                    "fromId": from_id,
-                    "toId": to_id,
-                    "stix_id": stix_id,
-                    "relationship_type": relationship_type,
-                    "description": description,
-                    "start_time": start_time,
-                    "stop_time": stop_time,
-                    "revoked": revoked,
-                    "confidence": confidence,
-                    "lang": lang,
-                    "created": created,
-                    "modified": modified,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "objectLabel": object_label,
-                    "objectOrganization": granted_refs,
-                    "externalReferences": external_references,
-                    "killChainPhases": kill_chain_phases,
-                    "x_opencti_workflow_id": x_opencti_workflow_id,
-                    "x_opencti_stix_ids": x_opencti_stix_ids,
-                    "x_opencti_modified_at": x_opencti_modified_at,
-                    "external_uri": external_uri,
-                    "coverage_information": coverage_information,
-                    "update": update,
-                    "upsertOperations": upsert_operations,
-                }
-            },
-        )
+        relationship_input = {
+            "fromId": from_id,
+            "toId": to_id,
+            "stix_id": stix_id,
+            "relationship_type": relationship_type,
+            "description": description,
+            "start_time": start_time,
+            "stop_time": stop_time,
+            "revoked": revoked,
+            "confidence": confidence,
+            "lang": lang,
+            "created": created,
+            "modified": modified,
+            "createdBy": created_by,
+            "objectMarking": object_marking,
+            "objectLabel": object_label,
+            "objectOrganization": granted_refs,
+            "externalReferences": external_references,
+            "killChainPhases": kill_chain_phases,
+            "x_opencti_workflow_id": x_opencti_workflow_id,
+            "x_opencti_stix_ids": x_opencti_stix_ids,
+            "x_opencti_modified_at": x_opencti_modified_at,
+            "external_uri": external_uri,
+            "coverage_information": coverage_information,
+            "update": update,
+            "upsertOperations": upsert_operations,
+        }
+        # Only sent when supplied, and only to a platform that knows the field; an empty list is sent to clear a
+        # previous per-platform attribution
+        if coverage_platforms_information is not None:
+            if self.supports_input_field("coverage_platforms_information"):
+                relationship_input["coverage_platforms_information"] = (
+                    coverage_platforms_information
+                )
+            else:
+                self.opencti.app_logger.warning(
+                    "The platform does not know the per security platform coverage of relationships, it is not sent",
+                    {"relationship_type": relationship_type},
+                )
+        result = self.opencti.query(query, {"input": relationship_input})
         return self.opencti.process_multiple_fields(
             result["data"]["stixCoreRelationshipAdd"]
         )
@@ -1405,6 +1586,11 @@ class StixCoreRelationship:
                 for cov in raw_coverages
                 if "score" in cov
             ]
+            coverage_platforms_information = (
+                self.convert_coverage_platforms(stix_relation["coverage_platforms"])
+                if "coverage_platforms" in stix_relation
+                else None
+            )
 
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
@@ -1430,6 +1616,7 @@ class StixCoreRelationship:
                 ),
                 external_uri=external_uri,
                 coverage_information=coverage_information,
+                coverage_platforms_information=coverage_platforms_information,
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None
                 ),

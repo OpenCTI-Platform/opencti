@@ -106,6 +106,9 @@
   "retention_manager": {
     "enabled": true
   },
+  "defense_coverage_manager": {
+    "enabled": false
+  },
   "indicator_decay_manager": {
     "enabled": true,
     "interval": 6000000

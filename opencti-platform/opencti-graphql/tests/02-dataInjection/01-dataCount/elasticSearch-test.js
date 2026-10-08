@@ -414,6 +414,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(entitiesCounter.CourseOfAction);
     expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
     expect(entityTypeMap.get('DecayRule')).toBe(entitiesCounter.DecayRule);
+    expect(entityTypeMap.get('DefenseLogsourceMapping')).toBe(entitiesCounter.DefenseLogsourceMapping);
     expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
@@ -529,7 +530,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(61);
+    expect(data.edges.length).toEqual(66);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(2);
   });
@@ -569,6 +570,7 @@ describe('Elasticsearch pagination', () => {
       { type: 'Course-Of-Action', size: entitiesCounter.CourseOfAction },
       { type: 'Credential', size: entitiesCounter.Credential },
       { type: 'DecayRule', size: entitiesCounter.DecayRule },
+      { type: 'DefenseLogsourceMapping', size: entitiesCounter.DefenseLogsourceMapping },
       { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
       { type: 'EntitySetting', size: entitiesCounter.EntitySetting },
       { type: 'External-Reference', size: entitiesCounter.ExternalReference },
@@ -711,6 +713,7 @@ describe('Elasticsearch pagination', () => {
       { type: 'Capability', size: entitiesCounter.Capability },
       { type: 'Credential', size: entitiesCounter.Credential },
       { type: 'DecayRule', size: entitiesCounter.DecayRule },
+      { type: 'DefenseLogsourceMapping', size: entitiesCounter.DefenseLogsourceMapping },
       { type: 'EntitySetting', size: entitiesCounter.EntitySetting },
       { type: 'StixFile', size: entitiesCounter.StixFile },
       { type: 'Group', size: entitiesCounter.Group },

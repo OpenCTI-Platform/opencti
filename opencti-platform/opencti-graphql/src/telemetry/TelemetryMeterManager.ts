@@ -203,6 +203,27 @@ export class TelemetryMeterManager {
   // Number of has-covered relationships
   relationshipsHasCoveredCount = 0;
 
+  // Number of provides relationships (security platform or system providing a data component)
+  relationshipsProvidesCount = 0;
+
+  // Number of techniques with a defense level above none
+  defenseTechniquesWithLevelCount = 0;
+
+  // Number of techniques whose detection or prevention is validated by OpenAEV
+  defenseValidatedTechniquesCount = 0;
+
+  // Number of open defense gaps over all security platforms
+  defenseOpenGapsCount = 0;
+
+  // Number of defense validation requests created from gaps
+  defenseValidationRequestCount = 0;
+
+  // Number of defense gaps closed
+  defenseGapClosedCount = 0;
+
+  // Number of defense gap backlog exports
+  defenseGapExportCount = 0;
+
   // Number of decay rules created
   decayRuleCreationCount = 0;
 
@@ -527,6 +548,34 @@ export class TelemetryMeterManager {
     this.relationshipsHasCoveredCount = n;
   }
 
+  setRelationshipsProvidesCount(n: number) {
+    this.relationshipsProvidesCount = n;
+  }
+
+  setDefenseTechniquesWithLevelCount(n: number) {
+    this.defenseTechniquesWithLevelCount = n;
+  }
+
+  setDefenseValidatedTechniquesCount(n: number) {
+    this.defenseValidatedTechniquesCount = n;
+  }
+
+  setDefenseOpenGapsCount(n: number) {
+    this.defenseOpenGapsCount = n;
+  }
+
+  setDefenseValidationRequestCount(n: number) {
+    this.defenseValidationRequestCount = n;
+  }
+
+  setDefenseGapClosedCount(n: number) {
+    this.defenseGapClosedCount = n;
+  }
+
+  setDefenseGapExportCount(n: number) {
+    this.defenseGapExportCount = n;
+  }
+
   setDecayRuleCreationCount(n: number) {
     this.decayRuleCreationCount = n;
   }
@@ -753,6 +802,13 @@ export class TelemetryMeterManager {
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
     this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
     this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
+    this.registerGauge('relationships_provides_count', 'Number of relationships provides', 'relationshipsProvidesCount');
+    this.registerGauge('defense_techniques_with_level_count', 'Number of techniques with a defense level above none', 'defenseTechniquesWithLevelCount');
+    this.registerGauge('defense_validated_techniques_count', 'Number of techniques validated by OpenAEV', 'defenseValidatedTechniquesCount');
+    this.registerGauge('defense_open_gaps_count', 'Number of open defense gaps', 'defenseOpenGapsCount');
+    this.registerGauge('defense_validation_request_count', 'Number of defense validation requests created from gaps', 'defenseValidationRequestCount');
+    this.registerGauge('defense_gap_closed_count', 'Number of defense gaps closed', 'defenseGapClosedCount');
+    this.registerGauge('defense_gap_export_count', 'Number of defense gap backlog exports', 'defenseGapExportCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });

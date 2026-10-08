@@ -1,0 +1,172 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
+import { addStixCoreRelationship } from '../../../../src/domain/stixCoreRelationship';
+import {
+  addPlatformProvidesFromLogsources,
+  defenseTechniqueRules,
+  type DefenseTechniqueView,
+  exportDefenseGaps,
+} from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
+import { listAllDefenseLogsourceMappings } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  storeLoadById: vi.fn(async () => undefined),
+  fullEntitiesList: vi.fn(async () => []),
+  fullRelationsList: vi.fn(async () => []),
+  internalFindByIds: vi.fn(async () => []),
+}));
+vi.mock('../../../../src/domain/stixCoreRelationship', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/domain/stixCoreRelationship')>()),
+  addStixCoreRelationship: vi.fn(async () => ({})),
+}));
+vi.mock('../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain')>()),
+  listAllDefenseLogsourceMappings: vi.fn(async () => []),
+}));
+
+const context = {} as AuthContext;
+const user = {} as AuthUser;
+
+describe('Defense telemetry from log sources', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each(['category', 'product', 'service'])('should refuse a %s longer than 256 characters before reading anything', async (field) => {
+    const logsources = [{ product: 'windows' }, { [field]: ` ${'x'.repeat(257)} ` }];
+    await expect(addPlatformProvidesFromLogsources(context, user, 'platform-id', logsources))
+      .rejects.toThrow('A log source value cannot be longer than 256 characters');
+    expect(vi.mocked(storeLoadById)).not.toHaveBeenCalled();
+  });
+
+  it('should accept a value of 256 characters once trimmed', async () => {
+    // The platform lookup is the first read: reaching it means the values passed the bound
+    await expect(addPlatformProvidesFromLogsources(context, user, 'platform-id', [{ service: ` ${'x'.repeat(256)} ` }]))
+      .rejects.toThrow('Security platform or system not found');
+    expect(vi.mocked(storeLoadById)).toHaveBeenCalledTimes(1);
+  });
+
+  it('should refuse to declare telemetry on a revoked platform', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1', revoked: true } as never);
+    await expect(addPlatformProvidesFromLogsources(context, user, 'platform-1', [{ product: 'windows' }]))
+      .rejects.toThrow('A revoked security platform or system cannot declare telemetry');
+    expect(vi.mocked(listAllDefenseLogsourceMappings)).not.toHaveBeenCalled();
+    expect(vi.mocked(addStixCoreRelationship)).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['without', [], []],
+    ['with', [{ name: 'SETTINGS_SETCUSTOMIZATION' }], ['Network Traffic Flow']],
+  ])('should name the mapped data components not found only to a user %s the customization capability', async (_, capabilities, unmatched) => {
+    const editor = { capabilities } as unknown as AuthUser;
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1' } as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation', 'Network Traffic Flow'] },
+    ] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
+    const result = await addPlatformProvidesFromLogsources(context, editor, 'platform-1', [{ product: 'windows' }]);
+    expect(result.created_count).toEqual(1);
+    expect(result.unmatched_data_components).toEqual(unmatched);
+  });
+
+  it.each([
+    [true, 1, 0],
+    [false, 0, 1],
+  ])('should declare again a revoked declaration (revoked: %s)', async (revoked, created, existing) => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1' } as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([{ active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation'] }] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
+    vi.mocked(fullRelationsList).mockResolvedValueOnce([{ id: 'provides-1', fromId: 'platform-1', toId: 'dc-1', revoked }] as never);
+    const result = await addPlatformProvidesFromLogsources(context, user, 'platform-1', [{ product: 'windows' }]);
+    expect(result.created_count).toEqual(created);
+    expect(result.existing_count).toEqual(existing);
+    if (revoked) {
+      // The upsert of the same relationship sets revoked back to false
+      expect(vi.mocked(addStixCoreRelationship)).toHaveBeenCalledWith(context, user, expect.objectContaining({
+        fromId: 'platform-1',
+        toId: 'dc-1',
+        relationship_type: 'provides',
+        revoked: false,
+      }));
+    } else {
+      expect(vi.mocked(addStixCoreRelationship)).not.toHaveBeenCalled();
+    }
+  });
+
+  it.each([
+    [200, 200],
+    [201, 0],
+  ])('should bound the data components a declaration declares before any write (%s mapped)', async (count, created) => {
+    const names = Array.from({ length: count }, (_, index) => `Data component ${index}`);
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ internal_id: 'platform-1' } as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([{ active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: names }] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce(names.map((dcName, index) => ({ internal_id: `dc-${index}`, name: dcName })) as never);
+    const declaration = addPlatformProvidesFromLogsources(context, user, 'platform-1', [{ product: 'windows' }]);
+    if (created > 0) {
+      expect((await declaration).created_count).toEqual(created);
+    } else {
+      await expect(declaration).rejects.toThrow('A declaration cannot declare more than 200 data components: declare fewer log sources at a time');
+    }
+    expect(vi.mocked(addStixCoreRelationship)).toHaveBeenCalledTimes(created);
+  });
+});
+
+describe('Defense rule evidence', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['without', [], ['Process Creation']],
+    ['with', [{ name: 'SETTINGS_SETCUSTOMIZATION' }], ['Process Creation', 'Restricted Component']],
+  ])('should name the required data components of a rule a reader %s the customization capability can see', async (_, capabilities, required) => {
+    const reader = { id: `reader-${capabilities.length}`, capabilities } as unknown as AuthUser;
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'indicator-1', x_opencti_rule_logsource: { product: 'windows' } }] as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation', 'Restricted Component'] },
+    ] as never);
+    // The data components the reader can access
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }] as never);
+    const view = { evaluated: { rule_ids: ['indicator-1'], platforms: [] }, coverage: undefined, evaluation: {} } as unknown as DefenseTechniqueView;
+    const rules = await defenseTechniqueRules({} as AuthContext, reader, view);
+    expect(rules.map((rule) => rule.required_data_components)).toEqual([required]);
+  });
+
+  it('should list the deployed rules first, then the rules the telemetry in view supports, then by maturity', async () => {
+    const reader = { id: 'reader-order', capabilities: [] } as unknown as AuthUser;
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([
+      { internal_id: 'rule-deployed', x_opencti_rule_status: 'experimental', x_opencti_rule_logsource: { product: 'linux' } },
+      { internal_id: 'rule-stable', x_opencti_rule_status: 'stable', x_opencti_rule_logsource: { product: 'linux' } },
+      { internal_id: 'rule-compatible', x_opencti_rule_status: 'test', x_opencti_rule_logsource: { product: 'windows' } },
+    ] as never);
+    vi.mocked(listAllDefenseLogsourceMappings).mockResolvedValueOnce([
+      { active: true, x_opencti_rule_logsource: { product: 'windows' }, data_components: ['Process Creation'] },
+      { active: true, x_opencti_rule_logsource: { product: 'linux' }, data_components: ['Linux Audit'] },
+    ] as never);
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ internal_id: 'dc-1', name: 'Process Creation' }, { internal_id: 'dc-2', name: 'Linux Audit' }] as never);
+    const view = {
+      evaluated: {
+        rule_ids: ['rule-deployed', 'rule-stable', 'rule-compatible'],
+        platforms: [{ platform_id: 'platform-1', data_component_ids: ['dc-1'], inferred_data_component_ids: [] }],
+      },
+      coverage: { platforms: [{ platform_id: 'platform-1', deployments: [{ id: 'rule-deployed', rel: 'rel-1', indicates: 'indicates-1', status: 'deployed' }] }] },
+      evaluation: { platformById: new Map([['platform-1', { id: 'platform-1' }]]), can: () => true },
+    } as unknown as DefenseTechniqueView;
+    const rules = await defenseTechniqueRules({} as AuthContext, reader, view);
+    expect(rules.map((rule) => rule.indicator.internal_id)).toEqual(['rule-deployed', 'rule-compatible', 'rule-stable']);
+  });
+});
+
+describe('Defense gaps export', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should refuse the export without the web interface export capability', async () => {
+    const reader = { capabilities: [{ name: 'KNOWLEDGE' }] } as unknown as AuthUser;
+    await expect(exportDefenseGaps(context, reader, {})).rejects.toThrow('You are not allowed to do this.');
+    expect(vi.mocked(fullEntitiesList)).not.toHaveBeenCalled();
+  });
+});

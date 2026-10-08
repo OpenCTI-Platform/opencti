@@ -36,6 +36,9 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
         score: instance.x_opencti_score,
         main_observable_type: instance.x_opencti_main_observable_type,
         observable_values: getObservableValuesFromPattern(instance.pattern, true),
+        rule_status: instance.x_opencti_rule_status,
+        rule_level: instance.x_opencti_rule_level,
+        rule_logsource: instance.x_opencti_rule_logsource,
       }),
       [STIX_EXT_MITRE]: buildMITREExtensions(instance),
     },
@@ -67,6 +70,9 @@ export const convertIndicatorToStix_2_0 = (instance: StoreEntity): Stix2Indicato
     x_opencti_detection: indicator.x_opencti_detection,
     x_opencti_main_observable_type: indicator.x_opencti_main_observable_type,
     x_mitre_platforms: indicator.x_mitre_platforms,
+    x_opencti_rule_status: indicator.x_opencti_rule_status,
+    x_opencti_rule_level: indicator.x_opencti_rule_level,
+    x_opencti_rule_logsource: indicator.x_opencti_rule_logsource,
   };
 };
 

@@ -14014,6 +14014,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
   coverage_information: [CoverageResult!]
+  coverage_platforms_information: [CoveragePlatformResult!]
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -14024,6 +14025,18 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type CoveragePlatformResult {
+  platform_ref: String!
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+input SecurityCoveragePlatformExpectation {
+  platform_ref: String!
   coverage_name: String!
   coverage_score: Int!
 }
@@ -14054,6 +14067,7 @@ input StixCoreRelationshipAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
+  coverage_platforms_information: [SecurityCoveragePlatformExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean

@@ -20,6 +20,9 @@ import useTopBanner from '../../../../../utils/hooks/useTopBanner';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
+import { useFormatter } from '../../../../../components/i18n';
+import { defenseCellLevel, defenseCoveredPercent, isInDefenseLevelFilter, isTechniqueInDefenseLevelFilter, isUsedByThreats } from './AttackPatternsMatrixDefense';
+import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
 export type AttackPattern = NonNullable<AttackPatternsOfPhase['attackPatterns']>[number];
@@ -154,8 +157,10 @@ const AttackPatternsMatrixColumns = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  defense,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
@@ -191,7 +196,22 @@ const AttackPatternsMatrixColumns = ({
   }, []);
 
   const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => {
+    if (defense) {
+      if (defense.levelFilter) {
+        return isInDefenseLevelFilter(defense, ap.attack_pattern_id);
+      }
+      const level = defenseCellLevel(defense, ap.attack_pattern_id);
+      // Without threat overlay, the defense mode highlights the techniques with any coverage
+      return defense.threatOverlay ? isUsedByThreats(defense, ap.attack_pattern_id) : level > DEFENSE_LEVEL_NONE;
+    }
     return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length > 0;
+  };
+
+  const defenseTechniqueIds = (ap: FilteredAttackPattern) => [ap.attack_pattern_id, ...(ap.subAttackPatterns ?? []).map((sub) => sub.attack_pattern_id)];
+
+  const defenseColumnCoverage = (col: FilteredData) => {
+    if (!defense) return null;
+    return defenseCoveredPercent(defense, (col.attackPatterns ?? []).map(defenseTechniqueIds));
   };
 
   const getAttackPatternLevel = (ap: AttackPattern): number => {
@@ -226,9 +246,13 @@ const AttackPatternsMatrixColumns = ({
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
-        .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
+        .filter((ap) => {
+          if (!isModeOnlyActive) return true;
+          if (defense?.levelFilter) return isTechniqueInDefenseLevelFilter(defense, defenseTechniqueIds(ap));
+          return ap.isCovered || isSubAttackPatternCovered(ap);
+        })
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, defense]);
 
   const { height: topBannerHeight } = useTopBanner();
 
@@ -258,84 +282,102 @@ const AttackPatternsMatrixColumns = ({
             }}
           >
             <Box display="inline-flex" id="container">
-              {filteredData?.map((col) => (
-                <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
-                  <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
-                    <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
-                  </Box>
-                  {col.attackPatterns?.map((ap) => {
-                    return (
-                      ap.subAttackPatterns?.length ? (
-                        (() => {
+              {filteredData?.map((col) => {
+                const columnCoverage = defenseColumnCoverage(col);
+                return (
+                  <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
+                    <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
+                      <Typography variant="caption">
+                        {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: col.attackPatterns?.length ?? 0 } })}
+                      </Typography>
+                      {columnCoverage !== null && (
+                        <Typography variant="caption" component="div" data-testid={`defense-tactic-coverage-${col.phase_name}`}>
+                          {t_i18n('{percent}% covered', { values: { percent: columnCoverage } })}
+                        </Typography>
+                      )}
+                    </Box>
+                    {col.attackPatterns?.map((ap) => {
+                      return (
+                        ap.subAttackPatterns?.length ? (
+                          (() => {
                           // Calculate badge color based on coverage
-                          let badgeColor = isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE;
-                          let badgeTextColor = theme.palette.common.black || '#000000';
+                            let badgeColor = isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE;
+                            let badgeTextColor = theme.palette.common.black || '#000000';
+                            let badgeCount: number | undefined;
 
-                          if (isCoverage && coverageMap) {
+                            if (defense) {
+                              const levels = defenseTechniqueIds(ap).map((id) => defenseCellLevel(defense, id));
+                              badgeColor = defenseLevelColor(theme, Math.max(...levels));
+                              badgeCount = levels.filter((level) => level >= DEFENSE_COVERED_LEVEL).length;
+                            } else if (isCoverage && coverageMap) {
                             // Check if parent or any sub-technique is covered
-                            const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub) => (sub as FilteredSubAttackPattern).isCovered);
+                              const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub) => (sub as FilteredSubAttackPattern).isCovered);
 
-                            if (ap.isCovered || hasAnyCoveredSubTechniques) {
-                              const parentCoverage = ap.isCovered ? coverageMap.get(ap.attack_pattern_id) : null;
-                              const subCoverages = ap.subAttackPatterns
-                                ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
-                                ?.map((sub) => coverageMap.get((sub as FilteredSubAttackPattern).attack_pattern_id))
-                                .filter(Boolean)
-                                .flat() || [];
+                              if (ap.isCovered || hasAnyCoveredSubTechniques) {
+                                const parentCoverage = ap.isCovered ? coverageMap.get(ap.attack_pattern_id) : null;
+                                const subCoverages = ap.subAttackPatterns
+                                  ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
+                                  ?.map((sub) => coverageMap.get((sub as FilteredSubAttackPattern).attack_pattern_id))
+                                  .filter(Boolean)
+                                  .flat() || [];
 
-                              const allCoverages = [...(parentCoverage || []), ...subCoverages];
+                                const allCoverages = [...(parentCoverage || []), ...subCoverages];
 
-                              if (allCoverages.length > 0) {
-                                const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
-                                // Green to red gradient for badge
-                                const red = Math.round(255 * (1 - avgScore / 100));
-                                const green = Math.round(255 * (avgScore / 100));
-                                badgeColor = `rgb(${red}, ${green}, 0)`;
-                                badgeTextColor = theme.palette.common.white || '#ffffff';
-                              } else {
+                                if (allCoverages.length > 0) {
+                                  const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
+                                  // Green to red gradient for badge
+                                  const red = Math.round(255 * (1 - avgScore / 100));
+                                  const green = Math.round(255 * (avgScore / 100));
+                                  badgeColor = `rgb(${red}, ${green}, 0)`;
+                                  badgeTextColor = theme.palette.common.white || '#ffffff';
+                                } else {
                                 // No coverage data but covered - use blue
-                                badgeColor = theme.palette.primary.main || '#1976d2';
-                                badgeTextColor = theme.palette.common.white || '#ffffff';
+                                  badgeColor = theme.palette.primary.main || '#1976d2';
+                                  badgeTextColor = theme.palette.common.white || '#ffffff';
+                                }
                               }
                             }
-                          }
 
-                          return (
-                            <AttackPatternsMatrixBadge
-                              key={ap.attack_pattern_id}
-                              attackPattern={ap}
-                              color={badgeColor}
-                              textColor={badgeTextColor}
-                            >
-                              <AccordionAttackPattern
+                            return (
+                              <AttackPatternsMatrixBadge
+                                key={ap.attack_pattern_id}
                                 attackPattern={ap}
-                                handleOpen={handleOpen}
-                                attackPatternIdsToOverlap={attackPatternIdsToOverlap}
-                                isSecurityPlatform={isSecurityPlatform}
-                                isCoverage={isCoverage}
-                                coverageMap={coverageMap}
-                                entityId={entityId}
-                              />
-                            </AttackPatternsMatrixBadge>
-                          );
-                        })()
-                      ) : (
-                        <AttackPatternsMatrixColumnsElement
-                          key={ap.attack_pattern_id}
-                          attackPattern={ap}
-                          handleOpen={handleOpen}
-                          attackPatternIdsToOverlap={attackPatternIdsToOverlap}
-                          isSecurityPlatform={isSecurityPlatform}
-                          isCoverage={isCoverage}
-                          coverageMap={coverageMap}
-                          entityId={entityId}
-                        />
-                      )
-                    );
-                  })}
-                </Box>
-              ))}
+                                color={badgeColor}
+                                textColor={badgeTextColor}
+                                count={badgeCount}
+                              >
+                                <AccordionAttackPattern
+                                  attackPattern={ap}
+                                  handleOpen={handleOpen}
+                                  attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                                  isSecurityPlatform={isSecurityPlatform}
+                                  isCoverage={isCoverage}
+                                  coverageMap={coverageMap}
+                                  entityId={entityId}
+                                  defense={defense}
+                                />
+                              </AttackPatternsMatrixBadge>
+                            );
+                          })()
+                        ) : (
+                          <AttackPatternsMatrixColumnsElement
+                            key={ap.attack_pattern_id}
+                            attackPattern={ap}
+                            handleOpen={handleOpen}
+                            attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                            isSecurityPlatform={isSecurityPlatform}
+                            isCoverage={isCoverage}
+                            coverageMap={coverageMap}
+                            entityId={entityId}
+                            defense={defense}
+                          />
+                        )
+                      );
+                    })}
+                  </Box>
+                );
+              })}
             </Box>
 
             <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={handleClose}>

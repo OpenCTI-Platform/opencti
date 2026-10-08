@@ -1,14 +1,31 @@
 # coding: utf-8
 
 import json
+import threading
+import time
 import uuid
+from typing import Optional
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
 from .indicator.opencti_indicator_properties import (
     INDICATOR_PROPERTIES,
     INDICATOR_PROPERTIES_WITH_FILES,
+    INDICATOR_RULE_PROPERTIES,
 )
+
+# Seconds before a failed schema feature detection is tried again
+FEATURE_DETECTION_RETRY_DELAY = 300
+
+_INDICATOR_FIELDS_QUERY = """
+    query IndicatorRuleMetadataFeatureDetection {
+        __type(name: "Indicator") {
+            fields {
+                name
+            }
+        }
+    }
+"""
 
 
 class Indicator:
@@ -27,8 +44,67 @@ class Indicator:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
-        self.properties = INDICATOR_PROPERTIES
-        self.properties_with_files = INDICATOR_PROPERTIES_WITH_FILES
+        self._rule_metadata_supported: Optional[bool] = None
+        self._rule_metadata_retry_at = 0.0
+        self._detection_lock = threading.Lock()
+
+    def supports_rule_metadata(self) -> bool:
+        """Tell if the platform knows the detection rule metadata of indicators (schema feature detection, cached).
+
+        A support found is kept for the life of the client. An absence of support, or a detection that fails (platform
+        unavailable, introspection disabled), is checked again after ``FEATURE_DETECTION_RETRY_DELAY`` seconds, so a
+        long-running client follows an upgrade of the platform.
+
+        :return: True when the Indicator type of the platform has ``x_opencti_rule_status``
+        :rtype: bool
+        """
+        if (
+            self._rule_metadata_supported is not None
+            and time.monotonic() < self._rule_metadata_retry_at
+        ):
+            return self._rule_metadata_supported
+        with self._detection_lock:
+            if (
+                self._rule_metadata_supported is None
+                or time.monotonic() >= self._rule_metadata_retry_at
+            ):
+                try:
+                    result = self.opencti.query(_INDICATOR_FIELDS_QUERY)
+                    fields = ((result.get("data") or {}).get("__type") or {}).get(
+                        "fields"
+                    ) or []
+                    self._rule_metadata_supported = "x_opencti_rule_status" in {
+                        field["name"] for field in fields
+                    }
+                    self._rule_metadata_retry_at = (
+                        float("inf")
+                        if self._rule_metadata_supported
+                        else time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
+                except Exception as err:  # pylint: disable=broad-except
+                    self.opencti.app_logger.warning(
+                        "Cannot detect the indicator rule metadata support",
+                        {"error": str(err)},
+                    )
+                    self._rule_metadata_supported = False
+                    self._rule_metadata_retry_at = (
+                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
+        return self._rule_metadata_supported
+
+    @property
+    def properties(self):
+        """Default selection of an indicator, with the rule metadata when the platform knows it."""
+        return INDICATOR_PROPERTIES + (
+            INDICATOR_RULE_PROPERTIES if self.supports_rule_metadata() else ""
+        )
+
+    @property
+    def properties_with_files(self):
+        """Default selection of an indicator with its files, with the rule metadata when the platform knows it."""
+        return INDICATOR_PROPERTIES_WITH_FILES + (
+            INDICATOR_RULE_PROPERTIES if self.supports_rule_metadata() else ""
+        )
 
     @staticmethod
     def generate_id(pattern):
@@ -54,6 +130,47 @@ class Indicator:
         :rtype: str
         """
         return Indicator.generate_id(data["pattern"])
+
+    @staticmethod
+    def _clean_rule_logsource(logsource):
+        """Keep only the supported keys of a detection rule log source.
+
+        :param logsource: the log source ({"category", "product", "service"})
+        :type logsource: dict or None
+        :return: the cleaned log source, or None when nothing is set
+        :rtype: dict or None
+        """
+        if not isinstance(logsource, dict):
+            return None
+        cleaned = {
+            key: str(logsource[key])
+            for key in ["category", "product", "service"]
+            if logsource.get(key) not in [None, ""]
+        }
+        return cleaned if len(cleaned) > 0 else None
+
+    def _rule_metadata_input(self, rule_status, rule_level, rule_logsource):
+        """Detection rule metadata of the indicator input, only the values that are set.
+
+        Unset keys are omitted, and the metadata is left out for a platform that does not know it, so the
+        indicator is still created there.
+
+        :return: the input keys to add
+        :rtype: dict
+        """
+        metadata = {
+            "x_opencti_rule_status": rule_status,
+            "x_opencti_rule_level": rule_level,
+            "x_opencti_rule_logsource": rule_logsource,
+        }
+        metadata = {key: value for key, value in metadata.items() if value is not None}
+        if len(metadata) > 0 and not self.supports_rule_metadata():
+            self.opencti.app_logger.warning(
+                "The platform does not know the detection rule metadata of indicators, it is not sent",
+                {"keys": sorted(metadata.keys())},
+            )
+            return {}
+        return metadata
 
     def list(self, **kwargs):
         """List Indicator objects.
@@ -270,6 +387,12 @@ class Indicator:
         :type x_opencti_main_observable_type: str
         :param x_mitre_platforms: (optional) list of MITRE platforms
         :type x_mitre_platforms: list
+        :param x_opencti_rule_status: (optional) detection rule status (Sigma status: stable, test, experimental, deprecated, unsupported)
+        :type x_opencti_rule_status: str
+        :param x_opencti_rule_level: (optional) detection rule level (informational, low, medium, high, critical)
+        :type x_opencti_rule_level: str
+        :param x_opencti_rule_logsource: (optional) detection rule log source ({"category", "product", "service"})
+        :type x_opencti_rule_logsource: dict
         :param killChainPhases: (optional) list of kill chain phase IDs
         :type killChainPhases: list
         :param x_opencti_stix_ids: (optional) list of additional STIX IDs
@@ -315,6 +438,11 @@ class Indicator:
             "x_opencti_main_observable_type", None
         )
         x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
+        x_opencti_rule_status = kwargs.get("x_opencti_rule_status", None)
+        x_opencti_rule_level = kwargs.get("x_opencti_rule_level", None)
+        x_opencti_rule_logsource = self._clean_rule_logsource(
+            kwargs.get("x_opencti_rule_logsource", None)
+        )
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         create_observables = kwargs.get("x_opencti_create_observables", False)
@@ -383,6 +511,11 @@ class Indicator:
                         "x_opencti_detection": x_opencti_detection,
                         "x_opencti_main_observable_type": x_opencti_main_observable_type,
                         "x_mitre_platforms": x_mitre_platforms,
+                        **self._rule_metadata_input(
+                            x_opencti_rule_status,
+                            x_opencti_rule_level,
+                            x_opencti_rule_logsource,
+                        ),
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "killChainPhases": kill_chain_phases,
                         "createObservables": create_observables,
@@ -570,6 +703,13 @@ class Indicator:
                         "opencti_upsert_operations", stix_object
                     )
                 )
+            for rule_attribute in ["rule_status", "rule_level", "rule_logsource"]:
+                if "x_opencti_" + rule_attribute not in stix_object:
+                    stix_object["x_opencti_" + rule_attribute] = (
+                        self.opencti.get_attribute_in_extension(
+                            rule_attribute, stix_object
+                        )
+                    )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -643,6 +783,9 @@ class Indicator:
                     if "x_mitre_platforms" in stix_object
                     else None
                 ),
+                x_opencti_rule_status=stix_object.get("x_opencti_rule_status"),
+                x_opencti_rule_level=stix_object.get("x_opencti_rule_level"),
+                x_opencti_rule_logsource=stix_object.get("x_opencti_rule_logsource"),
                 x_opencti_main_observable_type=(
                     stix_object["x_opencti_main_observable_type"]
                     if "x_opencti_main_observable_type" in stix_object

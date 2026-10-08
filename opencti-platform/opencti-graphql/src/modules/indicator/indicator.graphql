@@ -9,6 +9,8 @@ enum IndicatorsOrdering {
   valid_until
   x_opencti_score
   x_opencti_detection
+  x_opencti_rule_status
+  x_opencti_rule_level
   confidence
   created
   modified
@@ -19,6 +21,17 @@ enum IndicatorsOrdering {
   creator
   createdBy
   _score
+}
+# Detection rule metadata (Sigma logsource, or the equivalent exposed by the SIEM / EDR of a deployed rule)
+type IndicatorRuleLogsource {
+  category: String
+  product: String
+  service: String
+}
+input IndicatorRuleLogsourceInput {
+  category: String @constraint(maxLength: 256)
+  product: String @constraint(maxLength: 256)
+  service: String @constraint(maxLength: 256)
 }
 type IndicatorConnection {
   pageInfo: PageInfo!
@@ -192,6 +205,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_observable_values: [ObservablesValues!]
   x_opencti_reliability: String
   x_mitre_platforms: [String]
+  x_opencti_rule_status: String
+  x_opencti_rule_level: String
+  x_opencti_rule_logsource: IndicatorRuleLogsource
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   #Decay
@@ -251,6 +267,9 @@ input IndicatorAddInput {
   x_opencti_main_observable_type: String
   x_opencti_reliability: String
   x_mitre_platforms: [String!]
+  x_opencti_rule_status: String @constraint(maxLength: 64)
+  x_opencti_rule_level: String @constraint(maxLength: 64)
+  x_opencti_rule_logsource: IndicatorRuleLogsourceInput
   killChainPhases: [String!]
   createdBy: String
   objectMarking: [String!]
