@@ -228,7 +228,7 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
 export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
-const ES_MAX_MAPPINGS = 3000;
+const ES_MAX_MAPPINGS = Number(conf.get('elasticsearch:max_mapping_fields') ?? 3500);
 const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
