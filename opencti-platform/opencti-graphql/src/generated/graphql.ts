@@ -4593,6 +4593,7 @@ export type Connector = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
+  last_seen_at?: Maybe<Scalars['DateTime']['output']>;
   latest_compatible_version?: Maybe<Scalars['String']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
@@ -44267,6 +44268,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_seen_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   latest_compatible_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

@@ -104,11 +104,11 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
     return t_i18n('Inactive');
   })();
 
-  const lastDate = item.lastRunDate ?? item.updatedAt;
+  const lastDate = item.lastRunDate ?? item.lastSeenAt ?? item.updatedAt;
   const lastDateLabel = (() => {
     if (item.lastRunDate) return t_i18n('Last run');
-    // The connector updated_at is refreshed by pings: it is a last seen date.
-    return item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified');
+    if (item.lastSeenAt) return t_i18n('Last seen');
+    return t_i18n('Modified');
   })();
 
   const hasQueuedMessages = item.messagesCount != null && item.messagesCount > 0;

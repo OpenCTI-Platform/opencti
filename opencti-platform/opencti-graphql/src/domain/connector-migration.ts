@@ -2,7 +2,7 @@ import { BUS_TOPICS, logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { notify } from '../database/redis';
+import { notify, redisGetConnectorHeartbeat } from '../database/redis';
 import { completeConnector, connector, connectors } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -388,7 +388,7 @@ export const migrateConnectorToManaged = async (
     managedConnectorData,
   );
 
-  const completedConnector = completeConnector(element);
+  const completedConnector = completeConnector(element, await redisGetConnectorHeartbeat(existingConnector.internal_id));
 
   await addConnectorDeployedCount();
 

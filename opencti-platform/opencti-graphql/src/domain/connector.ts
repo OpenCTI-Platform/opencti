@@ -17,9 +17,12 @@ import {
   type ConnectorHealthMetrics,
   delEditContext,
   notify,
+  redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
+  redisGetConnectorHeartbeat,
   redisGetWork,
   redisSetConnectorHealthMetrics,
+  redisSetConnectorHeartbeat,
   redisSetConnectorLogs,
   setEditContext,
 } from '../database/redis';
@@ -119,13 +122,13 @@ export const updateConnectorWithConnectorInfo = async (
   state: string,
   connectorInfo: ConnectorInfo,
 ) => {
-  // Patch the updated_at and the state if needed
+  // Patch the state if needed. Liveness is not tracked here but in redis (see redisSetConnectorHeartbeat)
   let connectorPatch;
 
   if (connectorEntity.connector_state_reset) {
     connectorPatch = { connector_state_reset: false };
   } else {
-    connectorPatch = { updated_at: now(), connector_state: state };
+    connectorPatch = { connector_state: state };
   }
 
   if (connectorInfo) {
@@ -154,7 +157,9 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  return completeConnector(updatedConnector);
+  const lastSeenAt = now();
+  await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
+  return completeConnector(updatedConnector, lastSeenAt);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
@@ -168,7 +173,7 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return completeConnector(element);
+  return completeConnector(element, await redisGetConnectorHeartbeat(element.internal_id));
 };
 interface RegisterOptions {
   built_in?: boolean;
@@ -365,11 +370,12 @@ export const registerConnector = async (
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
+  // A registration comes from the running connector itself: it is a heartbeat
+  const lastSeenAt = now();
   if (conn) {
     // Simple connector update
     const patch: any = {
       name,
-      updated_at: now(),
       connector_type: type,
       connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
@@ -390,7 +396,8 @@ export const registerConnector = async (
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+    await redisSetConnectorHeartbeat(id, lastSeenAt);
+    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, lastSeenAt));
   }
   // Need to create the connector
   const connectorToCreate: any = {
@@ -426,14 +433,16 @@ export const registerConnector = async (
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
+  await redisSetConnectorHeartbeat(id, lastSeenAt);
   // Return the connector
-  return completeConnector(createdConnector);
+  return completeConnector(createdConnector, lastSeenAt);
 };
 
 export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  await redisDeleteConnectorHeartbeat(element.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',

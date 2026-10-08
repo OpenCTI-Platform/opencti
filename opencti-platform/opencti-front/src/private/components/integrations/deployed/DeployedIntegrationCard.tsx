@@ -237,13 +237,11 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             {item.lastRunDate && (
               <Metric label={t_i18n('Last run')} value={nsdt(item.lastRunDate)} />
             )}
-            {!item.lastRunDate && item.updatedAt && (
-              // The connector updated_at is refreshed by pings: it is a last
-              // seen date, unlike the feed entities modification date.
-              <Metric
-                label={item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified')}
-                value={nsdt(item.updatedAt)}
-              />
+            {!item.lastRunDate && item.lastSeenAt && (
+              <Metric label={t_i18n('Last seen')} value={nsdt(item.lastSeenAt)} />
+            )}
+            {!item.lastRunDate && !item.lastSeenAt && item.updatedAt && (
+              <Metric label={t_i18n('Modified')} value={nsdt(item.updatedAt)} />
             )}
             {item.userName && (
               <Metric label={t_i18n('User')} value={item.userName} />

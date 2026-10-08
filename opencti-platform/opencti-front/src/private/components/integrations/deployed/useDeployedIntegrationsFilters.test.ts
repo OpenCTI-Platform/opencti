@@ -16,6 +16,7 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
   messagesCount: 0,
   throughputRate: null,
   lastRunDate: null,
+  lastSeenAt: null,
   updatedAt: '2026-01-01T00:00:00.000Z',
   updateAvailable: false,
   latestCompatibleVersion: null,

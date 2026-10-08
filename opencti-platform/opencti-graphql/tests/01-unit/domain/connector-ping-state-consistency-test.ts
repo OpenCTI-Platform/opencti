@@ -44,6 +44,12 @@ vi.mock('../../../src/database/rabbitmq', () => ({
   connectorConfig: vi.fn().mockReturnValue({}),
 }));
 
+vi.mock('../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  redisSetConnectorHeartbeat: vi.fn(),
+  redisGetConnectorHeartbeat: vi.fn().mockResolvedValue(null),
+}));
+
 vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
   completeContextDataForEntity: vi.fn(),

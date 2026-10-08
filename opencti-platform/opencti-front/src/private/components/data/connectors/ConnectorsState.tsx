@@ -8,6 +8,7 @@ export const connectorsStateQuery = graphql`
     connectors {
       id
       active
+      last_seen_at
       auto
       manager_current_status
       manager_requested_status

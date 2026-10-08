@@ -20,7 +20,7 @@ import { getPlatformCrypto } from '../utils/platformCrypto';
 import { SignJWT } from 'jose';
 import { memoize } from '../utils/memoize';
 import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
-import { getClientBase } from './redis';
+import { getClientBase, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
@@ -43,7 +43,9 @@ export const issueConnectorJWT = async () => {
   return await keyPair.signJwt(jwt);
 };
 
-export const isConnectorActive = (connector) => {
+// lastSeenAt is the last connector heartbeat (ping or registration), stored in Redis.
+// Never derive it from updated_at: any write on the connector entity bumps it.
+export const isConnectorActive = (connector, lastSeenAt) => {
   if (connector.built_in) {
     return connector.active ?? true;
   }
@@ -56,10 +58,10 @@ export const isConnectorActive = (connector) => {
       return false;
     }
   }
-  return sinceNowInMinutes(connector.updated_at) < 5;
+  return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
 };
 
-export const completeConnector = (connector) => {
+export const completeConnector = (connector, lastSeenAt) => {
   if (connector) {
     const completed = { ...connector };
     completed.title = connector.title ? connector.title : connector.name;
@@ -74,7 +76,8 @@ export const completeConnector = (connector) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.active = isConnectorActive(connector);
+    completed.last_seen_at = lastSeenAt ?? null;
+    completed.active = isConnectorActive(connector, lastSeenAt);
     return completed;
   }
   return null;
@@ -82,12 +85,12 @@ export const completeConnector = (connector) => {
 
 export const connector = async (context, user, id) => {
   // Database connector
-  const element = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR)
-    .then((conn) => completeConnector(conn));
+  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  const element = conn ? completeConnector(conn, await redisGetConnectorHeartbeat(conn.internal_id)) : null;
   if (isEmptyField(element)) {
     // Built in connector
-    const conn = await builtInConnector(context, user, id);
-    return completeConnector(conn);
+    const builtIn = await builtInConnector(context, user, id);
+    return completeConnector(builtIn);
   }
 
   return element;
@@ -207,7 +210,8 @@ export const computeManagerContractHash = async (context, user, cn) => {
 export const connectors = async (context, user) => {
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
-  return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
+  const heartbeats = await redisGetConnectorsHeartbeats();
+  return map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)), [...elements, ...builtInElements]);
 };
 
 export const connectorManager = async (context, user, managerId) => {
@@ -228,7 +232,8 @@ export const connectorsForManagers = async (context, user) => {
     noFiltersChecking: true,
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
-  return elements.map((conn) => completeConnector(conn));
+  const heartbeats = await redisGetConnectorsHeartbeats();
+  return elements.map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)));
 };
 
 const NO_UPDATE_STATUS = {
