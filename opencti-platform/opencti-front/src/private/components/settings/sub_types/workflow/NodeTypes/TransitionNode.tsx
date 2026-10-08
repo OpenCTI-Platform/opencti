@@ -129,6 +129,11 @@ const TransitionNode = ({ data, id }: NodeProps) => {
                   {data.comment === CommentMode.required ? t_i18n('comment required') : t_i18n('comment allowed')}
                 </li>
               )}
+              {data.closingReason && data.closingReason !== CommentMode.disabled && (
+                <li>
+                  {data.closingReason === CommentMode.required ? t_i18n('closing reason required') : t_i18n('closing reason allowed')}
+                </li>
+              )}
             </ul>
           </div>
         </foreignObject>
