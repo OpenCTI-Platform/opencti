@@ -129,10 +129,10 @@ const RectangleSelection = ({
     // the graph's <canvas> — not itself an interactive control, so it has no
     // meaningful keyboard equivalent (a drag has no single-keydown analog).
     // Graph nodes/links are drawn on the canvas and handle their own
-    // selection separately (see Graph.tsx toggleNode); real interactive
-    // controls elsewhere in the graph (toolbar buttons, etc.) remain
-    // independently focusable and keyboard-operable, unaffected by this
-    // layer. See a11y-linting-remediation-plan.md, Phase 3, RectangleSelection.
+    // selection separately (see toggleNode in utils/useGraphInteractions.ts);
+    // real interactive controls elsewhere in the graph (toolbar buttons,
+    // etc.) remain independently focusable and keyboard-operable, unaffected
+    // by this layer.
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       style={{
