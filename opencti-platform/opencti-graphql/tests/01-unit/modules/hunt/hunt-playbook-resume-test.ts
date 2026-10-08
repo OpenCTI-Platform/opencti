@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
-import { redisPlaybookUpdate } from '../../../../src/database/redis';
+import { getLastPlaybookExecutions, redisPlaybookUpdate } from '../../../../src/database/redis';
 import { offsetToCursor } from '../../../../src/database/utils';
 import { FilterMode } from '../../../../src/generated/graphql';
 import { resumeSettledHuntPlaybooks } from '../../../../src/modules/hunt/hunt-automation';
@@ -21,6 +21,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/redis')>(),
+  getLastPlaybookExecutions: vi.fn(),
   redisPlaybookUpdate: vi.fn(),
 }));
 
@@ -46,6 +47,10 @@ const leaderOf = (index: number) => ({
 const leader = leaderOf(1);
 let leaders = [leader];
 const patches = () => vi.mocked(patchAttribute).mock.calls.map((call) => call[4]);
+// The log of the playbook holds one execution, whose hunt step recorded its outcome at this date
+const loggedExecution = (executionId: string, outAt: string) => vi.mocked(getLastPlaybookExecutions).mockResolvedValue([
+  { id: executionId, playbook_id: 'playbook-1', steps: [{ id: `${executionId}-hunt-step`, status: 'success', out_timestamp: outAt }] },
+] as never);
 const scanOptions = (call: number) => vi.mocked(fullEntitiesList).mock.calls[call][3] as { after?: string; filters: unknown };
 
 describe('Hunt playbook continuation', () => {
@@ -61,6 +66,8 @@ describe('Hunt playbook continuation', () => {
     vi.mocked(findPlaybookHuntRuns).mockClear();
     vi.mocked(findPlaybookHuntRuns).mockImplementation((async () => [leader]) as never);
     vi.mocked(redisPlaybookUpdate).mockClear();
+    vi.mocked(getLastPlaybookExecutions).mockReset();
+    vi.mocked(getLastPlaybookExecutions).mockResolvedValue([]);
     vi.mocked(buildHuntPlaybookResume).mockClear();
     vi.mocked(executeHuntPlaybookResume).mockReset();
     vi.mocked(executeHuntPlaybookResume).mockResolvedValue(true);
@@ -82,6 +89,8 @@ describe('Hunt playbook continuation', () => {
     const recent = { ...leader, playbook_resumed_at: new Date(Date.now() - 60000).toISOString() };
     const interrupted = { ...leaderOf(2), playbook_resumed_at: new Date(Date.now() - 60 * 60000).toISOString() };
     leaders = [recent, interrupted];
+    // The hunt step only recorded it was waiting, before the hand-over
+    loggedExecution('execution-2', new Date(Date.now() - 120 * 60000).toISOString());
     expect(await resumeSettledHuntPlaybooks(context)).toEqual(0);
     expect(executeHuntPlaybookResume).not.toHaveBeenCalled();
     expect(findPlaybookHuntRuns).not.toHaveBeenCalled();
@@ -94,6 +103,22 @@ describe('Hunt playbook continuation', () => {
       last_execution_step: 'hunt-step',
       'step_hunt-step': { status: 'error', in_timestamp: interrupted.playbook_resumed_at },
     });
+  });
+
+  it('should only let the continuation go of a step that ran once handed over, or whose execution left the log', async () => {
+    const handedOverAt = new Date(Date.now() - 60 * 60000).toISOString();
+    // The step ran and recorded its outcome after the hand-over: only the write letting the continuation go had failed
+    const ran = { ...leaderOf(2), playbook_resumed_at: handedOverAt };
+    leaders = [ran];
+    loggedExecution('execution-2', new Date(Date.now() - 59 * 60000).toISOString());
+    expect(await resumeSettledHuntPlaybooks(context)).toEqual(0);
+    // An execution gone from the log of its playbook has nothing left to show
+    const forgotten = { ...leaderOf(3), playbook_resumed_at: handedOverAt };
+    leaders = [forgotten];
+    expect(await resumeSettledHuntPlaybooks(context)).toEqual(0);
+    expect(redisPlaybookUpdate).not.toHaveBeenCalled();
+    expect(executeHuntPlaybookResume).not.toHaveBeenCalled();
+    expect(vi.mocked(patchAttribute).mock.calls.map((call) => [call[2], call[4]])).toEqual([['run-2', { playbook_leader: false }], ['run-3', { playbook_leader: false }]]);
   });
 
   it('should not execute a step whose handover could not be recorded, and execute it once handed over at the next tick', async () => {

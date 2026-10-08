@@ -5,7 +5,7 @@ import type { ExecutionEnvelop } from '../../types/playbookExecution';
 import { logApp } from '../../config/conf';
 import { stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { redisPlaybookUpdate } from '../../database/redis';
+import { getLastPlaybookExecutions, redisPlaybookUpdate } from '../../database/redis';
 import { FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { now } from '../../utils/format';
@@ -204,13 +204,25 @@ export const resumeHuntPlaybookStep = async (context: AuthContext, playbookConte
 /**
  * Records on its playbook execution the hunt step a run handed over without the hand-over being confirmed: the platform
  * stopped while the step ran, or just before. The steps after it may have run, so it is never run again: the execution
- * shows the failure of the step instead of waiting for good.
+ * shows the failure of the step instead of waiting for good. A step that recorded its outcome since the hand-over ran,
+ * only its confirmation was lost, and an execution gone from the log of its playbook has nothing left to show: neither
+ * is recorded. Returns whether the interruption was recorded.
  */
 export const recordInterruptedHuntPlaybookResume = async (run: BasicStoreEntityHuntRun) => {
-  if (!run.playbook_id || !run.playbook_execution_id || !run.playbook_step_id) {
-    return;
+  if (!run.playbook_id || !run.playbook_execution_id || !run.playbook_step_id || !run.playbook_resumed_at) {
+    return false;
   }
-  const start = run.playbook_resumed_at ?? now();
+  const start = run.playbook_resumed_at;
+  const executions = await getLastPlaybookExecutions(run.playbook_id);
+  const execution = executions.find((candidate) => candidate.id === run.playbook_execution_id);
+  if (!execution) {
+    return false;
+  }
+  const stepLogId = `${run.playbook_execution_id}-${run.playbook_step_id}`;
+  const outcome = execution.steps.find((step) => step.id === stepLogId);
+  if (outcome?.out_timestamp && new Date(outcome.out_timestamp).getTime() >= new Date(start).getTime()) {
+    return false;
+  }
   const end = now();
   const envelop = { playbook_id: run.playbook_id, playbook_execution_id: run.playbook_execution_id, last_execution_step: run.playbook_step_id } as ExecutionEnvelop;
   envelop[`step_${run.playbook_step_id}`] = {
@@ -222,4 +234,5 @@ export const recordInterruptedHuntPlaybookResume = async (run: BasicStoreEntityH
     error: JSON.stringify({ name: 'HuntPlaybookResumeInterrupted', message: 'The platform stopped before the hunt step confirmed it resumed: the steps after it may not have run' }, null, 2),
   };
   await redisPlaybookUpdate(envelop);
+  return true;
 };

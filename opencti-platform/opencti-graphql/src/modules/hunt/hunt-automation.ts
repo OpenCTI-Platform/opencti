@@ -562,7 +562,8 @@ const PLAYBOOK_HANDOVER_GRACE_MINUTES = 10;
  * then the run lets the continuation go: a step that could not be built or whose hand-over could not be recorded stays
  * with its run for the next tick, and a step that fails once handed over is never executed again (the playbook execution
  * shows its failure, as for any step). Neither is a step whose hand-over was never confirmed, the platform having
- * stopped while it ran or just before: its execution records the interruption, so that it never waits for good. The runs
+ * stopped while it ran or just before: its execution records the interruption, so that it never waits for good, unless
+ * the step recorded its outcome since the hand-over, only the confirmation having failed. The runs
  * holding a continuation are scanned from where the previous tick stopped, at most `maxRunsPerTick` resumes per tick, so
  * that the steps still waiting never keep the settled ones from resuming.
  */
@@ -578,9 +579,10 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
       try {
         if (leader.playbook_resumed_at) {
           if (new Date(leader.playbook_resumed_at).getTime() < Date.now() - PLAYBOOK_HANDOVER_GRACE_MINUTES * 60000) {
-            await recordInterruptedHuntPlaybookResume(leader);
+            if (await recordInterruptedHuntPlaybookResume(leader)) {
+              logApp.error('[OPENCTI-MODULE] Hunt playbook step interrupted once handed over, not run again', { runId: leader.internal_id, playbookId: leader.playbook_id });
+            }
             await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_leader: false });
-            logApp.error('[OPENCTI-MODULE] Hunt playbook step interrupted once handed over, not run again', { runId: leader.internal_id, playbookId: leader.playbook_id });
           }
         } else {
           const group = leader.playbook_execution_id
@@ -600,7 +602,7 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
         await executeHuntPlaybookResume(context, handedOver)
           .catch((error) => logApp.error('[OPENCTI-MODULE] Hunt playbook step failed once handed over', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id }));
         await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_leader: false })
-          .catch((error) => logApp.warn('[OPENCTI-MODULE] Hunt playbook hand-over cannot be confirmed, it is recorded as interrupted later', { cause: error, runId: leader.internal_id }));
+          .catch((error) => logApp.warn('[OPENCTI-MODULE] Hunt playbook hand-over cannot be confirmed, a later tick lets the continuation go', { cause: error, runId: leader.internal_id }));
       }
     }
     return leaders.length;
