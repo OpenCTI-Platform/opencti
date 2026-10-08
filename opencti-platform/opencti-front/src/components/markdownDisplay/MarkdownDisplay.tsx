@@ -167,6 +167,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
       }
 
       return (
+        // FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67
         <button
           type="button"
           onClick={(event) => {
