@@ -3883,6 +3883,22 @@ describe('getWorkflowInstance — read-repair', () => {
     expect(resolveMappedStatusId).toHaveBeenCalledTimes(1);
   });
 
+  it('returns null without backfill nor repair for a non-DraftWorkspace entity when ENTITIES_WORKFLOW is disabled', async () => {
+    setup();
+    (isFeatureEnabled as any).mockReturnValue(false);
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    try {
+      const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+      expect(result).toBeNull();
+      expect(createEntity).not.toHaveBeenCalled();
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+    } finally {
+      (isFeatureEnabled as any).mockReturnValue(true);
+    }
+  });
+
   it('skips repair entirely when the workflow:disable_read_repair kill switch is enabled', async () => {
     setup();
     (booleanConf as any).mockReturnValue(true);
