@@ -73,6 +73,7 @@ describe('useWorkflowInitialElements', () => {
         event: 'close_event',
         conditions: {},
         comment: null,
+        closingReason: null,
         asyncActions: [],
         syncActions: [],
       },
@@ -225,6 +226,7 @@ describe('useWorkflowInitialElements', () => {
           event: 'share_event',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [
             {
               type: 'asyncBulkAction',
@@ -267,6 +269,7 @@ describe('useWorkflowInitialElements', () => {
           event: 'unshare_event',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [
             {
               type: 'asyncBulkAction',
@@ -307,6 +310,7 @@ describe('useWorkflowInitialElements', () => {
         event: 'draft_event',
         conditions: {},
         comment: null,
+        closingReason: null,
         asyncActions: [],
         syncActions: [],
       }],
