@@ -175,6 +175,9 @@
       matchDepTypes: [
         'devDependencies',
         'action',
+        // Python: PEP 735 dependency groups and build backend are development tooling
+        'dependency-groups',
+        'build-system.requires',
       ],
       matchUpdateTypes: [
         'minor',
@@ -213,6 +216,37 @@
         'digest',
       ],
       rebaseWhen: 'auto',
+    },
+    // every uv of the repository (Docker images, CircleCI, GitHub Actions, Read the Docs) moves in one PR,
+    // with setup-uv, which verifies the checksum of the uv it downloads only for the uv versions it knows
+    {
+      groupName: 'uv',
+      matchPackageNames: [
+        'astral-sh/setup-uv',
+        'astral-sh/uv',
+        'ghcr.io/astral-sh/uv',
+      ],
+    },
+    // Python: in-range updates of direct dependencies get a dedicated lockfile-only PR, out-of-range updates replace the constraint
+    {
+      matchManagers: ['pep621'],
+      rangeStrategy: 'update-lockfile',
+    },
+  ],
+  // uv versions that no built-in manager tracks (the docker manager tracks ghcr.io/astral-sh/uv, the github-actions manager the version input of setup-uv)
+  customManagers: [
+    {
+      customType: 'regex',
+      // the checksum is the SHA-256 of a release asset, which the github-release-attachments datasource updates with the version
+      description: 'uv installed by scripts/ci/install-uv.sh on CircleCI and Read the Docs',
+      managerFilePatterns: [
+        '/^scripts/ci/install-uv\\.sh$/',
+      ],
+      matchStrings: [
+        'UV_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)\\s+UV_SHA256=(?<currentDigest>[a-f0-9]{64})',
+      ],
+      depNameTemplate: 'astral-sh/uv',
+      datasourceTemplate: 'github-release-attachments',
     },
   ],
   // do lock file maintenance once a week on Sunday

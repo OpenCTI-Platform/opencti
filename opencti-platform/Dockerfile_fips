@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.28
+# Built from the repository root: docker build -f opencti-platform/Dockerfile_fips .
 FROM filigran/alpine-python-nodejs-fips:python3.12-nodejs24 AS base
 FROM node:24-alpine3.23 AS base-nonfips
 
@@ -14,8 +15,6 @@ RUN <<EOT
   set -euxo pipefail
 
   apk --no-cache add make g++ python3 python3-dev
-  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
-  python3 -m ensurepip
   npm install -g corepack
 EOT
 
@@ -28,6 +27,9 @@ COPY opencti-platform/opencti-front/package.json ./opencti-platform/opencti-fron
 COPY opencti-platform/opencti-graphql/package.json ./opencti-platform/opencti-graphql/
 
 ENV YARN_ENABLE_IMMUTABLE_INSTALLS="true"
+
+# uv static binary, pinned by digest; Renovate updates the tag and the digest together. Used by `yarn install:python`
+COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21c84b5e8c9193f7014ed71479ee795ff /uv /bin/uv
 
 
 ##############################
@@ -48,6 +50,11 @@ WORKDIR /opt/opencti/opencti-platform/opencti-graphql
 COPY opencti-platform/opencti-graphql/ ./
 RUN yarn build:prod
 
+# uv workspace metadata and pycti of the same commit: the backend tests run `yarn install:python` in this stage's image
+COPY pyproject.toml uv.lock /opt/opencti/
+COPY client-python/ /opt/opencti/client-python/
+COPY opencti-worker/pyproject.toml /opt/opencti/opencti-worker/
+
 ##############################
 ### Build front
 ##############################
@@ -62,6 +69,45 @@ COPY opencti-platform/opencti-front/ ./
 RUN yarn build
 
 ##############################
+### Build Python runtime
+##############################
+
+FROM base AS builder-python
+
+# uv static binary, pinned by digest; Renovate updates the tag and the digest together
+COPY --from=ghcr.io/astral-sh/uv:0.12.9@sha256:8b940d3a9d65bed080436972241af2e21c84b5e8c9193f7014ed71479ee795ff /uv /bin/uv
+
+# faster startup, cache mount compatibility, use the image's Python
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /opt/opencti
+
+# dependency layer: only invalidated when the workspace metadata or uv.lock change
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=client-python/pyproject.toml,target=client-python/pyproject.toml \
+    --mount=type=bind,source=opencti-worker/pyproject.toml,target=opencti-worker/pyproject.toml \
+    --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/pyproject.toml,target=opencti-platform/opencti-graphql/src/python/pyproject.toml \
+    uv sync --locked --no-dev --no-editable --no-install-workspace --package opencti-platform-python
+
+# project layer: pycti of the same commit
+COPY pyproject.toml uv.lock ./
+COPY client-python/ ./client-python/
+COPY opencti-worker/pyproject.toml ./opencti-worker/pyproject.toml
+COPY opencti-platform/opencti-graphql/src/python/pyproject.toml ./opencti-platform/opencti-graphql/src/python/pyproject.toml
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/link_site_packages.py,target=/tmp/link_site_packages.py <<EOT
+  set -euxo pipefail
+
+  uv sync --locked --no-dev --no-editable --package opencti-platform-python
+  # stable path to the site-packages, whatever the Python version of the image
+  .venv/bin/python /tmp/link_site_packages.py
+EOT
+
+##############################
 ### Build production image
 ##############################
 
@@ -71,16 +117,8 @@ RUN <<EOT
   set -euxo pipefail
 
   apk --no-cache add tini python3-dev
-  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
-  rm /var/log/apk.log
-EOT
-
-RUN --mount=type=bind,source=opencti-platform/opencti-graphql/src/python/requirements.txt,target=/opt/opencti/src/python/requirements.txt <<EOT
-  set -euxo pipefail
-
-  apk --no-cache add -t .pip_deps git
-  pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
-  apk del .pip_deps
+  # the Python runtime dependencies come from the virtual environment, no pip in the image
+  apk --no-cache del py3-pip
   rm /var/log/apk.log
 EOT
 
@@ -91,7 +129,11 @@ COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/config/ .
 COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/src/python/runtime/ ./src/python/runtime/
 COPY --from=builder-back /opt/opencti/opencti-platform/opencti-graphql/static/ ./static/
 COPY --from=builder-front /opt/opencti/opencti-platform/opencti-front/dist/ ./public/
+# Python runtime dependencies: virtual environment only, no uv, no pip
+COPY --from=builder-python /opt/opencti/.venv/ ./.venv/
 
+ENV PATH="/opt/opencti/.venv/bin:$PATH"
+ENV APP__PYTHON_EXECUTION_VENV="/opt/opencti/.venv/site-packages"
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"

@@ -22,28 +22,26 @@ jobs:
       with:
         ref: ${{ inputs.checkout_ref }}
 
-    - name: Set up Python
-      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+    - name: Set up uv
+      uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
       with:
+        version: "0.12.9"
         python-version: "3.12"
+        enable-cache: true
 
     - name: Install dependencies
-      run: |
-        cd client-python
-        pip3 install -r requirements.txt
-        pip3 install -r test-requirements.txt
+      run: uv sync --locked --package pycti --no-default-groups --group lint
 
     - name: Run isort check
-      run: cd client-python && isort --check-only .
+      working-directory: client-python
+      run: uv run --no-sync isort --check-only .
 
     - name: Run black check
-      run: cd client-python && black --check .
+      working-directory: client-python
+      run: uv run --no-sync black --check .
 
     - name: flake8 Lint
-      uses: py-actions/flake8@84ec6726560b6d5bd68f2a5bed83d62b52bb50ba #v2.3.0
-      with:
-        ignore: "E,W"
-        path: "client-python"
+      run: uv run --no-sync flake8 --ignore E,W client-python
 
   client-python-test:
     runs-on: ubuntu-26.04
@@ -62,10 +60,15 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Set up Python environment for flake8 lint
-      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+    - name: Set up uv and Python ${{ matrix.python-version }}
+      uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
       with:
+        version: "0.12.9"
         python-version: ${{ matrix.python-version }}
+        enable-cache: true
+
+    - name: Install pycti and its test dependencies from the lockfile
+      run: uv sync --locked --package pycti --no-default-groups --group test
 
     - name: Download image platform
       continue-on-error: true
@@ -94,20 +97,14 @@ jobs:
       run: ./scripts/ci/wait-for-url-200.sh http://localhost:4600/health?health_access_key=cihealthkey 300 10
 
     - name: Test Client Python ${{ matrix.python-version }}
+      working-directory: client-python
+      env:
+        OPENCTI_API_URL: http://localhost:4600
+        OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       run: |
-        docker run --network runner-docker-network \
-          --name client-test \
-          -v ${{ github.workspace }}:/home/workspace \
-          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
-          -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-        python:${{ matrix.python-version }} \
-        sh -c 'set -ex;
-          cd /home/workspace/client-python
-          pip3 install -r requirements.txt --user
-          pip3 install -r test-requirements.txt --user
-          sleep 180
-          python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --cov-report=xml:coverage.xml --drone
-          '
+        set -ex
+        sleep 180
+        uv run --no-sync pytest --no-header -vv --disable-warnings --cov=pycti --cov-report=xml:coverage.xml --drone
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
@@ -120,20 +117,11 @@ jobs:
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Run pycti example tests
-      run: |
-        docker run --network runner-docker-network \
-          --name pycti-example-tests \
-          -v ${{ github.workspace }}:/home/workspace \
-          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
-          -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
-        python:${{ matrix.python-version }} \
-        sh -c 'set -ex;
-          cd /home/workspace/client-python
-          pip3 install -r test-requirements.txt --user
-          pip3 install .
-          cd examples/
-          /bin/bash run_all.sh
-          '
+      working-directory: client-python/examples
+      env:
+        OPENCTI_API_URL: http://localhost:4600
+        OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      run: uv run --no-sync bash run_all.sh
 
     - name: Logs opencti-pycti-start
       if: always()
