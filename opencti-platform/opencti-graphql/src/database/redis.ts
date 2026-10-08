@@ -6,6 +6,8 @@ import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { errorChain, isNetworkFailure } from '../config/error-origin';
+import { defineDependencyClient } from './dependency-client';
 import { mergeDeepRightAll, now } from '../utils/format';
 import type { BasicStoreCommon } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -188,13 +190,47 @@ export const pubSubSubscription = async <T>(topic: string, onMessage: (message: 
 // endregion
 
 // region basic operations
+// region error classification (RFC 0006)
+// ioredis already retried (retry strategy, offline queue). Redis is unavailable when it cannot be reached,
+// the connection is closed or out of retries, or the server cannot serve right now: loading its dataset,
+// busy with a script, read-only replica, cluster down, out of memory. A command it rejects (WRONGTYPE,
+// a syntax error, an unknown script) is a code fault.
+const REDIS_UNAVAILABLE_REPLIES = /^(LOADING|BUSY|MASTERDOWN|CLUSTERDOWN|TRYAGAIN|READONLY|OOM)\b/;
+const isRedisUnavailable = (err: unknown) => {
+  return errorChain(err).some((item: any) => {
+    if (isNetworkFailure(item) || ['MaxRetriesPerRequestError', 'ClusterAllFailedError'].includes(item?.name)) {
+      return true;
+    }
+    if (item?.message === 'Connection is closed.') {
+      return true;
+    }
+    return item?.name === 'ReplyError' && REDIS_UNAVAILABLE_REPLIES.test(item?.message ?? '');
+  });
+};
+
+// Redis keeps DATABASE_ERROR, the code its callers know: naming the dependency makes it an infra error.
+export const redisDependency = defineDependencyClient({
+  dependency: 'redis',
+  isUnavailable: isRedisUnavailable,
+  unavailableMessage: 'Redis is unavailable',
+  errorFactory: (reason, data) => DatabaseError(reason, data),
+});
+
+export const wrapRedisError = (reason: string, err: unknown, data: Record<string, unknown> = {}) => {
+  if (isRedisUnavailable(err)) {
+    return redisDependency.classify(err, { reason, ...data });
+  }
+  return DatabaseError(reason, { cause: redisDependency.classify(err), ...data });
+};
+// endregion
+
 export const redisTx = async (client: Cluster | Redis, chain: (tx: ChainableCommander) => void) => {
   const tx = client.multi();
   try {
     await chain(tx);
     return await tx.exec();
   } catch (e) {
-    throw DatabaseError('Redis transaction error', { cause: e });
+    throw wrapRedisError('Redis transaction error', e);
   }
 };
 const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object) => {
@@ -948,17 +984,14 @@ export interface AuthLogEntry {
 
 const authLogListKey = (id: string) => `${AUTH_LOG_LIST_KEY_PREFIX}${id}`;
 
+// Throws when the entry cannot be written: whether it can be lost is the caller's decision (see `bestEffort`).
 export const redisPushAuthLog = async (id: string, entry: Omit<AuthLogEntry, 'timestamp'>) => {
-  try {
-    const key = authLogListKey(id);
-    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
-    await redisTx(getClientBase(), async (tx) => {
-      tx.lpush(key, value);
-      tx.ltrim(key, 0, AUTH_LOG_MAX_SIZE - 1);
-    });
-  } catch (err) {
-    logApp.error('Failed to push auth log entry to Redis', { cause: err });
-  }
+  const key = authLogListKey(id);
+  const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+  await redisTx(getClientBase(), async (tx) => {
+    tx.lpush(key, value);
+    tx.ltrim(key, 0, AUTH_LOG_MAX_SIZE - 1);
+  });
 };
 
 export const redisGetAuthLogHistory = async (id: string): Promise<AuthLogEntry[]> => {

@@ -13,11 +13,11 @@ import {
   type GraphqlCatalogContract,
 } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
 import { findAllCatalogs, findAllCatalogsRevisions, findCatalogByCatalogId, findCatalogContractsByCatalogId, findCatalogContractsBySlug } from './catalog-repository';
-import { logApp } from '../../config/conf';
+import { logCatalog } from './catalog-logger';
 import { buildCatalogContractCompatibility, groupContractVersionsBySlug, selectLatestContractsBySlug } from './catalog-version-utils';
 
 const validatorCache = new Map<string, ValidateFunction>();
@@ -122,13 +122,13 @@ export const processConfigurationValue = (
   switch (propSchema.type) {
     case 'boolean':
       if (rawValue !== 'true' && rawValue !== 'false') {
-        throw UnsupportedError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
+        throw FunctionalError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
       }
       return rawValue;
     case 'integer': {
       const parsedInt = parseInt(rawValue, 10);
       if (Number.isNaN(parsedInt)) {
-        throw UnsupportedError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
+        throw FunctionalError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
       }
       return String(parsedInt);
     }
@@ -313,8 +313,7 @@ export const validateContractConfigurations = (
   ].join('|');
 
   const validate = getOrCompileValidator(cacheKey, jsonValidation);
-  logApp.debug('[OPENCTI-MODULE] Validating connector contract configuration', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Validating connector contract configuration', {
     contractSlug: targetContract.slug,
     contractTitle: targetContract.title,
     requiredCount: filteredRequired.length,
@@ -324,8 +323,7 @@ export const validateContractConfigurations = (
   const validContractObject = validate(contractObject);
 
   if (!validContractObject) {
-    logApp.warn('[OPENCTI-MODULE] Invalid connector contract configuration', {
-      module: 'catalog',
+    logCatalog.warn('[OPENCTI-MODULE] Invalid connector contract configuration', {
       contractSlug: targetContract.slug,
       contractTitle: targetContract.title,
       requiredCount: filteredRequired.length,
@@ -333,7 +331,7 @@ export const validateContractConfigurations = (
       errorsCount: validate.errors?.length ?? 0,
     });
     const formattedError = formatValidationErrors(validate.errors, targetContract.title);
-    throw UnsupportedError(formattedError, { errors: validate.errors });
+    throw FunctionalError(formattedError, { errors: validate.errors });
   }
 };
 
@@ -405,8 +403,7 @@ export const computeConnectorTargetContract = (
 
   // Validate the configurations
   validateContractConfigurations(contractConfigurations, targetContract);
-  logApp.debug('[OPENCTI-MODULE] Computed connector contract configuration', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Computed connector contract configuration', {
     contractSlug: targetContract.slug,
     contractTitle: targetContract.title,
     inputCount: configurations.length,
@@ -445,8 +442,7 @@ const mapCatalogToGraphqlCatalog = (
 export const queryCatalogById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
   const catalog = await findCatalogByCatalogId(context, user, catalogId);
   if (!catalog) {
-    logApp.debug('[OPENCTI-MODULE] Catalog query by id returned no catalog', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] Catalog query by id returned no catalog', {
       catalogId,
     });
     return null;
@@ -458,8 +454,7 @@ export const queryCatalogById = async (context: AuthContext, user: AuthUser, cat
   const compatibilityBySlug = new Map(
     [...versionsBySlug.entries()].map(([slug, versions]) => [slug, buildCatalogContractCompatibility(versions)]),
   );
-  logApp.debug('[OPENCTI-MODULE] Catalog query by id resolved', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Catalog query by id resolved', {
     catalogId,
     contractsCount: latestContracts.length,
   });
@@ -475,8 +470,7 @@ export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
     [...versionsBySlug.entries()].map(([slug, versions]) => [slug, buildCatalogContractCompatibility(versions)]),
   ));
   const contractsTotalCount = latestContractsByCatalog.reduce((total, contractsByCatalog) => total + contractsByCatalog.length, 0);
-  logApp.debug('[OPENCTI-MODULE] Catalogs query resolved', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Catalogs query resolved', {
     catalogsCount: catalogs.length,
     contractsTotalCount,
   });
@@ -486,36 +480,29 @@ export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
   return ret;
 };
 
+// A failure is logged once, by the GraphQL error boundary.
 export const findCatalogRevisions = async (context: AuthContext, user: AuthUser): Promise<GraphqlCatalogRevision[]> => {
-  try {
-    const catalogsRevisions = await findAllCatalogsRevisions(context, user);
-    const revisions = catalogsRevisions.map((catalog) => ({
-      catalog_id: catalog.catalog_id,
-      revision: catalog.revision ?? null,
-    }));
-    logApp.debug('[OPENCTI-MODULE] [catalog] Catalog revisions query resolved', {
-      module: 'catalog',
-      catalogsCount: revisions.length,
-    });
-    return revisions;
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] [catalog] Catalog revisions query failed', { module: 'catalog', error });
-    throw error;
-  }
+  const catalogsRevisions = await findAllCatalogsRevisions(context, user);
+  const revisions = catalogsRevisions.map((catalog) => ({
+    catalog_id: catalog.catalog_id,
+    revision: catalog.revision ?? null,
+  }));
+  logCatalog.debug('[OPENCTI-MODULE] [catalog] Catalog revisions query resolved', {
+    catalogsCount: revisions.length,
+  });
+  return revisions;
 };
 
 export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
   const contracts = await findCatalogContractsBySlug(context, user, contractSlug);
   const contract = selectLatestContractsBySlug(contracts)[0];
   if (!contract) {
-    logApp.debug('[OPENCTI-MODULE] Contract query by slug returned no contract', {
-      module: 'catalog',
+    logCatalog.debug('[OPENCTI-MODULE] Contract query by slug returned no contract', {
       contractSlug,
     });
     return null;
   }
-  logApp.debug('[OPENCTI-MODULE] Contract query by slug resolved', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Contract query by slug resolved', {
     contractSlug,
     catalogId: contract.catalog_id,
     contractVersion: contract.contract_version,

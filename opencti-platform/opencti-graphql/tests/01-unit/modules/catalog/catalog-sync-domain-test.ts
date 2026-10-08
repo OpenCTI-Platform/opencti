@@ -92,6 +92,8 @@ vi.mock('../../../../src/schema/identifier', () => ({
 }));
 
 import { synchronizeCatalogs } from '../../../../src/modules/catalog/sync/catalog-sync-domain';
+import { logApp } from '../../../../src/config/conf';
+import { FunctionalError } from '../../../../src/config/errors';
 
 const buildSourceCatalog = (id: string) => ({
   id,
@@ -249,5 +251,64 @@ describe('catalog-sync-domain', () => {
     expect(result).toEqual(['embedded-catalog']);
     expect(mockFindAllCatalogsExcluding).not.toHaveBeenCalled();
     expect(mockDeleteCatalogs).not.toHaveBeenCalled();
+  });
+
+  describe('error classification (RFC 0006)', () => {
+    const useLocalCustomCatalog = () => {
+      mockConfGet.mockImplementation((key: string) => {
+        if (key === 'app:custom_catalogs') return ['/tmp/custom-catalog.json'];
+        return undefined;
+      });
+    };
+
+    it('should log a manifest rejected from a custom source as input, at warn', async () => {
+      useLocalCustomCatalog();
+      const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+      const error = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+      mockFetchSourceCatalog.mockImplementation(async (source: { kind: string }) => {
+        if (source.kind === 'local') {
+          throw FunctionalError('Unsupported catalog schema version');
+        }
+        return buildSourceCatalog('embedded-catalog');
+      });
+      await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+      expect(error).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledWith('[OPENCTI-MODULE] [catalog] Error while syncing catalog', expect.objectContaining({
+        origin: 'input',
+        module: 'catalog',
+        entry_module: 'catalog',
+        sourceKind: 'local',
+      }));
+      warn.mockRestore();
+      error.mockRestore();
+    });
+
+    it('should log the embedded manifest rejected as a code fault, at error', async () => {
+      const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+      const error = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+      mockFetchSourceCatalog.mockRejectedValue(FunctionalError('Contract must define container_image field'));
+      await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+      expect(warn).not.toHaveBeenCalled();
+      expect(error).toHaveBeenCalledWith('[OPENCTI-MODULE] [catalog] Error while syncing catalog', expect.objectContaining({
+        origin: 'code',
+        module: 'catalog',
+        sourceKind: 'embedded',
+      }));
+      warn.mockRestore();
+      error.mockRestore();
+    });
+
+    it('should say which catalog, revision and step a failed write stopped at', async () => {
+      const error = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+      mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
+      mockUpsertCatalog.mockRejectedValue(new TypeError('Cannot read properties of undefined'));
+      await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+      expect(mockInsertCatalogContracts).toHaveBeenCalled();
+      expect(error).toHaveBeenCalledWith('[OPENCTI-MODULE] [catalog] Error while syncing catalog', expect.objectContaining({
+        origin: 'code',
+        error_context: { catalogId: 'embedded-catalog', revision: expect.any(String), step: 'upsert_catalog', count: 1 },
+      }));
+      error.mockRestore();
+    });
   });
 });

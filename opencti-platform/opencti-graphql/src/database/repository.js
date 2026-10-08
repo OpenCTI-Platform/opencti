@@ -9,7 +9,13 @@ import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-stati
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
-import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '../modules/catalog/catalog-domain';
+import {
+  buildConnectorUpdateStatus,
+  encryptValue,
+  findCatalogContractsBySlugs,
+  groupContractVersionsBySlug,
+  mapContractEntityFieldsToGraphqlCatalogContract,
+} from '../modules/catalog/catalog-api';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
@@ -23,8 +29,6 @@ import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/use
 import { getClientBase } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
-import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
-import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();

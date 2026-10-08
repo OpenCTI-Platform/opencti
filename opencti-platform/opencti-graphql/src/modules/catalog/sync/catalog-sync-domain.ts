@@ -1,10 +1,13 @@
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
+import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, PLATFORM_VERSION } from '../../../config/conf';
+import { logCatalog } from '../catalog-logger';
+import { logBoundaryError } from '../../../config/module-logger';
+import { APP_MODULE, classifyErrorOrigin, runWithErrorContext } from '../../../config/error-origin';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
-import { UnsupportedError } from '../../../config/errors';
+import { FunctionalError, UnknownError, UnsupportedError } from '../../../config/errors';
 import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG } from '../catalog-types';
 import {
   type CatalogContractLogoUploadOperation,
@@ -84,7 +87,7 @@ const computeCatalogLogosSyncOps = (
   for (const sourceContract of sourceCatalog.contracts) {
     const logoOperationResult = computeCatalogContractLogoUploadOperation(sourceContract, plannedLogos);
     if (logoOperationResult.result === 'failed') {
-      throw UnsupportedError(`Error while preparing logo for contract ${sourceContract.id}`, {
+      throw FunctionalError(`Error while preparing logo for contract ${sourceContract.id}`, {
         cause: logoOperationResult.error,
       });
     }
@@ -237,7 +240,7 @@ const synchronizeCatalog = async (
   options?: CatalogSyncSourceGatewayOptions,
 ) => {
   try {
-    logApp.debug('[OPENCTI-MODULE] Synchronizing catalog', {
+    logCatalog.debug('[OPENCTI-MODULE] Synchronizing catalog', {
       sourceKind: sourceConfig.kind,
       sourceUri: sourceConfig.uri,
     });
@@ -249,11 +252,10 @@ const synchronizeCatalog = async (
       : undefined;
     if (sourceConfig.kind === 'remote' && currentCatalogBySourceUri?.revision) {
       if (remoteRevisionHint && remoteRevisionHint === currentCatalogBySourceUri.revision) {
-        logApp.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (remote ETag match)', {
+        logCatalog.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (remote ETag match)', {
           sourceKind: sourceConfig.kind,
           catalogId: currentCatalogBySourceUri.catalog_id,
           revision: remoteRevisionHint,
-          module: 'catalog',
         });
         return {
           synced: false,
@@ -267,35 +269,31 @@ const synchronizeCatalog = async (
     const currentCatalog = await findCatalogByCatalogId(context, user, sourceCatalog.id);
     const currentRevision = currentCatalog?.revision;
     if (currentCatalog) {
-      logApp.debug('[OPENCTI-MODULE] Found existing persisted catalog', {
+      logCatalog.debug('[OPENCTI-MODULE] Found existing persisted catalog', {
         sourceKind: sourceConfig.kind,
         catalogId: currentCatalog.catalog_id,
         revision: currentRevision,
-        module: 'catalog',
       });
     } else {
-      logApp.info('[OPENCTI-MODULE] New catalog source', {
+      logCatalog.info('[OPENCTI-MODULE] New catalog source', {
         executionContext: context.source,
         sourceKind: sourceConfig.kind,
-        module: 'catalog',
       });
     }
     if (currentCatalogBySourceUri && currentCatalogBySourceUri.catalog_id !== sourceCatalog.id) {
-      logApp.warn('[OPENCTI-MODULE] Same catalog source with different ID', {
+      logCatalog.warn('[OPENCTI-MODULE] Same catalog source with different ID', {
         sourceKind: sourceConfig.kind,
         knownId: currentCatalogBySourceUri.catalog_id,
         newId: sourceCatalog.id,
-        module: 'catalog',
       });
     }
     // Compute revision and compare with persisted, return early if equal.
     const revision = remoteRevisionHint ?? computeCatalogRevision(sourceCatalog);
     if (currentRevision && revision === currentRevision) {
-      logApp.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (revision match)', {
+      logCatalog.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (revision match)', {
         sourceKind: sourceConfig.kind,
         catalogId: sourceCatalog.id,
         revision,
-        module: 'catalog',
       });
       return {
         synced: false,
@@ -323,29 +321,32 @@ const synchronizeCatalog = async (
     });
     // Persist refreshed catalog, contracts & logos
     // Something's fishy if this occurs too frequently.
-    logApp.warn('[OPENCTI-MODULE] Persisting catalog & contracts', {
+    logCatalog.warn('[OPENCTI-MODULE] Persisting catalog & contracts', {
       catalogId: sourceCatalog.id,
       contractsCreationsCount: catalogSyncDiff.contractsCreations.length,
       contractsUpdatesCount: catalogSyncDiff.contractsUpdates.length,
       contractsDeletionsCount: catalogSyncDiff.contractsDeletions.length,
-      module: 'catalog',
     });
-    await uploadCatalogContractLogos(logoSyncOps.uploadOperations);
-    await insertCatalogContracts(context, user, catalogSyncDiff.contractsCreations);
+    // These writes are not atomic and the boundary below only knows the source: a failure says which
+    // catalog, revision and step it stopped at, to tell a partially persisted catalog from an untouched one.
+    const persistStep = (step: string, count: number, write: () => Promise<unknown>) => {
+      return runWithErrorContext({ catalogId: sourceCatalog.id, revision, step, count }, write);
+    };
+    await persistStep('upload_logos', logoSyncOps.uploadOperations.length, () => uploadCatalogContractLogos(logoSyncOps.uploadOperations));
+    await persistStep('insert_contracts', catalogSyncDiff.contractsCreations.length, () => insertCatalogContracts(context, user, catalogSyncDiff.contractsCreations));
     if (catalogSyncDiff.contractsUpdates.length > 0) {
       // Usually there would be no updates of catalog contracts given a change
       // would be treated in a new version. This could be the result of a previous
       // failure being compensated or an issue in the release process.
       // Something's fishy if this occurs too frequently.
-      logApp.warn('[OPENCTI-MODULE] Catalog contracts updates', {
+      logCatalog.warn('[OPENCTI-MODULE] Catalog contracts updates', {
         catalogId: sourceCatalog.id,
         count: catalogSyncDiff.contractsUpdates.length,
-        module: 'catalog',
       });
-      await updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates);
+      await persistStep('update_contracts', catalogSyncDiff.contractsUpdates.length, () => updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates));
     }
-    await deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions);
-    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert);
+    await persistStep('delete_contracts', catalogSyncDiff.contractsDeletions.length, () => deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions));
+    await persistStep('upsert_catalog', 1, () => upsertCatalog(context, user, catalogSyncDiff.catalogUpsert));
     const isNotNil = (str: string | null | undefined): str is string => Boolean(str);
     let usedLogos = catalogSyncDiff.contractsCreations.map(({ logo_uri }) => logo_uri).filter(isNotNil);
     usedLogos = usedLogos.concat(catalogSyncDiff.contractsUpdates.map(({ logo_uri }) => logo_uri).filter(isNotNil));
@@ -355,8 +356,15 @@ const synchronizeCatalog = async (
       usedLogos: new Set(usedLogos),
     };
   } catch (exception) {
-    logApp.error('[OPENCTI-MODULE] [catalog] Error while syncing catalog', {
-      cause: exception,
+    // The embedded manifest ships in our build: when the sync rejects it, the bug is ours, not the input's.
+    const error = sourceConfig.kind === 'embedded' && classifyErrorOrigin(exception) === 'input'
+      ? UnknownError('Embedded catalog manifest rejected', { cause: exception })
+      : exception;
+    // The other sources are still synchronized: this catch is the boundary of one source.
+    logBoundaryError('[OPENCTI-MODULE] [catalog] Error while syncing catalog', error, {
+      entryModule: APP_MODULE.CATALOG,
+      sourceKind: sourceConfig.kind,
+      sourceUri: sourceConfig.uri,
     });
     return { synced: false, error: true } as const;
   }
@@ -427,8 +435,7 @@ const cleanupObsoleteCatalogs = async (context: AuthContext, syncedCatalogs: str
   const obsoleteCatalogs = await findAllCatalogsExcluding(context, SYSTEM_USER, syncedCatalogs);
   if (obsoleteCatalogs.length) {
     // The app config changed resulting in a catalog not being synced anymore
-    logApp.warn('[OPENCTI-MODULE] Deleting obsolete catalogs', {
-      module: 'catalog',
+    logCatalog.warn('[OPENCTI-MODULE] Deleting obsolete catalogs', {
       deletedCatalogIds: obsoleteCatalogs.map((catalog) => catalog.catalog_id),
     });
     await deleteCatalogs(context, obsoleteCatalogs);
@@ -442,8 +449,7 @@ export const synchronizeCatalogs = async (
 ) => {
   const sources = initSyncSources();
   const filigranCatalogRemoteUri = getFiligranCatalogRemoteUri();
-  logApp.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Synchronizing catalogs', {
     executionContext: context.source,
     count: sources.length,
     filigranCatalogRemoteUri,
@@ -455,10 +461,10 @@ export const synchronizeCatalogs = async (
     if (source.kind === 'remote' && result.error && filigranCatalogRemoteUri && source.uri === filigranCatalogRemoteUri) {
       const alreadyPersistedRemoteCatalog = await findCatalogBySourceUri(context, user, source.uri);
       if (!alreadyPersistedRemoteCatalog) {
-        logApp.error('[OPENCTI-MODULE] Remote catalog source failed before first successful persistence, falling back to embedded source', {
+        // Fallback taken: the failure itself is already logged with its origin.
+        logCatalog.warn('[OPENCTI-MODULE] Remote catalog source failed before first successful persistence, falling back to embedded source', {
           sourceKind: source.kind,
           sourceUri: source.uri,
-          module: 'catalog',
         });
         result = await synchronizeCatalog(context, user, EMBEDDED_CATALOG_SYNC_SOURCE, options);
       }

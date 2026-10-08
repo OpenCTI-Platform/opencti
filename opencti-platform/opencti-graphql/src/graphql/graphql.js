@@ -7,6 +7,7 @@ import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive
 import createSchema from './schema';
 import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { AuthRequired, muteError, ResourceNotFoundError } from '../config/errors';
+import { classifyErrorOrigin } from '../config/error-origin';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
@@ -121,9 +122,14 @@ const createApolloServer = () => {
       warn: (msg) => logApp.warn(`[APOLLO] ${msg}`),
       error: (msg) => logApp.error(`[APOLLO] ${msg}`),
     },
-    formatError: (error) => {
+    formatError: (error, originalError) => {
       // To maintain compatibility with client in version 3.
-      const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
+      // `origin` (RFC 0006): the UI tells a rejected input from a failing API without its own list of codes.
+      const enrichedError = {
+        ...error,
+        name: error.extensions?.code ?? error.name,
+        extensions: { ...error.extensions, origin: classifyErrorOrigin(originalError ?? error) },
+      };
       // Remove the exception stack in production.
       return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
     },

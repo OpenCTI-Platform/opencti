@@ -77,6 +77,10 @@ vi.mock('@components/integrations/deployed/IntegrationsStatsStrip', () => ({
   default: () => null,
 }));
 
+vi.mock('../Error', () => ({
+  ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock('@components/integrations/deployed/useDeployedIntegrations', () => ({
   connectorIdFromIngestId: (id: string) => id,
 }));

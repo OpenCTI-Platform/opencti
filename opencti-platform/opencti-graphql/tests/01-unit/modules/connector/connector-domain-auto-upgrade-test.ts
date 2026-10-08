@@ -23,13 +23,14 @@ vi.mock('../../../../src/modules/connector/connector-repository', () => ({
   findManagedConnectorsByCatalogId: mockFindManagedConnectorsByCatalogId,
 }));
 
-vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
-  findLatestCompatibleCatalogContractBySlug: mockFindLatestCompatibleCatalogContractBySlug,
-}));
-
-vi.mock('../../../../src/modules/catalog/catalog-domain', () => ({
-  mapContractEntityFieldsToEmbeddedConnectorManagerContract: mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
-}));
+vi.mock('../../../../src/modules/catalog/catalog-api', async () => {
+  const versionUtils = await vi.importActual<typeof import('../../../../src/modules/catalog/catalog-version-utils')>('../../../../src/modules/catalog/catalog-version-utils');
+  return {
+    compareContractVersions: versionUtils.compareContractVersions,
+    findLatestCompatibleCatalogContractBySlug: mockFindLatestCompatibleCatalogContractBySlug,
+    mapContractEntityFieldsToEmbeddedConnectorManagerContract: mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
+  };
+});
 
 vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: mockPatchAttribute,

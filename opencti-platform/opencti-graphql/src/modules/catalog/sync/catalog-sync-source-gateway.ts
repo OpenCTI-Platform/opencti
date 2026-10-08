@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
-import { logApp } from '../../../config/conf';
+import { logCatalog } from '../catalog-logger';
 import { isEmptyField } from '../../../database/utils';
-import { UnsupportedError } from '../../../config/errors';
+import { FunctionalError, InfraError, UnsupportedError } from '../../../config/errors';
+import { isNetworkFailure } from '../../../config/error-origin';
 import { getOrCompileValidator } from '../catalog-domain';
 import { getHttpClient } from '../../../utils/http-client';
 import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
@@ -82,6 +83,14 @@ const withAbortTimeout = async <T>(timeoutMs: number, call: (signal: AbortSignal
   }
 };
 
+const parseCatalogManifest = (content: string) => {
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    throw FunctionalError('Catalog manifest is not valid JSON', { cause: err });
+  }
+};
+
 class EmbeddedCatalogSyncSource implements CatalogSyncSourceAdapter {
   constructor(_sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'embedded' }>) {}
 
@@ -96,9 +105,28 @@ class LocalCatalogSyncSource implements CatalogSyncSourceAdapter {
 
   async fetch() {
     const catalog = await readFile(this.sourceConfig.filepath, { encoding: 'utf8', flag: 'r' });
-    return JSON.parse(catalog);
+    return parseCatalogManifest(catalog);
   }
 }
+
+// A remote catalog source is a service outside the process: unreachable, timed out (including our own
+// abort timeout) or failing, it is `infra` (RFC 0006). A request it rejects (4xx) is left as is.
+// No retry here: the catalog manager runs again on its next interval.
+const classifyRemoteCatalogError = (err: any) => {
+  const status = err?.response?.status;
+  const isUnavailable = isNetworkFailure(err)
+    || err?.code === 'ERR_CANCELED'
+    || (typeof status === 'number' && (status >= 500 || status === 429));
+  return isUnavailable ? InfraError('remote_http', 'Catalog source is unavailable', { status, cause: err }) : err;
+};
+
+const remoteCatalogCall = async <T>(call: () => Promise<T>): Promise<T> => {
+  try {
+    return await call();
+  } catch (err) {
+    throw classifyRemoteCatalogError(err);
+  }
+};
 
 class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
   constructor(
@@ -109,14 +137,14 @@ class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
   async fetch() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
-    const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
-    return JSON.parse(response.data);
+    const response = await remoteCatalogCall(() => withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal })));
+    return parseCatalogManifest(response.data);
   }
 
   async fetchRevisionHint() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
-    const response = await withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal }));
+    const response = await remoteCatalogCall(() => withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal })));
     const etagHeader = response.headers?.etag;
     const etag = Array.isArray(etagHeader) ? etagHeader[0] : etagHeader;
     if (!etag || typeof etag !== 'string') {
@@ -151,13 +179,13 @@ const validateSyncSource = (syncSource: CatalogSyncSource) => {
     const contract = syncSource.contracts[contractIndex];
     if (contract.manager_supported) {
       if (!contract.config_schema) {
-        logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
+        logCatalog.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
       } else {
         if (isEmptyField(contract.container_image)) {
-          throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
+          throw FunctionalError('Contract must define container_image field', { contractTitle: contract.title });
         }
         if (isEmptyField(contract.container_type)) {
-          throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
+          throw FunctionalError('Contract must define container_type field', { contractTitle: contract.title });
         }
 
         if (contract.config_schema) {
@@ -170,7 +198,7 @@ const validateSyncSource = (syncSource: CatalogSyncSource) => {
           try {
             getOrCompileValidator(`catalog-contract:${syncSource.id}:${contract.slug}`, jsonValidation);
           } catch (err) {
-            throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+            throw FunctionalError('Contract must be a valid json schema definition', { cause: err });
           }
         }
       }
@@ -285,12 +313,12 @@ const mapCatalogDtoToCatalogSyncSource = (catalog: unknown): CatalogSyncSource =
     return mapCatalogDtoV0ToCatalogSyncSource(catalog);
   }
   if (!isCatalogDtoWithExplicitSchemaVersion(catalog)) {
-    throw UnsupportedError('Unrecognized catalog format: no manifest_schema_version');
+    throw FunctionalError('Unrecognized catalog format: no manifest_schema_version');
   }
   if (isCatalogDtoV1(catalog)) {
     return mapCatalogDtoV1ToCatalogSyncSource(catalog);
   }
-  throw UnsupportedError('Unsupported catalog schema version', {
+  throw FunctionalError('Unsupported catalog schema version', {
     cause: {
       manifest_schema_version: catalog.manifest_schema_version,
     },
@@ -329,8 +357,7 @@ export const fetchSourceCatalog = async (
   const raw = await adapter.fetch();
   const syncSource = mapCatalogDtoToCatalogSyncSource(raw);
   validateSyncSource(syncSource);
-  logApp.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
-    module: 'catalog',
+  logCatalog.debug('[OPENCTI-MODULE] Fetched and validated catalog source', {
     sourceKind: sourceConfig.kind,
     sourceUri: sourceConfig.uri,
     catalogId: syncSource.id,
@@ -350,15 +377,13 @@ export const fetchSourceCatalogRevisionHint = async (
   const revisionHint = await adapter.fetchRevisionHint?.();
   if (sourceConfig.kind === 'remote') {
     if (revisionHint) {
-      logApp.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
-        module: 'catalog',
+      logCatalog.debug('[OPENCTI-MODULE] Fetched catalog source revision hint', {
         sourceKind: sourceConfig.kind,
         sourceUri: sourceConfig.uri,
         revisionHint,
       });
     } else {
-      logApp.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
-        module: 'catalog',
+      logCatalog.debug('[OPENCTI-MODULE] Catalog source revision hint unavailable', {
         sourceKind: sourceConfig.kind,
         sourceUri: sourceConfig.uri,
       });

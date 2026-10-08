@@ -6,6 +6,8 @@ import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
 import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
+import type { AppModule } from '../config/error-origin';
+import { logBoundaryError } from '../config/module-logger';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import type { DataEvent, SseEvent } from '../types/event';
@@ -48,6 +50,7 @@ export interface ManagerDefinition {
   enabledToStart: () => boolean; // if manager can be started (some managers need to start even when disabled)
   enterpriseEditionOnly?: boolean;
   warning?: () => boolean; // condition to display a warning on manager module (ex: missing configuration, manager can't start)
+  module?: AppModule; // module owning the manager: the entry module of its errors (RFC 0006)
 }
 
 const isEnterpriseEditionAuthorized = async (manager: ManagerDefinition): Promise<boolean> => {
@@ -103,7 +106,7 @@ const initManager = (manager: ManagerDefinition) => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} already started by another API`);
         } else {
-          logApp.error(`[OPENCTI-MODULE] ${manager.label} handling error`, { cause: e, manager: manager.id });
+          logBoundaryError(`[OPENCTI-MODULE] ${manager.label} handling error`, e, { manager: manager.id, entryModule: manager.module });
         }
       } finally {
         running = false;
@@ -145,7 +148,7 @@ const initManager = (manager: ManagerDefinition) => {
         if (e.name === TYPE_LOCK_ERROR) {
           logApp.debug(`[OPENCTI-MODULE] ${manager.label} stream handler already started by another API`);
         } else {
-          logApp.error(`[OPENCTI-MODULE] ${manager.label} stream error`, { cause: e, manager: manager.id });
+          logBoundaryError(`[OPENCTI-MODULE] ${manager.label} stream error`, e, { manager: manager.id, entryModule: manager.module });
         }
       } finally {
         if (streamProcessor) await streamProcessor.shutdown();

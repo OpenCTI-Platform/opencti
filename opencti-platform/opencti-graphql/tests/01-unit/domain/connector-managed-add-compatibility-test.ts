@@ -39,9 +39,6 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
-vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(),
-}));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addConnectorDeployedCount: vi.fn(), addWorkbenchDraftConvertionCount: vi.fn(), addWorkbenchValidationCount: vi.fn(),
@@ -71,12 +68,13 @@ vi.mock('../../../src/config/conf', async () => {
   return { ...actual, logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } };
 });
 vi.mock('../../../src/enterprise-edition/ee', () => ({ checkEnterpriseEdition: vi.fn() }));
-vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
+vi.mock('../../../src/modules/catalog/catalog-api', () => ({
+  computeConnectorTargetContract: vi.fn(),
   findLatestCompatibleCatalogContractByImageName: vi.fn(),
   findCatalogContractsByImageName: vi.fn(),
 }));
 
-import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
+import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-api';
 import { managedConnectorAdd } from '../../../src/domain/connector';
 
 const fakeContext = {} as any;
