@@ -168,6 +168,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     status: Status
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
     customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
     securityCoverage: SecurityCoverage
