@@ -49,11 +49,15 @@ import {
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
   ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+  ACTION_TYPE_WORKFLOW_BYPASS,
+  ACTION_TYPE_WORKFLOW_TRANSITION,
+  isWorkflowBypassAction,
+  isWorkflowTransitionAction,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/rabbitmq';
-import { updateProcessedTime } from '../domain/work';
+import { reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -66,6 +70,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../modules/workflow/domain/workflow-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -590,6 +595,50 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   };
 };
 
+// Workflow operations go through the workflow engine, element by element, instead of the workers.
+// Each element is reported on the task work, so the task completes and rejections are listed as errors.
+const workflowOperationCallback = (context, user, task, applyOnElement) => {
+  let totalProcessed = task.task_processed_number;
+  return async (elements) => {
+    if (task.work_id) {
+      await updateExpectationsNumber(context, user, task.work_id, elements.length);
+    }
+    for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
+      const element = elements[index];
+      let errorData;
+      try {
+        const result = await applyOnElement(element);
+        if (!result.success) {
+          errorData = { error: result.reason, source: element.internal_id };
+        }
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Workflow operation error, skipping element', { cause: error, id: element.internal_id });
+        errorData = { error: error.message, source: element.internal_id };
+      }
+      if (task.work_id) {
+        await reportExpectation(context, user, task.work_id, errorData);
+      }
+    }
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+};
+
+export const workflowBypassOperationCallback = (context, user, task, operations) => {
+  const { values, options } = operations[0].context;
+  return workflowOperationCallback(context, user, task, (element) => {
+    return setWorkflowStatus(context, user, element.internal_id, values[0], options.applyTransitionActions);
+  });
+};
+
+export const workflowTransitionOperationCallback = (context, user, task, operations) => {
+  const { eventName } = operations[0].context.options;
+  return workflowOperationCallback(context, user, task, (element) => {
+    return triggerWorkflowEvent(context, user, element.internal_id, eventName);
+  });
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -606,6 +655,12 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   // Handle specific case of removing a deleted custom field definition values from entities
   if (actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES) {
     return customFieldValuesRemoveOperationCallback(context, user, task, operations);
+  }
+  if (actionType === ACTION_TYPE_WORKFLOW_BYPASS) {
+    return workflowBypassOperationCallback(context, user, task, operations);
+  }
+  if (actionType === ACTION_TYPE_WORKFLOW_TRANSITION) {
+    return workflowTransitionOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
@@ -697,6 +752,12 @@ const taskHandlerGenerator = (context) => {
       // Support specific container add operation
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
+      }
+      if (isWorkflowBypassAction(action)) {
+        return ACTION_TYPE_WORKFLOW_BYPASS;
+      }
+      if (isWorkflowTransitionAction(action)) {
+        return ACTION_TYPE_WORKFLOW_TRANSITION;
       }
       // Support generic knowledge
       if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {

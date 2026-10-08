@@ -31,6 +31,8 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
+import { setWorkflowStatus } from '../../workflow/domain/workflow-domain';
 
 const attributePathMapping: any = {
   [INPUT_MARKINGS]: {
@@ -88,7 +90,13 @@ const attributePathMapping: any = {
 };
 
 export interface ManipulateConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
+  actions: {
+    op: 'add' | 'replace' | 'remove';
+    attribute: string;
+    value: UpdateValueConfiguration[];
+    // Only for a replace of x_opencti_workflow_id: change the status through the workflow engine
+    apply_transition_actions?: boolean;
+  }[];
   applyToElements: PlaybookBundleElementsToApply;
   applyWithFilters?: string;
 }
@@ -130,6 +138,7 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
               required: ['label', 'value', 'patch_value'],
             },
           },
+          apply_transition_actions: { type: 'boolean', nullable: true, default: false },
         },
         required: ['op', 'attribute', 'value'],
       },
@@ -160,6 +169,12 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
     const eventContext = buildPlaybookEventContext(event);
+    const isWorkflowStatusAction = (action: ManipulateConfiguration['actions'][number]) => {
+      return isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && action.attribute === 'x_opencti_workflow_id'
+        && action.op === EditOperation.Replace && action.apply_transition_actions === true;
+    };
+    const workflowStatusActions = actions.filter((action) => isWorkflowStatusAction(action));
+    const patchActions = actions.filter((action) => !isWorkflowStatusAction(action));
 
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
@@ -199,7 +214,26 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters, eventContext);
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
-        const elementOperations = actions
+        if (id) {
+          for (const workflowStatusAction of workflowStatusActions) {
+            const targetStatusId = R.head(workflowStatusAction.value)?.value;
+            if (targetStatusId) {
+              try {
+                const result = await setWorkflowStatus(context, AUTOMATION_MANAGER_USER, id, targetStatusId, true);
+                const attrPath = computeAttributePath(type, workflowStatusAction.attribute);
+                if (!result.success) {
+                  logApp.warn('[OPENCTI-MODULE][PLAYBOOK] Workflow status not applied', { id, reason: result.reason });
+                } else if (attrPath) {
+                  // Keep the bundle aligned with the new status for the next playbook components
+                  patchOperations.push({ op: EditOperation.Replace, path: `/objects/${index}${attrPath}`, value: targetStatusId });
+                }
+              } catch (error) {
+                logApp.error('[OPENCTI-MODULE][PLAYBOOK] Workflow status error, skipping element', { cause: error, id });
+              }
+            }
+          }
+        }
+        const elementOperations = patchActions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);

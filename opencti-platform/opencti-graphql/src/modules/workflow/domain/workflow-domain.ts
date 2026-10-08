@@ -463,6 +463,20 @@ export const hasPublishedWorkflowDefinition = async (
 };
 
 /**
+ * Distinct event names of the published workflow transitions. Exposed at the same level as
+ * `hasPublishedWorkflowDefinition` so knowledge editors can pick a transition to mass-apply.
+ */
+export const getWorkflowTransitionEvents = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<string[]> => {
+  const definitionData = await getWorkflowDefinition(context, user, entityType, false);
+  const events = (definitionData?.transitions ?? []).map((transition) => transition.event);
+  return [...new Set(events)].sort();
+};
+
+/**
  * Returns the ID of the published version for the given entity setting's workflow, or null if not published.
  */
 export const getWorkflowPublishedVersionId = async (

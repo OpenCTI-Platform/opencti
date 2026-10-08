@@ -5,6 +5,7 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { now } from '../utils/format';
 import {
+  isBypassUser,
   isOnlyOrgaAdmin,
   isUserHasCapability,
   KNOWLEDGE_KNASKIMPORT,
@@ -17,7 +18,7 @@ import {
 import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { publishUserAction } from '../listener/UserActionListener';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
@@ -33,6 +34,7 @@ import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-consta
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -64,11 +66,50 @@ export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 export const ACTION_TYPE_ENROLL_PLAYBOOK = 'ENROLL_PLAYBOOK';
 export const ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES = 'REMOVE_CUSTOM_FIELD_VALUES';
 export const ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES = 'ADD_RELATED_COVERED_ENTITIES';
+// Internal routing types, never sent by clients: derived from a REPLACE on the workflow status field
+export const ACTION_TYPE_WORKFLOW_BYPASS = 'WORKFLOW_BYPASS';
+export const ACTION_TYPE_WORKFLOW_TRANSITION = 'WORKFLOW_TRANSITION';
+
+const isWorkflowStatusAction = (action) => {
+  return action.type === ACTION_TYPE_REPLACE && action.context?.field === 'x_opencti_workflow_id';
+};
+// Real transition triggered by its event name, only applied to elements in an eligible state
+export const isWorkflowTransitionAction = (action) => {
+  return isWorkflowStatusAction(action) && isNotEmptyField(action.context?.options?.eventName);
+};
+// Forced status change through the workflow engine, with or without the onExit/onEnter actions
+export const isWorkflowBypassAction = (action) => {
+  return isWorkflowStatusAction(action) && !isWorkflowTransitionAction(action)
+    && typeof action.context?.options?.applyTransitionActions === 'boolean';
+};
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
 };
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
+
+const checkWorkflowActionsValidity = (context, user, actions) => {
+  const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
+  const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
+  if (!hasBypassAction && !hasTransitionAction) {
+    return;
+  }
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    throw FunctionalError('ENTITIES_WORKFLOW is disabled');
+  }
+  if (getDraftContext(context, user)) {
+    throw FunctionalError('Cannot change workflow status in draft');
+  }
+  if (actions.filter((a) => isWorkflowStatusAction(a)).length > 1) {
+    throw FunctionalError('A single task cannot perform several actions on the workflow status');
+  }
+  if (hasBypassAction && !isBypassUser(user)) {
+    throw ForbiddenAccess();
+  }
+  if (actions.some((a) => isWorkflowBypassAction(a) && a.context.values?.length !== 1)) {
+    throw FunctionalError('A workflow status action requires exactly one target status');
+  }
+};
 
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
@@ -82,6 +123,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   if (severalReplaceOnSameKey || replaceAndOtherActionOnSameKey) {
     throw FunctionalError('A single task cannot perform several actions on the same field if one action is a replace.', { data: replaceActionsFields });
   }
+  checkWorkflowActionsValidity(context, user, actions);
   // check rights
   const baseFilterObject = baseFilterString ? JSON.parse(baseFilterString) : undefined;
   const filters = isFilterGroupNotEmpty(baseFilterObject)

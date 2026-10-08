@@ -21,6 +21,7 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  getWorkflowTransitionEvents,
   initializeEntityWorkflow,
   isStatusTemplateUsedInWorkflows,
   isStatusUsedInWorkflow,
@@ -3426,6 +3427,59 @@ describe('getWorkflowPublishedVersionId', () => {
 // ---------------------------------------------------------------------------
 // cleanupEntityWorkflow
 // ---------------------------------------------------------------------------
+
+describe('getWorkflowTransitionEvents', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should return the sorted distinct event names of the published workflow', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      published_version: {
+        id: 'v1',
+        content: JSON.stringify({
+          initialState: 'draft',
+          states: [{ statusId: 'draft' }, { statusId: 'reviewing' }, { statusId: 'approved' }],
+          transitions: [
+            { from: 'draft', to: 'reviewing', event: 'submit' },
+            { from: 'reviewing', to: 'draft', event: 'reject' },
+            { from: 'reviewing', to: 'approved', event: 'approve' },
+            { from: 'draft', to: 'approved', event: 'approve' },
+          ],
+        }),
+      },
+    });
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
+
+    expect(result).toEqual(['approve', 'reject', 'submit']);
+  });
+
+  it('should return an empty list when the entity type has no workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
+
+    expect(result).toEqual([]);
+  });
+
+  it('should ignore an unpublished draft version', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-def-id',
+      draft_version: {
+        id: 'v1',
+        content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [{ from: 'draft', to: 'draft', event: 'loop' }] }),
+      },
+    });
+
+    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
+
+    expect(result).toEqual([]);
+  });
+});
 
 describe('cleanupEntityWorkflow', () => {
   beforeEach(() => {
