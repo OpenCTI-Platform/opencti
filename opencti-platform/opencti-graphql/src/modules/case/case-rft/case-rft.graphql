@@ -161,6 +161,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   # Cases
   name: String!
   description: String

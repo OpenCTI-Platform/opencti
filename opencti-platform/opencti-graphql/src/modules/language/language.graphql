@@ -140,6 +140,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     status: Status
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 

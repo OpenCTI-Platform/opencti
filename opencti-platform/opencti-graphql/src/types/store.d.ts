@@ -124,6 +124,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   i_aliases_ids?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
+  x_opencti_closing_reason?: string;
   creator_id?: string | string[];
   type?: string;
   draft_ids?: string[];
