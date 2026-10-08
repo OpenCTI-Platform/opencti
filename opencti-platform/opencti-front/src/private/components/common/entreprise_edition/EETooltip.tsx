@@ -65,12 +65,12 @@ const EETooltip = ({
           <span
             role="button"
             tabIndex={0}
-            onClick={(e) => {
+            onClickCapture={(e) => {
               setOpenConfigAI(true);
               e.preventDefault();
               e.stopPropagation();
             }}
-            onKeyDown={(e) => {
+            onKeyDownCapture={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -80,8 +80,9 @@ const EETooltip = ({
           >
             {/*
               The wrapping span is the single interactive control here (it
-              intercepts the click/keyboard activation to open the "enable
-              AI" dialog instead of whatever the child would normally do);
+              intercepts the click/keyboard activation, in the capture phase
+              so before the child's own handlers, to open the "enable AI"
+              dialog instead of whatever the child would normally do);
               take the child out of the tab order so children that already
               render a focusable control (e.g. a Button/IconButton) don't
               create a second, redundant tab stop for the same action.
@@ -111,12 +112,12 @@ const EETooltip = ({
         <span
           role="button"
           tabIndex={0}
-          onClick={(e) => {
+          onClickCapture={(e) => {
             setFeedbackCreation(true);
             e.preventDefault();
             e.stopPropagation();
           }}
-          onKeyDown={(e) => {
+          onKeyDownCapture={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               e.stopPropagation();
@@ -126,7 +127,8 @@ const EETooltip = ({
         >
           {/*
             The wrapping span is the single interactive control here (it
-            intercepts the click/keyboard activation to open the EE
+            intercepts the click/keyboard activation, in the capture phase
+            so before the child's own handlers, to open the EE
             feedback/agreement flow instead of whatever the child would
             normally do); take the child out of the tab order so children
             that already render a focusable control (e.g. a Button/
