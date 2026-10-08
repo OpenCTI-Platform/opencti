@@ -49,7 +49,7 @@ import {
   type UpdateConnectorManagerStatusInput,
   ValidationMode,
 } from '../generated/graphql';
-import { BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
@@ -72,6 +72,7 @@ import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
+import { redisDeleteIngestionHealthObservation } from '../modules/ingestionHealth/ingestionHealth-redis';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -459,6 +460,10 @@ export const registerConnector = async (
 export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
+  if (isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG)) {
+    // The ingestion health observation has no TTL, it lives as long as its connector
+    await redisDeleteIngestionHealthObservation(connectorId);
+  }
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   try {
     await redisDeleteConnectorHeartbeat(element.internal_id);

@@ -373,6 +373,11 @@
     "lock_key": "data_sanity_manager_lock",
     "interval": 600000
   },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000
+  },
   "exclusion_list_cache_build_manager": {
     "enabled": true,
     "lock_key": "exclusion_list_cache_build_manager_lock",

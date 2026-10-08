@@ -10,6 +10,7 @@ import { patchAttribute } from '../../../src/database/middleware';
 import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/database/redis';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
 import { DRAFT_VALIDATION_CONNECTOR } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
+import { redisGetIngestionHealthObservation, redisSetIngestionHealthObservation } from '../../../src/modules/ingestionHealth/ingestionHealth-redis';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String, $isMultiPartWork: Boolean) {
@@ -679,12 +680,15 @@ describe('Capability checks', () => {
 });
 
 afterAll(async () => {
+  // The heartbeat observation of a connector must not outlive it
+  await redisSetIngestionHealthObservation(TEST_CN_ID, { last_seen_at: null, close_pings: 0 });
   // Delete the connector
   await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   // Verify is no longer found
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();
   expect(queryResult.data?.connector).toBeNull();
+  expect(await redisGetIngestionHealthObservation(TEST_CN_ID)).toBeNull();
   // Its heartbeat is cleaned up as well
   expect(await redisGetConnectorHeartbeat(TEST_CN_ID)).toBeNull();
 });
