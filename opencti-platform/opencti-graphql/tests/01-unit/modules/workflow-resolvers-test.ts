@@ -257,6 +257,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       'Approved for review',
       {},
+      undefined,
     );
   });
 
@@ -276,7 +277,22 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       undefined,
       {},
+      undefined,
     );
+  });
+});
+
+describe('Mutation.triggerWorkflowEvent resolver – closing reason forwarding', () => {
+  it('should forward the closing reason to the domain function', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'closed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'duplicate' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'close', undefined, {}, 'duplicate');
   });
 });
 
@@ -348,7 +364,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     ).resolves.not.toThrow();
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {},
+      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {}, undefined,
     );
   });
 
@@ -362,7 +378,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {},
+      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {}, undefined,
     );
   });
 
@@ -376,7 +392,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', undefined, {},
+      mockContext, mockContext.user, 'entity-id', 'review', undefined, {}, undefined,
     );
   });
 });
@@ -627,6 +643,7 @@ describe('workflow-resolvers', () => {
           'close',
           undefined,
           {},
+          undefined,
         );
         expect(result).toBe(mockResult);
       });
