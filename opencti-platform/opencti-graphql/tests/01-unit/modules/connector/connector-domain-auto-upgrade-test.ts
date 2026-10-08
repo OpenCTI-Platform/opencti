@@ -6,6 +6,7 @@ const {
   mockFindLatestCompatibleCatalogContractBySlug,
   mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mockPatchAttribute,
+  mockNotify,
   mockPublishUserAction,
   mockRedisGetManagedConnectorAutoUpgradeStatus,
   mockRedisSetManagedConnectorAutoUpgradeStatus,
@@ -14,6 +15,7 @@ const {
   mockFindLatestCompatibleCatalogContractBySlug: vi.fn(),
   mockMapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn((c) => ({ ...c })),
   mockPatchAttribute: vi.fn(),
+  mockNotify: vi.fn(),
   mockPublishUserAction: vi.fn(),
   mockRedisGetManagedConnectorAutoUpgradeStatus: vi.fn(),
   mockRedisSetManagedConnectorAutoUpgradeStatus: vi.fn(),
@@ -35,11 +37,16 @@ vi.mock('../../../../src/database/middleware', () => ({
   patchAttribute: mockPatchAttribute,
 }));
 
+vi.mock('../../../../src/database/redis', () => ({
+  notify: mockNotify,
+}));
+
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: mockPublishUserAction,
 }));
 
 vi.mock('../../../../src/config/conf', () => ({
+  BUS_TOPICS: { Connector: { EDIT_TOPIC: 'CONNECTOR_EDIT_TOPIC' } },
   PLATFORM_VERSION: '7.2.0-test',
   logApp: {
     debug: vi.fn(),
@@ -100,6 +107,7 @@ describe('connector-domain auto-upgrade', () => {
     vi.clearAllMocks();
     mockFindManagedConnectorsByCatalogId.mockResolvedValue([]);
     mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(undefined);
+    mockPatchAttribute.mockImplementation((_context, _user, id, _type, patch) => Promise.resolve({ element: { id, ...patch } }));
     mockRedisGetManagedConnectorAutoUpgradeStatus.mockResolvedValue(null);
     mockRedisSetManagedConnectorAutoUpgradeStatus.mockResolvedValue(undefined);
   });
@@ -180,6 +188,7 @@ describe('connector-domain auto-upgrade', () => {
     mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
     await autoUpgradeManagedConnectors({ source: 'test' } as any, { id: 'user-1' } as any, ['catalog-1']);
     expect(mockPatchAttribute).not.toHaveBeenCalled();
+    expect(mockNotify).not.toHaveBeenCalled();
   });
 
   it('should patch managed connector when a newer compatible contract exists', async () => {
@@ -197,6 +206,17 @@ describe('connector-domain auto-upgrade', () => {
       }),
     );
     expect(mockPublishUserAction).toHaveBeenCalled();
+  });
+
+  it('should notify the connectors cache of the upgraded contract', async () => {
+    mockFindManagedConnectorsByCatalogId.mockResolvedValue([buildManagedConnector()]);
+    mockFindLatestCompatibleCatalogContractBySlug.mockResolvedValue(latestCompatibleContract);
+    await autoUpgradeManagedConnectors({ source: 'test' } as any, { id: 'user-1' } as any, ['catalog-1']);
+    expect(mockNotify).toHaveBeenCalledWith(
+      'CONNECTOR_EDIT_TOPIC',
+      expect.objectContaining({ id: 'connector-1', manager_contract_image: 'opencti/connector-test' }),
+      { id: 'user-1' },
+    );
   });
 
   it('should patch managed connector when latest compatible contract is an older version (downgrade)', async () => {
