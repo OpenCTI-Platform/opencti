@@ -78,8 +78,8 @@ const resetUserDraftContext = async (request: APIRequestContext, userId: string)
   await graphqlRequest(
     request,
     `
-      mutation ResetTestUserDraftContext($id: ID!) {
-        userEdit(id: $id) {
+      mutation ResetTestUserDraftContext {
+        userEdit(id: "${userId}") {
           fieldPatch(input: [{ key: "draft_context", value: [""] }]) {
             id
           }
