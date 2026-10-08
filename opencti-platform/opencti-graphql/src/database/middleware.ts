@@ -285,6 +285,7 @@ import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '.
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
   normalizeCustomFieldValuesDates,
+  resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
@@ -3029,7 +3030,8 @@ export const updateAttribute = async <T extends StoreObject>(
   const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
   if (customFieldValuesInput) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(customFieldValuesInput.value ?? []) };
+      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(resolvedValues) };
       await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
       finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
     } else {

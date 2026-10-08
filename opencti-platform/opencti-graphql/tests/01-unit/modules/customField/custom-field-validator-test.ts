@@ -5,6 +5,7 @@ import {
   fillCustomFieldsDefaultValues,
   getCustomFieldDefaultValueFromEntitySettings,
   normalizeCustomFieldValuesDates,
+  resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
@@ -411,6 +412,42 @@ describe('validateMandatoryCustomFieldValues', () => {
     seed(mandatoryDefinition());
     const valuesWithDefault = await fillCustomFieldsDefaultValues(CONTEXT, USER, {}, ENTITY_TYPE);
     await expect(validateMandatoryCustomFieldValues(CONTEXT, USER, valuesWithDefault, ENTITY_TYPE)).resolves.not.toThrow();
+  });
+});
+
+describe('resolveCustomFieldValuesIdentity', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    seed(
+      makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_priority', aliases: ['x_vendor_priority'] } as any),
+      makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_score', field_type: 'integer' }),
+    );
+  });
+  const resolve = (values: CustomFieldValue[]) => resolveCustomFieldValuesIdentity(CONTEXT, USER, values, ENTITY_TYPE);
+
+  it('fills a missing field_id from the technical name', async () => {
+    expect(await resolve([{ field_name: 'x_opencti_cf_priority', string_value: 'P1' } as CustomFieldValue]))
+      .toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_priority', string_value: 'P1' }]);
+  });
+
+  it('replaces an alias by the technical name', async () => {
+    expect(await resolve([{ field_name: 'x_vendor_priority', string_value: 'P1' } as CustomFieldValue]))
+      .toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_priority', string_value: 'P1' }]);
+  });
+
+  it('rejects a field_id that does not match the name', async () => {
+    await expect(resolve([{ field_id: 'cf-id-2', field_name: 'x_opencti_cf_priority', string_value: 'P1' }]))
+      .rejects.toThrow('Custom field id does not match its name');
+  });
+
+  it('fills the name from the field_id when only the id is given (remove)', async () => {
+    expect(await resolve([{ field_id: 'cf-id-2' } as CustomFieldValue]))
+      .toEqual([{ field_id: 'cf-id-2', field_name: 'x_opencti_cf_score' }]);
+  });
+
+  it('leaves an unknown name as is for validation to reject', async () => {
+    const values = [{ field_name: 'x_opencti_cf_unknown', string_value: 'a' } as CustomFieldValue];
+    expect(await resolve(values)).toEqual(values);
   });
 });
 

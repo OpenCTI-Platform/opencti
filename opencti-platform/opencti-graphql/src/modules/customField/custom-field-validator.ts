@@ -33,6 +33,30 @@ export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): Cus
   return normalizedDate ? { ...value, date_value: normalizedDate } : value;
 });
 
+// Edit path (stored format): the technical name is unique and immutable, so the server derives field_id
+// from field_name (or an alias) instead of trusting the client. A missing field_id is filled, an inconsistent
+// one is rejected, and an alias is replaced by the technical name. Unknown names are left for validation.
+export const resolveCustomFieldValuesIdentity = async (
+  context: AuthContext,
+  user: AuthUser,
+  values: CustomFieldValue[],
+  entityType: string,
+): Promise<CustomFieldValue[]> => {
+  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
+  return values.map((value) => {
+    const definition = value.field_name
+      ? definitions.find((d) => d.name === value.field_name || d.aliases?.some((a) => a === value.field_name))
+      : definitions.find((d) => d.id === value.field_id);
+    if (!definition) {
+      return value;
+    }
+    if (value.field_id && value.field_name && value.field_id !== definition.id) {
+      throw FunctionalError('Custom field id does not match its name', { field_id: value.field_id, field_name: value.field_name });
+    }
+    return { ...value, field_id: definition.id, field_name: definition.name };
+  });
+};
+
 const verifyAddInputValueType = (
   customFieldValueAddInputValue: any[],
   customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
