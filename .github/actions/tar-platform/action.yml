@@ -5,10 +5,6 @@ inputs:
   checkout_ref:
     description: "Reference of the branch or commit sha"
     default: ${{ github.sha }}
-  client_python_local:
-    description: "Use client python from the same commit"
-    required: false
-    default: "false"
 
 runs:
   using: "composite"
@@ -16,12 +12,6 @@ runs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         ref: ${{ inputs.checkout_ref }}
-
-    - name: Use client-python in OpenCTI from same branch
-      shell: bash
-      if: ${{ inputs.client_python_local == 'true' }}
-      run: |
-        find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i {} \;
 
     - name: Build platform and package tar.gz
       shell: bash
@@ -32,6 +22,7 @@ runs:
           nikolaik/python-nodejs:python3.11-nodejs22 \
           sh -c '
             apt-get update && apt-get install -y --no-install-recommends build-essential libffi-dev curl g++ make python3 python3-dev && rm -rf /var/lib/apt/lists/* &&
+            curl -LsSf https://astral.sh/uv/0.12.9/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh &&
             npm install -g node-gyp &&
             cd /workspace/opencti-platform/opencti-graphql &&
             yarn install --immutable &&
