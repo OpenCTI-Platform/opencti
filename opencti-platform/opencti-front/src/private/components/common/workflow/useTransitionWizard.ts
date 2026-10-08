@@ -19,10 +19,12 @@ export interface TransitionWizard {
   requiresShareOrg: boolean;
   requiresUnshareOrg: boolean;
   commentMode?: string;
+  closingReasonMode?: string;
 }
 
 export interface TransitionFormValues {
   comment: string;
+  closingReason?: string | null;
   shareOrganizations: Array<{ value: string; label?: string }>;
   unshareOrganizations: Array<{ value: string; label?: string }>;
 }
@@ -66,6 +68,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     actions: readonly string[],
     runtimeParams?: Record<string, unknown>,
     comment?: string,
+    closingReason?: string,
   ): Promise<void> => {
     if (inFlight.current || approving || clearing || isPending) return Promise.resolve();
     inFlight.current = true;
@@ -77,7 +80,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
         resolve();
       };
       commit({
-        variables: { entityId, eventName, runtimeParams, comment },
+        variables: { entityId, eventName, runtimeParams, comment, closingReason },
         onCompleted: (response) => {
           finish();
           const result = response.triggerWorkflowEvent;
@@ -112,11 +115,13 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     comment?: string | null,
     requiresShareOrg?: boolean | null,
     requiresUnshareOrg?: boolean | null,
+    closingReason?: string | null,
   ) => {
     if (inFlight.current || approving || clearing || isPending) return;
     const requiresValidation = !!draftId && actions.includes('validateDraft');
     const hasComment = comment === CommentMode.allowed || comment === CommentMode.required;
-    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation) {
+    const hasClosingReason = closingReason === CommentMode.allowed || closingReason === CommentMode.required;
+    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !hasClosingReason && !requiresValidation) {
       fireTransition(eventName, actions);
       return;
     }
@@ -127,6 +132,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
       requiresShareOrg: !!requiresShareOrg,
       requiresUnshareOrg: !!requiresUnshareOrg,
       commentMode: comment ?? undefined,
+      closingReasonMode: hasClosingReason ? closingReason : undefined,
     });
   };
 
@@ -135,7 +141,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     const runtimeParams: Record<string, string[]> = {};
     if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((organization) => organization.value);
     if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((organization) => organization.value);
-    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined);
+    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined, values.closingReason || undefined);
   };
 
   const handleClear = () => {

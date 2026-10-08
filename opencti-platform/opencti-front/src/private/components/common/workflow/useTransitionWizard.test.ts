@@ -317,6 +317,61 @@ describe('useTransitionWizard comment inputs', () => {
   });
 });
 
+describe('useTransitionWizard closing reason inputs', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('opens the form when the transition enables a closing reason', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('close', [], null, false, false, CommentMode.required);
+    });
+
+    expect(mockCommit).not.toHaveBeenCalled();
+    expect(result.current.wizard?.closingReasonMode).toBe(CommentMode.required);
+  });
+
+  it('fires the mutation directly when the closing reason is disabled', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('close', [], null, false, false, CommentMode.disabled);
+    });
+
+    expect(mockCommit).toHaveBeenCalledTimes(1);
+  });
+
+  it('submits the selected closing reason', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('close', [], null, false, false, CommentMode.allowed);
+    });
+    act(() => {
+      result.current.handleApplyWizard({ ...emptyValues, closingReason: 'false-positive' });
+    });
+
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.closingReason).toBe('false-positive');
+  });
+
+  it('passes undefined closing reason when none is selected', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('close', [], null, false, false, CommentMode.allowed);
+    });
+    act(() => {
+      result.current.handleApplyWizard({ ...emptyValues, closingReason: '' });
+    });
+
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.closingReason).toBeUndefined();
+  });
+});
+
 describe('useTransitionWizard draft confirmation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
