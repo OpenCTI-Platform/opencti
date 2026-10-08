@@ -14,6 +14,7 @@ export const CUSTOM_FIELD_NOW_TOKEN = '@now';
 // Field types supported by custom fields
 // `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
 export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';
+export const CUSTOM_FIELD_TYPES: CustomFieldType[] = ['integer', 'string', 'markdown', 'boolean', 'date', 'select', 'multi_select'];
 
 export interface CustomFieldValue {
   field_id: string;
