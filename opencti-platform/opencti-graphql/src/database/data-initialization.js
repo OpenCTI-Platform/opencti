@@ -29,6 +29,7 @@ import { createRetentionRule } from '../modules/retentionRules/retentionRules-do
 import { generateBuiltInExportId } from '../schema/identifier';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -276,6 +277,7 @@ const createVocabularies = async (context) => {
         category,
         order,
         builtIn: builtInOv.includes(category),
+        export_id: generateBuiltInExportId(ENTITY_TYPE_VOCABULARY, { category, name: key.trim() }),
       };
       await addVocabulary(context, SYSTEM_USER, data);
     }

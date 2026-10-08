@@ -1,5 +1,14 @@
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_THEME } from './internalObject';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from './stixMetaObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_RETENTION_RULE,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_THEME,
+} from './internalObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
@@ -26,7 +35,8 @@ import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTempla
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 
 // Configuration elements created by users that can be carried from one platform to another.
-// They get their internal_id as export_id when created: it identifies the element in the exported bundles.
+// They get their internal_id as export_id when created: it identifies the element in the exported bundles,
+// so that importing it again on a platform finds the element it comes from instead of creating a duplicate.
 // Built-in elements of these types already get a deterministic export_id at platform init (see generateBuiltInExportId).
 export const EXPORT_ID_ON_CREATION_TYPES = [
   ENTITY_TYPE_PLAYBOOK,
@@ -56,34 +66,46 @@ export const EXPORT_ID_ON_CREATION_TYPES = [
   ENTITY_TYPE_EMAIL_TEMPLATE,
   ENTITY_TYPE_NOTIFIER,
   ENTITY_TYPE_THEME,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  ENTITY_TYPE_RETENTION_RULE,
 ];
 
 // Types where only some elements are exportable configuration: investigations, connectors registered by
 // themselves and built-in decay rules (not editable) get no export_id.
-const isDashboard = (element: Record<string, any>) => element.type === 'dashboard';
-const isManagedConnector = (element: Record<string, any>) => Boolean(element.catalog_id);
-const isCustomDecayRule = (element: Record<string, any>) => element.built_in !== true;
-const PARTIAL_EXPORT_ID_TYPES: Record<string, (element: Record<string, any>) => boolean> = {
-  [ENTITY_TYPE_WORKSPACE]: isDashboard,
-  [ENTITY_TYPE_CONNECTOR]: isManagedConnector,
-  [ENTITY_TYPE_DECAY_RULE]: isCustomDecayRule,
+// Each type declares its condition twice, for an element and as an elasticsearch clause for the migration: keep them aligned.
+type PartialExportIdType = {
+  isExportable: (element: Record<string, any>) => boolean;
+  clause: { must?: object[]; must_not?: object[] };
+};
+const PARTIAL_EXPORT_ID_TYPES: Record<string, PartialExportIdType> = {
+  [ENTITY_TYPE_WORKSPACE]: {
+    isExportable: (element) => element.type === 'dashboard',
+    clause: { must: [{ term: { 'type.keyword': { value: 'dashboard' } } }] },
+  },
+  [ENTITY_TYPE_CONNECTOR]: {
+    isExportable: (element) => Boolean(element.catalog_id),
+    clause: { must: [{ exists: { field: 'catalog_id' } }] },
+  },
+  [ENTITY_TYPE_DECAY_RULE]: {
+    isExportable: (element) => element.built_in !== true,
+    clause: { must_not: [{ term: { built_in: true } }] },
+  },
 };
 
 export const isExportIdOnCreation = (type: string, element: Record<string, any>) => {
-  return EXPORT_ID_ON_CREATION_TYPES.includes(type) || (PARTIAL_EXPORT_ID_TYPES[type]?.(element) ?? false);
+  return EXPORT_ID_ON_CREATION_TYPES.includes(type) || (PARTIAL_EXPORT_ID_TYPES[type]?.isExportable(element) ?? false);
 };
 
 // Same scope as isExportIdOnCreation, as an elasticsearch query
 export const exportIdOnCreationQuery = () => {
-  const ofType = (type: string) => ({ term: { 'entity_type.keyword': { value: type } } });
+  const partialClauses = Object.entries(PARTIAL_EXPORT_ID_TYPES).map(([type, { clause }]) => ({
+    bool: { ...clause, must: [{ term: { 'entity_type.keyword': { value: type } } }, ...(clause.must ?? [])] },
+  }));
   return {
     bool: {
-      should: [
-        { terms: { 'entity_type.keyword': EXPORT_ID_ON_CREATION_TYPES } },
-        { bool: { must: [ofType(ENTITY_TYPE_WORKSPACE), { term: { 'type.keyword': { value: 'dashboard' } } }] } },
-        { bool: { must: [ofType(ENTITY_TYPE_CONNECTOR), { exists: { field: 'catalog_id' } }] } },
-        { bool: { must: [ofType(ENTITY_TYPE_DECAY_RULE)], must_not: [{ term: { built_in: true } }] } },
-      ],
+      should: [{ terms: { 'entity_type.keyword': EXPORT_ID_ON_CREATION_TYPES } }, ...partialClauses],
       minimum_should_match: 1,
     },
   };

@@ -6,6 +6,7 @@ import { addGroup, addRole } from '../../../src/domain/grant';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { createStatus, createStatusTemplate } from '../../../src/domain/status';
 import { addEmailTemplate } from '../../../src/modules/emailTemplate/emailTemplate-domain';
+import { addVocabulary } from '../../../src/modules/vocabulary/vocabulary-domain';
 import { createRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
 
@@ -144,6 +145,17 @@ describe('Data initialization export_id', () => {
     expect(retentionRules.map(({ scope, export_id }) => [scope, export_id])).toEqual(
       ['file', 'workbench', 'history', 'activity'].map((scope) => [scope, generateBuiltInExportId('RetentionRule', { scope })]),
     );
+  });
+
+  it('should create every built-in vocabulary with an export_id based on its category and trimmed name', () => {
+    const vocabularies = inputsOf(addVocabulary, 2);
+    expect(vocabularies.length).toBeGreaterThan(300);
+    vocabularies.forEach(({ category, name, export_id }) => {
+      expect(export_id, `${category} ${name}`).toEqual(generateBuiltInExportId('Vocabulary', { category, name: name.trim() }));
+    });
+    // Declared with a leading space, stored trimmed: same export_id as the migration computes from the stored name
+    const ransomware = vocabularies.find((v) => v.category === 'malware_type_ov' && v.name === ' ransomware');
+    expect(ransomware.export_id).toEqual(generateBuiltInExportId('Vocabulary', { category: 'malware_type_ov', name: 'ransomware' }));
   });
 
   it('should not create the marking definitions when not requested', async () => {
