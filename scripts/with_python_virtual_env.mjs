@@ -13,14 +13,15 @@
  *   ./with_python_virtual_env.mjs              Output activation command for eval
  * 
  * Environment variables:
- *   VENV_PATH    Path to virtual environment (default: ../.python-venv)
+ *   VENV_PATH    Path to virtual environment (default: the .venv created by uv at the repository root)
  */
 
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const VENV_PATH = process.env.VENV_PATH || join(process.cwd(), '..', '.python-venv')
+const VENV_PATH = process.env.VENV_PATH || join(dirname(fileURLToPath(import.meta.url)), '..', '.venv')
 const commandToRun = process.argv.slice(2).join(' ')
 const activateScript = join(VENV_PATH, 'bin', 'activate')
 
