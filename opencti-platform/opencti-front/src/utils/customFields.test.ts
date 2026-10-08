@@ -174,6 +174,15 @@ describe('customFields', () => {
     expect(getCustomFieldValueError(definition('string'), '1.9', translate)).toBeUndefined();
   });
 
+  it('bounds integers without min/max to the 32-bit range', () => {
+    const unbounded = definition('integer');
+    expect(getCustomFieldValueError(unbounded, '2147483647', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(unbounded, '3000000000', translate)).toBe('The value must be between min and max value');
+    const schema = buildCustomFieldsValidationSchema([unbounded], 'Report', translate);
+    expect(schema.isValidSync({ integer: '-2147483648' })).toBe(true);
+    expect(() => schema.validateSync({ integer: '3000000000' })).toThrow('The value must be between min and max value');
+  });
+
   it('clears an integer value when the input is emptied', () => {
     const stored = Object.freeze([{ field_id: 'integer', field_name: 'custom_integer', int_value: 5 }]);
     expect(updateCustomFieldValues(definition('integer'), '', stored)).toEqual([]);

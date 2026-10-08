@@ -41,6 +41,15 @@ export const getCustomFieldsInitialValues = (
   }),
 );
 
+// Integer values are stored as 32-bit signed integers (GraphQL Int, Elasticsearch integer):
+// without min/max on the definition, these are the bounds.
+const INTEGER_MIN = -2147483648;
+const INTEGER_MAX = 2147483647;
+const getIntegerBounds = (definition: CustomFieldDef) => ({
+  min: definition.min_value ?? INTEGER_MIN,
+  max: definition.max_value ?? INTEGER_MAX,
+});
+
 // Same rules as the creation schema below, for the edition which saves field by field without Yup.
 // An empty input is valid: it clears the value.
 export const getCustomFieldValueError = (
@@ -53,7 +62,8 @@ export const getCustomFieldValueError = (
   if (trimmed === '') return undefined;
   const parsed = Number(trimmed);
   if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
-  if ((definition.min_value != null && parsed < definition.min_value) || (definition.max_value != null && parsed > definition.max_value)) {
+  const { min, max } = getIntegerBounds(definition);
+  if (parsed < min || parsed > max) {
     return t_i18n('The value must be between min and max value');
   }
   return undefined;
@@ -64,17 +74,14 @@ const buildIntegerValidationSchema = (
   isMandatory: boolean,
   t_i18n: (key: string) => string,
 ) => {
-  let schema = Yup.number()
+  const { min, max } = getIntegerBounds(definition);
+  const schema = Yup.number()
     // An empty input means "no value": only a mandatory field requires one
     .transform((value, originalValue) => (originalValue === '' || originalValue === null ? undefined : value))
     .typeError(t_i18n('The value must be an integer'))
-    .integer(t_i18n('The value must be an integer'));
-  if (definition.min_value != null) {
-    schema = schema.min(definition.min_value, t_i18n('The value must be between min and max value'));
-  }
-  if (definition.max_value != null) {
-    schema = schema.max(definition.max_value, t_i18n('The value must be between min and max value'));
-  }
+    .integer(t_i18n('The value must be an integer'))
+    .min(min, t_i18n('The value must be between min and max value'))
+    .max(max, t_i18n('The value must be between min and max value'));
   return isMandatory ? schema.required(t_i18n('This field is required')) : schema.notRequired();
 };
 
