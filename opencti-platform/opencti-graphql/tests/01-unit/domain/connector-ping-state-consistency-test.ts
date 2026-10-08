@@ -104,3 +104,34 @@ describe('pingConnector / resetStateConnector state consistency', () => {
     expect(result.connector_state_reset).toBe(true);
   });
 });
+
+describe('pingConnector', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps the queued once values, which the tests above can leave unconsumed
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(registerConnectorQueues).mockResolvedValue(undefined as never);
+  });
+
+  it('should reject a ping from an unknown connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce(undefined as never);
+
+    await expect(pingConnector(testContext, testUser, 'unknown-connector', 'state', undefined as never))
+      .rejects.toThrow('No connector found with the specified ID');
+    expect(registerConnectorQueues).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should only acknowledge a pending state reset instead of writing the pinged state', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, connector_state: '', connector_state_reset: true } as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({
+      element: { ...baseConnector, connector_state: '', connector_state_reset: false },
+    } as never);
+
+    const result = await pingConnector(testContext, testUser, 'connector-1', 'state-before-reset', undefined as never);
+
+    expect(patchAttribute).toHaveBeenCalledWith(testContext, testUser, 'connector-1', 'Connector', { connector_state_reset: false });
+    expect(result.connector_state).toBe('');
+  });
+});
