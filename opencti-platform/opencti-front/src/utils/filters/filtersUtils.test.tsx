@@ -6,6 +6,7 @@ import {
   findFilterFromKey,
   findFiltersFromKeys,
   formatFiltersInPirContext,
+  getAvailableOperatorForFilter,
   getEntityTypeThreeFirstLevelsFilterValues,
   isDraftWorkspaceFilterGroup,
   isFilterGroupFormatCorrect,
@@ -24,6 +25,7 @@ import {
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
+import { FilterDefinition } from '../hooks/useAuth';
 
 describe('Filters utils', () => {
   describe('removeEmptyFiltersFromList', () => {
@@ -1555,5 +1557,120 @@ describe('stixFilters', () => {
     expect(stixFilters).toContain('x_opencti_ssvc_exploitation');
     expect(stixFilters).toContain('x_opencti_ssvc_automatable');
     expect(stixFilters).toContain('x_opencti_ssvc_technical_impact');
+  });
+});
+
+describe('getAvailableOperatorForFilter', () => {
+  const buildFilterDefinition = (definition: Partial<FilterDefinition>): FilterDefinition => ({
+    filterKey: 'name',
+    label: 'Name',
+    type: 'string',
+    multiple: false,
+    subEntityTypes: [],
+    elementsForFilterValuesSearch: [],
+    ...definition,
+  });
+  const changeOperators = ['has_changed', 'not_has_changed'];
+
+  it('should only allow eq when there is no filter definition', () => {
+    expect(getAvailableOperatorForFilter(undefined)).toEqual(['eq']);
+    expect(getAvailableOperatorForFilter(undefined, 'relationship_type')).toEqual(['eq']);
+  });
+
+  describe('with a subKey', () => {
+    it('should only allow eq and not_eq on the relationship_type subKey of regardingOf filters', () => {
+      ['regardingOf', 'dynamicRegardingOf'].forEach((filterKey) => {
+        const filterDefinition = buildFilterDefinition({ filterKey, type: 'nested' });
+        expect(getAvailableOperatorForFilter(filterDefinition, 'relationship_type')).toEqual(['eq', 'not_eq']);
+      });
+    });
+
+    it('should allow no operator on the other subKeys of regardingOf filters', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'regardingOf', type: 'nested' });
+      expect(getAvailableOperatorForFilter(filterDefinition, 'id')).toEqual([]);
+    });
+
+    it('should allow the default operators on the subKeys of other filters', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic', type: 'nested' });
+      expect(getAvailableOperatorForFilter(filterDefinition, 'id')).toEqual(['eq', 'not_eq', 'nil', 'not_nil']);
+    });
+
+    it('should ignore the stix filtering option', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic', type: 'nested' });
+      expect(getAvailableOperatorForFilter(filterDefinition, 'id', { isStixFiltering: true }))
+        .toEqual(['eq', 'not_eq', 'nil', 'not_nil']);
+    });
+  });
+
+  describe('without a subKey', () => {
+    it('should only allow eq on the connectedToId filter, even in stix filtering', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'connectedToId', type: 'id' });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(['eq']);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true })).toEqual(['eq']);
+    });
+
+    it('should return the date operators for a date filter', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'created', type: 'date' });
+      const dateOperators = ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within'];
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(dateOperators);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual([...dateOperators, ...changeOperators]);
+    });
+
+    it('should return the numeric operators for integer and float filters', () => {
+      const numericOperators = ['gt', 'gte', 'lt', 'lte', 'eq', 'not_eq'];
+      ['integer', 'float'].forEach((type) => {
+        const filterDefinition = buildFilterDefinition({ filterKey: 'confidence', type });
+        expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(numericOperators);
+        expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+          .toEqual([...numericOperators, ...changeOperators]);
+      });
+    });
+
+    it('should return eq and not_eq for a boolean filter', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'revoked', type: 'boolean' });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(['eq', 'not_eq']);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual(['eq', 'not_eq', ...changeOperators]);
+    });
+
+    const stringOperators = ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
+      'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
+
+    it('should return all the string operators for a string filter', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'name', type: 'string' });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(stringOperators);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual([...stringOperators, ...changeOperators]);
+    });
+
+    it('should restrict a text filter to search and nil operators, except in stix filtering', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'description', type: 'text' });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(['search', 'nil', 'not_nil']);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual([...stringOperators, ...changeOperators]);
+    });
+
+    it('should not treat entity type filters as text filters', () => {
+      const filterDefinition = buildFilterDefinition({ filterKey: 'entity_type', type: 'string', multiple: true });
+      expect(getAvailableOperatorForFilter(filterDefinition))
+        .toEqual(['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil']);
+    });
+
+    it('should add the only_eq_to operators for a multiple filter', () => {
+      const multipleOperators = ['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil'];
+      const filterDefinition = buildFilterDefinition({ filterKey: 'objectLabel', type: 'id', multiple: true });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(multipleOperators);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual([...multipleOperators, ...changeOperators]);
+    });
+
+    it('should return the default operators for a single value filter', () => {
+      const defaultOperators = ['eq', 'not_eq', 'nil', 'not_nil'];
+      const filterDefinition = buildFilterDefinition({ filterKey: 'createdBy', type: 'id', multiple: false });
+      expect(getAvailableOperatorForFilter(filterDefinition)).toEqual(defaultOperators);
+      expect(getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering: true }))
+        .toEqual([...defaultOperators, ...changeOperators]);
+    });
   });
 });
