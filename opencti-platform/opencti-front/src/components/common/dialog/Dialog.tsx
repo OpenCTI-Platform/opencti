@@ -1,9 +1,15 @@
 import { CloseOutlined } from '@mui/icons-material';
 import { Box, DialogActionsProps, DialogContent, DialogContentProps, DialogTitle } from '@mui/material';
 import MUIDialog, { DialogProps as MUIDialogProps } from '@mui/material/Dialog';
+import { PaperProps } from '@mui/material/Paper';
 import { ReactNode } from 'react';
 import IconButton from '../button/IconButton';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
+
+type MUIDialogSlotProps = NonNullable<MUIDialogProps['slotProps']>;
+// MUI also accepts a function of the owner state for a slot; the paper slot is
+// merged with this wrapper's own paper props, so only the object form is accepted.
+type PaperSlotProps = Partial<PaperProps>;
 
 type DialogProps = {
   title?: ReactNode;
@@ -11,7 +17,8 @@ type DialogProps = {
   actionsProps?: DialogActionsProps;
   size?: DialogSize;
   showCloseButton?: boolean;
-} & Omit<MUIDialogProps, 'title'>;
+  slotProps?: Omit<MUIDialogSlotProps, 'paper'> & { paper?: PaperSlotProps };
+} & Omit<MUIDialogProps, 'title' | 'slotProps'>;
 
 type DialogSize = 'small' | 'medium' | 'large';
 
@@ -31,10 +38,7 @@ const Dialog = ({
   fullScreen = false,
   ...dialogProps
 }: DialogProps) => {
-  const paperSlotProps = dialogProps.slotProps?.paper;
-  // Only the plain-object form is supported here (no current caller uses the
-  // function-form slot props); fall back to empty so spreading stays safe.
-  const callerPaperSlotProps = typeof paperSlotProps === 'function' ? {} : (paperSlotProps ?? {});
+  const callerPaperSlotProps = dialogProps.slotProps?.paper ?? {};
   return (
     <MUIDialog
       {...dialogProps}
