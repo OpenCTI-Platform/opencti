@@ -1,9 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { testContext } from '../../utils/testQuery';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import activityManager, { buildActivityHistoryElements, getLiveActivityNotifications } from '../../../src/manager/activityManager';
-import { INDEX_HISTORY } from '../../../src/database/utils';
+import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import type { ActivityStreamEvent, SseEvent } from '../../../src/types/event';
+import { type ActionHandler, registerUserActionListener, type UserAction } from '../../../src/listener/UserActionListener';
+import { askEntityExport, askListExport } from '../../../src/domain/stix';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { elIndexElements, elRawDeleteByQuery, elRawGet } from '../../../src/database/engine';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
+import type { BasicStoreEntity, StoreMarkingDefinition } from '../../../src/types/store';
 
 // -------------------------------------------------------------------
 // Helpers
@@ -201,5 +210,56 @@ describe('Activity manager - buildActivityHistoryElements', () => {
     const event = buildSseEvent(`${EVENT_TIMESTAMP}-0`, { message: 'user logged in successfully' });
     const elements = await buildActivityHistoryElements(testContext, [event]);
     expect(elements[0].context_data.message).toBe('user logged in successfully');
+  });
+});
+
+// -------------------------------------------------------------------
+// Export events indexing
+// -------------------------------------------------------------------
+
+describe('Activity manager - export events indexing', () => {
+  const REPORT_ID = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+  const EXPORT_FORMAT = 'application/pdf';
+  const exportActions: UserAction[] = [];
+  let exportListener: ActionHandler;
+  let eventIds: string[] = [];
+
+  beforeAll(async () => {
+    exportListener = registerUserActionListener({
+      id: 'TEST_EXPORT_ACTIONS',
+      next: async (action) => {
+        if (action.event_scope === 'export') exportActions.push(action);
+      },
+    });
+    const report = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, REPORT_ID, ENTITY_TYPE_CONTAINER_REPORT);
+    const tlpGreen = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_GREEN, ENTITY_TYPE_MARKING_DEFINITION);
+    const tlpClear = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_CLEAR, ENTITY_TYPE_MARKING_DEFINITION);
+    const exportUser = { ...ADMIN_USER, max_shareable_marking: [tlpGreen] };
+    await askEntityExport(testContext, exportUser, EXPORT_FORMAT, report, 'simple', [tlpGreen.id], [tlpClear.id]);
+    await askListExport(testContext, exportUser, { entity_type: ENTITY_TYPE_CONTAINER_REPORT }, EXPORT_FORMAT, [report.id], {}, 'simple', [], []);
+    eventIds = exportActions.map((_, index) => `${EVENT_TIMESTAMP}-export-${index}`);
+  });
+
+  afterAll(async () => {
+    exportListener.unregister();
+    await elRawDeleteByQuery({ index: READ_INDEX_HISTORY, refresh: true, body: { query: { ids: { values: eventIds } } } });
+  });
+
+  it('should index entity and list export events with their filters and file markings', async () => {
+    expect(exportActions).toHaveLength(2);
+    const events = exportActions.map((action, index) => buildSseEvent(eventIds[index], {
+      type: 'command',
+      event_scope: 'export',
+      message: 'asks for export',
+      data: action.context_data as ActivityStreamEvent['data'],
+    }));
+    const elements = await buildActivityHistoryElements(testContext, events);
+    await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, elements);
+    for (let index = 0; index < eventIds.length; index += 1) {
+      const { main_filter, access_filter, file_markings } = exportActions[index].context_data as Record<string, unknown>;
+      expect({ main_filter, access_filter, file_markings }).toEqual({ main_filter: expect.any(Object), access_filter: expect.any(Object), file_markings: expect.any(Array) });
+      const { _source } = await elRawGet({ id: eventIds[index], index: INDEX_HISTORY }) as { _source: { context_data: Record<string, unknown> } };
+      expect(_source.context_data).toMatchObject({ main_filter, access_filter, file_markings });
+    }
   });
 });
