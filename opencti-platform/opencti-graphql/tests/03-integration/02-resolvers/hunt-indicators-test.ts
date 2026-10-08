@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
@@ -293,10 +293,16 @@ describe('Hunt readiness and indicator hunts', () => {
       { name: 'Authentication', ok: true, message: 'The token is valid' },
       { name: 'search', ok: false, message: 'Access denied: the account lacks the search capability' },
     ];
-    const stale = await queryAsUser(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: 'another-test', checks } } });
+    type StoredConnector = BasicStoreEntity & { hunt_connection_check?: { work_id?: string } };
+    const stored = await internalLoadById<StoredConnector>(testContext, ADMIN_USER, CONNECTOR_ID, { type: ENTITY_TYPE_CONNECTOR });
+    const workId = stored.hunt_connection_check?.work_id;
+    expect(workId).toBeTruthy();
+    const stale = await queryAsUser(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: 'another-test', work_id: workId, checks } } });
     expect(stale.errors?.[0].message).toContain('not the last one requested');
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
-    await queryAsUserWithSuccess(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: check.id, checks } } });
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: check.id, work_id: 'another-work', checks } } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: check.id, work_id: workId, checks } } });
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const read = await queryAsAdminWithSuccess({ query: CHECK_READ, variables: { id: CONNECTOR_ID } });
     expect(read.data?.connector.hunt.connection_check.status).toEqual('failed');

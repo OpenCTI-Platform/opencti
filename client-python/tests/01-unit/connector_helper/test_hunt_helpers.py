@@ -78,7 +78,18 @@ class TestHuntHelpers(TestCase):
         checks = [{"name": "search", "ok": True, "message": "Allowed"}]
         helper.report_hunt_connection_check("check-1", checks)
         helper.api.hunt_run.report_connection_check.assert_called_once_with(
-            connector_id="connector-1", check_id="check-1", checks=checks
+            connector_id="connector-1",
+            check_id="check-1",
+            checks=checks,
+            work_id="work-1",
+        )
+
+    def test_report_hunt_connection_check_names_the_work_it_was_given(self):
+        helper = _helper()
+        helper.report_hunt_connection_check("check-1", [], work_id="work-2")
+        self.assertEqual(
+            helper.api.hunt_run.report_connection_check.call_args.kwargs["work_id"],
+            "work-2",
         )
 
     def test_listen_hunt_answers_a_connection_test_without_a_run(self):
@@ -95,7 +106,9 @@ class TestHuntHelpers(TestCase):
         event = _event(mode="check", hunt_run=None, connection_check={"id": "check-1"})
         with self.assertRaises(RuntimeError):
             callback(event)
-        checks = helper.api.hunt_run.report_connection_check.call_args.kwargs["checks"]
+        kwargs = helper.api.hunt_run.report_connection_check.call_args.kwargs
+        checks = kwargs["checks"]
+        self.assertEqual(kwargs["work_id"], "work-1")
         self.assertEqual(checks[0]["message"], "down")
         self.assertFalse(checks[0]["ok"])
         with self.assertRaises(ValueError):

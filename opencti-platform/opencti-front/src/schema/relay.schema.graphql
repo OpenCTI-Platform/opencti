@@ -17398,6 +17398,9 @@ input HuntConnectorCheckReportInput {
 
   "*Constraints:*\n* Maximal length: `64`\n"
   check_id: String!
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  work_id: String
   checks: [HuntConnectionCheckItemInput!]!
 }
 

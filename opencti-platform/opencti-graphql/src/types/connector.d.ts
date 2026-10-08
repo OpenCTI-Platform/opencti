@@ -42,6 +42,7 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   } | null;
   hunt_connection_check?: {
     id: string;
+    work_id?: string | null;
     status: string;
     requested_at?: string | null;
     checked_at?: string | null;

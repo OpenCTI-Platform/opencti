@@ -1930,11 +1930,11 @@ export const testHuntConnectorConnection = async (context: AuthContext, user: Au
   const { connector, element } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
     // Read under the lock: the stored result is the one every earlier test left, dispatched or rolled back
     const current = await loadHuntConnector(context, connectorId);
-    const check = { id: uuidv4(), status: HUNT_CONNECTION_CHECK_PENDING, requested_at: now(), checked_at: null, checks: [] };
     const work = await createWork(context, user, current, 'Connection test', current.internal_id);
     if (!work) {
       throw FunctionalError('The connection test work cannot be created', { connectorId });
     }
+    const check = { id: uuidv4(), work_id: work.id, status: HUNT_CONNECTION_CHECK_PENDING, requested_at: now(), checked_at: null, checks: [] };
     const previousCheck = current.hunt_connection_check ?? null;
     const patched = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
     try {
@@ -1964,12 +1964,17 @@ export const testHuntConnectorConnection = async (context: AuthContext, user: Au
   return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: connector.active });
 };
 
-/** The answer of a hunt connector to its last connection test: one result per check, the test passed when all pass. */
+/**
+ * The answer of a hunt connector to its last connection test: one result per check, the test passed when all pass.
+ * The answer comes in the work the test was dispatched with: the id of a test can be read, its work only reaches the
+ * connector it was sent to, so a connector sharing the user of another one never answers its test.
+ */
 export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthUser, input: HuntConnectorCheckReportInput) => {
   const listed = await loadHuntConnector(context, input.connector_id);
   if (!isHuntConnectorOwner(user, listed)) {
     throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
   }
+  const workId = input.work_id ?? context.workId;
   const checks = input.checks
     .map((item) => ({ name: truncate(item.name.trim(), 256), ok: item.ok === true, message: truncate(item.message.trim(), 2048) }))
     .slice(0, CONNECTION_CHECKS_MAX);
@@ -1982,6 +1987,9 @@ export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthU
     }
     if (current.hunt_connection_check?.id !== input.check_id) {
       throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
+    }
+    if (!workId || current.hunt_connection_check.work_id !== workId) {
+      throw ForbiddenAccess('A hunt connector can only report the connection test it received', { connectorId: input.connector_id });
     }
     const result = {
       ...current.hunt_connection_check,

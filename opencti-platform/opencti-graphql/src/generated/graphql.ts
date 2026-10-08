@@ -11616,6 +11616,7 @@ export type HuntConnectorCheckReportInput = {
   check_id: Scalars['String']['input'];
   checks: Array<HuntConnectionCheckItemInput>;
   connector_id: Scalars['ID']['input'];
+  work_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type HuntConnectorRegisterInput = {

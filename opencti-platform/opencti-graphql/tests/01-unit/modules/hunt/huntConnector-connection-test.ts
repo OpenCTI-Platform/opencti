@@ -110,18 +110,29 @@ describe('Connection test of a hunt connector', () => {
     const answered = await reportHuntConnectorCheck(testContext, ADMIN_USER, {
       connector_id: 'connector-1',
       check_id: view.connection_check?.id as string,
+      work_id: 'work-1',
       checks: [{ name: 'Search', ok: false, message: 'The role cannot run searches' }],
     });
     expect(answered.connection_check?.status).toEqual('failed');
     expect(storedCheck().status).toEqual('failed');
   });
 
+  it('should only take the answer given in the work the test was dispatched with', async () => {
+    const view = await testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
+    const answer = { connector_id: 'connector-1', check_id: view.connection_check?.id as string, checks: [{ name: 'Search', ok: true, message: 'Allowed' }] };
+    await expect(reportHuntConnectorCheck(testContext, ADMIN_USER, { ...answer, work_id: 'work-2' })).rejects.toThrow('A hunt connector can only report the connection test it received');
+    await expect(reportHuntConnectorCheck(testContext, ADMIN_USER, answer)).rejects.toThrow('A hunt connector can only report the connection test it received');
+    expect(storedCheck().status).toEqual('pending');
+    // The work of the message being processed, given by the call
+    expect((await reportHuntConnectorCheck({ ...testContext, workId: 'work-1' }, ADMIN_USER, answer)).connection_check?.status).toEqual('passed');
+  });
+
   it('should refuse the answer of the former user of a connector registered again with another user while the answer waited for the lock', async () => {
     const connectorUser = { ...ADMIN_USER, id: 'connector-user-1', capabilities: [{ name: 'CONNECTORAPI' }] } as AuthUser;
-    const pending = { ...PASSED, id: 'check-1', status: 'pending', checked_at: null };
+    const pending = { ...PASSED, id: 'check-1', work_id: 'work-1', status: 'pending', checked_at: null };
     store.connector.connector_user_id = connectorUser.id;
     store.connector.hunt_connection_check = pending;
-    const answer = { connector_id: 'connector-1', check_id: pending.id, checks: [{ name: 'Search', ok: true, message: 'Allowed' }] };
+    const answer = { connector_id: 'connector-1', check_id: pending.id, work_id: 'work-1', checks: [{ name: 'Search', ok: true, message: 'Allowed' }] };
     vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
       store.connector.connector_user_id = 'connector-user-2';
       return action();

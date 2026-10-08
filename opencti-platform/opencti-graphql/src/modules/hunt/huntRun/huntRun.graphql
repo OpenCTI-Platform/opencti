@@ -425,6 +425,8 @@ input HuntConnectionCheckItemInput {
 input HuntConnectorCheckReportInput {
   connector_id: ID!
   check_id: String! @constraint(maxLength: 64)
+  # The work the test was dispatched with: only the connector that received the test knows it
+  work_id: String @constraint(maxLength: 64)
   checks: [HuntConnectionCheckItemInput!]!
 }
 

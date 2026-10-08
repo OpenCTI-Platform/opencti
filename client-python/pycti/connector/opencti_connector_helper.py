@@ -3306,7 +3306,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             documentation_url=documentation_url,
         )
 
-    def report_hunt_connection_check(self, check_id: str, checks: List[Dict]) -> Dict:
+    def report_hunt_connection_check(
+        self, check_id: str, checks: List[Dict], work_id: Optional[str] = None
+    ) -> Dict:
         """Report the answer of this INTERNAL_HUNT connector to a connection test.
 
         :param check_id: the id of the connection test, from the check message
@@ -3314,11 +3316,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param checks: one result per check, as {name, ok, message}, the message in plain
             words (for example "Access denied: the account lacks the search capability")
         :type checks: List[Dict]
+        :param work_id: the work the test was dispatched with; by default the work of the
+            message being processed, which binds the answer to this connector
+        :type work_id: str
         :return: the hunt connector
         :rtype: Dict
         """
         return self.api.hunt_run.report_connection_check(
-            connector_id=self.connect_id, check_id=check_id, checks=checks
+            connector_id=self.connect_id,
+            check_id=check_id,
+            checks=checks,
+            work_id=work_id or self.work_id,
         )
 
     def report_hunt_run(
