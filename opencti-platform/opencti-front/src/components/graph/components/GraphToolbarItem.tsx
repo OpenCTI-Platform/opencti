@@ -23,6 +23,10 @@ const GraphToolbarItem = ({
           inline-flex keeps the button's size and alignment in the toolbar. */}
       <span
         style={{ display: 'inline-flex' }}
+        // Known gap: the focusable span lets keyboard users reach a disabled tool's tooltip.
+        // The fix is an aria-disabled IconButton with no wrapper (WAI-ARIA APG,
+        // "Focusability of disabled controls"), deferred out of this change.
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={disabled ? 0 : undefined}
       >
         <IconButton
