@@ -15,14 +15,23 @@ const mockChannelPublish = vi.fn((_exchange, _routingKey, _content, _options, ca
   callback(null);
   return true;
 });
+// Channel methods used through util.promisify: they answer through their last argument
+const succeedingCallback = () => vi.fn((...args: any[]) => args[args.length - 1](null, {}));
 const mockChannel = {
   on: vi.fn(),
+  close: vi.fn(),
   publish: mockChannelPublish,
+  assertExchange: succeedingCallback(),
+  assertQueue: succeedingCallback(),
+  bindQueue: succeedingCallback(),
+  deleteExchange: succeedingCallback(),
+  consume: vi.fn(),
 };
 const mockConnection = {
   on: vi.fn(),
   close: vi.fn(),
   createConfirmChannel: vi.fn((cb) => cb(null, mockChannel)),
+  createChannel: vi.fn((cb) => cb(null, mockChannel)),
 };
 vi.mock('amqplib/callback_api', () => ({
   default: {
@@ -94,9 +103,24 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
+import amqp from 'amqplib/callback_api';
+import { logApp } from '../../../src/config/conf';
+import { fullEntitiesList } from '../../../src/database/middleware-loader';
+import { getHttpClient } from '../../../src/utils/http-client';
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
-import { connectorConfig, getConnectorQueueSize, getInternalBackgroundTaskQueues, getInternalQueues } from '../../../src/modules/connector/connector-rabbitmq';
+import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
+import {
+  connectorConfig,
+  consumeQueue,
+  enforceQueuesConsistency,
+  getConnectorQueueDetails,
+  getConnectorQueueSize,
+  getInternalBackgroundTaskQueues,
+  getInternalQueues,
+  initializeInternalQueues,
+  rabbitMQIsAlive,
+  unregisterExchanges,
+} from '../../../src/modules/connector/connector-rabbitmq';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 describe('rabbitmq: metrics', () => {
@@ -772,5 +796,225 @@ describe('rabbitmq: getQueueConsumersByType', () => {
     const result = await getQueueConsumersByType(context, user);
 
     expect(result).toEqual({});
+  });
+});
+
+const failingConnect = (error: Error) => (_uri: unknown, _options: unknown, callback: (error: Error | null, connection?: unknown) => void) => {
+  callback(error);
+};
+
+describe('rabbitmq: executeRabbitmq', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should resolve with the result of the execution and close the channel and the connection', async () => {
+    const result = await executeRabbitmq(async () => 'executed');
+
+    expect(result).toBe('executed');
+    expect(mockChannel.close).toHaveBeenCalled();
+    expect(mockConnection.close).toHaveBeenCalled();
+  });
+
+  it('should reject when the connection cannot be opened', async () => {
+    const error = new Error('Connection refused');
+    vi.mocked(amqp.connect).mockImplementationOnce(failingConnect(error) as never);
+
+    await expect(executeRabbitmq(async () => 'executed')).rejects.toBe(error);
+  });
+
+  it('should reject and log when the connection fails', async () => {
+    const error = new Error('Connection lost');
+    mockConnection.on.mockImplementationOnce((_event: string, handler: (error: Error) => void) => handler(error));
+
+    await expect(executeRabbitmq(async () => 'executed')).rejects.toBe(error);
+    expect(logApp.error).toHaveBeenCalledWith('Rabbit Error trying to connect', { error });
+  });
+
+  it('should reject and log when the channel cannot be created', async () => {
+    const channelError = new Error('Channel refused');
+    mockConnection.createConfirmChannel.mockImplementationOnce((callback: (error: Error) => void) => callback(channelError));
+
+    await expect(executeRabbitmq(async () => 'executed')).rejects.toBe(channelError);
+    expect(logApp.error).toHaveBeenCalledWith('Rabbit Error on channel', { channelError });
+  });
+
+  it('should reject and log when the channel fails', async () => {
+    const error = new Error('Channel closed');
+    mockChannel.on.mockImplementationOnce((_event: string, handler: (error: Error) => void) => handler(error));
+
+    await expect(executeRabbitmq(async () => 'executed')).rejects.toBe(error);
+    expect(logApp.error).toHaveBeenCalledWith('Rabbit Error on channel', { error });
+  });
+
+  it('should reject and log when the execution fails', async () => {
+    const error = new Error('Execution failed');
+
+    await expect(executeRabbitmq(async () => {
+      throw error;
+    })).rejects.toBe(error);
+    expect(logApp.error).toHaveBeenCalledWith('Rabbit Error on execute', { error });
+  });
+
+  it('should reject and log when connecting throws', async () => {
+    const error = new Error('Invalid URI');
+    vi.mocked(amqp.connect).mockImplementationOnce(() => {
+      throw error;
+    });
+
+    await expect(executeRabbitmq(async () => 'executed')).rejects.toBe(error);
+    expect(logApp.error).toHaveBeenCalledWith('Rabbit Error', { error });
+  });
+});
+
+describe('connector rabbitmq: queues management', () => {
+  const context = {} as AuthContext;
+  const user = {} as AuthUser;
+  const listenQueueAssertions = () => mockChannel.assertQueue.mock.calls
+    .filter(([queue]) => queue.startsWith('opencti_listen_'))
+    .map(([queue, options]) => ({ queue, name: options.arguments.name, config: options.arguments.config }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should register the queues of the stored connectors, playbooks and syncs', async () => {
+    vi.mocked(fullEntitiesList).mockImplementation((async (_context: unknown, _user: unknown, types: string[]) => {
+      if (types[0] === 'Connector') {
+        return [
+          { internal_id: 'connector-1', name: 'Connector 1', connector_type: 'EXTERNAL_IMPORT', connector_scope: 'Report,Malware' },
+          { internal_id: 'connector-2', name: 'Connector 2', connector_type: 'STREAM', connector_scope: null },
+        ];
+      }
+      if (types[0] === 'Playbook') {
+        return [{ internal_id: 'playbook-1', name: 'Playbook 1' }];
+      }
+      return [{ internal_id: 'sync-1', name: 'Sync 1' }];
+    }) as never);
+
+    await enforceQueuesConsistency(context, user);
+
+    expect(listenQueueAssertions()).toEqual([
+      { queue: 'opencti_listen_connector-1', name: 'Connector 1', config: { id: 'connector-1', type: 'EXTERNAL_IMPORT', scope: ['Report', 'Malware'] } },
+      { queue: 'opencti_listen_connector-2', name: 'Connector 2', config: { id: 'connector-2', type: 'STREAM', scope: [] } },
+      { queue: 'opencti_listen_playbook-1', name: '[PLAYBOOK] Playbook 1', config: { id: 'playbook-1', type: 'internal', scope: 'Playbook' } },
+      { queue: 'opencti_listen_sync-1', name: '[SYNC] Sync 1', config: { id: 'sync-1', type: 'internal', scope: 'Sync' } },
+    ]);
+    expect(mockChannel.assertQueue).toHaveBeenCalledWith('opencti_push_connector-1', expect.anything(), expect.any(Function));
+  });
+
+  it('should register every internal queue', async () => {
+    await initializeInternalQueues();
+
+    expect(listenQueueAssertions().map(({ queue }) => queue)).toEqual(getInternalQueues().map(({ id }) => `opencti_listen_${id}`));
+  });
+
+  it('should delete the connector and worker exchanges', async () => {
+    await unregisterExchanges();
+
+    expect(mockChannel.deleteExchange.mock.calls.map(([exchange]) => exchange)).toEqual([
+      'opencti_amqp.connector.exchange',
+      'opencti_amqp.worker.exchange',
+    ]);
+  });
+
+  it('should report RabbitMQ as down when it cannot be reached', async () => {
+    vi.mocked(amqp.connect).mockImplementationOnce(failingConnect(new Error('Connection refused')) as never);
+
+    await expect(rabbitMQIsAlive()).rejects.toThrow('RabbitMQ seems down');
+  });
+
+  it('should report empty queue details when the management API is unavailable', async () => {
+    const error = new Error('Invalid management configuration');
+    vi.mocked(getHttpClient).mockImplementationOnce(() => {
+      throw error;
+    });
+
+    await expect(getConnectorQueueDetails('connector-1')).resolves.toEqual({ messages_number: 0, messages_size: 0 });
+    expect(logApp.warn).toHaveBeenCalledWith('Get connector queue details fail', { cause: error, connectorId: 'connector-1' });
+  });
+});
+
+describe('connector rabbitmq: consumeQueue', () => {
+  const context = {} as AuthContext;
+  const connectionSetter = vi.fn();
+  const onMessage = vi.fn();
+  const startConsuming = () => consumeQueue(context, 'connector-1', connectionSetter, onMessage);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should hand over the connection and deliver the messages of the connector listen queue', () => {
+    let deliver: (data: unknown) => void = () => {};
+    mockChannel.consume.mockImplementationOnce((_queue: string, consumer: (data: unknown) => void) => {
+      deliver = consumer;
+    });
+
+    void startConsuming();
+    deliver({ content: Buffer.from('{"event":"ping"}') });
+    deliver(null);
+
+    expect(connectionSetter).toHaveBeenCalledWith(mockConnection);
+    expect(mockChannel.consume).toHaveBeenCalledWith('opencti_listen_connector-1', expect.any(Function), { noAck: true }, expect.any(Function));
+    expect(onMessage).toHaveBeenCalledTimes(1);
+    expect(onMessage).toHaveBeenCalledWith(context, '{"event":"ping"}');
+  });
+
+  it('should log a consumption failure', () => {
+    const consumeError = new Error('Queue not found');
+    mockChannel.consume.mockImplementationOnce((_queue: string, _consumer: unknown, _options: unknown, callback: (error: Error) => void) => {
+      callback(consumeError);
+    });
+
+    void startConsuming();
+
+    expect(logApp.error).toHaveBeenCalledWith('[QUEUEING] Consumption fail', { connectorId: 'connector-1', cause: consumeError });
+  });
+
+  it('should reject when the connection cannot be opened', async () => {
+    const error = new Error('Connection refused');
+    vi.mocked(amqp.connect).mockImplementationOnce(failingConnect(error) as never);
+
+    await expect(startConsuming()).rejects.toBe(error);
+  });
+
+  it('should reject when the channel cannot be created', async () => {
+    const channelError = new Error('Channel refused');
+    mockConnection.createChannel.mockImplementationOnce((callback: (error: Error) => void) => callback(channelError));
+
+    await expect(startConsuming()).rejects.toBe(channelError);
+  });
+
+  it('should reject when the connection is closed on error', async () => {
+    const error = new Error('Connection reset');
+    mockConnection.on.mockImplementationOnce((event: string, handler: (error?: Error) => void) => event === 'close' && handler(error));
+
+    await expect(startConsuming()).rejects.toBe(error);
+  });
+
+  it('should reject when the connection fails', async () => {
+    const error = new Error('Connection lost');
+    mockConnection.on
+      .mockImplementationOnce(() => {})
+      .mockImplementationOnce((_event: string, handler: (error: Error) => void) => handler(error));
+
+    await expect(startConsuming()).rejects.toBe(error);
+  });
+
+  it('should reject when the channel fails', async () => {
+    const error = new Error('Channel closed');
+    mockChannel.on.mockImplementationOnce((_event: string, handler: (error: Error) => void) => handler(error));
+
+    await expect(startConsuming()).rejects.toBe(error);
+  });
+
+  it('should reject when connecting throws', async () => {
+    const error = new Error('Invalid URI');
+    vi.mocked(amqp.connect).mockImplementationOnce(() => {
+      throw error;
+    });
+
+    await expect(startConsuming()).rejects.toBe(error);
   });
 });
