@@ -3,6 +3,8 @@ import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../
 import { patchAttribute } from '../../../../src/database/middleware';
 import { elCount } from '../../../../src/database/engine';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
+import { generateStandardId } from '../../../../src/schema/identifier';
 import { dispatchHuntRun, isHuntConnectorBoundToRun } from '../../../../src/modules/hunt/hunt-dispatch';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
 import { huntRunTransitionLockKey, withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
@@ -72,6 +74,17 @@ const serving = (connectors: object[], runs: object[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_context, _user, types) => (types?.includes('Connector') ? connectors : runs) as never);
 };
 
+// The connector a registration reads, and the security platform its name stands for when it exists
+const loadingRegistration = (current: object | ((id: string) => object), platform: object | null) => {
+  vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id, type) => {
+    if (type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) {
+      return platform as never;
+    }
+    return (typeof current === 'function' ? current(id) : current) as never;
+  });
+};
+const PROD_STANDARD_ID = generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name: 'Prod', identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string;
+
 const registering = (input: Record<string, unknown>) => registerHuntConnector(testContext, ADMIN_USER, {
   connector_id: SPLUNK_PROD.internal_id,
   platform: 'splunk',
@@ -101,16 +114,30 @@ describe('Hunt connectors and their security platforms', () => {
 
   it('should refuse a connector of another kind on a security platform a connector already executes against', async () => {
     serving([SPLUNK_PROD, SENTINEL_LAB]);
-    vi.mocked(storeLoadById).mockResolvedValue({ ...SPLUNK_PROD, hunt_security_platform_id: null } as never);
-    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-lab' } as never);
+    loadingRegistration({ ...SPLUNK_PROD, hunt_security_platform_id: null }, { internal_id: 'platform-lab' });
     await expect(registering({ security_platform_name: 'Lab' })).rejects.toThrow('The security platform Lab is hunted by the sentinel connector');
+    // Refused, the registration wrote nothing, to the security platform neither
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
     expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should create the security platform a registration names only once it is accepted, and never write to an existing one', async () => {
+    serving([SPLUNK_PROD]);
+    loadingRegistration(SPLUNK_PROD, null);
+    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-new' } as never);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...SPLUNK_PROD, ...patch } }) as never);
+    expect(await registering({ security_platform_name: 'New SIEM', security_platform_type: 'EDR' })).toMatchObject({ security_platform_id: 'platform-new' });
+    expect(addSecurityPlatform).toHaveBeenCalledWith(testContext, ADMIN_USER, { name: 'New SIEM', security_platform_type: 'EDR' });
+    // Named again once it exists, the platform is bound as it is: its type is left to its editors
+    vi.mocked(addSecurityPlatform).mockClear();
+    loadingRegistration(SPLUNK_PROD, { internal_id: 'platform-new', security_platform_type: 'EDR' });
+    expect(await registering({ security_platform_name: 'New SIEM', security_platform_type: 'SIEM' })).toMatchObject({ security_platform_id: 'platform-new' });
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
   });
 
   it('should check and bind a connector under a lock per security platform, never an internet connector, and bind every connector under its dispatch lock', async () => {
     serving([SPLUNK_PROD, TRACKER]);
-    vi.mocked(storeLoadById).mockResolvedValue(SPLUNK_PROD as never);
-    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
+    loadingRegistration(SPLUNK_PROD, { internal_id: 'platform-prod' });
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...SPLUNK_PROD, ...patch } }) as never);
     // The connectors read for the check and the binding both happen while the lock is held
     const heldDuring: number[] = [];
@@ -120,13 +147,13 @@ describe('Hunt connectors and their security platforms', () => {
       return result;
     });
     await registering({ security_platform_name: 'Prod' });
-    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey('platform-prod'), 'hunt_connector_dispatch_connector-splunk']);
+    expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual([huntConnectorPlatformLockKey(PROD_STANDARD_ID), 'hunt_connector_dispatch_connector-splunk']);
     expect(heldDuring).toEqual([1, 1]);
     vi.mocked(withHuntLock).mockClear();
-    vi.mocked(storeLoadById).mockResolvedValue(TRACKER as never);
+    loadingRegistration(TRACKER, null);
     await registering({ connector_id: TRACKER.internal_id, platform: 'internet', languages: ['url'] });
     expect(vi.mocked(withHuntLock).mock.calls.map(([key]) => key)).toEqual(['hunt_connector_dispatch_connector-tracker']);
-    expect(addSecurityPlatform).toHaveBeenCalledTimes(1);
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
   });
 
   it('should read the binding again under the dispatch lock, so a connector registered meanwhile against another platform gets no run of the former', async () => {
@@ -191,20 +218,21 @@ describe('Hunt connectors and their security platforms', () => {
   it('should refuse a registration whose connector got another user while the binding waited for its lock', async () => {
     const connectorUser = { ...ADMIN_USER, id: 'connector-user-1', capabilities: [{ name: 'CONNECTORAPI' }] } as AuthUser;
     serving([SPLUNK_PROD]);
-    vi.mocked(storeLoadById)
-      .mockResolvedValueOnce({ ...SPLUNK_PROD, connector_user_id: connectorUser.id } as never)
-      .mockResolvedValueOnce({ ...SPLUNK_PROD, connector_user_id: 'connector-user-2' } as never);
-    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
+    let reads = 0;
+    loadingRegistration(() => {
+      reads += 1;
+      return { ...SPLUNK_PROD, connector_user_id: reads === 1 ? connectorUser.id : 'connector-user-2' };
+    }, null);
     await expect(registerHuntConnector(testContext, connectorUser, { connector_id: SPLUNK_PROD.internal_id, platform: 'splunk', languages: ['spl'], security_platform_name: 'Prod' } as never))
       .rejects.toThrow('A hunt connector can only register itself');
+    expect(addSecurityPlatform).not.toHaveBeenCalled();
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
   it('should let connectors of the same kind share a security platform', async () => {
     const replica = connector('connector-splunk-2', 'splunk', 'platform-prod');
     serving([SPLUNK_PROD, replica]);
-    vi.mocked(storeLoadById).mockResolvedValue(SPLUNK_PROD as never);
-    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
+    loadingRegistration(SPLUNK_PROD, { internal_id: 'platform-prod' });
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...SPLUNK_PROD, ...patch } }) as never);
     expect(await registering({ security_platform_name: 'Prod' })).toMatchObject({ security_platform_id: 'platform-prod' });
     // Registered again against the same platform: its runs are left as they are
@@ -214,7 +242,7 @@ describe('Hunt connectors and their security platforms', () => {
   it('should cancel the runs of the former platform of a connector registered against another one', async () => {
     const former = { internal_id: 'run-former', hunt_id: 'hunt-1', connector_id: SPLUNK_PROD.internal_id, security_platform_id: 'platform-prod', hunt_run_status: 'queued', hunt_run_mode: 'execute' };
     serving([SPLUNK_PROD], [former]);
-    vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => (id === 'run-former' ? former : SPLUNK_PROD) as never);
+    loadingRegistration((id) => (id === 'run-former' ? former : SPLUNK_PROD), null);
     vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-dr' } as never);
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, id, _type, patch) => ({ element: { ...(id === 'run-former' ? former : SPLUNK_PROD), ...patch } }) as never);
     await registering({ security_platform_name: 'Disaster recovery' });

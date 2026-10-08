@@ -24,6 +24,7 @@ import { pushToConnector } from '../../../database/rabbitmq';
 import { createWork, deleteWork } from '../../../domain/work';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
+import { generateStandardId } from '../../../schema/identifier';
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
 import { isStixCyberObservable } from '../../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../schema/stixDomainObject';
@@ -1809,7 +1810,8 @@ export const findHuntConnectors = async (context: AuthContext, user: AuthUser, o
 };
 
 const HUNT_CONNECTOR_PLATFORM_LOCK = 'hunt_connector_platform';
-export const huntConnectorPlatformLockKey = (securityPlatformId: string) => `${HUNT_CONNECTOR_PLATFORM_LOCK}_${securityPlatformId}`;
+// Keyed by the standard id of the platform, known before the platform exists
+export const huntConnectorPlatformLockKey = (securityPlatformStandardId: string) => `${HUNT_CONNECTOR_PLATFORM_LOCK}_${securityPlatformStandardId}`;
 
 // A connector acts only as its own user: checked before its locks to fail fast, and again on the connector read under
 // them, as the connector may have registered again with another user meanwhile
@@ -1835,28 +1837,27 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
     throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
   }
   const name = input.security_platform_name?.trim();
-  let securityPlatformId: string | null = null;
-  if (platform !== HUNT_PLATFORM_INTERNET) {
-    if (!name) {
-      throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
-    }
-    // Upsert by deterministic identity (name + identity class)
-    const securityPlatform = await addSecurityPlatform(context, user, {
-      name,
-      security_platform_type: input.security_platform_type ?? 'SIEM',
-    }) as BasicStoreEntitySecurityPlatform;
-    securityPlatformId = securityPlatform.internal_id;
+  if (platform !== HUNT_PLATFORM_INTERNET && !name) {
+    throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
   }
+  // The security platform is the one of its deterministic identity (name and identity class), found without writing:
+  // a registration never changes an existing platform, and creates a missing one only once it is accepted
+  const platformStandardId = platform !== HUNT_PLATFORM_INTERNET && name
+    ? generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string
+    : null;
   const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
   const bind = async () => {
+    const existing = platformStandardId
+      ? await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, platformStandardId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
+      : null;
     // A security platform is one product: connectors of the same kind share it, a connector of another kind never
     // executes its own query language against it
-    const otherKind = securityPlatformId ? (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
-      && other.hunt_security_platform_id === securityPlatformId && huntConnectorPlatform(other) !== platform) : undefined;
+    const otherKind = existing ? (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
+      && other.hunt_security_platform_id === existing.internal_id && huntConnectorPlatform(other) !== platform) : undefined;
     if (otherKind) {
       throw FunctionalError(
         `The security platform ${name} is hunted by the ${huntConnectorPlatform(otherKind)} connector ${otherKind.name}: name another security platform, or delete that connector`,
-        { connectorId: input.connector_id, securityPlatformId, otherConnectorId: otherKind.internal_id },
+        { connectorId: input.connector_id, securityPlatformId: existing?.internal_id, otherConnectorId: otherKind.internal_id },
       );
     }
     // Bound under the dispatch lock of the connector: a run being published completes first, and a run dispatched after
@@ -1866,7 +1867,12 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
       if (!current || !isHuntConnectorOwner(user, current)) {
         throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
       }
-      return patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
+      let securityPlatformId: string | null = existing?.internal_id ?? null;
+      if (platformStandardId && !existing) {
+        const created = await addSecurityPlatform(context, user, { name: name as string, security_platform_type: input.security_platform_type ?? 'SIEM' });
+        securityPlatformId = (created as BasicStoreEntitySecurityPlatform).internal_id;
+      }
+      const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
         hunt_platform: platform,
         hunt_languages: languages,
         hunt_security_platform_id: securityPlatformId,
@@ -1879,11 +1885,12 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
           required_permissions: sanitizeRequiredPermissions(input.required_permissions),
         },
       });
+      return { element, securityPlatformId };
     });
   };
   // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
   // both bind to it
-  const { element } = securityPlatformId ? await withHuntLock(huntConnectorPlatformLockKey(securityPlatformId), bind) : await bind();
+  const { element, securityPlatformId } = platformStandardId ? await withHuntLock(huntConnectorPlatformLockKey(platformStandardId), bind) : await bind();
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   if ((connector.hunt_security_platform_id ?? null) !== securityPlatformId) {

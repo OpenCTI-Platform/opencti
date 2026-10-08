@@ -319,7 +319,7 @@ Full configuration: [connector README](https://github.com/OpenCTI-Platform/conne
 
 ## Registration
 
-At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created when missing. Hunts are scoped on security platforms, and the sightings OpenCTI keeps for the hunts are sighted on them.
+At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created, with the declared type, when missing and once the registration is accepted. A registration never changes an existing security platform: its type and the rest are left to its editors. Hunts are scoped on security platforms, and the sightings OpenCTI keeps for the hunts are sighted on them.
 
 Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The `internet` platform has no security platform.
 
