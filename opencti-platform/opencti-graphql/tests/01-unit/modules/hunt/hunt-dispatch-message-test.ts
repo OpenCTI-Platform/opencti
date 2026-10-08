@@ -133,4 +133,21 @@ describe('Hunt run message', () => {
     const internet = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'infrastructure' } as never, { hunt_platform: 'internet' } as never, null, 'work-4');
     expect(internet.event.hunt.sigma_rule).toBeNull();
   });
+
+  it('should give the connector the native query of its platform only in a language it executes', async () => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(markings as never);
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => ids.map((id) => elements.get(id)).filter((element) => !!element) as never);
+    const nativeQuery = { platform: 'elastic-security', language: 'EQL', query: 'process where process.name == "powershell.exe"' };
+    const hunt = { internal_id: 'hunt-5', standard_id: 'hunt--5', name: 'Native hunt', hunt_type: 'telemetry', sigma_rule: 'title: t', native_queries: [nativeQuery], escalation_threshold: 1 };
+    const run = { internal_id: 'run-5', attempt: 1, hunt_run_trigger: 'manual', hunt_run_mode: 'execute' };
+    const executing = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'elastic-security', hunt_languages: ['esql', 'eql'] } as never, null, 'work-5');
+    expect(executing.event.hunt.native_query).toMatchObject({ platform: 'elastic-security', language: 'EQL' });
+    // Another language of the platform: the connector translates the Sigma rule instead
+    const other = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'elastic-security', hunt_languages: ['esql'] } as never, null, 'work-5');
+    expect(other.event.hunt.native_query).toBeNull();
+    expect(other.event.hunt.sigma_rule).toBe('title: t');
+    // A connector registered before it declared its languages
+    const older = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'elastic-security' } as never, null, 'work-5');
+    expect(older.event.hunt.native_query).toMatchObject({ platform: 'elastic-security', language: 'EQL' });
+  });
 });

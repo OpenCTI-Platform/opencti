@@ -248,7 +248,11 @@ export const buildHuntRunMessage = async (
   iocs: HuntIoc[] | null = null,
 ) => {
   const platform = huntConnectorPlatform(connector);
-  const nativeQuery = normalizeNativeQueries(hunt.native_queries).find((query) => query.platform === platform) ?? null;
+  // The native query of the platform only in a language the connector executes, else it translates the Sigma rule or
+  // reports it cannot. A connector registered before it declared its languages takes it as before
+  const languages = (connector.hunt_languages ?? []).map((language) => language.toLowerCase());
+  const nativeQuery = normalizeNativeQueries(hunt.native_queries)
+    .find((query) => query.platform === platform && (languages.length === 0 || languages.includes(query.language.toLowerCase()))) ?? null;
   const authorId = hunt[RELATION_CREATED_BY];
   // The evidence of a run is restricted like the run: the markings of the hunt and of its security platform, and the
   // organizations both are shared with. The attribution of an object to the run refuses a less restricted one
