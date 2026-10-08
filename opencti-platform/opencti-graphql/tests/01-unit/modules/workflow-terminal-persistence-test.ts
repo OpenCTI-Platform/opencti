@@ -7,6 +7,7 @@ import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/d
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
+import { validateUserAccessOperation } from '../../../src/utils/access';
 import '../../../src/modules/workflow/storage/workflow-instance-entity';
 
 vi.mock('../../../src/database/middleware', () => ({
@@ -102,6 +103,12 @@ describe('Terminal workflow persistence', () => {
     expect(await triggerWorkflowEvent(context, user, entity.id, 'Validate')).toMatchObject({ success: false });
     expect(validate).toHaveBeenCalledOnce();
     expect(onEnter).not.toHaveBeenCalled();
+  });
+
+  it('rejects triggering a transition for a user without edit access, not just hiding it from getAllowedTransitions', async () => {
+    vi.mocked(validateUserAccessOperation).mockReturnValueOnce(false);
+    await expect(triggerWorkflowEvent(context, user, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it('does not complete or persist a terminal transition whose side effect fails', async () => {

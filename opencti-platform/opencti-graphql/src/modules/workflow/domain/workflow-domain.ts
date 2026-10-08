@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { logApp } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
@@ -1178,6 +1178,13 @@ export const triggerWorkflowEvent = async (
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
     throw FunctionalError('Entity not found', { entityId });
+  }
+
+  // View access alone isn't enough to trigger a transition: mirrors the check in
+  // getAllowedTransitions, which only hides transitions from the UI and does not itself
+  // prevent a view-only user from calling this mutation directly.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+    throw ForbiddenAccess();
   }
 
   // 2. Fetch its EntitySetting to get the workflow configuration
