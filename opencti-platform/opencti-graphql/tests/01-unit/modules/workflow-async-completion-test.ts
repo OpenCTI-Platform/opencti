@@ -141,7 +141,7 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(instance.pendingTransition).toBeNull();
     expect(ActionRegistry.bypassSync).toHaveBeenCalledTimes(2);
     expect(JSON.parse(instance.history)).toEqual([expect.objectContaining({ event: 'event_bypass', user_id: 'user-id', comment: 'override', state: 'reviewing' })]);
-    expect(projectWorkflowState).toHaveBeenCalledWith({}, { ...mockUser, draft_context: undefined }, entity, 'reviewing', 'GLOBAL');
+    expect(projectWorkflowState).toHaveBeenCalledWith({}, { ...mockUser, draft_context: undefined }, entity, 'reviewing', 'GLOBAL', null);
     await reportWorkflowAsyncActionResult(contextWithoutUser, mockUser, 'instance-id', 'slot-2', 'success');
     expect(ActionRegistry.bypassSync).toHaveBeenCalledTimes(2);
   });
@@ -757,11 +757,27 @@ describe('reportWorkflowAsyncActionResult', () => {
 
       await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
-      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: mockUser.id }), fullEntity, 'reviewing', 'GLOBAL');
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: mockUser.id }), fullEntity, 'reviewing', 'GLOBAL', null);
       // Must happen after the instance's own currentState/history update, not before.
       const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder.at(-1);
       const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
       expect(projectionOrder).toBeGreaterThan(updateAttributeOrder);
+    });
+
+    it('projects the closing reason captured when the transition was triggered', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: 'false-positive' });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), fullEntity, 'reviewing', 'GLOBAL', 'false-positive');
     });
 
     it('skips projection and logs a warning when the full entity could not be loaded', async () => {

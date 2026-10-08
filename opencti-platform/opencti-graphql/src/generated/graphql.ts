@@ -20370,6 +20370,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 
 export type MutationTriggerWorkflowEventArgs = {
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   entityId: Scalars['String']['input'];
   eventName: Scalars['String']['input'];

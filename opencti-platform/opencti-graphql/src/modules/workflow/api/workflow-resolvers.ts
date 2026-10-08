@@ -54,12 +54,13 @@ const workflowResolvers = {
       eventName,
       comment,
       runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown>; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, closingReason ?? undefined);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
