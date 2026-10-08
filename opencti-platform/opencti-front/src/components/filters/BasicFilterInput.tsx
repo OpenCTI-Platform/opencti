@@ -1,6 +1,9 @@
 import TextField from '@mui/material/TextField';
-import { FunctionComponent, useEffect, useRef } from 'react';
+import { ClearOutlined } from '@mui/icons-material';
+import { IconButton } from '@filigran/design-system';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import { useFormatter } from '../i18n';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -19,7 +22,9 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   label,
   type,
 }) => {
+  const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const [value, setValue] = useState(filterValues[0] ?? '');
 
   // The operator select is rendered before this field, so removing autoFocus
   // made it take an extra Tab to reach the value. This field is mounted once
@@ -30,9 +35,14 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
     inputRef.current?.focus();
   }, []);
 
+  const handleClear = () => {
+    setValue('');
+    helpers?.handleAddSingleValueFilter(filter?.id ?? '', '');
+    inputRef.current?.focus();
+  };
+
   return (
     <TextField
-      role="search"
       variant="outlined"
       size="small"
       fullWidth={true}
@@ -40,7 +50,8 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       label={label}
       type={type}
       inputRef={inputRef}
-      defaultValue={filterValues[0]}
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           helpers?.handleAddSingleValueFilter(
@@ -62,7 +73,20 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
           event.target.value,
         );
       }}
-      slotProps={{ input: { type: type ?? 'search' } }}
+      slotProps={{
+        input: {
+          endAdornment: value && (
+            <IconButton
+              variant="default"
+              priority="tertiary"
+              size="sm"
+              onClick={handleClear}
+              aria-label={t_i18n('Clear')}
+              icon={<ClearOutlined fontSize="small" />}
+            />
+          ),
+        },
+      }}
     />
   );
 };

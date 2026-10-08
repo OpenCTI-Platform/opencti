@@ -17,6 +17,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { Stack } from '@mui/material';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   paper: {
@@ -179,6 +180,9 @@ class StixCyberObservableEntities extends Component {
         <div
           style={inlineStylesHeaders[field]}
           onClick={this.handleSort.bind(this, field, !this.state.orderAsc)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => this.handleSort(field, !this.state.orderAsc))}
         >
           <span>{t(label)}</span>
           {this.state.sortBy === field ? sortComponent : ''}

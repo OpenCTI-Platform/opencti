@@ -36,6 +36,7 @@ import FilterIconButton from '../FilterIconButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
+import { onActivationKey } from '../../utils/domEvent';
 
 const styles = (theme) => ({
   container: {
@@ -140,6 +141,9 @@ class ListLines extends Component {
           className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={this.reverseBy.bind(this, field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => this.reverseBy(field))}
         >
           <div className={classes.headerItemText}>{t(label)}</div>
           {sortBy === field ? orderComponent : ''}
