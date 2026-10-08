@@ -92,7 +92,7 @@ describe('Global configuration export', () => {
       expect(archive.append).toHaveBeenCalledTimes(count);
       if (count > 0) {
         const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(options.name).toMatch(/^form_intakes\/form-.+\.json$/);
+        expect(options.name).toMatch(/^ingestion\/forms\/form-.+\.json$/);
       }
     });
 
@@ -174,7 +174,7 @@ describe('Global configuration export', () => {
       }
     });
 
-    it('should export platform branding settings as settings/theme/branding.json within the theme category', async () => {
+    it('should export platform branding settings as parameters/theme/branding.json within the theme category', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext) as any;
       const count = await exportSettingsThemeCategory(testContext, ADMIN_USER, archive);
@@ -182,7 +182,7 @@ describe('Global configuration export', () => {
       expect(count).toBe(2);
       expect(archive.append).toHaveBeenCalledTimes(2);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[1];
-      expect(options.name).toBe('settings/theme/branding.json');
+      expect(options.name).toBe('parameters/theme/branding.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsBranding');
       expect(parsed).toHaveProperty('openCTI_version');
@@ -200,7 +200,7 @@ describe('Global configuration export', () => {
       expect(parsed.configuration).not.toHaveProperty('headers_auth');
     });
 
-    it('should export the platform theme as settings/theme/theme.json with flattened Theme fields', async () => {
+    it('should export the platform theme as parameters/theme/theme.json with flattened Theme fields', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext);
       const count = await exportSettingsThemeCategory(testContext, ADMIN_USER, archive);
@@ -208,7 +208,7 @@ describe('Global configuration export', () => {
       expect(count).toBe(2);
       expect(archive.append).toHaveBeenCalledTimes(2);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('settings/theme/theme.json');
+      expect(options.name).toBe('parameters/theme/theme.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsTheme');
 
@@ -236,7 +236,7 @@ describe('Global configuration export', () => {
       expect(parsed.configuration).not.toHaveProperty('internal_id');
     });
 
-    it('should export language settings as a single settings/language.json entry', async () => {
+    it('should export language settings as a single parameters/language.json entry', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext) as any;
       const count = await exportSettingsLanguageCategory(testContext, ADMIN_USER, archive);
@@ -244,14 +244,14 @@ describe('Global configuration export', () => {
       expect(count).toBe(1);
       expect(archive.append).toHaveBeenCalledTimes(1);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('settings/language.json');
+      expect(options.name).toBe('parameters/language.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsLanguage');
       expect(parsed.configuration.platform_language).toEqual(settings.platform_language);
       expect(parsed.configuration.platform_translations).toEqual(settings.platform_translations);
     });
 
-    it('should export message settings as a single settings/messages.json entry', async () => {
+    it('should export message settings as a single parameters/messages.json entry', async () => {
       const archive = createFakeArchive();
       const settings = await getSettings(testContext) as any;
       const count = await exportSettingsMessagesCategory(testContext, ADMIN_USER, archive);
@@ -259,7 +259,7 @@ describe('Global configuration export', () => {
       expect(count).toBe(1);
       expect(archive.append).toHaveBeenCalledTimes(1);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('settings/messages.json');
+      expect(options.name).toBe('parameters/messages.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsMessages');
       expect(parsed.configuration.platform_banner_text).toEqual(settings.platform_banner_text);
@@ -270,14 +270,14 @@ describe('Global configuration export', () => {
       expect(parsed.configuration.platform_no_access_message).toEqual(settings.platform_no_access_message);
     });
 
-    it('should export hidden entity types as a single entity_settings/hidden_entity_types.json entry', async () => {
+    it('should export hidden entity types as a single parameters/hidden_entity_types.json entry', async () => {
       const archive = createFakeArchive();
       const count = await exportHiddenEntityTypesCategory(testContext, ADMIN_USER, archive);
 
       expect(count).toBeGreaterThanOrEqual(0);
       expect(archive.append).toHaveBeenCalledTimes(1);
       const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toBe('entity_settings/hidden_entity_types.json');
+      expect(options.name).toBe('parameters/hidden_entity_types.json');
       const parsed = JSON.parse(content);
       expect(parsed.type).toBe('settingsHiddenEntityTypes');
       expect(Array.isArray(parsed.configuration.hidden_entity_types)).toBe(true);
@@ -455,11 +455,11 @@ describe('Global configuration export', () => {
       expect(file).toBeDefined();
       const buffer = await readExportedZip(file);
       expect(buffer.subarray(0, 4)).toEqual(ZIP_MAGIC_BYTES);
-      expect(buffer.includes(Buffer.from('settings/theme/branding.json'))).toBe(true);
-      expect(buffer.includes(Buffer.from('settings/theme/theme.json'))).toBe(true);
-      expect(buffer.includes(Buffer.from('settings/language.json'))).toBe(true);
-      expect(buffer.includes(Buffer.from('settings/messages.json'))).toBe(true);
-      expect(buffer.includes(Buffer.from('entity_settings/hidden_entity_types.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('parameters/theme/branding.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('parameters/theme/theme.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('parameters/language.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('parameters/messages.json'))).toBe(true);
+      expect(buffer.includes(Buffer.from('parameters/hidden_entity_types.json'))).toBe(true);
       expect(buffer.includes(Buffer.from('meta.json'))).toBe(true);
     });
   });
@@ -476,7 +476,7 @@ describe('Global configuration export', () => {
       expect(count).toBe(1);
       expect(archive.append).toHaveBeenCalledTimes(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^playbooks/playbook-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^automation/playbooks/playbook-.+-${target.id}\\.json$`));
     });
 
     it('should export nothing when given ids that do not match any playbook', async () => {
@@ -507,7 +507,7 @@ describe('Global configuration export', () => {
 
       expect(count).toBe(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^form_intakes/form-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^ingestion/forms/form-.+-${target.id}\\.json$`));
     });
 
     it('should restrict custom views export to the given ids only', async () => {
@@ -520,7 +520,7 @@ describe('Global configuration export', () => {
 
       expect(count).toBe(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^custom_views/custom-view-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^visualization/custom_views/custom-view-.+-${target.id}\\.json$`));
     });
 
     it('should restrict fintel templates export to the given ids only', async () => {
@@ -533,7 +533,7 @@ describe('Global configuration export', () => {
 
       expect(count).toBe(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^fintel_templates/fintel-template-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^visualization/fintel_templates/fintel-template-.+-${target.id}\\.json$`));
     });
 
     it('should restrict CSV ingestion feed export to the given ids only', async () => {
@@ -546,7 +546,7 @@ describe('Global configuration export', () => {
 
       expect(count).toBe(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^ingestion/feeds/feed-csv/feed-csv-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^ingestion/csv_feeds/feed-csv-.+-${target.id}\\.json$`));
     });
 
     it('should restrict dashboard export to a given dashboard id', async () => {
@@ -560,7 +560,7 @@ describe('Global configuration export', () => {
 
       expect(count).toBe(1);
       const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(options.name).toMatch(new RegExp(`^dashboards/dash-.+-${target.id}\\.json$`));
+      expect(options.name).toMatch(new RegExp(`^visualization/custom_dashboards/dash-.+-${target.id}\\.json$`));
     });
 
     // Regression test for the in-memory "type === 'dashboard'" filter combined with
@@ -750,7 +750,7 @@ describe('Global configuration export', () => {
           ENTITY_TYPE_INGESTION_RSS,
         ]);
 
-        const feedEntries = appendSpy.mock.calls.filter(([, options]) => options?.name?.startsWith('ingestion/feeds/'));
+        const feedEntries = appendSpy.mock.calls.filter(([, options]) => /^ingestion\/\w+_feeds\//.test(options?.name ?? ''));
         expect(feedEntries.some(([, options]) => options?.name?.endsWith(`${feed.id}.json`))).toBe(true);
         feedEntries.forEach(([content, options]) => {
           const exported = content as string;
