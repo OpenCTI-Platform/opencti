@@ -27,6 +27,8 @@ Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **c
 | Change le statut | oui                                                        | jamais                                     |
 | Affiché          | partout : liste, cartes, page détail                       | page détail uniquement                     |
 
+Le warning de configuration dit seulement « User is not a service account ». **Il n'affiche jamais le nom du user**, ni dans le message ni dans ses paramètres. Pour lire un connecteur, la capability `MODULES` suffit, alors que le nom de son user est réservé à `SETTINGS_SETACCESSES`.
+
 ## Statuts
 
 - **`stopped`** : un connecteur géré, arrêté par une personne. Ce statut l'emporte sur tous les autres.
@@ -38,7 +40,11 @@ Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **c
 
 - **Ce qui est surveillé :** seuls les connecteurs qui pinguent toutes les 40 s (le thread de ping pycti). Il faut que le manager ait vu **3 pings d'affilée, chacun à 2 périodes ou moins du précédent, avec un minimum de 120 s**. Avec la période par défaut, cela donne 120 s.
 - **Pourquoi :** environ 30 connecteurs run-and-terminate « legacy » (par exemple `cape`) ne le déclarent pas. Ils pinguent une ou deux fois par run, puis se taisent pendant des heures : sans ce garde-fou, ils passeraient en rouge entre chaque run.
-- **Panne du manager de plus de 2 périodes (au moins 120 s) :** les compteurs sont figés au lieu d'être remis à zéro, grâce à la clé Redis `ingestion-health-manager-last-run`. Un connecteur qui meurt juste après la panne est donc quand même détecté.
+- **Panne du manager de plus de 2 périodes (au moins 120 s) :**
+  - Un *cycle complet*, c'est un passage du manager sur tous les connecteurs déployés. Il compte dès que la liste des connecteurs a pu être lue, même si certains n'ont pas pu être évalués.
+  - Après chaque cycle complet, le manager enregistre **l'heure de début de ce cycle** dans la clé Redis `ingestion-health-manager-last-run`.
+  - Au cycle suivant, si ce début date de plus de 2 périodes, le manager sait qu'il n'a pas regardé. Il garde alors le compteur des connecteurs **déjà reconnus** comme pinguant toutes les 40 s : un connecteur qui meurt juste après la panne est quand même détecté.
+  - Les autres compteurs repartent de zéro. Un connecteur legacy ne peut donc jamais accumuler de pings d'une panne à l'autre.
 - **Jamais évalués :** les connecteurs qui déclarent `run_and_terminate`, et ceux qu'on n'a jamais vus tourner.
 
 ## Fonctionnement
@@ -58,13 +64,15 @@ Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **c
 - **Décalage.** Le chip passe en rouge jusqu'à une période (60 s par défaut) après « Inactive ». Plus la période est longue, plus ce décalage augmente, et plus un nouveau connecteur met de temps à être surveillé (environ 3 périodes).
 - **Connecteur déjà mort à l'activation du flag.** Il n'est pas détecté : rien ne le distingue d'un connecteur legacy entre deux runs.
 - **Jobs run-and-terminate planifiés toutes les 2 périodes ou moins** (2 min avec la période par défaut). Ils peuvent passer en faux `critical`. Ce risque grandit avec la période.
+- **Connecteur supprimé pendant un cycle du manager.** Sa clé Redis peut être réécrite juste après la suppression, et reste alors sans expiration. À traiter dans un chunk suivant.
 - **Restes après désactivation.** Si on désactive le flag après l'avoir activé, les clés Redis et les champs stockés restent en place.
 
 ## À la fin du chunk
 
 - Mettre à jour le RFC 0001.
-- Ouvrir 3 issues de suivi :
+- Ouvrir 4 issues de suivi :
   - `TOKEN_EXPIRED` sans toucher à l'authentification ;
   - la révocation suspectée du token composer entre connecteurs qui partagent un user ;
-  - un timestamp de ping dédié.
+  - un timestamp de ping dédié ;
+  - la suppression définitive de la clé Redis d'un connecteur supprimé, même pendant un cycle du manager.
 - Cocher le chunk 1 dans Notion.

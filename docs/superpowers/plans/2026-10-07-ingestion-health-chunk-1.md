@@ -16,7 +16,7 @@ The manager caches the status on the connector. The status is shown as an FDS ch
 - Runtime checks decide the status. Configuration warnings are a second axis: they never change the status, are never cached and are never notified (RFC 0001 §4.1, §5.1).
 - `ingestionHealthManager` is a cron with its own lock, every 60 s by default (`ingestion_health_manager:interval`), registered only when the flag is on. **It is the only code that reads or writes Redis for this feature.** On each cycle it does two things:
   - It updates a **heartbeat observation** per connector in Redis (`ingestion-health-observation:<id>`, no TTL). The observation counts the pings seen in a row, each close to the previous one: at most 2 manager periods, never less than 120 s (the **close-pings bound**, 120 s with the default period). A connector **pings every 40 s** (the pycti ping thread) once that count reaches 3. Only such a connector can become `critical`.
-  - It records the end of each full cycle in one platform-wide Redis key, `ingestion-health-manager-last-run`. If its previous cycle ended more than the close-pings bound ago, the manager was **blind** (platform restart, lost lock…). A wide gap between two pings then says nothing about the connector, so the count is kept instead of being restarted.
+  - After each full cycle (one pass that listed every connector, even if some evaluations failed), it records **the time that cycle started** in one platform-wide Redis key, `ingestion-health-manager-last-run`. If the previous full cycle started more than the close-pings bound before the current one, the manager was **blind** (platform restart, lost lock…). A wide gap between two pings then says nothing about the connector: the count of a connector **already seen pinging every 40 s** is kept instead of being restarted. Any other count restarts as usual, so outages can never add up into a false proof for a legacy connector.
   - When the status, the summary or the checks change, it caches them with `elReplace`: `ingestion_health_status`, `ingestion_health_since`, `ingestion_health_summary`, `ingestion_health_checks`. That write never touches `updated_at`, which is the heartbeat being measured.
 - `Connector.ingestion_health` **reads that cache**, with no Redis and no evaluation. `Connector.ingestion_warnings` is computed at read time from the user cache. Both are gated by `@ff(..., softFail: true)`.
 - On the front:
@@ -41,7 +41,7 @@ The manager caches the status on the connector. The status is shown as an FDS ch
 | Only connectors pinging every 40 s | `NO_HEARTBEAT` only fires for a connector seen pinging every 40 s, like the pycti ping thread. The manager must have seen **3 pings in a row, each within the close-pings bound of the previous one**: 2 periods, never less than 120 s. With a 40 s ping and the default 60 s period, a live connector shows a new ping 40 to 80 s after the previous one, so it qualifies after about 4 min. With a 5 min period, it shows one up to about 5 min 40 s later, hence a 10 min bound.<br>Legacy run-and-terminate connectors (about 30, e.g. `cape`) do not declare `run_and_terminate` and do not start the ping thread. They register at start and call `force_ping()` at exit, which sends one or two pings milliseconds apart. That is at most 2 pings seen per run, so they never qualify and stay `unknown`, whatever the run length. The check is also skipped for connectors that declare `run_and_terminate`, and for connectors never seen running. |
 | Read path | **The UI reads the cache written by the manager.** No resolver calls Redis or evaluates anything. The deployed list is polled every 5 s per open tab, and a Redis error there would break the whole page: `react-relay-network-modern` throws on any GraphQL error. |
 | Statuses produced | `stopped` (a managed connector switched off by a person; wins over everything) > `critical` > `unknown`. **Never `healthy` in chunk 1**: a ping proves liveness, not that data comes in. The GraphQL enum exposes all 6 RFC values. |
-| Configuration warning | `USER_NOT_SERVICE_ACCOUNT` (advisory) only, when the connector user has `user_service_account !== true`. A missing user → no warning (`USER_MISSING` is deferred). `TOKEN_EXPIRED` is **out of chunk 1**. |
+| Configuration warning | `USER_NOT_SERVICE_ACCOUNT` (advisory) only, when the connector user has `user_service_account !== true`. A missing user → no warning (`USER_MISSING` is deferred). The message is « User is not a service account », **with no user name**, in the message or the params: reading a connector only needs `MODULES`, while the name of its user is reserved to `SETTINGS_SETACCESSES` (`connectorUser`, `src/domain/connector.ts:811-817`). `TOKEN_EXPIRED` is **out of chunk 1**. |
 | Authentication | **The authentication path is not modified.** |
 | API | `ingestion_health { status summary since checks }` (runtime only) **and** a separate field `ingestion_warnings: [IngestionCheck!]`. |
 | Manager | Kept in chunk 1, and the only evaluator. It holds the heartbeat observation in Redis (no TTL, deleted with the connector) and the cached verdict in the connector document. Its period is **60 s by default, configurable** with `ingestion_health_manager:interval` (ms). The close-pings bound and the blind threshold follow it (2 periods, never less than 120 s), otherwise a longer period would leave no connector able to qualify. No events, no hysteresis, no dedicated user: all of that is chunk 2. |
@@ -58,6 +58,7 @@ The manager caches the status on the connector. The status is shown as an FDS ch
 - **A connector already dead when the flag is turned on is never flagged.** Its last ping is older than the activation, so the manager never sees 3 close pings, and it stays `unknown` until it restarts. Nothing in the existing data tells it apart from a legacy run-and-terminate connector between two runs. Accepted for chunk 1. A connector that dies *after* a manager outage is handled: the count is kept while the manager was blind.
 - **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period). Their pings fall within the bound, so they look like connectors pinging every 40 s, and they turn `critical` when their schedule pauses. Rare. Accepted for chunk 1. A longer manager period widens this risk.
 - **A longer period, a slower feature.** With a period P, the chip turns red up to P after « Inactive », and a new connector is checked after about 3 P. Accepted: 60 s by default.
+- **A connector deleted during a manager cycle.** The cycle can write its Redis observation again right after `connectorDelete` removed it: an orphan key with no TTL, and one warning in the logs. Accepted for chunk 1, follow-up issue in Task 7.
 - **Leftovers after the flag is turned off.** Turning the flag on, then off, leaves the `ingestion-health-observation:*` keys in Redis and the `ingestion_health_*` fields in the connector documents. Nothing reads them while the flag is off, and nothing cleans them up: with the flag off, nothing differs from `master`. Accepted.
 
 ## Global Constraints
@@ -147,7 +148,7 @@ The manager caches the status on the connector. The status is shown as an FDS ch
   - Types:
     - `INGESTION_HEALTH_STATUSES`, `IngestionHealthStatus`
     - `IngestionCheckCode = 'NO_HEARTBEAT' | 'USER_NOT_SERVICE_ACCOUNT'`, `IngestionCheck`, `IngestionHealth`
-    - `IngestionActingUser { name: string; service_account: boolean }`
+    - `IngestionActingUser { service_account: boolean }`: no name on purpose, see `computeIngestionWarnings`
     - `HeartbeatObservation { last_seen_at: string | null; close_pings: number }`
     - `IngestionHealthInput { running: boolean; run_and_terminate: boolean; last_seen_at: Date | null; pings_regularly: boolean }`
   - `HEARTBEAT_TIMEOUT_SECONDS = 300`, `MIN_CLOSE_PINGS_BOUND_SECONDS = 120`, `REGULAR_PING_MIN_STREAK = 3`
@@ -206,9 +207,8 @@ export interface IngestionHealth {
   since?: Date | null;
 }
 
-// The user the source acts as
+// The user the source acts as. No name: the warning must not leak it (see computeIngestionWarnings)
 export interface IngestionActingUser {
-  name: string;
   service_account: boolean;
 }
 
@@ -331,9 +331,24 @@ describe('Ingestion health evaluator - heartbeat observation', () => {
     expect(nextHeartbeatObservation(regular, secondsAgo(10), { managerWasBlind: true })).toEqual({ last_seen_at: secondsAgo(10).toISOString(), close_pings: 3 });
   });
 
-  it('should never let a manager outage turn a legacy run-and-terminate connector into a regular one', () => {
-    const legacy = { last_seen_at: secondsAgo(400).toISOString(), close_pings: 2 };
-    expect(isPingingRegularly(nextHeartbeatObservation(legacy, secondsAgo(10), { managerWasBlind: true }))).toBe(false);
+  it('should never let manager outages build up the count of a legacy run-and-terminate connector, run after run', () => {
+    const blind = { managerWasBlind: true };
+    // Run 1: registration, then force_ping doubled at exit
+    let observation = nextHeartbeatObservation(null, secondsAgo(3000));
+    observation = nextHeartbeatObservation(observation, secondsAgo(2910));
+    observation = nextHeartbeatObservation(observation, secondsAgo(2909.99));
+    expect(observation.close_pings).toBe(2);
+    // Run 2 starts during a manager outage, then ends with the same exit pings
+    observation = nextHeartbeatObservation(observation, secondsAgo(1000), blind);
+    observation = nextHeartbeatObservation(observation, secondsAgo(910));
+    observation = nextHeartbeatObservation(observation, secondsAgo(909.99));
+    expect(observation.close_pings).toBe(2);
+    expect(isPingingRegularly(observation)).toBe(false);
+  });
+
+  it('should restart from zero a connector not yet seen pinging every 40 seconds, after a manager outage', () => {
+    const starting = { last_seen_at: secondsAgo(400).toISOString(), close_pings: 2 };
+    expect(nextHeartbeatObservation(starting, secondsAgo(10), { managerWasBlind: true }).close_pings).toBe(0);
   });
 
   it('should derive the close-pings bound from the manager period, never below 120 seconds', () => {
@@ -401,17 +416,19 @@ describe('Ingestion health evaluator - status', () => {
 
 describe('Ingestion health evaluator - configuration warnings', () => {
   it('should warn when the connector user is not a service account', () => {
-    expect(computeIngestionWarnings({ name: 'John', service_account: false })).toEqual([{
+    // No user name, neither in the message nor in the params: reading a connector only needs MODULES,
+    // while the name of its user is reserved to SETTINGS_SETACCESSES (connectorUser, domain/connector.ts)
+    expect(computeIngestionWarnings({ service_account: false })).toEqual([{
       kind: 'configuration',
       code: 'USER_NOT_SERVICE_ACCOUNT',
       severity: 'advisory',
-      params: { user: 'John' },
-      message: 'User John is not a service account',
+      params: {},
+      message: 'User is not a service account',
     }]);
   });
 
   it('should not warn for a service account', () => {
-    expect(computeIngestionWarnings({ name: 'Service', service_account: true })).toEqual([]);
+    expect(computeIngestionWarnings({ service_account: true })).toEqual([]);
   });
 
   it('should not warn when the connector user is missing, that is another check', () => {
@@ -450,7 +467,8 @@ export interface ObservationOptions {
   // Max gap between two close pings, from closePingsBoundSeconds
   boundSeconds?: number;
   // The manager itself did not look for longer than the bound (platform restart, lost lock...).
-  // A wide gap then says nothing about the connector: the count is kept as is, neither raised nor restarted.
+  // A wide gap then says nothing about the connector: the count of a connector already seen
+  // pinging every 40 seconds is kept as is; any other count restarts as usual.
   managerWasBlind?: boolean;
 }
 
@@ -473,7 +491,10 @@ export const nextHeartbeatObservation = (previous: HeartbeatObservation | null, 
   if (isClose) {
     return { last_seen_at: lastSeen, close_pings: Math.min(previousCount + 1, REGULAR_PING_MIN_STREAK) };
   }
-  return { last_seen_at: lastSeen, close_pings: managerWasBlind ? previousCount : 0 };
+  // An outage only spares a connector already seen pinging every 40 seconds. A count still being built
+  // (a new connector, or a legacy run-and-terminate one) restarts, so outages can never add up into a false proof
+  const isAlreadyRegular = previousCount >= REGULAR_PING_MIN_STREAK;
+  return { last_seen_at: lastSeen, close_pings: managerWasBlind && isAlreadyRegular ? previousCount : 0 };
 };
 
 // Seen pinging every 40 seconds: only such a connector can be said to have stopped pinging
@@ -535,12 +556,14 @@ export const computeIngestionWarnings = (actingUser: IngestionActingUser | undef
   if (!actingUser || actingUser.service_account) {
     return [];
   }
+  // Never the user name: reading a connector only needs MODULES, while the name of its user
+  // is reserved to SETTINGS_SETACCESSES (connectorUser, domain/connector.ts)
   return [{
     kind: 'configuration',
     code: 'USER_NOT_SERVICE_ACCOUNT',
     severity: 'advisory',
-    params: { user: actingUser.name },
-    message: `User ${actingUser.name} is not a service account`,
+    params: {},
+    message: 'User is not a service account',
   }];
 };
 ```
@@ -548,7 +571,7 @@ export const computeIngestionWarnings = (actingUser: IngestionActingUser | undef
 - [ ] **Step 6: Run them and check they pass**
 
 Run: `cd opencti-platform/opencti-graphql && yarn test:ci-unit tests/01-unit/modules/ingestionHealth/ingestionHealth-checks-test.ts`
-Expected: PASS (25 tests)
+Expected: PASS (26 tests)
 
 - [ ] **Step 7: Commit**
 
@@ -572,7 +595,7 @@ git commit -S -m "feat(ingestion-health): add the INGESTION_HEALTH flag and the 
   - `redisGetIngestionHealthObservation(sourceId: string): Promise<HeartbeatObservation | null>`
   - `redisSetIngestionHealthObservation(sourceId: string, observation: HeartbeatObservation): Promise<void>`
   - `redisDeleteIngestionHealthObservation(sourceId: string): Promise<void>`
-  - `redisGetIngestionHealthLastRun(): Promise<Date | null>` / `redisSetIngestionHealthLastRun(at: Date): Promise<void>`: one platform-wide key, `ingestion-health-manager-last-run`, the end of the manager's last full cycle
+  - `redisGetIngestionHealthLastRun(): Promise<Date | null>` / `redisSetIngestionHealthLastRun(at: Date): Promise<void>`: one platform-wide key, `ingestion-health-manager-last-run`, the start time of the manager's last full cycle
   - `type IngestionHealthConnector`: the stored connector fields read by the feature, including the cached `ingestion_health_status?`, `ingestion_health_since?`, `ingestion_health_summary?` and `ingestion_health_checks?` (a JSON string)
   - `isIngestionConnector(connector): boolean`
   - `buildActingUser(connector, usersById: Map<string, AuthUser>): IngestionActingUser | undefined`
@@ -670,9 +693,9 @@ describe('Ingestion health domain', () => {
     expect(buildIngestionHealthInput(connector({ manager_requested_status: 'stopped' }), regular(RECENT)).running).toBe(true);
   });
 
-  it('should build the acting user, a user without the service account flag being a personal account', () => {
-    expect(buildActingUser(connector(), users)).toEqual({ name: 'Service', service_account: true });
-    expect(buildActingUser(connector({ connector_user_id: 'personal-user' }), users)).toEqual({ name: 'John', service_account: false });
+  it('should build the acting user without its name, a user without the service account flag being a personal account', () => {
+    expect(buildActingUser(connector(), users)).toEqual({ service_account: true });
+    expect(buildActingUser(connector({ connector_user_id: 'personal-user' }), users)).toEqual({ service_account: false });
     expect(buildActingUser(connector({ connector_user_id: 'deleted-user' }), users)).toBeUndefined();
     expect(buildActingUser(connector({ connector_user_id: null }), users)).toBeUndefined();
   });
@@ -786,7 +809,8 @@ export const redisDeleteIngestionHealthObservation = async (sourceId: string) =>
   await getClientBase().del(observationKey(sourceId));
 };
 
-// End of the manager's last full cycle, one key for the platform. It tells the manager whether
+// Start time of the manager's last full cycle (a pass that listed every connector), one key for the platform.
+// It tells the manager whether
 // it was blind for a while (restart, lost lock), so a wide gap between two pings is not blamed
 // on the connector. It also answers « is the ingestion health manager alive » for an operator.
 const LAST_RUN_KEY = 'ingestion-health-manager-last-run';
@@ -892,7 +916,7 @@ export const buildIngestionHealthInput = (connector: IngestionHealthConnector, h
 
 export const buildActingUser = (connector: IngestionHealthConnector, usersById: Map<string, AuthUser>): IngestionActingUser | undefined => {
   const user = connector.connector_user_id ? usersById.get(connector.connector_user_id) : undefined;
-  return user ? { name: user.name, service_account: user.user_service_account === true } : undefined;
+  return user ? { service_account: user.user_service_account === true } : undefined;
 };
 
 const getUsersById = (context: AuthContext) => getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -1033,7 +1057,8 @@ and in `describe('Connector resolver standard behaviour', ...)`, after `'should 
     // USER_CONNECTOR, who registered TestConnector, is not a service account
     const queryResult = await queryAsAdminWithSuccess({ query: READ_CONNECTOR_HEALTH_QUERY, variables: { id: TEST_CN_ID } });
     expect(queryResult.data?.connector.ingestion_warnings).toEqual([
-      expect.objectContaining({ kind: 'configuration', code: 'USER_NOT_SERVICE_ACCOUNT', severity: 'advisory' }),
+      // No user name: the admin running this query could see it, a MODULES-only user could not
+      { kind: 'configuration', code: 'USER_NOT_SERVICE_ACCOUNT', severity: 'advisory', message: 'User is not a service account' },
     ]);
   });
 
@@ -1301,7 +1326,7 @@ describe('Ingestion health manager', () => {
     });
 
     // The default period (config/default.json): 60 seconds, so a 120 seconds close-pings bound
-    it('should not consider itself blind when its last cycle ended less than 120 seconds ago', async () => {
+    it('should not consider itself blind when its last full cycle started less than 120 seconds ago', async () => {
       (redisGetIngestionHealthLastRun as any).mockResolvedValue(new Date(Date.now() - 60 * 1000));
       await ingestionHealthHandler();
       expect(collectIngestionSources).toHaveBeenCalledWith(expect.anything(), { boundSeconds: 120, managerWasBlind: false });
@@ -1316,7 +1341,7 @@ describe('Ingestion health manager', () => {
       expect(collectIngestionSources).toHaveBeenLastCalledWith(expect.anything(), { boundSeconds: 120, managerWasBlind: true });
     });
 
-    it('should record the end of a full cycle, and not of a cycle that could not collect the sources', async () => {
+    it('should record the start time of a full cycle, and nothing for a cycle that could not list the connectors', async () => {
       await ingestionHealthHandler();
       expect(redisSetIngestionHealthLastRun).toHaveBeenCalledTimes(1);
       (collectIngestionSources as any).mockRejectedValueOnce(new Error('index unavailable'));
@@ -1497,7 +1522,8 @@ export const ingestionHealthHandler = async () => {
       logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: INGESTION_HEALTH_MANAGER_ID, id: sources[i].connector.internal_id });
     }
   }
-  // Only a cycle that collected the sources counts as a look
+  // Only a cycle that listed the connectors counts as a look. Its start time is recorded,
+  // so the next cycle compares start with start
   await redisSetIngestionHealthLastRun(now);
 };
 
@@ -1588,7 +1614,7 @@ Then: `cd opencti-platform/opencti-front && yarn sort-translation`
 - [ ] **Step 7: Run the tests and check they pass**
 
 Run: `cd opencti-platform/opencti-graphql && yarn test:ci-unit tests/01-unit/manager/ingestionHealthManager-test.ts tests/01-unit/modules/ingestionHealth`
-Expected: PASS (9 + 25 + 13 tests)
+Expected: PASS (9 + 26 + 13 tests)
 
 Then, with the local stack: `yarn test:dev tests/03-integration/02-resolvers/connector-test.ts`
 Expected: PASS, including the `afterAll` cleanup assertion.
@@ -1647,11 +1673,11 @@ describe('IngestionHealthChip', () => {
 
   it('shows the server summary and every detail line in its tooltip', async () => {
     const { user } = testRender(
-      <IngestionHealthChip status="unknown" summary="Pinging every 40 seconds, data intake not evaluated yet" details={['⚠ User John is not a service account']} />,
+      <IngestionHealthChip status="unknown" summary="Pinging every 40 seconds, data intake not evaluated yet" details={['⚠ User is not a service account']} />,
     );
     await user.hover(screen.getByText('Unknown'));
     expect((await screen.findAllByText('Pinging every 40 seconds, data intake not evaluated yet')).length).toBeGreaterThan(0);
-    expect((await screen.findAllByText('⚠ User John is not a service account')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('⚠ User is not a service account')).length).toBeGreaterThan(0);
   });
 });
 ```
@@ -1872,14 +1898,14 @@ In `Connector.test.tsx`, inside `describe('Connector', ...)`, reusing `Connector
         Connector: () => ({
           ...baseMockConnector,
           ingestion_health: { status: 'critical', summary: 'No ping received since 2026-10-07T10:00:00.000Z', since: null, checks: [{ message: 'No ping received since 2026-10-07T10:00:00.000Z' }] },
-          ingestion_warnings: [{ message: 'User John is not a service account' }],
+          ingestion_warnings: [{ message: 'User is not a service account' }],
         }),
       }));
     });
     const chip = await screen.findByTestId('ingestion-health-chip');
     expect(chip).toHaveTextContent('Critical');
     await user.hover(chip);
-    expect((await screen.findAllByText('⚠ User John is not a service account')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('⚠ User is not a service account')).length).toBeGreaterThan(0);
   });
 
   it('should display no ingestion health chip when the flag is off', async () => {
@@ -2014,7 +2040,7 @@ Expected:
 - before the first manager cycle, the list and the page show a neutral « Unknown » chip with « Not evaluated yet » in the tooltip;
 - after the first cycle, the tooltip says « No ping every 40 seconds observed, heartbeat not evaluated »;
 - after about 4 cycles, the key `ingestion-health-observation:<id>` holds `close_pings: 3`, and the tooltip says « Pinging every 40 seconds, data intake not evaluated yet »;
-- on the page only, the tooltip also shows « ⚠ User … is not a service account »;
+- on the page only, the tooltip also shows « ⚠ User is not a service account », with no user name;
 - the Deployed list makes no Redis call: run `redis-cli MONITOR` while the list is open, and no `ingestion-health-observation` read appears between two manager cycles;
 - « Last seen » (`updated_at`) keeps following the pings only.
 
@@ -2026,7 +2052,7 @@ Expected:
 - the log shows `Ingestion health of <name> is now critical`, and « Since … » appears on the page;
 - after the connector restarts, the chip goes back to « Unknown » at the next manager cycle: its first ping comes long after the last one, so the count restarts from 0.
 
-Manager outage: with a connector showing « Pinging every 40 seconds », stop the platform for 3 min while the connector keeps running, restart the platform, then stop the connector. Expected: the chip turns red 5 min after the last ping, as without the outage, and `ingestion-health-manager-last-run` holds the end of the latest cycle.
+Manager outage: with a connector showing « Pinging every 40 seconds », stop the platform for 3 min while the connector keeps running, restart the platform, then stop the connector. Expected: the chip turns red 5 min after the last ping, as without the outage, and `ingestion-health-manager-last-run` holds the start time of the latest full cycle.
 
 Longer period: set `ingestion_health_manager:interval` to `300000`, restart, and run a live pycti connector. Expected: it reaches `close_pings: 3` after about 3 cycles (15 min), then stopping it still turns the chip red, at most 5 min after « Inactive ».
 
@@ -2058,8 +2084,9 @@ Title: `feat(ingestion-health): preparation of connector health monitoring (#183
   - a heartbeat threshold of 5 min aligned on `isConnectorActive`. The RFC gives no number, and the POC used 10 min;
   - `NO_HEARTBEAT` limited to connectors seen pinging every 40 s (3 pings within max(120 s, 2 manager periods)), with the observation kept in Redis;
   - the manager is the only evaluator, and the UI reads its cache (status, since, summary, checks).
-- Open three issues:
+- Open four issues:
   1. `TOKEN_EXPIRED`: the token a connector actually uses cannot be identified without touching authentication. A read-only heuristic on `{token_usage}:<tokenId>` is possible.
   2. A probable bug, inferred from the code and still to be checked: two managed connectors from different catalogs sharing one user revoke each other's composer token (`src/database/repository.js:133-141`).
   3. A dedicated ping timestamp, so that an edit or a composer status report no longer counts as a ping (the accepted `updated_at` risk).
+  4. Make sure the Redis observation of a deleted connector is gone for good: a manager cycle running while the connector is deleted can write it again right after `connectorDelete` removed it, leaving an orphan key with no TTL.
 - Tick the Chunk 1 items on the Notion page.

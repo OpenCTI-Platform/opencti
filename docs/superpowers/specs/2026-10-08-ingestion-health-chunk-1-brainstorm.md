@@ -83,16 +83,19 @@ So a connector is checked only once the manager has seen **3 pings in a row, eac
 **Back to normal:** a dead connector that restarts pings long after its last ping, so the count starts again from zero. It shows `unknown` again at the next cycle.
 
 **When the manager itself was not looking.** A platform restart or a lost lock can leave the manager without a cycle for a while. Then the gap between two pings it sees is wide because *it* did not look, not because the connector stopped.
-- The manager records the end of each full cycle in a single Redis key, `ingestion-health-manager-last-run`.
-- If its previous cycle ended more than 2 periods ago (and at least 120 s ago), the manager knows it was blind. It then keeps every count as is, instead of restarting it.
-- A connector that was pinging every 40 s and dies right after the outage is therefore still caught.
-- A legacy connector gains nothing from the outage: its count stays at 2 or less.
+- A **full cycle** is one pass of the manager over every deployed connector. It counts as full as soon as the connector list could be read, even if some connectors failed to evaluate.
+- After each full cycle, the manager records **the time that cycle started** in a single Redis key, `ingestion-health-manager-last-run`.
+- At the start of the next cycle, it reads that key. If the previous full cycle started more than 2 periods ago (and at least 120 s ago), the manager knows it was blind.
+- It then keeps the count of the connectors **already seen pinging every 40 s** (count at 3), instead of restarting it. A connector that was pinging every 40 s and dies right after the outage is therefore still caught.
+- Every other count restarts as usual: a newly started connector, and above all a legacy one. Outages can never add up, run after run, into a false proof: a legacy connector's count stays at 2 or less.
+- Side effect: a connector that had just started (1 or 2 pings seen) before the outage starts its count again, and is checked a few minutes later.
 
 The same key also tells an operator whether the manager is alive.
 
 ## 6. The configuration check: `USER_NOT_SERVICE_ACCOUNT`
 
 - Fires when the connector user is not a service account.
+- The message is « User is not a service account », **with no user name**, neither in the message nor in its parameters. Reading a connector only needs the `MODULES` capability, while the name of its user is reserved to `SETTINGS_SETACCESSES`: the platform hides it from everyone else, and the warning must not leak it.
 - Advisory only: it never changes the status.
 - No user at all → no warning. That is another check (`USER_MISSING`), deferred.
 - Shown only on the connector detail page, in the chip tooltip, after the runtime explanation.
@@ -147,6 +150,7 @@ Nothing differs from `master`:
 - **A connector already dead when the flag is turned on is never flagged.** The manager never sees it ping, so it stays `unknown` until it restarts. Nothing tells it apart from a legacy connector between two runs. Accepted.
 - **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period). They look like connectors pinging every 40 s, and turn red when their schedule pauses. Rare, accepted. A longer period widens this risk.
 - **Lag.** The chip turns red up to one period (60 s by default) after Active/Inactive turns « Inactive », plus the 5 s poll. A longer period means a longer lag, and a longer wait (about 3 periods) before a new connector is checked.
+- **A connector deleted during a manager cycle.** The cycle can write its Redis key again right after the deletion removed it, leaving a key with no expiry. Accepted for chunk 1; a later chunk makes sure the key of a deleted connector is gone for good.
 - **Leftovers.** Turning the flag on, then off, leaves the Redis keys and the stored fields behind. Nothing reads them, and nothing cleans them up.
 
 ## 11. How we will know it works
@@ -155,13 +159,13 @@ Nothing differs from `master`:
 - A connector pinging every 40 s is checked after 3 close pings, never before, with the default period and with a longer one.
 - A legacy run of 30 s, 90 s or 10 min never makes the connector `critical`, including between two runs.
 - Right after the flag is turned on, no connector is `critical`.
-- After a manager outage of several minutes, a connector that was pinging every 40 s and then dies still turns `critical`. A legacy connector still never does.
+- After a manager outage of several minutes, a connector that was pinging every 40 s and then dies still turns `critical`. A legacy connector still never does, even with outages run after run.
 - A stopped managed connector is `stopped`, even with no ping.
 - The manager write never moves `updated_at`.
 - One broken connector does not stop the evaluation of the others, and the error is logged with its id.
 - Neither API field ever calls Redis. This is checked by a test, and by watching Redis while the Deployed list is open.
 - With the flag off, nothing changes compared with `master`.
-- The service account warning shows on the detail page only. It disappears as soon as the user becomes a service account, without a restart.
+- The service account warning shows on the detail page only, and never contains the user name. It disappears as soon as the user becomes a service account, without a restart.
 - The manager is disabled in the integration test configuration, so the suite stays deterministic: there, every connector is `unknown` / « Not evaluated yet ». The manager is covered by unit tests, and end to end by the manual run below.
 - Manual run: stop a live pycti connector; « Inactive », then a red chip one cycle later; restart it, and the chip goes back to `unknown`.
 
@@ -174,10 +178,11 @@ Nothing differs from `master`:
   - the 5 min threshold;
   - the 40 s rule;
   - the manager as the only evaluator.
-- Open three follow-up issues:
+- Open four follow-up issues:
   - `TOKEN_EXPIRED` without touching authentication;
   - the suspected composer token revocation between connectors sharing a user;
-  - a dedicated ping timestamp.
+  - a dedicated ping timestamp;
+  - deleting a connector deletes its Redis key for good, even during a manager cycle.
 - Tick the chunk 1 items in Notion.
 
 ## 13. Decisions log
@@ -192,6 +197,8 @@ Nothing differs from `master`:
 | 2026-10-08 | Runtime checks: manager, each cycle, stored in Elasticsearch. Configuration checks: resolver, each API call, never stored. |
 | 2026-10-08 | No Redis outside the manager. |
 | 2026-10-08 | The ingestion health manager is disabled in `config/test.json`. |
-| 2026-10-08 | After a manager outage of more than 2 periods (at least 120 s), the ping counts are kept, not restarted (`ingestion-health-manager-last-run`). A connector already dead at activation stays undetected (accepted). |
+| 2026-10-08 | After a manager outage of more than 2 periods (at least 120 s), only the counts of connectors already seen pinging every 40 s are kept; every other count restarts (`ingestion-health-manager-last-run`, start time of the last full cycle). A connector already dead at activation stays undetected (accepted). |
+| 2026-10-08 | A badly written manager period is not handled. Deleting the Redis key of a connector deleted during a cycle: later chunk. |
+| 2026-10-08 | The service account warning says « User is not a service account », with no user name (reserved to `SETTINGS_SETACCESSES`). |
 | 2026-10-08 | Manager period: 60 s by default, configurable (`ingestion_health_manager:interval`). The close-pings bound and the blind threshold follow it: 2 periods, never less than 120 s. |
 | 2026-10-08 | Accepted: `updated_at` not only a ping, no fresh status without the manager (`since` = last change of the health status), leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |
