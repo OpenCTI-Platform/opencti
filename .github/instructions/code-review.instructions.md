@@ -40,6 +40,13 @@ Also flag, on any logging line: intelligence content in the metadata (STIX bundl
 observable values, indicator patterns, resolved connector configs), and an exception
 passed as `{ error: e.message }` rather than `{ cause: e }`, which discards the stack.
 
+## Feature Flags
+When a change introduces or uses a feature flag (`*_FEATURE_FLAG`, `@ff`,
+`enforceEnableFeatureFlag`, `isFeatureEnabled`), check that every new attribute definition
+and every new nested `mappings` entry of the feature sets `featureFlag: <FLAG_CONSTANT>`.
+A missing one silently adds the field to the ElasticSearch mapping with the flag off.
+See [Feature Flags](backend/patterns/feature-flags.md).
+
 ## Review Style
 - Be specific and actionable in feedback
 - Explain the "why" behind recommendations
