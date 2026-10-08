@@ -649,7 +649,7 @@ class Identity:
                 result_data_field = "systemAdd"
             elif type == IdentityTypes.CITIZENSHIP_DOCUMENT.value:
                 query = """
-                    mutation CitizenshipDocumentAdd($input: SystemAddInput!) {
+                    mutation CitizenshipDocumentAdd($input: CitizenshipDocumentAddInput!) {
                         citizenshipDocumentAdd(input: $input) {
                             id
                             standard_id
