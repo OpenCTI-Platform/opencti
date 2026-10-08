@@ -7,7 +7,7 @@
 ## 1. Goal
 
 Deliver the **full workflow once, at its smallest**:
-- **1 configuration check**: the connector user is not a service account;
+- **2 configuration checks**: the connector user is not a service account, or the connector user is missing;
 - **1 runtime check**: the connector stopped pinging;
 - the result shown as **chips in the UI**;
 - **no notification yet**.
@@ -97,8 +97,16 @@ The same key also tells an operator whether the manager is alive.
 - Fires when the connector user is not a service account.
 - The message is « User is not a service account », **with no user name**, neither in the message nor in its parameters. Reading a connector only needs the `MODULES` capability, while the name of its user is reserved to `SETTINGS_SETACCESSES`: the platform hides it from everyone else, and the warning must not leak it.
 - Advisory only: it never changes the status.
-- No user at all → no warning. That is another check (`USER_MISSING`), deferred.
+- No user at all → `USER_NOT_SERVICE_ACCOUNT` does not apply; `USER_MISSING` does (below).
 - Shown only on the connector detail page, in the chip tooltip, after the runtime explanation.
+
+## 6 bis. The configuration check: `USER_MISSING`
+
+- Fires when the connector has no user: `connector_user_id` is empty, or the user it points to no longer exists (deleted).
+- The message is « User is missing », with no user id or name, for the same reason as above.
+- Severity `blocking`: a connector without a user cannot authenticate. As every configuration check, it still never changes the status. When the connector stops pinging because of it, the status turns `critical` through `NO_HEARTBEAT`, and the warning tells why on the detail page.
+- A connector gets either `USER_MISSING` or `USER_NOT_SERVICE_ACCOUNT`, never both.
+- `connector_user_id` is set again at every registration, so a running connector always has one. An empty value only exists on an old record of a connector that has not restarted since.
 
 ## 7. How it works
 
@@ -173,7 +181,7 @@ Nothing differs from `master`:
 - Update RFC 0001 with the gaps:
   - connectors only;
   - `unknown` instead of `healthy`;
-  - one configuration warning instead of three;
+  - two configuration warnings (service account, missing user) instead of three, `TOKEN_EXPIRED` not shipped;
   - the 5 min threshold;
   - the 40 s rule;
   - the manager as the only evaluator.
@@ -200,5 +208,6 @@ Nothing differs from `master`:
 | 2026-10-08 | A badly written manager period is not handled. Deleting the Redis key of a connector deleted during a cycle: later chunk. |
 | 2026-10-08 | The service account warning says « User is not a service account », with no user name (reserved to `SETTINGS_SETACCESSES`). |
 | 2026-10-08 | Manager period: 60 s by default, configurable (`ingestion_health_manager:interval`). The close-pings bound and the blind threshold follow it: 2 periods, never less than 120 s. |
+| 2026-10-08 | `USER_MISSING` added to chunk 1 (PO): empty `connector_user_id` or deleted user, message « User is missing », severity `blocking`, exclusive with `USER_NOT_SERVICE_ACCOUNT`. |
 | 2026-10-08 | Final review: the heartbeat is the Redis `connector_heartbeats` value (#18851), read by the manager once per cycle; if that read fails, the cycle fails and is retried. `stopped` = requested status `stopping`/`stopped` only, so a crashed managed container turns `critical`. |
 | 2026-10-08 | Accepted: no fresh status without the manager (`since` = last change of the health status), leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |

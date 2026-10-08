@@ -6,7 +6,7 @@
 
 ## En une phrase
 
-Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **chip de santé**. Ce chunk livre le circuit complet à sa taille minimale : **1 check de configuration**, **1 check de fonctionnement**, l'affichage dans l'UI, et **aucune notification**.
+Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **chip de santé**. Ce chunk livre le circuit complet à sa taille minimale : **2 checks de configuration** (user qui n'est pas un compte de service, user manquant), **1 check de fonctionnement**, l'affichage dans l'UI, et **aucune notification**.
 
 ## Périmètre
 
@@ -27,7 +27,7 @@ Derrière le flag `INGESTION_HEALTH`, chaque connecteur déployé affiche un **c
 | Change le statut | oui                                                        | jamais                                     |
 | Affiché          | partout : liste, cartes, page détail                       | page détail uniquement                     |
 
-Le warning de configuration dit seulement « User is not a service account ». **Il n'affiche jamais le nom du user**, ni dans le message ni dans ses paramètres. Pour lire un connecteur, la capability `MODULES` suffit, alors que le nom de son user est réservé à `SETTINGS_SETACCESSES`.
+Le warning de configuration dit seulement « User is not a service account ». Si le connecteur n'a pas de user (`connector_user_id` vide ou user supprimé), le warning devient « User is missing » (sévérité `blocking`, mais il ne change jamais le statut). Un connecteur a l'un ou l'autre, jamais les deux. **Il n'affiche jamais le nom du user**, ni dans le message ni dans ses paramètres. Pour lire un connecteur, la capability `MODULES` suffit, alors que le nom de son user est réservé à `SETTINGS_SETACCESSES`.
 
 ## Statuts
 
