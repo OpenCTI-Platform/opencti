@@ -12,7 +12,7 @@ import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retenti
 import { elList, elUpdate } from '../../../src/database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../../src/database/utils';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
-import { logApp } from '../../../src/config/conf';
+import { logMigration } from '../../../src/config/conf';
 import {
   BUILT_IN_EXPORT_ID_TYPES,
   computeMissingBuiltInExportIds,
@@ -253,7 +253,7 @@ describe('Built-in entities export_id', () => {
     }
     const withoutExportId = await listBuiltInCandidates();
     expect(computeMissingBuiltInExportIds(withoutExportId)).toHaveLength(targets.length);
-    const warnSpy = vi.spyOn(logApp, 'warn');
+    const warnSpy = vi.spyOn(logMigration, 'warn');
     await addExportIdMigration(() => {});
     // The test platform setup does not create the fintel templates: the migration reports them
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('6 built-in FintelTemplate not found'));

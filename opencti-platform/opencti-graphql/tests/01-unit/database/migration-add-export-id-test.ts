@@ -97,6 +97,14 @@ describe('Migration add export_id to built-in entities', () => {
     ]);
   });
 
+  it('should replace the internal_id given at creation to built-in elements created by an older migration', () => {
+    const theme = element('Theme', { name: 'Filigran Dark', built_in: true });
+    const createdByMigration = { ...theme, export_id: theme.internal_id };
+    expect(computeMissingBuiltInExportIds([createdByMigration])).toEqual([
+      { element: createdByMigration, export_id: generateBuiltInExportId('Theme', { name: 'Filigran Dark' }) },
+    ]);
+  });
+
   it('should list the built-in elements that cannot be found', () => {
     const administrators = element('Group', { name: 'Administrators' });
     const renamedDefault = element('Group', { name: 'Everyone' });
