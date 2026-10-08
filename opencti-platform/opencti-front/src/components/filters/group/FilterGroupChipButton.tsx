@@ -37,18 +37,18 @@ const FilterGroupChipButton = forwardRef<HTMLSpanElement, FilterGroupChipButtonP
   const directChildrenCount = filterGroup.filters.length + filterGroup.filterGroups.length;
   const label = `${directChildrenCount} ${directChildrenCount === 1 ? t_i18n('rule') : t_i18n('rules')}`;
 
-  // The wrapping `span` carries the ref (button-in-a-box) and is the actual click target:
-  // `Button` is a plain function component (no forwardRef), so a ref placed on it would be
-  // silently dropped, breaking the click-away containment check done by the parent filter line.
+  // The wrapping `span` carries the ref (button-in-a-box): `Button` is a plain function component
+  // (no forwardRef), so a ref placed on it would be silently dropped, breaking the click-away
+  // containment check done by the parent filter line. The click itself belongs to the button.
   return (
     <span
       ref={ref}
       data-testid={`filter-group-chip-${filterGroup.id ?? 'group'}`}
       style={style}
-      onClick={onClick}
     >
       <Button
         variant="secondary"
+        onClick={onClick}
         startIcon={<FilterListOutlinedIcon fontSize="small" color="primary" />}
         endIcon={isOpen ? <KeyboardArrowUp fontSize="small" /> : <KeyboardArrowDown fontSize="small" />}
         style={{ color: theme.palette.text.primary, height: FILTER_LINE_ITEM_HEIGHT, ...style }}
