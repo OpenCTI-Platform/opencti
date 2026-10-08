@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectVa
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
@@ -307,6 +307,7 @@ const StixDomainObjectHeader = (props) => {
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
+  const newAliasInputRef = useRef(null);
   const [openCommitCreate, setOpenCommitCreate] = useState(false);
   const [openCommitDelete, setOpenCommitDelete] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
@@ -681,10 +682,9 @@ const StixDomainObjectHeader = (props) => {
           title={t_i18n('Entity aliases')}
           size="small"
           slotProps={{
-            // The shared TextField wrapper does not forward a ref, so focus
-            // is restored via the input's id once the dialog has fully
-            // entered (only action of this dialog, replacing autoFocus).
-            transition: { onEntered: () => document.getElementById('new-alias-input')?.focus() },
+            // Focus the field once the dialog has fully entered (only action
+            // of this dialog, replacing autoFocus).
+            transition: { onEntered: () => newAliasInputRef.current?.focus() },
           }}
         >
           <Formik
@@ -698,7 +698,9 @@ const StixDomainObjectHeader = (props) => {
                   component={TextField}
                   variant="outlined"
                   name="new_alias"
-                  id="new-alias-input"
+                  innerRef={(node) => {
+                    newAliasInputRef.current = node;
+                  }}
                   placeholder={t_i18n('New alias')}
                   onChange={handleChangeNewAlias}
                   value={newAlias}

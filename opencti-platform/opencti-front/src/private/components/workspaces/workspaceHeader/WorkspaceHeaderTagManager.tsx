@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import TextField from 'src/components/TextField';
 import { useFormatter } from 'src/components/i18n';
@@ -48,14 +48,13 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   const [commit] = useApiMutation(workspaceMutation);
 
   const inlineTagInputId = 'inline-new-tag-input';
+  const inlineTagInputRef = useRef<HTMLInputElement | null>(null);
 
   // The inline field appears in place (Slide) while the trigger button stays
   // mounted, so removing autoFocus left it never reached nor announced.
-  // The shared TextField wrapper does not forward a ref, so focus is
-  // restored through the DOM id once the field mounts.
   useEffect(() => {
     if (isTagInputOpen) {
-      document.getElementById(inlineTagInputId)?.focus();
+      inlineTagInputRef.current?.focus();
     }
   }, [isTagInputOpen]);
 
@@ -153,6 +152,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                   <label className="sr-only" htmlFor={inlineTagInputId}>{t_i18n('New tag')}</label>
                   <Field
                     id={inlineTagInputId}
+                    innerRef={(node: HTMLInputElement | null) => {
+                      inlineTagInputRef.current = node;
+                    }}
                     component={TextField}
                     variant="outlined"
                     name="newTag"
