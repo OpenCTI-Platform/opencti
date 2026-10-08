@@ -16,6 +16,7 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
   messagesCount: 0,
   throughputRate: null,
   lastRunDate: null,
+  lastSeenAt: null,
   updatedAt: '2026-01-01T00:00:00.000Z',
   updateAvailable: false,
   latestCompatibleVersion: null,
@@ -46,6 +47,18 @@ const renderFilters = ({
 describe('useDeployedIntegrationsFilters', () => {
   beforeEach(() => {
     window.history.replaceState({}, '', '/');
+  });
+
+  it('sorts by last activity: last run, then connector last heartbeat, then modification date', () => {
+    const items = [
+      makeItem({ id: 'never-seen', name: 'A never seen', lastSeenAt: null, updatedAt: null }),
+      makeItem({ id: 'seen-earlier', name: 'B seen earlier', lastSeenAt: '2026-02-01T00:00:00.000Z', updatedAt: null }),
+      makeItem({ id: 'seen-recently', name: 'C seen recently', lastSeenAt: '2026-03-01T00:00:00.000Z', updatedAt: null }),
+      makeItem({ id: 'modified', name: 'D modified', lastSeenAt: null, updatedAt: '2026-02-15T00:00:00.000Z' }),
+    ];
+    const { result } = renderFilters({ items, params: 'sort=lastRun' });
+
+    expect(result.current.sections[0].items.map((item) => item.id)).toEqual(['seen-recently', 'modified', 'seen-earlier', 'never-seen']);
   });
 
   it('filters deployed items by update availability when the checkbox is enabled', () => {

@@ -102,6 +102,22 @@ describe('useDeployedIntegrations', () => {
       expect(result.current[0].name).toBe('Nice title');
     });
 
+    it('uses the connector last heartbeat as its last activity, never its modification date', () => {
+      const { result: seen } = renderIntegrations({
+        connectors: [makeConnector({ updated_at: '2026-01-01T00:00:00.000Z' })],
+        states: [makeState({ last_seen_at: '2026-02-01T00:00:00.000Z' })],
+      });
+      expect(seen.current[0].lastSeenAt).toBe('2026-02-01T00:00:00.000Z');
+      expect(seen.current[0].updatedAt).toBeNull();
+      // Any write on the connector entity bumps updated_at: it must not look like an activity
+      const { result: neverSeen } = renderIntegrations({
+        connectors: [makeConnector({ updated_at: '2026-01-01T00:00:00.000Z' })],
+        states: [makeState({ last_seen_at: null })],
+      });
+      expect(neverSeen.current[0].lastSeenAt).toBeNull();
+      expect(neverSeen.current[0].updatedAt).toBeNull();
+    });
+
     it('skips internal connectors', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector({ id: 'internal-1', connector_type: 'internal' }), makeConnector()],

@@ -1,11 +1,13 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';
-import { ENTITY_TYPE_BACKGROUND_TASK } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { patchAttribute } from '../../../src/database/middleware';
+import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/database/redis';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
 import { DRAFT_VALIDATION_CONNECTOR } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 
@@ -128,6 +130,7 @@ const READ_CONNECTOR_QUERY = gql`
       connector_scope
       connector_state
       version
+      last_seen_at
       connector_queue_details {
         messages_number
         messages_size
@@ -389,6 +392,39 @@ describe('Connector resolver standard behaviour', () => {
   });
 });
 
+describe('Connector liveness', () => {
+  const PING_CONNECTOR_LIVENESS_QUERY = gql`
+    mutation PingConnector($id: ID!, $state: String) {
+      pingConnector(id: $id, state: $state) {
+        id
+        active
+        last_seen_at
+      }
+    }
+  `;
+
+  it('should not become active when its entity is updated without heartbeat', async () => {
+    // Simulate a connector that stopped pinging long ago
+    await redisDeleteConnectorHeartbeat(TEST_CN_ID);
+    // Same kind of write as the managed connectors contract migration or the catalog auto-upgrade
+    await patchAttribute(testContext, ADMIN_USER, TEST_CN_ID, ENTITY_TYPE_CONNECTOR, { manager_upgrade_strategy: 'latest' });
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data.connector.active).toBe(false);
+    expect(queryResult.data.connector.last_seen_at).toBeNull();
+  });
+
+  it('should become active again on ping', async () => {
+    const pingResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR_LIVENESS_QUERY, variables: { id: TEST_CN_ID, state: '{}' } });
+    expect(pingResult.data.pingConnector.active).toBe(true);
+    expect(pingResult.data.pingConnector.last_seen_at).toBeDefined();
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data.connector.active).toBe(true);
+    expect(queryResult.data.connector.last_seen_at).toEqual(pingResult.data.pingConnector.last_seen_at);
+    const listResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: LIST_CONNECTORS_QUERY, variables: {} });
+    expect(listResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).active).toBe(true);
+  });
+});
+
 describe.todo('Connector sending multiple bundles during the same multi-part work', () => {
   describe('when worker finishes all work items before connector', () => {
     it('should mark work as completed when connector calls to_processed', async () => {
@@ -602,4 +638,6 @@ afterAll(async () => {
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();
   expect(queryResult.data?.connector).toBeNull();
+  // Its heartbeat is cleaned up as well
+  expect(await redisGetConnectorHeartbeat(TEST_CN_ID)).toBeNull();
 });

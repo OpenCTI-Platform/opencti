@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import semver from 'semver';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
-import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
+import { completeConnector, connector, connectors, connectorsFor, loadConnectorHeartbeat } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -17,9 +17,11 @@ import {
   type ConnectorHealthMetrics,
   delEditContext,
   notify,
+  redisDeleteConnectorHeartbeat,
   redisGetConnectorHealthMetrics,
   redisGetWork,
   redisSetConnectorHealthMetrics,
+  redisSetConnectorHeartbeat,
   redisSetConnectorLogs,
   setEditContext,
 } from '../database/redis';
@@ -119,13 +121,13 @@ export const updateConnectorWithConnectorInfo = async (
   state: string,
   connectorInfo: ConnectorInfo,
 ) => {
-  // Patch the updated_at and the state if needed
+  // Patch the state if needed. Liveness is not tracked here but in redis (see redisSetConnectorHeartbeat)
   let connectorPatch;
 
   if (connectorEntity.connector_state_reset) {
     connectorPatch = { connector_state_reset: false };
   } else {
-    connectorPatch = { updated_at: now(), connector_state: state };
+    connectorPatch = { connector_state: state };
   }
 
   if (connectorInfo) {
@@ -153,8 +155,13 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
+  const lastSeenAt = now();
+  // Not best effort: recording the heartbeat is the purpose of the ping, the connector must know it failed and retry.
+  // Recorded before updating the state: a pending state reset is consumed by the update, failing after it would let
+  // the connector, which never received the reset state, write back its stale one on its next ping
+  await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
-  return completeConnector(updatedConnector);
+  return completeConnector(updatedConnector, lastSeenAt);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
@@ -168,7 +175,16 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch },
   });
   await purgeConnectorQueues(element);
-  return completeConnector(element);
+  return completeConnector(element, await loadConnectorHeartbeat(element.internal_id));
+};
+// Best effort: the next ping of the connector records its heartbeat anyway,
+// and a failed registration would prevent the connector from starting.
+const recordRegistrationHeartbeat = async (connectorId: string, lastSeenAt: string) => {
+  try {
+    await redisSetConnectorHeartbeat(connectorId, lastSeenAt);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to record connector heartbeat on registration', { cause: err, connectorId });
+  }
 };
 interface RegisterOptions {
   built_in?: boolean;
@@ -365,11 +381,13 @@ export const registerConnector = async (
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
+  // A registration comes from the running connector itself: it is a heartbeat. Except for built-in connectors,
+  // registered by the platform, whose liveness is their configured `active` (see isConnectorActive)
+  const lastSeenAt = opts.built_in ? null : now();
   if (conn) {
     // Simple connector update
     const patch: any = {
       name,
-      updated_at: now(),
       connector_type: type,
       connector_scope: scope && scope.length > 0 ? scope.join(',') : null,
       auto,
@@ -388,9 +406,13 @@ export const registerConnector = async (
       patch.active = opts.active;
     }
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+    // Before notifying: the connectors cache must not reload the connector without its heartbeat
+    if (lastSeenAt) {
+      await recordRegistrationHeartbeat(id, lastSeenAt);
+    }
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+    return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, lastSeenAt));
   }
   // Need to create the connector
   const connectorToCreate: any = {
@@ -424,16 +446,26 @@ export const registerConnector = async (
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData },
   });
+  // Before notifying: the connectors cache must not load the connector without its heartbeat
+  if (lastSeenAt) {
+    await recordRegistrationHeartbeat(id, lastSeenAt);
+  }
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
   // Return the connector
-  return completeConnector(createdConnector);
+  return completeConnector(createdConnector, lastSeenAt);
 };
 
 export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  try {
+    await redisDeleteConnectorHeartbeat(element.internal_id);
+  } catch (err) {
+    // Best effort: the connector is already deleted, an orphan heartbeat is never read
+    logApp.warn('[OPENCTI-MODULE] Unable to delete connector heartbeat', { cause: err, connectorId });
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -458,7 +490,8 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
     context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
-  return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+  await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+  return completeConnector(element, await loadConnectorHeartbeat(element.internal_id));
 };
 
 export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {

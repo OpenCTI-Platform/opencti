@@ -66,7 +66,7 @@ const baseMockConnector = {
   manager_connector_uptime: null,
   manager_health_metrics: null,
   config: null,
-  updated_at: '2024-01-01T00:00:00.000Z',
+  last_seen_at: '2024-01-01T00:00:00.000Z',
   created_at: '2024-01-01T00:00:00.000Z',
 };
 
