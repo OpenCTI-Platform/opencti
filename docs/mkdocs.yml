@@ -66,6 +66,11 @@ plugins:
       enable_creation_date: true
       type: timeago
   - glightbox
+  - macros:
+      module_name: macros
+      render_by_default: false
+      on_undefined: strict
+      on_error_fail: true
 
 # Extensions
 markdown_extensions:

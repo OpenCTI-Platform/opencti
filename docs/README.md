@@ -109,3 +109,30 @@ With the right version number (eg. 5.7.X), update the `latest` tag:
 ```sh
 mike deploy --push --update-aliases [version] latest
 ```
+
+### Use a feature flag on existing documentation page
+
+On the top of markdown page, enable macro and then use `flag` macro
+
+```
+---
+render_macros: true
+---
+
+# Here normal md title
+
+{%- if flag("MY_FEATURE_FLAG") %}
+Here is all documentation under feature flag.
+Will not be published.
+{%- endif %}
+
+```
+
+To render locally with your feature flag:
+
+```sh
+export ENABLED_DEV_FEATURES=MY_FEATURE_FLAG
+mkdocs build
+mkdocs serve
+# unset ENABLED_DEV_FEATURES // to remove it
+```
