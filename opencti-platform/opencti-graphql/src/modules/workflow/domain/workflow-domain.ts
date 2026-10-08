@@ -1436,6 +1436,22 @@ export const getMassWorkflowTransitions = async (
   }));
 };
 
+// A transition that does not capture a closing reason clears it, so a reopened entity has none.
+const resolveTransitionClosingReason = (
+  user: AuthUser,
+  mode: string | undefined,
+  closingReason: string | undefined,
+): { closingReason: string | null } | { error: string } => {
+  const value = closingReason?.trim() || null;
+  if (mode !== 'allowed' && mode !== 'required') {
+    return value ? { error: 'Closing reason is not enabled for this transition' } : { closingReason: null };
+  }
+  if (mode === 'required' && !value && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    return { error: 'A closing reason is required for this transition' };
+  }
+  return { closingReason: value };
+};
+
 /**
  * Trigger a workflow event on an entity.
  * This is the main entry point for the backend logic.
@@ -1446,6 +1462,7 @@ export const getMassWorkflowTransitions = async (
  * @param eventName The name of the event to trigger
  * @param comment Optional comment entered by the user when performing the transition
  * @param runtimeParams Optional runtime parameters (e.g. organizationIds for share actions). Persisted for retry.
+ * @param closingReason Optional closing reason, accepted only when the transition enables it
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -1455,6 +1472,7 @@ export const triggerWorkflowEvent = async (
   eventName: string,
   comment?: string,
   runtimeParams: Record<string, unknown> = {},
+  closingReason?: string,
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -1502,6 +1520,14 @@ export const triggerWorkflowEvent = async (
 
     const currentStateId = instanceEntity.currentState;
     const definition = WorkflowFactory.createDefinition(definitionData);
+    const targetTransition = definitionData.transitions?.find((t: any) => {
+      const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+      return fromStates.includes(currentStateId) && t.event === eventName;
+    });
+    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason);
+    if ('error' in resolvedClosingReason) {
+      return { success: false, reason: resolvedClosingReason.error };
+    }
 
     // 4. Inject createListTask and instance metadata into context for asyncBulkAction.
     // When the workflow entity is a DraftWorkspace, pre-query only the STIX entities that
@@ -1572,21 +1598,16 @@ export const triggerWorkflowEvent = async (
         status: 'pending' as const,
       }));
 
-      // Get the serialized transition to persist its syncActions for phase-2 execution.
-      const targetTransitionForSync = definitionData.transitions?.find((t: any) => {
-        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-        return fromStates.includes(currentStateId) && t.event === eventName;
-      });
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
-      const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
+      const serializedTransitions: WorkflowActionConfig[] = targetTransition?.syncActions ?? [];
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
-      const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
+      const toStateId = targetTransition?.to ?? instance.getCurrentState();
       // A null `to` only completes the workflow when paired with `validateDraft` (see
       // workflow-validation.ts) - otherwise it's a stale orphaned reference (e.g. a status
       // deleted after this definition was published, before that validation gate existed).
-      const completesWorkflow = targetTransitionForSync != null
-        && targetTransitionForSync.to == null
+      const completesWorkflow = targetTransition != null
+        && targetTransition.to == null
         && serializedTransitions.some((action) => action.type === 'validateDraft');
       const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
@@ -1599,6 +1620,7 @@ export const triggerWorkflowEvent = async (
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
+        ...(resolvedClosingReason.closingReason ? { closingReason: resolvedClosingReason.closingReason } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
@@ -1649,7 +1671,8 @@ export const triggerWorkflowEvent = async (
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
-    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
+    const scope = resolveProjectionScope(instanceEntity.scope);
+    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
 
     await lock.unlock();
     lock = undefined;
@@ -1856,7 +1879,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [null] },
       { key: 'pendingTransition', value: [null] },
     ]);
-    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope);
+    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, null);
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
