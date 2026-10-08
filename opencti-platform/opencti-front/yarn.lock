@@ -12080,7 +12080,7 @@ __metadata:
     react-draggable: "npm:4.7.2"
     react-force-graph-2d: "npm:1.29.2"
     react-force-graph-3d: "npm:1.29.2"
-    react-grid-layout: "npm:2.2.4"
+    react-grid-layout: "npm:2.3.0"
     react-intl: "npm:12.1.4"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
@@ -13190,20 +13190,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:2.2.4":
-  version: 2.2.4
-  resolution: "react-grid-layout@npm:2.2.4"
+"react-grid-layout@npm:2.3.0":
+  version: 2.3.0
+  resolution: "react-grid-layout@npm:2.3.0"
   dependencies:
     clsx: "npm:^2.1.1"
     fast-equals: "npm:^4.0.3"
     prop-types: "npm:^15.8.1"
     react-draggable: "npm:^4.4.6"
-    react-resizable: "npm:^3.1.3"
+    react-resizable: "npm:^3.2.0"
     resize-observer-polyfill: "npm:^1.5.1"
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 10c0/cde80a1fa5aaa40ac5b42a0c99c7bb07436e14c5e076b11c6a66810665ff9e23c78cc5583e2edcabec57629801af976bf34c3345a25b85662aea470eca40813b
+  checksum: 10c0/7b9b960e17857868f729ecb20a4d8538295b923bd5c9ed105cd0808fb50c89a32469f454b9cf6b549bbaedce6fb1c3242847dfeebfbf08725d4c2fcf55ed8116
   languageName: node
   linkType: hard
 
@@ -13459,7 +13459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resizable@npm:^3.1.3":
+"react-resizable@npm:^3.2.0":
   version: 3.2.0
   resolution: "react-resizable@npm:3.2.0"
   dependencies:
