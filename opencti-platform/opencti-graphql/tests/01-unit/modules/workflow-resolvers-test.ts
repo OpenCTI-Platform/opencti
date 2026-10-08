@@ -659,6 +659,12 @@ describe('workflow-resolvers', () => {
   });
 
   describe('WorkflowTransition type resolvers', () => {
+    describe('closingReason', () => {
+      it('should return the closing reason mode or null', () => {
+        expect(workflowResolvers.WorkflowTransition.closingReason({ closingReason: 'required' })).toBe('required');
+        expect(workflowResolvers.WorkflowTransition.closingReason({})).toBeNull();
+      });
+    });
     describe('toStatus', () => {
       it('should return the complete mapped destination status', () => {
         const toStatus = { id: 'mapped-closed', template_id: 'closed', order: 2 };

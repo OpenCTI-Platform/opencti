@@ -2566,6 +2566,7 @@ describe('Transition comments – Domain', () => {
           event: t.event,
           to: t.to,
           comment: t.comment,
+          closingReason: t.closingReason,
           actionTypes: (t.actions ?? []).map((a: any) => a.type),
         })),
     }));
@@ -2576,7 +2577,7 @@ describe('Transition comments – Domain', () => {
       initialState: 'draft',
       states: [{ statusId: 'draft' }, { statusId: 'reviewed' }, { statusId: 'published' }],
       transitions: [
-        { from: 'draft', to: 'reviewed', event: 'review', comment: 'Requires manager approval' },
+        { from: 'draft', to: 'reviewed', event: 'review', comment: 'Requires manager approval', closingReason: 'required' },
         { from: 'reviewed', to: 'published', event: 'publish' },
       ],
     });
@@ -2598,6 +2599,14 @@ describe('Transition comments – Domain', () => {
       expect(transitions).toHaveLength(1);
       expect(transitions[0].event).toBe('review');
       expect(transitions[0].comment).toBe('Requires manager approval');
+    });
+
+    it('should expose the closing reason mode on allowed transitions', async () => {
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions[0].closingReason).toBe('required');
     });
 
     it('should expose undefined comment on allowed transitions when no comment is defined', async () => {

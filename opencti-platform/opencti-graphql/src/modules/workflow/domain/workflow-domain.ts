@@ -1222,6 +1222,7 @@ export const getAllowedTransitions = async (
   toState: string;
   toStatus: BasicWorkflowStatus | null;
   comment?: string;
+  closingReason?: string;
   actions: string[];
   requiresShareOrganizationInput: boolean;
   requiresUnshareOrganizationInput: boolean;
@@ -1266,6 +1267,7 @@ export const getAllowedTransitions = async (
         toState: transition.to,
         toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
         comment: transition.comment,
+        closingReason: transition.closingReason,
         actions: transition.actionTypes || [],
         requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
         requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,

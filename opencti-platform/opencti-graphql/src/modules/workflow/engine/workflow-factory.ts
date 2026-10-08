@@ -170,6 +170,7 @@ export class WorkflowFactory {
 
       definition.addTransition(t.from, t.to, t.event, {
         comment: t.comment,
+        closingReason: t.closingReason,
         conditions: this.createConditions<TContext>(t.conditions),
         asyncSideEffects,
         onTransition: syncSideEffects,

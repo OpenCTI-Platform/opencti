@@ -85,6 +85,7 @@ export interface Transition<TContext extends Context = Context> {
   to: State;
   event: Event;
   comment?: string;
+  closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
@@ -172,6 +173,7 @@ export interface WorkflowSerializedTransition {
   to: string | null;
   event: string;
   comment?: string;
+  closingReason?: string;
   /** Phase 1: async background task actions. Run before syncActions. */
   asyncActions?: WorkflowActionConfig[];
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */

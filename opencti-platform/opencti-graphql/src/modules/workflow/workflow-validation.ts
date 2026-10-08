@@ -4,6 +4,7 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
@@ -59,6 +60,7 @@ export const workflowSerializedTransitionSchema = z.object({
   syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
   comment: z.enum(['allowed', 'required', 'disabled']).optional(),
+  closingReason: z.enum(['allowed', 'required', 'disabled']).optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -245,6 +247,13 @@ export const validateWorkflowDefinitionData = async (
     }
     if (transition.to && transition.to !== '*') {
       statesWithIncomingTransition.add(transition.to);
+    }
+
+    if (transition.closingReason && transition.closingReason !== 'disabled' && !isStixDomainObject(entityType)) {
+      errors.push({
+        type: 'CLOSING_REASON_NOT_SUPPORTED',
+        message: `Closing reason in transition '${transition.event}' is only supported for domain objects`,
+      });
     }
 
     if (transition.conditions) {

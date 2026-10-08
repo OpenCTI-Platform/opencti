@@ -119,6 +119,7 @@ const workflowResolvers = {
   WorkflowTransition: {
     toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
+    closingReason: (transition: any) => transition.closingReason ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
     requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,
