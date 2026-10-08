@@ -163,7 +163,7 @@ const buildSectionTree = (container: HTMLElement) => {
 const decideSectionRetention = (
   section: TemplateSection,
   resolutions: Map<string, TemplateVariableResolution>,
-) => {
+): boolean => {
   const keptChildren = section.children.filter((child) => decideSectionRetention(child, resolutions));
   const variables = Array.from(section.variableNames);
   const hasVariablesInTree = variables.length > 0 || section.children.some((child) => child.hasVariablesInTree);
