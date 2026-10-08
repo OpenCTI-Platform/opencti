@@ -615,6 +615,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                       <FilterIconButton
                         filters={filters}
                         helpers={helpers}
+                        availableFilterKeys={availableFilterKeys}
                         redirection
                         searchContext={{ entityTypes: selectedTypes }}
                       />

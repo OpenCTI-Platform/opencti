@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, KeyboardEvent } from 'react';
+import React, { FunctionComponent, useRef, useState, KeyboardEvent } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { buildDate, dateFiltersValueForDisplay } from '../../../../utils/Time';
 
@@ -15,6 +15,8 @@ interface FilterDateProps {
   setInputValues: (value: { key: string; values: string[]; operator?: string }[]) => void;
   filterLabel: string;
   filterValue?: string;
+  /** Also save a typed (not yet accepted) valid date when the field loses focus. */
+  commitOnBlur?: boolean;
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -25,7 +27,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   setInputValues,
   filterLabel,
   filterValue,
+  commitOnBlur = false,
 }) => {
+  const isDirty = useRef(false);
   const [dateState, setDateState] = useState<Date | null>(filterValue
     ? new Date(dateFiltersValueForDisplay(filterValue, operator))
     : null);
@@ -46,11 +50,13 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   };
 
   const handleChangeDate = (date: Date | null) => {
+    isDirty.current = true;
     setDateState(date);
   };
 
   const handleAcceptDate = (date: Date | null) => {
-    if (date && date.toISOString()) {
+    if (date && !Number.isNaN(date.getTime())) {
+      isDirty.current = false;
       // set new input values
       const newInputValue = { key: filterKey, values: [date.toString()], operator };
       const newInputValues = inputValues.filter((f) => f.key !== filterKey || (operator && f.operator !== operator));
@@ -80,6 +86,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
           variant: 'outlined',
           fullWidth: true,
           onKeyDown: (event) => handleValidateDate(event),
+          onBlur: () => {
+            if (commitOnBlur && isDirty.current) handleAcceptDate(dateState);
+          },
         }),
       }}
     />

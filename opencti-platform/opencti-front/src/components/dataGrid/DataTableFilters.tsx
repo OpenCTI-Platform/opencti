@@ -10,7 +10,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import { ExportContext } from '../../utils/ExportContextProvider';
-import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, canonicalizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
@@ -56,6 +56,25 @@ export const DataTableDisplayFilters = ({
   );
 };
 
+/**
+ * Builds the filter group sent to the export mutations: the context filters and the current
+ * filters are kept as two sibling groups, and the frontend-only ids are stripped at any depth.
+ */
+export const buildExportFilterGroup = (contextFilters?: FilterGroup | null, filters?: FilterGroup | null): FilterGroup => {
+  const exportFilterGroups: FilterGroup[] = [];
+  if (isFilterGroupNotEmpty(contextFilters)) {
+    exportFilterGroups.push(canonicalizeFilterGroupForBackend(contextFilters!));
+  }
+  if (isFilterGroupNotEmpty(filters)) {
+    exportFilterGroups.push(canonicalizeFilterGroupForBackend(filters!));
+  }
+  return {
+    mode: 'and',
+    filters: [],
+    filterGroups: exportFilterGroups,
+  };
+};
+
 const DataTableFilters = ({
   contextFilters,
   availableFilterKeys,
@@ -95,20 +114,9 @@ const DataTableFilters = ({
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
-  const exportFilterGroups: FilterGroup[] = [];
-  if (isFilterGroupNotEmpty(contextFilters)) {
-    exportFilterGroups.push(contextFilters!);
-  }
-  if (isFilterGroupNotEmpty(paginationOptions.filters)) {
-    exportFilterGroups.push(paginationOptions.filters);
-  }
   const exportPaginationOptions = {
     ...paginationOptions,
-    filters: {
-      mode: 'and',
-      filters: [],
-      filterGroups: exportFilterGroups,
-    },
+    filters: buildExportFilterGroup(contextFilters, paginationOptions.filters),
   };
 
   return (

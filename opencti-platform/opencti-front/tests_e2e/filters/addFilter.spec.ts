@@ -5,8 +5,8 @@ test('Add a new filter in the observables list and check the filter is still pre
   await page.goto('/dashboard/observations/observables');
   const filterUtils = new FiltersPageModel(page);
   await filterUtils.addEntityTypeFilter('Artifact');
-  await expect(page.getByRole('button', { name: 'Entity type = Artifact' })).toBeVisible();
+  await expect(page.getByTestId('filter-chip').filter({ hasText: 'Entity type = Artifact' })).toBeVisible();
   await page.goto('/dashboard/');
   await page.goto('/dashboard/observations/observables');
-  await expect(page.getByRole('button', { name: 'Entity type = Artifact' })).toBeVisible();
+  await expect(page.getByTestId('filter-chip').filter({ hasText: 'Entity type = Artifact' })).toBeVisible();
 });

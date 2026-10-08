@@ -255,6 +255,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            availableFilterKeys={stixFilters}
             redirection={true}
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
@@ -285,6 +286,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 <FilterIconButton
                   filters={originFilters}
                   helpers={originHelpers}
+                  availableFilterKeys={streamOriginFilters}
                   redirection={true}
                   searchContext={{ entityTypes: ['History'] }}
                   entityTypes={['History']}

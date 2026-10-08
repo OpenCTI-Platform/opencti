@@ -59,7 +59,7 @@ const PlaybookFlowFieldFilters = ({
   };
 
   return (
-    <FormControl sx={{ marginTop: 2 }}>
+    <FormControl fullWidth sx={{ marginTop: 2 }}>
       {label && (
         <FormLabel sx={{ fontSize: 12, marginBottom: theme.spacing(0.5) }}>
           {label}
@@ -81,6 +81,7 @@ const PlaybookFlowFieldFilters = ({
       <FilterIconButton
         filters={filters}
         helpers={helpers}
+        availableFilterKeys={availableFilterKeys}
         entityTypes={entityTypes}
         searchContext={searchContext}
         redirection

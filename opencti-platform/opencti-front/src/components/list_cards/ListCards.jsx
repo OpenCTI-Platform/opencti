@@ -237,6 +237,7 @@ class ListCards extends Component {
               <FilterIconButton
                 helpers={helpers}
                 filters={filters}
+                availableFilterKeys={availableFilterKeys}
                 handleRemoveFilter={handleRemoveFilter}
                 handleSwitchGlobalMode={handleSwitchGlobalMode}
                 handleSwitchLocalMode={handleSwitchLocalMode}

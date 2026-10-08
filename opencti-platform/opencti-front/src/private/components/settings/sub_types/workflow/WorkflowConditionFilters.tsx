@@ -22,7 +22,7 @@ const WorkflowConditionFilters = ({
 
   const [filters, helpers] = useFiltersState(value?.filters || emptyFilterGroup);
   const availableEntityTypes = ['User', 'Group', 'Organization', 'DraftWorkspace'];
-  const availableFilterKeys = [
+  const WORKFLOW_CONDITION_FILTER_KEYS = [
     'name',
     'workflow_user',
     'workflow_group',
@@ -42,7 +42,7 @@ const WorkflowConditionFilters = ({
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Filters
-          availableFilterKeys={availableFilterKeys}
+          availableFilterKeys={WORKFLOW_CONDITION_FILTER_KEYS}
           availableEntityTypes={availableEntityTypes}
           helpers={helpers}
           searchContext={searchContext}
@@ -51,6 +51,7 @@ const WorkflowConditionFilters = ({
       <FilterIconButton
         filters={filters}
         helpers={helpers}
+        availableFilterKeys={WORKFLOW_CONDITION_FILTER_KEYS}
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         entityTypes={searchContext.entityTypes}

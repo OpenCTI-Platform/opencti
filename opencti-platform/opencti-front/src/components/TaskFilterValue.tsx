@@ -7,7 +7,7 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { useFormatter } from './i18n';
 import { entityTypesFilters, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { displayEntityTypeForTranslation, truncate } from '../utils/String';
-import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
+import FilterGroupSummaryButton from './filters/FilterGroupSummaryButton';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 /**
@@ -41,7 +41,7 @@ const TaskFilterValue = ({
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
+    (filtersRepresentatives ?? []).map((n) => [n?.representativeId, n]),
   );
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
@@ -101,11 +101,14 @@ const TaskFilterValue = ({
       })}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && (
-        <ImbricatedFilterGroupDisplay
+        <FilterGroupSummaryButton
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
-          filterMode={filters.mode}
+          showOnlyFilterGroups
           filterStyle={CHIP_STYLE}
+          buttonLabel={t_i18n('Filters are not fully displayed')}
+          dialogTitle={t_i18n('Imbricated filter groups')}
+          dialogDescription={t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited directly from the filters line on the entity page.')}
         />
       )}
     </>
