@@ -66,6 +66,8 @@ describe('Hunt schedule utils', () => {
 
     it('should reject invalid and never firing expressions', () => {
       expect(validateHuntSchedule('every day').code).toEqual('invalid');
+      expect(validateHuntSchedule(`${Array.from({ length: 100 }, (_, index) => index % 60).join(',')} * * * *`))
+        .toEqual({ valid: false, code: 'invalid', detail: 'a cron expression is at most 256 characters' });
       expect(validateHuntSchedule('0 0 30 2 *')).toEqual({ valid: false, code: 'never' });
     });
   });

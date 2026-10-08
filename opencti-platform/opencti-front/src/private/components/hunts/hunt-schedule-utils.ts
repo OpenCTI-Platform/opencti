@@ -20,6 +20,7 @@ const MACROS: Record<string, string> = {
 const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 const MAX_SEARCH_DAYS = 366 * 5;
+export const HUNT_CRON_MAX_LENGTH = 256;
 interface FieldSpec {
   min: number;
   max: number;
@@ -127,6 +128,9 @@ const parseField = (field: string, spec: FieldSpec): { values: Set<number>; rest
 const sorted = (values: Set<number>) => Array.from(values).sort((a, b) => a - b);
 
 export const parseHuntCron = (expression: string): ParsedHuntCron => {
+  if (expression.length > HUNT_CRON_MAX_LENGTH) {
+    throw new HuntCronError(`a cron expression is at most ${HUNT_CRON_MAX_LENGTH} characters`);
+  }
   const normalized = MACROS[expression.trim().toLowerCase()] ?? expression.trim();
   const parts = normalized.split(/\s+/);
   if (parts.length !== 5) {

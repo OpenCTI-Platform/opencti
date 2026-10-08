@@ -16,6 +16,7 @@ import { HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { huntScheduleMode } from './hunt-schedule-utils';
 import { useHuntScheduleText } from './HuntSchedulePreview';
 import { HUNT_ENTITY_TYPE, huntTypeLabel } from './hunt-utils';
+import { unscrolledTop } from './hunt-layout-utils';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
@@ -146,8 +147,7 @@ const useRemainingHeight = (element: HTMLDivElement | null, watched: HTMLDivElem
       return undefined;
     }
     const compute = () => {
-      const top = element.getBoundingClientRect().top + window.scrollY;
-      setHeight(Math.max(MIN_TABLE_HEIGHT, window.innerHeight - top - PAGE_BOTTOM_PADDING));
+      setHeight(Math.max(MIN_TABLE_HEIGHT, window.innerHeight - unscrolledTop(element) - PAGE_BOTTOM_PADDING));
     };
     compute();
     window.addEventListener('resize', compute);
