@@ -18,7 +18,7 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
     label: 'Platform settings',
     kind: 'children',
     items: [
-      { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name, favicon...)' },
+      { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name...)' },
       { key: 'SettingsLanguage', label: 'Language' },
       { key: 'SettingsMessages', label: 'Messages (banner)' },
       { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
