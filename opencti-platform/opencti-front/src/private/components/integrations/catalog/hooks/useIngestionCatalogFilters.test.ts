@@ -280,6 +280,33 @@ describe('useIngestionCatalogFilters', () => {
       expect(mocks.notifyError).toHaveBeenCalledTimes(1);
     });
 
+    it('sorts contracts without a title, falling back to their slug', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: 'Zeta', slug: 'zeta' }),
+          makeContract({ title: undefined, slug: 'alpha' }),
+          makeContract({ title: 'Beta', slug: 'beta' }),
+        ],
+      });
+      expect(result.current.sections.flatMap((section) => section.items.map((item) => item.title))).toEqual(['alpha', 'Beta', 'Zeta']);
+    });
+
+    it('gives the parsed connector of a contract without a title its slug as title', () => {
+      const { result } = renderFilters({ contracts: [makeContract({ title: undefined, slug: 'alpha' })] });
+      expect(result.current.items[0].connector?.connector.title).toBe('alpha');
+    });
+
+    it('finds a contract without a title by its slug', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: undefined, slug: 'alpha' }),
+          makeContract({ title: 'Beta', slug: 'beta' }),
+        ],
+      });
+      act(() => result.current.setFilters((prev) => ({ ...prev, search: 'alpha' })));
+      expect(result.current.filteredItems.map((item) => item.title)).toEqual(['alpha']);
+    });
+
     it('does not notify when every contract is valid', () => {
       renderFilters({ contracts: [makeContract()] });
       expect(mocks.notifyError).not.toHaveBeenCalled();
