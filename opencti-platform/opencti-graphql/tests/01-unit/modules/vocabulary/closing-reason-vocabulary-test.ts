@@ -4,7 +4,7 @@ import { getVocabulariesCategories, isEntityFieldAnOpenVocabulary, openVocabular
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
-import { depsKeysRegister } from '../../../../src/schema/schema-attributes';
+import { depsKeysRegister, schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 
 describe('closing_reason_ov vocabulary', () => {
   it('should apply to every domain object type, including module ones', () => {
@@ -26,5 +26,16 @@ describe('closing_reason_ov vocabulary', () => {
 
   it('should ship default values', () => {
     expect(openVocabularies.closing_reason_ov.map(({ key }) => key)).toEqual(['true-positive', 'false-positive', 'duplicate', 'indeterminate', 'other']);
+  });
+});
+
+describe('x_opencti_closing_reason attribute', () => {
+  it('should be a workflow-controlled vocabulary attribute of domain objects', () => {
+    const attribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, 'x_opencti_closing_reason');
+    expect(attribute).toMatchObject({ format: 'vocabulary', vocabularyCategory: 'closing_reason_ov', editDefault: false, upsert: false, multiple: false });
+  });
+
+  it('should not exist on draft workspaces', () => {
+    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_DRAFT_WORKSPACE, 'x_opencti_closing_reason')).toBeUndefined();
   });
 });
