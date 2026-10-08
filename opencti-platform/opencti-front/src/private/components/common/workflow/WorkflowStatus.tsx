@@ -13,6 +13,8 @@ import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomain
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
+import Label from '../../../../components/common/label/Label';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 export { WorkflowTransitions } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
@@ -92,6 +94,26 @@ export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, chi
         </>
       )
     : fallback;
+};
+
+export const WorkflowClosingReasonForEntity = ({ data, entityType }: {
+  data: WorkflowStatusStixDomainObject_data$key;
+  entityType: string;
+}) => {
+  const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
+  if (!isWorkflowUiEnabledForType(entityType, isFeatureEnable) || !entity.x_opencti_closing_reason) {
+    return null;
+  }
+  return (
+    <>
+      <Label sx={{ marginTop: 2 }}>
+        {t_i18n('Closing reason')}
+      </Label>
+      <ItemOpenVocab type="closing_reason_ov" value={entity.x_opencti_closing_reason} />
+    </>
+  );
 };
 
 export default WorkflowStatus;
