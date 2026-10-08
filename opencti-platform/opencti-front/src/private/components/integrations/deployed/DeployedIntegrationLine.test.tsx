@@ -50,4 +50,15 @@ describe('DeployedIntegrationLine', () => {
     const middleClick = new MouseEvent('auxclick', { bubbles: true, cancelable: true, button: 1 });
     expect(fireEvent(screen.getByText('Active'), middleClick)).toBe(false);
   });
+
+  it('shows no health chip when there is no ingestion health', () => {
+    testRender(<DeployedIntegrationLine item={item} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
+    expect(screen.queryByTestId('ingestion-health-chip')).toBeNull();
+  });
+
+  it('shows the health chip next to the status', () => {
+    const withHealth = { ...item, health: { status: 'critical', summary: 'No ping received since 2026-10-07T10:00:00.000Z' } };
+    testRender(<DeployedIntegrationLine item={withHealth} onChange={vi.fn()} />, { route: '/dashboard/integrations/deployed' });
+    expect(screen.getByTestId('ingestion-health-chip')).toHaveTextContent('Critical');
+  });
 });

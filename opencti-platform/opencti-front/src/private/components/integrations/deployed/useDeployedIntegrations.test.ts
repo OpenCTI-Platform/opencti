@@ -95,6 +95,17 @@ describe('useDeployedIntegrations', () => {
       expect(item.connector?.active).toBe(true);
     });
 
+    it('carries the connector ingestion health from the polled state', () => {
+      const health = { status: 'critical', summary: 'No ping received since 2026-10-07T10:00:00.000Z' };
+      const { result } = renderIntegrations({ connectors: [makeConnector()], states: [makeState({ ingestion_health: health })] });
+      expect(result.current[0].health).toEqual(health);
+    });
+
+    it('has no ingestion health when the flag is off or the connector is not evaluated', () => {
+      const { result } = renderIntegrations({ connectors: [makeConnector()], states: [makeState({ ingestion_health: null })] });
+      expect(result.current[0].health).toBeNull();
+    });
+
     it('prefers the connector title over its technical name', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector({ title: 'Nice title' })],
