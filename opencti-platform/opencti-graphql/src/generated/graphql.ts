@@ -25049,6 +25049,7 @@ export type Query = {
   fintelDesign?: Maybe<FintelDesign>;
   fintelDesigns?: Maybe<FintelDesignConnection>;
   fintelTemplate?: Maybe<FintelTemplate>;
+  fintelTemplates?: Maybe<FintelTemplateConnection>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
@@ -26239,6 +26240,16 @@ export type QueryFintelDesignsArgs = {
 
 export type QueryFintelTemplateArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryFintelTemplatesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FintelTemplateOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -51069,6 +51080,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelDesign?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<QueryFintelDesignArgs, 'id'>>;
   fintelDesigns?: Resolver<Maybe<ResolversTypes['FintelDesignConnection']>, ParentType, ContextType, Partial<QueryFintelDesignsArgs>>;
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
+  fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<QueryFintelTemplatesArgs>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;

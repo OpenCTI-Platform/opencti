@@ -157,7 +157,7 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
                       style={{ marginLeft: 15, marginRight: 10 }}
                     />
                   )}
-                  label={item.name}
+                  label={t_i18n(item.name)}
                 />
               ))}
               {loadedOnce && items.length === 0 && !loading && (

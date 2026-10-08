@@ -18,7 +18,8 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { emptyPaginationResult } from '../../database/utils';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -57,6 +58,14 @@ export const canViewTemplates = async (context: AuthContext) => {
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelTemplate> => {
   await canViewTemplates(context);
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
+};
+
+export const findFintelTemplatePaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelTemplate>) => {
+  const canGetTemplates = await canViewTemplates(context);
+  if (!canGetTemplates) {
+    return emptyPaginationResult<BasicStoreEntityFintelTemplate>();
+  }
+  return pageEntitiesConnection<BasicStoreEntityFintelTemplate>(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], opts);
 };
 
 // check validity of variable_name of fintel template widgets
