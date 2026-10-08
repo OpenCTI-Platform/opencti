@@ -11,7 +11,7 @@ import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } fro
 import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { HUNT_MANAGER_USER, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
 import { findByType as findStatusesByType } from '../../domain/status';
-import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
@@ -50,30 +50,32 @@ export const parseIncidentProposal = (proposal: string | null | undefined): Hunt
  * The draft workspace an incident proposed by a hunt run is created in (draft-first: an analyst validates it into the
  * knowledge graph). The workspace is restricted to the organizations the run is shared with, if any, and its name and
  * description carry no detail of the hunt: draft workspaces are listed to every user with draft access, the markings
- * of the run only protect the incident inside. The open draft of the run is reused: an attempt that failed to record
- * it on the run never leaves the run with two drafts.
+ * of the run only protect the incident inside. The draft is recorded on the run (`record`) as soon as it is opened, and
+ * a later attempt reuses the recorded one; a draft that cannot be recorded is deleted, so a failed attempt never leaves
+ * the run with two drafts. A draft is never found again by its name: any user with draft access can give that name to
+ * a draft of their own.
  */
-export const createHuntIncidentWorkspace = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<string> => {
-  const name = `Hunt incident - run ${run.internal_id}`;
-  const [existing] = await topEntitiesList<BasicStoreEntity>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_DRAFT_WORKSPACE], {
-    first: 1,
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['name'], values: [name] }, { key: ['draft_status'], values: [DRAFT_STATUS_OPEN] }],
-      filterGroups: [],
-    },
-    noFiltersChecking: true,
-  });
-  if (existing) {
-    return existing.internal_id;
-  }
+export const createHuntIncidentWorkspace = async <T>(
+  context: AuthContext,
+  run: BasicStoreEntityHuntRun,
+  record: (draftId: string) => Promise<T>,
+): Promise<T> => {
   const organizations = run[RELATION_GRANTED_TO] ?? [];
   const draft = await addDraftWorkspace(context, HUNT_MANAGER_USER, {
-    name,
+    name: `Hunt incident - run ${run.internal_id}`,
     description: 'Incident proposed by a hunt run. Validate the draft to create the incident.',
     ...(organizations.length > 0 ? { authorized_members: organizations.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_EDIT })) } : {}),
   });
-  return draft.id;
+  try {
+    return await record(draft.id);
+  } catch (error) {
+    try {
+      await deleteDraftWorkspace(context, HUNT_MANAGER_USER, draft.id);
+    } catch (deletionError) {
+      logApp.warn('[OPENCTI-MODULE] Hunt incident draft not recorded on its run could not be deleted', { cause: deletionError, draftId: draft.id, runId: run.internal_id });
+    }
+    throw error;
+  }
 };
 
 const topValues = (hits: HuntHit[], values: (hit: HuntHit) => (string | null | undefined)[]): string[] => {

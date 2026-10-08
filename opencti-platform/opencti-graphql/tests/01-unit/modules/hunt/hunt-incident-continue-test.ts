@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { createEntity, createRelation, patchAttribute } from '../../../../src/database/middleware';
 import { internalLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
-import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import {
   continueHuntIncident,
   createHuntIncidentInWorkspace,
@@ -32,6 +32,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/modules/draftWorkspace/draftWorkspace-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/draftWorkspace/draftWorkspace-domain')>(),
   addDraftWorkspace: vi.fn(async () => ({ id: 'draft-new' })),
+  deleteDraftWorkspace: vi.fn(async () => 'draft-new'),
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -129,19 +130,32 @@ describe('Incident of a run opened again after a failed attempt', () => {
   beforeEach(() => {
     vi.mocked(createEntity).mockClear();
     vi.mocked(addDraftWorkspace).mockClear();
+    vi.mocked(deleteDraftWorkspace).mockClear();
     vi.mocked(topEntitiesList).mockReset();
     vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'platform-1', name: 'Splunk prod' } as never);
   });
 
-  it('should reuse the open draft of the run rather than open another', async () => {
-    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ internal_id: 'draft-1' }] as never);
-    expect(await createHuntIncidentWorkspace({} as AuthContext, run)).toEqual('draft-1');
-    expect(addDraftWorkspace).not.toHaveBeenCalled();
-    const filters = (vi.mocked(topEntitiesList).mock.calls[0][3] as { filters: { filters: { key: string[]; values: string[] }[] } }).filters.filters;
-    expect(filters).toEqual([{ key: ['name'], values: ['Hunt incident - run run-2'] }, { key: ['draft_status'], values: ['open'] }]);
-    vi.mocked(topEntitiesList).mockResolvedValueOnce([] as never);
-    expect(await createHuntIncidentWorkspace({} as AuthContext, run)).toEqual('draft-new');
-    expect(addDraftWorkspace).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ name: 'Hunt incident - run run-2' }));
+  it('should record the draft it opens on the run, and never take a draft found by its name', async () => {
+    const record = vi.fn(async (draftId: string) => ({ ...run, draft_id: draftId }));
+    expect(await createHuntIncidentWorkspace({} as AuthContext, run, record)).toMatchObject({ draft_id: 'draft-new' });
+    expect(record).toHaveBeenCalledWith('draft-new');
+    expect(addDraftWorkspace).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({
+      name: 'Hunt incident - run run-2',
+      authorized_members: [{ id: 'organization-1', access_right: 'edit' }],
+    }));
+    expect(topEntitiesList).not.toHaveBeenCalled();
+    expect(deleteDraftWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('should delete the draft it could not record on the run, so that a later attempt opens a single one', async () => {
+    const failing = vi.fn(async () => {
+      throw new Error('engine unavailable');
+    });
+    await expect(createHuntIncidentWorkspace({} as AuthContext, run, failing)).rejects.toThrow('engine unavailable');
+    expect(deleteDraftWorkspace).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'draft-new');
+    // A deletion that fails too leaves the failure of the attempt as it is
+    vi.mocked(deleteDraftWorkspace).mockRejectedValueOnce(new Error('draft locked'));
+    await expect(createHuntIncidentWorkspace({} as AuthContext, run, failing)).rejects.toThrow('engine unavailable');
   });
 
   it('should give every attempt at the incident of a run the same STIX id, so a later one updates it', async () => {

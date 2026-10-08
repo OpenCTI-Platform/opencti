@@ -850,11 +850,7 @@ const escalateHuntRun = async (
     await continueHuntIncident(context, hunt, run, open);
     return patchHuntRun(context, run, { incident_id: open.incidentId, draft_id: open.draftId, incident_continued: true });
   }
-  let current = run;
-  if (!current.draft_id) {
-    const draftId = await createHuntIncidentWorkspace(context, current);
-    current = await patchHuntRun(context, current, { draft_id: draftId });
-  }
+  const current = run.draft_id ? run : await createHuntIncidentWorkspace(context, run, (draftId) => patchHuntRun(context, run, { draft_id: draftId }));
   const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
   return patchHuntRun(context, current, { incident_id: incidentId, incident_continued: false });
 });
@@ -1703,8 +1699,11 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
           patch.incident_id = open.incidentId;
           patch.incident_continued = true;
         } else {
-          // A draft recorded by an interrupted finalization is reused rather than doubled
-          const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
+          // A draft recorded by an interrupted finalization or verdict is reused rather than doubled
+          const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current, async (opened) => {
+            await patchHuntRun(context, current, { draft_id: opened });
+            return opened;
+          });
           patch.draft_id = draftId;
           patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
           patch.incident_continued = false;

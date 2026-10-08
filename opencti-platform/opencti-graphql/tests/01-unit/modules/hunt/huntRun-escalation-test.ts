@@ -47,7 +47,7 @@ vi.mock('../../../../src/modules/hunt/hunt-dispatch', async (importOriginal) => 
 
 vi.mock('../../../../src/modules/hunt/hunt-incident', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-incident')>(),
-  createHuntIncidentWorkspace: vi.fn(async () => 'draft-1'),
+  createHuntIncidentWorkspace: vi.fn(async (_context: unknown, _run: unknown, record: (draftId: string) => Promise<unknown>) => record('draft-1')),
   createHuntIncidentInWorkspace: vi.fn(async () => 'incident-1'),
   findOpenHuntIncident: vi.fn(async () => null),
   continueHuntIncident: vi.fn(async () => undefined),
