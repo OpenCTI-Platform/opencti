@@ -10226,6 +10226,7 @@ type WorkflowSerializedTransition {
   syncActions: [WorkflowActionConfig!]
   conditions: JSON
   comment: String
+  closingReason: String
 }
 
 type WorkflowSchema {
@@ -10329,6 +10330,7 @@ type WorkflowTransition {
   toState: String!
   toStatus: Status
   comment: String
+  closingReason: String
   actions: [String!]
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
