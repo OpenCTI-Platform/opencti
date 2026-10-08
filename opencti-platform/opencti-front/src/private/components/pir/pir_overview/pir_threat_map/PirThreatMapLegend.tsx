@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
+import { onActivationKey } from '../../../../../utils/domEvent';
 
 interface PirThreatMapLegendProps {
   entityTypes: string[];
@@ -58,12 +59,7 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
           onClick={() => toggleType(type)}
           role="button"
           tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              toggleType(type);
-            }
-          }}
+          onKeyDown={onActivationKey(() => toggleType(type))}
         >
           <div
             style={{

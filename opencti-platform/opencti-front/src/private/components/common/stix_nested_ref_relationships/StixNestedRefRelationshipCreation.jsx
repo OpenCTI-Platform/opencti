@@ -26,6 +26,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
+import { onActivationKey } from '../../../../utils/domEvent';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -618,12 +619,7 @@ class StixNestedRefRelationshipCreation extends Component {
               onClick={this.handleSelectRelation.bind(this, relation.node)}
               role="button"
               tabIndex={0}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  this.handleSelectRelation(relation.node);
-                }
-              }}
+              onKeyDown={onActivationKey(() => this.handleSelectRelation(relation.node))}
             >
               <div
                 className={classes.item}
@@ -733,12 +729,7 @@ class StixNestedRefRelationshipCreation extends Component {
             onClick={this.handleChangeStep.bind(this)}
             role="button"
             tabIndex={0}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                this.handleChangeStep();
-              }
-            }}
+            onKeyDown={onActivationKey(() => this.handleChangeStep())}
           >
             <div
               className={classes.item}

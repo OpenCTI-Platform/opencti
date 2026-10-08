@@ -7,6 +7,7 @@ import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { toPairs } from 'ramda';
 import { useFormatter } from './i18n';
 import { DataColumns } from './list_lines';
+import { onActivationKey } from '../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,12 +79,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
           onClick={() => reverseBy(field)}
           role="button"
           tabIndex={0}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              reverseBy(field);
-            }
-          }}
+          onKeyDown={onActivationKey(() => reverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? orderComponent : ''}
