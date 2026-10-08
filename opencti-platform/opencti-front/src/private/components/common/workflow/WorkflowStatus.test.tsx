@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import WorkflowStatus, { WorkflowStatusForEntity } from './WorkflowStatus';
+import WorkflowStatus, { WorkflowClosingReasonForEntity, WorkflowStatusForEntity } from './WorkflowStatus';
 import WorkflowTransitions, { WorkflowTransitionsForEntity } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
@@ -37,6 +37,12 @@ vi.mock('../form/ObjectOrganizationField', async () => {
     },
   };
 });
+
+vi.mock('../form/OpenVocabField', () => ({
+  default: ({ name, label, onChange }: { name: string; label: string; onChange: (name: string, value: string) => void }) => (
+    <button type="button" onClick={() => onChange(name, 'false-positive')}>{label}</button>
+  ),
+}));
 
 vi.mock('../../../../utils/hooks/useHelper', () => ({
   default: vi.fn(),
@@ -585,5 +591,48 @@ describe('WorkflowTransitions', () => {
     });
     testRender(<WorkflowTransitions data={draft} entityType="Incident" />);
     expect(screen.getByText('approve')).not.toBeNull();
+  });
+});
+
+describe('Workflow closing reason', () => {
+  beforeEach(() => {
+    mockCommit.mockClear();
+  });
+
+  it('requires a closing reason before confirming and submits it', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'close', closingReason: CommentMode.required })],
+      },
+    });
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('close'));
+    expect(await screen.findByText('A closing reason is required before changing the status.')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Closing reason' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled());
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    expect(mockCommit).toHaveBeenCalledTimes(1);
+    expect(mockCommit.mock.calls[0][0].variables).toMatchObject({ eventName: 'close', closingReason: 'false-positive' });
+  });
+
+  it('displays the closing reason of an entity when the workflow UI is enabled', () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    const entity = { x_opencti_closing_reason: 'duplicate' } as unknown as WorkflowStatusStixDomainObject_data$key;
+    testRender(<WorkflowClosingReasonForEntity data={entity} entityType="Case-Incident" />);
+    expect(screen.getByText('Closing reason')).toBeVisible();
+    expect(screen.getByText('duplicate')).toBeVisible();
+  });
+
+  it('hides the closing reason when the workflow UI is disabled', () => {
+    const entity = { x_opencti_closing_reason: 'duplicate' } as unknown as WorkflowStatusStixDomainObject_data$key;
+    testRender(<WorkflowClosingReasonForEntity data={entity} entityType="Case-Incident" />);
+    expect(screen.queryByText('duplicate')).toBeNull();
   });
 });
