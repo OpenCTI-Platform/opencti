@@ -169,10 +169,28 @@ describe('heartbeat storage failures', () => {
 
   it('should fail the ping, as recording the heartbeat is its purpose', async () => {
     vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, connector_state: 'state' } as never);
-    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...baseConnector, connector_state: 'state' } } as never);
     vi.mocked(redisSetConnectorHeartbeat).mockRejectedValueOnce(redisError);
 
     await expect(pingConnector(testContext, testUser, 'connector-1', 'state', undefined as never)).rejects.toThrow(redisError);
+  });
+
+  it('should keep a pending state reset when the heartbeat fails, so that the retry delivers it', async () => {
+    const resetConnector = { ...baseConnector, connector_state: '', connector_state_reset: true };
+    // The connector pings with its stale local state while a reset is pending
+    vi.mocked(storeLoadById).mockResolvedValueOnce(resetConnector as never);
+    vi.mocked(redisSetConnectorHeartbeat).mockRejectedValueOnce(redisError);
+
+    await expect(pingConnector(testContext, testUser, 'connector-1', 'stale-state', undefined as never)).rejects.toThrow(redisError);
+    expect(patchAttribute).not.toHaveBeenCalled();
+
+    // The retry still finds the reset pending: it consumes it and returns the reset state, without writing the stale one
+    vi.mocked(storeLoadById).mockResolvedValueOnce(resetConnector as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...resetConnector, connector_state_reset: false } } as never);
+
+    const result = await pingConnector(testContext, testUser, 'connector-1', 'stale-state', undefined as never);
+
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toEqual({ connector_state_reset: false });
+    expect(result.connector_state).toBe('');
   });
 
   it('should still register the connector', async () => {

@@ -155,11 +155,12 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   const scopes = connectorEntity.connector_scope ? connectorEntity.connector_scope.split(',') : [];
   await registerConnectorQueues(connectorEntity.id, connectorEntity.name, connectorEntity.connector_type, scopes);
 
-  const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   const lastSeenAt = now();
-  // Not best effort: recording the heartbeat is the purpose of the ping, the connector must know it failed
-  // (the state is already saved and the connector retries on its next ping)
+  // Not best effort: recording the heartbeat is the purpose of the ping, the connector must know it failed and retry.
+  // Recorded before updating the state: a pending state reset is consumed by the update, failing after it would let
+  // the connector, which never received the reset state, write back its stale one on its next ping
   await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
+  const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   return completeConnector(updatedConnector, lastSeenAt);
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
