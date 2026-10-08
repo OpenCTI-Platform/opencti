@@ -170,6 +170,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
                       searchScope={searchScope}
                       setSearchScope={setSearchScope}
                       availableRelationFilterTypes={availableRelationFilterTypes}
+                      additionalEntityTypes={filterKey === 'regardingOf' && subKey === 'id' ? ['External-Reference'] : undefined}
                     />
                   )
                 : paramsInput.InputProps.endAdornment,

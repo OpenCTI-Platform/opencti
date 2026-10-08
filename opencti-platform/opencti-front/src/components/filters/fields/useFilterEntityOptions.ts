@@ -110,7 +110,7 @@ const useFilterEntityOptions = ({
   const options = [...selectedOptions, ...allOptions.filter((option) => !optionsValues.includes(option.value))];
 
   const triggerSearch = (event: SyntheticEvent) => {
-    searchEntities(searchKey, cacheEntities, setCacheEntities, event, !!subKey);
+    searchEntities(searchKey, cacheEntities, setCacheEntities, event, subKey ? filterKey : undefined);
   };
 
   const setInputValue = (value: string) => {
