@@ -6448,12 +6448,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ejs@npm:6.0.1":
-  version: 6.0.1
-  resolution: "ejs@npm:6.0.1"
+"ejs@npm:7.0.1":
+  version: 7.0.1
+  resolution: "ejs@npm:7.0.1"
   bin:
     ejs: bin/cli.js
-  checksum: 10c0/475665efdab9deb01448a0b136129d138483228520138b2fba7991330255e4e1050eae145124c26101ff1ab158bf5f506f19a8dae5996054fc7e76bb94a12ebd
+  checksum: 10c0/683485e8f4d1db361fe4c6b3906733555460eb7f858ad4ca7f7c0e0e7925d83e6b6e55edda9baf0701213c2e9a7e08e83c2ec116ba71a98affdf5638e8ba8067
   languageName: node
   linkType: hard
 
@@ -10354,7 +10354,7 @@ __metadata:
     cors: "npm:2.8.6"
     csv-parse: "npm:7.0.3"
     dataloader: "npm:2.2.3"
-    ejs: "npm:6.0.1"
+    ejs: "npm:7.0.1"
     esbuild: "npm:0.28.2"
     esbuild-plugin-copy: "npm:2.1.1"
     esbuild-plugin-import-glob: "npm:0.1.1"
