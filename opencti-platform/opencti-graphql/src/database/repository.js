@@ -1,7 +1,7 @@
 import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
-import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS } from './connector-liveness';
+import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS, isManagedConnectorStopped } from './connector-liveness';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';
 import { isEmptyField, isNotEmptyField } from './utils';
@@ -49,14 +49,8 @@ export const isConnectorActive = (connector, lastSeenAt) => {
   if (connector.built_in) {
     return connector.active ?? true;
   }
-  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
-    // return false if managed connector is stopped or stopping
-    const connectorStopped = connector.manager_requested_status === 'stopping'
-      || connector.manager_requested_status === 'stopped'
-      || connector.manager_current_status === 'stopped';
-    if (connectorStopped) {
-      return false;
-    }
+  if (isManagedConnectorStopped(connector)) {
+    return false;
   }
   return isNotEmptyField(lastSeenAt) && (Date.now() - new Date(lastSeenAt).getTime()) / 1000 < CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS;
 };

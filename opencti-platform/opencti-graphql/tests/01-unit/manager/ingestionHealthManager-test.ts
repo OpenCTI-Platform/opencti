@@ -43,7 +43,7 @@ describe('Ingestion health manager', () => {
 
   it('should cache the new verdict with only the ingestion health fields when the status changes', async () => {
     expect(await evaluateIngestionSource({} as any, source('a', { ingestion_health_status: 'unknown', ingestion_health_since: SINCE }), NOW)).toBe(true);
-    // Only these four keys: updated_at is the heartbeat this manager measures, it must never move here
+    // Only these four keys: the cache write must never move updated_at nor touch any other field
     expect(elReplace).toHaveBeenCalledWith(expect.anything(), 'opencti_internal_objects-000001', 'a', {
       doc: { ingestion_health_status: 'critical', ingestion_health_since: NOW.toISOString(), ingestion_health_summary: SUMMARY, ingestion_health_checks: CHECKS },
     });

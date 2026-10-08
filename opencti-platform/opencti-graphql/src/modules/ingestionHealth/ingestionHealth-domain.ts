@@ -1,5 +1,6 @@
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { fullEntitiesList } from '../../database/middleware-loader';
+import { isStopRequestedByUser } from '../../database/connector-liveness';
 import { redisGetConnectorsHeartbeats } from '../../database/redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import type { BasicStoreEntity } from '../../types/store';
@@ -43,19 +44,6 @@ export const isIngestionConnector = (connector: Pick<IngestionHealthConnector, '
   return connector.built_in !== true && connector.connector_type !== 'internal';
 };
 
-// Switched off by a person: only the requested status counts.
-// Unlike isConnectorActive (database/repository.js), manager_current_status is ignored: xtm-composer reports
-// 'stopped' for any container that is not running (crashed, exited, restarting) while the requested status
-// stays 'starting', and a crash must not be painted as a person's decision. It goes through the heartbeat check.
-// A self-hosted connector cannot be switched off from the platform.
-const isStoppedByUser = (connector: IngestionHealthConnector) => {
-  if (!connector.catalog_id) {
-    return false;
-  }
-  return connector.manager_requested_status === 'stopping'
-    || connector.manager_requested_status === 'stopped';
-};
-
 const toDate = (value: string | Date | null | undefined): Date | null => {
   if (!value) {
     return null;
@@ -66,7 +54,7 @@ const toDate = (value: string | Date | null | undefined): Date | null => {
 
 // lastPing: the connector heartbeat, read from the Redis connector heartbeats (updated_at is not moved by pings anymore)
 export const buildIngestionHealthInput = (connector: IngestionHealthConnector, lastPing: Date | null, heartbeat: HeartbeatObservation): IngestionHealthInput => ({
-  running: !isStoppedByUser(connector),
+  running: !isStopRequestedByUser(connector),
   run_and_terminate: connector.connector_info?.run_and_terminate === true,
   last_seen_at: lastPing,
   pings_regularly: isPingingRegularly(heartbeat),
