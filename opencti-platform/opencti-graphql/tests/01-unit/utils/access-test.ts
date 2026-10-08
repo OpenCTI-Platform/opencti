@@ -235,8 +235,8 @@ describe('User access entity testing', async () => {
     expect(hasAccess).toEqual(false);
   });
   it('should apply organization check on STIX element with unresolvable type', () => {
-    // Raw stix location without x_opencti_location_type nor OpenCTI extension
-    const location = { id: 'location--f3e554eb-60f5-587c-9191-4f25e9ba9f32', spec_version: '2.1', type: 'location' } as StixObject;
+    // Raw stix location without x_opencti_location_type nor OpenCTI extension: deliberately not a complete StixObject
+    const location = { id: 'location--f3e554eb-60f5-587c-9191-4f25e9ba9f32', spec_version: '2.1', type: 'location' } as unknown as StixObject;
     expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, false)).toEqual(true);
     expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, true)).toEqual(false);
   });
