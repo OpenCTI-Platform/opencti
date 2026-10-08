@@ -1,5 +1,8 @@
+# Build context of every image is the repository root (Yarn and uv workspaces).
+# Only what the Dockerfiles copy is kept in the context.
 *
 
+# Yarn workspace
 !.yarnrc.yml
 !package.json
 !yarn.lock
@@ -8,7 +11,13 @@
 !opencti-platform/opencti-front
 !opencti-platform/opencti-graphql
 
-!opencti-worker/requirements.txt
+# uv workspace
+!pyproject.toml
+!uv.lock
+!client-python/pyproject.toml
+!client-python/README.md
+!client-python/pycti
+!opencti-worker/pyproject.toml
 !opencti-worker/src
 
 # never sent to the daemon, whatever the rules above
@@ -25,7 +34,12 @@
 **/__generated__
 **/__pycache__
 **/*.py[cod]
+**/.venv
+**/.ruff_cache
+**/.mypy_cache
+**/.pytest_cache
 opencti-platform/opencti-front/config/development.json
+opencti-platform/opencti-front/.DS_Store
 opencti-platform/opencti-front/.env.local
 opencti-platform/opencti-front/.env.development.local
 opencti-platform/opencti-front/.env.test.local

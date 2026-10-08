@@ -16,16 +16,16 @@ git clone git@github.com:OpenCTI-Platform/opencti.git
 cd docs
 ```
 
-Install dependencies
+Install dependencies (with [uv](https://docs.astral.sh/uv/), they are locked in the `uv.lock` of the repository)
 
 ```sh
-pip install -r requirements.txt
+uv sync --inexact --only-group docs
 ```
 
 Run local server with hot-reload:
 
 ```sh
-mkdocs serve
+uv run mkdocs serve
 ```
 
 It should display the following output in the terminal:
@@ -36,7 +36,7 @@ It should display the following output in the terminal:
 ⚠️ Make sure to always build the documentation locally before submitting a pull request, and check for errors and warnings in the terminal output,as they can indicate issues with the formatting of the documentation.
 
 ```sh
-mkdocs build
+uv run mkdocs build
 ```
 
 
@@ -99,7 +99,7 @@ The deployment relies on `mike`.
 List existing versions with:
 
 ```sh
-mike list
+uv run mike list
 ```
 
 Deploy **without** `mike deploy --push`, then publish the shared images with `scripts/publish_shared_assets.py --push`,
@@ -111,8 +111,8 @@ missing images.
 With the right version number (eg. 5.7.X):
 
 ```sh
-mike deploy [version]
-python scripts/publish_shared_assets.py --push
+uv run mike deploy [version]
+uv run python scripts/publish_shared_assets.py --push
 ```
 
 ### Deploy a new stable version
@@ -120,8 +120,8 @@ python scripts/publish_shared_assets.py --push
 With the right version number (eg. 5.7.X), update the `latest` tag:
 
 ```sh
-mike deploy --update-aliases [version] latest
-python scripts/publish_shared_assets.py --push
+uv run mike deploy --update-aliases [version] latest
+uv run python scripts/publish_shared_assets.py --push
 ```
 
 ### Use a feature flag on existing documentation page
