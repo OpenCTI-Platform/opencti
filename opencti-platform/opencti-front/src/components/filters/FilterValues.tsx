@@ -227,25 +227,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   host={host}
                 />
                 {last(filterValues) !== id && isRegardingOfFilter
-                  && (
-                    <Button
-                      type="button"
-                      sx={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        color: 'inherit',
-                        display: 'inline-block',
-                        height: '100%',
-                        borderRadius: 0,
-                        margin: '0 2px 0 0',
-                        fontFamily: 'Consolas, monaco, monospace',
-                      }}
-                      onClick={operatorOnClick}
-                    >
-                      ,
-                    </Button>
-                  )
+                  && <span style={{ marginRight: 2 }}>,</span>
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
