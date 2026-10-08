@@ -146,6 +146,13 @@ const TRANSLATED_QUERY_MAX_LENGTH = 65536;
 // The result objects a run keeps for its Results drawer and its playbooks, at least as many as the results a hunt may
 // request: a run that sent more has partial results
 export const HUNT_RUN_RESULT_IDS_MAX = Math.max(5000, HUNT_CONFIG.maxResultsPerRun);
+/** The result ids of a run with more of them, within the bound of a run: results cut to it are partial. */
+const withResultIds = (run: BasicStoreEntityHuntRun, ids: string[]) => {
+  const resultIds = Array.from(new Set([...(run.result_ids ?? []), ...ids]));
+  return resultIds.length > HUNT_RUN_RESULT_IDS_MAX
+    ? { result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX), results_truncated: true }
+    : { result_ids: resultIds };
+};
 // The objects of a report are sent after it (contract section 5): their STIX ids are kept, and every reader loads
 // them with its own identity, the playbook with the one of the hunt connector of the run
 const STIX_ID_PATTERN = /^[a-z][a-z0-9-]*--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -886,8 +893,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       const { observedDataIds, observableIds } = await createHuntHitObservations(context, hunt, current);
       const observationIds = [...observedDataIds, ...observableIds];
       if (observationIds.length > 0) {
-        const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...observedDataIds])).slice(0, HUNT_RUN_RESULT_IDS_MAX);
-        current = await patchHuntRun(context, current, { hit_observation_ids: observationIds, result_ids: resultIds });
+        current = await patchHuntRun(context, current, { hit_observation_ids: observationIds, ...withResultIds(current, observedDataIds) });
       }
     } catch (error) {
       stepFailed('[OPENCTI-MODULE] Hunt hit observations creation failed', error);
@@ -898,8 +904,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     try {
       const sightings = await upsertHuntSightings(context, hunt, current);
       if (sightings.ids.length > 0) {
-        const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...sightings.ids])).slice(0, HUNT_RUN_RESULT_IDS_MAX);
-        current = await patchHuntRun(context, current, { result_ids: resultIds, sightings_created_count: current.sightings_created_count ?? sightings.created });
+        current = await patchHuntRun(context, current, { ...withResultIds(current, sightings.ids), sightings_created_count: current.sightings_created_count ?? sightings.created });
       }
     } catch (error) {
       stepFailed('[OPENCTI-MODULE] Hunt sightings update failed', error);

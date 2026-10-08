@@ -10,7 +10,14 @@ import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
 import { huntHitKey } from '../../../../src/modules/hunt/hunt-utils';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
-import { addHuntRunEvidence, createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import {
+  addHuntRunEvidence,
+  createHuntRuns,
+  HUNT_RUN_RESULT_IDS_MAX,
+  isAutoEscalatedHuntRun,
+  reportHuntRun,
+  setHuntRunVerdict,
+} from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -201,6 +208,22 @@ describe('Escalation at the end of a run above the threshold', () => {
     vi.mocked(patchAttribute).mockReset();
     loading({ ...running, auto_escalation: false });
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, truncated: false } as never);
+    expect(finalState().results_truncated).toBe(false);
+  });
+
+  it('should mark the results partial once the sightings of the finalization no longer fit in the results of the run', async () => {
+    const full = Array.from({ length: HUNT_RUN_RESULT_IDS_MAX }, (_, index) => `indicator--result-${index}`);
+    loading({ ...running, auto_escalation: false, result_ids: full } as BasicStoreEntityHuntRun);
+    vi.mocked(upsertHuntSightings).mockResolvedValueOnce({ ids: ['sighting--1'], created: 1, updated: 0 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, truncated: false } as never);
+    expect(finalState().result_ids).toHaveLength(HUNT_RUN_RESULT_IDS_MAX);
+    expect(finalState().results_truncated).toBe(true);
+    // With room for them, the results stay complete
+    vi.mocked(patchAttribute).mockReset();
+    loading({ ...running, auto_escalation: false, result_ids: full.slice(1) } as BasicStoreEntityHuntRun);
+    vi.mocked(upsertHuntSightings).mockResolvedValueOnce({ ids: ['sighting--1'], created: 1, updated: 0 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, truncated: false } as never);
+    expect(finalState().result_ids).toContain('sighting--1');
     expect(finalState().results_truncated).toBe(false);
   });
 
