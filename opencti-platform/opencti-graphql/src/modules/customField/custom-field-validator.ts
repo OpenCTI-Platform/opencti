@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
-import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
+import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_INT_MAX, CUSTOM_FIELD_INT_MIN, CUSTOM_FIELD_NOW_TOKEN, type CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldDefinitionsForEntityType, getCustomFieldSettingForEntityType, getCustomFieldValueField } from './custom-field-cache';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -19,6 +19,9 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
   }
 };
 
+const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
+  && (value as number) >= CUSTOM_FIELD_INT_MIN && (value as number) <= CUSTOM_FIELD_INT_MAX;
+
 // Normalize the date values of stored-format entries (edit path); invalid dates are left as is for validation to reject.
 export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
   if (value.date_value === undefined || value.date_value === null) {
@@ -36,7 +39,9 @@ const verifyAddInputValueType = (
   // If not, drop
   switch (customFieldDefinition.field_type) {
     case 'integer':
-      if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'number') {
+      // A decimal or out of range number (e.g. a connector score) is dropped like any mistyped value,
+      // instead of reaching validateIntegerField and failing the whole entity.
+      if (customFieldValueAddInputValue.length != 1 || !isCustomFieldInteger(customFieldValueAddInputValue[0])) {
         logApp.warn('Invalid value type for integer custom field', { field_name: customFieldDefinition.label });
         return false;
       }
@@ -152,8 +157,11 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
     const defaultValue = customFieldEntitySettings?.default_value;
     const customFieldDefaultValue = { field_id: customFieldDefinition.id, field_name: customFieldDefinition.name };
     switch (customFieldDefinition.field_type) {
-      case 'integer':
-        return { ...customFieldDefaultValue, int_value: Number.parseInt(defaultValue) };
+      case 'integer': {
+        // Number() never truncates (unlike parseInt): an invalid integer default is ignored rather than stored
+        const intValue = Number(defaultValue);
+        return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
+      }
       case 'markdown':
       case 'string':
         return { ...customFieldDefaultValue, string_value: defaultValue };
@@ -372,6 +380,9 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
   }
   if (!Number.isInteger(value.int_value)) {
     throw FunctionalError('int_value must be an integer', { field_name: value.field_name, value: value.int_value });
+  }
+  if (!isCustomFieldInteger(value.int_value)) {
+    throw FunctionalError('int_value must be a 32-bit integer', { field_name: value.field_name, value: value.int_value, min: CUSTOM_FIELD_INT_MIN, max: CUSTOM_FIELD_INT_MAX });
   }
   if (definition.min_value != null && value.int_value < definition.min_value) {
     throw FunctionalError('int_value is below minimum', { field_name: value.field_name, value: value.int_value, min: definition.min_value });

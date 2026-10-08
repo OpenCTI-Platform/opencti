@@ -11,6 +11,10 @@ export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 // Must stay in sync with CUSTOM_FIELD_NOW_TOKEN in opencti-front/src/utils/customFieldDefaults.ts
 export const CUSTOM_FIELD_NOW_TOKEN = '@now';
 
+// int_value is a GraphQL Int and an Elasticsearch integer: a 32-bit signed integer
+export const CUSTOM_FIELD_INT_MIN = -2147483648;
+export const CUSTOM_FIELD_INT_MAX = 2147483647;
+
 // Field types supported by custom fields
 // `markdown` reuses the string value channel; `multi_select` reuses select_options but stores an array (select_values).
 export type CustomFieldType = 'integer' | 'string' | 'markdown' | 'boolean' | 'date' | 'select' | 'multi_select';

@@ -82,6 +82,12 @@ describe('validateCustomFieldValues', () => {
       await expect(validate(values)).rejects.toThrow('int_value must be an integer');
     });
 
+    it('throws when int_value is outside the 32-bit integer range', async () => {
+      seed(makeDefinition({ field_type: 'integer' }));
+      const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 3000000000 }];
+      await expect(validate(values)).rejects.toThrow('int_value must be a 32-bit integer');
+    });
+
     it('throws when int_value is below min_value', async () => {
       seed(makeDefinition({ field_type: 'integer', min_value: 10 }));
       const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 5 }];
@@ -296,6 +302,12 @@ describe('transformCustomFieldValueAddInput', () => {
     seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
     const result = await transform([{ field_name: 'x_opencti_cf_field', value: [42] } as any]);
     expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }]);
+  });
+
+  it.each([7.5, 3000000000, '42'])('drops an integer input that is not a 32-bit integer (%s)', async (intValue) => {
+    seed(makeDefinition({ id: 'cf-id-1', field_type: 'integer' }));
+    const result = await transform([{ field_name: 'x_opencti_cf_field', value: [intValue] } as any]);
+    expect(result).toEqual([]);
   });
 
   it('transforms a markdown input using the string_value channel', async () => {
@@ -534,6 +546,11 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
   it('builds an integer default value, parsing the string default_value into a number', () => {
     const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', entity_type_settings: settingsFor('5') });
     expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 5 });
+  });
+
+  it.each(['1.5', 'abc'])('ignores an invalid integer default value (%s)', (defaultValue) => {
+    const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', entity_type_settings: settingsFor(defaultValue) });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toBeUndefined();
   });
 
   it('builds a string default value', () => {
