@@ -20,7 +20,17 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import { buildPagination, cursorToOffset, INDEX_FILES, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_FILES } from './utils';
 import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
-import { buildDataRestrictions, elFindByIds, elIndex, elRawCount, elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery, ES_MINIMUM_FIXED_PAGINATION } from './engine';
+import {
+  buildDataRestrictions,
+  elFindByIds,
+  elIndex,
+  elRawCount,
+  elRawDeleteByQuery,
+  elRawSearch,
+  elRawUpdateByQuery,
+  ES_MINIMUM_FIXED_PAGINATION,
+  isTransitoryNonCircuitBreakingError,
+} from './engine';
 
 const buildIndexFileBody = (documentId, file, entity = null) => {
   const documentBody = {
@@ -65,9 +75,10 @@ export const elIndexFiles = async (context, user, files) => {
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
       try {
-        // No retry here: a circuit breaking exception is likely caused by the file content size itself,
+        // Circuit breaking exceptions are not retried here: they are likely caused by the file content size itself,
         // so replaying the same large request would only add memory pressure before reaching the fallback.
-        await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment', retryOnTransitoryError: false });
+        // Other transitory errors (network, 503...) are still retried to preserve the searchable content.
+        await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment', isRetryableError: isTransitoryNonCircuitBreakingError });
       } catch (err) {
         // catch & log error
         logApp.error('Error on file indexing', { cause: err, file_id });

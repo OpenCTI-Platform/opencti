@@ -554,6 +554,20 @@ const isPermanentCircuitBreakingError = (error: any): boolean => {
   return collectErrorFieldValues(error, 'durability').some((durability) => durability.toUpperCase() === 'PERMANENT');
 };
 
+const collectErrorText = (error: any): string => {
+  return [
+    ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
+    ...collectErrorFieldValues(error, 'type'),
+    ...collectErrorFieldValues(error, 'name'),
+    ...collectErrorFieldValues(error, 'stack'),
+  ].join(' ');
+};
+
+const isCircuitBreakingError = (error: any): boolean => {
+  return /circuit_breaking_exception/i.test(collectErrorText(error));
+};
+
 export const isTransitoryError = (error: any): boolean => {
   if (isPermanentCircuitBreakingError(error)) {
     return false;
@@ -580,19 +594,18 @@ export const isTransitoryError = (error: any): boolean => {
     return true;
   }
 
-  const errorText = [
-    ...collectErrorFieldValues(error, 'message'),
-    ...collectErrorFieldValues(error, 'reason'),
-    ...collectErrorFieldValues(error, 'type'),
-    ...collectErrorFieldValues(error, 'name'),
-    ...collectErrorFieldValues(error, 'stack'),
-  ].join(' ');
-
+  const errorText = collectErrorText(error);
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
   if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
     return true;
   }
   return false;
+};
+
+// Same as isTransitoryError, except that circuit breaking exceptions are not retried. Meant for requests whose
+// payload itself may trip the breaker (e.g. large attachments): replaying them would only add memory pressure.
+export const isTransitoryNonCircuitBreakingError = (error: any): boolean => {
+  return !isCircuitBreakingError(error) && isTransitoryError(error);
 };
 
 // covers both engine clients: node-fetch's AbortError (ElkClient) and
@@ -611,12 +624,15 @@ export const wrapEngineError = (reason: string, err: any, data: Record<string, a
   return DatabaseError(reason, { cause: err, ...data });
 };
 
-export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
+export const retryElOperations = async (
+  operation: () => Promise<any>,
+  isRetryableError: (error: any) => boolean = isTransitoryError,
+): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
       return await operation();
     } catch (error) {
-      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
+      if (attempt < BULK_MAX_RETRIES && isRetryableError(error)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
         logApp.warn(`[SEARCH] Engine transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
@@ -3912,9 +3928,9 @@ export const elBulk = async (context: AuthContext, args: any) => {
 export const elIndex = async (
   indexName: string[] | string | undefined,
   documentBody: Record<string, any>,
-  opts: { refresh?: boolean; pipeline?: any; retryOnTransitoryError?: boolean } = {},
+  opts: { refresh?: boolean; pipeline?: any; isRetryableError?: (error: any) => boolean } = {},
 ) => {
-  const { refresh = true, pipeline, retryOnTransitoryError = true } = opts;
+  const { refresh = true, pipeline, isRetryableError = isTransitoryError } = opts;
   const documentId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${documentId} in ${indexName}`, { documentBody });
@@ -3936,8 +3952,7 @@ export const elIndex = async (
       return await engine.index(indexParams);
     }
   };
-  const indexPromise = retryOnTransitoryError ? retryElOperations(indexOperation) : indexOperation();
-  await indexPromise.catch((err: any) => {
+  await retryElOperations(indexOperation, isRetryableError).catch((err: any) => {
     throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
   });
 

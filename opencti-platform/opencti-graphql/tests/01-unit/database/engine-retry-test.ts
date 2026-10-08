@@ -82,7 +82,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-import { elDelete, elIndex, elReindexElements, elUpdate, searchEngineInit } from '../../../src/database/engine';
+import { elDelete, elIndex, elReindexElements, elUpdate, isTransitoryNonCircuitBreakingError, searchEngineInit } from '../../../src/database/engine';
 
 const TRANSIENT_ERROR = new Error('circuit_breaking_exception: data too large');
 const PERMANENT_CIRCUIT_BREAKING_ERROR = Object.assign(new Error('circuit_breaking_exception: [fielddata] Data too large'), {
@@ -165,14 +165,25 @@ describe('engine retries on circuit breaking exception', () => {
       expect(testMocks.index).toHaveBeenCalledTimes(1);
     });
 
-    it('does not retry when retryOnTransitoryError is disabled', async () => {
+    it('does not retry a circuit_breaking_exception rejected by a custom retry predicate', async () => {
       testMocks.index.mockRejectedValue(TRANSIENT_ERROR);
-      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' }, { retryOnTransitoryError: false });
+      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' }, { isRetryableError: isTransitoryNonCircuitBreakingError });
       await expect(indexPromise).rejects.toMatchObject({
         message: 'Simple indexing fail',
         extensions: { code: 'DATABASE_ERROR' },
       });
       expect(testMocks.index).toHaveBeenCalledTimes(1);
+    });
+
+    it('still retries other transitory errors accepted by a custom retry predicate', async () => {
+      vi.useFakeTimers();
+      testMocks.index
+        .mockRejectedValueOnce(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }))
+        .mockResolvedValueOnce({});
+      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' }, { isRetryableError: isTransitoryNonCircuitBreakingError });
+      await vi.advanceTimersByTimeAsync(500);
+      await expect(indexPromise).resolves.toMatchObject({ internal_id: 'entity-1' });
+      expect(testMocks.index).toHaveBeenCalledTimes(2);
     });
   });
 

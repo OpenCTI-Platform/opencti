@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildDenormalizedRefsScriptParams, buildLocalMustFilter, buildReplaceScriptParams, isTransitoryError, prepareElementForIndexing } from '../../../src/database/engine';
+import {
+  buildDenormalizedRefsScriptParams,
+  buildLocalMustFilter,
+  buildReplaceScriptParams,
+  isTransitoryError,
+  isTransitoryNonCircuitBreakingError,
+  prepareElementForIndexing,
+} from '../../../src/database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import * as engineConfig from '../../../src/database/engine-config';
@@ -405,6 +412,37 @@ describe('isTransitoryError testing', () => {
 
   it('should return false when text fields are empty strings (not matched)', () => {
     expect(isTransitoryError({ message: '', reason: '', type: '', name: '', stack: '' })).toBe(false);
+  });
+});
+
+describe('isTransitoryNonCircuitBreakingError testing', () => {
+  it('should return false for a TRANSIENT circuit_breaking_exception', () => {
+    const error = {
+      meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', reason: '[parent] Data too large', durability: 'TRANSIENT' } } },
+    };
+    expect(isTransitoryNonCircuitBreakingError(error)).toBe(false);
+  });
+
+  it('should return false for a circuit_breaking_exception wrapped in a DatabaseError', () => {
+    const error = {
+      extensions: { data: { cause: { meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', durability: 'TRANSIENT' } } } } } },
+    };
+    expect(isTransitoryNonCircuitBreakingError(error)).toBe(false);
+  });
+
+  it('should return false for a circuit_breaking_exception message', () => {
+    expect(isTransitoryNonCircuitBreakingError({ message: 'circuit_breaking_exception: [parent] Data too large' })).toBe(false);
+  });
+
+  it('should return true for other transitory errors', () => {
+    expect(isTransitoryNonCircuitBreakingError({ code: 'ECONNRESET' })).toBe(true);
+    expect(isTransitoryNonCircuitBreakingError({ statusCode: 503 })).toBe(true);
+    expect(isTransitoryNonCircuitBreakingError({ message: 'es_rejected_execution: queue capacity reached' })).toBe(true);
+  });
+
+  it('should return false for non transitory errors', () => {
+    expect(isTransitoryNonCircuitBreakingError({ statusCode: 500 })).toBe(false);
+    expect(isTransitoryNonCircuitBreakingError(null)).toBe(false);
   });
 });
 
