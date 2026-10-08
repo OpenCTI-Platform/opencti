@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
@@ -7,7 +7,8 @@ import EETooltip from './EETooltip';
 // Non-enterprise-edition path: EETooltip wraps `children` in a focusable
 // `role="button"` span that opens the feedback/agreement flow instead of
 // whatever the child would normally do.
-vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => false }));
+const state = vi.hoisted(() => ({ isEnterpriseEdition: false }));
+vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => state.isEnterpriseEdition }));
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
   SETTINGS_SETPARAMETERS: 'SETTINGS_SETPARAMETERS',
@@ -44,5 +45,34 @@ describe('EETooltip', () => {
     expect(wrapper).toHaveAttribute('tabIndex', '0');
     expect(child.tagName).toBe('BUTTON');
     expect(child).toHaveAttribute('tabIndex', '-1');
+  });
+
+  it('opens the EE flow instead of running the wrapped control\'s own action', async () => {
+    state.isEnterpriseEdition = false;
+    const childAction = vi.fn();
+    const { user } = testRender(
+      <EETooltip title="Some EE feature">
+        <button type="button" onClick={childAction}>Do something</button>
+      </EETooltip>,
+    );
+
+    // A mouse click lands on the child itself: the wrapper must stop it in the capture phase
+    await user.click(screen.getByRole('button', { name: 'Do something' }));
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Do something' }), { key: 'Enter' });
+    expect(childAction).not.toHaveBeenCalled();
+  });
+
+  it('opens the "enable AI" dialog instead of running the wrapped control\'s own action', async () => {
+    state.isEnterpriseEdition = true;
+    const childAction = vi.fn();
+    const { user } = testRender(
+      <EETooltip title="Some AI feature" forAi>
+        <button type="button" onClick={childAction}>Ask AI</button>
+      </EETooltip>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    expect(childAction).not.toHaveBeenCalled();
+    expect(await screen.findByText('Enable AI powered platform')).toBeInTheDocument();
   });
 });
