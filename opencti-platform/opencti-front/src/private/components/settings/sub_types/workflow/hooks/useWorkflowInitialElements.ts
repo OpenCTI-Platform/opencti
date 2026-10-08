@@ -98,7 +98,7 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
+      .map(({ from, to, event, conditions = {}, comment, closingReason, asyncActions = [], syncActions = [] }) => {
         const fromIds = (Array.isArray(from) ? from : [from]).join(',');
         return {
           id: `${WorkflowNodeType.transition}-${fromIds}-${event}-${to ?? '_unlinked'}`,
@@ -107,6 +107,7 @@ export const useWorkflowInitialElements = (
             event,
             conditions,
             comment: (comment ?? CommentMode.disabled) as CommentModeType,
+            closingReason: (closingReason ?? CommentMode.disabled) as CommentModeType,
             asyncActions: parseActions((asyncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
             syncActions: parseActions((syncActions ?? []) as ReadonlyArray<ReadOnlyAction>),
           },
