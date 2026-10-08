@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { connectorDelete, pingConnector, registerConnector } from '../../../src/domain/connector';
+import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
 import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
-import { internalDeleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
-import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats, redisSetConnectorHeartbeat } from '../../../src/database/redis';
+import { notify, redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats, redisSetConnectorHeartbeat } from '../../../src/database/redis';
 import { ConnectorType } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -118,6 +118,45 @@ describe('pingConnector liveness', () => {
     const [, recordedLastSeenAt] = vi.mocked(redisSetConnectorHeartbeat).mock.calls[0];
     expect(result.last_seen_at).toBe(recordedLastSeenAt);
     expect(result.active).toBe(true);
+  });
+});
+
+describe('connector writes and the connectors cache', () => {
+  const input = { id: 'connector-1', name: 'Test Connector', type: ConnectorType.ExternalImport, scope: ['Report'] };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // The notification resets the connectors cache: a reload in between would cache the connector without its heartbeat
+  it('should record the heartbeat before notifying the registration of an existing connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(baseConnector as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: baseConnector } as never);
+
+    await registerConnector(testContext, testUser, input);
+
+    expect(vi.mocked(redisSetConnectorHeartbeat).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(notify).mock.invocationCallOrder[0]);
+  });
+
+  it('should record the heartbeat before notifying the registration of a new connector', async () => {
+    vi.mocked(storeLoadById).mockResolvedValueOnce(undefined as never);
+    vi.mocked(createEntity).mockResolvedValueOnce(baseConnector as never);
+
+    await registerConnector(testContext, testUser, input);
+
+    expect(vi.mocked(redisSetConnectorHeartbeat).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(notify).mock.invocationCallOrder[0]);
+  });
+
+  it('should return the completed connector, with its liveness, from connector updates', async () => {
+    const lastSeenAt = minutesAgo(0);
+    vi.mocked(updateAttribute).mockResolvedValueOnce({ element: baseConnector } as never);
+    vi.mocked(redisGetConnectorHeartbeat).mockResolvedValueOnce(lastSeenAt);
+
+    const result = await updateConnectorRequestedStatus(testContext, testUser, { id: 'connector-1', status: 'starting' } as never);
+
+    expect(result.active).toBe(true);
+    expect(result.last_seen_at).toBe(lastSeenAt);
+    expect(result.connector_scope).toEqual(['Report']);
   });
 });
 

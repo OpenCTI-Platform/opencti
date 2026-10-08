@@ -404,9 +404,10 @@ export const registerConnector = async (
       patch.active = opts.active;
     }
     const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+    // Before notifying: the connectors cache must not reload the connector without its heartbeat
+    await recordRegistrationHeartbeat(id, lastSeenAt);
     // Notify configuration change for caching system
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-    await recordRegistrationHeartbeat(id, lastSeenAt);
     return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, lastSeenAt));
   }
   // Need to create the connector
@@ -441,9 +442,10 @@ export const registerConnector = async (
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData },
   });
+  // Before notifying: the connectors cache must not load the connector without its heartbeat
+  await recordRegistrationHeartbeat(id, lastSeenAt);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
-  await recordRegistrationHeartbeat(id, lastSeenAt);
   // Return the connector
   return completeConnector(createdConnector, lastSeenAt);
 };
@@ -482,7 +484,8 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
     context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input },
   });
   // Notify configuration change for caching system
-  return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+  await notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+  return completeConnector(element, await loadConnectorHeartbeat(element.internal_id));
 };
 
 export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {
