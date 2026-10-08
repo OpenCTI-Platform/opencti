@@ -4591,6 +4591,8 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
+  ingestion_health?: Maybe<IngestionHealth>;
+  ingestion_warnings?: Maybe<Array<IngestionCheck>>;
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
   last_seen_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13915,6 +13917,30 @@ export enum IngestionAuthType {
   None = 'none'
 }
 
+export type IngestionCheck = {
+  __typename?: 'IngestionCheck';
+  code: IngestionCheckCode;
+  kind: IngestionCheckKind;
+  message: Scalars['String']['output'];
+  params?: Maybe<Scalars['JSON']['output']>;
+  severity: IngestionCheckSeverity;
+};
+
+export enum IngestionCheckCode {
+  NoHeartbeat = 'NO_HEARTBEAT',
+  UserNotServiceAccount = 'USER_NOT_SERVICE_ACCOUNT'
+}
+
+export enum IngestionCheckKind {
+  Configuration = 'configuration',
+  Runtime = 'runtime'
+}
+
+export enum IngestionCheckSeverity {
+  Advisory = 'advisory',
+  Blocking = 'blocking'
+}
+
 export type IngestionCsv = BasicObject & InternalObject & {
   __typename?: 'IngestionCsv';
   authentication_type: IngestionAuthType;
@@ -14013,6 +14039,23 @@ export type IngestionHeader = {
   name: Scalars['String']['output'];
   value: Scalars['String']['output'];
 };
+
+export type IngestionHealth = {
+  __typename?: 'IngestionHealth';
+  checks: Array<IngestionCheck>;
+  since?: Maybe<Scalars['DateTime']['output']>;
+  status: IngestionHealthStatus;
+  summary: Scalars['String']['output'];
+};
+
+export enum IngestionHealthStatus {
+  Critical = 'critical',
+  Degraded = 'degraded',
+  Healthy = 'healthy',
+  Idle = 'idle',
+  Stopped = 'stopped',
+  Unknown = 'unknown'
+}
 
 export type IngestionJson = BasicObject & InternalObject & {
   __typename?: 'IngestionJson';
@@ -41072,6 +41115,10 @@ export type ResolversTypes = ResolversObject<{
   InfrastructureEditMutations: ResolverTypeWrapper<Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Infrastructure']>, contextPatch?: Maybe<ResolversTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversTypes['Infrastructure']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Infrastructure']> }>;
   InfrastructuresOrdering: InfrastructuresOrdering;
   IngestionAuthType: IngestionAuthType;
+  IngestionCheck: ResolverTypeWrapper<IngestionCheck>;
+  IngestionCheckCode: IngestionCheckCode;
+  IngestionCheckKind: IngestionCheckKind;
+  IngestionCheckSeverity: IngestionCheckSeverity;
   IngestionCsv: ResolverTypeWrapper<BasicStoreEntityIngestionCsv>;
   IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
@@ -41081,6 +41128,8 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvOrdering: IngestionCsvOrdering;
   IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
+  IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
+  IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: ResolverTypeWrapper<IngestionJsonAddInputFromImport>;
@@ -42194,6 +42243,7 @@ export type ResolversParentTypes = ResolversObject<{
   InfrastructureConnection: Omit<InfrastructureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['InfrastructureEdge']>>> };
   InfrastructureEdge: Omit<InfrastructureEdge, 'node'> & { node: ResolversParentTypes['Infrastructure'] };
   InfrastructureEditMutations: Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Infrastructure']>, contextPatch?: Maybe<ResolversParentTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversParentTypes['Infrastructure']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Infrastructure']> };
+  IngestionCheck: IngestionCheck;
   IngestionCsv: BasicStoreEntityIngestionCsv;
   IngestionCsvAddAutoUserInput: IngestionCsvAddAutoUserInput;
   IngestionCsvAddInput: IngestionCsvAddInput;
@@ -42201,6 +42251,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
   IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
+  IngestionHealth: IngestionHealth;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -44293,6 +44344,8 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestion_health?: Resolver<Maybe<ResolversTypes['IngestionHealth']>, ParentType, ContextType>;
+  ingestion_warnings?: Resolver<Maybe<Array<ResolversTypes['IngestionCheck']>>, ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   last_seen_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47368,6 +47421,14 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
   relationDelete?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
 }>;
 
+export type IngestionCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCheck'] = ResolversParentTypes['IngestionCheck']> = ResolversObject<{
+  code?: Resolver<ResolversTypes['IngestionCheckCode'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['IngestionCheckKind'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  severity?: Resolver<ResolversTypes['IngestionCheckSeverity'], ParentType, ContextType>;
+}>;
+
 export type IngestionCsvResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsv'] = ResolversParentTypes['IngestionCsv']> = ResolversObject<{
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -47423,6 +47484,13 @@ export type IngestionEntryResolvers<ContextType = any, ParentType extends Resolv
 export type IngestionHeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHeader'] = ResolversParentTypes['IngestionHeader']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealth'] = ResolversParentTypes['IngestionHealth']> = ResolversObject<{
+  checks?: Resolver<Array<ResolversTypes['IngestionCheck']>, ParentType, ContextType>;
+  since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  summary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
@@ -55240,11 +55308,13 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   InfrastructureConnection?: InfrastructureConnectionResolvers<ContextType>;
   InfrastructureEdge?: InfrastructureEdgeResolvers<ContextType>;
   InfrastructureEditMutations?: InfrastructureEditMutationsResolvers<ContextType>;
+  IngestionCheck?: IngestionCheckResolvers<ContextType>;
   IngestionCsv?: IngestionCsvResolvers<ContextType>;
   IngestionCsvConnection?: IngestionCsvConnectionResolvers<ContextType>;
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
   IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
+  IngestionHealth?: IngestionHealthResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;

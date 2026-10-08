@@ -2143,6 +2143,8 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -17096,6 +17098,45 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum IngestionHealthStatus {
+  healthy
+  idle
+  degraded
+  critical
+  stopped
+  unknown
+}
+
+enum IngestionCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionCheckSeverity {
+  advisory
+  blocking
+}
+
+enum IngestionCheckCode {
+  NO_HEARTBEAT
+  USER_NOT_SERVICE_ACCOUNT
+}
+
+type IngestionCheck {
+  kind: IngestionCheckKind!
+  code: IngestionCheckCode!
+  severity: IngestionCheckSeverity!
+  params: JSON
+  message: String!
+}
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  summary: String!
+  checks: [IngestionCheck!]!
+  since: DateTime
 }
 
 enum UsersOrdering {

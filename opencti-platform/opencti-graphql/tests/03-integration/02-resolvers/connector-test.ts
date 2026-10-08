@@ -148,6 +148,28 @@ const READ_CONNECTOR_QUERY = gql`
   }
 `;
 
+const READ_CONNECTOR_HEALTH_QUERY = gql`
+  query GetConnectorHealth($id: String!) {
+    connector(id: $id) {
+      id
+      ingestion_health {
+        status
+        summary
+        since
+        checks {
+          code
+        }
+      }
+      ingestion_warnings {
+        kind
+        code
+        severity
+        message
+      }
+    }
+  }
+`;
+
 const DELETE_CONNECTOR_QUERY = gql`
   mutation ConnectorDeletionMutation($id: ID!) {
     deleteConnector(id: $id)
@@ -268,6 +290,31 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connector.connector_queue_details).toBeDefined();
     expect(queryResult.data.connector.connector_queue_details.messages_number).toBe(0);
     expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
+  });
+
+  it('should read the ingestion health of a connector, never healthy in chunk 1', async () => {
+    // The ingestion health manager is disabled in config/test.json: nothing is ever evaluated here
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_CONNECTOR_HEALTH_QUERY, variables: { id: TEST_CN_ID } });
+    const health = queryResult.data?.connector.ingestion_health;
+    expect(health.status).toEqual('unknown');
+    expect(health.summary).toEqual('Not evaluated yet');
+    expect(health.since).toBeNull();
+    expect(health.checks).toEqual([]);
+  });
+
+  it('should warn that the connector user is not a service account, apart from the status', async () => {
+    // USER_CONNECTOR, who registered TestConnector, is not a service account
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_CONNECTOR_HEALTH_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data?.connector.ingestion_warnings).toEqual([
+      // No user name: the admin running this query could see it, a MODULES-only user could not
+      { kind: 'configuration', code: 'USER_NOT_SERVICE_ACCOUNT', severity: 'advisory', message: 'User is not a service account' },
+    ]);
+  });
+
+  it('should not compute any ingestion health for a built-in connector', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_CONNECTOR_HEALTH_QUERY, variables: { id: IMPORT_CSV_CONNECTOR.id } });
+    expect(queryResult.data?.connector.ingestion_health).toBeNull();
+    expect(queryResult.data?.connector.ingestion_warnings).toBeNull();
   });
 
   it('should register connector with a valid version and slug', async () => {

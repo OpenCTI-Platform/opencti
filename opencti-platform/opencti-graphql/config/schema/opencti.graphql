@@ -2060,6 +2060,8 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  ingestion_warnings: [IngestionCheck!] @ff(flags: ["INGESTION_HEALTH"], softFail: true)
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
