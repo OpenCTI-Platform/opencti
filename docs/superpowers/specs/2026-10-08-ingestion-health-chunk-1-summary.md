@@ -31,12 +31,14 @@ Le warning de configuration dit seulement « User is not a service account ». *
 
 ## Statuts
 
-- **`stopped`** : un connecteur géré, arrêté par une personne. Ce statut l'emporte sur tous les autres.
+- **`stopped`** : un connecteur géré arrêté par une personne, c'est-à-dire dont le statut *demandé* est `stopping` ou `stopped`. Ce statut l'emporte sur tous les autres. Un conteneur planté (demandé `starting`, actuel `stopped`) n'est pas `stopped` : il passe par le check du ping et devient `critical`.
 - **`critical`** : aucun ping depuis 5 min ou plus, soit le même seuil que Active/Inactive.
 - **`unknown`** : tous les autres cas.
 - **Jamais `healthy`** dans ce chunk : un ping prouve que le connecteur est vivant, pas que les données arrivent.
 
 ## La règle du ping
+
+- **Source du ping :** le heartbeat Redis du connecteur (`connector_heartbeats`, depuis #18851), la même source que Active/Inactive. Le manager le lit une fois par cycle. Si la lecture échoue, le cycle échoue et sera refait.
 
 - **Ce qui est surveillé :** seuls les connecteurs qui pinguent toutes les 40 s (le thread de ping pycti). Il faut que le manager ait vu **3 pings d'affilée, chacun à 2 périodes ou moins du précédent, avec un minimum de 120 s**. Avec la période par défaut, cela donne 120 s.
 - **Pourquoi :** environ 30 connecteurs run-and-terminate « legacy » (par exemple `cape`) ne le déclarent pas. Ils pinguent une ou deux fois par run, puis se taisent pendant des heures : sans ce garde-fou, ils passeraient en rouge entre chaque run.
@@ -59,7 +61,6 @@ Le warning de configuration dit seulement « User is not a service account ». *
 
 ## Risques acceptés
 
-- **`updated_at` ne bouge pas que sur un ping.** Une édition ou un rapport du composer le modifie aussi, ce qui peut provoquer un faux `critical` sur un connecteur legacy.
 - **Manager arrêté.** Le statut stocké vieillit sans que l'UI le montre.
 - **Décalage.** Le chip passe en rouge jusqu'à une période (60 s par défaut) après « Inactive ». Plus la période est longue, plus ce décalage augmente, et plus un nouveau connecteur met de temps à être surveillé (environ 3 périodes).
 - **Connecteur déjà mort à l'activation du flag.** Il n'est pas détecté : rien ne le distingue d'un connecteur legacy entre deux runs.
@@ -73,6 +74,6 @@ Le warning de configuration dit seulement « User is not a service account ». *
 - Ouvrir 4 issues de suivi :
   - `TOKEN_EXPIRED` sans toucher à l'authentification ;
   - la révocation suspectée du token composer entre connecteurs qui partagent un user ;
-  - un timestamp de ping dédié ;
+  - les champs de santé lisibles par les users qui n'ont que `KNOWLEDGE` (ils voient si le user d'un connecteur est un compte de service, sans son nom) ;
   - la suppression définitive de la clé Redis d'un connecteur supprimé, même pendant un cycle du manager.
 - Cocher le chunk 1 dans Notion.

@@ -48,7 +48,7 @@ Why:
 
 | Status             | When                                                                                                             | In chunk 1                                                               |
 |--------------------|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `stopped`          | A managed connector switched off by a person. It wins over everything: a source stopped on purpose is never red. | Produced                                                                 |
+| `stopped`          | A managed connector switched off by a person: its **requested** status is `stopping` or `stopped`. It wins over everything: a source stopped on purpose is never red. A crashed container (requested `starting`, current `stopped`) is **not** stopped: it goes through the heartbeat check. | Produced                                                                 |
 | `critical`         | The runtime check fails.                                                                                         | Produced                                                                 |
 | `unknown`          | Nothing proves the connector works or fails.                                                                     | Produced                                                                 |
 | `healthy`          | Proven to bring data in.                                                                                         | **Never**: a ping proves the connector is alive, not that data comes in. |
@@ -60,7 +60,7 @@ The API exposes all six values from the start, so the list never changes in late
 
 **Rule:** no ping for **5 minutes or more** → `critical`.
 - It is the same threshold as Active/Inactive, so the two always agree. The POC's 10 min is rejected.
-- The ping date is the connector's `updated_at`.
+- The ping date is the connector's **Redis heartbeat** (`connector_heartbeats`), written by every ping and every registration since #18851. It is the same source as Active/Inactive, read by the manager once per cycle.
 
 **Only for connectors that ping every 40 s.** A long-running pycti connector has a thread that pings every 40 s.
 Many legacy run-and-terminate connectors (about 30, e.g. `cape`) behave differently:
@@ -107,7 +107,7 @@ The same key also tells an operator whether the manager is alive.
 3. It evaluates the connector with a **pure function**, with no I/O.
 4. **Only when** the status, the summary or the checks change, it writes them on the connector in **Elasticsearch**:
    - `since` moves only when the status changes;
-   - the write must not touch `updated_at`, the very heartbeat being measured;
+   - the write must not touch `updated_at` (an entity update would also emit a stream event);
    - it must not emit a stream event.
 5. **Redis is used by the manager only.** The Deployed list is polled every 5 s per open tab, and a single GraphQL error would break the whole page.
 6. **The API** returns the stored runtime verdict as is, and computes the configuration warning at each call.
@@ -145,7 +145,6 @@ Nothing differs from `master`:
 
 ## 10. Accepted risks
 
-- ⚠ **`updated_at` is not only a ping.** An admin edit, a state reset or a composer status report also moves it, and counts as a ping. One of these during a legacy run can complete the 3-ping proof, so the connector turns red 5 min after its run ends. Accepted for chunk 1. Follow-up: a dedicated ping timestamp.
 - **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing in the UI says so. « since » is when the health status last changed, not when the manager last looked. A connector never evaluated says « Not evaluated yet ». One cached `critical` that comes back while the manager is down stays red next to « Active ». Whether the manager runs is visible in Settings › Parameters.
 - **A connector already dead when the flag is turned on is never flagged.** The manager never sees it ping, so it stays `unknown` until it restarts. Nothing tells it apart from a legacy connector between two runs. Accepted.
 - **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period). They look like connectors pinging every 40 s, and turn red when their schedule pauses. Rare, accepted. A longer period widens this risk.
@@ -160,7 +159,7 @@ Nothing differs from `master`:
 - A legacy run of 30 s, 90 s or 10 min never makes the connector `critical`, including between two runs.
 - Right after the flag is turned on, no connector is `critical`.
 - After a manager outage of several minutes, a connector that was pinging every 40 s and then dies still turns `critical`. A legacy connector still never does, even with outages run after run.
-- A stopped managed connector is `stopped`, even with no ping.
+- A stopped managed connector is `stopped`, even with no ping. A crashed managed container (requested `starting`, current `stopped`) turns `critical` once its pings stop.
 - The manager write never moves `updated_at`.
 - One broken connector does not stop the evaluation of the others, and the error is logged with its id.
 - Neither API field ever calls Redis. This is checked by a test, and by watching Redis while the Deployed list is open.
@@ -181,7 +180,7 @@ Nothing differs from `master`:
 - Open four follow-up issues:
   - `TOKEN_EXPIRED` without touching authentication;
   - the suspected composer token revocation between connectors sharing a user;
-  - a dedicated ping timestamp;
+  - the health fields are readable by users with only the `KNOWLEDGE` capability (through `connectorsForImport`/`Export`/`Analysis`), so they can tell whether a connector user is a service account (no name);
   - deleting a connector deletes its Redis key for good, even during a manager cycle.
 - Tick the chunk 1 items in Notion.
 
@@ -201,4 +200,5 @@ Nothing differs from `master`:
 | 2026-10-08 | A badly written manager period is not handled. Deleting the Redis key of a connector deleted during a cycle: later chunk. |
 | 2026-10-08 | The service account warning says « User is not a service account », with no user name (reserved to `SETTINGS_SETACCESSES`). |
 | 2026-10-08 | Manager period: 60 s by default, configurable (`ingestion_health_manager:interval`). The close-pings bound and the blind threshold follow it: 2 periods, never less than 120 s. |
-| 2026-10-08 | Accepted: `updated_at` not only a ping, no fresh status without the manager (`since` = last change of the health status), leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |
+| 2026-10-08 | Final review: the heartbeat is the Redis `connector_heartbeats` value (#18851), read by the manager once per cycle; if that read fails, the cycle fails and is retried. `stopped` = requested status `stopping`/`stopped` only, so a crashed managed container turns `critical`. |
+| 2026-10-08 | Accepted: no fresh status without the manager (`since` = last change of the health status), leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |
