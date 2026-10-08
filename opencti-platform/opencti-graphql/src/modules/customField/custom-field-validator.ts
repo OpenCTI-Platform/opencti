@@ -9,6 +9,7 @@ import { type CustomFieldValueAddInput, type EditInput, EditOperation } from '..
 import { logApp } from '../../config/conf';
 import { customFieldValues } from '../../schema/attribute-definition';
 import { now } from '../../utils/format';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../utils/access';
 
 // Custom field values are typed `[Any]` in the API, so dates don't go through the GraphQL DateTime scalar.
 // Apply the same rule as standard date attributes: RFC 3339 date-time only, normalized to ISO UTC.
@@ -48,6 +49,10 @@ export const resolveCustomFieldValuesIdentity = async (
       ? definitions.find((d) => d.name === value.field_name || d.aliases?.some((a) => a === value.field_name))
       : definitions.find((d) => d.id === value.field_id);
     if (!definition) {
+      // A name/id pair whose name does not resolve must not act on the id (e.g. remove by id)
+      if (value.field_id && value.field_name) {
+        throw FunctionalError('Custom field name not found for this entity type', { field_id: value.field_id, field_name: value.field_name });
+      }
       return value;
     }
     if (value.field_id && value.field_name && value.field_id !== definition.id) {
@@ -185,7 +190,8 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
     switch (customFieldDefinition.field_type) {
       case 'integer': {
         // Number() never truncates (unlike parseInt): an invalid integer default is ignored rather than stored
-        const intValue = Number(defaultValue);
+        const trimmedDefault = defaultValue.trim();
+        const intValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
         return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
       }
       case 'markdown':
@@ -337,9 +343,11 @@ export const validateCustomFieldValuesEditInput = async (
 ): Promise<void> => {
   const customFieldsDefinitionForEntityType = await getCustomFieldDefinitionsForEntityType(context, user, currentEntity.entity_type);
   const inputValues = customFieldValuesEditInput.value ?? [];
+  // Same bypass as mandatory standard attributes; type and range checks still apply
+  const checkMandatory = !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
   if (!customFieldValuesEditInput.operation || customFieldValuesEditInput.operation === EditOperation.Replace) {
-    await validateCustomFieldValues(context, user, inputValues, currentEntity.entity_type);
-  } else if (customFieldValuesEditInput.operation === EditOperation.Remove) {
+    await validateCustomFieldValues(context, user, inputValues, currentEntity.entity_type, { checkMandatory });
+  } else if (customFieldValuesEditInput.operation === EditOperation.Remove && checkMandatory) {
     for (let i = 0; i < inputValues.length; i++) {
       const inputValue = inputValues[i];
       if (inputValue.field_id && currentEntity.custom_field_values && currentEntity.custom_field_values.some((cf: any) => cf.field_id === inputValue.field_id)) {
@@ -362,7 +370,7 @@ export const validateCustomFieldValuesEditInput = async (
       return incoming;
     });
     const fullCustomFieldValues = [...preservedValues, ...mergedInputValues];
-    await validateCustomFieldValues(context, user, fullCustomFieldValues, currentEntity.entity_type);
+    await validateCustomFieldValues(context, user, fullCustomFieldValues, currentEntity.entity_type, { checkMandatory });
   }
 };
 

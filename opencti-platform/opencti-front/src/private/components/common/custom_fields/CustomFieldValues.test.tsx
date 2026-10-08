@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Field, Form, Formik } from 'formik';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -43,19 +43,25 @@ vi.mock('./CustomFieldsInput', () => ({
     error?: string;
     onChange?: (value: string) => void;
     onSubmit?: (value: string) => void;
-  }) => (
-    <>
-      <input
-        aria-label={definition.label}
-        value={String(value)}
-        onChange={(event) => {
-          onChange?.(event.target.value);
-          onSubmit?.(event.target.value);
-        }}
-      />
-      {error && <span role="alert">{`${definition.label}: ${error}`}</span>}
-    </>
-  ),
+  }) => {
+    // Like the real input: the draft is kept locally and an unchanged value is not submitted again
+    const [localValue, setLocalValue] = useState(String(value));
+    useEffect(() => setLocalValue(String(value)), [value]);
+    return (
+      <>
+        <input
+          aria-label={definition.label}
+          value={localValue}
+          onChange={(event) => {
+            setLocalValue(event.target.value);
+            onChange?.(event.target.value);
+            if (event.target.value !== String(value)) onSubmit?.(event.target.value);
+          }}
+        />
+        {error && <span role="alert">{`${definition.label}: ${error}`}</span>}
+      </>
+    );
+  },
 }));
 
 const definition = (id: string, entityType = 'Report', defaultValue = ''): CustomFieldDef => ({
@@ -229,6 +235,18 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
     expect(patch).toHaveBeenCalledTimes(1);
     expect(patch.mock.calls[0][0].variables.input.value).toEqual([...stored, { field_id: 'score', field_name: 'score', int_value: 7 }]);
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('hides the error when the stored integer is restored without saving it again', async () => {
+    state.definitions[entityType] = [{ ...definition('score', entityType), field_type: 'integer' }];
+    const patch = vi.fn();
+    const storedScore: CustomFieldStoredValue[] = [...stored, { field_id: 'score', field_name: 'score', int_value: 5 }];
+    render(<Formik initialValues={{}} onSubmit={vi.fn()}><CustomFieldValuesEdition entityId="id" entityType={entityType} values={storedScore} fieldPatch={patch} /></Formik>);
+    fireEvent.change(await screen.findByLabelText('score'), { target: { value: '1.9' } });
+    expect(screen.getByRole('alert')).toHaveTextContent('score: The value must be an integer');
+    fireEvent.change(screen.getByLabelText('score'), { target: { value: '5' } });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(patch).not.toHaveBeenCalled();
   });
 
   it('stages an invalid integer with its error when references are enabled', async () => {

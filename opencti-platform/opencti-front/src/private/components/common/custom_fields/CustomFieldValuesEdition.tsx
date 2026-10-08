@@ -61,6 +61,11 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
     return error === undefined;
   };
 
+  // The error is recomputed on save; a change clears it, so restoring the stored value (not saved again) hides it.
+  const clearError = (definition: CustomFieldDef) => {
+    setErrors((previous) => (previous[definition.id] === undefined ? previous : { ...previous, [definition.id]: undefined }));
+  };
+
   // With references, the value is still staged: keeping the last valid one would silently commit a value
   // different from the displayed one; the commit then fails explicitly on the backend.
   const stageValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
@@ -126,7 +131,7 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
               mandatory={getCustomFieldSetting(definition, entityType)?.mandatory ?? false}
               value={getCustomFieldCurrentValue(definition, currentValues)}
               error={errors[definition.id]}
-              onChange={enableReferences ? (value) => stageValue(definition, value) : undefined}
+              onChange={enableReferences ? (value) => stageValue(definition, value) : () => clearError(definition)}
               onSubmit={enableReferences ? undefined : (value) => handleSubmit(definition, value)}
             />
           ))}

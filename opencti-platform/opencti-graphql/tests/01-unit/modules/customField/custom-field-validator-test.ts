@@ -445,6 +445,11 @@ describe('resolveCustomFieldValuesIdentity', () => {
       .toEqual([{ field_id: 'cf-id-2', field_name: 'x_opencti_cf_score' }]);
   });
 
+  it('rejects an unknown name sent with a field_id (would act on the id)', async () => {
+    await expect(resolve([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_unknown' }]))
+      .rejects.toThrow('Custom field name not found for this entity type');
+  });
+
   it('leaves an unknown name as is for validation to reject', async () => {
     const values = [{ field_name: 'x_opencti_cf_unknown', string_value: 'a' } as CustomFieldValue];
     expect(await resolve(values)).toEqual(values);
@@ -474,6 +479,34 @@ describe('validateCustomFieldValuesEditInput', () => {
     vi.restoreAllMocks();
   });
   const editInput = (value: any[], operation?: EditOperation): EditInput => ({ key: 'custom_field_values', value, operation } as EditInput);
+  describe('mandatory bypass (KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)', () => {
+    const BYPASS_FIELDS_USER = { id: 'user-2', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+    const mandatoryDefinitions = () => seed(
+      makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: true }] }),
+      makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_other', field_type: 'string' }),
+    );
+    const entityWithoutMandatory = { entity_type: ENTITY_TYPE, custom_field_values: [] };
+
+    it('lets a bypass user add another field to an entity missing a mandatory field', async () => {
+      mandatoryDefinitions();
+      const input = editInput([{ field_id: 'cf-id-2', field_name: 'x_opencti_cf_other', string_value: 'a' }], EditOperation.Add);
+      await expect(validateCustomFieldValuesEditInput(CONTEXT, BYPASS_FIELDS_USER, input, entityWithoutMandatory)).resolves.not.toThrow();
+      await expect(validateCustomFieldValuesEditInput(CONTEXT, USER, input, entityWithoutMandatory)).rejects.toThrow('Mandatory custom field is missing');
+    });
+
+    it('lets a bypass user remove a mandatory field value', async () => {
+      mandatoryDefinitions();
+      const entity = { entity_type: ENTITY_TYPE, custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }] };
+      const input = editInput([{ field_id: 'cf-id-1' }], EditOperation.Remove);
+      await expect(validateCustomFieldValuesEditInput(CONTEXT, BYPASS_FIELDS_USER, input, entity)).resolves.not.toThrow();
+    });
+
+    it('still validates value types and bounds for a bypass user', async () => {
+      seed(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }));
+      const input = editInput([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 99 }], EditOperation.Replace);
+      await expect(validateCustomFieldValuesEditInput(CONTEXT, BYPASS_FIELDS_USER, input, entityWithoutMandatory)).rejects.toThrow('int_value is above maximum');
+    });
+  });
   describe('replace (default) operation', () => {
     it('validates the input values as the full resulting set (delegates to validateCustomFieldValues)', async () => {
       seed(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }));
@@ -585,7 +618,12 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
     expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 5 });
   });
 
-  it.each(['1.5', 'abc'])('ignores an invalid integer default value (%s)', (defaultValue) => {
+  it('keeps 0 as a valid integer default value', () => {
+    const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', entity_type_settings: settingsFor('0') });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 0 });
+  });
+
+  it.each(['1.5', 'abc', ' '])('ignores an invalid integer default value (%s)', (defaultValue) => {
     const definition = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', entity_type_settings: settingsFor(defaultValue) });
     expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toBeUndefined();
   });
