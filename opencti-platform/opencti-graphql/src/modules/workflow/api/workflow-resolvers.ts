@@ -1,12 +1,14 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
+import { buildWorkflowMigrationPreviewResult } from '../migration/status-to-definition-converter';
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
+  getWorkflowMigrationPreview,
   getWorkflowPublishedVersionId,
   hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
@@ -28,6 +30,10 @@ const workflowResolvers = {
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
+    },
+    workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      const { byScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
+      return buildWorkflowMigrationPreviewResult(entityType, byScope);
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);

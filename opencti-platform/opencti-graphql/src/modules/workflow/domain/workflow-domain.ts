@@ -5,7 +5,7 @@ import { FunctionalError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../database/middleware-loader';
 import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
@@ -16,7 +16,7 @@ import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
-import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
@@ -48,6 +48,7 @@ import { computeStateOrder } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { runWorkflowBypassActions } from './workflow-async-completion';
+import { type ConvertStatusToDefinitionResult, convertStatusToDefinition } from '../migration/status-to-definition-converter';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -479,6 +480,35 @@ export const getWorkflowPublishedVersionId = async (
     ENTITY_TYPE_WORKFLOW_DEFINITION,
   ) as WorkflowDefinitionEntity | undefined;
   return workflowDefinitionEntity?.published_version?.id ?? null;
+};
+
+/**
+ * Read-only preview of what migrating an entity type's legacy `Status` set to a
+ * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted
+ * changes. Pure conversion logic lives in `convertStatusToDefinition`; this just gathers the
+ * `Status`/`StatusTemplate` input data for `entityType` (all scopes, matching `byScope`'s shape).
+ */
+export const getWorkflowMigrationPreview = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<ConvertStatusToDefinitionResult> => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const statuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['type'], values: [entityType] }],
+      filterGroups: [],
+    },
+  });
+  const templateIds = [...new Set(statuses.map((status) => status.template_id))];
+  const templates = templateIds.length > 0
+    ? await storeLoadByIds<BasicWorkflowTemplateEntity>(executionContext, executionUser, templateIds, ENTITY_TYPE_STATUS_TEMPLATE)
+    : [];
+  // storeLoadByIds returns an undefined entry for each id it couldn't find — filter those out
+  // before handing templates to the converter (a missing one becomes a MISSING_TEMPLATE diagnostic).
+  return convertStatusToDefinition(statuses, templates.filter((template): template is BasicWorkflowTemplateEntity => template != null));
 };
 
 /**

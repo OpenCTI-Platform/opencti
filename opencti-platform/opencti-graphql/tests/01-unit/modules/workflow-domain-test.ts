@@ -3,7 +3,7 @@ import { booleanConf, isFeatureEnabled } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } from '../../../src/database/middleware-loader';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import * as ee from '../../../src/enterprise-edition/ee';
@@ -26,6 +26,7 @@ import {
   isStatusUsedInWorkflow,
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
+  getWorkflowMigrationPreview,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
@@ -38,7 +39,7 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/typ
 import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
-import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
@@ -59,6 +60,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
   internalLoadById: vi.fn(),
   storeLoadById: vi.fn(),
+  storeLoadByIds: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/user/user-domain', () => ({
@@ -3908,5 +3910,54 @@ describe('getWorkflowInstance — read-repair', () => {
 
     expect(resolveMappedStatusId).not.toHaveBeenCalled();
     expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+describe('getWorkflowMigrationPreview', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  it('groups legacy Status data by scope and delegates to the pure converter', async () => {
+    (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
+      if (types.includes(ENTITY_TYPE_STATUS)) {
+        return Promise.resolve([
+          { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+          { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.RequestAccess, order: 1 },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+    (storeLoadByIds as any).mockResolvedValue([
+      { id: 't1', name: 'New' },
+      { id: 't2', name: 'Pending Approval' },
+    ]);
+
+    const { byScope } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(byScope[StatusScope.Global]?.definition.states.map((s) => s.statusId)).toEqual(['t1']);
+    expect(byScope[StatusScope.RequestAccess]?.definition.states.map((s) => s.statusId)).toEqual(['t2']);
+  });
+
+  it('filters Status lookup by entity type only, so both scopes are included', async () => {
+    (fullEntitiesList as any).mockResolvedValue([]);
+    (storeLoadByIds as any).mockResolvedValue([]);
+
+    await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    const statusCall = (fullEntitiesList as any).mock.calls.find(([, , types]: [any, any, string[]]) => types.includes(ENTITY_TYPE_STATUS));
+    const [, , , args] = statusCall;
+    expect(args.filters.filters).toEqual([{ key: ['type'], values: ['Incident'] }]);
+  });
+
+  it('loads only the templates referenced by the fetched statuses (deduplicated), not every StatusTemplate', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+      { id: 's2', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 2 },
+    ]);
+    (storeLoadByIds as any).mockResolvedValue([{ id: 't1', name: 'New' }]);
+
+    await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(storeLoadByIds).toHaveBeenCalledWith(mockContext, mockUser, ['t1'], ENTITY_TYPE_STATUS_TEMPLATE);
   });
 });
