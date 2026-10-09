@@ -1,9 +1,9 @@
 import * as R from 'ramda';
-import { type DashboardVariable, type DashboardVariableRestrictionMode, type DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
+import { type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
-import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type DashboardVariableTypeName, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable, type DashboardVariableInputLike } from './workspace-variables-validation';
 
 export const buildVariableAuditInput = (
@@ -75,11 +75,9 @@ export const preserveServerOwnedManifestKeys = (inputs: EditInput[], storedManif
   });
 };
 
-const DASHBOARD_VARIABLE_TYPE_NAMES: ReadonlySet<string> = new Set<DashboardVariableTypeName>([
-  'vocabulary', 'killChainPhase', 'entity', 'entityType', 'label', 'user',
-  'marking', 'status', 'group', 'boolean', 'numeric', 'text', 'date',
-]);
-const RESTRICTION_MODES: ReadonlySet<string> = new Set(['none', 'selection', 'filters']);
+// Derived from the GraphQL enums: an imported variable is checked against exactly what the mutation accepts.
+const DASHBOARD_VARIABLE_TYPE_NAMES: ReadonlySet<string> = new Set(Object.values(DashboardVariableType));
+const RESTRICTION_MODES: ReadonlySet<string> = new Set(Object.values(DashboardVariableRestrictionMode));
 const VOCABULARY_CATEGORIES: ReadonlySet<string> = new Set(Object.values(VocabularyCategory));
 
 const isOptionalString = (value: unknown) => value === undefined || value === null || typeof value === 'string';
