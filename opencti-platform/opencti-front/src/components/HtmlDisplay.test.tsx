@@ -44,18 +44,39 @@ describe('HtmlDisplay style sanitization', () => {
     expect(paragraph?.style.getPropertyValue('color')).toBe('blue');
   });
 
-  it('removes non-allowlisted properties and negative indentation', () => {
+  it('removes values loading a resource and border images', () => {
     const { container } = render(
-      <HtmlDisplay content={'<p style="transform: scale(20); translate: -500px; margin-top: -2000px; margin-left: -100vw; font-size: 18px;">a</p><p style="margin-left: 40px;">b</p>'} />,
+      <HtmlDisplay content={'<p style="background-image: url(https://example.com/pixel.png); list-style-image: image-set(\'https://example.com/pixel.png\' 1x); border-image-source: linear-gradient(red, blue); background-color: yellow;">test</p>'} />,
     );
-    const [first, second] = Array.from(container.querySelectorAll('p'));
+    const paragraph = container.querySelector('p');
 
-    expect(first.style.getPropertyValue('transform')).toBe('');
-    expect(first.style.getPropertyValue('translate')).toBe('');
-    expect(first.style.getPropertyValue('margin-top')).toBe('');
-    expect(first.style.getPropertyValue('margin-left')).toBe('');
-    expect(first.style.getPropertyValue('font-size')).toBe('18px');
-    expect(second.style.getPropertyValue('margin-left')).toBe('40px');
+    expect(paragraph?.style.getPropertyValue('background-image')).toBe('');
+    expect(paragraph?.style.getPropertyValue('list-style-image')).toBe('');
+    expect(paragraph?.style.getPropertyValue('border-image-source')).toBe('');
+    expect(paragraph?.style.getPropertyValue('background-color')).toBe('yellow');
+  });
+
+  it('keeps the table cell styles produced by the rich-text editor', () => {
+    const { container } = render(
+      <HtmlDisplay content={'<table><tbody><tr><td style="background-color: rgb(217, 226, 243); border-top: 1pt solid currentcolor; border-left: none; width: 120px;" data-cell-background="light">a</td></tr></tbody></table>'} />,
+    );
+    const cell = container.querySelector('td');
+
+    expect(cell?.style.getPropertyValue('background-color')).toBe('rgb(217, 226, 243)');
+    expect(cell?.style.getPropertyValue('border-top-style')).toBe('solid');
+    expect(cell?.style.getPropertyValue('border-left-style')).toBe('none');
+    expect(cell?.style.getPropertyValue('width')).toBe('120px');
+    expect(cell?.getAttribute('data-cell-background')).toBe('light');
+  });
+
+  it('contains the content within its container', () => {
+    const { container } = render(
+      <HtmlDisplay content={'<p style="transform: translate(-500px, -500px); margin-left: 40px;">test</p>'} />,
+    );
+    const wrapper = container.querySelector('.rich-text-content') as HTMLElement;
+
+    expect(wrapper.style.getPropertyValue('contain')).toBe('paint');
+    expect(container.querySelector('p')?.style.getPropertyValue('margin-left')).toBe('40px');
   });
 
   it('removes style elements', () => {
@@ -77,18 +98,9 @@ describe('HtmlDisplay style sanitization', () => {
     expect(container.querySelector('[popovertarget]')).not.toBeInTheDocument();
   });
 
-  it('keeps rich-text classes and removes other classes', () => {
-    const { container } = render(
-      <HtmlDisplay content={'<p><mark class="marker-yellow css-1abcd">a</mark></p><ul class="todo-list MuiDrawer-paper"><li>b</li></ul>'} />,
-    );
-
-    expect(container.querySelector('mark')?.className).toBe('marker-yellow');
-    expect(container.querySelector('ul')?.className).toBe('todo-list');
-  });
-
   it('does not change the behavior of the shared DOMPurify instance', () => {
     render(<HtmlDisplay content="<p>test</p>" />);
 
-    expect(purify.sanitize('<p style="position: fixed;" class="custom">a</p>')).toBe('<p style="position: fixed;" class="custom">a</p>');
+    expect(purify.sanitize('<p style="position: fixed;">a</p>')).toBe('<p style="position: fixed;">a</p>');
   });
 });

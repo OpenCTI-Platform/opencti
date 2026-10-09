@@ -11,7 +11,7 @@ interface HtmlDisplayProps {
 }
 
 const SANITIZE_CONFIG = {
-  ADD_ATTR: ['data-type', 'data-checked', 'title', 'class', 'href', 'src', 'alt', 'width', 'height', 'data-caption', 'data-href', 'data-title', 'colspan', 'rowspan', 'style'],
+  ADD_ATTR: ['data-type', 'data-checked', 'title', 'class', 'href', 'src', 'alt', 'width', 'height', 'data-caption', 'data-href', 'data-title', 'colspan', 'rowspan', 'style', 'data-cell-background'],
   ADD_TAGS: ['figure', 'figcaption', 'th', 'colgroup', 'col'],
   // <style> elements would apply their rules to the whole application,
   // an open <dialog> is positioned outside of the content flow.
@@ -20,74 +20,29 @@ const SANITIZE_CONFIG = {
   FORBID_ATTR: ['popover', 'popovertarget', 'popovertargetaction'],
 };
 
-// Classes styled by the rich-text stylesheet (`.rich-text-content ...` rules of
-// @filigran/rich-text-editor) plus the mapping highlights. Other classes are
-// dropped so content cannot reuse the application's own layout classes.
-const ALLOWED_CLASSES = [
-  'image',
-  'image-figure',
-  'image-style-side',
-  'marker-blue',
-  'marker-green',
-  'marker-pink',
-  'marker-yellow',
-  'page-break',
-  'pen-green',
-  'pen-red',
-  'table',
-  'text-big',
-  'text-huge',
-  'text-small',
-  'text-tiny',
-  'tiptap-task-item',
-  'todo-list',
-  'todo-list__label',
-];
+// CSS properties that take an element out of the content flow (e.g. a
+// full-screen overlay). The container below already keeps such elements
+// inside its box; they are also removed from the content itself.
+const FORBIDDEN_STYLE_PROPERTIES = ['position', 'z-index', 'inset', 'top', 'right', 'bottom', 'left'];
 
-const sanitizeClassAttribute = (classValue: string) => classValue
-  .split(/\s+/)
-  .filter((className) => ALLOWED_CLASSES.includes(className))
-  .join(' ');
+// Values loading a resource (tracking pixels): `url(...)`, and `image-set(...)`
+// which also accepts plain strings as URLs.
+const RESOURCE_VALUE_REGEX = /url\(|image-set\(/i;
 
-// Inline CSS properties produced by the rich-text editor. Anything else is
-// dropped: a denylist cannot cover every way to move content outside of its
-// container (transform, translate, negative margins...).
-// Shorthands are listed by name and also match their longhands
-// (e.g. `text-decoration` matches `text-decoration-line`).
-const ALLOWED_STYLE_PROPERTIES = [
-  'color',
-  'background-color',
-  'font',
-  'line-height',
-  'text-align',
-  'text-decoration',
-  'vertical-align',
-  'width',
-  'min-width',
-  'height',
-  'table-layout',
-];
-
-// Indentation is the only margin the editor emits; only positive lengths are kept.
-const INDENT_STYLE_PROPERTY = 'margin-left';
-const POSITIVE_LENGTH_REGEX = /^\d+(\.\d+)?(px|em|rem|%)?$/;
-
-const isAllowedStyleProperty = (property: string, value: string) => {
-  if (property === INDENT_STYLE_PROPERTY) {
-    return POSITIVE_LENGTH_REGEX.test(value);
-  }
-  return ALLOWED_STYLE_PROPERTIES.some((allowed) => property === allowed || property.startsWith(`${allowed}-`));
-};
+const isForbiddenDeclaration = (property: string, value: string) => FORBIDDEN_STYLE_PROPERTIES.includes(property)
+  || property.startsWith('border-image')
+  || RESOURCE_VALUE_REGEX.test(value);
 
 // Use the browser's own CSS parser (via CSSStyleDeclaration) instead of naive
-// string splitting: it normalizes CSS escapes (e.g. `po\73ition`) and safely
-// handles values that legitimately contain `;` (e.g. data-URIs).
+// string splitting: it normalizes CSS escapes (e.g. `po\73ition`), expands
+// shorthands into longhands and safely handles values that legitimately
+// contain `;` (e.g. data-URIs).
 const sanitizeStyleAttribute = (styleValue: string) => {
   const span = document.createElement('span');
   span.setAttribute('style', styleValue);
   // Copy the property names first: removing properties mutates span.style.
   Array.from(span.style).forEach((property) => {
-    if (!isAllowedStyleProperty(property, span.style.getPropertyValue(property))) {
+    if (isForbiddenDeclaration(property, span.style.getPropertyValue(property))) {
       span.style.removeProperty(property);
     }
   });
@@ -98,15 +53,18 @@ const sanitizeStyleAttribute = (styleValue: string) => {
 // also apply to every other sanitize call of the application.
 const htmlDisplayPurify = purify(window);
 
-// Keep rich-text formatting only, so content stays within its container.
 htmlDisplayPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName === 'style' && data.attrValue) {
     data.attrValue = sanitizeStyleAttribute(data.attrValue);
   }
-  if (data.attrName === 'class' && data.attrValue) {
-    data.attrValue = sanitizeClassAttribute(data.attrValue);
-  }
 });
+
+// Keeps the content inside the container box whatever its styles: the container
+// becomes the containing block of fixed and absolute descendants and their
+// stacking context, and anything moved outside of it (transform, translate,
+// negative margins...) is clipped. Inline styles produced by the rich-text
+// editor (borders, backgrounds, indentation...) are left untouched.
+const CONTAINER_STYLE = { contain: 'paint' };
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
   if (isEmptyField(content)) {
@@ -170,7 +128,7 @@ const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) =>
   };
 
   return (
-    <div className="rich-text-content">
+    <div className="rich-text-content" style={CONTAINER_STYLE}>
       {parse(normalizeImageMetadata(sanitize(limit ? truncate(content, limit) : content)))}
     </div>
   );

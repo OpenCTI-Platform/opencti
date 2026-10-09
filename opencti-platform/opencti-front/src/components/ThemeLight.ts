@@ -629,6 +629,12 @@ const ThemeLight = (
           },
           // Paragraph spacing belongs between blocks, not against the edges of
           // the field, where it reads as a stray gap now that the editor is painted.
+          // Keeps the edited content inside the editor box whatever its inline
+          // styles (fixed positioning, transform, negative margins...), as
+          // HtmlDisplay does for the read-only rendering.
+          '.rich-text-editor-wrapper .ProseMirror': {
+            contain: 'paint',
+          },
           '.rich-text-editor-wrapper .ProseMirror > :first-child': {
             marginTop: 0,
           },
