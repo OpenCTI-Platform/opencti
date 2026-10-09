@@ -8984,6 +8984,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  managedConnectorAddInputFromImport(file: Upload!): ManagedConnectorAddInputFromImport!
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   catalogsRevisions: [CatalogRevision!]!
@@ -10667,6 +10668,15 @@ type ManagerContractConfiguration {
   value: String
 }
 
+type ManagedConnectorAddInputFromImport {
+  name: String!
+  catalog_id: String!
+  contract: String!
+  confidence_level: Int
+  manager_contract_configuration: [ManagerContractConfiguration!]!
+  required_at_import: [String!]!
+}
+
 type ManagerContractExcerpt {
   title: String!
   slug: String!
@@ -10789,6 +10799,7 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  toConfigurationExport: String
 }
 
 type ManagedConnector implements BasicObject & InternalObject {

@@ -219,4 +219,38 @@ describe('IngestionCatalogConnectorCreation', () => {
     expect(screen.getByLabelText('Display name')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
   });
+
+  it('prefills an imported configuration and requires its excluded secrets', () => {
+    testRender(
+      <IngestionCatalogConnectorCreation
+        connector={{
+          ...connectorFixture,
+          config_schema: {
+            ...connectorFixture.config_schema,
+            properties: {
+              API_KEY: { type: 'string', format: 'password', default: '', description: 'API key' },
+              CONNECTOR_LOG_LEVEL: { type: 'string', default: '', description: 'Log level' },
+            },
+            required: ['API_KEY'],
+          },
+        }}
+        open
+        onClose={vi.fn()}
+        catalogId="catalog-1"
+        isEnterpriseEdition
+        hasActiveManagers
+        importedConfiguration={{
+          name: 'Imported Falcon',
+          confidence_level: 30,
+          manager_contract_configuration: [{ key: 'CONNECTOR_LOG_LEVEL', value: 'debug' }],
+          required_at_import: ['API_KEY'],
+        }}
+      />,
+    );
+
+    expect(screen.getByLabelText('Display name')).toHaveValue('Imported Falcon');
+    expect(screen.getByLabelText('Instance name')).toHaveValue('imported-falcon');
+    expect(screen.getByText('The sensitive fields excluded from the export must be filled in before deploying the connector: API_KEY')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
+  });
 });

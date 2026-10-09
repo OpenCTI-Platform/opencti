@@ -16,5 +16,5 @@ export interface ExportInstanceConfig {
   group: string;
   query: GraphQLTaggedNode;
   extraVariables?: Record<string, unknown>;
-  extractData: (data: unknown) => InstanceConnection | null | undefined;
+  extractData: (data: unknown, search: string) => InstanceConnection | null | undefined;
 }
