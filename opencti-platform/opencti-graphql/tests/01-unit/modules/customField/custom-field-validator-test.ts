@@ -9,7 +9,6 @@ import {
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
-  validateMandatoryCustomFieldValues,
 } from '../../../../src/modules/customField/custom-field-validator';
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from '../../../../src/modules/customField/custom-field-types';
 import type { CustomFieldValueAddInput, EditInput } from '../../../../src/generated/graphql';
@@ -392,26 +391,27 @@ describe('transformCustomFieldValueAddInput', () => {
     ]);
   });
 });
-describe('validateMandatoryCustomFieldValues', () => {
+describe('validateCustomFieldValues on final values (after default values)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  const mandatoryDefinition = () => makeDefinition({
+  const mandatoryDefinition = (defaultValue: string) => makeDefinition({
     field_type: 'select',
     select_options: ['P1', 'P3'],
-    entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: true, default_value: 'P3' }],
-  });
-
-  it('throws when a mandatory field is missing from the final values', async () => {
-    seed(mandatoryDefinition());
-    await expect(validateMandatoryCustomFieldValues(CONTEXT, USER, undefined, ENTITY_TYPE)).rejects.toThrow('Mandatory custom field is missing');
+    entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: true, default_value: defaultValue }],
   });
 
   it('passes when the mandatory field was filled with its default value', async () => {
-    seed(mandatoryDefinition());
+    seed(mandatoryDefinition('P3'));
     const valuesWithDefault = await fillCustomFieldsDefaultValues(CONTEXT, USER, {}, ENTITY_TYPE);
-    await expect(validateMandatoryCustomFieldValues(CONTEXT, USER, valuesWithDefault, ENTITY_TYPE)).resolves.not.toThrow();
+    await expect(validate(valuesWithDefault)).resolves.not.toThrow();
+  });
+
+  it('also validates the default values', async () => {
+    seed(mandatoryDefinition('P9'));
+    const valuesWithDefault = await fillCustomFieldsDefaultValues(CONTEXT, USER, {}, ENTITY_TYPE);
+    await expect(validate(valuesWithDefault)).rejects.toThrow('select_value is not in the allowed options');
   });
 });
 

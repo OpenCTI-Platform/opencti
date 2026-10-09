@@ -258,25 +258,10 @@ export const extractStringifiedCustomFieldValueFromStoreEntity = async (
   if (rawValue === undefined || rawValue === null) return undefined;
   return Array.isArray(rawValue) ? rawValue.join(',') : String(rawValue);
 };
-const checkMandatoryCustomFieldValues = (
-  values: CustomFieldValue[],
-  definitions: BasicStoreEntityCustomFieldDefinition[],
-  entityType: string,
-): void => {
-  // Runs even when no values are provided, so an omitted mandatory field is rejected.
-  const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
-  for (const def of mandatoryDefs) {
-    const valueEntry = values.find((v) => v.field_name === def.name);
-    if (!valueEntry) {
-      throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
-    }
-  }
-};
-
 /**
  * Validates an array of custom field values against the definitions for a given entity type.
  * Throws FunctionalError if any validation fails.
- * On creation, mandatory fields are checked separately (checkMandatory: false), once default values are filled.
+ * checkMandatory: false skips the mandatory check (users allowed to bypass mandatory fields).
  */
 export const validateCustomFieldValues = async (
   context: AuthContext,
@@ -313,23 +298,17 @@ export const validateCustomFieldValues = async (
     }
   }
 
+  // Check mandatory fields are present.
+  // Runs even when no values are provided, so an omitted mandatory field is rejected.
   if (opts.checkMandatory !== false) {
-    checkMandatoryCustomFieldValues(values, definitions, entityType);
+    const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
+    for (const def of mandatoryDefs) {
+      const valueEntry = values.find((v) => v.field_name === def.name);
+      if (!valueEntry) {
+        throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
+      }
+    }
   }
-};
-
-/**
- * Checks that the mandatory custom fields of an entity type are present, on creation.
- * Must run once default values are filled, like the mandatory check of standard attributes.
- */
-export const validateMandatoryCustomFieldValues = async (
-  context: AuthContext,
-  user: AuthUser,
-  customFieldValues: CustomFieldValue[] | undefined,
-  entityType: string,
-): Promise<void> => {
-  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
-  checkMandatoryCustomFieldValues(customFieldValues ?? [], definitions, entityType);
 };
 
 // When validating a replace, check consistency of the new values coming in

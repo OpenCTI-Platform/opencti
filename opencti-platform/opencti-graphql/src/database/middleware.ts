@@ -289,7 +289,6 @@ import {
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
-  validateMandatoryCustomFieldValues,
 } from '../modules/customField/custom-field-validator';
 
 // region global variables
@@ -3237,10 +3236,11 @@ const validateEntityAndRelationCreation = async (
     await validateInputCreation(context, user, type, input, entitySetting, {
       bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
     });
-    // Same rules as mandatory standard attributes: after default values, and bypassable
-    const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) && !isAllowedToBypassMandatory) {
-      await validateMandatoryCustomFieldValues(context, user, input.custom_field_values, type);
+    // Custom field values are validated on the final values (default values included).
+    // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
     }
   }
 };
@@ -3457,8 +3457,6 @@ export const createRelationRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    // Mandatory custom fields are checked once default values are filled (see validateEntityAndRelationCreation)
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType, { checkMandatory: false });
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;
@@ -3791,8 +3789,6 @@ const internalCreateEntityRaw = async (
   if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
     const rawInputCustomFieldValues = input.customFieldValues ?? [];
     const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    // Mandatory custom fields are checked once default values are filled (see validateEntityAndRelationCreation)
-    await validateCustomFieldValues(context, user, customFieldValuesFromInput, type, { checkMandatory: false });
     // Only keep empty custom fields values if it came from input
     if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
       (input as any).custom_field_values = customFieldValuesFromInput;
