@@ -45,7 +45,7 @@ export interface WorkflowPendingTransition {
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   comment?: string;
-  closingReason?: string;
+  closingReason?: string | null;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
