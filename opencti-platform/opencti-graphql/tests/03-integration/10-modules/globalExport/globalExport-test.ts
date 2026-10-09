@@ -3,25 +3,30 @@ import os from 'node:os';
 import { afterAll, describe, it, expect, vi } from 'vitest';
 import { ZipArchive } from 'archiver';
 import {
+  buildUniqueNamePath,
   exportCategory,
   exportCustomViewsCategory,
   exportDashboardsCategory,
   exportFintelTemplatesCategory,
   exportFormsCategory,
+  exportGroupsCategory,
   exportHiddenEntityTypesCategory,
   exportIngestionCsvCategory,
   exportIngestionJsonCategory,
   exportIngestionRssCategory,
   exportIngestionTaxiiCategory,
   exportPlaybooksCategory,
+  exportRolesCategory,
   exportSettingsLanguageCategory,
   exportSettingsMessagesCategory,
+  exportSettingsPoliciesCategory,
   exportSettingsThemeCategory,
   deleteGlobalExportsNotModifiedSince,
   generateGlobalConfigurationExport,
   SETTINGS_HIDDEN_ENTITY_TYPES,
   SETTINGS_LANGUAGE,
   SETTINGS_MESSAGES,
+  SETTINGS_POLICIES,
   SETTINGS_THEME,
   withExportId,
 } from '../../../../src/modules/globalExport/globalExport-domain';
@@ -29,7 +34,9 @@ import { ingestionTaxiiAdd, ingestionTaxiiDelete } from '../../../../src/modules
 import { IngestionAuthType, TaxiiVersion } from '../../../../src/generated/graphql';
 import pjson from '../../../../package.json';
 import { getSettings } from '../../../../src/domain/settings';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, GREEN_GROUP, ROLE_EDITOR, testContext } from '../../../utils/testQuery';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../../src/schema/internalObject';
+import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_PLAYBOOK } from '../../../../src/modules/playbook/playbook-types';
 import { ENTITY_TYPE_FORM } from '../../../../src/modules/form/form-types';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../../../../src/modules/ingestion/ingestion-types';
@@ -285,6 +292,122 @@ describe('Global configuration export', () => {
     });
   });
 
+  describe('RBAC category functions', () => {
+    const findByName = async (entityType: string, name: string) => {
+      const entities = await fullEntitiesList<any>(testContext, ADMIN_USER, [entityType], {});
+      return entities.find((entity) => entity.name === name);
+    };
+
+    it('should export existing groups and append one entry per group', async () => {
+      const archive = createFakeArchive();
+      const count = await exportGroupsCategory(testContext, ADMIN_USER, archive);
+
+      expect(count).toBeGreaterThan(0);
+      expect(archive.append).toHaveBeenCalledTimes(count);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(/^security\/groups\/[^/]+\.json$/);
+    });
+
+    it('should export a group with its roles and markings referenced by standard_id', async () => {
+      const group = await findByName(ENTITY_TYPE_GROUP, AMBER_GROUP.name);
+      const archive = createFakeArchive();
+      const count = await exportGroupsCategory(testContext, ADMIN_USER, archive, [group.id]);
+
+      expect(count).toBe(1);
+      const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toBe('security/groups/amber-group.json');
+      const parsed = JSON.parse(content);
+      expect(parsed.openCTI_version).toBe(pjson.version);
+      expect(parsed.type).toBe('group');
+      expect(parsed).not.toHaveProperty('internal_id');
+      expect(parsed.configuration.name).toBe(AMBER_GROUP.name);
+      expect(parsed.configuration.group_confidence_level).toEqual(AMBER_GROUP.group_confidence_level);
+      expect(parsed.configuration.roles).toEqual([{ standard_id: ROLE_EDITOR.id, name: ROLE_EDITOR.name }]);
+      // A role created by a user is not built-in, so it has no export_id
+      expect(parsed.configuration.roles[0]).not.toHaveProperty('export_id');
+      expect(parsed.configuration.allowed_markings.map((m: { standard_id: string }) => m.standard_id)).toEqual([MARKING_TLP_AMBER]);
+      expect(parsed.configuration.max_shareable_markings).toMatchObject([
+        { type: 'TLP', value: { standard_id: MARKING_TLP_GREEN, name: 'TLP:GREEN' } },
+      ]);
+      // No internal id of a related entity must leak in the export
+      expect(content).not.toContain(group.id);
+    });
+
+    it('should restrict group export to the given ids only', async () => {
+      const group = await findByName(ENTITY_TYPE_GROUP, GREEN_GROUP.name);
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, ENTITY_TYPE_GROUP, archive, [group.id]);
+
+      expect(count).toBe(1);
+      const [content] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(JSON.parse(content).configuration.name).toBe(GREEN_GROUP.name);
+    });
+
+    it('should name each file after its entity and number the duplicated names', () => {
+      const pathFor = buildUniqueNamePath('security/roles');
+
+      expect(pathFor({ name: 'Admin' })).toBe('security/roles/admin.json');
+      expect(pathFor({ name: 'Admin!' })).toBe('security/roles/admin2.json');
+      expect(pathFor({ name: 'admin' })).toBe('security/roles/admin3.json');
+      expect(pathFor({ name: 'Access knowledge/exploration' })).toBe('security/roles/access-knowledge-exploration.json');
+      // Each export starts again from an empty list of names
+      expect(buildUniqueNamePath('security/roles')({ name: 'Admin' })).toBe('security/roles/admin.json');
+    });
+
+    it('should export existing roles and append one entry per role', async () => {
+      const archive = createFakeArchive();
+      const count = await exportRolesCategory(testContext, ADMIN_USER, archive);
+
+      expect(count).toBeGreaterThan(0);
+      expect(archive.append).toHaveBeenCalledTimes(count);
+      const [, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toMatch(/^security\/roles\/[^/]+\.json$/);
+    });
+
+    it('should export a role with its capabilities referenced by name', async () => {
+      const role = await findByName(ENTITY_TYPE_ROLE, ROLE_EDITOR.name);
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, ENTITY_TYPE_ROLE, archive, [role.id]);
+
+      expect(count).toBe(1);
+      const [content] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      const parsed = JSON.parse(content);
+      expect(parsed.type).toBe('role');
+      expect(parsed).not.toHaveProperty('internal_id');
+      expect(parsed.configuration.name).toBe(ROLE_EDITOR.name);
+      expect(parsed.configuration.description).toBe(ROLE_EDITOR.description);
+      expect([...parsed.configuration.capabilities].sort()).toEqual([...ROLE_EDITOR.capabilities].sort());
+      expect(Array.isArray(parsed.configuration.capabilities_in_draft)).toBe(true);
+    });
+
+    it('should export the policies settings as a single security/policies.json entry', async () => {
+      const archive = createFakeArchive();
+      const settings = await getSettings(testContext) as any;
+      const count = await exportSettingsPoliciesCategory(testContext, ADMIN_USER, archive);
+
+      expect(count).toBe(1);
+      expect(archive.append).toHaveBeenCalledTimes(1);
+      const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toBe('security/policies.json');
+      const parsed = JSON.parse(content);
+      expect(parsed.type).toBe('settingsPolicies');
+      expect(parsed.export_id).toBe(settings.export_id);
+      expect(parsed.configuration.view_all_users).toEqual(settings.view_all_users);
+      expect(parsed.configuration.platform_login_message).toEqual(settings.platform_login_message);
+      expect(parsed.configuration.platform_consent_message).toEqual(settings.platform_consent_message);
+      expect(parsed.configuration.platform_consent_confirm_text).toEqual(settings.platform_consent_confirm_text);
+      expect(parsed.configuration.password_policy_min_length).toEqual(settings.password_policy_min_length);
+      expect(parsed.configuration.password_policy_validity_days).toEqual(settings.password_policy_validity_days);
+      if (settings.platform_organization) {
+        expect(parsed.configuration.platform_organization.standard_id).toBeDefined();
+        expect(parsed.configuration.platform_organization.name).toBeDefined();
+        expect(content).not.toContain(settings.platform_organization);
+      } else {
+        expect(parsed.configuration.platform_organization).toBeNull();
+      }
+    });
+  });
+
   describe('exportCategory dispatch', () => {
     it('should route ENTITY_TYPE_PLAYBOOK to the playbook category export', async () => {
       const archive = createFakeArchive();
@@ -356,6 +479,12 @@ describe('Global configuration export', () => {
     it('should route SETTINGS_MESSAGES to the settings messages category export', async () => {
       const archive = createFakeArchive();
       const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_MESSAGES, archive);
+      expect(count).toBe(1);
+    });
+
+    it('should route SETTINGS_POLICIES to the settings policies category export', async () => {
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_POLICIES, archive);
       expect(count).toBe(1);
     });
 
@@ -449,6 +578,7 @@ describe('Global configuration export', () => {
         SETTINGS_THEME,
         SETTINGS_LANGUAGE,
         SETTINGS_MESSAGES,
+        SETTINGS_POLICIES,
         SETTINGS_HIDDEN_ENTITY_TYPES,
       ]);
 
@@ -563,9 +693,6 @@ describe('Global configuration export', () => {
       expect(options.name).toMatch(new RegExp(`^visualization/custom_dashboards/dash-.+-${target.id}\\.json$`));
     });
 
-    // Regression test for the in-memory "type === 'dashboard'" filter combined with
-    // the ES-level id filter: a non-dashboard workspace must be excluded even when
-    // explicitly requested by id.
     it('should exclude a matched non-dashboard workspace even when explicitly requested by id', async () => {
       const allWorkspaces = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKSPACE], {});
       const nonDashboard = allWorkspaces.find((w) => w.type !== 'dashboard');

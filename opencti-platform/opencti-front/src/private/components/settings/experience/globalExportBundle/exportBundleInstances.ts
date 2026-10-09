@@ -9,6 +9,8 @@ import {
   ingestionRsssQuery,
   ingestionTaxiisQuery,
   fintelTemplatesQuery,
+  groupsQuery,
+  rolesQuery,
 } from './exportBundleInstanceQueries';
 import { ExportBundlePlaybooksQuery$data } from './__generated__/ExportBundlePlaybooksQuery.graphql';
 import { ExportBundleFormsQuery$data } from './__generated__/ExportBundleFormsQuery.graphql';
@@ -19,6 +21,8 @@ import { ExportBundleIngestionTaxiisQuery$data } from './__generated__/ExportBun
 import { ExportBundleIngestionJsonsQuery$data } from './__generated__/ExportBundleIngestionJsonsQuery.graphql';
 import { ExportBundleIngestionRsssQuery$data } from './__generated__/ExportBundleIngestionRsssQuery.graphql';
 import { ExportBundleFintelTemplatesQuery$data } from './__generated__/ExportBundleFintelTemplatesQuery.graphql';
+import { ExportBundleGroupsQuery$data } from './__generated__/ExportBundleGroupsQuery.graphql';
+import { ExportBundleRolesQuery$data } from './__generated__/ExportBundleRolesQuery.graphql';
 
 const dashboardsFilters = {
   mode: 'and',
@@ -90,5 +94,19 @@ export const EXPORT_INSTANCE_CONFIGS: ExportInstanceConfig[] = [
     group: 'Ingestion',
     query: ingestionRsssQuery,
     extractData: (data) => (data as ExportBundleIngestionRsssQuery$data)?.ingestionRsss,
+  },
+  {
+    entityType: 'Role',
+    label: 'Roles',
+    group: 'Security & Access',
+    query: rolesQuery,
+    extractData: (data) => (data as ExportBundleRolesQuery$data)?.roles,
+  },
+  {
+    entityType: 'Group',
+    label: 'Groups',
+    group: 'Security & Access',
+    query: groupsQuery,
+    extractData: (data) => (data as ExportBundleGroupsQuery$data)?.groups,
   },
 ];

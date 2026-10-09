@@ -6,14 +6,14 @@ export interface InstanceItem {
 }
 
 export interface InstanceConnection {
-  edges: ReadonlyArray<{ node: InstanceItem | null } | null> | null;
+  edges: ReadonlyArray<{ node: InstanceItem | null } | null | undefined> | null | undefined;
   pageInfo: { endCursor: string | null; hasNextPage: boolean; globalCount: number | null };
 }
 
 export interface ExportInstanceConfig {
   entityType: string;
   label: string;
-  group?: string;
+  group: string;
   query: GraphQLTaggedNode;
   extraVariables?: Record<string, unknown>;
   extractData: (data: unknown) => InstanceConnection | null | undefined;
