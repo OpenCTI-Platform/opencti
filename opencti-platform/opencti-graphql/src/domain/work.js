@@ -267,7 +267,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   const createdWork = await loadWorkById(context, user, workId);
   // If work was created, initialize work on redis
   if (createdWork) {
-    await redisInitializeWork(createdWork.id, isMultiPartWork);
+    await redisInitializeWork(createdWork.id, isMultiPartWork, connector.connector_type);
   }
   logApp.info('Work initiated', {
     workId,
