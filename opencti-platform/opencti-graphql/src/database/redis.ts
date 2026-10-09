@@ -523,9 +523,95 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
+// Touched elements of enrichment works: ids of elements created or updated while
+// processing the work. Separate keys (not fields of the work hash) so that writing
+// them can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+export const WORK_TOUCHED_TTL = 7 * 24 * 60 * 60; // 7 days backstop, refreshed on each write
+export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
+const WORK_COMPLETION_HOOKS_FLAG_TTL = 86400; // 1 day
+
+/**
+ * Redis key of the set holding the ids touched by a work.
+ */
+const workTouchedKey = (workId: string) => `work_touched:${workId}`;
+
+/**
+ * Redis key of the flag set once an id was refused because the touched set of a work was full.
+ */
+const workTouchedTruncatedKey = (workId: string) => `work_touched_truncated:${workId}`;
+
+// Cap check, add and TTL refresh in one atomic round-trip on a single key (cluster safe).
+// KEYS[1] touched set, ARGV[1] element id, ARGV[2] cap, ARGV[3] ttl. Returns 0 when refused by the cap.
+const WORK_TOUCHED_ADD_SCRIPT = `
+  if redis.call('SCARD', KEYS[1]) >= tonumber(ARGV[2]) then
+    return 0
+  end
+  redis.call('SADD', KEYS[1], ARGV[1])
+  redis.call('EXPIRE', KEYS[1], ARGV[3])
+  return 1`;
+
+/**
+ * Record an element id as touched by a work. The cap check, the add and the TTL refresh run
+ * atomically in one Lua script, so the cap is exact even under concurrent writers.
+ * @param cap maximum number of ids kept per work, beyond it the work is flagged as truncated
+ * @returns false when the id was refused by the cap
+ */
+export const redisAddWorkTouchedElement = async (workId: string, elementId: string, cap = WORK_TOUCHED_CAP): Promise<boolean> => {
+  const client = getClientBase();
+  const added = await client.eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), elementId, cap, WORK_TOUCHED_TTL);
+  if (added === 0) {
+    // The flag lives in another key, so it is set in its own call to stay single-key per command
+    await client.set(workTouchedTruncatedKey(workId), '1', 'EX', WORK_TOUCHED_TTL);
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Read the ids touched by a work and whether the collection was truncated by the cap.
+ */
+export const redisGetWorkTouchedElements = async (workId: string) => {
+  const client = getClientBase();
+  const [touched, truncated] = await Promise.all([
+    client.smembers(workTouchedKey(workId)),
+    client.get(workTouchedTruncatedKey(workId)),
+  ]);
+  return { touched_ids: touched, touched_ids_truncated: truncated === '1' };
+};
+
+/**
+ * Delete the touched ids (and truncation flag) of the given works.
+ */
+export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => {
+  const keys = workIds.flatMap((id) => [workTouchedKey(id), workTouchedTruncatedKey(id)]);
+  await Promise.all(keys.map((key) => getClientBase().del(key)));
+};
+
+/**
+ * Atomically claim the right to run the completion hooks of a work (SET NX).
+ * @returns true for the first caller only, false for every later one
+ */
+export const redisAcquireWorkCompletionHooksFlag = async (workId: string): Promise<boolean> => {
+  const result = await getClientBase().set(`work_completion_hooks:${workId}`, '1', 'EX', WORK_COMPLETION_HOOKS_FLAG_TTL, 'NX');
+  return result === 'OK';
+};
+
+/**
+ * Read the event type stored when the work was initialized.
+ * @returns null when the work has no event type
+ */
+export const redisGetWorkEventType = async (workId: string): Promise<string | null> => {
+  return getClientBase().hget(workId, 'event_type');
+};
+
+/**
+ * Delete the work hashes together with their touched elements keys.
+ */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {
+  await redisDeleteWorkTouchedElements(internalIds);
   return Promise.all(internalIds.map((id) => getClientBase().del(id)));
 };
+
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
@@ -569,14 +655,20 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
+
+/**
+ * Mark a work as initialized, optionally storing its event type.
+ */
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean, eventType?: string) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, {
       is_initialized: true,
       is_multipart: isMultiPartWork,
+      ...(eventType ? { event_type: eventType } : {}),
     });
   });
 };
+
 // Atomic first-completion marker for a work: SET NX guarantees that exactly
 // one caller wins, whichever completion path (reportExpectation vs
 // updateProcessedTime) and whichever node observes the completion first.
