@@ -11,6 +11,13 @@ export interface GlobalExportBundleCategory {
 
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
+    key: 'Security & Access',
+    label: 'Security & Access',
+    items: [
+      { key: 'SettingsPolicies', label: 'Policies' },
+    ],
+  },
+  {
     key: 'Data Model',
     label: 'Data Model',
     items: [
@@ -24,13 +31,6 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
       { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name...)' },
       { key: 'SettingsLanguage', label: 'Language' },
       { key: 'SettingsMessages', label: 'Messages (banner)' },
-    ],
-  },
-  {
-    key: 'Security',
-    label: 'Security',
-    items: [
-      { key: 'SettingsPolicies', label: 'Policies' },
     ],
   },
 ];

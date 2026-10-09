@@ -145,15 +145,21 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
               );
             })}
 
-            {EXPORT_CATEGORIES.map((category) => (
-              <ExportBundleCategoryChecklist
-                key={category.key}
-                category={category}
-                checkedKeys={checkedCategoryItems[category.key] ?? []}
-                onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
-                accordionSx={accordionSx}
-              />
-            ))}
+            {EXPORT_CATEGORIES.map((category, index) => {
+              const previousGroup = index > 0
+                ? EXPORT_CATEGORIES[index - 1].label
+                : EXPORT_INSTANCE_CONFIGS[EXPORT_INSTANCE_CONFIGS.length - 1]?.group;
+              return (
+                <ExportBundleCategoryChecklist
+                  key={category.key}
+                  category={category}
+                  checkedKeys={checkedCategoryItems[category.key] ?? []}
+                  showLabel={category.label !== previousGroup}
+                  onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
+                  accordionSx={accordionSx}
+                />
+              );
+            })}
 
             <Alert
               icon={<WarningAmberOutlined fontSize="inherit" />}

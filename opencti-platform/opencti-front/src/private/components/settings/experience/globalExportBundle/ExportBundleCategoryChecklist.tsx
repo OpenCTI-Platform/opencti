@@ -10,6 +10,7 @@ import { GlobalExportBundleCategory } from '@components/settings/experience/glob
 interface ExportBundleCategoryChecklistProps {
   category: GlobalExportBundleCategory;
   checkedKeys: string[];
+  showLabel: boolean;
   onToggleItem: (itemKey: string) => (checked: boolean | 'indeterminate') => void;
   accordionSx: Record<string, unknown>;
 }
@@ -17,6 +18,7 @@ interface ExportBundleCategoryChecklistProps {
 const ExportBundleCategoryChecklist: FunctionComponent<ExportBundleCategoryChecklistProps> = ({
   category,
   checkedKeys,
+  showLabel,
   onToggleItem,
   accordionSx,
 }) => {
@@ -25,9 +27,11 @@ const ExportBundleCategoryChecklist: FunctionComponent<ExportBundleCategoryCheck
 
   return (
     <>
-      <Typography variant="overline" color="textSecondary" sx={{ mt: 1 }}>
-        {t_i18n(category.label)}
-      </Typography>
+      {showLabel && (
+        <Typography variant="overline" color="textSecondary" sx={{ mt: 1 }}>
+          {t_i18n(category.label)}
+        </Typography>
+      )}
       {items.map((item) => (
         <Accordion key={item.key} disableGutters expanded={false} sx={accordionSx}>
           <AccordionSummary sx={{ cursor: 'default' }}>
