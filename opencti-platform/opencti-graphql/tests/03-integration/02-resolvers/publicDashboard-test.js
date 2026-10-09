@@ -1408,4 +1408,88 @@ describe('Public dashboards and dashboard variables', () => {
     expect(publicManifest.variables).toBeUndefined();
     expect(publicManifest.presets).toBeUndefined();
   });
+
+  const READ_PRIVATE_MANIFEST_QUERY = gql`
+    query PublicDashboardPrivateManifest($id: String!) {
+      publicDashboard(id: $id) {
+        id
+        private_manifest
+      }
+    }
+  `;
+  const READ_DASHBOARD_MANIFEST_QUERY = gql`
+    query PublicDashboardTestDashboardManifest($id: String!) {
+      workspace(id: $id) {
+        id
+        manifest
+      }
+    }
+  `;
+  const ORPHAN_VARIABLE_ID = '33333333-3333-4333-8333-333333333333';
+  const tokenWidget = (variableId, operator) => ({
+    id: 'variable-widget',
+    type: 'number',
+    perspective: 'entities',
+    dataSelection: [{
+      label: 'variable',
+      attribute: 'entity_type',
+      date_attribute: 'created_at',
+      perspective: 'entities',
+      filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${variableId}`], operator, mode: 'or' }], filterGroups: [] },
+      dynamicFrom: { mode: 'and', filters: [], filterGroups: [] },
+      dynamicTo: { mode: 'and', filters: [], filterGroups: [] },
+    }],
+    parameters: { title: 'variable widget' },
+    layout: { w: 4, h: 2, x: 0, y: 0, i: 'variable-widget', moved: false, static: false },
+  });
+  const extraDashboardIds = [];
+  const extraPublicDashboardIds = [];
+  const createDashboardWithVariableWidget = async (name, operator, withVariable) => {
+    const created = await queryAsAdmin({ query: CREATE_PRIVATE_DASHBOARD_QUERY, variables: { input: { type: 'dashboard', name } } });
+    const dashboardId = created.data.workspaceAdd.id;
+    extraDashboardIds.push(dashboardId);
+    let variableId = ORPHAN_VARIABLE_ID;
+    if (withVariable) {
+      const upsert = await queryAsAdmin({ query: UPSERT_VARIABLE_QUERY, variables: { id: dashboardId, input: { name: 'Type', type: 'entityType', defaultValue: 'Malware' } } });
+      expect(upsert.errors).toBeUndefined();
+      const read = await queryAsAdmin({ query: READ_DASHBOARD_MANIFEST_QUERY, variables: { id: dashboardId } });
+      variableId = fromB64(read.data.workspace.manifest).variables[0].id;
+    }
+    const read = await queryAsAdmin({ query: READ_DASHBOARD_MANIFEST_QUERY, variables: { id: dashboardId } });
+    const manifest = { ...fromB64(read.data.workspace.manifest), widgets: { 'variable-widget': tokenWidget(variableId, operator) }, config: {} };
+    await queryAsAdmin({ query: UPDATE_PRIVATE_DASHBOARD_QUERY, variables: { id: dashboardId, input: { key: 'manifest', value: toB64(manifest) } } });
+    return dashboardId;
+  };
+  const publish = (dashboardId, uriKey) => queryAsAdmin({
+    query: CREATE_QUERY,
+    variables: { input: { name: uriKey, uri_key: uriKey, dashboard_id: dashboardId, enabled: true } },
+  });
+
+  afterAll(async () => {
+    for (let i = 0; i < extraPublicDashboardIds.length; i += 1) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: extraPublicDashboardIds[i] } });
+    }
+    for (let i = 0; i < extraDashboardIds.length; i += 1) {
+      await queryAsAdmin({ query: DELETE_PRIVATE_DASHBOARD_QUERY, variables: { id: extraDashboardIds[i] } });
+    }
+  });
+
+  it('should freeze the default values of dashboard variables in the private manifest', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables resolved', 'eq', true);
+    const published = await publish(dashboardId, 'public-dashboard-variables-resolved');
+    expect(published.errors).toBeUndefined();
+    extraPublicDashboardIds.push(published.data.publicDashboardAdd.id);
+    const read = await queryAsAdmin({ query: READ_PRIVATE_MANIFEST_QUERY, variables: { id: published.data.publicDashboardAdd.id } });
+    const privateManifest = fromB64(read.data.publicDashboard.private_manifest);
+    expect(JSON.stringify(privateManifest)).not.toContain('$var:');
+    expect(privateManifest.widgets['variable-widget'].dataSelection[0].filters.filters[0].values).toEqual(['Malware']);
+    expect(privateManifest.variables).toBeUndefined();
+  });
+
+  it.each(['eq', 'not_eq'])('should refuse to publish a widget using a variable without value (%s)', async (operator) => {
+    const dashboardId = await createDashboardWithVariableWidget(`Dashboard variables orphan ${operator}`, operator, false);
+    const published = await publish(dashboardId, `public-dashboard-variables-orphan-${operator}`);
+    if (published.data?.publicDashboardAdd) extraPublicDashboardIds.push(published.data.publicDashboardAdd.id);
+    expect(published.errors?.[0].message).toEqual('Cannot publish this dashboard, some widgets use dashboard variables without value');
+  });
 });

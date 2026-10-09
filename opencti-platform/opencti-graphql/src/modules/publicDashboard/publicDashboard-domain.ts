@@ -34,6 +34,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cach
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
+import { buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -145,7 +146,8 @@ export const getAllowedMarkings = async (
 
 /**
  * Creates the private manifest by resolving saved filter references
- * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters,
+ * then dashboard variable tokens into their default values.
  */
 const createPrivateManifest = async (
   context: AuthContext,
@@ -155,6 +157,14 @@ const createPrivateManifest = async (
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const widgetDefinitions = Object.values(parsedManifest.widgets);
     await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+    // Variable values are frozen at publication: the private manifest never holds a token.
+    // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
+    const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues);
+    if (unresolved.length > 0) {
+      throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
+    }
+    return toB64({ ...R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest), widgets });
   }
   return toB64(parsedManifest ?? '{}');
 };

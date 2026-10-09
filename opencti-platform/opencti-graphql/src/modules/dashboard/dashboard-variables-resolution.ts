@@ -95,3 +95,44 @@ export const computeDashboardVariablesUsage = (widgets: Record<string, ManifestW
   });
   return usage;
 };
+
+/**
+ * Default value of each variable of a manifest, keyed by variable id.
+ * The manifest may come from an import: anything malformed is ignored, so its tokens stay unresolved.
+ */
+export const buildDashboardVariableDefaultValues = (variables: unknown) => {
+  const values = new Map<string, string>();
+  if (!Array.isArray(variables)) return values;
+  variables.forEach((variable: { id?: unknown; defaultValue?: unknown } | null) => {
+    if (typeof variable?.id === 'string' && typeof variable.defaultValue === 'string' && variable.defaultValue !== '') {
+      values.set(variable.id, variable.defaultValue);
+    }
+  });
+  return values;
+};
+
+const RESOLVED_SELECTION_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const;
+
+/**
+ * Resolve the variable tokens of every widget data selection. The widgets given are not mutated.
+ */
+export const resolveDashboardVariablesInWidgets = <W extends ManifestWidgetLike>(
+  widgets: Record<string, W> | undefined,
+  values: ReadonlyMap<string, string>,
+) => {
+  const unresolved = new Set<string>();
+  const resolvedWidgets = Object.fromEntries(Object.entries(widgets ?? {}).map(([widgetId, widget]) => {
+    if (!widget.dataSelection) return [widgetId, widget];
+    const dataSelection = widget.dataSelection.map((selection) => {
+      const resolvedSelection = { ...selection };
+      RESOLVED_SELECTION_KEYS.filter((key) => key in selection).forEach((key) => {
+        const resolution = resolveVariablesInFilterGroup(selection[key], values);
+        resolvedSelection[key] = resolution.filters;
+        resolution.unresolved.forEach((id) => unresolved.add(id));
+      });
+      return resolvedSelection;
+    });
+    return [widgetId, { ...widget, dataSelection }];
+  })) as Record<string, W>;
+  return { widgets: resolvedWidgets, unresolved: [...unresolved] };
+};
