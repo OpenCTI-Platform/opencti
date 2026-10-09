@@ -51,6 +51,7 @@ describe('Workflow bypass API', () => {
         enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
+        enum StatusScope { GLOBAL REQUEST_ACCESS }
         scalar JSON
         scalar DateTime
         scalar BasicObject
