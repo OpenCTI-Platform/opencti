@@ -92,6 +92,9 @@ describe('buildDashboardVariable - update', () => {
   it('should reject an unknown id that is not a uuid', () => {
     expect(() => build({ id: 'not-a-uuid' }, [existing()])).toThrow('Invalid dashboard variable id');
   });
+  it('should reject an empty id instead of storing it', () => {
+    expect(() => build({ id: '' }, [existing()])).toThrow('Invalid dashboard variable id');
+  });
   it('should apply the quota when recreating with a given id', () => {
     const variables = Array.from({ length: 50 }, (_, i) => existing({ id: `id-${i}`, name: `v${i}` }));
     expect(() => build({ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'recreated' }, variables)).toThrow('A dashboard cannot hold more than 50 variables');

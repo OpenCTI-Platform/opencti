@@ -129,7 +129,7 @@ export const buildDashboardVariable = (
 ): StoreDashboardVariable => {
   const current = input.id ? existingVariables.find((variable) => variable.id === input.id) : undefined;
   // An unknown id recreates the variable with it: tokens left orphan by a deletion resolve again.
-  if (input.id && !current && !validator.isUUID(input.id)) {
+  if (input.id != null && !current && !validator.isUUID(input.id)) {
     throw FunctionalError('Invalid dashboard variable id', { variableId: input.id });
   }
   if (!current && existingVariables.length >= DASHBOARD_VARIABLES_MAX_COUNT) {

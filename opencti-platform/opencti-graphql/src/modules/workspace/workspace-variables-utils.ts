@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { type DashboardVariable, type DashboardVariableRestrictionMode, type DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
-import { isNotEmptyField } from '../../database/utils';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
 import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type DashboardVariableTypeName, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable, type DashboardVariableInputLike } from './workspace-variables-validation';
@@ -97,7 +96,7 @@ const toVariableInput = (variable: unknown): DashboardVariableInputLike => {
     throw FunctionalError('Invalid dashboard variable', { variableId: value.id });
   }
   if (!DASHBOARD_VARIABLE_TYPE_NAMES.has(value.type)) throw FunctionalError('Invalid dashboard variable type', { type: value.type });
-  if (isNotEmptyField(value.vocabularyCategory) && !VOCABULARY_CATEGORIES.has(value.vocabularyCategory)) {
+  if (value.vocabularyCategory != null && !(typeof value.vocabularyCategory === 'string' && VOCABULARY_CATEGORIES.has(value.vocabularyCategory))) {
     throw FunctionalError('Invalid dashboard variable vocabulary category', { vocabularyCategory: value.vocabularyCategory });
   }
   const restriction = value.restriction ?? { mode: 'none' };
