@@ -119,7 +119,6 @@ describe('RSS ingestion resolver standard behavior', () => {
       variables: { id: createdRssIngesterId },
     });
     const rssFeedIngestion = JSON.parse(queryResult.data?.ingestionRss.toConfigurationExport);
-    expect(rssFeedIngestion.export_id).toBe(createdRssIngesterId);
     expect(rssFeedIngestion.configuration).toMatchObject({
       name: 'RSS ingester for integration test',
       uri: 'http://rss-feed.invalid/feed.xml',

@@ -201,10 +201,6 @@ const resolveBuiltInExportId = (element: StoredElement, statusTemplateNames: Map
   return isBuiltIn ? exportId : undefined;
 };
 
-// Built-in elements created by an older migration, run just before this one during the same upgrade,
-// got their internal_id as export_id at creation, like any configuration element: it must be replaced.
-const hasNoBuiltInExportId = (element: StoredElement) => !element.export_id || element.export_id === element.internal_id;
-
 // Computes the export_id each built-in element must have, and returns the elements that do not have it yet.
 export const computeMissingBuiltInExportIds = (elements: StoredElement[]): ExportIdAssignment[] => {
   const statusTemplateNames = buildStatusTemplateNames(elements);
@@ -221,7 +217,7 @@ export const computeMissingBuiltInExportIds = (elements: StoredElement[]): Expor
     // An export_id must identify a single element. If several ones match the same built-in
     // (a copy with the same name for instance), the oldest is kept: built-in elements are created at platform init.
     const alreadyAssigned = candidates.some((candidate) => candidate.export_id === exportId);
-    const [oldest] = R.sortBy((candidate) => candidate.created_at ?? '', candidates.filter(hasNoBuiltInExportId));
+    const [oldest] = R.sortBy((candidate) => candidate.created_at ?? '', candidates.filter((candidate) => !candidate.export_id));
     if (!alreadyAssigned && oldest) {
       assignments.push({ element: oldest, export_id: exportId });
     }
@@ -251,7 +247,7 @@ export const up = async (next: (error?: Error) => void) => {
   const missingByType = R.groupBy((missing) => missing.entity_type, findMissingBuiltInElements(elements));
   Object.entries(missingByType).forEach(([entityType, missing]) => {
     const naturalKeys = (missing ?? []).map(({ naturalKey }) => JSON.stringify(naturalKey)).join(', ');
-    logMigration.warn(`${message} > ${missing?.length} built-in ${entityType} not found (renamed or deleted), they get their internal_id as export_id: ${naturalKeys}`);
+    logMigration.warn(`${message} > ${missing?.length} built-in ${entityType} not found (renamed or deleted), they get no export_id: ${naturalKeys}`);
   });
   const assignments = computeMissingBuiltInExportIds(elements);
   const countByType = R.countBy((assignment) => assignment.element.entity_type, assignments);
@@ -264,8 +260,7 @@ export const up = async (next: (error?: Error) => void) => {
       { update: { _index: element._index, _id: element._id ?? element.internal_id } },
       {
         script: {
-          source: 'if (ctx._source.export_id == null || ctx._source.export_id == ctx._source.internal_id) '
-            + '{ ctx._source.export_id = params.export_id; } else { ctx.op = \'noop\'; }',
+          source: 'if (ctx._source.export_id == null) { ctx._source.export_id = params.export_id; } else { ctx.op = \'noop\'; }',
           params: { export_id },
         },
       },

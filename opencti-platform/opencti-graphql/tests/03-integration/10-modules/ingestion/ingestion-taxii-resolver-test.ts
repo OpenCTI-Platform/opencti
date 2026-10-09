@@ -110,7 +110,6 @@ describe('TAXII ingestion resolver standard behavior', () => {
       variables: { id: createdTaxiiIngesterId },
     });
     const taxiiFeedIngestion = JSON.parse(data?.ingestionTaxii.toConfigurationExport);
-    expect(taxiiFeedIngestion.export_id).toBe(createdTaxiiIngesterId);
     expect(taxiiFeedIngestion.configuration).toMatchObject({
       name: 'Taxii ingester for integration test',
       uri: 'http://taxiserver.invalid',

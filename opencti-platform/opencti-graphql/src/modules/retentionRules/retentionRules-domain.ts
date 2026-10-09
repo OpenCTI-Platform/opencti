@@ -81,7 +81,6 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     remaining_count: null,
     retention_unit: input.retention_unit ?? 'days',
     ...input,
-    export_id: input.export_id ?? retentionRuleId,
     active: input.active ?? true,
     filters,
   };

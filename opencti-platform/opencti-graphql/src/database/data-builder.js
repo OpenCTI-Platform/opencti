@@ -27,7 +27,6 @@ import { isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTR
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
-import { isExportIdOnCreation } from '../schema/export-id';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule, restore } = opts;
@@ -53,9 +52,6 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('embedded'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
-  if (isEmptyField(data.export_id) && isExportIdOnCreation(type, data)) {
-    data.export_id = internalId;
-  }
   if (inferred) {
     // Simply add the rule
     // start/stop confidence was computed by the rule directly
