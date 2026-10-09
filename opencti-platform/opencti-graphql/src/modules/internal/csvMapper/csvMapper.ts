@@ -1,14 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
-import type { StixCsvMapper, StoreEntityCsvMapper } from './csvMapper-types';
+import type { InternalObjectModuleDefinition } from '../../../schema/module';
+import { registerInternalObjectDefinition } from '../../../schema/module';
 import { ENTITY_TYPE_CSV_MAPPER } from './csvMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
-import convertCsvMapperToStix from './csvMapper-converter';
 import './deprecated/csvMapper-deprecated';
 
-const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMapper> = {
+const CSV_MAPPER_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'csvmapper',
     name: ENTITY_TYPE_CSV_MAPPER,
@@ -33,10 +31,6 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
     { name: 'skipLineChar', label: 'Skip line character', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
-  representative: (instance: StixCsvMapper) => {
-    return instance.name;
-  },
-  converter_2_1: convertCsvMapperToStix,
 };
 
-registerDefinition(CSV_MAPPER_DEFINITION);
+registerInternalObjectDefinition(CSV_MAPPER_DEFINITION);

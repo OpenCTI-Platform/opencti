@@ -1,10 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ENTITY_TYPE_FINTEL_DESIGN, type StixFintelDesign, type StoreEntityFintelDesign } from './fintelDesign-types';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { convertFintelDesignToStix } from './fintelDesign-converter';
 
-export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign, StixFintelDesign> = {
+export const FINTEL_DESIGN_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'fintelDesign',
     name: ENTITY_TYPE_FINTEL_DESIGN,
@@ -36,10 +35,6 @@ export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign,
     { name: 'default', label: 'Default', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
-  representative: (stix: StixFintelDesign) => {
-    return stix.name;
-  },
-  converter_2_1: convertFintelDesignToStix,
 };
 
-registerDefinition(FINTEL_DESIGN_DEFINITION);
+registerInternalObjectDefinition(FINTEL_DESIGN_DEFINITION);

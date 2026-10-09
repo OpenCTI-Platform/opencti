@@ -2,7 +2,7 @@
  * Migration orchestrator: reads env config, converts via pure functions, persists to database.
  *
  * This module is the ONLY place where side effects (database writes, logging) happen.
- * The actual field-by-field conversion logic is in authenticationProvider-converter.ts.
+ * The actual field-by-field conversion logic is in authenticationProvider-migration-converter.ts.
  */
 
 import type { AuthContext, AuthUser } from '../../types/user';

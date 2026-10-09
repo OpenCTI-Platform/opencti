@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type StixPublicDashboard, type StoreEntityPublicDashboard } from './publicDashboard-types';
-import convertPublicDashboardToStix from './publicDashboard-converter';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from './publicDashboard-types';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { draftChange } from '../../schema/attribute-definition';
 
-export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDashboard, StixPublicDashboard> = {
+export const PUBLIC_DASHBOARD_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'publicDashboards',
     name: ENTITY_TYPE_PUBLIC_DASHBOARD,
@@ -31,10 +30,6 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
     { ...draftChange, isFilterable: false },
   ],
   relations: [],
-  representative: (stix: StixPublicDashboard) => {
-    return stix.name;
-  },
-  converter_2_1: convertPublicDashboardToStix,
 };
 
-registerDefinition(PUBLIC_DASHBOARD_DEFINITION);
+registerInternalObjectDefinition(PUBLIC_DASHBOARD_DEFINITION);

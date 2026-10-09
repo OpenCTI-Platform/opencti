@@ -1,16 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { convertNotificationToStix, convertTriggerToStix } from './notification-converter';
-import {
-  ENTITY_TYPE_NOTIFICATION,
-  ENTITY_TYPE_TRIGGER,
-  type StixNotification,
-  type StixTrigger,
-  type StoreEntityNotification,
-  type StoreEntityTrigger,
-} from './notification-types';
+import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from './notification-types';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
+import type { InternalObjectModuleDefinition } from '../../schema/module';
+import { registerInternalObjectDefinition } from '../../schema/module';
 import { authorizedAuthorities, authorizedMembers, created } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
@@ -21,7 +13,7 @@ import { MEMBERS_ENTITY_TYPES } from '../../utils/access';
 // TODO
 
 // Triggers
-const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
+const TRIGGER_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'triggers',
     name: ENTITY_TYPE_TRIGGER,
@@ -52,15 +44,11 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     authorizedAuthorities,
   ],
   relations: [],
-  representative: (stix: StixTrigger) => {
-    return stix.name;
-  },
-  converter_2_1: convertTriggerToStix,
 };
-registerDefinition(TRIGGER_DEFINITION);
+registerInternalObjectDefinition(TRIGGER_DEFINITION);
 
 // Notifications
-const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNotification> = {
+const NOTIFICATION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'notifications',
     name: ENTITY_TYPE_NOTIFICATION,
@@ -123,9 +111,5 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     authorizedAuthorities,
   ],
   relations: [],
-  representative: (stix: StixNotification) => {
-    return stix.messages.join(', ');
-  },
-  converter_2_1: convertNotificationToStix,
 };
-registerDefinition(NOTIFICATION_DEFINITION);
+registerInternalObjectDefinition(NOTIFICATION_DEFINITION);

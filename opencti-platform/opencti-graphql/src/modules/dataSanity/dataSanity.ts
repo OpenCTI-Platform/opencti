@@ -1,11 +1,9 @@
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import type { StixDataSanity, StoreEntityDataSanity } from './dataSanity-types';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertDataSanityToStix from './dataSanity-converter';
 import { v4 as uuidv4 } from 'uuid';
 
-const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSanity> = {
+const DATA_SANITY_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'dataSanity',
     name: ENTITY_TYPE_DATA_SANITY_EXECUTION,
@@ -28,10 +26,6 @@ const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSa
     { name: 'is_running', label: 'Is running', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
-  representative: (stix: StixDataSanity) => {
-    return stix.operation_name;
-  },
-  converter_2_1: convertDataSanityToStix,
 };
 
-registerDefinition(DATA_SANITY_DEFINITION);
+registerInternalObjectDefinition(DATA_SANITY_DEFINITION);

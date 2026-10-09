@@ -1,9 +1,8 @@
 import type { JSONSchemaType } from 'ajv';
-import type { AttributeConfiguration, ScaleConfig, StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
+import type { AttributeConfiguration, ScaleConfig } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import convertEntitySettingToStix from './entitySetting-converter';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
 
 const TARGET_TYPE = 'target_type';
@@ -70,7 +69,7 @@ const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
   },
 };
 
-export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
+export const ENTITY_SETTING_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'entitysettings',
     name: ENTITY_TYPE_ENTITY_SETTING,
@@ -118,10 +117,6 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
     validatorCreation: validateEntitySettingCreation,
     validatorUpdate: validateEntitySettingUpdate,
   },
-  representative: (stix: StixEntitySetting) => {
-    return stix.target_type;
-  },
-  converter_2_1: convertEntitySettingToStix,
 };
 
-registerDefinition(ENTITY_SETTING_DEFINITION);
+registerInternalObjectDefinition(ENTITY_SETTING_DEFINITION);

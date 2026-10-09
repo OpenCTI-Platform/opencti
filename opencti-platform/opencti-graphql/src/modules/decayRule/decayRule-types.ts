@@ -1,5 +1,3 @@
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 export const ENTITY_TYPE_DECAY_RULE = 'DecayRule';
@@ -26,17 +24,4 @@ export interface StoreEntityDecayRule extends StoreEntity {
   decay_filters: string;
   order: number;
   active: boolean;
-}
-
-export interface StixDecayRule extends StixObject {
-  name: string;
-  description: string;
-  decay_lifetime: number;
-  decay_pound: number;
-  decay_points: number[];
-  decay_revoke_score: number;
-  decay_filters: string;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }

@@ -1,4 +1,3 @@
-import type { StixObject } from '../../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 
 export const ENTITY_TYPE_DECAY_EXCLUSION_RULE = 'DecayExclusionRule';
@@ -15,10 +14,4 @@ export interface StoreEntityDecayExclusionRule extends StoreEntity {
   description: string;
   decay_exclusion_filters: string;
   active: boolean;
-}
-
-export interface StixDecayExclusionRule extends StixObject {
-  name: string;
-  description: string;
-  decay_exclusion_filters: string;
 }

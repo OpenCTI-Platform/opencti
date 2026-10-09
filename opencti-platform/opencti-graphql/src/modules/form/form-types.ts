@@ -1,6 +1,4 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_FORM = 'Form';
 
@@ -165,18 +163,6 @@ export interface StoreEntityForm extends StoreEntity {
   form_schema: string;
   active: boolean;
 
-}
-
-// STIX representation
-export interface StixForm extends StixObject {
-  name: string;
-  description: string;
-  main_entity_type: string;
-  form_schema: string;
-  active: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 
 // JSON Schema for validation

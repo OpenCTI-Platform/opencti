@@ -1,5 +1,3 @@
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import { IngestionAuthType, IngestionCsvMapperType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
@@ -37,17 +35,6 @@ export interface StoreEntityIngestionRss extends StoreEntity {
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
   ssl_verify?: boolean;
-}
-
-export interface StixIngestionRss extends StixObject {
-  name: string;
-  description: string;
-  uri: string;
-  report_types: string[];
-  ingestion_running: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion
 
@@ -93,17 +80,6 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   last_execution_date: Date | undefined;
   ssl_verify?: boolean;
 }
-
-export interface StixIngestionTaxii extends StixObject {
-  name: string;
-  description: string;
-  uri: string;
-  ingestion_running: boolean;
-  confidence_to_score: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
-}
 // endregion
 
 // region Csv ingestion
@@ -139,17 +115,6 @@ export interface StoreEntityIngestionCsv extends StoreEntity {
   last_execution_date: Date | undefined;
   user_id: string | undefined;
   ssl_verify?: boolean;
-}
-
-export interface StixIngestionCsv extends StixObject {
-  name: string;
-  description: string;
-  uri: string;
-  csv_mapper_id: string;
-  ingestion_running: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion
 
@@ -207,17 +172,6 @@ export interface StoreEntityIngestionJson extends StoreEntity {
   query_attributes?: Array<DataParam>;
   ssl_verify?: boolean;
 }
-
-export interface StixIngestionJson extends StixObject {
-  name: string;
-  description: string;
-  uri: string;
-  json_mapper_id: string;
-  ingestion_running: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
-}
 // endregion
 
 // region Taxii ingestion
@@ -239,16 +193,6 @@ export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {
   confidence_to_score: boolean;
   ingestion_running: boolean;
   restricted_members: Array<AuthorizedMember>;
-}
-
-export interface StixIngestionTaxiiCollection extends StixObject {
-  name: string;
-  description: string;
-  ingestion_running: boolean;
-  confidence_to_score: boolean;
-  extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
-  };
 }
 // endregion
 

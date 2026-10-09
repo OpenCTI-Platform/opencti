@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollection, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
-import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
+import { type InternalObjectModuleDefinition, registerInternalObjectDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from './ingestion-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { authorizedMembers } from '../../schema/attribute-definition';
 
-const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
+const INGESTION_DEFINITION: InternalObjectModuleDefinition = {
   type: {
     id: 'ingestion-taxii-collection',
     name: ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
@@ -44,10 +43,6 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
     authorizedMembers,
   ],
   relations: [],
-  representative: (stix: StixIngestionTaxiiCollection) => {
-    return stix.name;
-  },
-  converter_2_1: convertIngestionTaxiiCollectionToStix,
 };
 
-registerDefinition(INGESTION_DEFINITION);
+registerInternalObjectDefinition(INGESTION_DEFINITION);
