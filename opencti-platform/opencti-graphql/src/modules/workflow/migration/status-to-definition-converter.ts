@@ -1,3 +1,4 @@
+import { FunctionalError } from '../../../config/errors';
 import { StatusScope } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { WorkflowSerializedTransition } from '../types/workflow-types';
@@ -259,3 +260,27 @@ export const buildWorkflowMigrationPreviewResult = (
       diagnostics: result.diagnostics,
     })),
 });
+
+// Diagnostics that make a migrated definition unsafe to publish straight away: a state whose
+// template no longer exists, or two states a human cannot tell apart. Ordering diagnostics
+// (MISSING_ORDER / DUPLICATE_ORDER) are only warnings, the converter resolves them deterministically.
+const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = ['NAME_CONFLICT', 'MISSING_TEMPLATE'];
+
+export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiagnostic[]): WorkflowMigrationDiagnostic[] => {
+  return diagnostics.filter((diagnostic) => PUBLISH_BLOCKING_DIAGNOSTIC_TYPES.includes(diagnostic.type));
+};
+
+/**
+ * Picks the GLOBAL scope out of a conversion result: a single entity type has one workflow, and
+ * `REQUEST_ACCESS` statuses are not part of it. Throws when the entity type has no GLOBAL statuses.
+ */
+export const buildMigrationDefinition = (
+  entityType: string,
+  byScope: WorkflowMigrationByScope,
+): WorkflowMigrationConversionResult => {
+  const globalResult = byScope[StatusScope.Global];
+  if (!globalResult || globalResult.definition.states.length === 0) {
+    throw FunctionalError('No legacy statuses to migrate', { entityType, scope: StatusScope.Global });
+  }
+  return globalResult;
+};

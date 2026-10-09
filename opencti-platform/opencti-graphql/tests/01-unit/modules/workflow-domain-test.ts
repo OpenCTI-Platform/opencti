@@ -29,6 +29,7 @@ import {
   publishWorkflowDefinition,
   hasPublishedWorkflowDefinition,
   getWorkflowMigrationPreview,
+  migrateWorkflowFromStatuses,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
@@ -4429,5 +4430,99 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(logApp.error).toHaveBeenCalledOnce();
     expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
     expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', status_id: 'status-reviewing-id', reason: 'sync_failed' })]);
+  });
+});
+describe('migrateWorkflowFromStatuses', () => {
+  const legacyStatuses = [
+    { id: 's1', template_id: 't1', type: 'Grouping', scope: StatusScope.Global, order: 1 },
+    { id: 's2', template_id: 't2', type: 'Grouping', scope: StatusScope.Global, order: 2 },
+    { id: 's3', template_id: 't3', type: 'Grouping', scope: StatusScope.RequestAccess, order: 1 },
+  ];
+  const templates = [
+    { id: 't1', name: 'New' },
+    { id: 't2', name: 'Closed' },
+    { id: 't3', name: 'Pending' },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (fullEntitiesList as any).mockResolvedValue(legacyStatuses);
+    (storeLoadByIds as any).mockResolvedValue(templates);
+    const createdVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
+    (createEntity as any).mockResolvedValue({ id: 'workflow-id', draft_version: createdVersion, all_versions: [createdVersion] });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
+  });
+
+  it('throws when the entity setting does not exist', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false)).rejects.toThrow('Entity setting not found for type');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('refuses to overwrite an entity type that already has a workflow', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'existing-workflow' });
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false)).rejects.toThrow('already has a workflow');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('throws when there are no GLOBAL legacy statuses', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+    (fullEntitiesList as any).mockResolvedValue([legacyStatuses[2]]);
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false)).rejects.toThrow('No legacy statuses to migrate');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('saves the GLOBAL scope as a draft only when publish is false', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+
+    const result = await migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false);
+
+    expect(result.published).toBe(false);
+    const [, , input] = (createEntity as any).mock.calls[0];
+    const content = JSON.parse(input.draft_version.content);
+    expect(content.initialState).toBe('t1');
+    expect(content.states).toEqual([{ statusId: 't1', order: 0 }, { statusId: 't2', order: 1 }]);
+    expect(updateAttribute).not.toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition', expect.arrayContaining([expect.objectContaining({ key: 'published_version' })]));
+  });
+
+  it('refuses to publish when the preview has a blocking diagnostic, and persists nothing', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+    (storeLoadByIds as any).mockResolvedValue([{ id: 't2', name: 'Closed' }]);
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('Cannot publish migrated workflow');
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('still saves a draft when a blocking diagnostic exists but publish is false', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+    (storeLoadByIds as any).mockResolvedValue([{ id: 't2', name: 'Closed' }]);
+
+    await migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false);
+
+    expect(createEntity).toHaveBeenCalledTimes(1);
+  });
+
+  it('publishes the saved draft when publish is true', async () => {
+    const draftVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"t1","states":[],"transitions":[]}', validation_errors: [] };
+    (findByType as any)
+      .mockResolvedValueOnce({ id: 'entity-setting-id' })
+      .mockResolvedValueOnce({ id: 'entity-setting-id' })
+      .mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Workflow for Grouping', draft_version: draftVersion, all_versions: [draftVersion] });
+
+    const result = await migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true);
+
+    expect(createEntity).toHaveBeenCalledTimes(1);
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'workflow-id',
+      'WorkflowDefinition',
+      expect.arrayContaining([expect.objectContaining({ key: 'published_version' })]),
+    );
+    expect(result).toBeDefined();
   });
 });

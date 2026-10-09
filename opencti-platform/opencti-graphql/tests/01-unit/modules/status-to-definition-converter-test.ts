@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { StatusScope } from '../../../src/generated/graphql';
-import { buildWorkflowMigrationPreviewResult, convertStatusToDefinition } from '../../../src/modules/workflow/migration/status-to-definition-converter';
+import {
+  buildMigrationDefinition,
+  buildWorkflowMigrationPreviewResult,
+  convertStatusToDefinition,
+  getPublishBlockingDiagnostics,
+} from '../../../src/modules/workflow/migration/status-to-definition-converter';
 import type { WorkflowSerializedTransition } from '../../../src/modules/workflow/types/workflow-types';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 
@@ -268,5 +273,61 @@ describe('buildWorkflowMigrationPreviewResult', () => {
 
   it('returns an empty results array when byScope has no entries', () => {
     expect(buildWorkflowMigrationPreviewResult('Incident', {})).toEqual({ entityType: 'Incident', results: [] });
+  });
+});
+
+describe('buildMigrationDefinition', () => {
+  it('serialises the GLOBAL scope into a definition payload, keeping states, order and transitions', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Closed' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition, diagnostics } = buildMigrationDefinition('Grouping', byScope);
+
+    expect(definition.initialState).toBe('t1');
+    expect(definition.states).toEqual([{ statusId: 't1', order: 0 }, { statusId: 't2', order: 1 }]);
+    expect(definition.transitions.map((t) => t.event)).toEqual(['MOVE_TO_NEW', 'MOVE_TO_CLOSED']);
+    expect(diagnostics).toEqual([]);
+  });
+
+  it('ignores non-GLOBAL scopes', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1, scope: StatusScope.Global }),
+      buildStatus({ id: 's2', template_id: 't2', order: 1, scope: StatusScope.RequestAccess }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Pending' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition } = buildMigrationDefinition('Grouping', byScope);
+
+    expect(definition.states.map((s) => s.statusId)).toEqual(['t1']);
+  });
+
+  it('throws when there is no GLOBAL scope result', () => {
+    expect(() => buildMigrationDefinition('Grouping', {})).toThrow('No legacy statuses to migrate');
+  });
+
+  it('exposes diagnostics so the caller can gate publishing', () => {
+    const statuses = [buildStatus({ id: 's1', template_id: 'missing', order: 1 })];
+    const { byScope } = convertStatusToDefinition(statuses, []);
+
+    const { diagnostics } = buildMigrationDefinition('Grouping', byScope);
+
+    expect(diagnostics.map((d) => d.type)).toEqual(['MISSING_TEMPLATE']);
+  });
+});
+
+describe('getPublishBlockingDiagnostics', () => {
+  it('blocks on MISSING_TEMPLATE and NAME_CONFLICT only', () => {
+    const diagnostics = [
+      { type: 'MISSING_ORDER' as const, message: 'a' },
+      { type: 'DUPLICATE_ORDER' as const, message: 'b' },
+      { type: 'NAME_CONFLICT' as const, message: 'c' },
+      { type: 'MISSING_TEMPLATE' as const, message: 'd' },
+    ];
+    expect(getPublishBlockingDiagnostics(diagnostics).map((d) => d.type)).toEqual(['NAME_CONFLICT', 'MISSING_TEMPLATE']);
   });
 });
