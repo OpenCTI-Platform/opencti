@@ -21,7 +21,7 @@ const ExportBundleCategoryChecklist: FunctionComponent<ExportBundleCategoryCheck
   accordionSx,
 }) => {
   const { t_i18n } = useFormatter();
-  const items = category.items ?? [];
+  const { items } = category;
 
   return (
     <>
