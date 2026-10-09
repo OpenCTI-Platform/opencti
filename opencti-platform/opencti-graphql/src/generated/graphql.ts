@@ -4671,6 +4671,7 @@ export type ConnectorHealthMetrics = {
 export type ConnectorInfo = {
   __typename?: 'ConnectorInfo';
   buffering: Scalars['Boolean']['output'];
+  errors?: Maybe<Array<ConnectorInfoError>>;
   last_run_datetime?: Maybe<Scalars['DateTime']['output']>;
   next_run_datetime?: Maybe<Scalars['DateTime']['output']>;
   queue_messages_size: Scalars['Float']['output'];
@@ -4678,8 +4679,22 @@ export type ConnectorInfo = {
   run_and_terminate: Scalars['Boolean']['output'];
 };
 
+export type ConnectorInfoError = {
+  __typename?: 'ConnectorInfoError';
+  code: Scalars['String']['output'];
+  criticity: Scalars['Int']['output'];
+  message: Scalars['String']['output'];
+};
+
+export type ConnectorInfoErrorInput = {
+  code: Scalars['String']['input'];
+  criticity: Scalars['Int']['input'];
+  message: Scalars['String']['input'];
+};
+
 export type ConnectorInfoInput = {
   buffering: Scalars['Boolean']['input'];
+  errors?: InputMaybe<Array<ConnectorInfoErrorInput>>;
   last_run_datetime?: InputMaybe<Scalars['DateTime']['input']>;
   next_run_datetime?: InputMaybe<Scalars['DateTime']['input']>;
   queue_messages_size: Scalars['Float']['input'];
@@ -40746,6 +40761,8 @@ export type ResolversTypes = ResolversObject<{
   ConnectorCurrentStatus: ConnectorCurrentStatus;
   ConnectorHealthMetrics: ResolverTypeWrapper<ConnectorHealthMetrics>;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
+  ConnectorInfoError: ResolverTypeWrapper<ConnectorInfoError>;
+  ConnectorInfoErrorInput: ConnectorInfoErrorInput;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorManager: ResolverTypeWrapper<ConnectorManager>;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
@@ -41918,6 +41935,8 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorContractConfiguration: ConnectorContractConfiguration;
   ConnectorHealthMetrics: ConnectorHealthMetrics;
   ConnectorInfo: ConnectorInfo;
+  ConnectorInfoError: ConnectorInfoError;
+  ConnectorInfoErrorInput: ConnectorInfoErrorInput;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorManager: ConnectorManager;
   ConnectorMetadata: ConnectorMetadata;
@@ -44359,11 +44378,18 @@ export type ConnectorHealthMetricsResolvers<ContextType = any, ParentType extend
 
 export type ConnectorInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfo'] = ResolversParentTypes['ConnectorInfo']> = ResolversObject<{
   buffering?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  errors?: Resolver<Maybe<Array<ResolversTypes['ConnectorInfoError']>>, ParentType, ContextType>;
   last_run_datetime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   next_run_datetime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   queue_messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   queue_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   run_and_terminate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConnectorInfoErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfoError'] = ResolversParentTypes['ConnectorInfoError']> = ResolversObject<{
+  code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  criticity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type ConnectorManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorManager'] = ResolversParentTypes['ConnectorManager']> = ResolversObject<{
@@ -55041,6 +55067,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConnectorContractConfiguration?: ConnectorContractConfigurationResolvers<ContextType>;
   ConnectorHealthMetrics?: ConnectorHealthMetricsResolvers<ContextType>;
   ConnectorInfo?: ConnectorInfoResolvers<ContextType>;
+  ConnectorInfoError?: ConnectorInfoErrorResolvers<ContextType>;
   ConnectorManager?: ConnectorManagerResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
   ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;

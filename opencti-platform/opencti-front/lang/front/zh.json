@@ -2039,6 +2039,7 @@
   "Equal": "平等",
   "Equals": "等于",
   "Error": "错误",
+  "Error feedback from connector on last ping": "连接器在上次 ping 时反馈的错误",
   "Error loading forms": "加载表格出错",
   "Error loading stream collection consumers": "加载数据流集合消费者时出错",
   "Error trying to download in PDF": "尝试以 PDF 格式下载时出错",

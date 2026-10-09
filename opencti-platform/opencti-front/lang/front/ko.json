@@ -2039,6 +2039,7 @@
   "Equal": "Equal",
   "Equals": "같음",
   "Error": "오류",
+  "Error feedback from connector on last ping": "마지막 ping에서 커넥터가 보고한 오류",
   "Error loading forms": "양식 로드 중 오류 발생",
   "Error loading stream collection consumers": "스트림 컬렉션 소비자 로드 중 오류 발생",
   "Error trying to download in PDF": "PDF로 다운로드하는 동안 오류가 발생했습니다",

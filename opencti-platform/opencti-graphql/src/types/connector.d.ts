@@ -2,6 +2,12 @@ import type { ConnectorContractConfiguration } from '../generated/graphql';
 import type { CatalogContractEntityFields } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntity, StoreEntity } from './store';
 
+export interface ConnectorInfoError {
+  code: string;
+  message: string;
+  criticity: number;
+}
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;
@@ -9,6 +15,7 @@ export interface ConnectorInfo {
   queue_messages_size: number;
   next_run_datetime: DateTime;
   last_run_datetime: DateTime;
+  errors?: ConnectorInfoError[];
 }
 
 type ConnectorManagerContract = CatalogContractEntityFields;

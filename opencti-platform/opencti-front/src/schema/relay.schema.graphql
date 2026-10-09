@@ -1954,6 +1954,12 @@ type S3Connection {
   secret_key: String!
 }
 
+input ConnectorInfoErrorInput {
+  code: String!
+  message: String!
+  criticity: Int!
+}
+
 input ConnectorInfoInput {
   run_and_terminate: Boolean!
   buffering: Boolean!
@@ -1961,6 +1967,13 @@ input ConnectorInfoInput {
   queue_messages_size: Float!
   next_run_datetime: DateTime
   last_run_datetime: DateTime
+  errors: [ConnectorInfoErrorInput!]
+}
+
+type ConnectorInfoError {
+  code: String!
+  message: String!
+  criticity: Int!
 }
 
 type ConnectorInfo {
@@ -1970,6 +1983,7 @@ type ConnectorInfo {
   queue_messages_size: Float!
   next_run_datetime: DateTime
   last_run_datetime: DateTime
+  errors: [ConnectorInfoError!]
 }
 
 type ConnectorConfig {

@@ -2039,6 +2039,7 @@
   "Equal": "Gleich",
   "Equals": "Ist gleich",
   "Error": "Fehler",
+  "Error feedback from connector on last ping": "Fehlerrückmeldung des Connectors beim letzten Ping",
   "Error loading forms": "Fehler beim Laden von Formularen",
   "Error loading stream collection consumers": "Fehler beim Laden von Stream-Sammelkunden",
   "Error trying to download in PDF": "Fehler beim Herunterladen in PDF",

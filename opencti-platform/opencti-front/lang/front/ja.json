@@ -2039,6 +2039,7 @@
   "Equal": "イコール",
   "Equals": "等しい",
   "Error": "エラー",
+  "Error feedback from connector on last ping": "前回のpingでコネクタから報告されたエラー",
   "Error loading forms": "フォームの読み込みエラー",
   "Error loading stream collection consumers": "ストリーム・コレクション・コンシューマの読み込みエラー",
   "Error trying to download in PDF": "PDFでダウンロードしようとするエラー",
