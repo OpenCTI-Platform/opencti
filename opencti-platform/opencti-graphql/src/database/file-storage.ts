@@ -22,9 +22,16 @@ import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, in
 // Storage path constants are imported directly from this dependency-free module (not document-domain.ts)
 // to avoid a circular import evaluation-order issue where these constants could be undefined
 // at the time ALL_MERGEABLE_FOLDERS/ALL_ROOT_FOLDERS are computed below.
-import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH, IMPORT_STORAGE_PATH, SUPPORT_STORAGE_PATH } from '../modules/internal/document/document-types';
+import {
+  EMBEDDED_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  SUPPORT_STORAGE_PATH,
+  GLOBAL_EXPORT_STORAGE_PATH,
+} from '../modules/internal/document/document-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking, BYPASS } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
@@ -116,7 +123,14 @@ export const loadFile = async (
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
-    // 01.1. Check if user as enough capability to load import / export / template knowledge files
+    // 01.1. Check if user has enough capability to get the global platform configuration export
+    if (pathForPermissionChecks.startsWith(GLOBAL_EXPORT_STORAGE_PATH) && !isUserHasCapability(user, BYPASS)) {
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+    }
+    // 01.2. Check if user as enough capability to load import / export / template knowledge files
     if ((pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH)
       || pathForPermissionChecks.startsWith(EMBEDDED_STORAGE_PATH)
       || pathForPermissionChecks.startsWith(EXPORT_STORAGE_PATH)
@@ -127,7 +141,7 @@ export const loadFile = async (
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
-    // 01.2. Check if user as enough capability to load import/global files
+    // 01.3. Check if user as enough capability to load import/global files
     if (pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
       if (opts.dontThrow) {
         return undefined;

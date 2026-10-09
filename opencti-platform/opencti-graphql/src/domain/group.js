@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import pjson from '../../package.json';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
   fullEntitiesThroughRelationsFromList,
@@ -20,6 +21,8 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../util
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { toExportReference } from '../modules/globalExport/globalExport-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -290,4 +293,42 @@ export const groupCleanContext = async (context, user, groupId) => {
 export const groupEditContext = async (context, user, groupId, input) => {
   await setEditContext(user, groupId, input);
   return storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP); // notify removed for performance issues with users cache
+};
+
+// -- EXPORT --
+
+export const generateGroupExportConfiguration = async (context, user, group) => {
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const toMarkingReferences = (markingIds) => (markingIds ?? [])
+    .map((markingId) => markingsMap.get(markingId))
+    .filter((marking) => !!marking)
+    .map(toExportReference);
+  const roles = await fullEntitiesThroughRelationsToList(context, user, group.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
+  const allowedMarkings = await groupAllowedMarkings(context, user, group.id);
+  const defaultDashboard = group.default_dashboard ? await storeLoadById(context, user, group.default_dashboard, ENTITY_TYPE_WORKSPACE) : null;
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'group',
+    configuration: {
+      name: group.name,
+      description: group.description,
+      default_assignation: group.default_assignation,
+      auto_integration_assignation: group.auto_integration_assignation,
+      no_creators: group.no_creators,
+      restrict_delete: group.restrict_delete,
+      auto_new_marking: group.auto_new_marking,
+      group_confidence_level: group.group_confidence_level,
+      default_hidden_types: group.default_hidden_types,
+      default_dashboard: defaultDashboard ? toExportReference(defaultDashboard) : null,
+      roles: roles.map(toExportReference),
+      allowed_markings: allowedMarkings.map(toExportReference),
+      default_marking: (group.default_marking ?? []).map(({ entity_type, values }) => ({
+        entity_type,
+        values: toMarkingReferences(values),
+      })),
+      max_shareable_markings: (group.max_shareable_markings ?? [])
+        .map(({ type, value }) => ({ type, value: value === 'none' ? 'none' : toMarkingReferences([value])[0] }))
+        .filter(({ value }) => !!value),
+    },
+  });
 };
