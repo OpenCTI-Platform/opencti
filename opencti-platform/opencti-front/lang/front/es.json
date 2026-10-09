@@ -81,6 +81,8 @@
   "A non-exhaustive enumeration of infrastructure types": "Una enumeración no exhaustiva de tipos de infraestructura",
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "se generará una contraseña aleatoria para su usuario: deberá cambiarla para poder iniciar sesión mediante correo electrónico y contraseña. Simplemente utilice el flujo de trabajo de olvido de contraseña.",
+  "A result with this external link already exists in this security coverage": "Ya existe un resultado con este enlace externo en esta cobertura de seguridad",
+  "A result with this name already exists in this security coverage": "Ya existe un resultado con este nombre en esta cobertura de seguridad",
   "A widget has a @me filter enabled...": "Un widget tiene activado un filtro @me. Al compartir este panel como panel público, el filtro @me se sustituirá por \"{name}\" que está compartiendo el panel. Esto podría afectar a los datos mostrados en el panel.",
   "About": "Acerca de",
   "About this connector": "Acerca de este conector",

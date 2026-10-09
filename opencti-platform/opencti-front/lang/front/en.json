@@ -81,6 +81,8 @@
   "A non-exhaustive enumeration of infrastructure types": "A non-exhaustive enumeration of infrastructure types",
   "A public dashboard is a snapshot...": "A public dashboard is a snapshot of a private dashboard at a specific time. If you modify the private dashboard, already created public dashboards won't be modified.",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.",
+  "A result with this external link already exists in this security coverage": "A result with this external link already exists in this security coverage",
+  "A result with this name already exists in this security coverage": "A result with this name already exists in this security coverage",
   "A widget has a @me filter enabled...": "A widget has a @me filter enabled. When sharing this dashboard as a public dashboard, the @me filter will be replaced by \"{name}\" who is sharing the dashboard. It might impact the data displayed in the dashboard.",
   "About": "About",
   "About this connector": "About this connector",

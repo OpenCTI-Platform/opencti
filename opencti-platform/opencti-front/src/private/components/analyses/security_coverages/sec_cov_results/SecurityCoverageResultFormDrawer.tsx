@@ -27,6 +27,11 @@ const fragment = graphql`
       id
       parent_types
     }
+    results {
+      id
+      name
+      external_uri
+    }
   }
 `;
 
@@ -40,6 +45,8 @@ const securityCoverageResultMutation = graphql`
         id
         results {
           id
+          name
+          external_uri
         }
       }
     }
@@ -55,7 +62,7 @@ const SecurityCoverageResultFormDrawer = ({
 }: SecurityCoverageResultFormDrawerProps) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const { objectCovered, id } = useFragment(fragment, data);
+  const { objectCovered, id, results } = useFragment(fragment, data);
 
   const [activeStep, setActiveStep] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -189,6 +196,7 @@ const SecurityCoverageResultFormDrawer = ({
                 setActiveStep((a) => a + 1);
               }}
               initValues={formDetails}
+              existingResults={results}
             />
           </div>
 

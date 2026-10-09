@@ -81,6 +81,8 @@
   "A non-exhaustive enumeration of infrastructure types": "Eine nicht erschöpfende Aufzählung von Infrastruktur-Typen",
   "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert.",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "wird ein zufälliges Passwort für Ihren Benutzer generiert: Sie müssen es ändern, um sich per E-Mail und Passwort anmelden zu können. Verwenden Sie einfach den Workflow \"Passwort vergessen\".",
+  "A result with this external link already exists in this security coverage": "Ein Ergebnis mit diesem externen Link existiert bereits in dieser Sicherheitsabdeckung",
+  "A result with this name already exists in this security coverage": "Ein Ergebnis mit diesem Namen existiert bereits in dieser Sicherheitsabdeckung",
   "A widget has a @me filter enabled...": "Ein Widget hat einen @me-Filter aktiviert. Wenn Sie dieses Dashboard als öffentliches Dashboard teilen, wird der @me-Filter durch \"{name}\" ersetzt, der das Dashboard teilt. Dies kann Auswirkungen auf die im Dashboard angezeigten Daten haben.",
   "About": "Über",
   "About this connector": "Über diesen Konnektor",

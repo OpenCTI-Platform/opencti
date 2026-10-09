@@ -81,6 +81,8 @@
   "A non-exhaustive enumeration of infrastructure types": "Неполное перечисление типов инфраструктуры",
   "A public dashboard is a snapshot...": "Публичный дашборд - это снэпшот...",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "для вашего пользователя будет сгенерирован случайный пароль: вам нужно будет изменить его, чтобы иметь возможность входить в систему по электронной почте и паролю. Просто используйте процедуру \"Забыть пароль\".",
+  "A result with this external link already exists in this security coverage": "Результат с такой внешней ссылкой уже существует в этом покрытии безопасности",
+  "A result with this name already exists in this security coverage": "Результат с таким названием уже существует в этом покрытии безопасности",
   "A widget has a @me filter enabled...": "В виджете включен фильтр @me...",
   "About": "О сайте",
   "About this connector": "Об этом коннекторе",
