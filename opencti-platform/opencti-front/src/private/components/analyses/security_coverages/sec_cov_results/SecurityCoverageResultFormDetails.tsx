@@ -13,6 +13,7 @@ import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../../components/SimpleMarkdownField';
 import ConfidenceField from '../../../common/form/ConfidenceField';
+import { ExistingSecurityCoverageResult, findDuplicateResultField } from './SecurityCoverageResultForm-utils';
 
 export interface SecurityCoverageResultFormData {
   name: string;
@@ -32,6 +33,7 @@ interface SecurityCoverageResultFormDetailsProps {
   onNext: (values: SecurityCoverageResultFormData) => void;
   onCancel: () => void;
   initValues?: SecurityCoverageResultFormData;
+  existingResults?: readonly ExistingSecurityCoverageResult[] | null;
 }
 
 const SecurityCoverageResultFormDetails = ({
@@ -39,11 +41,19 @@ const SecurityCoverageResultFormDetails = ({
   onNext,
   onCancel,
   initValues,
+  existingResults,
 }: SecurityCoverageResultFormDetailsProps) => {
   const { t_i18n } = useFormatter();
 
   const validation = Yup.object().shape({
-    name: Yup.string().trim().required(t_i18n('This field is required')),
+    name: Yup.string().trim().required(t_i18n('This field is required'))
+      .test(
+        'unique-name',
+        t_i18n('A result with this name already exists in this security coverage'),
+        function isNameUnique(name) {
+          return findDuplicateResultField({ name: name ?? '', externalUri: this.parent.externalUri }, existingResults) !== 'name';
+        },
+      ),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     validFrom: Yup.date().nullable().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -60,7 +70,14 @@ const SecurityCoverageResultFormDetails = ({
           .max(100, t_i18n('Score must be at most 100')),
       }),
     ).min(1, t_i18n('At least one coverage metric is required')),
-    externalUri: Yup.string().url().nullable(),
+    externalUri: Yup.string().url().nullable()
+      .test(
+        'unique-external-uri',
+        t_i18n('A result with this external link already exists in this security coverage'),
+        function isExternalUriUnique(externalUri) {
+          return findDuplicateResultField({ name: this.parent.name, externalUri }, existingResults) !== 'externalUri';
+        },
+      ),
   });
 
   const initialValues: SecurityCoverageResultFormData = initValues ?? {
