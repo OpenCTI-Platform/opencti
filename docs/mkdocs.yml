@@ -112,6 +112,10 @@ markdown_extensions:
   - pymdownx.snippets:
       url_download: true
 
+draft_docs: |
+  feature-flags/
+  _*.md
+
 # Page tree
 nav:
   - Home: 'index.md'

@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # Prerequisites Windows
 
 Development stack require some base software that need to be installed.
@@ -56,6 +60,9 @@ For this reason **Visual Studio Build Tools** is required.
   - VSCode - [https://code.visualstudio.com/docs/?dv=win64](https://code.visualstudio.com/docs/?dv=win64)
 
 
-     
+{%- if flag("MY_FEATURE_FLAG") %}
+- Feature flag test
+  - This is a documentation under feature flag test. If you see me in public documentation please raise an issue.
+{%- endif %}
 
 
