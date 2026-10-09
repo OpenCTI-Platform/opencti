@@ -2405,6 +2405,7 @@
   "has not changed": "не изменилось",
   "Has not changed": "не изменилось",
   "has updated the field": "обновил поле",
+  "Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on": "Связи has-covered создаются фоновой задачей и появятся в результатах после обновления. Вы можете отслеживать её на",
   "hash_md5": "хэш_md5",
   "hash_sha-1": "хэш_ша-1",
   "hash_sha-256": "hash_sha-256",

@@ -2405,6 +2405,7 @@
   "has not changed": "未更改",
   "Has not changed": "未更改",
   "has updated the field": "已更新字段",
+  "Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on": "has-covered 关系正在由后台任务创建，刷新后将显示在结果中。您可以在以下位置监控：",
   "hash_md5": "MD5",
   "hash_sha-1": "SHA1",
   "hash_sha-256": "SHA256",

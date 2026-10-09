@@ -2405,6 +2405,7 @@
   "has not changed": "변경되지 않음",
   "Has not changed": "변경되지 않음",
   "has updated the field": "필드를 업데이트했습니다",
+  "Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on": "has-covered 관계가 백그라운드 작업으로 생성되고 있으며 새로 고침 후 결과에 표시됩니다. 다음에서 모니터링할 수 있습니다:",
   "hash_md5": "MD5",
   "hash_sha-1": "SHA1",
   "hash_sha-256": "SHA256",

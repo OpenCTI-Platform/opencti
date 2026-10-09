@@ -2405,6 +2405,7 @@
   "has not changed": "has not changed",
   "Has not changed": "Has not changed",
   "has updated the field": "has updated the field",
+  "Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on": "Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on",
   "hash_md5": "MD5",
   "hash_sha-1": "SHA1",
   "hash_sha-256": "SHA256",
