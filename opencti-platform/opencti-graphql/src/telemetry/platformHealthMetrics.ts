@@ -4,7 +4,7 @@ import { meterManager } from '../config/tracing';
 import { isEngineAlive } from '../database/engine';
 import { isStorageAlive } from '../database/raw-file-storage';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
-import { redisGetPlatformUsageMetrics, redisIsAlive } from '../database/redis';
+import { redisGetPlatformUsageMetrics, redisHealthCheck } from '../database/redis';
 
 export const HEALTH_DEPENDENCIES = ['elasticsearch', 'storage', 'rabbitmq', 'redis'] as const;
 export type HealthDependency = typeof HEALTH_DEPENDENCIES[number];
@@ -52,7 +52,7 @@ const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
   elasticsearch: isEngineAlive,
   storage: isStorageAlive,
   rabbitmq: rabbitMQIsAlive,
-  redis: redisIsAlive,
+  redis: redisHealthCheck,
 };
 
 // Bound a probe so one unresponsive dependency cannot stall the whole refresh cycle.
