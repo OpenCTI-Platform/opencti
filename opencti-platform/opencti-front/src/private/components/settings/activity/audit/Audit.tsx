@@ -129,7 +129,6 @@ type AuditCsvRow = {
   event_type: string;
   event_scope?: string | null;
   event_status: string;
-  user_metadata: string;
   timestamp: unknown;
   context_uri?: string | null;
   user_id: string;
@@ -138,37 +137,42 @@ type AuditCsvRow = {
   context_data_entity_type: string;
   context_data_entity_name: string;
   context_data_message: string;
+  user_metadata: string;
   context_data_from_id: string;
   context_data_to_id: string;
   context_data_changes: string;
 };
 
 // react-csv wraps values in quotes but never escapes quotes within them (no RFC4180 support),
-// so any JSON-serialized field must go through this before being handed to CSVLink.
+// so every string value must go through this before being handed to CSVLink, otherwise the row breaks and columns shift.
+export const escapeCsvValue = <T,>(value: T): T | string => (typeof value === 'string' ? value.replace(/"/g, '""') : value);
+
 export const toCsvSafeJson = (value: unknown): string => {
   if (value === null || value === undefined) return 'undefined';
   // JSON.stringify returns undefined for non-serializable inputs such as functions or symbols.
   const serialized = JSON.stringify(value);
-  return serialized === undefined ? 'undefined' : serialized.replace(/"/g, '""');
+  return serialized === undefined ? 'undefined' : escapeCsvValue(serialized);
 };
 
+// Column order is a public contract: consumers (SIEM, scripts, spreadsheets) may read the export by position,
+// so new columns must only be appended after the existing ones.
 export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCsvRow[] => nodes.map(({ node }) => ({
-  id: node.id,
-  entity_type: node.entity_type,
-  event_type: node.event_type,
-  event_scope: node.event_scope,
-  event_status: node.event_status,
+  id: escapeCsvValue(node.id),
+  entity_type: escapeCsvValue(node.entity_type),
+  event_type: escapeCsvValue(node.event_type),
+  event_scope: escapeCsvValue(node.event_scope),
+  event_status: escapeCsvValue(node.event_status),
+  timestamp: escapeCsvValue(node.timestamp),
+  context_uri: escapeCsvValue(node.context_uri),
+  user_id: escapeCsvValue(node.user?.id ?? 'undefined'),
+  user_name: escapeCsvValue(node.user?.name ?? 'undefined'),
+  context_data_id: escapeCsvValue(node.context_data?.entity_id ?? 'undefined'),
+  context_data_entity_type: escapeCsvValue(node.context_data?.entity_type ?? 'undefined'),
+  context_data_entity_name: escapeCsvValue(node.context_data?.entity_name ?? 'undefined'),
+  context_data_message: escapeCsvValue(node.context_data?.message ?? 'undefined'),
   user_metadata: toCsvSafeJson(node.user_metadata),
-  timestamp: node.timestamp,
-  context_uri: node.context_uri,
-  user_id: node.user?.id ?? 'undefined',
-  user_name: node.user?.name ?? 'undefined',
-  context_data_id: node.context_data?.entity_id ?? 'undefined',
-  context_data_entity_type: node.context_data?.entity_type ?? 'undefined',
-  context_data_entity_name: node.context_data?.entity_name ?? 'undefined',
-  context_data_message: node.context_data?.message ?? 'undefined',
-  context_data_from_id: node.context_data?.from_id ?? 'undefined',
-  context_data_to_id: node.context_data?.to_id ?? 'undefined',
+  context_data_from_id: escapeCsvValue(node.context_data?.from_id ?? 'undefined'),
+  context_data_to_id: escapeCsvValue(node.context_data?.to_id ?? 'undefined'),
   context_data_changes: toCsvSafeJson(node.context_data?.changes),
 }));
 
