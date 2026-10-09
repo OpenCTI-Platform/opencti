@@ -277,6 +277,15 @@ describe('Mutation.triggerWorkflowEvent resolver – closing reason forwarding',
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'close', undefined, {}, 'duplicate');
   });
+
+  it('should reject a closing reason longer than 255 characters', () => {
+    expect(() => workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'a'.repeat(256) },
+      mockContext,
+    )).toThrow('Closing reason exceeds maximum allowed length of 255 characters.');
+    expect(triggerWorkflowEvent).not.toHaveBeenCalled();
+  });
 });
 
 // ---------------------------------------------------------------------------

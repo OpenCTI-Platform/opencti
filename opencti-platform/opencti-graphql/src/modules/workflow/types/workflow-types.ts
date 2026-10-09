@@ -137,6 +137,8 @@ export interface TriggerResult {
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
 export const COMMENT_MAX_LENGTH = 1000;
 
+export const CLOSING_REASON_MAX_LENGTH = 255;
+
 /**
  * Workflow validation error structure
  */

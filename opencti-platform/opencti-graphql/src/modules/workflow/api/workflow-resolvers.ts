@@ -16,7 +16,7 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
+import { CLOSING_REASON_MAX_LENGTH, COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
 const workflowResolvers = {
   Query: {
@@ -59,6 +59,9 @@ const workflowResolvers = {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
+      }
+      if (closingReason && closingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
       }
       return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, closingReason ?? undefined);
     },
