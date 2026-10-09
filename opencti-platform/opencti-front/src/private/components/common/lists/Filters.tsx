@@ -37,6 +37,7 @@ interface FiltersProps {
   required?: boolean;
   hideSavedFilters?: boolean;
   disableAddFilterGroup?: boolean;
+  expandAddFilter?: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   required = false,
   hideSavedFilters = false,
   disableAddFilterGroup = false,
+  expandAddFilter = false,
 }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -170,6 +172,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           disabled={disabled}
           hideSavedFilters={hideSavedFilters}
           disableAddFilterGroup={disableAddFilterGroup}
+          expandAddFilter={expandAddFilter}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

@@ -78,6 +78,7 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
           searchContext={{ entityTypes }}
           disabled={disabled}
           disableAddFilterGroup
+          expandAddFilter
         />
       </Box>
       <FilterIconButton
