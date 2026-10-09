@@ -6,6 +6,40 @@ import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { SELF_ID } from '../../../filters/filtersUtils';
+import { isSemanticallyEmptyHtmlFragment } from '../templateSectionUtils';
+
+export type AttributeOutcome = {
+  variableName: string | null | undefined;
+  attributeData: string;
+  isEmpty: boolean;
+  preserveSection?: boolean;
+  error?: unknown;
+};
+
+type BuildAttributesOutcomeOptions = {
+  includeMetadata?: boolean;
+};
+
+const isRawAttributeEmpty = (value: unknown): boolean => {
+  if (value === null || value === undefined) {
+    return true;
+  }
+
+  if (typeof value === 'string') {
+    return isSemanticallyEmptyHtmlFragment(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.length === 0 || value.every((item) => isRawAttributeEmpty(item));
+  }
+
+  if (typeof value === 'object') {
+    const values = Object.values(value as Record<string, unknown>);
+    return values.length === 0 || values.every((item) => isRawAttributeEmpty(item));
+  }
+
+  return false;
+};
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -13,7 +47,8 @@ const useBuildAttributesOutcome = () => {
   const buildAttributesOutcome = async (
     containerId: string,
     dataSelection: Pick<Widget['dataSelection'][0], 'instance_id' | 'columns'>,
-  ) => {
+    options?: BuildAttributesOutcomeOptions,
+  ): Promise<AttributeOutcome[]> => {
     const { instance_id, columns } = dataSelection;
     if (!instance_id) {
       throw Error('The attribute widget should refers to an instance');
@@ -24,20 +59,43 @@ const useBuildAttributesOutcome = () => {
       queryVariables,
     ).toPromise() as StixCoreObjectsAttributesQuery$data;
 
-    return (columns ?? []).map((col) => {
-      let result;
+    return (columns ?? []).flatMap((col) => {
       try {
-        result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
-      } catch (_e) {
-        result = '';
-      }
-      const readableAttribute = buildReadableAttribute(result, col);
-      return {
-        variableName: col.variableName,
-        attributeData: typeof readableAttribute === 'string'
+        const result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
+        const isEmpty = options?.includeMetadata ? isRawAttributeEmpty(result) : false;
+        const readableAttribute = options?.includeMetadata && isEmpty
+          ? ''
+          : buildReadableAttribute(result, col);
+        const attributeData = typeof readableAttribute === 'string'
           ? readableAttribute
-          : renderToString(readableAttribute),
-      };
+          : renderToString(readableAttribute);
+
+        return [{
+          variableName: col.variableName,
+          attributeData,
+          isEmpty,
+        }];
+      } catch (error) {
+        if (!options?.includeMetadata) {
+          return [{
+            variableName: col.variableName,
+            attributeData: '',
+            isEmpty: false,
+          }];
+        }
+
+        if (!col.variableName) {
+          return [];
+        }
+
+        return [{
+          variableName: col.variableName,
+          attributeData: `$${col.variableName}`,
+          isEmpty: false,
+          preserveSection: true,
+          error,
+        }];
+      }
     });
   };
 
