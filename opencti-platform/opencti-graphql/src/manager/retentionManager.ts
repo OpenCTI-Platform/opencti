@@ -6,7 +6,7 @@ import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
 import { now, utcDate } from '../utils/format';
-import { READ_INDEX_HISTORY, READ_STIX_INDICES } from '../database/utils';
+import { READ_INDEX_HISTORY, READ_STIX_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elPaginate } from '../database/engine';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import type { ManagerDefinition } from './managerModule';
@@ -21,6 +21,8 @@ import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -53,6 +55,8 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, deleteOpts);
   } else if (scope === 'activity') {
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_ACTIVITY, deleteOpts);
+  } else if (scope === 'draft') {
+    await deleteDraftWorkspace(context, RETENTION_MANAGER_USER, nodeId);
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -77,6 +81,11 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: RETENTION_BATCH_SIZE }) as any;
+  } else if (scope === 'draft') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'created_at' });
+    result = await elPaginate(
+      context, RETENTION_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { ...queryOptions, types: [ENTITY_TYPE_DRAFT_WORKSPACE], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }

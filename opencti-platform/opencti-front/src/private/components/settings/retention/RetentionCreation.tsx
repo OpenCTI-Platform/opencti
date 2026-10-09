@@ -58,6 +58,7 @@ interface RetentionFormValues {
   max_retention: string;
   retention_unit: 'minutes' | 'hours' | 'days';
   filters: string;
+  scope: string;
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
@@ -73,7 +74,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
+      scope: values.scope,
       filters: jsonFilters,
     };
     commitMutation({
@@ -105,7 +106,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
     const finalValues = {
       ...values,
       max_retention: Number(values.max_retention),
-      scope: 'knowledge',
+      scope: values.scope,
       filters: jsonFilters,
     };
     commitMutation({
@@ -199,9 +200,10 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
-                disabled={true}
+              // disabled={true}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
+                <SelectItem value="draft">{t_i18n('Draft')}</SelectItem>
               </Field>
               <Box sx={{
                 paddingTop: 4,
@@ -213,11 +215,13 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
               >
                 <Filters
                   availableFilterKeys={availableFilterKeys}
+                  disabled={formValues.scope === 'draft' ? true : false}
                   helpers={helpers}
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </Box>
               <FilterIconButton
+                disabledPossible={formValues.scope === 'draft' ? true : false}
                 filters={filters}
                 helpers={helpers}
                 availableFilterKeys={availableFilterKeys}

@@ -45,7 +45,7 @@ export const entitiesCounter = {
   User: TESTING_USERS.length + 1,
   Vocabulary: 355,
   EmailTemplate: 1,
-  RetentionRule: 4,
+  RetentionRule: 5,
   SecurityCoverage: 1,
   SecurityCoverageResult: 1,
 };
