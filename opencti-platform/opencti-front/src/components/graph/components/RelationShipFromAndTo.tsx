@@ -82,6 +82,9 @@ const relationShipFromAndToQuery = graphql`
       ... on Region {
         name
       }
+      ... on Hunt {
+        name
+      }
       ... on Malware {
         name
       }
