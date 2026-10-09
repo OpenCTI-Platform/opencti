@@ -110,6 +110,11 @@ const relationshipsStixCoreRelationshipsLineFragment = graphql`
           main
         }
       }
+      ... on SecurityCoverageResult {
+        resultOf {
+          id
+        }
+      }
     }
     to {
       ... on BasicObject {

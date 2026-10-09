@@ -29,9 +29,8 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
     <>
       <DialogContentText sx={{ marginBottom: 3, whiteSpace: 'break-spaces' }}>
         {t_i18n(
-          '',
+          `alert_${alert.type}`,
           {
-            id: `alert_${alert.type}`,
             values: {
               link_blogpost: <a href="https://blog.filigran.io/d10d7eb4407e">{t_i18n('this blogpost')}</a>,
               link_slack: <a href="https://filigran-community.slack.com">{t_i18n('our Slack channel')}</a>,
@@ -56,7 +55,7 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
           ))}
           { restCount > 0 && (
             <Box component="span" sx={{ marginLeft: 0.5 }}>
-              { t_i18n('', { id: 'and ... more', values: { count: restCount } }) }
+              { t_i18n('and ... more', { values: { count: restCount } }) }
             </Box>
           )}
         </DialogContentText>

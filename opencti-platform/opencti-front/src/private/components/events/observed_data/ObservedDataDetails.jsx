@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import inject18n from '../../../../components/i18n';
@@ -54,13 +55,26 @@ class ObservedDataDetailsComponent extends Component {
                 {t('Number observed')}
               </Label>
               {observedData.number_observed}
+              <Label
+                sx={{ marginTop: 2 }}
+              >
+                {t('Number seen')}
+              </Label>
+              {observedData.number_seen ?? '-'}
             </Grid>
             <Grid item xs={6}>
               <Label>
                 {t('Last observed')}
               </Label>
               {fldt(observedData.last_observed)}
+              <Label
+                sx={{ marginTop: 2 }}
+              >
+                {t('Max distinct count')}
+              </Label>
+              {observedData.max_distinct_count ?? '-'}
             </Grid>
+            <CustomFieldValuesDisplay entityType={observedData.entity_type} values={observedData.customFieldValues ?? []} />
           </Grid>
           <StixCoreObjectsDonut
             dataSelection={observablesDataSelection}
@@ -88,9 +102,15 @@ const ObservedDataDetails = createFragmentContainer(
     observedData: graphql`
       fragment ObservedDataDetails_observedData on ObservedData {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         first_observed
         last_observed
         number_observed
+        number_seen
+        max_distinct_count
       }
     `,
   },

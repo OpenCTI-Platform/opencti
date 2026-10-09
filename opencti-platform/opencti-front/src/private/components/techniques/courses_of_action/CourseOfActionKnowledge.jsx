@@ -7,14 +7,13 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 
 class CourseOfActionKnowledgeComponent extends Component {
   render() {
-    const { courseOfAction } = this.props;
     return (
       <>
         <Routes>
           <Route
             path="/relations/:relationId"
             element={
-              <StixCoreRelationship entityId={courseOfAction.id} />
+              <StixCoreRelationship />
             }
           />
         </Routes>

@@ -165,7 +165,6 @@ class WorkbenchFileToolbar extends Component {
             anchor="bottom"
             variant="persistent"
             classes={{
-
               paper: classes.bottomNav,
             }}
             open={isOpen}

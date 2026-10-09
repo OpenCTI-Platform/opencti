@@ -28,6 +28,16 @@ class StixObjectOrStixRelationship:
                 updated_at
             }
             ... on StixDomainObject {
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             creators {
                 id
                 name
@@ -353,6 +363,9 @@ class StixObjectOrStixRelationship:
                 x_opencti_cvss_v4_availability_impact_v
                 x_opencti_cvss_v4_availability_impact_s
                 x_opencti_cvss_v4_exploit_maturity
+                x_opencti_ssvc_exploitation
+                x_opencti_ssvc_automatable
+                x_opencti_ssvc_technical_impact
                 x_opencti_cwe
                 x_opencti_cisa_kev
                 x_opencti_epss_score
@@ -455,6 +468,16 @@ class StixObjectOrStixRelationship:
                             modified
                         }
                     }
+                }
+                customFieldValues {
+                    field_id
+                    field_name
+                    int_value
+                    string_value
+                    boolean_value
+                    date_value
+                    select_value
+                    select_values
                 }
                 from {
                     ... on BasicObject {
@@ -750,6 +773,16 @@ class StixObjectOrStixRelationship:
                 x_opencti_negative
                 first_seen
                 last_seen
+                customFieldValues {
+                    field_id
+                    field_name
+                    int_value
+                    string_value
+                    boolean_value
+                    date_value
+                    select_value
+                    select_values
+                }
             }
         """
 

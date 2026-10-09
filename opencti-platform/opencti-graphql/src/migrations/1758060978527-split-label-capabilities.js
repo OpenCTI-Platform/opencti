@@ -3,7 +3,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { createRelation } from '../database/middleware';
 import { elLoadById, elReplace } from '../database/engine';
 

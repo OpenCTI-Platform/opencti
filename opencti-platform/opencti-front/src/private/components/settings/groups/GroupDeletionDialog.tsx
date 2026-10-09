@@ -29,8 +29,7 @@ const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('Group') },
   });
   const [commitDeleteMutation] = useApiMutation(

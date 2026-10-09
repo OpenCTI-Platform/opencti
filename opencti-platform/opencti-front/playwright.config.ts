@@ -27,14 +27,14 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['monocart-reporter', {
-      name: `OpenCTI Report`,
+      name: 'OpenCTI Report',
       outputFile: './test-results/report.html',
       // global coverage report options
       coverage: {
-        entryFilter: (entry) => true,
-        sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+        entryFilter: () => true,
+        sourceFilter: (sourcePath: string) => sourcePath.startsWith('src'),
       },
-    }]
+    }],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -53,11 +53,11 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: "**/*.setup.ts"
+      testMatch: '**/*.setup.ts',
     },
     {
       name: 'init data',
-      testMatch: "dataForTesting/init.data.ts",
+      testMatch: 'dataForTesting/init.data.ts',
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'tests_e2e/.setup/.auth/user.json',
@@ -71,8 +71,8 @@ export default defineConfig({
         storageState: 'tests_e2e/.setup/.auth/user.json',
         viewport: {
           width: 1920,
-          height: 1080
-        }
+          height: 1080,
+        },
       },
       dependencies: ['init data'],
     },
@@ -108,10 +108,10 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-   webServer: {
-     command: `APP__BASE_PATH=${BASE_PATH} yarn start`,
-     url: BASE_URL,
-     reuseExistingServer: !process.env.CI,
-   },
+  webServer: {
+    command: `APP__BASE_PATH=${BASE_PATH} yarn start`,
+    url: BASE_URL,
+    reuseExistingServer: !process.env.CI,
+  },
 
 });

@@ -87,7 +87,12 @@
       }
     },
     "health_access_key": "ChangeMe",
+    "health_monitoring": {
+      "dependency_check_interval": 30000,
+      "usage_metrics_interval": 300000
+    },
     "request_timeout": 1200000,
+    "keep_alive_timeout": 65000,
     "session_timeout": 1200000,
     "session_cookie": false,
     "child_locking_process": {
@@ -120,6 +125,7 @@
     },
     "performance_logger": false,
     "map_bundled_file_path": "./static/maps/world.pmtiles",
+    "map_countries_bundled_file_path": "./static/maps/countries.json",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
@@ -301,6 +307,10 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "platform_usage_metrics_manager": {
+    "enabled": false,
+    "lock_key": "platform_usage_metrics_manager_lock"
+  },
   "garbage_collection_manager": {
     "enabled": true,
     "lock_key": "garbage_collection_manager_lock",
@@ -372,10 +382,19 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "catalog_manager": {
+    "enabled": true,
+    "lock_key": "catalog_manager_lock",
+    "interval": 60000,
+    "custom_catalog_refresh_endpoint_uri": null,
+    "catalog_sync_remote_timeout": 30000
+  },
   "redis": {
     "mode": "single",
     "namespace": "",
     "hostname": "localhost",
+    "tls_servername": "",
+    "tls_cluster_node_mode": false,
     "use_ssl": false,
     "ca": [],
     "port": 6379,
@@ -429,7 +448,9 @@
     "username": "",
     "password": "",
     "forced_sender_email": "",
-    "email_max_cc_size": 500
+    "email_max_cc_size": 500,
+    "connection_timeout": 10000,
+    "greeting_timeout": 10000
   },
   "aws": {
     "proxy_enabled": false

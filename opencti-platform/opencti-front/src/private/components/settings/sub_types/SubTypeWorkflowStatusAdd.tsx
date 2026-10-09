@@ -1,9 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
@@ -13,16 +10,6 @@ import TextField from '../../../../components/TextField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import StatusTemplateField from '../../common/form/StatusTemplateField';
 import { StatusForm, statusValidation } from './statusFormUtils';
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-});
 
 const subTypeWorkflowStatusAddCreationMutation = graphql`
   mutation SubTypeWorkflowStatusAddCreationMutation(
@@ -46,7 +33,6 @@ interface SubTypeWorkflowStatusAddProps {
 const SubTypeWorkflowStatusAdd: FunctionComponent<
   SubTypeWorkflowStatusAddProps
 > = ({ display, subTypeId, scope }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -77,15 +63,12 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
   };
   return (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
+      <Button
         onClick={handleOpen}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
+        variant="secondary"
       >
-        <Add />
-      </Fab>
+        {t_i18n('Create status')}
+      </Button>
       <Formik
         initialValues={initialValues}
         validationSchema={statusValidation(t_i18n)}

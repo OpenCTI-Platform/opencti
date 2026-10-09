@@ -446,9 +446,9 @@ ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocati
 
 Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions which represents a memory footprint around `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
 
-#### MinIO / S3 Bucket
+#### S3 bucket / Silo
 
-MinIO is a small process and does not require a high amount of memory. More information are available for Linux here on the [Kernel tuning guide](https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning).
+Silo, the community-maintained fork of MinIO, is a small process and does not require a high amount of memory. More information is available in the [Silo documentation](https://silo.pgsty.com/docs/).
 
 #### RabbitMQ
 

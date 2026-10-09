@@ -134,9 +134,7 @@ class GroupingKnowledgeComponent extends Component {
           <Route
             path="/relations/:relationId"
             element={(
-              <StixCoreRelationship
-                entityId={grouping.id}
-              />
+              <StixCoreRelationship />
             )}
           />
           <Route index element={<Navigate replace={true} to="graph" />} />

@@ -291,8 +291,8 @@ describe('Grouping resolver standard behavior', () => {
             }],
             filterGroups: [],
           },
-          noFiltersChecking: true
-        }
+          noFiltersChecking: true,
+        },
       );
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
     });
@@ -309,7 +309,7 @@ describe('Grouping resolver standard behavior', () => {
           }
         `,
         variables: {
-          id: groupingInternalId
+          id: groupingInternalId,
         },
       });
       const { containerEdit } = graphQLResponse.data;

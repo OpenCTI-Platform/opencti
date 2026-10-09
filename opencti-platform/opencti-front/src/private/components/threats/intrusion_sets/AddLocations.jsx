@@ -65,7 +65,6 @@ class AddLocations extends Component {
             right: [(
               <LocationCreation
                 display={this.state.open}
-                contextual={true}
                 inputValue={this.state.search}
                 paginationOptions={paginationOptions}
                 updater={updater}

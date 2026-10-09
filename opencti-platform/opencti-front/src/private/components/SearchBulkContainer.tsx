@@ -92,6 +92,7 @@ const SearchBulkContainer = () => {
             onChange={handleChangeTextField}
             value={textFieldValue}
             minRows={20}
+            label={t_i18n('Keywords to search')}
             placeholder={t_i18n('One keyword by line or separated by commas')}
             resize="none"
           />

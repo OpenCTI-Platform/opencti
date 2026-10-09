@@ -4,7 +4,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -138,6 +141,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRftAddInput = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -214,6 +218,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   }
   return (
     <Formik<FormikCaseRftAddInput>
+      entityType={CASE_RFT_TYPE}
       initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={true}
@@ -339,6 +344,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

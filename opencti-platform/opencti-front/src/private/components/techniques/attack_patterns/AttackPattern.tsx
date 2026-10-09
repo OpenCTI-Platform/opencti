@@ -60,6 +60,7 @@ export const attackPatternFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...AttackPatternDetails_attackPattern
   }
   `;

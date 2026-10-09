@@ -48,6 +48,7 @@ export interface WorkflowPendingTransition {
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
+  draftEntityIds?: string[];
 }
 
 /**
@@ -131,6 +132,9 @@ export interface TriggerResult {
   asyncActionSlots?: AsyncActionSlot[];
 }
 
+// Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
+export const COMMENT_MAX_LENGTH = 1000;
+
 /**
  * Workflow validation error structure
  */
@@ -157,6 +161,8 @@ export interface WorkflowConditionConfig {
 
 export interface WorkflowSerializedState {
   statusId: string;
+  /** Legacy manual order, kept for backward-compatible round-tripping; the order actually applied is always derived from the transition graph (see workflow-ordering.ts). */
+  order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
 }

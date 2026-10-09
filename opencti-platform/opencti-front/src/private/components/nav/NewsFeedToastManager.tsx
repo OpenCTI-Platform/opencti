@@ -8,6 +8,8 @@ import useAuth from '../../../utils/hooks/useAuth';
 import NewsFeedToastItem, { NewsFeedToastData, NEWS_FEED_TOAST_WIDTH } from './NewsFeedToastItem';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import type { NewsFeedToastManagerSubscription, NewsFeedToastManagerSubscription$data } from './__generated__/NewsFeedToastManagerSubscription.graphql';
+import type { NewsFeedToastManagerDeleteSubscription, NewsFeedToastManagerDeleteSubscription$data } from './__generated__/NewsFeedToastManagerDeleteSubscription.graphql';
 
 const newsFeedToastSubscription = graphql`
   subscription NewsFeedToastManagerSubscription {
@@ -41,7 +43,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const isEnabled = isXTMHubRegistered && !isAllNewsFeedUnsubscribed;
 
-  const handleNewsFeedItem = useCallback((data: { newsFeedItemAdded?: NewsFeedToastData }) => {
+  const handleNewsFeedItem = useCallback((data: NewsFeedToastManagerSubscription$data | null | undefined) => {
     if (!data?.newsFeedItemAdded) return;
     const { id, title, news_feed_type, metadata } = data.newsFeedItemAdded;
     setToasts((prev) => {
@@ -50,7 +52,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
     });
   }, []);
 
-  const handleNewsFeedItemDeleted = useCallback((data: { newsFeedItemDeleted?: string | null }) => {
+  const handleNewsFeedItemDeleted = useCallback((data: NewsFeedToastManagerDeleteSubscription$data | null | undefined) => {
     const deletedId = data?.newsFeedItemDeleted;
     if (!deletedId) return;
     setToasts((prev) => prev.filter((t) => t.id !== deletedId));
@@ -58,7 +60,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
 
   useEffect(() => {
     if (!isEnabled) return undefined;
-    const sub = requestSubscription({
+    const sub = requestSubscription<NewsFeedToastManagerSubscription>({
       subscription: newsFeedToastSubscription,
       variables: {},
       onNext: handleNewsFeedItem,
@@ -68,7 +70,7 @@ const NewsFeedToastManager: FunctionComponent = () => {
 
   useEffect(() => {
     if (!isEnabled) return undefined;
-    const sub = requestSubscription({
+    const sub = requestSubscription<NewsFeedToastManagerDeleteSubscription>({
       subscription: newsFeedToastDeleteSubscription,
       variables: {},
       onNext: handleNewsFeedItemDeleted,

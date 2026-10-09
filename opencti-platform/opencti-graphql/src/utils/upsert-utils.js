@@ -124,6 +124,18 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     if (isCFoUpdated || isCLoUpdated) {
       updatePatch.number_observed = resolvedElement.number_observed + updatePatch.number_observed;
     }
+    // number_seen counts observation events: accumulate on every upsert, defaulting the increment to 1
+    // (unlike number_observed which is the total count and only accumulates when the observation window changes)
+    // Like number_observed, the computed counters are then subject to the standard confidence-level upsert policy
+    // applied by generateAttributesInputsForUpsert: a lower confidence ingestion does not override existing counters
+    const incomingNumberSeen = isNotEmptyField(updatePatch.number_seen) ? updatePatch.number_seen : 1;
+    const existingNumberSeen = isNotEmptyField(resolvedElement.number_seen) ? resolvedElement.number_seen : 1;
+    updatePatch.number_seen = existingNumberSeen + incomingNumberSeen;
+    // max_distinct_count keeps the maximum number of distinct sources (users/endpoints)
+    // having observed the data at a single point in time
+    if (isNotEmptyField(updatePatch.max_distinct_count) || isNotEmptyField(resolvedElement.max_distinct_count)) {
+      updatePatch.max_distinct_count = Math.max(updatePatch.max_distinct_count ?? 0, resolvedElement.max_distinct_count ?? 0);
+    }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
     // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,

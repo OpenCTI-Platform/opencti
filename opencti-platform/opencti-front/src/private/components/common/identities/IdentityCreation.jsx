@@ -2,7 +2,9 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import withStyles from '@mui/styles/withStyles';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/DynamicCustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
@@ -136,6 +138,8 @@ class IdentityCreation extends Component {
     return (
       <>
         <Formik
+          typeField="type"
+          enabled={!dryrun}
           enableReinitialize={true}
           initialValues={{
             name: inputValue,
@@ -215,6 +219,7 @@ class IdentityCreation extends Component {
                     values={values.externalReferences}
                   />
                 )}
+                {!dryrun && <CustomFieldValuesCreation />}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}

@@ -13,6 +13,7 @@ export interface RelayError {
         stacktrace?: string[];
       };
       data?: {
+        type?: string;
         field?: string;
         message?: string;
         reason?: string;

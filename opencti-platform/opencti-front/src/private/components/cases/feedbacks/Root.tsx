@@ -169,9 +169,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }: RootFeedbackComponentProps)
           <Route
             path="/knowledge/relations/:relationId"
             element={(
-              <StixCoreRelationship
-                entityId={feedbackData.id}
-              />
+              <StixCoreRelationship />
             )}
           />
         )}

@@ -29,4 +29,3 @@ export const EXPECTED_WINDOWS_REGISTRY_KEY = {
   key: 'HKCU\\Software\\Classes\\CLSID\\{84DA0A92}',
   values: [],
 };
-

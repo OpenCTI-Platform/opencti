@@ -231,10 +231,11 @@ const useGraphParser = () => {
     const uniqObjects = R.uniqBy(R.prop('id'), objects);
     const uniqIds = uniqObjects.map((o) => o.id);
     const relationshipsIdsInNestedRelationship = objects.flatMap((o) => {
-      if (isNestedRelationship(o)) {
-        return o.from?.relationship_type ? o.from.id : o.to!.id;
-      }
-      return [];
+      if (!isNestedRelationship(o)) return [];
+      const ids: string[] = [];
+      if (o.from?.relationship_type) ids.push(o.from.id);
+      if (o.to?.relationship_type) ids.push(o.to.id);
+      return ids;
     });
 
     const links = uniqObjects.flatMap((o) => {

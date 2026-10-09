@@ -60,9 +60,9 @@ test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ pag
   await customViewDetailsPage.widgets.openWidgetModal();
   await customViewDetailsPage.widgets.selectWidget('List');
   await customViewDetailsPage.widgets.selectPerspective('Entities');
-  // Assert the default filter chip through its button role: when the pointer hovers the chip,
+  // Assert the default filter chip through its data-testid: when the pointer hovers the chip,
   // a tooltip duplicates the chip text and makes page-wide getByText locators ambiguous.
-  await expect(page.getByRole('button', { name: /In regards of.*CURRENT ENTITY/ })).toBeVisible();
+  await expect(page.getByTestId('filter-chip').filter({ hasText: /In regards of.*CURRENT ENTITY/ })).toBeVisible();
   await customViewDetailsPage.widgets.fillLabel('Malwares');
   await customViewDetailsPage.widgets.validateFilters();
   await customViewDetailsPage.widgets.titleField.fill('Related malwares');

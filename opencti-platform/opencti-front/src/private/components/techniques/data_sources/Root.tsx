@@ -51,7 +51,6 @@ const dataSourceQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...DataSource_dataSource
-      ...DataSourceKnowledge_dataSource
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -144,10 +143,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }: RootDataSourceCompo
                 <Route
                   path="/knowledge/*"
                   element={(
-                    <DataSourceKnowledgeComponent
-                      data={dataSource}
-                      enableReferences={false}
-                    />
+                    <DataSourceKnowledgeComponent />
                   )}
                 />,
               </>

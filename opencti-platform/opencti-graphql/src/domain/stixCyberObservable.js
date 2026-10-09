@@ -44,6 +44,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage';
 import { isNumericAttribute } from '../schema/schema-attributes';
+import { paginatedForExportContext } from '../modules/internal/document/document-domain';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 
 export const findById = (context, user, stixCyberObservableId) => {
@@ -345,6 +346,10 @@ export const stixCyberObservableEditContext = async (context, user, stixCyberObs
 // endregion
 
 // region export
+export const stixCyberObservablesExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedForExportContext(context, user, exportContext, { first });
+};
+
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters, types } = args;

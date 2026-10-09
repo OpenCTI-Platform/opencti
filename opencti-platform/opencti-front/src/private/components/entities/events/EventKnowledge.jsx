@@ -35,10 +35,7 @@ const EventKnowledgeComponent = ({
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={event.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

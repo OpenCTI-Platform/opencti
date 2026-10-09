@@ -61,6 +61,7 @@ const organizationFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...OrganizationDetails_organization
   }
 `;

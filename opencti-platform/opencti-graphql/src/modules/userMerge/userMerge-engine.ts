@@ -1,55 +1,313 @@
 import { v4 as uuidv4 } from 'uuid';
 import { logApp } from '../../config/conf';
+import { UnsupportedError } from '../../config/errors';
+import { publishCacheResetEvent } from '../../database/redis';
+import { resolveUserById } from '../user/user-domain';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { userMergeProjectRights, userMergeRightsLabels, userMergeRightsOf } from './userMerge-rights';
+import {
+  handlerDryRun,
+  planDivergence,
+  planFingerprint,
+  type UserMergeHandler,
+  type UserMergeHandlerContext,
+  type UserMergeHandlerOutcome,
+  type UserMergeHandlerPlan,
+  type UserMergeRightsProjection,
+} from './userMerge-handler';
+import { journalRefusal, readJournalEntries, resolveMergeStartedAt, withJournalEntry } from './userMerge-journal';
+import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
+import { userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../dataSharing/streamCollection-types';
+import { ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_TRIGGER } from '../notification/notification-types';
+import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
+import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
+import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
+
+/**
+ * Entity types the platform serves from its in-memory cache and whose user references a handler
+ * rewrites — filters, authorized members, owners, playbook definitions, platform settings.
+ *
+ * Most handlers write straight to Elasticsearch, which notifies no cache: a live stream, a trigger
+ * or a PIR would keep evaluating the source id until a restart, and on every node of a cluster.
+ * Resetting these types once the writes are done makes every node reload them on the next read.
+ */
+export const USER_MERGE_CACHED_ENTITY_TYPES = [
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_DECAY_EXCLUSION_RULE,
+  ENTITY_TYPE_DECAY_RULE,
+  ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_NOTIFIER,
+  ENTITY_TYPE_PIR,
+  ENTITY_TYPE_PLAYBOOK,
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_TRIGGER,
+  ENTITY_TYPE_USER,
+];
+
+// A failed reset must not turn an applied merge into a failure: the writes stand either way.
+const resetMergedCaches = async (mergeId: string) => {
+  try {
+    await Promise.all(USER_MERGE_CACHED_ENTITY_TYPES.map((entityType) => publishCacheResetEvent(entityType)));
+  } catch (err) {
+    logApp.error(`${LOG_PREFIX} cache reset failed, the merged entities are served stale until a restart`, {
+      merge_id: mergeId,
+      cause: err instanceof Error ? err.message : String(err),
+    });
+  }
+};
 
 const LOG_PREFIX = '[MERGE_USERS]';
 
+export interface UserMergeExecutionReport {
+  merge_id: string;
+  handlers: UserMergeHandlerOutcome[];
+  total_updated: number;
+  /**
+   * Attached to every report, not only on demand. A report showing three handlers that
+   * succeeded reads as a complete merge unless it also says what the register still holds.
+   */
+  coverage: UserMergeApiCoverage;
+}
+
+/** Coverage is built from the handlers that actually ran, not from the registry read again. */
+const buildReport = (mergeId: string, handlers: UserMergeHandler[], outcomes: UserMergeHandlerOutcome[]): UserMergeExecutionReport => ({
+  merge_id: mergeId,
+  handlers: outcomes,
+  total_updated: outcomes.reduce((total, outcome) => total + outcome.updated, 0),
+  coverage: buildApiUserMergeCoverage(handlers),
+});
+
+const describeDivergence = ({ dry_only: dryOnly, real_only: realOnly }: { dry_only: string[]; real_only: string[] }): string => {
+  const parts = [];
+  if (dryOnly.length > 0) parts.push(`dry only [${dryOnly.join(', ')}]`);
+  if (realOnly.length > 0) parts.push(`real only [${realOnly.join(', ')}]`);
+  return parts.length > 0 ? parts.join(', ') : 'same entries in different numbers';
+};
+
 /**
- * Stubbed merge engine.
+ * Recomputes every handler and checks it against the dry pass, before any of them writes.
  *
- * PR1 ships the API surface only, so this executes nothing. PR2 replaces this file with the
- * handler registry and the dry-run/run framework; the signature below is the one it must
- * honour, so the resolver and the domain guard-rails do not move when it lands.
- *
- * The placeholder deliberately reports FAILED rather than SUCCESS. Reporting success for
- * work that was never done is exactly the `cleanInconsistency` behaviour this feature is
- * specified against — an unimplemented engine must be impossible to mistake for a merge
- * that happened.
+ * Not per handler before its own write: earlier handlers destroy what later ones count (the
+ * deactivation kills the sessions), so a correct merge would read as a platform that moved. And a
+ * refusal here writes nothing, where one mid-loop would leave the platform half merged.
  */
-export const executeUserMerge = async (
+const recomputeVerifiedPlans = async (
+  handlers: UserMergeHandler[],
+  handlerContext: UserMergeHandlerContext,
+  dryOutcomes: UserMergeHandlerOutcome[],
+  journalInput: { mergeId: string; sourceId: string; targetId: string; mergeStartedAt: Date },
+): Promise<UserMergeHandlerPlan[]> => {
+  const plans: UserMergeHandlerPlan[] = [];
+  for (let i = 0; i < handlers.length; i += 1) {
+    const handler = handlers[i];
+    const plan = await handler.compute(handlerContext);
+    if (planFingerprint(plan) !== planFingerprint(dryOutcomes[i])) {
+      const divergence = planDivergence(dryOutcomes[i], plan);
+      const message = `Platform state changed between the dry pass and the real pass, nothing was written: ${describeDivergence(divergence)}`;
+      await journalRefusal({ ...journalInput, handler: handler.identifier }, message);
+      throw UnsupportedError(message, {
+        handler: handler.identifier,
+        ...divergence,
+      });
+    }
+    plans.push(plan);
+  }
+  return plans;
+};
+
+const applyHandler = async (
+  handler: UserMergeHandler,
+  handlerContext: UserMergeHandlerContext,
+  plan: UserMergeHandlerPlan,
+): Promise<UserMergeHandlerOutcome> => {
+  const updated = await handler.apply(handlerContext, plan);
+  return { ...plan, updated };
+};
+
+/**
+ * Gate placed between the two passes, which is where the human decision belongs.
+ *
+ * Blocking on the dry pass would hide the difference from the report the operator needs to
+ * decide with; blocking inside a handler's write would stop the merge after earlier handlers
+ * already wrote.
+ */
+const assertBlockingAlertsAcknowledged = (outcomes: UserMergeHandlerOutcome[], options: UserMergeOptions): void => {
+  if (options.acknowledgeExposureChange) {
+    return;
+  }
+  const blocking = outcomes.flatMap((outcome) => outcome.alerts.filter((alert) => alert.blocking));
+  if (blocking.length > 0) {
+    throw UnsupportedError('Merge blocked by unacknowledged alerts, nothing was written', {
+      alerts: blocking.map((alert) => ({ register_row_id: alert.register_row_id, kind: alert.kind, message: alert.message })),
+    });
+  }
+};
+
+/**
+ * Both users and the projected rights, read from the store.
+ *
+ * Read through the domain resolver rather than the user cache: the cache is refreshed
+ * asynchronously, so a merge started right after a rights change would decide on a stale
+ * projection. Aborts on a missing user rather than degrading. Every blocking alert of the
+ * feature — public exposure, authorized member management, individual ownership — is derived
+ * from these values, so a handler coping with a missing projection would skip its security
+ * checks while the merge carried on.
+ */
+const readRightsProjection = async (
+  context: AuthContext,
   sourceId: string,
   targetId: string,
   options: UserMergeOptions,
-): Promise<UserMergeResult> => {
-  const startedAt = new Date();
-  logApp.warn(`${LOG_PREFIX} merge requested but the engine is not implemented yet, nothing was executed`, {
-    source_id: sourceId,
-    target_id: targetId,
-    dry_run: options.dryRun,
-    rights_strategy: options.rightsStrategy,
-  });
+): Promise<{ sourceUser: AuthUser; targetUser: AuthUser; rights: UserMergeRightsProjection }> => {
+  const sourceUser = await resolveUserById(context, sourceId);
+  const targetUser = await resolveUserById(context, targetId);
+  if (!sourceUser || !targetUser) {
+    throw UnsupportedError('Cannot resolve the rights of the users to merge', {
+      source_id: sourceId,
+      target_id: targetId,
+      missing: !sourceUser ? 'source' : 'target',
+    });
+  }
+  const source = userMergeRightsOf(sourceUser);
+  const target = userMergeRightsOf(targetUser);
   return {
-    id: uuidv4(),
-    source_id: sourceId,
-    target_id: targetId,
-    dry_run: options.dryRun,
-    rights_strategy: options.rightsStrategy,
-    status: UserMergeStatus.Failed,
-    started_at: startedAt,
-    completed_at: new Date(),
-    message: 'Merge engine not implemented: this build ships the API surface only (PR1). No data was modified.',
+    sourceUser,
+    targetUser,
+    rights: {
+      source,
+      target,
+      projected: userMergeProjectRights(source, target, options.rightsStrategy),
+      labels: userMergeRightsLabels(sourceUser, targetUser),
+    },
   };
 };
 
 /**
- * Reads the execution journal. The journal entity itself is created by PR2, so this returns
- * an empty list for now — typed, so the query contract is reviewable and the frontend or an
- * operator script can be written against it before the engine exists.
+ * Two full passes, never interleaved.
+ *
+ * Every handler computes first, the complete report is produced, and only then does any
+ * handler write. Interleaving — compute A, write A, compute B — would let B observe what A
+ * wrote, so B's dry figure and B's real figure would describe different platform states and
+ * "dry-run == real impact" would stop holding at the second handler.
+ *
+ * The dry pass is journalled too. An operator who lost the connection mid-dry-run still has
+ * a queryable trace of what was computed, and the two passes are distinguishable by dry_run.
+ *
+ * No calling user is taken: whether a merge may be asked for at all is decided in the domain
+ * layer, and a merge rewrites references the caller has no reason to be allowed to read.
  */
+export const executeUserMerge = async (
+  context: AuthContext,
+  sourceId: string,
+  targetId: string,
+  options: UserMergeOptions,
+): Promise<UserMergeResult & { report?: UserMergeExecutionReport }> => {
+  const mergeId = uuidv4();
+  const startedAt = new Date();
+  const baseResult = {
+    id: mergeId,
+    source_id: sourceId,
+    target_id: targetId,
+    dry_run: options.dryRun,
+    rights_strategy: options.rightsStrategy,
+    started_at: startedAt,
+  };
+  try {
+    const handlers = userMergeHandlers();
+    const projection = await readRightsProjection(context, sourceId, targetId, options);
+    const handlerContext: UserMergeHandlerContext = {
+      context,
+      sourceId,
+      targetId,
+      options,
+      mergeStartedAt: await resolveMergeStartedAt(sourceId, targetId, startedAt),
+      ...projection,
+    };
+    // Every entry records the history cut-off of the run, so that later runs on the pair reuse it.
+    const journalInput = { mergeId, sourceId, targetId, mergeStartedAt: handlerContext.mergeStartedAt };
+
+    const dryOutcomes: UserMergeHandlerOutcome[] = [];
+    for (let i = 0; i < handlers.length; i += 1) {
+      const handler = handlers[i];
+      const outcome = await withJournalEntry(
+        { ...journalInput, handler: handler.identifier, dryRun: true },
+        () => handlerDryRun(handler, handlerContext),
+      );
+      dryOutcomes.push(outcome);
+    }
+    if (options.dryRun) {
+      return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, dryOutcomes) };
+    }
+    assertBlockingAlertsAcknowledged(dryOutcomes, options);
+    const plans = await recomputeVerifiedPlans(handlers, handlerContext, dryOutcomes, journalInput);
+
+    const outcomes: UserMergeHandlerOutcome[] = [];
+    try {
+      for (let i = 0; i < handlers.length; i += 1) {
+        const handler = handlers[i];
+        const outcome = await withJournalEntry(
+          { ...journalInput, handler: handler.identifier, dryRun: false },
+          () => applyHandler(handler, handlerContext, plans[i]),
+        );
+        outcomes.push(outcome);
+      }
+    } finally {
+      // A failed run too: what the handlers before the failure wrote is just as stale.
+      await resetMergedCaches(mergeId);
+    }
+    return { ...baseResult, status: UserMergeStatus.Success, completed_at: new Date(), report: buildReport(mergeId, handlers, outcomes) };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logApp.error(`${LOG_PREFIX} merge failed`, { merge_id: mergeId, source_id: sourceId, target_id: targetId, cause: message });
+    // The failure is returned rather than thrown so the caller keeps the merge id: what was
+    // and was not applied before the failure is only readable from the journal.
+    return { ...baseResult, status: UserMergeStatus.Failed, completed_at: new Date(), message };
+  }
+};
+
+/**
+ * Reads back what a handler recorded. Corrupt or truncated payloads are dropped rather than
+ * propagated: the journal is what an operator falls back on when a run went wrong, so it has
+ * to stay readable even when one entry is not.
+ */
+const parseJournalOutcome = (output?: string): UserMergeHandlerOutcome | undefined => {
+  if (!output) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(output) as UserMergeHandlerOutcome;
+  } catch (err) {
+    logApp.warn(`${LOG_PREFIX} unreadable journal outcome`, { cause: err instanceof Error ? err.message : String(err) });
+    return undefined;
+  }
+};
+
 export const readUserMergeJournal = async (
   mergeId?: string,
   first?: number,
 ): Promise<UserMergeJournalEntry[]> => {
-  logApp.debug(`${LOG_PREFIX} journal read but the journal is not implemented yet`, { merge_id: mergeId, first });
-  return [];
+  const entries = await readJournalEntries(mergeId, first);
+  return entries.map((entry) => ({
+    id: entry.id,
+    merge_id: entry.merge_id,
+    source_id: entry.source_user_id,
+    target_id: entry.target_user_id,
+    handler: entry.handler,
+    dry_run: entry.dry_run,
+    status: entry.status,
+    started_at: new Date(entry.started_at),
+    completed_at: entry.completed_at ? new Date(entry.completed_at) : undefined,
+    message: entry.message,
+    updated_count: entry.updated_count,
+    outcome: parseJournalOutcome(entry.output),
+  }));
 };

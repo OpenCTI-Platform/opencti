@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
+import { defaultRender } from '../dataGrid/dataTableUtils';
 import type { WidgetColumn } from '../../utils/widget/widget';
+import { getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from '../../utils/customFields';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +32,22 @@ const WidgetListCoreObjects = ({
           if (!attribute) {
             return acc;
           }
-          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+          // Custom fields are not part of the DataTable column registry (they are
+          // dynamic, per-deployment), so they need their own generic renderer reading
+          // the entity's `customFieldValues` instead of relying on a registered one.
+          const customFieldRender = isCustomFieldAttribute(attribute)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ? (node: any) => {
+                const value = getCustomFieldRawValueByFieldName(node?.customFieldValues, attribute);
+                return defaultRender(Array.isArray(value) ? value.join(', ') : value);
+              }
+            : undefined;
+          acc[attribute] = {
+            percentWidth,
+            isSortable: false,
+            ...(label ? { label } : {}),
+            ...(customFieldRender ? { render: customFieldRender } : {}),
+          };
           return acc;
         },
         {},

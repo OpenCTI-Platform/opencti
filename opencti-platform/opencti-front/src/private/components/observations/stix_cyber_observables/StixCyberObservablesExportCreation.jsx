@@ -1,14 +1,12 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import withStyles from '@mui/styles/withStyles';
+import { Stack } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, propOr, uniq, zip } from 'ramda';
 import React, { Component } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
@@ -27,24 +25,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = () => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
-});
 
 export const StixCyberObservablesExportCreationMutation = graphql`
   mutation StixCyberObservablesExportCreationMutation($input: StixCyberObservablesExportAskInput!) {
@@ -134,7 +114,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
   }
 
   render() {
-    const { classes, t, data } = this.props;
+    const { t, data } = this.props;
     const connectorsExport = propOr([], 'connectorsForExport', data);
     const exportScopes = uniq(
       flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -148,28 +128,29 @@ class StixCyberObservablesExportCreationComponent extends Component {
         {({ selectedIds }) => {
           return (
             <>
-              <Tooltip
-                title={
-                  isExportPossible
-                    ? t('Generate an export')
-                    : t('No export connector available to generate an export')
-                }
-                aria-label="generate-export"
+              <Stack
+                direction="row"
+                justifyContent="flex-end"
+                gap={1}
               >
-                <Fab
-                  // FDS-FAB: stays on MUI. The library ships no floating action
-                  // button, so this control has nothing to convert to. Owner: the
-                  // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
-                  onClick={this.handleOpen.bind(this)}
-                  color="primary"
-                  aria-label="Add"
-                  className={classes.createButton}
-                  disabled={!isExportPossible}
-                  data-testid="StixCyberObservablesExportCreationAddButton"
+                <Tooltip
+                  title={
+                    isExportPossible
+                      ? t('Generate an export')
+                      : t('No export connector available to generate an export')
+                  }
+                  aria-label="generate-export"
                 >
-                  <Add />
-                </Fab>
-              </Tooltip>
+                  <Button
+                    onClick={this.handleOpen.bind(this)}
+                    color="secondary"
+                    disabled={!isExportPossible}
+                    data-testid="StixCyberObservablesExportCreationGenerateExportButton"
+                  >
+                    {t('Generate an export')}
+                  </Button>
+                </Tooltip>
+              </Stack>
               <Formik
                 enableReinitialize={true}
                 initialValues={{
@@ -315,7 +296,6 @@ const StixCyberObservablesExportCreations = createFragmentContainer(
 );
 
 StixCyberObservablesExportCreations.propTypes = {
-  classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
@@ -323,7 +303,4 @@ StixCyberObservablesExportCreations.propTypes = {
   onExportAsk: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesExportCreations);
+export default inject18n(StixCyberObservablesExportCreations);

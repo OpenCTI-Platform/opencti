@@ -148,7 +148,7 @@ const TasksListFragment = graphql`
             }
             status
             timestamp
-            draft_context  
+            draft_context
           }
         }
       }
@@ -290,7 +290,7 @@ const TasksList = ({ data, options }) => {
                               label={`${t_i18n('Search')}: ${task.task_search}`}
                             />
                             <Tag
-                              label={t_i18n('AND')}
+                              label={t_i18n('and').toUpperCase()}
                             />
                           </Stack>
                         )}
@@ -429,9 +429,9 @@ const TasksList = ({ data, options }) => {
                         variant="secondary"
                         onClick={() => handleDeleteTask(task.id)}
                         size="small"
+                        startIcon={<Delete />}
                       >
-                        <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t_i18n('Delete')}
+                        {t_i18n('Delete')}
                       </Button>
                     )
                   : (
@@ -441,9 +441,9 @@ const TasksList = ({ data, options }) => {
                           variant="outlined"
                           onClick={() => handleDeleteTask(task.id)}
                           size="small"
+                          startIcon={<Delete />}
                         >
-                          <Delete fontSize="small" />
-                      &nbsp;&nbsp;{t_i18n('Delete')}
+                          {t_i18n('Delete')}
                         </Button>
                       </Security>
                     )

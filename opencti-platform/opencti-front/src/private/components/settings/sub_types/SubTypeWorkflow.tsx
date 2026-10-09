@@ -26,6 +26,7 @@ export const workflowQuery = graphql`
       initialState
       states {
         statusId
+        order
         onExit{
           type
           params

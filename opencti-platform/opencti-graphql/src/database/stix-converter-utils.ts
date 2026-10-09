@@ -13,20 +13,30 @@ export const assertType = (type: string, instanceType: string) => {
     throw UnsupportedError('Incompatible type', { instanceType, type });
   }
 };
-export const convertToStixDate = (date: Date | string | undefined): S.StixDate | S2.StixDate => {
+export const convertToStixDate = (
+  date: Date | string | undefined,
+  options: { allowEpoch?: boolean } = {},
+): S.StixDate | S2.StixDate => {
   if (date === undefined) {
     return undefined;
   }
+  const { allowEpoch = false } = options;
   // date type from graphql
   if (date instanceof Date) {
     const time = date.getTime();
-    if (time === FROM_START || time === UNTIL_END) {
+    if (!allowEpoch && time === FROM_START) {
+      return undefined;
+    }
+    if (time === UNTIL_END) {
       return undefined;
     }
     return date.toISOString();
   }
   // date string from the database
-  if (date === FROM_START_STR || date === UNTIL_END_STR) {
+  if (!allowEpoch && date === FROM_START_STR) {
+    return undefined;
+  }
+  if (date === UNTIL_END_STR) {
     return undefined;
   }
   return date;

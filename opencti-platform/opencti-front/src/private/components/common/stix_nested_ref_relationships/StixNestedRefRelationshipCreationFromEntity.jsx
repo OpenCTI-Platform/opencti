@@ -7,7 +7,6 @@ import * as Yup from 'yup';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add, ArrowRightAlt, ChevronRightOutlined } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -296,7 +295,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   entityId,
   entityType,
   paginationOptions,
-  variant,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -847,28 +845,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
 
   return (
     <>
-      {variant === 'inLine' ? (
-        <IconButton
-          color="primary"
-          aria-label="Label"
-          onClick={handleOpen}
-          size="small"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      ) : (
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
-          onClick={handleOpen}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-      )}
+      <IconButton
+        color="primary"
+        aria-label="Label"
+        onClick={handleOpen}
+        size="small"
+      >
+        <Add fontSize="small" />
+      </IconButton>
 
       <Drawer
         open={open}

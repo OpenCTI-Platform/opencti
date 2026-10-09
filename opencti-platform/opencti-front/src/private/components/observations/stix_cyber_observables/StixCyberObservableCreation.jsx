@@ -1,11 +1,11 @@
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
 import Alert from '@mui/lab/Alert';
 import { ListItemButton, Stack } from '@mui/material';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
@@ -1093,15 +1093,15 @@ const StixCyberObservableCreation = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
-          <Fab
-            /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
+          <IconButton
             onClick={handleOpen}
-            color="primary"
             aria-label="Add"
             className={classes.createButtonContextual}
+            variant="tertiary"
+            size="small"
           >
             <Add />
-          </Fab>
+          </IconButton>
         )}
         <Dialog
           open={speeddial ? open : status.open}

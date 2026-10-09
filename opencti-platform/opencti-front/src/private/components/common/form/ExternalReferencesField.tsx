@@ -160,7 +160,7 @@ export const ExternalReferencesField: FunctionComponent<
         required={required}
         multiple={true}
         // Server-side search: the identity filter keeps the list as returned.
-        filterOptions={(options) => options}
+        filterOptions={(options: typeof externalReferences) => options}
         label={t_i18n('External references')}
         helperText={helpertext}
         noOptionsText={t_i18n('No available options')}

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import Alert from '@mui/material/Alert';
-import InputSliderField from '../../../../components/InputSliderField';
+import ConfidenceInputSliderField from '../../../../components/ConfidenceInputSliderField';
 import { useFormatter } from '../../../../components/i18n';
 import { GenericContext } from '../model/GenericContextModel';
 import { layerInputVars } from '../../../../utils/fdsLayer';
@@ -45,7 +45,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
 
   const Slider = (
     <Field
-      component={InputSliderField}
+      component={ConfidenceInputSliderField}
       variant={variant}
       containerstyle={containerStyle}
       fullWidth={true}

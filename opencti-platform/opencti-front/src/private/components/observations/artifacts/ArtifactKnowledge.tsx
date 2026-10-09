@@ -23,9 +23,7 @@ const ArtifactKnowledge = ({ artifact, connectorsForImport }: ArtifactKnowledgeP
     <Route
       path="/relations/:relationId"
       element={(
-        <StixCoreRelationship
-          entityId={artifact.id}
-        />
+        <StixCoreRelationship />
       )}
     />
     <Route

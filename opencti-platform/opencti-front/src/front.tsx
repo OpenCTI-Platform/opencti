@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@filigran/design-system/dist/index.css';
 import './static/css/index.css';
+import './static/css/custom-theme-tokens.css';
 import './static/css/design-system-host.css';
 import makeStyles from '@mui/styles/makeStyles';
 import { RelayEnvironmentProvider } from 'react-relay';

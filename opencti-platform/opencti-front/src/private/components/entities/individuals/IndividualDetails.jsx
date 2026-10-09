@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -40,6 +41,7 @@ class IndividualDetailsComponent extends Component {
                 <Tag label={individual.contact_information} />
               </FieldOrEmpty>
             </Grid>
+            <CustomFieldValuesDisplay entityType={individual.entity_type} values={individual.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -57,6 +59,10 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
   individual: graphql`
     fragment IndividualDetails_individual on Individual {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       contact_information
       description
       x_opencti_reliability

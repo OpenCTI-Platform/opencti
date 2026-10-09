@@ -83,7 +83,7 @@ export const computeInitialComponentConfigValues = ({
     initialValues.description = '';
     Object.entries(configurationSchema?.properties ?? {})
       .forEach(([propName, property]) => {
-        initialValues[propName] = property.default;
+        Object.assign(initialValues, { [propName]: property.default });
         if (propName === 'actions') initialValues.actionsFormValues = [];
       });
   } else {
@@ -100,7 +100,7 @@ export const computeInitialComponentConfigValues = ({
       .forEach(([key, value]) => {
         if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
         else {
-          initialValues[key] = value;
+          Object.assign(initialValues, { [key]: value });
         }
         initialValues.actionsFormValues = actionsFormValues;
       });

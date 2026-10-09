@@ -10,7 +10,7 @@ import themeDark, {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
-import themeLight, { THEME_LIGHT_DEFAULT_PAPER } from './ThemeLight';
+import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import useFdsThemeScope from '../utils/hooks/useFdsThemeScope';
 import { isLightThemeName } from '../utils/themeName';
@@ -118,10 +118,15 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   }, [themeToUse]);
 
   const resolvedName = themeToUse?.name ?? defaultTheme.name;
-  const resolvedPaper = themeToUse?.theme_paper ?? defaultTheme.theme_paper;
-  const defaultPaper = isLightThemeName(resolvedName) ? THEME_LIGHT_DEFAULT_PAPER : THEME_DARK_DEFAULT_PAPER;
-  const customPaper = resolvedPaper && resolvedPaper !== defaultPaper ? resolvedPaper : null;
-  const themeMode = useFdsThemeScope(resolvedName, customPaper);
+  const themeMode = useFdsThemeScope(resolvedName, {
+    background: themeToUse?.theme_background ?? defaultTheme.theme_background,
+    paper: themeToUse?.theme_paper ?? defaultTheme.theme_paper,
+    nav: themeToUse?.theme_nav ?? defaultTheme.theme_nav,
+    primary: themeToUse?.theme_primary ?? defaultTheme.theme_primary,
+    secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
+    accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
+    text: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
+  });
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

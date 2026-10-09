@@ -1,6 +1,6 @@
 import conf, { getBaseUrl, logApp } from '../../../config/conf';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { findUserWithCapabilities } from '../../../domain/user';
+import { findUserWithCapabilities } from '../../user/user-domain';
 import { BYPASS, HUB_REGISTRATION_MANAGER_USER, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/access';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { OCTI_EMAIL_TEMPLATE } from '../../../utils/emailTemplates/octiEmailTemplate';

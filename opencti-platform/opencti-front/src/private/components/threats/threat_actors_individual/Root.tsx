@@ -147,6 +147,7 @@ const RootThreatActorIndividualComponent = ({
                     'countries',
                   ]}
                   data={threatActorIndividual}
+                  relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                 />
               )}
             />

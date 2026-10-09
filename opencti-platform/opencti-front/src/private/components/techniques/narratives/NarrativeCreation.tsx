@@ -4,7 +4,10 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { Stack } from '@mui/material';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -157,6 +160,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: NarrativeCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -199,6 +203,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
 
   return (
     <Formik<NarrativeAddInput>
+      entityType={NARRATIVE_TYPE}
       initialValues={initialValues}
       validationSchema={narrativeValidator}
       validateOnChange={true}
@@ -295,6 +300,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

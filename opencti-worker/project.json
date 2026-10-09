@@ -47,6 +47,30 @@
       "metadata": {
         "description": "Push the OpenCTI worker UBI9 Docker image"
       }
+    },
+    "dev:watch": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev:watch" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "python worker.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI worker in development mode"
+      }
+    },
+    "dev:watch-with-graphql": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev:watch-with-graphql" }],
+      "options": {
+        "cwd": "opencti-worker/src",
+        "command": "python worker.py"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI worker in development mode with GraphQL hot reload"
+      }
     }
   }
 }

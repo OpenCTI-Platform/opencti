@@ -2,7 +2,7 @@ import { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { elList, elLoadById, elReplace } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';

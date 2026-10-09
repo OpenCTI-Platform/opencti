@@ -26,8 +26,8 @@ export const repMarking = {
       column: {
         column_name: 'H',
       },
-    }
-  ]
+    },
+  ],
 };
 
 export const repAreaMarking: (policy: string | undefined) => CsvMapperRepresentation = (policy) => ({
@@ -47,8 +47,8 @@ export const repAreaMarking: (policy: string | undefined) => CsvMapperRepresenta
       key: 'objectMarking',
       default_values: policy ? [policy] : undefined,
       based_on: {
-        representations: ['representation-marking']
-      }
-    }
-  ]
+        representations: ['representation-marking'],
+      },
+    },
+  ],
 });

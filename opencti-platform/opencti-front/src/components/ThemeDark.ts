@@ -384,6 +384,7 @@ const ThemeDark = (
               backgroundColor: hexToRGB('#ffffff', 0.05),
             },
           },
+          '&:focus-visible': { outline: `2px solid ${primary || THEME_DARK_DEFAULT_PRIMARY}`, outlineOffset: 2 },
         },
       },
     },
@@ -391,11 +392,8 @@ const ThemeDark = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
-          // layer 2. A platform-customised paper colour still wins.
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? 'var(--bg-elevation-default)'
-            : (paper ?? 'var(--bg-elevation-default)'),
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at layer 2.
+          backgroundColor: 'var(--bg-elevation-default)',
           borderRadius: 4,
         },
       },
@@ -433,7 +431,7 @@ const ThemeDark = (
             display: 'none',
           },
           '& .MuiToggleButton-root': {
-            border: '1px solid #2B3447',
+            border: '1px solid var(--border-elevation-subtle)',
             color: primary,
 
             '&:focus-visible': {
@@ -559,9 +557,7 @@ const ThemeDark = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? '#0C1524'
-            : (paper ?? '#0C1524'),
+          backgroundColor: 'var(--bg-input-default)',
         },
       },
     },
@@ -806,9 +802,7 @@ const ThemeDark = (
           },
           '& .MuiOutlinedInput-root': {
             // Same layer-aware background as every other outlined field.
-            backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-              ? 'var(--bg-input-default)'
-              : (paper ?? 'var(--bg-input-default)'),
+            backgroundColor: 'var(--bg-input-default)',
             '& fieldset': {
               borderColor: 'transparent',
             },

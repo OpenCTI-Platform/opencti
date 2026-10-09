@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -148,6 +149,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.secondary_motivations}
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={threatActorGroup.entity_type} values={threatActorGroup.customFieldValues ?? []} />
         </Grid>
       </Card>
     );
@@ -166,6 +168,10 @@ const ThreatActorGroupDetails = createFragmentContainer(
     threatActorGroup: graphql`
       fragment ThreatActorGroupDetails_ThreatActorGroup on ThreatActorGroup {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         first_seen
         last_seen
         description

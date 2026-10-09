@@ -1,22 +1,25 @@
 {
-  "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*", ".eslintrc.js"],
-  "files": ["src/generated/graphql.ts"],
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.back.json" },
+    { "path": "./tsconfig.tool.json" }
+  ],
   "compilerOptions": {
     "target": "es2023",
-    "module": "es2022",
     "lib": ["es2023"],
+    "module": "es2022",
+    "moduleResolution": "bundler",
     "strict": true,
     "allowJs": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true,
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "skipLibCheck": true,
+    "noEmit": true,
+    "composite": true,
+    "verbatimModuleSyntax": true
   }
 }

@@ -18,6 +18,7 @@
 > - `create-creation-form` — Scaffold a creation form drawer (Formik + Relay mutation)
 > - `create-playbook-component` — Add a new playbook automation component
 > - `create-workflow` — Scaffold a new GitHub Actions workflow
+> - `add-feature-flag` — Put a feature behind a feature flag (constant, attribute `featureFlag`, `@ff`, domain, manager and UI gating) or remove one
 
 ## Project Overview
 
@@ -79,7 +80,7 @@ yarn graphql
 The `:venv` variants wrap the command with a Python virtual environment — use them when working on `client-python` or `opencti-worker` and running the backend app.
 
 ### 4. Local Development Stack
-Start the necessary infrastructure (Elastic, Redis, RabbitMQ, MinIO):
+Start the necessary infrastructure (Elastic, Redis, RabbitMQ, Silo):
 ```bash
 cd opencti-platform/opencti-dev
 docker compose up -d

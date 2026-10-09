@@ -69,6 +69,7 @@ const securityCoverageFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     objectCovered {
       ... on Report {
         id
@@ -122,7 +123,7 @@ const SecurityCoverageComponent = ({
 
       <Grid size={12}>
         <SecurityCoverageAttackPatterns
-          data={securityCoverage}
+          securityCoverage={securityCoverage}
           dataKillChains={dataKillChains}
         />
       </Grid>

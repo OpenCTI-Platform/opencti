@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { findById, getUserByEmail, userEditField } from '../../domain/user';
+import { findById, getUserByEmail, userEditField } from '../user/user-domain';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';

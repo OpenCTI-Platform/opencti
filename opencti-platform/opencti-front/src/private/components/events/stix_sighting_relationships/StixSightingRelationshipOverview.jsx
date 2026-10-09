@@ -32,6 +32,7 @@ import { truncate } from '../../../../utils/String';
 import StixSightingRelationshipExternalReferences from '../../analyses/external_references/StixSightingRelationshipExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import CustomFieldValuesDisplay from '../../common/custom_fields/CustomFieldValuesDisplay';
 import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
@@ -486,6 +487,10 @@ class StixSightingRelationshipContainer extends Component {
                     creators={stixSightingRelationship.creators ?? []}
                   />
                 </Grid>
+                <CustomFieldValuesDisplay
+                  entityType="stix-sighting-relationship"
+                  values={stixSightingRelationship.customFieldValues ?? []}
+                />
               </Grid>
             </Card>
           </Grid>
@@ -579,6 +584,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
     stixSightingRelationship: graphql`
       fragment StixSightingRelationshipOverview_stixSightingRelationship on StixSightingRelationship {
         id
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         entity_type
         parent_types
         confidence
@@ -737,6 +745,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                       description
                     }
+                    ... on SecurityPlatform {
+                      name
+                      description
+                    }
                     ... on Indicator {
                       name
                       description
@@ -810,6 +822,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               name
             }
             ... on System {
+              name
+            }
+            ... on SecurityPlatform {
               name
             }
             ... on Indicator {
@@ -891,6 +906,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   name
                 }
                 ... on System {
+                  name
+                }
+                ... on SecurityPlatform {
                   name
                 }
                 ... on Indicator {
@@ -976,6 +994,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on System {
                       name
                     }
+                    ... on SecurityPlatform {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -1051,6 +1072,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on System {
+                      name
+                    }
+                    ... on SecurityPlatform {
                       name
                     }
                     ... on Indicator {
@@ -1136,6 +1160,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on System {
                   name
                 }
+                ... on SecurityPlatform {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -1221,6 +1248,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on System {
                       name
                     }
+                    ... on SecurityPlatform {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -1301,6 +1331,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on System {
+                      name
+                    }
+                    ... on SecurityPlatform {
                       name
                     }
                     ... on Indicator {
@@ -1396,6 +1429,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on System {
                   name
                 }
+                ... on SecurityPlatform {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -1514,6 +1550,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           name
                           description
                         }
+                        ... on SecurityPlatform {
+                          name
+                          description
+                        }
                         ... on Indicator {
                           name
                           description
@@ -1629,6 +1669,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on System {
                       name
                     }
+                    ... on SecurityPlatform {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -1706,6 +1749,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on System {
+                      name
+                    }
+                    ... on SecurityPlatform {
                       name
                     }
                     ... on Indicator {
@@ -1820,6 +1866,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on System {
+                              name
+                              description
+                            }
+                            ... on SecurityPlatform {
                               name
                               description
                             }
@@ -1939,6 +1989,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on System {
                   name
                 }
+                ... on SecurityPlatform {
+                  name
+                }
                 ... on Indicator {
                   name
                 }
@@ -2054,6 +2107,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           description
                         }
                         ... on System {
+                          name
+                          description
+                        }
+                        ... on SecurityPlatform {
                           name
                           description
                         }
@@ -2174,6 +2231,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on System {
                       name
                     }
+                    ... on SecurityPlatform {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -2289,6 +2349,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on System {
+                              name
+                              description
+                            }
+                            ... on SecurityPlatform {
                               name
                               description
                             }
@@ -2403,6 +2467,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on System {
                       name
                     }
+                    ... on SecurityPlatform {
+                      name
+                    }
                     ... on Indicator {
                       name
                     }
@@ -2518,6 +2585,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               description
                             }
                             ... on System {
+                              name
+                              description
+                            }
+                            ... on SecurityPlatform {
                               name
                               description
                             }
@@ -2725,6 +2796,10 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     name
                     description
                   }
+                  ... on SecurityPlatform {
+                    name
+                    description
+                  }
                   ... on Indicator {
                     name
                     description
@@ -2798,6 +2873,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             name
           }
           ... on System {
+            name
+          }
+          ... on SecurityPlatform {
             name
           }
           ... on Indicator {
@@ -2882,6 +2960,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on System {
                 name
               }
+              ... on SecurityPlatform {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -2956,6 +3037,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on System {
+                name
+              }
+              ... on SecurityPlatform {
                 name
               }
               ... on Indicator {
@@ -3040,6 +3124,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on System {
             name
           }
+          ... on SecurityPlatform {
+            name
+          }
           ... on Indicator {
             name
           }
@@ -3117,6 +3204,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on System {
                 name
               }
+              ... on SecurityPlatform {
+                name
+              }
               ... on Indicator {
                 name
               }
@@ -3190,6 +3280,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 name
               }
               ... on System {
+                name
+              }
+              ... on SecurityPlatform {
                 name
               }
               ... on Indicator {

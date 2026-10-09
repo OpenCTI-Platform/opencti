@@ -23,7 +23,18 @@ class SecurityCoverage:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
+            name
             standard_id
             entity_type
             parent_types
@@ -40,6 +51,9 @@ class SecurityCoverage:
                 ... on StixCoreObject {
                   id
                 }
+            }
+            results {
+                id
             }
             objectMarking {
                 id
@@ -247,6 +261,10 @@ class SecurityCoverage:
         :type auto_enrichment_disable: bool
         :param periodicity: (optional) periodicity
         :type periodicity: str
+        :param tenant_name: (optional) tenant name
+        :type tenant_name: str
+        :param tenant_id: (optional) tenant id
+        :type tenant_id: str
         :param duration: (optional) duration
         :type duration: str
         :param type_affinity: (optional) type affinity
@@ -257,10 +275,13 @@ class SecurityCoverage:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: Security Coverage object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
+        custom_properties = kwargs.get("custom_properties", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         created_by = kwargs.get("createdBy", None)
@@ -275,6 +296,8 @@ class SecurityCoverage:
         coverage_information = kwargs.get("coverage_information", None)
         auto_enrichment_disable = kwargs.get("auto_enrichment_disable", None)
         periodicity = kwargs.get("periodicity", None)
+        tenant_name = kwargs.get("tenant_name", None)
+        tenant_id = kwargs.get("tenant_id", None)
         duration = kwargs.get("duration", None)
         type_affinity = kwargs.get("type_affinity", None)
         platforms_affinity = kwargs.get("platforms_affinity", None)
@@ -301,6 +324,7 @@ class SecurityCoverage:
                 {
                     "input": {
                         "stix_id": stix_id,
+                        "customFieldValues": custom_properties,
                         "name": name,
                         "description": description,
                         "createdBy": created_by,
@@ -315,6 +339,8 @@ class SecurityCoverage:
                         "coverage_information": coverage_information,
                         "auto_enrichment_disable": auto_enrichment_disable,
                         "periodicity": periodicity,
+                        "tenant_name": tenant_name,
+                        "tenant_id": tenant_id,
                         "duration": duration,
                         "type_affinity": type_affinity,
                         "platforms_affinity": platforms_affinity,
@@ -362,17 +388,14 @@ class SecurityCoverage:
                 )
 
             raw_coverages = stix_object["coverage"] if "coverage" in stix_object else []
-            coverage_information = list(
-                map(
-                    lambda cov: {
-                        "coverage_name": cov["name"],
-                        "coverage_score": cov["score"],
-                    },
-                    raw_coverages,
-                )
-            )
+            coverage_information = [
+                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
+                for cov in raw_coverages
+                if "score" in cov
+            ]
 
             return self.create(
+                custom_properties=extras.get("custom_properties", None),
                 stix_id=stix_object["id"],
                 name=stix_object["name"],
                 external_uri=(
@@ -387,6 +410,12 @@ class SecurityCoverage:
                 ),
                 periodicity=(
                     stix_object["periodicity"] if "periodicity" in stix_object else None
+                ),
+                tenant_name=(
+                    stix_object["tenant_name"] if "tenant_name" in stix_object else None
+                ),
+                tenant_id=(
+                    stix_object["tenant_id"] if "tenant_id" in stix_object else None
                 ),
                 duration=(
                     stix_object["duration"] if "duration" in stix_object else None
@@ -448,5 +477,26 @@ class SecurityCoverage:
         else:
             self.opencti.app_logger.error(
                 "[opencti_security_coverage] Missing parameters: stixObject"
+            )
+            return None
+
+    def delete(self, **kwargs):
+        """Delete a Security-Coverage object.
+
+        :param id: the Security-Coverage id
+        :type id: str
+        """
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.app_logger.info("Deleting security_coverage", {"id": id})
+            query = """
+                mutation SecurityCoverageDelete($id: ID!) {
+                    securityCoverageDelete(id: $id)
+                }
+            """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_security_coverage] Missing parameters: id"
             )
             return None

@@ -24,7 +24,7 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
@@ -161,7 +161,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -170,6 +170,7 @@ import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
+  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -208,7 +209,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domai
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
@@ -236,7 +237,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -281,6 +282,7 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { transformCustomFieldValueAddInput, validateCustomFieldValues, validateCustomFieldValuesEditInput } from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -780,7 +782,6 @@ const convertAggregateDistributions = async (
     // The 'unknown' bucket has no real entity — skip resolution and access check
     if (filteredData[i].label === 'unknown') {
       grantedIds.push('unknown');
-      // eslint-disable-next-line no-continue
       continue;
     }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
@@ -886,7 +887,7 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
     const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
@@ -961,7 +962,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -1886,6 +1887,10 @@ const mergeEntitiesRaw = async (
       if (targetFieldKey === IDS_STIX) {
         pushAll(sourceValues, sourceEntities.map((s) => s.standard_id));
       }
+      // The merging user is folded into this same creator_id update (instead of a separate one) to avoid a second EditInput silently overwriting it.
+      if (targetFieldKey === 'creator_id' && !INTERNAL_USERS[user.id] && !user.no_creators) {
+        pushAll(sourceValues, [user.id]);
+      }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
         const concatSource = mergedEntityCurrentFieldValue as any[] ?? [];
@@ -2486,13 +2491,15 @@ const resolveRefsForInputs = async (
   return revolvedInputs;
 };
 
-type UpdateAttributeMetaResolvedOpts = {
+type UpdateAttributeMetaResolvedOpts = EventOpts & {
   locks?: string[];
   impactStandardId?: boolean;
   references?: string[];
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
+  skipUserIndividualSync?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2570,12 +2577,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2860,7 +2861,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {
@@ -2876,7 +2883,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       }
     }
     // Post-operation to update the individual linked to a user
-    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user)) {
+    if (updatedInstance.entity_type === ENTITY_TYPE_USER && !getDraftContext(context, user) && !opts.skipUserIndividualSync) {
       const args = {
         filters: {
           mode: FilterMode.And,
@@ -2924,7 +2931,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
       const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
-      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+      const shouldUpdateSecurityCoverage = data.updatedInstance[RELATION_COVERED]
+        && data.updatedInstance.entity_type !== ENTITY_TYPE_SECURITY_COVERAGE;
+      if (isRefUpdate && shouldUpdateSecurityCoverage) {
         const { element: securityCoverage } = await updateAttribute(
           context,
           user,
@@ -3005,6 +3014,18 @@ export const updateAttribute = async <T extends StoreObject>(
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
+  // Validate custom field values against their definitions (mandatory / min-max / select options)
+  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
+    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
+  }
+  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
+  if (customFieldValuesInput) {
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+    } else {
+      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    }
+  }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
   if (!opts.noEnrich && data.event) {
@@ -3415,6 +3436,19 @@ export const createRelationRaw = async (
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+    await validateCustomFieldValues(context, user, customFieldValuesFromInput, relationshipType);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
@@ -3499,6 +3533,7 @@ export const createRelationRaw = async (
       // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
 
@@ -3734,6 +3769,19 @@ const internalCreateEntityRaw = async (
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+    await validateCustomFieldValues(context, user, customFieldValuesFromInput, type);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // validate user access to create the entity in draft
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
@@ -3794,6 +3842,7 @@ const internalCreateEntityRaw = async (
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion
@@ -4062,7 +4111,7 @@ export const createEntity = async (
   user: AuthUser,
   input: Record<string, any>,
   type: string,
-  opts: { complete?: boolean } & CreateEntityRawOpts = {},
+  opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
@@ -4073,7 +4122,7 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null) { // upsert
+  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;

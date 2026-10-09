@@ -194,6 +194,10 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
+// A read-only view of a STIX object. Property access stays untyped because the STIX
+// model is not fully typed yet, but assignments are rejected by the compiler.
+export type ReadonlyStix = { readonly [key: string]: any };
+
 export type TesterFunction = (data: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => boolean;
 
 /**

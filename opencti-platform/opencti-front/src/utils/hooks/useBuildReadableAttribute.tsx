@@ -35,7 +35,9 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     });
     // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
     // We sanitize the given html above.
-    const stringHtml = DOMPurify.sanitize(mark);
+    // In tables, the only link wanted is the one to the entity page: other links
+    // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
+    const stringHtml = DOMPurify.sanitize(mark, inTable ? { FORBID_TAGS: ['a'] } : undefined);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
   } else if (inTable) {
     value = stringWithZeroWidthSpace(value);
@@ -52,6 +54,11 @@ const useBuildReadableAttribute = () => {
     if (attribute) {
       attributeType = stixCoreObjectsAttributesMap.get(attribute)?.type;
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
+    }
+    // Attributes unknown to the standard schema (e.g. custom fields) carry their own
+    // attributeType directly on the column: use it as a fallback.
+    if (!attributeType && displayInfo.attributeType) {
+      attributeType = displayInfo.attributeType;
     }
 
     let readableAttribute;

@@ -308,10 +308,10 @@
       "files": [
         "opencti-platform/opencti-front/src/components/list_lines/ListLines.jsx",
         "opencti-platform/opencti-front/src/components/dataGrid/components/DataTableHeaders.tsx",
-        "opencti-platform/opencti-front/src/components/filters/FilterChipPopover.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
         "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectContainer.tsx",
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
-        "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
+        "opencti-platform/opencti-front/src/private/components/data/forms/view/fieldRenderers/primitiveFieldRenderers.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
         "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
       ]
@@ -338,6 +338,156 @@
       "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
+    },
+    {
+      "component": "SearchField",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Settings > Parameters redesign: the managers search, size md (36 px) on the centre line of the 36 px status filter and flush with the content edge of the card (measured at 1440 and 1920); the clear control is the library's own, labelled through clearLabel.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_managers/SettingsManagers.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Settings > Parameters redesign: the edition badge of the platform summary (Enterprise in the ee severity, Community in the default tone), 24 px on the value line of the facts grid, replacing the MUI chip of the former platform card.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_platform/SettingsPlatformSummary.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: one row menu (MenuTrigger asChild around IconButton, MenuContent align=\"end\", MenuItem startIcon, MenuSeparator) replaces the Download / Upload / Delete buttons. Download is a MenuItem asChild around a real <a download>. Delete carries its error colour through FDS-WORKAROUND #64.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "nested filter group support: the recursive group editor's own floating panel (inline mode, in-flow Box, and the disablePortal Popper fallback) both wrap FilterGroupPanel in the library Paper, padding={0} — the panel's own Stack owns the internal spacing.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanelHost.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group mode picker (AND/OR) in the recursive group editor, and the per-condition operator picker (FilterOperatorSelect, used by FilterRow but not inlined there).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterOperatorSelect.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: the row menu trigger, variant=\"default\" priority=\"tertiary\" as in the Themes rows, with `active` while its menu is open.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the group/condition delete controls (destructive, tertiary) in the recursive group editor and each filter row.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/group/FilterGroupPanel.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterRow.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows and footer: each row title (content-base) and its secondary line (content-compact, `--text-default-secondary`), the propagation note (content-compact) and the documentation link (content-compact-link, as={Link}), replacing MUI ListItemText and Typography. The Themes rows render 13px, hardcoded in DataTableLine.tsx; the library scale has 12px and 14px only, so the row title takes content-base.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the relationships-perspective info tooltip in the widget creation dialog uses the library Text (variant content-compact-bold) for its section headings, replacing a bare <strong>.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationDataSelection.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Map configuration rows: the neutral `Default` chip shown while the bundled file is used. The `Custom` chip stays the Tools block's ItemBoolean, so both blocks show the same green chip.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_map_source/SettingsMapSource.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover. Also the selected-value tags of the entity autocomplete's renderTags: each holds its own onDelete, and the locked sole value of a disabled composite subfilter renders without one instead of a dead click. Also the 'Click to display filters' info chip of FilterGroupSummaryButton, which opens the read-only dialog showing the full filter content.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/CompositeRegardingOfFilterEditor.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx",
+        "opencti-platform/opencti-front/src/components/filters/FilterGroupSummaryButton.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: the trigger that opens the nested-group row's dynamic-filter popover, styled tertiary/sm to read as a chip in the row rather than as a button.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterRowCompositeValue.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "nested filter group support: full-value hover tooltip on a top-level filter chip in the filter line (regardingOf/dynamicRegardingOf chips excluded, handled by their own composite editor instead), and the full-label tooltip on a truncated entity option row in the filter value autocomplete. Also the locked-value tag of the entity autocomplete (composite subfilter, isChangeBlocked): explains why that tag's delete icon is absent instead of silently doing nothing.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/FilterChipLine.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
       ]
     }
   ]

@@ -6,7 +6,7 @@ import { useTheme } from '@mui/styles';
 import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import SecurityCoverageScores from '@components/analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps } from './dataTableTypes';
@@ -223,7 +223,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ color }) => (
       <Tooltip title={color}>
-        <>
+        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
           <div
             style={{
               backgroundColor: color,
@@ -235,7 +235,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },
@@ -263,6 +263,32 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: true,
     render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+  },
+  coverage_last_modified_date: {
+    id: 'coverage_last_modified_date',
+    label: 'Coverage Last modified date',
+    percentWidth: 16,
+    isSortable: false,
+    render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
+  },
+  coverage: {
+    id: 'coverage',
+    label: 'Coverage Score',
+    percentWidth: 11,
+    isSortable: false,
+    render: ({ coverage_information }, { t_i18n }) => (
+      coverage_information?.length
+        ? (
+            <SecurityCoverageScores
+              coverage_information={coverage_information}
+              variant="header"
+            />
+          ) : (
+            <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
+              <span style={{ width: '100%' }}>-</span>
+            </Tooltip>
+          )
+    ),
   },
   created: {
     id: 'created',
@@ -460,8 +486,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
-        <Tooltip title={file?.metaData?.mimetype}>
-          <>{b(file?.size)}</>
+        <Tooltip title={b(file?.size)}>
+          <span>{b(file?.size)}</span>
         </Tooltip>
       );
     },
@@ -774,7 +800,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ number_observed }, { n }) => (
       <Tooltip title={number_observed}>
-        <>{n(number_observed)}</>
+        <span>{n(number_observed)}</span>
       </Tooltip>
     ),
   },
@@ -842,7 +868,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ operatingSystem }) => (
       <Tooltip title={operatingSystem?.name}>
-        <>{operatingSystem?.name ?? EMPTY_VALUE}</>
+        <span>{operatingSystem?.name ?? EMPTY_VALUE}</span>
       </Tooltip>
     ),
   },
@@ -1063,6 +1089,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ secondary_motivations }) => {
       return defaultRender(secondary_motivations);
     },
+  },
+  security_coverage_result_name: {
+    id: 'security_coverage_result_name',
+    label: 'Security Coverage Result Name',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ from }) => defaultRender(from?.name),
   },
   security_platform_type: {
     id: 'security_platform_type',
@@ -1373,7 +1406,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
-        <>
+        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
           <div
             style={{
               backgroundColor: x_opencti_color,
@@ -1385,7 +1418,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{x_opencti_color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },

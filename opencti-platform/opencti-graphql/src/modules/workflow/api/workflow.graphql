@@ -11,6 +11,7 @@ type WorkflowActionConfig {
 
 type WorkflowSerializedState {
     statusId: String!
+    order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
 }
@@ -108,6 +109,14 @@ type WorkflowTransition {
     requiresUnshareOrganizationInput: Boolean
 }
 
+type WorkflowBypassStatus {
+    status: Status!
+    onExit: [WorkflowActionConfig!]!
+    onEnter: [WorkflowActionConfig!]!
+    requiresShareOrganizationInput: Boolean!
+    requiresUnshareOrganizationInput: Boolean!
+}
+
 type WorkflowLastHistoryEntry {
     state: String!
     event: String!
@@ -125,6 +134,7 @@ type WorkflowInstance {
     pendingStatus: WorkflowExecutionStatus
     pendingError: String
     pendingTransition: WorkflowPendingTransition
+    scope: String
 }
 
 extend type DraftWorkspace {
@@ -136,6 +146,7 @@ extend type Query {
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]! @auth(for: [BYPASS])
 }
 
 extend type Mutation {
@@ -144,6 +155,7 @@ extend type Mutation {
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
-    clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])
-    reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+    setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [BYPASS])
+    clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [BYPASS])
+    reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [BYPASS])
 }

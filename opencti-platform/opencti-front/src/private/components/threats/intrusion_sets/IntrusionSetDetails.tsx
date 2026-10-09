@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { IntrusionSetDetails_intrusionSet$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetDetails_intrusionSet.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
@@ -109,6 +110,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
               list={intrusionSet.secondary_motivations}
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={intrusionSet.entity_type} values={intrusionSet.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>
@@ -121,6 +123,10 @@ const IntrusionSetDetails = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         first_seen
         last_seen
         description

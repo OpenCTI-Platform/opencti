@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -9,6 +9,9 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import FiligranIcon from '@components/common/FiligranIcon';
 import { CatalogItem } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { LogoFiligranIcon } from 'filigran-icon';
@@ -16,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 // Shared column geometry between the header row and the lines, mirroring the
@@ -92,11 +96,15 @@ export interface AvailableIntegrationLineProps {
 const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, onClickCreate }: AvailableIntegrationLineProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const canCreate = useGranted([INGESTION_SETINGESTIONS]);
 
   const connector = item.connector?.connector;
   const BuiltInIcon = item.builtIn?.icon;
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
+  const shouldRenderDeploy = connector?.manager_supported === true;
 
   const typeLabel = connector
     ? getConnectorMetadata(connector.container_type, t_i18n).label
@@ -105,20 +113,17 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
     ? connector.short_description
     : t_i18n(item.builtIn?.description ?? '');
 
-  // Opening a connector line navigates to its catalog detail; a built-in line
-  // opens its creation drawer (like the matching cards).
-  const handleLineClick = () => {
-    if (connector) {
-      navigate(`/dashboard/integrations/catalog/${connector.slug}`);
-    } else if (canCreate) {
-      onClickCreate();
-    }
-  };
+  // A connector line is a real link to its catalog detail (so ctrl/cmd and
+  // middle click open a new tab); a built-in line opens its creation drawer
+  // (like the matching cards), an action rather than a navigation.
+  const lineProps = connector
+    ? { component: Link, to: `/dashboard/integrations/catalog/${connector.slug}` }
+    : { onClick: canCreate ? () => onClickCreate() : undefined };
 
   return (
     <Box
       data-testid="available-integration-line"
-      onClick={handleLineClick}
+      {...lineProps}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -126,6 +131,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         paddingInline: 1.5,
         paddingBlock: 0.75,
         cursor: connector || canCreate ? 'pointer' : undefined,
+        textDecoration: 'none',
+        color: 'inherit',
         transition: 'background-color 0.2s ease-in-out',
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -244,9 +251,9 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         )}
       </Box>
       {/* Actions column. */}
-      <Box onClick={(event) => event.stopPropagation()} sx={cellSx('actions')}>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          {item.builtIn ? (
+      <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('actions')}>
+        {item.builtIn ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
             <Stack direction="row" alignItems="center">
               {isImportableBuiltInKind(item.builtIn.kind) && (
                 <>
@@ -258,20 +265,22 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
                 {t_i18n('Create')}
               </Button>
             </Stack>
-          ) : (
-            <>
-              {isEnterpriseEdition ? (
-                <Button size="small" onClick={onClickDeploy}>
+          </Security>
+        ) : shouldRenderDeploy ? (
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            {showEnterpriseUpsell ? (
+              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+              </Box>
+            ) : (
+              <DisabledReasonTooltip reason={compatibilityMessage}>
+                <Button size="small" disabled={!canDeploy} onClick={onClickDeploy}>
                   {t_i18n('Deploy')}
                 </Button>
-              ) : (
-                <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                  <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-                </Box>
-              )}
-            </>
-          )}
-        </Security>
+              </DisabledReasonTooltip>
+            )}
+          </Security>
+        ) : null}
       </Box>
     </Box>
   );

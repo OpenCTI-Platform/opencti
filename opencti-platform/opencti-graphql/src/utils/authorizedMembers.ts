@@ -6,7 +6,7 @@ import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { isEmptyField } from '../database/utils';
 import { findById as findGroup } from '../domain/group';
-import { findAllMembers, findById as findUser } from '../domain/user';
+import { findAllMembers, findById as findUser } from '../modules/user/user-domain';
 import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';

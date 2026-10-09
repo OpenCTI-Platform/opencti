@@ -68,11 +68,11 @@ describe('Decay Exclusion Rule', () => {
     beforeAll(async () => {
       const decayExclusionRule = await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_CREATE,
-        variables: { input: createInput }
+        variables: { input: createInput },
       });
       const decayExclusionRule2 = await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_CREATE,
-        variables: { input: createInput2 }
+        variables: { input: createInput2 },
       });
       createdDecayExclusionRule_1 = decayExclusionRule.data?.decayExclusionRuleAdd as StoreEntityDecayExclusionRule;
       createdDecayExclusionRule_2 = decayExclusionRule2.data?.decayExclusionRuleAdd as StoreEntityDecayExclusionRule;
@@ -93,7 +93,7 @@ describe('Decay Exclusion Rule', () => {
     it('should find a decay exclusion rule list', async () => {
       const decayExclusionRuleList = await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_LIST_QUERY,
-        variables: { first: 10 }
+        variables: { first: 10 },
       });
 
       expect(decayExclusionRuleList).toBeDefined();
@@ -110,8 +110,8 @@ describe('Decay Exclusion Rule', () => {
           input: {
             key: 'name',
             value: 'updated name 1',
-          }
-        }
+          },
+        },
       });
 
       expect(result?.data?.decayExclusionRuleFieldPatch).toBeDefined();
@@ -123,18 +123,18 @@ describe('Decay Exclusion Rule', () => {
     beforeAll(async () => {
       await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_DELETE,
-        variables: { id: createdDecayExclusionRule_1?.id }
+        variables: { id: createdDecayExclusionRule_1?.id },
       });
       await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_DELETE,
-        variables: { id: createdDecayExclusionRule_2?.id }
+        variables: { id: createdDecayExclusionRule_2?.id },
       });
     });
 
     it('should have deleted the both decay exclusion rule', async () => {
       const decayExclusionRuleList = await queryAsAdminWithSuccess({
         query: DECAY_EXCLUSION_RULE_LIST_QUERY,
-        variables: { first: 10 }
+        variables: { first: 10 },
       });
 
       expect(decayExclusionRuleList).toBeDefined();

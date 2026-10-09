@@ -140,7 +140,7 @@ describe('SupportPackage resolver standard behavior', () => {
       if (createdSupportPackage?.package_url) {
         await requestFileFromStorageAsAdmin(createdSupportPackage?.package_url);
       }
-    } catch (e) {
+    } catch {
       gotFileStorageError = true;
     } finally {
       expect(gotFileStorageError, 'We expect that the file cannot be found on storage anymore.').toBeTruthy();

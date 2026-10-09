@@ -32,7 +32,7 @@ import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csv
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
-import { findById as findUserById } from '../domain/user';
+import { findById as findUserById } from '../modules/user/user-domain';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
@@ -44,6 +44,7 @@ import { decryptIngestionCredential } from '../modules/ingestion/ingestion-commo
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
+import { assertIngestionExecutionIdentityAllowed } from '../modules/ingestion/ingestion-execution-identity';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -298,7 +299,7 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
               }
             }
             ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e))
-              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
+              .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
             patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
               .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
@@ -561,7 +562,9 @@ export const processCsvLines = async (
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
-    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
+    // The execution identity of an ingestion can never exceed the rights of its creator.
+    await assertIngestionExecutionIdentityAllowed(context, ingestion);
+    const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id!) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
       removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
     }
@@ -715,7 +718,7 @@ export const jsonExecutor = async (context: AuthContext) => {
         } catch (e) {
           logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
           await ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e as Error))
-            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
+            .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
           await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
             .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));

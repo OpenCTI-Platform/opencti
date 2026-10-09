@@ -1,0 +1,50 @@
+{
+  "id": "integration-catalog-v0",
+  "name": "Integration Catalog V0",
+  "description": "Small V0 catalog fixture for resolver integration tests",
+  "version": "7.2.0",
+  "contracts": [
+    {
+      "title": "Integration V0 Connector",
+      "slug": "integration-v0-connector",
+      "description": "V0 contract fixture",
+      "short_description": "v0 fixture",
+      "logo": null,
+      "use_cases": [],
+      "verified": true,
+      "last_verified_date": "2026-01-01",
+      "playbook_supported": false,
+      "max_confidence_level": 50,
+      "support_version": ">= 7.0.0",
+      "subscription_link": null,
+      "source_code": "",
+      "manager_supported": true,
+      "container_version": "1.0.0",
+      "container_image": "opencti/connector-integration-v0",
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "integration-v0",
+        "type": "object",
+        "properties": {
+          "INTEGRATION_API_KEY": {
+            "type": "string",
+            "description": "fixture key"
+          },
+          "OPENCTI_URL": {
+            "type": "string",
+            "description": "runtime key to strip"
+          }
+        },
+        "required": [
+          "INTEGRATION_API_KEY",
+          "OPENCTI_URL"
+        ],
+        "additionalProperties": false
+      },
+      "license_type": null,
+      "solution_categories": [],
+      "contact": null
+    }
+  ]
+}

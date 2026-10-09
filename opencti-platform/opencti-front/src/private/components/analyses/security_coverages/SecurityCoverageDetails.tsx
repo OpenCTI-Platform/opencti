@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -12,7 +13,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
-import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
@@ -23,6 +23,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     external_uri
@@ -33,7 +37,6 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
-    ...SecurityCoverageSecurityPlatforms_securityCoverage
     ...SecurityCoverageVulnerabilities_securityCoverage
   }
 `;
@@ -91,9 +94,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               </FieldOrEmpty>
             </List>
           </Grid>
-          <Grid item xs={12}>
-            <SecurityCoverageSecurityPlatforms securityCoverage={data} />
-          </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
           <Grid item xs={12}>
             <SecurityCoverageVulnerabilities securityCoverage={data} />
           </Grid>

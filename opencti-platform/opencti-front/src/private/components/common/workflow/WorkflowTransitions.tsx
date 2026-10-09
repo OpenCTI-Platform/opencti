@@ -1,101 +1,128 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { useFragment } from 'react-relay';
-import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Divider, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
-import { ArrowDropDownOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
-import { Form, Formik } from 'formik';
+import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
+import type { Subscription } from 'relay-runtime';
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  Icon,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+  Text,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
+import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
+import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
-import Button from '../../../../components/common/button/Button';
-import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
+import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
-import Dialog from '@common/dialog/Dialog';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
-import { workflowStatusFragment, COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
-import { useTransitionWizard } from './useTransitionWizard';
+import { workflowStatusFragment, workflowStatusStixDomainObjectFragment, workflowStatusEntityQuery, COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
+import { TransitionFormValues, useTransitionWizard } from './useTransitionWizard';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
+import TextareaField from '../../../../components/TextareaField';
+import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
+import type { WorkflowStatusEntityQuery } from './__generated__/WorkflowStatusEntityQuery.graphql';
+import useInterval from '../../../../utils/hooks/useInterval';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { relayErrorHandling } from '../../../../relay/environment';
+import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus';
+import Button from '@common/button/Button';
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
   entityType?: string;
 }
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+interface WorkflowTransitionsViewProps {
+  entityId: string;
+  entityNavigationId?: string | null;
+  draftId?: string;
+  processingCount?: number;
+  workflowInstance: WorkflowStatus_data$data['workflowInstance'];
+  entityType: string;
+  refreshing?: boolean;
+  onCompleted?: () => void;
+}
+
+const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
+  entityId,
+  entityNavigationId,
+  draftId,
+  processingCount = 0,
+  workflowInstance,
+  entityType,
+  refreshing = false,
+  onCompleted,
+}) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
 
-  const draft = useFragment(workflowStatusFragment, data);
+  const isPending = workflowInstance?.pendingStatus === 'pending';
+  const isError = workflowInstance?.pendingStatus === 'error';
   const {
     wizard,
     setWizard,
-    commentValue,
-    setCommentValue,
-    currentStep,
     canBypassMandatoryFields,
-    approving,
+    approving: submitting,
     clearing,
     handleTransition,
-    handleOrgPickerSubmit,
-    handleConfirmComment,
-    handleValidateDraft,
+    handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id, draftId: draft.id });
+  } = useTransitionWizard({ entityId, entityNavigationId, draftId, isPending, onCompleted });
+  const approving = submitting || refreshing;
 
-  const workflowInstance = draft.workflowInstance;
-  const isPending = workflowInstance?.pendingStatus === 'pending';
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
 
   const prevIsPendingRef = useRef<boolean>(isPending);
-  const prevSyncActionsRef = useRef<readonly { type: string }[] | null>(pendingTransition?.syncActions ?? null);
+  const prevPendingTransitionRef = useRef(pendingTransition);
   useEffect(() => {
     const wasJustPending = prevIsPendingRef.current && !isPending;
-    if (wasJustPending) {
-      const hadValidateDraft = prevSyncActionsRef.current?.some((a) => a.type === 'validateDraft');
+    if (draftId && wasJustPending && !isError && workflowInstance?.currentState === prevPendingTransitionRef.current?.toState) {
+      const hadValidateDraft = prevPendingTransitionRef.current?.syncActions?.some((action) => action.type === 'validateDraft');
       if (hadValidateDraft) {
         notifyBackgroundTransitionComplete();
       }
     }
     prevIsPendingRef.current = isPending;
-    prevSyncActionsRef.current = pendingTransition?.syncActions ?? null;
+    prevPendingTransitionRef.current = pendingTransition;
   });
 
   if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
 
-  const isError = workflowInstance.pendingStatus === 'error';
-
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  // Pending state UI
-  if (isPending && pendingTransition) {
-    const totalExpected = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.expectedCount ?? 0), 0);
-    const totalProcessed = pendingTransition.asyncActions.reduce((sum, s) => sum + (s.processedCount ?? 0), 0);
+  if (isPending) {
+    const totalExpected = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.expectedCount ?? 0), 0) ?? 0;
+    const totalProcessed = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.processedCount ?? 0), 0) ?? 0;
     return (
       <>
-        <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" noWrap>
-            {pendingTransition.event}
-          </Typography>
+          <Text as="span" variant="content-compact" className="whitespace-nowrap">
+            {pendingTransition?.event}
+          </Text>
           {totalExpected > 0 && (
-            <Typography variant="caption" color="text.secondary" noWrap>
+            <Text as="span" variant="content-compact" className="whitespace-nowrap text-default-secondary">
               {totalProcessed} / {totalExpected}
-            </Typography>
+            </Text>
           )}
           <CircularProgress size={14} thickness={5} />
           {isBypass && (
@@ -103,7 +130,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
               variant="secondary"
               size="small"
               onClick={handleClear}
-              disabled={clearing}
+              disabled={clearing || approving}
               startIcon={<Close fontSize="small" />}
             >
               {t_i18n('Clear')}
@@ -114,31 +141,37 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     );
   }
 
-  // Error state UI
   if (isError) {
     return (
       <>
-        <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
-            <ErrorOutline color="error" fontSize="small" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <ErrorOutline color="error" fontSize="small" />
+            </TooltipTrigger>
+            <TooltipContent>{workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}</TooltipContent>
           </Tooltip>
-          <Typography variant="caption" color="error">
+          <Text as="span" variant="content-compact" style={{ color: 'var(--text-input-error)' }}>
             {t_i18n('Transition failed')}
-          </Typography>
-          <Tooltip title={t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}>
-            <span>
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={handleClear}
-                disabled={clearing}
-                startIcon={<LockOpenOutlined fontSize="small" />}
-              >
-                {t_i18n('Clear')}
-              </Button>
-            </span>
-          </Tooltip>
+          </Text>
+          {isBypass && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={handleClear}
+                    disabled={clearing || approving}
+                    startIcon={<LockOpenOutlined fontSize="small" />}
+                  >
+                    {t_i18n('Clear')}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}</TooltipContent>
+            </Tooltip>
+          )}
         </Box>
       </>
     );
@@ -150,8 +183,48 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   return (
     <>
-      <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
-      {workflowInstance.allowedTransitions.length < 3 ? (
+      {workflowInstance.allowedTransitions.length > 1 ? (
+        <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+          <MenuTrigger asChild>
+            <Button
+              disabled={approving || clearing || !!wizard}
+              endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
+            >
+              {t_i18n('Next status')}
+            </Button>
+          </MenuTrigger>
+          <MenuContent
+            align="start"
+            sideOffset={6}
+            style={{ minWidth: 'var(--radix-dropdown-menu-trigger-width)', maxWidth: 'calc(100vw - 32px)' }}
+          >
+            {workflowInstance.allowedTransitions.map((transition) => {
+              const actionCount = transition.actions?.length ?? 0;
+              return (
+                <MenuItem
+                  key={transition.event}
+                  disabled={approving || clearing || !!wizard}
+                  onSelect={() => handleTransition(
+                    transition.event,
+                    transition.actions ?? [],
+                    transition.comment,
+                    transition.requiresShareOrganizationInput,
+                    transition.requiresUnshareOrganizationInput,
+                  )}
+                  style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
+                  endIcon={actionCount > 0 ? (
+                    <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
+                      (+{actionCount} {t_i18n(actionCount === 1 ? 'action required' : 'actions required')})
+                    </span>
+                  ) : undefined}
+                >
+                  <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
+                </MenuItem>
+              );
+            })}
+          </MenuContent>
+        </Menu>
+      ) : (
         <>
           {workflowInstance.allowedTransitions.map((transition) => (
             <Button
@@ -164,196 +237,222 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
                 transition.requiresShareOrganizationInput,
                 transition.requiresUnshareOrganizationInput,
               )}
-              disabled={approving}
+              disabled={approving || clearing || !!wizard}
             >
               {transition.event}
             </Button>
           ))}
         </>
-      ) : (
-        <>
-          <Button
-            variant="primary"
-            onClick={handleOpen}
-            endIcon={<ArrowDropDownOutlined />}
-            disabled={approving}
-          >
-            {t_i18n('Next status')}
-          </Button>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-            {workflowInstance.allowedTransitions.map((transition) => (
-              <MenuItem
-                key={transition.event}
-                onClick={() => {
-                  handleClose();
-                  handleTransition(
-                    transition.event,
-                    transition.actions ?? [],
-                    transition.comment,
-                    transition.requiresShareOrganizationInput,
-                    transition.requiresUnshareOrganizationInput,
-                  );
+      )}
+      {wizard && (
+        <Formik<TransitionFormValues>
+          initialValues={{ comment: '', shareOrganizations: [], unshareOrganizations: [] }}
+          validationSchema={Yup.object({
+            comment: wizard.commentMode === CommentMode.required && !canBypassMandatoryFields
+              ? Yup.string().trim().required(t_i18n('This field is required')).max(COMMENT_MAX_LENGTH)
+              : Yup.string().trim().max(COMMENT_MAX_LENGTH),
+            shareOrganizations: Yup.array(),
+            unshareOrganizations: Yup.array(),
+          })}
+          onSubmit={handleApplyWizard}
+          validateOnMount
+        >
+          {({ values, isSubmitting, isValid }) => {
+            const disabled = isSubmitting || approving || clearing;
+            const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
+            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
+            const showComment = wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required;
+            const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
+            return (
+              <Dialog
+                open
+                onOpenChange={(open) => {
+                  if (!open && !disabled) setWizard(null);
                 }}
               >
-                {transition.event}
-              </MenuItem>
-            ))}
-          </Menu>
-        </>
+                <DialogContent>
+                  <DialogTitle className="flex flex-col gap-6">
+                    <Text variant="title-md">{wizard.event}</Text>
+
+                    {targetStatus && (
+                      <div className="flex items-center gap-1">
+                        <Text as="span" variant="content-compact-medium">{t_i18n('Transitioning to')}</Text>
+                        <ItemStatusWorkflow status={targetStatus} />
+                      </div>
+                    )}
+                  </DialogTitle>
+                  <Form noValidate className="flex flex-col gap-6 min-h-0">
+                    <DialogBody style={{ margin: 'calc(var(--spacing) * -1)', padding: 'var(--spacing)' }}>
+                      <Box className="flex flex-col gap-6">
+                        {showComment && (
+                          <div className="flex flex-col gap-4">
+                            <DialogDescription className="flex flex-col gap-2">
+                              <Text variant="title-sm">{t_i18n('Add a comment')}</Text>
+                              <Text variant="content-compact">
+                                {wizard.commentMode === CommentMode.required
+                                  ? t_i18n('A comment is required before changing the status.')
+                                  : t_i18n('You can optionally add a comment before changing the status.')}
+                              </Text>
+                            </DialogDescription>
+                            <Field
+                              component={TextareaField}
+                              name="comment"
+                              label={t_i18n('Comment')}
+                              required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}
+                              disabled={disabled}
+                              rows={3}
+                              maxLength={COMMENT_MAX_LENGTH}
+                              helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
+                            />
+                          </div>
+                        )}
+                        {wizard.requiresShareOrg && (
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2">
+                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
+                              <Text variant="title-sm">{t_i18n('Share with organizations')}</Text>
+                            </div>
+                            <ObjectOrganizationField
+                              name="shareOrganizations"
+                              label={t_i18n('Organizations')}
+                              multiple={true}
+                              disabled={disabled}
+                              style={{ width: '100%' }}
+                              alert={false}
+                            />
+                          </div>
+                        )}
+                        {wizard.requiresUnshareOrg && (
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2">
+                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
+                              <Text variant="title-sm">{t_i18n('Unshare from organizations')}</Text>
+                            </div>
+                            <ObjectOrganizationField
+                              name="unshareOrganizations"
+                              label={t_i18n('Organizations')}
+                              multiple={true}
+                              disabled={disabled}
+                              style={{ width: '100%' }}
+                              alert={false}
+                            />
+                          </div>
+                        )}
+                        {wizard.requiresValidation && (
+                          <>
+                            {showComment ? (
+                              <Text variant="content-base">{t_i18n('Do you want to approve this draft and send it to ingestion?')}</Text>
+                            ) : (
+                              <DialogDescription>{t_i18n('Do you want to approve this draft and send it to ingestion?')}</DialogDescription>
+                            )}
+                            {processingCount > 0 && (
+                              <Alert severity="warning">
+                                <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                                {t_i18n('There are processes still running that could impact the data of the draft. '
+                                  + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+                              </Alert>
+                            )}
+                          </>
+                        )}
+                      </Box>
+                    </DialogBody>
+                    <DialogFooter>
+                      <Button variant="secondary" onClick={() => setWizard(null)} disabled={disabled}>
+                        {t_i18n('Cancel')}
+                      </Button>
+                      <Button type="submit" disabled={disabled || !isValid || !!missingComment || values.comment.length > COMMENT_MAX_LENGTH}>
+                        {wizard.requiresValidation ? t_i18n('Approve') : t_i18n('Confirm')}
+                      </Button>
+                    </DialogFooter>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            );
+          }}
+        </Formik>
       )}
-      {/* Step 1: org picker */}
-      <Formik
-        initialValues={{
-          shareOrganizations: [] as Array<{ value: string; label: string }>,
-          unshareOrganizations: [] as Array<{ value: string; label: string }>,
-        }}
-        validationSchema={Yup.object({
-          shareOrganizations: Yup.array(),
-          unshareOrganizations: Yup.array(),
-        })}
-        onSubmit={handleOrgPickerSubmit}
-        enableReinitialize
-      >
-        {({ submitForm, isSubmitting, resetForm }) => (
-          <Dialog
-            open={currentStep === 'org-picker'}
-            slotProps={{ paper: { elevation: 1 } }}
-            keepMounted={false}
-            slots={{ transition: Transition }}
-            onClose={() => {
-              setWizard(null);
-              resetForm();
-            }}
-            title={t_i18n('Select organizations')}
-            size="small"
-          >
-            <Form>
-              {wizard?.requiresShareOrg && (
-                <>
-                  <DialogContentText sx={{ mb: 2 }}>
-                    {t_i18n('Select the organizations to share the draft content with during this transition.')}
-                  </DialogContentText>
-                  <ObjectOrganizationField
-                    name="shareOrganizations"
-                    label={t_i18n('Organizations to share with')}
-                    multiple={true}
-                    style={{ width: '100%' }}
-                  />
-                </>
-              )}
-              {wizard?.requiresUnshareOrg && (
-                <>
-                  <DialogContentText sx={{ mb: 2, mt: wizard?.requiresShareOrg ? 2 : 0 }}>
-                    {t_i18n('Select the organizations to unshare the draft content from during this transition.')}
-                  </DialogContentText>
-                  <ObjectOrganizationField
-                    name="unshareOrganizations"
-                    label={t_i18n('Organizations to unshare from')}
-                    multiple={true}
-                    style={{ width: '100%' }}
-                  />
-                </>
-              )}
-              <DialogActions>
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setWizard(null);
-                    resetForm();
-                  }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting || approving}
-                >
-                  {t_i18n('Confirm')}
-                </Button>
-              </DialogActions>
-            </Form>
-          </Dialog>
-        )}
-      </Formik>
-      {/* Step 2: comment */}
-      <Dialog
-        open={currentStep === 'comment'}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
-        slots={{ transition: Transition }}
-        onClose={() => setWizard(null)}
-        title={t_i18n('Add a comment')}
-        size="large"
-      >
-        <DialogContentText sx={{ marginBottom: 2 }}>
-          {wizard?.commentMode === CommentMode.required
-            ? t_i18n('A comment is required before changing the status.')
-            : t_i18n('You can optionally add a comment before changing the status.')}
-        </DialogContentText>
-        <TextField
-          autoFocus
-          fullWidth
-          multiline
-          minRows={3}
-          label={t_i18n('Comment')}
-          value={commentValue}
-          onChange={(e) => setCommentValue(e.target.value)}
-          variant="outlined"
-          size="small"
-          required={wizard?.commentMode === CommentMode.required}
-          slotProps={{ htmlInput: { maxLength: COMMENT_MAX_LENGTH } }}
-          helperText={`${commentValue.length} / ${COMMENT_MAX_LENGTH}`}
-        />
-        <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleConfirmComment}
-            disabled={wizard?.commentMode === CommentMode.required && commentValue.trim() === '' && !canBypassMandatoryFields}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Step 3: validate draft */}
-      <Dialog
-        open={currentStep === 'validate'}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={false}
-        slots={{ transition: Transition }}
-        onClose={() => setWizard(null)}
-        title={t_i18n('Are you sure?')}
-        size="small"
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to approve this draft and send it to ingestion?')}
-          {draft.processingCount > 0 && (
-            <Alert sx={{ marginTop: 1 }} severity="warning">
-              <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-              {t_i18n('There are processes still running that could impact the data of the draft. '
-                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-            </Alert>
-          )}
-        </DialogContentText>
-        <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setWizard(null)}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleValidateDraft}
-            disabled={approving}
-          >
-            {t_i18n('Approve')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+    </>
+  );
+};
+
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+  const draft = useFragment<WorkflowStatus_data$key>(workflowStatusFragment, data);
+  return (
+    <WorkflowTransitionsView
+      key={draft.id}
+      entityId={draft.id}
+      entityNavigationId={draft.entity_id}
+      draftId={draft.id}
+      processingCount={draft.processingCount}
+      workflowInstance={draft.workflowInstance}
+      entityType={entityType}
+    />
+  );
+};
+
+const WorkflowPendingPoll = ({ refresh }: { refresh: () => void }) => {
+  useInterval(refresh, FIVE_SECONDS, false);
+  return null;
+};
+
+export const WorkflowTransitionsForEntity: FunctionComponent<{
+  data: WorkflowStatusStixDomainObject_data$key;
+  entityType: string;
+}> = ({ data, entityType }) => {
+  const entity = useFragment<WorkflowStatusStixDomainObject_data$key>(workflowStatusStixDomainObjectFragment, data);
+  const environment = useRelayEnvironment();
+  const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
+  const enabled = canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
+  const request = useRef<Subscription | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+
+  useEffect(() => {
+    setRefreshing(false);
+    setRefreshFailed(false);
+    return () => {
+      request.current?.unsubscribe();
+      request.current = null;
+    };
+  }, [environment, entity.id, enabled]);
+
+  const refresh = () => {
+    if (!enabled || request.current) return;
+    setRefreshing(true);
+    setRefreshFailed(false);
+    fetchQuery<WorkflowStatusEntityQuery>(environment, workflowStatusEntityQuery, { id: entity.id }, { fetchPolicy: 'network-only' }).subscribe({
+      start: (subscription) => {
+        request.current = subscription;
+      },
+      complete: () => {
+        request.current = null;
+        setRefreshing(false);
+      },
+      error: (error: Error) => {
+        request.current = null;
+        setRefreshing(false);
+        setRefreshFailed(true);
+        relayErrorHandling(error);
+      },
+    });
+  };
+
+  if (!enabled) return null;
+  return (
+    <>
+      {entity.workflowInstance?.pendingStatus === 'pending' && !refreshFailed && <WorkflowPendingPoll refresh={refresh} />}
+      {refreshFailed && <Button variant="secondary" onClick={refresh}>{t_i18n('Retry')}</Button>}
+      <WorkflowBypassStatus key={`bypass-${entity.id}`} data={data} entityType={entityType} refreshing={refreshing} onCompleted={refresh} />
+      <WorkflowTransitionsView
+        key={entity.id}
+        entityId={entity.id}
+        workflowInstance={entity.workflowInstance}
+        entityType={entityType}
+        refreshing={refreshing}
+        onCompleted={refresh}
+      />
     </>
   );
 };

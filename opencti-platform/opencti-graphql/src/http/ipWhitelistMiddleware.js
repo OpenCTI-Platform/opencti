@@ -5,7 +5,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { authenticateUserFromRequest, userWithOrigin } from '../modules/user/user-domain';
 import { publishUserAction } from '../listener/UserActionListener';
 
 // Escape hatch: set app:ip_whitelist_enabled to false in config to bypass
@@ -219,6 +219,16 @@ const ipWhitelistMiddleware = async (req, res, next) => {
       const fullUser = platformUsers.get(authenticatedUser.id);
       if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
         return next();
+      }
+      // A connector can authenticate with an excluded bypass token while impersonating
+      // another user via opencti-applicant-id.
+      // In this case, also check the real token/session identity.
+      const realAuthId = authenticatedUser.origin?.real_authentication_id;
+      if (realAuthId && realAuthId !== authenticatedUser.id) {
+        const realUser = platformUsers.get(realAuthId);
+        if (realUser && isUserExcluded(realUser, exclusionIds)) {
+          return next();
+        }
       }
     }
 

@@ -21,6 +21,7 @@ import {
   USER_SECURITY,
 } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
@@ -37,7 +38,7 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
+import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
 import { getSettingsFromDatabase } from '../../../src/domain/settings';
 import { updateLocalAuth } from '../../../src/domain/setting-auth';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -370,6 +371,12 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
+  });
+  it('should not update api_tokens field', async () => {
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'api_tokens', value: [] } },
+    }, undefined, FORBIDDEN_ACCESS);
   });
   it('should update language only if the value is valid', async () => {
     const validQueryResult = await queryAsAdmin({
@@ -955,7 +962,7 @@ describe('User has no settings capability and is organization admin query behavi
       },
     };
 
-    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const queryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
@@ -1005,6 +1012,20 @@ describe('User has no settings capability and is organization admin query behavi
       variables: USER_TO_CREATE_WRONG_GROUP,
     });
   });
+  it('should not create service account', async () => {
+    const SERVICE_ACCOUNT_TO_CREATE = {
+      input: {
+        name: 'Service account',
+        user_service_account: true,
+        objectOrganization: [testOrganizationId],
+        groups: [amberGroupId],
+      },
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: CREATE_QUERY,
+      variables: SERVICE_ACCOUNT_TO_CREATE,
+    });
+  });
   it('should list users from its own organization', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_QUERY,
@@ -1033,10 +1054,26 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data?.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
+  it('Org admins should NOT update user_service_account without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_service_account must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_service_account', value: [true] }] },
+    });
+  });
   it('should not update user with no organization', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
+    });
+  });
+  it('Org admins should NOT update user_email without SETTINGS_SETACCESSES capability', async () => {
+    // USER_EDITOR is an organization admin (VIRTUAL_ORGANIZATION_ADMIN) but has no SETTINGS_SETACCESSES capability.
+    // Even for a user of its own administrated organization, editing user_email must be forbidden.
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: [{ key: 'user_email', value: ['test_email@org.com'] }] },
     });
   });
   it('should not update user from an other organization', async () => {
@@ -1083,7 +1120,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should administrate more than 1 organization', async () => {
-    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
+    // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in modules/user/user-domain.ts
     const grantableGroupQueryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },

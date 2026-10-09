@@ -1,13 +1,15 @@
 import React, { FunctionComponent } from 'react';
-import { BulkEntityTypeInfo, entityNameHeaderWidth, entityTypeHeaderWidth, matchHeaderWidth } from '@components/common/bulk/dialog/BulkRelationDialog';
+import { BulkEntityTypeInfo } from '@components/common/bulk/dialog/BulkRelationDialog';
 import { DeleteOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { Chip, Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger, type ChipSeverity } from '@filigran/design-system';
+import { Chip, Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxLabel, ComboboxInput, ComboboxTrigger, type ChipSeverity } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 interface BulkSelectRawLineDataProps {
   entity: BulkEntityTypeInfo;
@@ -36,6 +38,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const isSearchTermEmpty = entity.searchTerm === '';
   const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
@@ -84,19 +87,9 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   };
 
   return (
-    <Box sx={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-      paddingBottom: '5px',
-      paddingLeft: '5px',
-    }}
-    >
-      <Box sx={{ width: `${entityTypeHeaderWidth}px` }}>
-        {/* `disablePortal` has no equivalent here and needs none: the library panel always portals, and it is
-            measured opening over this dialog without closing it. */}
+    <>
+      <Box>
         <Combobox<autocompleteOptionsType>
-          labelPosition="none"
           options={getAutocompleteOptions()}
           value={getAutocompleteValue() ?? null}
           onValueChange={(selectedOption) => {
@@ -110,6 +103,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           groupBy={(option) => option.groupLabel}
           className="min-w-[150px]"
         >
+          <ComboboxLabel>{t_i18n('Entity type')}</ComboboxLabel>
           <ComboboxField>
             <ComboboxInput aria-label={t_i18n('Entity type')} />
             <ComboboxControls>
@@ -122,7 +116,15 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           />
         </Combobox>
       </Box>
-      <Box sx={{ width: `${entityNameHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 1, color: theme.palette.text.light }} id={`representation-label-${entityIndex}`}>{t_i18n('Representation')}</Typography>
         <Typography
           sx={{
             fontSize: '0.9rem',
@@ -131,12 +133,20 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
             display: 'flex',
             alignItems: 'center',
           }}
-          variant="h3"
+          variant="body1"
         >
           {truncate(isSearchTermEmpty ? entity.searchTerm : entity.representative, 20)}
         </Typography>
       </Box>
-      <Box sx={{ width: `${matchHeaderWidth}px` }}>
+      <Box
+        tabIndex={0}
+        sx={{
+          display: 'flex', flexDirection: 'column', '&:focus-visible': {
+            boxShadow: `0 0 0 2px ${theme.palette.text.primary}`,
+          },
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 1.5, color: theme.palette.text.light }} id={`match-status-label-${entityIndex}`}>{t_i18n('Relationship match status')}</Typography>
         <Chip
           label={getRelationMatchStatus()}
           severity={getChipColor()}
@@ -154,7 +164,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
           <DeleteOutlined />
         </IconButton>
       </Box>
-    </Box>
+    </>
   );
 };
 

@@ -36,10 +36,7 @@ const NarrativeKnowledgeComponent = ({
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={narrative.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

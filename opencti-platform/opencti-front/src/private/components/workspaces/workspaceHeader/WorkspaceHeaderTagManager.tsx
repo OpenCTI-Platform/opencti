@@ -129,11 +129,12 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 onSubmit={onSubmitCreateTag}
               >
                 <Form>
+                  <label className="sr-only" htmlFor="inline-new-tag-input">{t_i18n('New tag')}</label>
                   <Field
+                    id="inline-new-tag-input"
                     component={TextField}
                     variant="outlined"
                     name="newTag"
-                    aria-label="tag field"
                     autoFocus
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
@@ -154,8 +155,10 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
               initialValues={{ newTag: '' }}
               onSubmit={onSubmitCreateTag}
             >
-              <Form>
+              <Form style={{ float: 'right' }}>
+                <label className="sr-only" htmlFor="dialog-new-tag-input">{t_i18n('New tag')}</label>
                 <Field
+                  id="dialog-new-tag-input"
                   component={TextField}
                   variant="outlined"
                   name="newTag"

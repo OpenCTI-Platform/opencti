@@ -28,4 +28,3 @@ export const EXPECTED_SSH_KEY = {
   comment: 'test key',
   external_references: [],
 };
-

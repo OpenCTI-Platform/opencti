@@ -12,7 +12,7 @@ import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
-import { issueXtmJwt } from '../domain/xtm-auth';
+import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisDeleteXtmAgentResponse, redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
@@ -48,8 +48,8 @@ const AI_AGENTS_REFRESH_TIMEOUT_MINUTES = Number.isFinite(parsedAgentsRefreshTim
 const AI_AGENTS_REFRESH_TIMEOUT_SECONDS = Math.floor(AI_AGENTS_REFRESH_TIMEOUT_MINUTES * 60);
 
 // Strict UUID shape check for path parameters forwarded to XTM One
-// (conversation ids, file ids). Rejecting anything else up-front keeps
-// arbitrary strings out of the upstream URL path.
+// (conversation ids, message ids, file ids). Rejecting anything else
+// up-front keeps arbitrary strings out of the upstream URL path.
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 // XTM One reports a refusal as `{detail: {code, message}}` as often as a bare
@@ -126,8 +126,9 @@ const generateBasicHeaders = async (req: Express.Request, context: AuthContext):
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
  *
- * When XTM One is configured, the license check is relaxed because XTM One
- * handles its own licensing validation during registration.
+ * The license is the Enterprise Edition of the platform (getEnterpriseEditionInfo):
+ * OpenCTI's own license or a verified XTM license, never the ee_enabled of the
+ * XTM One registration answer.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -138,9 +139,7 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
   const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
-  const { pem } = getEnterpriseEditionActivePem(settings);
-  const licenseInfo = getEnterpriseEditionInfo(settings);
-  const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
+  const isLicenseValidated = getEnterpriseEditionInfo(settings).license_validated;
 
   if (!isChatbotCGUAccepted || !isLicenseValidated) {
     logApp.info('Chatbot not enabled', { cguStatus: settings.filigran_chatbot_ai_cgu_status, isLicenseValidated });
@@ -152,7 +151,10 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
 };
 
 // ── GET /chatbot/config ──────────────────────────────────────────────────
-// Returns chatbot configuration (XTM One URL) for the frontend.
+// Returns chatbot configuration for the frontend. `xtm_one_url` is where the
+// browser opens XTM One (Ask Ariane's links, the CTEM Command Center, the MCP
+// card): its published identity, not `xtm:xtm_one_url`, which may be an
+// internal address only this backend reaches.
 export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -160,9 +162,12 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
       res.sendStatus(403);
       return null;
     }
+    // Only a configured client reads XTM One's identity: the default
+    // configuration names a URL without a token, and this route serves every page.
+    const configured = xtmOneClient.isConfigured();
     res.json({
-      xtm_one_url: XTM_ONE_URL || null,
-      xtm_one_configured: xtmOneClient.isConfigured(),
+      xtm_one_url: configured ? ((await getXtmOneIdentity()) ?? null) : null,
+      xtm_one_configured: configured,
     });
   } catch (e: unknown) {
     logApp.error('Error in chatbot config', { cause: e });
@@ -417,6 +422,142 @@ export const getChatbotPendingApprovals = async (req: Express.Request, res: Expr
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
     logApp.error('Error in chatbot pending approvals', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/prompts ────────────────────────────────────────────────
+// The user's reusable prompts for the composer's prompt picker. The chatbot
+// shows the picker only when this answers, so a failure simply hides it.
+export const getChatbotPrompts = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/prompts', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot prompts list', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── GET /chatbot/quota ──────────────────────────────────────────────────
+// The user's agentic quota for the composer's quota indicator. XTM One
+// answers 200 `null` when there is nothing to show; it is forwarded as is and
+// the chatbot then hides the indicator.
+export const getChatbotQuota = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.get('/api/v1/platform/chat/quota', {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot quota', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// Both ids of a message feedback route end up in the upstream URL path, so
+// both are held to the UUID shape; answers 400 and returns null otherwise.
+const readFeedbackTarget = (req: Express.Request, res: Express.Response) => {
+  const conversationId = String(req.params.conversationId ?? '');
+  if (!conversationId || !UUID_RE.test(conversationId)) {
+    res.status(400).json({ error: 'Invalid conversation id' });
+    return null;
+  }
+  const messageId = String(req.params.messageId ?? '');
+  if (!messageId || !UUID_RE.test(messageId)) {
+    res.status(400).json({ error: 'Invalid message id' });
+    return null;
+  }
+  return { conversationId, messageId };
+};
+
+// ── POST /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Stores the user's thumbs rating of an answer (`{ rating, comment }`) on the
+// message in XTM One, where the agent's managers read it. The body is
+// forwarded whole; XTM One validates it and answers 404 for a message the
+// user cannot see, which is passed through.
+export const postChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    if (!req.body) {
+      res.status(400).json({ error: 'Request body is missing' });
+      return;
+    }
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      req.body,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+  }
+};
+
+// ── DELETE /chatbot/conversations/:conversationId/messages/:messageId/feedback ──
+// Retracts the user's rating of an answer. Idempotent upstream (204 whether
+// or not a rating was stored).
+export const deleteChatbotMessageFeedback = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = readFeedbackTarget(req, res);
+    if (!target) return;
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
+    const httpClient = getXtmClient('json', {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+    });
+    const response = await httpClient.delete(
+      `/api/v1/platform/chat/conversations/${target.conversationId}/messages/${target.messageId}/feedback`,
+      { timeout: DEFAULT_XTM_TIMEOUT },
+    );
+    // Same forwarding as the session delete: an empty upstream body (the
+    // 204) is ended empty, never through `sendStatus` and its textual body.
+    if (response.data !== undefined && response.data !== null && response.data !== '') {
+      res.status(response.status).json(response.data);
+    } else {
+      res.status(response.status).end();
+    }
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot message feedback delete', { cause: e });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;

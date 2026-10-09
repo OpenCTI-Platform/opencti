@@ -18,6 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 export const observedDataMutationFieldPatch = graphql`
@@ -82,6 +83,8 @@ const observedDataMutationRelationDelete = graphql`
 `;
 
 const OBSERVED_DATA_TYPE = 'Observed-Data';
+// Optional counters can be cleared from the form: an empty input removes the attribute
+const OPTIONAL_COUNTERS = ['number_seen', 'max_distinct_count'];
 
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
@@ -92,7 +95,15 @@ const ObservedDataEditionOverviewComponent = (props) => {
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_observed: Yup.date()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    number_observed: Yup.number(),
+    // Counters are non-negative integers, mirroring the backend schema validation
+    number_observed: Yup.number().integer(t_i18n('The value must be an integer'))
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    number_seen: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
+    max_distinct_count: Yup.number().integer(t_i18n('The value must be an integer'))
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0')),
     confidence: Yup.number(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -148,11 +159,17 @@ const ObservedDataEditionOverviewComponent = (props) => {
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
+      let valueToValidate = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
+      if (OPTIONAL_COUNTERS.includes(name) && value === '') {
+        // Yup.number() rejects an empty string: validate the cleared counter as null, the patch sends an empty value
+        finalValue = null;
+        valueToValidate = null;
+      }
       observedDataValidator
-        .validateAt(name, { [name]: value })
+        .validateAt(name, { [name]: valueToValidate })
         .then(() => {
           editor.fieldPatch({
             variables: {
@@ -180,6 +197,8 @@ const ObservedDataEditionOverviewComponent = (props) => {
       'first_observed',
       'last_observed',
       'number_observed',
+      'number_seen',
+      'max_distinct_count',
       'confidence',
       'createdBy',
       'objectMarking',
@@ -261,6 +280,40 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 />
               )}
             />
+            <Field
+              component={TextField}
+              variant="outlined"
+              name="number_seen"
+              label={t_i18n('Number seen')}
+              required={(mandatoryAttributes.includes('number_seen'))}
+              fullWidth={true}
+              className="mt-5"
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              helperText={(
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="number_seen"
+                />
+              )}
+            />
+            <Field
+              component={TextField}
+              variant="outlined"
+              name="max_distinct_count"
+              label={t_i18n('Max distinct count')}
+              required={(mandatoryAttributes.includes('max_distinct_count'))}
+              fullWidth={true}
+              className="mt-5"
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              helperText={(
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="max_distinct_count"
+                />
+              )}
+            />
             <ConfidenceField
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
@@ -308,6 +361,13 @@ const ObservedDataEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            <CustomFieldValuesEdition
+              entityType={observedData.entity_type}
+              entityId={observedData.id}
+              values={observedData.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
@@ -329,11 +389,14 @@ export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
   observedData: graphql`
     fragment ObservedDataEditionOverview_observedData on ObservedData {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       confidence
       entity_type
       first_observed
       last_observed
       number_observed
+      number_seen
+      max_distinct_count
       createdBy {
         ... on Identity {
           id

@@ -10,7 +10,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 - GraphQL API requests (Apollo Server)
 - Data persistence (ElasticSearch/OpenSearch)
 - Message queuing (RabbitMQ)
-- File storage (MinIO/S3)
+- File storage (S3, served by Silo in the development stack)
 - Cache (Redis)
 - Authentication & Authorization
 
@@ -22,7 +22,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 - **API**: GraphQL (Apollo Server)
 - **Database**: ElasticSearch or OpenSearch
 - **Messaging**: RabbitMQ
-- **Object Storage**: MinIO (S3 compatible)
+- **Object Storage**: S3 compatible (Silo, a MinIO fork, in the development stack)
 - **Cache**: Redis
 
 ### Key Directories
@@ -71,8 +71,18 @@ yarn test:ci-integration-sync  # Integration tests
 > - [GraphQL Schema & Resolvers](backend/patterns/schema-resolvers.md)
 > - [Database & Migrations](backend/patterns/database-migrations.md)
 > - [Error Handling](backend/patterns/error-handling.md)
+> - [Logging Levels](backend/patterns/logging-levels.md)
 > - [Performance](backend/patterns/performance.md)
 > - [Testing](backend/patterns/testing.md)
+> - [Feature Flags](backend/patterns/feature-flags.md)
+
+### Feature flags (CRITICAL)
+When a feature is behind a feature flag, every new attribute definition **and** every new
+nested `mappings` entry it registers MUST set `featureFlag: <FLAG_CONSTANT>`. Otherwise the
+field is added to the ElasticSearch index mapping and exposed in the schema even when the
+flag is disabled — silently, no test fails. The `@ff` directive and `isFeatureEnabled`
+checks do not cover this. Full checklist: [Feature Flags](backend/patterns/feature-flags.md)
+and the `add-feature-flag` skill.
 
 ## Common Issues
 - **Missing Python deps**: If you see errors about missing modules, run `yarn install:python`.

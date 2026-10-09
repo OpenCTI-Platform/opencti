@@ -1,17 +1,42 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
-import WorkflowStatus from './WorkflowStatus';
-import WorkflowTransitions from './WorkflowTransitions';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import WorkflowStatus, { WorkflowStatusForEntity } from './WorkflowStatus';
+import WorkflowTransitions, { WorkflowTransitionsForEntity } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import useHelper from '../../../../utils/hooks/useHelper';
+import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 
 // ---------------------------------------------------------------------------
 // Relay mocks
 // ---------------------------------------------------------------------------
 const mockCommit = vi.fn();
+const { mockExitDraft, mockNavigate, permissions } = vi.hoisted(() => ({
+  mockExitDraft: vi.fn(), mockNavigate: vi.fn(), permissions: { bypass: false, mandatoryFields: false },
+}));
+
+vi.mock('./WorkflowStatus.graphql', () => ({
+  workflowStatusFragment: {},
+  workflowStatusStixDomainObjectFragment: {},
+  workflowStatusTriggerMutation: {},
+  workflowStatusClearMutation: {},
+  workflowStatusEntityQuery: {},
+  workflowSetStatusMutation: {},
+  workflowBypassStatusesQuery: {},
+  COMMENT_MAX_LENGTH: 1000,
+}));
+
+vi.mock('../form/ObjectOrganizationField', async () => {
+  const { useField } = await import('formik');
+  return {
+    default: ({ name, label, disabled }: { name: string; label: string; disabled?: boolean }) => {
+      const [, , helpers] = useField(name);
+      return <button type="button" disabled={disabled} onClick={() => helpers.setValue([{ value: `${name}-1`, label }])}>{label}</button>;
+    },
+  };
+});
 
 vi.mock('../../../../utils/hooks/useHelper', () => ({
   default: vi.fn(),
@@ -24,21 +49,27 @@ vi.mock('react-relay', async (importOriginal) => {
     createFragmentContainer: (component: React.ComponentType) => component,
     useFragment: (_fragment: unknown, data: unknown) => data,
     useMutation: () => [mockCommit, false] as const,
+    fetchQuery: () => ({
+      subscribe: ({ complete }: { complete: () => void }) => {
+        complete();
+        return { unsubscribe: vi.fn() };
+      },
+    }),
   };
 });
 
 vi.mock('../../drafts/useSwitchDraft', () => ({
-  default: () => ({ exitDraft: vi.fn() }),
+  default: () => ({ exitDraft: mockExitDraft }),
 }));
 
 vi.mock('react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router')>();
-  return { ...actual, useNavigate: () => vi.fn() };
+  return { ...actual, useNavigate: () => mockNavigate };
 });
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({
-  default: () => false,
-  isBypassUser: () => false,
+  default: () => permissions.mandatoryFields,
+  isBypassUser: () => permissions.bypass,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
@@ -85,6 +116,10 @@ const makeTransition = (overrides: Record<string, unknown> = {}) => ({
 });
 
 beforeEach(() => {
+  permissions.bypass = false;
+  permissions.mandatoryFields = false;
+  mockExitDraft.mockClear();
+  mockNavigate.mockClear();
   vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => false } as unknown as ReturnType<typeof useHelper>);
 });
 
@@ -102,6 +137,11 @@ describe('WorkflowStatus', () => {
   it('does not render a comment icon when lastHistoryEntry has no comment', () => {
     testRender(<WorkflowStatus data={makeDraft()} />);
     expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).toBeNull();
+  });
+
+  it('preserves the unknown badge for a draft workflow without a projected status', () => {
+    testRender(<WorkflowStatus data={makeDraft({ workflowInstance: { currentStatus: null, lastHistoryEntry: null } })} />);
+    expect(screen.getByText('Unknown')).toBeVisible();
   });
 
   it('renders a comment icon when lastHistoryEntry has a comment', () => {
@@ -171,9 +211,126 @@ describe('WorkflowStatus', () => {
 // ---------------------------------------------------------------------------
 // WorkflowTransitions
 // ---------------------------------------------------------------------------
+describe('WorkflowStatusForEntity', () => {
+  const entity = (workflowInstance: unknown = {
+    currentStatus: makeStatus(), lastHistoryEntry: { comment: 'Entity comment' },
+  }) => ({ id: 'incident-1', entity_type: 'Incident', workflowInstance }) as unknown as WorkflowStatusStixDomainObject_data$key;
+
+  it('retains the legacy status while the flag is off', () => {
+    testRender(<WorkflowStatusForEntity data={entity()} entityType="Incident" fallback={<span>Legacy status</span>} />);
+    expect(screen.getByText('Legacy status')).toBeVisible();
+    expect(screen.queryByText('In review')).toBeNull();
+  });
+
+  it('renders the generic status and comment when enabled', async () => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    const { user } = testRender(<WorkflowStatusForEntity data={entity()} entityType="Incident" fallback={<span>Legacy status</span>} />);
+    expect(screen.getByText('In review')).toBeVisible();
+    expect(screen.queryByText('Legacy status')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'View last comment' }));
+    expect(await screen.findByText('Entity comment')).toBeVisible();
+  });
+
+  it.each([null, { currentStatus: null, lastHistoryEntry: null }])('retains the legacy status when workflow status is missing', (workflowInstance) => {
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    testRender(<WorkflowStatusForEntity data={entity(workflowInstance)} entityType="Incident" fallback={<span>Legacy status</span>} />);
+    expect(screen.getByText('Legacy status')).toBeVisible();
+  });
+});
+
 describe('WorkflowTransitions', () => {
   beforeEach(() => {
     mockCommit.mockReset();
+  });
+
+  const transitionDraft = (transition = makeTransition(), overrides: Record<string, unknown> = {}) => makeDraft({
+    workflowInstance: {
+      id: 'instance-1', currentState: 'in_review', currentStatus: makeStatus(), lastHistoryEntry: null,
+      allowedTransitions: [transition], pendingStatus: null, pendingTransition: null,
+      ...overrides,
+    },
+    processingCount: 2,
+  });
+
+  it('shows all inputs and processing warnings in one form and submits once', async () => {
+    const draft = transitionDraft(makeTransition({
+      actions: ['validateDraft'], comment: CommentMode.required,
+      requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true,
+    }));
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByRole('button', { name: 'approve' }));
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByText('Ongoing processes')).toBeVisible();
+    const submit = screen.getByRole('button', { name: 'Approve' });
+    expect(submit).toBeDisabled();
+    await user.type(screen.getByLabelText(/Comment/), '  Ready  ');
+    const [shareOrganizations, unshareOrganizations] = screen.getAllByRole('button', { name: 'Organizations' });
+    await user.click(shareOrganizations);
+    await user.click(unshareOrganizations);
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    await waitFor(() => expect(mockCommit).toHaveBeenCalledOnce());
+    expect(mockCommit.mock.calls[0][0].variables).toEqual({
+      entityId: 'draft-1', eventName: 'approve', comment: 'Ready',
+      runtimeParams: { shareOrganizationIds: ['shareOrganizations-1'], unshareOrganizationIds: ['unshareOrganizations-1'] },
+    });
+    expect(submit).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+  });
+
+  it('allows bypassing required comments but still enforces the length limit', async () => {
+    permissions.mandatoryFields = true;
+    const { user } = testRender(<WorkflowTransitions data={transitionDraft(makeTransition({ comment: CommentMode.required }))} />);
+    await user.click(screen.getByRole('button', { name: 'approve' }));
+    expect(screen.getByRole('button', { name: 'Confirm' })).not.toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/Comment/), { target: { value: 'x'.repeat(1001) } });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled());
+    expect(mockCommit).not.toHaveBeenCalled();
+  });
+
+  it('does not expose Clear to users without bypass permission after an async error', () => {
+    testRender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus: 'error' })} />);
+    expect(screen.getByText('Transition failed')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull();
+  });
+
+  it('exposes Clear to bypass users after an async error', () => {
+    permissions.bypass = true;
+    testRender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus: 'error' })} />);
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeVisible();
+  });
+
+  it('does not offer transitions while pending details are unavailable', () => {
+    testRender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus: 'pending' })} />);
+    expect(screen.queryByRole('button', { name: 'approve' })).toBeNull();
+  });
+
+  it.each(['error', null])('does not navigate when pending validation becomes %s without reaching its target', (pendingStatus) => {
+    const pendingTransition = { event: 'approve', toState: 'approved', syncActions: [{ type: 'validateDraft' }], asyncActions: [] };
+    const { rerender } = testRender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus: 'pending', pendingTransition })} />);
+    rerender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus })} />);
+    expect(mockExitDraft).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('exits the draft only after pending validation reaches the target state', () => {
+    const pendingTransition = { event: 'approve', toState: 'approved', syncActions: [{ type: 'validateDraft' }], asyncActions: [] };
+    const { rerender } = testRender(<WorkflowTransitions data={transitionDraft(makeTransition(), { pendingStatus: 'pending', pendingTransition })} />);
+    rerender(<WorkflowTransitions data={transitionDraft(makeTransition(), { currentState: 'approved' })} />);
+    expect(mockExitDraft).toHaveBeenCalledOnce();
+  });
+
+  it('gates the generic wrapper and never runs draft navigation', async () => {
+    const entity = { ...transitionDraft(makeTransition({ actions: ['validateDraft'] })), currentUserAccessRight: 'edit' } as unknown as WorkflowStatusStixDomainObject_data$key;
+    const { rerender, user, container } = testRender(<WorkflowTransitionsForEntity data={entity} entityType="Incident" />);
+    expect(container.firstChild).toBeNull();
+    vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
+    rerender(<WorkflowTransitionsForEntity data={entity} entityType="Incident" />);
+    await user.click(screen.getByRole('button', { name: 'approve' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } }));
+    expect(mockExitDraft).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('renders null when workflowInstance is absent', () => {
@@ -190,7 +347,22 @@ describe('WorkflowTransitions', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders one button per transition when fewer than 3 transitions', () => {
+  it('renders a single button when there is one transition', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    testRender(<WorkflowTransitions data={draft} />);
+    expect(screen.getByRole('button', { name: 'approve' })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
+  });
+
+  it('renders a dropdown menu when there are two transitions', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -203,12 +375,12 @@ describe('WorkflowTransitions', () => {
         ],
       },
     });
-    testRender(<WorkflowTransitions data={draft} />);
-    expect(screen.getByText('approve')).toBeDefined();
-    expect(screen.getByText('reject')).toBeDefined();
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
   });
 
-  it('renders a dropdown menu when 3 or more transitions', async () => {
+  it('renders a dropdown menu when there are three or more transitions', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',

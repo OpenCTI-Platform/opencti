@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import ipWhitelistMiddleware, { ipMatchesWhitelist, isUserExcluded, isLoginOnlyRequest, checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
 import * as cache from '../../../src/database/cache';
-import * as userDomain from '../../../src/domain/user';
+import * as userDomain from '../../../src/modules/user/user-domain';
 import * as listener from '../../../src/listener/UserActionListener';
 import { logApp } from '../../../src/config/conf';
 
@@ -10,7 +10,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntitiesMapFromCache: vi.fn(),
 }));
 
-vi.mock('../../../src/domain/user', () => ({
+vi.mock('../../../src/modules/user/user-domain', () => ({
   authenticateUserFromRequest: vi.fn(),
   userWithOrigin: vi.fn((req, user) => user),
 }));
@@ -504,6 +504,51 @@ describe('ipWhitelistMiddleware', () => {
 
     await ipWhitelistMiddleware(req, res, next);
     expect(next).toHaveBeenCalled();
+  });
+
+  it('should allow impersonated request if the real (pre-impersonation) authenticated identity is excluded', async () => {
+    // Simulates a connector authenticating with an excluded admin's bypass token
+    // while impersonating its own connector user via opencti-applicant-id.
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: ['admin-id'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValueOnce({
+      id: 'connector-applicant-id',
+      origin: { real_authentication_id: 'admin-id' },
+    });
+
+    const mockUsersMap = new Map();
+    mockUsersMap.set('connector-applicant-id', { id: 'connector-applicant-id', groups: [] });
+    mockUsersMap.set('admin-id', { id: 'admin-id', groups: [] });
+    vi.mocked(cache.getEntitiesMapFromCache as any).mockResolvedValueOnce(mockUsersMap);
+
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should block impersonated request if neither the applicant nor the real authenticated identity is excluded', async () => {
+    vi.mocked(cache.getEntityFromCache as any).mockResolvedValueOnce({
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: ['other-user-id'],
+    });
+    vi.mocked(userDomain.authenticateUserFromRequest as any).mockResolvedValueOnce({
+      id: 'connector-applicant-id',
+      origin: { real_authentication_id: 'admin-id' },
+    });
+
+    const mockUsersMap = new Map();
+    mockUsersMap.set('connector-applicant-id', { id: 'connector-applicant-id', groups: [] });
+    mockUsersMap.set('admin-id', { id: 'admin-id', groups: [] });
+    vi.mocked(cache.getEntitiesMapFromCache as any).mockResolvedValueOnce(mockUsersMap);
+    req.ip = '203.0.113.3'; // New IP to bypass log throttle
+    vi.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+
+    await ipWhitelistMiddleware(req, res, next);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it('should block authenticated user if not in whitelist and not excluded', async () => {

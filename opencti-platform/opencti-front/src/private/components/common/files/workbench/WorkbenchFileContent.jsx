@@ -6,7 +6,6 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -14,7 +13,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { Checkbox, Select, SelectContent, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import Axios from 'axios';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useEffect, useState } from 'react';
@@ -391,14 +389,14 @@ const WorkbenchFileContentComponent = ({
   // endregion
 
   // region file
-  const loadFileContent = () => {
+  const loadFileContent = async () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(file.id)}`;
-    Axios.get(url).then(async (res) => {
-      const fileObjects = res.data.objects ?? [];
-      setFileObjectsJson(JSON.stringify(fileObjects));
-      computeState(fileObjects);
-      return true;
-    });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+    const data = await res.json();
+    const fileObjects = data.objects ?? [];
+    setFileObjectsJson(JSON.stringify(fileObjects));
+    computeState(fileObjects);
   };
 
   const saveFile = () => {
@@ -461,7 +459,9 @@ const WorkbenchFileContentComponent = ({
     }
   };
 
-  useEffect(() => loadFileContent(), []);
+  useEffect(() => {
+    loadFileContent();
+  }, []);
   useEffect(
     () => saveFile(),
     [
@@ -3311,18 +3311,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenEntity(null, null)}
-          color="primary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add entity')}
+        </Button>
         <Drawer
           open={entityStep != null}
           onClose={handleCloseEntity}
@@ -3557,18 +3554,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenObservable(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add observable')}
+        </Button>
         <Drawer
           open={displayObservable}
           onClose={handleCloseObservable}
@@ -4107,18 +4101,15 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <Button
           onClick={() => handleOpenContainer(null, null)}
-          color="secondary"
-          aria-label="Add"
+          variant="primary"
+          startIcon={<Add />}
           className={classes.createButton}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add container')}
+        </Button>
         <Drawer
           open={containerStep != null}
           onClose={handleCloseContainer}

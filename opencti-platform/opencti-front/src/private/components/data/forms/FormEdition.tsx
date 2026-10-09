@@ -12,7 +12,7 @@ import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
 import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import { convertFormBuilderDataToSchema, formatFormSchemaMappingError, normalizeDraftAuthorizedMembersDefaults, validateFormSchemaMappings } from './FormUtils';
 import Loader from '../../../../components/Loader';
 import { useTheme } from '@mui/styles';
 import { Input, Textarea } from '@filigran/design-system';
@@ -161,18 +161,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   const handleSubmit = () => {
     if (!formBuilderData) return;
 
-    // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
-    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
-      setValidationError(t_i18n('Map parsed values to attribute is required when using parsed mode'));
-      return;
-    }
-
-    // Validate additionalEntities parseFieldMapping
-    const missingMappings = formBuilderData.additionalEntities
-      .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
-      .map((entity) => entity.label);
-    if (missingMappings.length > 0) {
-      setValidationError(t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+    const mappingError = validateFormSchemaMappings(formBuilderData);
+    if (mappingError) {
+      setValidationError(formatFormSchemaMappingError(mappingError, t_i18n));
       return;
     }
 

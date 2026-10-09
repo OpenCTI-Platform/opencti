@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BasicStoreBase, BasicStoreEntityFeed } from '../../../../src/types/store';
 import { buildCsvLines } from '../../../../src/http/httpRollingFeed';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 const feed = {
   _index: 'opencti_internal_objects-000001',
@@ -66,7 +67,7 @@ const feed = {
 const elements = [{ _index: 'opencti_stix_domain_objects-000001', _id: 'test-id', id: 'test-id', sort: [1758547930892, 'test-id', 'indicator--id'], standard_id: 'indicator--id', parent_types: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'], i_attributes: [{ updated_at: '2025-09-22T13:41:46.875Z', user_id: 'user-id', confidence: 100, name: 'description' }], decay_applied_rule: { decay_rule_id: 'dacay-rule-id', decay_lifetime: 470, decay_pound: 0.35, decay_points: [80, 50], decay_revoke_score: 20 }, pattern: 'fezfzefez', description: 'Triggered risk rules:\n\n|Rule|Severity|Score|\n|----|---|----|\n|Line 2| column 2| column 3|\n|Line 3| column 2| column 3|\n\n**bold test**\n\n*italic test*\n~~strikethrough~~\ntest', valid_from: '2025-09-22T13:32:10.875Z', created_at: '2025-09-22T13:32:10.892Z', revoked: false, decay_base_score_date: '2025-09-22T13:32:10.875Z', base_type: 'ENTITY', updated_at: '2025-09-22T13:41:46.875Z', modified: '2025-09-22T13:41:46.875Z', x_opencti_score: 50, lang: 'en', pattern_type: 'shodan', internal_id: 'test-id', created: '2025-09-22T13:32:10.892Z', confidence: 100, x_opencti_main_observable_type: 'Cryptocurrency-Wallet', x_mitre_platforms: [], decay_next_reaction_date: '2026-06-24T10:51:42.710Z', valid_until: '2026-06-24T10:51:42.710Z', entity_type: 'Indicator', indicator_types: [], name: 'CSV test', creator_id: ['user-id'], x_opencti_detection: false, decay_base_score: 50, x_opencti_stix_ids: [], decay_history: [{ updated_at: '2025-09-22T13:32:10.875Z', score: 50 }] }];
 
 describe('buildCsvLines', () => {
-  it('should convert elements to CSV expected format', () => {
+  it('should convert elements to CSV expected format', async () => {
     const expectedResultLines: string[] = [
       `CSV test;"Triggered risk rules:
 
@@ -81,21 +82,21 @@ describe('buildCsvLines', () => {
 ~~strikethrough~~
 test"`,
     ];
-    const resultLines = buildCsvLines(elements, feed);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elements, feed);
     expect(resultLines).toEqual(expectedResultLines);
   });
 
-  it('should quote fields containing newlines (CRLF) without separator or double quotes', () => {
+  it('should quote fields containing newlines (CRLF) without separator or double quotes', async () => {
     const descriptionWithNewlines = 'line1\nline2\nline3';
     const elementsWithNewlines = [{ ...elements[0], description: descriptionWithNewlines }];
 
     const expectedResultLines: string[] = ['CSV test;"line1\nline2\nline3"'];
 
-    const resultLines = buildCsvLines(elementsWithNewlines, feed);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elementsWithNewlines, feed);
     expect(resultLines).toEqual(expectedResultLines);
   });
 
-  it('should replace double double quotes and ignore separator when formatting', () => {
+  it('should replace double double quotes and ignore separator when formatting', async () => {
     const descriptionWithIssues = 'Triggered risk rules:\n\n|Rule|Severity;|Score|\n|----|---|----|\n|Line 2| column" 2| column 3|\n|Line 3| column 2| column 3|\n\n**bold test**\n\n*italic test*\n~~strikethrough~~\n\ntest';
     const elementsWithCaractersToRemove = [{ ...elements[0], description: descriptionWithIssues }];
 
@@ -114,11 +115,11 @@ test"`,
 
 test"`];
 
-    const resultLines = buildCsvLines(elementsWithCaractersToRemove, feed);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elementsWithCaractersToRemove, feed);
     expect(resultLines).toEqual(expectedResultLines);
   });
 
-  it('should resolve neighbor attributes via relationship mapping', () => {
+  it('should resolve neighbor attributes via relationship mapping', async () => {
     const neighborFeed = {
       ...feed,
       feed_attributes: [
@@ -148,11 +149,11 @@ test"`];
     entityNeighbors.set('indicates:Malware', [malware1, malware2]);
     neighborsMap.set('test-id', entityNeighbors);
 
-    const resultLines = buildCsvLines(elements, neighborFeed, neighborsMap);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elements, neighborFeed, neighborsMap);
     expect(resultLines).toEqual(['CSV test;WannaCry|NotPetya']);
   });
 
-  it('should use first-match strategy when configured', () => {
+  it('should use first-match strategy when configured', async () => {
     const neighborFeed = {
       ...feed,
       feed_attributes: [
@@ -181,11 +182,11 @@ test"`];
     entityNeighbors.set('indicates:Malware', [malware1, malware2]);
     neighborsMap.set('test-id', entityNeighbors);
 
-    const resultLines = buildCsvLines(elements, neighborFeed, neighborsMap);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elements, neighborFeed, neighborsMap);
     expect(resultLines).toEqual(['CSV test;WannaCry']);
   });
 
-  it('should output empty value when no neighbors match', () => {
+  it('should output empty value when no neighbors match', async () => {
     const neighborFeed = {
       ...feed,
       feed_attributes: [
@@ -208,7 +209,7 @@ test"`];
     } as unknown as BasicStoreEntityFeed;
 
     const emptyNeighborsMap = new Map();
-    const resultLines = buildCsvLines(elements, neighborFeed, emptyNeighborsMap);
+    const resultLines = await buildCsvLines(testContext, ADMIN_USER, elements, neighborFeed, emptyNeighborsMap);
     expect(resultLines).toEqual(['CSV test;']);
   });
 });

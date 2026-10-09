@@ -15,4 +15,3 @@ test('Check access to the overview of a decay rule', { tag: ['@ce'] }, async ({ 
   await expect(page.getByText('Decay indicator filter', { exact: true })).toBeVisible();
   await expect(page.getByText('Lifetime (in days)', { exact: true })).toBeVisible();
 });
-

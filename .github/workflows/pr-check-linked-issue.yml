@@ -5,8 +5,8 @@ on:
 jobs:
   check-pr-issue:
     name: Check Pull Request is linked to an issue
-    # Only for PR that are targeting 'master' or 'lts/*' and except for renovate
-    if: ${{ (github.base_ref == 'master' || startsWith(github.base_ref, 'lts/')) && !contains(github.event.pull_request.labels.*.name, 'dependencies') }}
+    # Only for PR that are targeting 'master' or 'lts/*'
+    if: ${{ github.base_ref == 'master' || startsWith(github.base_ref, 'lts/') }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
@@ -17,9 +17,17 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
-          # Get PR details including linked issues
-          LINKED_ISSUES=$(gh pr view $PR_NUMBER --repo $REPO --json closingIssuesReferences --jq '.closingIssuesReferences | length')
-          
+          # Labels are read here rather than in the job condition: renovate applies them after
+          # opening the PR, so github.event.pull_request.labels can predate them.
+          PR=$(gh pr view $PR_NUMBER --repo $REPO --json labels,closingIssuesReferences)
+
+          if echo "$PR" | jq -e '.labels[] | select(.name == "dependencies")' > /dev/null; then
+            echo "✓ Dependency Pull Request, no linked issue required"
+            exit 0
+          fi
+
+          LINKED_ISSUES=$(echo "$PR" | jq '.closingIssuesReferences | length')
+
           if [ "$LINKED_ISSUES" -eq 0 ]; then
             echo "::error::No linked issues found. Please link at least one issue to this Pull Request."
             echo "You can link an issue by using keywords like 'Fixes #123', 'Closes #123', or 'Resolves #123' in the PR description."

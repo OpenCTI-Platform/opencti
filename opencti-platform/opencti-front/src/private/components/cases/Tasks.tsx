@@ -178,9 +178,8 @@ const Tasks = () => {
         />
       )}
       {/* TODO Add task creation when it will be possible to assign a task to something
-           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <TaskCreation paginationOptions={paginationOptions} />
-        </Security> */}
+           <Security needs={[KNOWLEDGE_KNUPDATE]}><TaskCreation (to implement/></Security>
+      */}
     </span>
   );
 };

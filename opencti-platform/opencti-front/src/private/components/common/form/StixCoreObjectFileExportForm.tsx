@@ -61,6 +61,7 @@ export interface StixCoreObjectFileExportFormInputs {
   type: string | null;
   fileToExport: FileOption | null;
   template: TemplateOption | null;
+  exportAsFintel: boolean;
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
@@ -130,6 +131,7 @@ const StixCoreObjectFileExportForm = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
   const lastAppliedPageDefaultsSource = useRef<string | null>(null);
+  const wasFintelPdf = useRef(false);
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
@@ -157,13 +159,14 @@ const StixCoreObjectFileExportForm = ({
       is: (val: ConnectorOption | null) => !isBuiltInConnector(val?.value),
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
-    template: Yup.object().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
+    template: Yup.object().nullable().when(['connector', 'exportAsFintel'], {
+      is: (val: ConnectorOption | null, exportAsFintel: boolean) => val?.value === BUILT_IN_FROM_TEMPLATE.value
+        || (val?.value === BUILT_IN_HTML_TO_PDF.value && exportAsFintel),
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
     fintelDesigns: Yup.object().nullable(),
-    fileToExport: Yup.object().nullable().when('connector', {
-      is: (val: ConnectorOption | null) => val?.value === BUILT_IN_HTML_TO_PDF.value,
+    fileToExport: Yup.object().nullable().when(['connector', 'exportAsFintel'], {
+      is: (val: ConnectorOption | null, exportAsFintel: boolean) => val?.value === BUILT_IN_HTML_TO_PDF.value && !exportAsFintel,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
     exportFileName: Yup.string().nullable().when('connector', {
@@ -178,6 +181,8 @@ const StixCoreObjectFileExportForm = ({
     [selectedDefaultTemplate] = templates ?? [];
   }
   const defaultFileToExport = fileOptions?.find((f) => f.value === defaultValues?.fileToExport);
+  // A preset file means we're converting a specific existing file, not generating a fresh one.
+  const hasPresetFileToExport = !!defaultValues?.fileToExport;
   let defaultFormat = '';
   if (defaultValues?.format) {
     defaultFormat = defaultValues.format;
@@ -188,6 +193,7 @@ const StixCoreObjectFileExportForm = ({
     connector: connectors.find((c) => c.value === defaultValues?.connector) ?? null,
     format: defaultFormat,
     type: null,
+    exportAsFintel: (templates?.length ?? 0) > 0 && !hasPresetFileToExport,
     template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
@@ -199,8 +205,9 @@ const StixCoreObjectFileExportForm = ({
       ?? defaultFileMarkings
       ?? [],
   };
+  // Built-in connectors self-manage their format (see the forcing effects below), so gating them here would lock users out of switching back.
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
-    if (!selectedFormat) return true;
+    if (!selectedFormat || isBuiltInConnector(option.value)) return true;
     const connector = connectors.find((c) => c.value === option.value);
     return !!connector?.connectorScope?.includes(selectedFormat);
   };
@@ -221,6 +228,28 @@ const StixCoreObjectFileExportForm = ({
       onSubmit={onSubmit}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => {
+        const isFintelPdf = values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.exportAsFintel;
+
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
+            setFieldValue('exportAsFintel', (templates?.length ?? 0) > 0 && !hasPresetFileToExport);
+          }
+        }, [values.connector?.value]);
+
+        // Generating FINTEL from a template only ever produces HTML; PDF is reserved for the toggle on HTML content files to PDF.
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format !== 'text/html') {
+            setFieldValue('format', 'text/html');
+          }
+        }, [values.connector?.value, values.format]);
+
+        // Symmetric to the effect above: the HTML-to-PDF connector only ever produces PDF.
+        useEffect(() => {
+          if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.format !== 'application/pdf') {
+            setFieldValue('format', 'application/pdf');
+          }
+        }, [values.connector?.value, values.format]);
+
         useEffect(() => {
           if (values.connector !== null) {
             const connector = connectors.find((c) => c.value === values.connector?.value);
@@ -238,23 +267,44 @@ const StixCoreObjectFileExportForm = ({
           }
         }, [values.format, connectors, values.connector, setFieldValue]);
 
+        // Reset dependent fields on mode changes; wasFintelPdf restores markings when leaving FINTEL mode.
         useEffect(() => {
           const connector = values.connector?.value;
           if (connector !== BUILT_IN_HTML_TO_PDF.value) setFieldValue('fileToExport', null);
           if (connector !== BUILT_IN_FROM_TEMPLATE.value) setFieldValue('template', null);
+          if (isFintelPdf) {
+            wasFintelPdf.current = true;
+            lastAppliedPageDefaultsSource.current = null;
+            setFieldValue('fileToExport', { value: 'generatedFile', label: t_i18n('Generated file'), fileMarkings: [] });
+            setFieldValue('exportFileName', null);
+            setFieldValue('fileMarkings', []);
+            setFieldValue('contentMaxMarkings', []);
+            setFieldValue('template', selectedDefaultTemplate);
+            setFieldValue('includeCoverPage', true);
+            setFieldValue('includeBackPage', true);
+            return;
+          }
+          if (wasFintelPdf.current) {
+            wasFintelPdf.current = false;
+            setFieldValue('fileMarkings', initialValues.fileMarkings);
+            setFieldValue('contentMaxMarkings', []);
+          }
           if (!isBuiltInConnector(connector)) {
             setFieldValue('exportFileName', null);
           }
-          if (connector === BUILT_IN_HTML_TO_PDF.value && values.fileToExport === null) {
-            setFieldValue('fileToExport', (fileOptions ?? [])[0] ?? null);
+          if (connector === BUILT_IN_HTML_TO_PDF.value && (values.fileToExport === null || values.fileToExport.value === 'generatedFile')) {
+            // Turning off the fintel toggle keeps the same connector; just fall back to a real file to export.
+            setFieldValue('fileToExport', defaultFileToExport ?? (fileOptions ?? [])[0] ?? null);
+            setFieldValue('fileMarkings', initialValues.fileMarkings);
+            setFieldValue('contentMaxMarkings', []);
           }
           if (connector === BUILT_IN_FROM_TEMPLATE.value && values.template === null) {
             setFieldValue('template', (templates ?? [])[0] ?? null);
           }
-        }, [values.connector]);
+        }, [values.connector, isFintelPdf]);
 
         useEffect(() => {
-          if (values.template || values.fileToExport) {
+          if (!isFintelPdf && (values.template || (values.fileToExport && values.fileToExport.value !== 'generatedFile'))) {
             const selectedEntityName = values.connector?.value === BUILT_IN_HTML_TO_PDF.value
               ? (values.fileToExport?.value === 'mappableContent'
                   ? scoName
@@ -266,7 +316,7 @@ const StixCoreObjectFileExportForm = ({
               utcIsoDate: nowUTC(),
             }));
           }
-        }, [values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
+        }, [isFintelPdf, values.template, values.fileToExport, values.fileMarkings, scoName, setFieldValue]);
 
         useEffect(() => {
           setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
@@ -274,15 +324,16 @@ const StixCoreObjectFileExportForm = ({
 
         useEffect(() => {
           const defaults = values.template;
-          if (!defaults) return;
+          if (!defaults || isFintelPdf) return;
           const sourceKey = `template:${defaults.value}`;
           if (lastAppliedPageDefaultsSource.current === sourceKey) return;
           lastAppliedPageDefaultsSource.current = sourceKey;
           setFieldValue('includeCoverPage', defaults.include_cover_page_by_default ?? true);
           setFieldValue('includeBackPage', defaults.include_back_page_by_default ?? true);
-        }, [setFieldValue, values.template?.value]);
+        }, [isFintelPdf, setFieldValue, values.template?.value]);
 
         useEffect(() => {
+          if (isFintelPdf) return;
           if (values.connector?.value !== BUILT_IN_HTML_TO_PDF.value) return;
           if (!values.fileToExport?.value.startsWith('fromTemplate/')) return;
           const originTemplateId = values.fileToExport.fintelTemplateId;
@@ -294,22 +345,20 @@ const StixCoreObjectFileExportForm = ({
           lastAppliedPageDefaultsSource.current = sourceKey;
           setFieldValue('includeCoverPage', originTemplate.include_cover_page_by_default ?? true);
           setFieldValue('includeBackPage', originTemplate.include_back_page_by_default ?? true);
-        }, [setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
+        }, [isFintelPdf, setFieldValue, templates, values.connector?.value, values.fileToExport?.value, values.fileToExport?.fintelTemplateId]);
 
         const shouldDisplayFintelDesign = (
-          (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+          isFintelPdf
           || (values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/'))
         );
-        const shouldDisplayPageOptions = (
-          values.connector?.value === BUILT_IN_HTML_TO_PDF.value
-          || (values.connector?.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-        );
+        const shouldDisplayPageOptions = values.connector?.value === BUILT_IN_HTML_TO_PDF.value;
 
         return (
 
           <Dialog
             open={isOpen}
             onClose={() => {
+              if (isSubmitting) return;
               handleReset();
               onClose();
             }}
@@ -439,7 +488,16 @@ const StixCoreObjectFileExportForm = ({
                   />
                   {values.connector && (
                     <>
-                      {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
+                      {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (templates?.length ?? 0) > 0 && (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="exportAsFintel"
+                          label={t_i18n('Export as fintel')}
+                          containerstyle={fieldSpacingContainerStyle}
+                        />
+                      )}
+                      {(values.connector.value === BUILT_IN_FROM_TEMPLATE.value || isFintelPdf) && (
                         <Field
                           component={ComboboxField}
                           name="template"
@@ -453,8 +511,9 @@ const StixCoreObjectFileExportForm = ({
                         <Field
                           component={ComboboxField}
                           name="fileToExport"
+                          disabled={isFintelPdf}
                           style={fieldSpacingContainerStyle}
-                          options={fileOptions}
+                          options={isFintelPdf ? [values.fileToExport].filter(Boolean) : fileOptions}
                           renderOption={(option: FieldOption) => option.label}
                           label={t_i18n('File to export')}
                           helperText={t_i18n('A FINTEL export will contain extra information like markings and creation date')}
@@ -494,7 +553,7 @@ const StixCoreObjectFileExportForm = ({
                           className="mt-5"
                         />
                       )}
-                      {values.connector.value !== BUILT_IN_HTML_TO_PDF.value && (
+                      {(values.connector.value !== BUILT_IN_HTML_TO_PDF.value || isFintelPdf) && (
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}

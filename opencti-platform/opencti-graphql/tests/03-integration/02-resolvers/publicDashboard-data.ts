@@ -18,21 +18,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: 'entity_type',
                 values: ['Malware'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'malwares number'
+        title: 'malwares number',
       },
       layout: {
         w: 4,
@@ -41,8 +41,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: 'ebb25410-7048-4de7-9288-704e962215f6',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     'ecb25410-7048-4de7-9288-704e962215f6': {
       id: 'ecb25410-7048-4de7-9288-704e962215f6',
@@ -62,21 +62,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: 'toTypes',
                 values: ['Administrative-Area'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'relationship_type',
                 values: ['targets'],
                 operator: 'eq',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'malwares attacking areas'
+        title: 'malwares attacking areas',
       },
       layout: {
         w: 4,
@@ -85,8 +85,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: 'ecb25410-7048-4de7-9288-704e962215f6',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '0a471055-7426-4840-9501-33770b845f92': {
       id: '0a471055-7426-4840-9501-33770b845f92',
@@ -106,16 +106,16 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['entity_type'],
                 values: ['Administrative-Area'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
         },
         {
@@ -131,21 +131,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['entity_type'],
                 values: ['Malware'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
-        }
+        },
       ],
       parameters: {
-        title: 'Evolution of malwares and areas'
+        title: 'Evolution of malwares and areas',
       },
       layout: {
         w: 2,
@@ -154,8 +154,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: '0a471055-7426-4840-9501-33770b845f92',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '9e6afa7e-0db7-424c-8951-16b867245583': {
       id: '9e6afa7e-0db7-424c-8951-16b867245583',
@@ -175,10 +175,10 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['relationship_type'],
                 values: ['targets'],
                 operator: 'eq',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           dynamicFrom: {
             mode: 'and',
@@ -186,14 +186,14 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
               key: ['description'],
               values: ['widget tests'],
               operator: 'search',
-              mode: 'or'
+              mode: 'or',
             }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'Evolution of attacks'
+        title: 'Evolution of attacks',
       },
       layout: {
         w: 3,
@@ -202,8 +202,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: '9e6afa7e-0db7-424c-8951-16b867245583',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb': {
       id: 'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb',
@@ -223,14 +223,14 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
               key: ['description'],
               values: ['widget tests'],
               operator: 'search',
-              mode: 'or'
+              mode: 'or',
             }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'Evolution of attacks without filters'
+        title: 'Evolution of attacks without filters',
       },
       layout: {
         w: 3,
@@ -239,8 +239,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 4,
         i: 'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '9865bec0-d8b1-4592-b14e-0e81e1645f59': {
       id: '9865bec0-d8b1-4592-b14e-0e81e1645f59',
@@ -260,21 +260,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['entity_type'],
                 values: ['Administrative-Area'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'Donut entities'
+        title: 'Donut entities',
       },
       layout: {
         w: 2,
@@ -283,8 +283,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: '9865bec0-d8b1-4592-b14e-0e81e1645f59',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '1865bec0-d8b1-4592-b14e-0e81e1645f59': {
       id: '1865bec0-d8b1-4592-b14e-0e81e1645f59',
@@ -304,21 +304,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['entity_type'],
                 values: ['Malware'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
-        }
+        },
       ],
       parameters: {
-        title: 'Malwares by type'
+        title: 'Malwares by type',
       },
       layout: {
         w: 2,
@@ -327,8 +327,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: '1865bec0-d8b1-4592-b14e-0e81e1645f59',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '2b3c637b-bf25-46ca-8b28-b891d349cc31': {
       id: '2b3c637b-bf25-46ca-8b28-b891d349cc31',
@@ -348,16 +348,16 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['relationship_type'],
                 values: ['targets'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: ['toTypes'],
                 values: ['Administrative-Area'],
                 operator: 'eq',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           dynamicFrom: {
             mode: 'and',
@@ -365,14 +365,14 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
               key: ['description'],
               values: ['widget tests'],
               operator: 'search',
-              mode: 'or'
+              mode: 'or',
             }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'Donut relationships'
+        title: 'Donut relationships',
       },
       layout: {
         w: 2,
@@ -381,8 +381,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 0,
         i: '2b3c637b-bf25-46ca-8b28-b891d349cc31',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     'bec879df-4da2-46c0-994a-e795c1b3a649': {
       id: 'bec879df-4da2-46c0-994a-e795c1b3a649',
@@ -402,21 +402,21 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['entity_type'],
                 values: ['Administrative-Area'],
                 operator: 'eq',
-                mode: 'or'
+                mode: 'or',
               },
               {
                 key: 'description',
                 values: ['widget tests'],
                 operator: 'search',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
-        }
+        },
       ],
       parameters: {
-        title: 'List entities'
+        title: 'List entities',
       },
       layout: {
         w: 4,
@@ -425,8 +425,8 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 4,
         i: 'bec879df-4da2-46c0-994a-e795c1b3a649',
         moved: false,
-        static: false
-      }
+        static: false,
+      },
     },
     '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7': {
       id: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7',
@@ -446,10 +446,10 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
                 key: ['relationship_type'],
                 values: ['targets'],
                 operator: 'eq',
-                mode: 'or'
-              }
+                mode: 'or',
+              },
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           dynamicFrom: {
             mode: 'and',
@@ -457,14 +457,14 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
               key: ['description'],
               values: ['widget tests'],
               operator: 'search',
-              mode: 'or'
+              mode: 'or',
             }],
-            filterGroups: []
-          }
-        }
+            filterGroups: [],
+          },
+        },
       ],
       parameters: {
-        title: 'List relationships'
+        title: 'List relationships',
       },
       layout: {
         w: 4,
@@ -473,11 +473,11 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         y: 6,
         i: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7',
         moved: false,
-        static: false
-      }
-    }
+        static: false,
+      },
+    },
   },
   config: {
 
-  }
+  },
 };

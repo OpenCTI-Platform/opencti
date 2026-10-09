@@ -51,7 +51,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
           event.target.value,
         );
       }}
-      slotProps={{ input: { type: 'search' } }}
+      slotProps={{ input: { type: type ?? 'search' } }}
     />
   );
 };

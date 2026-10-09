@@ -15,7 +15,6 @@ import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import StreamPopover from '@components/data/stream/StreamPopover';
-import stopEvent from '../../../utils/domEvent';
 import ItemCopy from '../../../components/ItemCopy';
 import { StreamLine_node$data } from '@components/data/__generated__/StreamLine_node.graphql';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -222,7 +221,6 @@ const Stream = () => {
           ? (
               <FilterIconButton
                 filters={deserializedFilters}
-                dataColumns={dataColumns}
                 variant="small"
                 entityTypes={['Stix-Filtering']}
               />
@@ -261,7 +259,7 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div onClick={(event) => stopEvent(event)}>
+            <div>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}

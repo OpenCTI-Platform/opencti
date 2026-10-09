@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getBase64ImageFromURL } from '../Image';
-import { resolvePdfMakeEmbeddedImages } from './htmlToPdf';
+import { resolvePdfMakeEmbeddedImages, resolvePdfPageGeometry } from './htmlToPdf';
 
 vi.mock('../Image', () => ({
   getBase64ImageFromURL: vi.fn(),
@@ -13,6 +13,20 @@ describe('resolvePdfMakeEmbeddedImages', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('resolvePdfPageGeometry', () => {
+    it('returns A4 portrait dimensions', () => {
+      const result = resolvePdfPageGeometry('A4', 'portrait');
+      expect(result.pageWidth).toBe(595.28);
+      expect(result.pageHeight).toBe(841.89);
+    });
+
+    it('returns A3 landscape dimensions with swapped width/height', () => {
+      const result = resolvePdfPageGeometry('A3', 'landscape');
+      expect(result.pageWidth).toBe(1190.55);
+      expect(result.pageHeight).toBe(841.89);
+    });
   });
 
   it('returns an empty object when images is undefined', async () => {

@@ -15,6 +15,7 @@ import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromContainer } from '../../../../utils/store';
+import { KnowledgeBarRefreshEvent } from '../bulk/useForceUpdate';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 
 const styles = (theme) => ({
@@ -113,6 +114,8 @@ class StixCoreRelationshipPopover extends Component {
         if (typeof this.props.onDelete === 'function') {
           this.props.onDelete();
         }
+        // Update the knowledge bar counters
+        dispatchEvent(new CustomEvent(KnowledgeBarRefreshEvent));
       },
     });
   }

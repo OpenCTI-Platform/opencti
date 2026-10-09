@@ -631,6 +631,9 @@ type Status {
   order: Int!
   disabled: Boolean
   scope: StatusScope
+  # Set when a Status becomes orphaned by a workflow republish; hard-deleted once past this date
+  # if it is still unreferenced (see the workflow status-projection cleanup manager).
+  to_be_deleted_at: DateTime
 }
 type StatusConnection {
   pageInfo: PageInfo!
@@ -671,7 +674,7 @@ type Synchronizer {
   current_state_date: DateTime
   last_execution_date: DateTime
   last_execution_status: String
-  ingestionLogs: [IngestionEntry] @ff(flags: ["INGESTION_FEED_LOGS"])
+  ingestionLogs: [IngestionEntry]
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -954,6 +957,7 @@ enum BackgroundTaskActionType {
   REMOVE_GROUPS
   SEND_EMAIL
   ENROLL_PLAYBOOK
+  ADD_RELATED_COVERED_ENTITIES
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1167,6 +1171,12 @@ type PlatformEE {
   license_global: Boolean!
   license_extra_expiration: Boolean!
   license_extra_expiration_days: Int
+  license_source: PlatformEESource
+}
+
+enum PlatformEESource {
+  OPENCTI_LICENSE
+  XTM_ONE_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -1418,6 +1428,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   filigran_chatbot_ai_cgu_status: CGUStatus!
   # Map file
   platform_map_custom_file: MapCustomFile
+  platform_map_countries_custom_file: MapCustomFile
 }
 
 type MapCustomFile {
@@ -1507,21 +1518,6 @@ enum UnitSystem {
   Metric
   Imperial
 }
-enum UsersOrdering {
-  name
-  user_email
-  firstname
-  lastname
-  language
-  external
-  created_at
-  updated_at
-  _score
-}
-type UserConnection {
-  pageInfo: PageInfo!
-  edges: [UserEdge!]!
-}
 type CreatorConnection {
   pageInfo: PageInfo!
   edges: [CreatorEdge]
@@ -1537,10 +1533,6 @@ type ParticipantConnection {
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
-}
-type UserEdge {
-  cursor: String!
-  node: User!
 }
 type CreatorEdge {
   cursor: String!
@@ -1597,10 +1589,6 @@ input MemberAccessInput {
   access_right: String!
   groups_restriction_ids: [ID!]
 }
-type OtpElement {
-  secret: String!
-  uri: String!
-}
 type Creator {
   id: ID! # internal_id
   name: String!
@@ -1638,184 +1626,6 @@ enum EffectiveConfidenceLevelSourceType {
 }
 union EffectiveConfidenceLevelSourceObject = Group | User
 
-type ApiToken {
-  id: ID!
-  name: String
-  created_at: DateTime
-  expires_at: DateTime
-  masked_token: String
-  last_used_at: DateTime
-}
-
-type TokenGenerated {
-  token_id: String!
-  plaintext_token: String!
-  expires_at: DateTime
-  masked_token: String!
-}
-
-input UserTokenAddInput {
-  name: String!
-  duration: TokenDuration!
-}
-
-type User implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  # User
-  user_email: String!
-  api_tokens: [ApiToken!]! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  personal_notifiers: [Notifier!]
-  individual_id: String
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  otp_mandatory: Boolean
-  password_valid_until: DateTime
-  user_service_account: Boolean
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  roles(
-    orderBy: RolesOrdering
-    orderMode: OrderingMode
-  ): [Role!]!
-  capabilities: [Capability]!
-  capabilitiesInDraft: [Capability]!
-  default_hidden_types: [String!]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  groups(
-    orderBy: GroupsOrdering
-    orderMode: OrderingMode
-  ): GroupConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  objectOrganization(
-    first: Int
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  objectAssignedOrganization(
-    first: Int
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  default_time_field: String
-  account_status: String! @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  # Technical
-  editContext: [EditUserContext!]
-  creator: Creator
-}
-
-type MeUser implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  representative: Representative!
-  parent_types: [String!]!
-  metrics:[Metric]
-  user_email: String!
-  name: String!
-  description: String
-  firstname: String
-  otp_activated: Boolean
-  otp_qr: String
-  password_valid_until: DateTime
-  lastname: String
-  theme: String
-  language: String
-  external: Boolean
-  individual_id: String
-  api_tokens: [ApiToken!]!
-  personal_notifiers: [Notifier!]
-  objectOrganization: MeOrganizationConnection
-  capabilities: [Capability!]!
-  capabilitiesInDraft: [Capability!]!
-  default_hidden_types: [String]!
-  user_confidence_level: ConfidenceLevel
-  effective_confidence_level: EffectiveConfidenceLevel
-  no_creators: Boolean
-  restrict_delete: Boolean
-  allowed_marking: [MarkingDefinition!]
-  default_marking: [DefaultMarking!]
-  max_shareable_marking: [MarkingDefinition!]
-  otp_mandatory: Boolean
-  groups(
-    orderBy: GroupsOrdering
-    orderMode: OrderingMode
-  ): GroupConnection
-  default_dashboards: [Workspace!]!
-  default_dashboard: Workspace
-  default_time_field: String
-  account_status: String!
-  account_lock_after_date: DateTime
-  administrated_organizations: [Organization!]!
-  unit_system: UnitSystem
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  can_manage_sensitive_config: Boolean
-  draftContext: DraftWorkspace
-}
-type SessionDetail {
-  id: ID!
-  created: DateTime
-  ttl: Int
-  originalMaxAge: Int
-}
-type UserSession {
-  user: Creator
-  sessions: [SessionDetail]
-}
-input UserAddInput {
-  user_email: String @constraint(minLength: 5, format: "email")
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  password: String
-  firstname: String
-  lastname: String
-  description: String
-  language: String
-  theme: String
-  objectOrganization: [ID!]
-  account_status: String
-  account_lock_after_date: DateTime
-  unit_system: String
-  submenu_show_icons: Boolean
-  submenu_auto_collapse: Boolean
-  monochrome_labels: Boolean
-  unsubscribed_news_feed_types: [String!]
-  groups: [ID!]
-  user_confidence_level: ConfidenceLevelInput
-  prevent_default_groups: Boolean
-  user_service_account: Boolean
-  email_template_id: String
-}
-
-input SendUserMailInput {
-  target_user_id: ID!
-  email_template_id: ID!
-}
-
 input ConfidenceLevelInput {
   max_confidence: Int
   overrides: [ConfidenceLevelOverrideInput!]!
@@ -1826,23 +1636,9 @@ input ConfidenceLevelOverrideInput {
   max_confidence: Int!
 }
 
-input UserLoginInput {
-  email: String!
-  password: String!
-}
-
-input UserOTPLoginInput {
-  code: String!
-}
-
 input LicenseActivationInput {
   settingId: ID!
   license: String! @constraint(minLength: 2, format: "not-blank")
-}
-
-input UserOTPActivationInput {
-  secret: String!
-  code: String!
 }
 
 ############## Roles
@@ -1998,6 +1794,8 @@ input RegisterConnectorInput {
   playbook_compatible: Boolean
   listen_callback_uri: String
   xtm_one_intent: String
+  version: String
+  slug: String
 }
 
 input EditManagedConnectorInput {
@@ -2218,6 +2016,7 @@ type Connector implements BasicObject & InternalObject {
   name: String!
   title: String!
   active: Boolean
+  last_seen_at: DateTime
   auto: Boolean
   auto_update: Boolean
   enrichment_resolution: String
@@ -2245,8 +2044,11 @@ type Connector implements BasicObject & InternalObject {
   manager_current_status: String
   manager_requested_status: String
   manager_contract_image: String
-  manager_contract_definition: String
+  manager_contract_definition: String # JSON.Stringified GraphqlCatalogContract item
   manager_contract_excerpt: ManagerContractExcerpt
+  update_available: Boolean
+  latest_compatible_version: String
+  has_newer_incompatible_version: Boolean
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
@@ -2255,6 +2057,8 @@ type Connector implements BasicObject & InternalObject {
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
   xtm_one_intent: String
+  version: String
+  slug: String
   jwks: String!
 }
 
@@ -2908,6 +2712,8 @@ enum StixDomainObjectsOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   incident_type
   severity
   priority
@@ -3076,6 +2882,7 @@ interface StixDomainObject {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -3100,6 +2907,7 @@ input StixDomainObjectAddInput {
   modified: DateTime
   x_opencti_modified_at: DateTime
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## AttackPatterns
@@ -3297,6 +3105,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input AttackPatternAddInput {
   stix_id: StixId
@@ -3330,6 +3139,7 @@ input AttackPatternAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 type AttackPatternForMatrix {
   attack_pattern_id: String!
@@ -3525,6 +3335,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
@@ -3558,6 +3369,7 @@ input CampaignAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Containers
@@ -3913,6 +3725,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input NoteAddInput {
   stix_id: StixId
@@ -3944,6 +3757,7 @@ input NoteAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 input NoteUserAddInput {
   stix_id: String
@@ -3964,6 +3778,7 @@ input NoteUserAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ ObservedDatas
@@ -3971,6 +3786,8 @@ enum ObservedDatasOrdering {
   first_observed
   last_observed
   number_observed
+  number_seen
+  max_distinct_count
   created
   modified
   created_at
@@ -4128,6 +3945,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   name: String!
   # Technical
   creators: [Creator!]
@@ -4157,6 +3976,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input ObservedDataAddInput {
   stix_id: StixId
@@ -4164,6 +3984,8 @@ input ObservedDataAddInput {
   first_observed: DateTime!
   last_observed: DateTime!
   number_observed: Int!
+  number_seen: Int
+  max_distinct_count: Int
   revoked: Boolean
   lang: String
   confidence: Int
@@ -4186,6 +4008,7 @@ input ObservedDataAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Opinions
@@ -4377,6 +4200,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input OpinionAddInput {
   stix_id: StixId
@@ -4405,6 +4229,7 @@ input OpinionAddInput {
   filesMarkings: [[String]]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -4425,6 +4250,7 @@ input OpinionUserAddInput {
   x_opencti_modified_at: DateTime
   update: Boolean
   clientMutationId: String
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Reports
@@ -4622,6 +4448,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowInstance: WorkflowInstance
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
@@ -4659,6 +4486,7 @@ input ReportAddInput {
   embedded: [Boolean]
   authorized_members: [MemberAccessInput!]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## CoursesOfAction
@@ -4829,6 +4657,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CourseOfActionAddInput {
   stix_id: StixId
@@ -4858,6 +4687,7 @@ input CourseOfActionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Identities
@@ -5028,6 +4858,7 @@ interface Identity {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 input IdentityAddInput {
   stix_id: StixId
@@ -5058,6 +4889,7 @@ input IdentityAddInput {
   embedded: [Boolean]
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Individuals
@@ -5232,6 +5064,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   workflowInstance: WorkflowInstance
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -5265,6 +5098,7 @@ input IndividualAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Sectors
@@ -5440,6 +5274,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input SectorAddInput {
   stix_id: StixId
@@ -5469,6 +5304,7 @@ input SectorAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Systems
@@ -5642,6 +5478,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input SystemAddInput {
   stix_id: StixId
@@ -5675,6 +5512,7 @@ input SystemAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Infrastructures
@@ -5850,6 +5688,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input InfrastructureAddInput {
   stix_id: StixId
@@ -5882,6 +5721,7 @@ input InfrastructureAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## IntrusionSets
@@ -6059,6 +5899,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
@@ -6096,6 +5937,7 @@ input IntrusionSetAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Locations
@@ -6262,6 +6104,7 @@ interface Location {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!]
 }
 input LocationAddInput {
   stix_id: StixId
@@ -6293,6 +6136,7 @@ input LocationAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Positions
@@ -6466,6 +6310,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input PositionAddInput {
   stix_id: StixId
@@ -6498,6 +6343,7 @@ input PositionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Cities
@@ -6671,6 +6517,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CityAddInput {
   stix_id: StixId
@@ -6702,6 +6549,7 @@ input CityAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 enum CountriesOrdering {
@@ -6870,6 +6718,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input CountryAddInput {
   stix_id: StixId
@@ -6900,6 +6749,7 @@ input CountryAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ################ Regions
@@ -7071,6 +6921,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input RegionAddInput {
   stix_id: StixId
@@ -7101,6 +6952,7 @@ input RegionAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Malware
@@ -7287,6 +7139,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input MalwareAddInput {
   stix_id: StixId
@@ -7326,6 +7179,7 @@ input MalwareAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## ThreatActorsGroup
@@ -7510,6 +7364,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 type ThreatActorEdge {
@@ -7679,6 +7534,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 input ThreatActorGroupAddInput {
@@ -7720,6 +7576,7 @@ input ThreatActorGroupAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Tools
@@ -7888,6 +7745,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input ToolAddInput {
   stix_id: StixId
@@ -7919,6 +7777,7 @@ input ToolAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## Incident
@@ -8100,6 +7959,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
@@ -8138,6 +7998,7 @@ input IncidentAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -13760,6 +13621,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Organization
   | SecurityPlatform
   | SecurityCoverage
+  | SecurityCoverageResult
   | Sector
   | System
   | Indicator
@@ -13929,6 +13791,7 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
+  | SecurityCoverageResult
   | CustomView
   | IMEI
   | ICCID
@@ -14208,6 +14071,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 input SecurityCoverageExpectation {
@@ -14239,11 +14103,13 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## StixSightingRelationships
@@ -14330,6 +14196,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
@@ -14356,6 +14223,7 @@ input StixSightingRelationshipAddInput {
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 ############## StixRefRelationships
@@ -14593,9 +14461,6 @@ type Query {
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
   @auth(for: [SETTINGS_SETACCESSES])
-  me: MeUser! @auth
-  otpGeneration: OtpElement @auth @allowUnprotectedOTP
-  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
   participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
@@ -14607,16 +14472,6 @@ type Query {
     entityTypes: [MemberType!]
   ): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
   systemMembers: MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE, CONNECTORAPI, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, SETTINGS_SETCUSTOMIZATION, INGESTION_SETINGESTIONS])
-  users(
-    first: Int
-    after: ID
-    orderBy: UsersOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
-    search: String
-    toStix: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   capabilitiesInDraft(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
@@ -14685,7 +14540,7 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION]) @ff(flags: ["INGESTION_FEED_LOGS"])
+  synchronizerLogs(id: String!): [IngestionEntry] @auth(for: [INGESTION])
   synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
 
   synchronizers(
@@ -14867,14 +14722,6 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(
-    first: Int,
-    after: ID,
-    types: [String],
-    orderBy: StixDomainObjectsOrdering
-    orderMode: OrderingMode
-    filters: FilterGroup
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
@@ -15703,11 +15550,9 @@ type Query {
 ### SUBSCRIPTIONS
 
 type Subscription {
-  me: MeUser @auth
   settings(id: ID!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   settingsMessages(id: ID!): Settings @auth
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
-  user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   label(id: ID!): Label @auth(for: [SETTINGS_SETLABELS])
   statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS_SETLABELS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
@@ -15749,6 +15594,8 @@ type SettingsEditMutations {
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   uploadMapCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   deleteMapCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  uploadCountriesCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteCountriesCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType
@@ -15763,16 +15610,6 @@ type GroupEditMutations {
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
   editDefaultMarking(input: DefaultMarkingInput!): Group
-}
-type UserEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): User
-  contextPatch(input: EditContext): User
-  contextClean: User
-  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): User
-  organizationAdd(organizationId: ID!): User
-  organizationDelete(organizationId: ID!): User
 }
 type RoleEditMutations {
   delete: ID
@@ -16214,12 +16051,7 @@ type Mutation {
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
-  token(input: UserLoginInput): String @public @rateLimit(limit: 1, duration: 1) # Use for login
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
-  otpActivation(input: UserOTPActivationInput): MeUser @auth @allowUnprotectedOTP
-  otpDeactivation: MeUser @auth
-  otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
-  otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1) @allowUnprotectedOTP
   settingsEdit(id: ID!): SettingsEditMutations @auth
   setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
@@ -16230,20 +16062,7 @@ type Mutation {
   statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  userTokenAdd(input: UserTokenAddInput!): TokenGenerated! @auth(for: [APIACCESS_USETOKEN])
-  userTokenRevoke(id: ID!): ID @auth(for: [APIACCESS_USETOKEN])
-  userAdminTokenRevoke(userId: ID!, id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  userAdminTokenAdd(userId: ID!, input: UserTokenAddInput!): TokenGenerated! @auth(for: [SETTINGS_SETACCESSES])
-  meEdit(input: [EditInput]!, password: String): MeUser @auth
-  bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
-  bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
-  sendUserMail(input: SendUserMailInput!): Boolean @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
-  logout: ID @auth @allowUnprotectedOTP
   roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
-  sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
-  userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])

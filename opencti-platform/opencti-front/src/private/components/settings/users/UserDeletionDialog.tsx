@@ -29,8 +29,7 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [deleting, setDeleting] = useState<boolean>(false);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('User') },
   });
   const [commit] = useApiMutation(

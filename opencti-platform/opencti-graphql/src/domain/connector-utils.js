@@ -1,5 +1,5 @@
 import { EventSource } from 'eventsource';
-import { Agent } from 'undici';
+import { Agent, fetch } from 'undici';
 import { UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { isEmptyField } from '../database/utils';

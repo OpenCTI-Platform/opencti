@@ -37,4 +37,3 @@ export const EXPECTED_USER_ACCOUNT = {
   is_disabled: false,
   account_created: '2025-01-01T00:00:00.000Z',
 };
-

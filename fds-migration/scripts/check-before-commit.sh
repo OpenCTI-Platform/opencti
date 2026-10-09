@@ -14,7 +14,7 @@ if [ "$n" -ne 0 ]; then printf '%s\n' "$out" | grep -E '^/|^[[:space:]]+[0-9]+:[
 echo "eslint errors: $n"
 
 echo "== tsc =="
-(cd opencti-platform/opencti-front && npx tsc --noEmit -p tsconfig.json) || fail=1
+(cd opencti-platform/opencti-front && yarn check-ts) || fail=1
 
 echo "== select-conversion guard =="
 node fds-migration/scripts/check-select-conversion.mjs || fail=1
@@ -26,7 +26,7 @@ node fds-migration/scripts/check-accessible-names.mjs || fail=1
 # for accessibility means introducing a t_i18n key, and a key with no catalogue
 # entry is a red gate the other three do not see.
 echo "== i18n keys =="
-out=$(cd opencti-platform/opencti-front && node script/verify-translation.js 2>&1)
+out=$(cd opencti-platform/opencti-front && yarn verify-translation 2>&1)
 printf '%s\n' "$out"
 printf '%s\n' "$out" | grep -q "^Missing" && fail=1
 

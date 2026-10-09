@@ -23,21 +23,21 @@ describe('transformCsvMapperConfig', () => {
               key: 'x_opencti_description',
               column: {
                 column_name: 'A',
-                configuration: null
+                configuration: null,
               },
               default_values: null,
-              based_on: null
+              based_on: null,
             },
             {
               key: 'value',
               column: {
                 column_name: 'A',
-                configuration: null
+                configuration: null,
               },
               default_values: null,
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: 'eb53977e-1bf0-4c9b-8d0a-07e3b298d02b',
@@ -51,21 +51,21 @@ describe('transformCsvMapperConfig', () => {
               key: 'value',
               column: {
                 column_name: 'B',
-                configuration: null
+                configuration: null,
               },
               default_values: null,
-              based_on: null
+              based_on: null,
             },
             {
               key: 'x_opencti_description',
               column: {
                 column_name: 'B',
-                configuration: null
+                configuration: null,
               },
               default_values: null,
-              based_on: null
-            }
-          ]
+              based_on: null,
+            },
+          ],
         },
         {
           id: 'f2e9f1ec-f988-40e3-bb8e-aae2a93257c8',
@@ -80,21 +80,21 @@ describe('transformCsvMapperConfig', () => {
               column: null,
               default_values: null,
               based_on: {
-                representations: ['eb53977e-1bf0-4c9b-8d0a-07e3b298d02b']
-              }
+                representations: ['eb53977e-1bf0-4c9b-8d0a-07e3b298d02b'],
+              },
             },
             {
               key: 'to',
               column: null,
               default_values: null,
               based_on: {
-                representations: ['1a3738ce-a0b2-40fb-a7fc-556e9ab97f43']
-              }
-            }
-          ]
-        }
+                representations: ['1a3738ce-a0b2-40fb-a7fc-556e9ab97f43'],
+              },
+            },
+          ],
+        },
       ],
-      skipLineChar: ''
+      skipLineChar: '',
     } as unknown as CsvMapperParsed;
 
     const context: AuthContext = {} as unknown as AuthContext; // Mock

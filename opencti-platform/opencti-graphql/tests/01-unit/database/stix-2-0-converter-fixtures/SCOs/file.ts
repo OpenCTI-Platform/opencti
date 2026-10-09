@@ -34,4 +34,3 @@ export const EXPECTED_FILE = {
   contains_refs: [],
   x_opencti_additional_names: ['trojan.exe'],
 };
-

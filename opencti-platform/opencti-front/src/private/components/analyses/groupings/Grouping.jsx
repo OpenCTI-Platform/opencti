@@ -128,6 +128,7 @@ export default createFragmentContainer(GroupingComponent, {
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
       currentUserAccessRight
       ...GroupingDetails_grouping
       ...ContainerHeader_container

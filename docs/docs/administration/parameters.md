@@ -2,30 +2,41 @@
 
 ## Description
 
-This part of the interface wil let you configure global platform settings, like title, favicon, etc.
+This part of the interface, in **Settings > Parameters**, lets you configure global platform settings, like the title, the favicon or the default theme.
 
-It will also give you important information about the platform.
+It also gives you important information about the platform: its version and edition, the services it depends on and the status of every manager.
 
-## The "Configuration" section
+The page reads from top to bottom: the platform summary, the Enterprise Edition and its license (when enabled), the configuration and appearance settings, the announcements and the map configuration next to the themes, the dependencies and the managers.
+
+## OpenCTI platform
+![parameters_platform](assets/parameters_platform.png)
+
+The summary at the top of the page gives the used version, the edition (Community or Enterprise), the architecture mode (Standalone or Cluster), the number of nodes, how many managers are enabled and the platform identifier, which you can copy with the button next to it. When no XTM One platform is registered, it also shows whether AI features are powered and by which provider.
+
+On a Community platform, this is where the [Enterprise edition](enterprise.md) can be enabled.
+
+## Enterprise Edition and License
+
+When the Enterprise Edition is enabled, two cards give the organization, the creator and the scope of the license, then its start date, expiration date and type. A warning appears when the license expires in less than three months.
+
+The "Disable Enterprise Edition" action asks for a confirmation that explains the consequence; your existing data stays intact. When this setting is protected as a sensitive configuration, only the users allowed to change sensitive configurations can use it.
+
+## Configuration and Appearance
 ![parameters_configuration.png](assets/parameters_configuration.png)
 
-This section allows the administrator to edit the following settings:
+The **Configuration** card allows the administrator to edit the following settings:
 
 - Platform title
 - Platform favicon URL
 - Sender email address: email address displayed as sender when sending notifications. The technical sender is defined in the [SMTP configuration](../deployment/configuration.md#smtp-service).
-- Theme
+- Third-party analytics (see below)
+
+The **Appearance** card groups the settings that change what users see:
+
+- Default theme
 - Language
 - Hidden entity types: allows you to customize which types of entities you want to see or hide in the platform. This can help you focus on the relevant information and avoid cluttering the platform with unnecessary data.
-
-## OpenCTI Platform
-![parameters_platform](assets/parameters_platform.png)
-
-This is where the [Enterprise edition](enterprise.md) can be enabled.
-
-This section gives important information about the platform like the used version, the edition, the architecture mode (can be Standalone or Cluster) and the number used nodes.
-
-Through the "Remove Filigran logos" toggle, the administrator has the option to hide the Filigran logo on the login page and the sidebar.
+- Remove Filigran logos: hides the Filigran logo on the login page and the sidebar (Enterprise Edition).
 
 
 ## Platform Announcement
@@ -52,7 +63,7 @@ This option can be deactivated to have a permanent announcement.
 
     [Please read the dedicated page to have more information](enterprise.md)
 
-This is where you can configure analytics providers. At the moment only Google Analytics v4 is supported.
+This is where you can configure analytics providers, at the bottom of the Configuration card. At the moment only Google Analytics v4 is supported. If needed, you can set a consent message shown on user login in the [policies](policies.md).
 
 ## Theme customization
 
@@ -64,7 +75,7 @@ In this section, administrators can customize OpenCTI themes to match their orga
 
 ## Quick Start
 
-1. Navigate to **Settings > Configuration > Theme customization**
+1. Navigate to **Settings > Parameters**, card **Themes**
 2. Click **"Create theme"** or **"Import theme"** to add a new theme
 3. Configure your colors and logos (see property descriptions below)
 4. Save your theme
@@ -191,7 +202,7 @@ To save a theme configuration for backup or sharing:
 
 To activate a theme:
 
-1. Navigate to **Settings > Configuration > Theme customization**
+1. Navigate to **Settings > Parameters**, card **Themes**
 2. Click on the theme you want to use from the themes list
 3. The theme is applied immediately across the application for all users using the default theme in the user profile settings (need to refresh their page)
 
@@ -209,13 +220,25 @@ To remove a custom theme:
 
 > **Important:** You cannot delete a theme that is currently in use. Apply a different theme first, then delete the unused theme.
 
+## Map configuration
+
+The **Map configuration** card, under the announcements, holds the two files map widgets are drawn from: the custom map (`.pmtiles` tiles) and the custom country boundaries (GeoJSON). Each row shows whether the bundled file or a custom one is used, and its `⋮` menu uploads, downloads, replaces or deletes the custom file. See [Map configuration](../deployment/advanced/map.md) for the file formats and the propagation delay.
 
 
-## Tools
+## Dependencies
 
-This section informs the administrator of the statuses of the different managers used in the Platform. More information about the managers can be found [here](../deployment/advanced/managers.md).
-It shows also the used versions of the search engine database, RabbitMQ and Redis.
+![Dependencies](assets/parameters-dependencies.png)
 
-In cluster mode, the fact that a manager appears as enabled means that it is active in at least one node. 
+One card per service the platform depends on gives its version: the search engine (Elasticsearch or OpenSearch), RabbitMQ, Redis and, once registered, XTM One.
 
-![parameters_tools](assets/parameters_tools.png)
+## Managers
+
+![Managers](assets/parameters-managers.png)
+
+This section informs the administrator of the status of every manager used in the platform. More information about the managers can be found [here](../deployment/advanced/managers.md).
+
+- Managers are grouped by domain: core platform, knowledge, ingestion and connectors, notifications, defense and investigations, Enterprise Edition, telemetry and Filigran ecosystem.
+- The filter above the list shows how many managers are enabled and disabled; select "Enabled" or "Disabled" to keep only those, and use the search to find a manager by its name or its identifier. On a Community platform, a fourth "Enterprise Edition" segment counts the managers that require the Enterprise Edition, so the segments always add up to "All".
+- A manager reads "Enabled" when the platform configuration turns it on and "Disabled" when the configuration switches it off. The status describes the configuration: it does not tell whether the manager is processing something at this moment. On a Community platform, the managers that require the Enterprise Edition read "Enterprise Edition".
+
+In cluster mode, a manager reads "Enabled" when the configuration of at least one node turns it on.

@@ -45,10 +45,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={threatActorIndividual.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

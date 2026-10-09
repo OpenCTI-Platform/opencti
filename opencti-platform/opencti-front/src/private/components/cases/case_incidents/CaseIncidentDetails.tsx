@@ -12,6 +12,9 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
+import CustomFieldValuesDisplay from '../../common/custom_fields/CustomFieldValuesDisplay';
+
+const CASE_INCIDENT_TYPE = 'Case-Incident';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -41,6 +44,9 @@ const CaseIncidentDetailsFragment = graphql`
       }
     }
     workflowEnabled
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     relatedContainers(
       first: 10
       orderBy: modified
@@ -115,6 +121,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          <CustomFieldValuesDisplay entityType={CASE_INCIDENT_TYPE} values={data.customFieldValues ?? []} />
         </Grid>
         <Divider />
         <RelatedContainers

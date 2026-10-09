@@ -354,7 +354,7 @@ export const fullEntitiesThoughAggregationConnection = async (context: AuthConte
   const nodeElements = values
     .sort((a: { value: string; label: string }, b: { value: string; label: string }) => a.label.localeCompare(b.label))
     .map((val: { value: string; label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
-  return buildPagination(0, null, nodeElements, nodeElements.length);
+  return buildPagination<Pick<BasicStoreEntity, 'id' | 'name' | 'entity_type'>>(0, null, nodeElements, nodeElements.length);
 };
 
 export const fullEntitiesList = async <T extends BasicStoreEntity>(
@@ -553,6 +553,32 @@ export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreEn
   const args = { first: 1 };
   const pagination = await pageRegardingEntitiesConnection<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, args);
   return pagination.edges[0]?.node;
+};
+
+export const batchEntitiesThroughRelations = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  targetIds: string[],
+  relationType: string,
+  fromType: string,
+): Promise<BasicConnection<T>[]> => {
+  const relations: { fromId: string; toId: string }[] = [];
+  await fullRelationsList<BasicStoreRelation>(context, user, relationType, {
+    toId: targetIds,
+    fromTypes: [fromType],
+    baseData: true,
+    callback: async (page) => {
+      page.forEach((relation) => relations.push({ fromId: relation.fromId, toId: relation.toId }));
+    },
+  });
+  const entitiesById = await internalFindByIdsMapped<T>(context, user, R.uniq(relations.map((relation) => relation.fromId)), { type: fromType });
+  const relationsByTargetId = R.groupBy((relation) => relation.toId, relations);
+  return targetIds.map((id) => {
+    const nodes = (relationsByTargetId[id] ?? [])
+      .map((relation) => entitiesById[relation.fromId])
+      .filter((node): node is T => !!node);
+    return buildPagination(0, null, nodes.map((node) => ({ node })), nodes.length);
+  });
 };
 
 export const countAllThings = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {

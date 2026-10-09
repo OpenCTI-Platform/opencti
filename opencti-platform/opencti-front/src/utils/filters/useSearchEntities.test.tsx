@@ -330,6 +330,99 @@ describe('useSearchEntities', () => {
     expect(relOptions.some((e) => e.value === 'object-label')).toBe(true);
   });
 
+  it('should include some ref relationship types in the relationship_type subfilter of regardingOf', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''), 'regardingOf');
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).toEqual(expect.arrayContaining(['object-label', 'external-reference', 'object-covered', 'result-of']));
+  });
+
+  it('should not include the marking ref relationship type in the relationship_type subfilter of regardingOf', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''), 'regardingOf');
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).not.toContain('object-marking');
+  });
+
+  it('should include the external-reference relationship type in the relationship_type subfilter of dynamicRegardingOf', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''), 'dynamicRegardingOf');
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).toEqual(expect.arrayContaining(['object-label', 'external-reference', 'object-covered', 'result-of']));
+  });
+
+  it('should fetch external references in the id subfilter of regardingOf', async () => {
+    mockFetchQuery.mockImplementation((query: string) => ({
+      toPromise: () => Promise.resolve(query === 'externalReferencesQueriesSearchQuery'
+        ? { externalReferences: { edges: [{ node: { id: 'ext-ref-1', source_name: 'mitre-attack', external_id: 'T1059' } }] } }
+        : { stixCoreObjects: { edges: [] } }),
+    }));
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('id', {}, vi.fn(), createEvent('mitre'), 'regardingOf');
+    });
+
+    await waitFor(() => {
+      const [entities] = result.current;
+      expect(entities.id ?? []).toEqual(expect.arrayContaining([
+        expect.objectContaining({ value: 'ext-ref-1', label: 'mitre-attack (T1059)', type: 'External-Reference', group: 'entity_External-Reference' }),
+      ]));
+    });
+  });
+
+  it('should not fetch external references for an id filter outside regardingOf', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ stixCoreObjects: { edges: [] } }) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('id', {}, vi.fn(), createEvent(''));
+    });
+
+    const queries = mockFetchQuery.mock.calls.map(([query]) => query);
+    expect(queries).not.toContain('externalReferencesQueriesSearchQuery');
+  });
+
+  it('should not include regardingOf-only ref relationship types in the relationship_type filter', () => {
+    const options = {
+      ...defaultOptions,
+      searchContext: { entityTypes: ['stix-core-relationship', 'contains', 'object-label'] } as { entityTypes: string[]; elementType?: string },
+    };
+    const { result } = renderHook(() => useSearchEntities(options));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''));
+    });
+
+    const [entities] = result.current;
+    const relOptions = (entities.relationship_type ?? []).map((e) => e.value);
+    expect(relOptions).toEqual(expect.arrayContaining(['object', 'object-label']));
+    expect(relOptions).not.toContain('external-reference');
+    expect(relOptions).not.toContain('object-covered');
+    expect(relOptions).not.toContain('result-of');
+  });
+
   it('should not execute search when event is falsy', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;

@@ -6,6 +6,9 @@ import IngestionCatalogChip from '@components/integrations/catalog/IngestionCata
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
+import useConnectorCompatibilityMessage from '@components/integrations/catalog/hooks/useConnectorCompatibilityMessage';
+import DisabledReasonTooltip from '@components/integrations/catalog/components/DisabledReasonTooltip';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -26,6 +29,11 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
   const theme = useTheme<Theme>();
 
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
+  const shouldRenderDeploy = connector.manager_supported === true;
+  const canDeploy = canDeployConnector(connector);
+  const compatibilityMessage = useConnectorCompatibilityMessage(connector);
+  // Community Edition: the EE upsell only where EE would make the connector deployable
+  const showEnterpriseUpsell = !isEnterpriseEdition && canDeploy;
 
   return (
     <Stack
@@ -94,12 +102,14 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
       </Stack>
 
       <div>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
+        <Security needs={[INGESTION_SETINGESTIONS]} hasAccess={shouldRenderDeploy}>
           {
-            isEnterpriseEdition ? (
-              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-            ) : (
+            showEnterpriseUpsell ? (
               <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+            ) : (
+              <DisabledReasonTooltip reason={compatibilityMessage}>
+                <Button disabled={!canDeploy} onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              </DisabledReasonTooltip>
             )
           }
         </Security>

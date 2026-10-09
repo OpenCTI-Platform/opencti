@@ -18,6 +18,8 @@ import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatu
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import { CustomFieldStoredValue } from '../../../../utils/customFields';
+import CustomFieldValuesEdition from '../custom_fields/CustomFieldValuesEdition';
 import CommitMessage from '../form/CommitMessage';
 import ConfidenceField from '../form/ConfidenceField';
 import CreatedByField from '../form/CreatedByField';
@@ -29,6 +31,7 @@ import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
+import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 
 const StixCoreRelationshipEditionOverviewFragment = graphql`
   fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
@@ -40,6 +43,9 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
     description
     relationship_type
     is_inferred
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     coverage_information {
       coverage_name
       coverage_score
@@ -171,10 +177,8 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
-  coverage_information?: readonly {
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }[] | undefined;
+  custom_field_values?: readonly CustomFieldStoredValue[];
+  coverage_information?: readonly CoverageInformation[] | undefined;
 }
 
 export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
@@ -201,7 +205,17 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    coverage_information: Yup.array().of(
+      Yup.object().shape({
+        coverage_name: Yup.string().required(t_i18n('This field is required')),
+        coverage_score: Yup.number()
+          .required(t_i18n('This field is required'))
+          .min(0, t_i18n('Score must be at least 0'))
+          .max(100, t_i18n('Score must be at most 100')),
+      }),
+    ),
   };
+
   const stixCoreRelationshipValidator = useSchemaEditionValidation(
     'stix-core-relationship',
     basicShape,
@@ -265,6 +279,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
       },
     });
   };
+
   const initialValues: StixCoreRelationshipAddInput = {
     confidence: stixCoreRelationship.confidence ?? null,
     start_time: buildDate(stixCoreRelationship.start_time),
@@ -277,6 +292,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     references: [],
     ...(displayCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
+
   return (
     <Stack>
       <Formik
@@ -417,6 +433,15 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            {!stixCoreRelationship.is_inferred && (
+              <CustomFieldValuesEdition
+                entityType={stixCoreRelationshipType}
+                entityId={stixCoreRelationship.id}
+                values={stixCoreRelationship.customFieldValues ?? []}
+                fieldPatch={editor.fieldPatch}
+                enableReferences={enableReferences}
+              />
+            )}
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

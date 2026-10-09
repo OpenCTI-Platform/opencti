@@ -1,5 +1,5 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
-import { AccountCircleOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/styles';
@@ -128,8 +128,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     ? (newsFeedsNumberFromSub !== null ? newsFeedsNumberFromSub : (data.myUnreadNewsFeedsCount ?? 0))
     : 0;
   const isNewNewsFeed = newsFeedCount > 0;
-  const hasUnread = isNewNotification || isNewNewsFeed;
-  const unreadCount = (notificationsNumber !== null ? notificationsNumber : (data.myUnreadNotificationsCount ?? 0)) + newsFeedCount;
   const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
@@ -291,32 +289,40 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TopBarIconLink
-                        aria-label={t_i18n('Triggers')}
-                        to="/dashboard/profile/triggers"
-                        active={location.pathname === '/dashboard/profile/triggers'}
-                        icon={<AlarmOnOutlined fontSize="medium" />}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TopBarIconLink
-                        aria-label={t_i18n('Notifications')}
-                        to="/dashboard/profile/notifications/alerts"
+                        aria-label={t_i18n('Notification Center')}
+                        to="/dashboard/profile/notifications"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
                         icon={<NotificationsOutlined fontSize="medium" />}
                         // Marks the control, never the glyph: the glyph sits in an aria-hidden
                         // span, where the badge's description reaches nobody.
                         badge={{
-                          content: unreadCount,
+                          content: notificationsNumber ?? 0,
                           dot: true,
-                          invisible: !hasUnread,
-                          accessibleText: `${unreadCount} ${t_i18n('unread')}`,
+                          invisible: !isNewNotification,
+                          accessibleText: `${notificationsNumber} ${t_i18n('unread')}`,
                         }}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Notifications')}</TooltipContent>
+                    <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TopBarIconLink
+                        aria-label={t_i18n('News Feed')}
+                        to="/dashboard/news-feed"
+                        active={location.pathname.startsWith('/dashboard/news-feed')}
+                        icon={<CampaignOutlined fontSize="medium" />}
+                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                        // span, where the badge's description reaches nobody.
+                        badge={{
+                          content: newsFeedCount ?? 0,
+                          dot: true,
+                          invisible: !isNewNewsFeed,
+                          accessibleText: `${newsFeedCount} ${t_i18n('unread')}`,
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{t_i18n('News Feed')}</TooltipContent>
                   </Tooltip>
                 </>
               </Security>

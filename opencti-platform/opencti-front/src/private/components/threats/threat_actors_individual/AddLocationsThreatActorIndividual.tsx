@@ -66,7 +66,6 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
           right: [(
             <LocationCreation
               display={open}
-              contextual={true}
               inputValue={paginationOptions.search ?? ''}
               updater={updater}
               key="rightButton"

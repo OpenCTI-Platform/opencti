@@ -36,6 +36,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
@@ -54,6 +55,7 @@ import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -297,6 +299,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const compatibleUpdateVersion = isConnectorUpdateEnabled && connector.update_available ? connector.latest_compatible_version : null;
+
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (
     <>
@@ -315,9 +321,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
               <Grid item xs={6}>
                 <Label>
-                  {t_i18n('Last update')}
+                  {t_i18n('Last seen')}
                 </Label>
-                {nsdt(connector.updated_at)}
+                {nsdt(connector.last_seen_at)}
               </Grid>
               <Grid item xs={6}>
                 <Label>
@@ -553,6 +559,22 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
               <Grid item={true} xs={12}>
                 <Label>
+                  {t_i18n('Version')}
+                </Label>
+                <FieldOrEmpty source={connector.version}>
+                  <Typography variant="body1" gutterBottom={true}>
+                    {connector.version}
+                  </Typography>
+                </FieldOrEmpty>
+                {compatibleUpdateVersion && (
+                  <Box sx={{ marginTop: 1 }}>
+                    <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
+                  </Box>
+                )}
+              </Grid>
+
+              <Grid item={true} xs={12}>
+                <Label>
                   {t_i18n('State')}
                 </Label>
                 <FieldOrEmpty source={connector.connector_state}>
@@ -707,6 +729,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     checkLastRunExistingInState,
     checkLastRunIsNumber,
     lastRunConverted,
+    compatibleUpdateVersion,
     theme,
     t_i18n,
     nsdt,
@@ -951,7 +974,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {managedConnectorDisplayName}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
             </TitleMainEntity>
@@ -1045,6 +1068,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         connector_state
+        version
         connector_user_id
         is_managed
         manager_contract_configuration {
@@ -1108,7 +1132,10 @@ const Connector = createRefetchContainer(
           messages_number
           messages_size
         }
-        updated_at
+        update_available
+        latest_compatible_version
+        has_newer_incompatible_version
+        last_seen_at
         created_at
         config {
           listen

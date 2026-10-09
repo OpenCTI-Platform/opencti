@@ -203,4 +203,3 @@ describe('Activity manager - buildActivityHistoryElements', () => {
     expect(elements[0].context_data.message).toBe('user logged in successfully');
   });
 });
-
