@@ -1,4 +1,4 @@
-import type { ExportInstanceConfig } from './exportBundleInstanceTypes';
+import type { ExportInstanceConfig, InstanceConnection } from './exportBundleInstanceTypes';
 import {
   workspacesQuery,
   playbooksQuery,
@@ -11,6 +11,7 @@ import {
   fintelTemplatesQuery,
   groupsQuery,
   rolesQuery,
+  connectorsQuery,
 } from './exportBundleInstanceQueries';
 import { ExportBundlePlaybooksQuery$data } from './__generated__/ExportBundlePlaybooksQuery.graphql';
 import { ExportBundleFormsQuery$data } from './__generated__/ExportBundleFormsQuery.graphql';
@@ -23,6 +24,15 @@ import { ExportBundleIngestionRsssQuery$data } from './__generated__/ExportBundl
 import { ExportBundleFintelTemplatesQuery$data } from './__generated__/ExportBundleFintelTemplatesQuery.graphql';
 import { ExportBundleGroupsQuery$data } from './__generated__/ExportBundleGroupsQuery.graphql';
 import { ExportBundleRolesQuery$data } from './__generated__/ExportBundleRolesQuery.graphql';
+import { ExportBundleConnectorsQuery$data } from './__generated__/ExportBundleConnectorsQuery.graphql';
+
+const extractManagedConnectors = (data: unknown, search: string): InstanceConnection => {
+  const searchValue = search.toLowerCase();
+  const edges = ((data as ExportBundleConnectorsQuery$data)?.connectors ?? [])
+    .filter((connector) => connector.is_managed && connector.title.toLowerCase().includes(searchValue))
+    .map((connector) => ({ node: { id: connector.id, name: connector.title } }));
+  return { edges, pageInfo: { endCursor: null, hasNextPage: false, globalCount: edges.length } };
+};
 
 const dashboardsFilters = {
   mode: 'and',
@@ -94,6 +104,13 @@ export const EXPORT_INSTANCE_CONFIGS: ExportInstanceConfig[] = [
     group: 'Ingestion',
     query: ingestionRsssQuery,
     extractData: (data) => (data as ExportBundleIngestionRsssQuery$data)?.ingestionRsss,
+  },
+  {
+    entityType: 'Connector',
+    label: 'Connectors',
+    group: 'Ingestion',
+    query: connectorsQuery,
+    extractData: extractManagedConnectors,
   },
   {
     entityType: 'Role',

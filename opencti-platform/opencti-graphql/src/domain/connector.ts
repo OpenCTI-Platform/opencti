@@ -31,6 +31,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
+  type ConnectorContractConfiguration,
   ConnectorPriorityGroup,
   ConnectorType,
   type CurrentConnectorStatusInput,
@@ -58,7 +59,12 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  getContractConfigSchemaWithoutExcludedRuntimeVars,
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract,
+  queryContractBySlug,
+} from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -72,6 +78,7 @@ import { encryptSynchronizerCredential } from './connector-sync-crypto';
 import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
+import { SENSITIVE_FIELD_NAME } from '../modules/globalExport/globalExport-utils';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -270,20 +277,14 @@ export const managedConnectorEdit = async (
   return element;
 };
 
-export const managedConnectorAdd = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: AddManagedConnectorInput,
-) => {
-  await checkEnterpriseEdition(context);
-  // Get contract
-  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, input.manager_contract_image);
+const findManagedConnectorTargetContract = async (context: AuthContext, user: AuthUser, image: string) => {
+  const targetContract = await findLatestCompatibleCatalogContractByImageName(context, user, image);
   if (isEmptyField(targetContract)) {
     // Distinguish an unknown connector from a connector that the platform version cannot run
-    const imageContracts = await findCatalogContractsByImageName(context, user, input.manager_contract_image);
+    const imageContracts = await findCatalogContractsByImageName(context, user, image);
     if (imageContracts.length > 0) {
       throw FunctionalError('This connector is not compatible with the platform version', {
-        image: input.manager_contract_image,
+        image,
         platformVersion: PLATFORM_VERSION,
       });
     }
@@ -292,6 +293,17 @@ export const managedConnectorAdd = async (
   if (!targetContract.manager_supported) {
     throw FunctionalError('You have not chosen a connector supported by the manager');
   }
+  return targetContract;
+};
+
+export const managedConnectorAdd = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: AddManagedConnectorInput,
+) => {
+  await checkEnterpriseEdition(context);
+  // Get contract
+  const targetContract = await findManagedConnectorTargetContract(context, user, input.manager_contract_image);
   const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
   if (connectorManagers?.length < 1) {
     throw FunctionalError('There is no connector manager configured');
@@ -812,6 +824,70 @@ export const synchronizerExport = async (synchronizer: BasicStoreEntitySynchroni
     },
   });
 };
+
+// region managed connector configuration export / import
+const MANAGED_CONNECTOR_EXPORT_TYPE = 'connector';
+
+// The credentials are encrypted with the key of the connector manager, the platform cannot read them back:
+// they are never exported, only listed as required at import.
+export const managedConnectorExport = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
+  if (isEmptyField(connectorEntity.catalog_id)) {
+    throw FunctionalError('Only a managed connector configuration can be exported', { id: connectorEntity.id });
+  }
+  const configSchema = getContractConfigSchemaWithoutExcludedRuntimeVars(connectorEntity.manager_contract?.config_schema);
+  const sensitiveKeys = Object.entries(configSchema.properties)
+    .filter(([key, property]) => property.format === 'password' || SENSITIVE_FIELD_NAME.test(key))
+    .map(([key]) => key);
+  const configurations = connectorEntity.manager_contract_configuration ?? [];
+  const isSensitive = (configuration: ConnectorContractConfiguration) => configuration.encrypted || sensitiveKeys.includes(configuration.key);
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const connectorUser = platformUsers.get(connectorEntity.connector_user_id);
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: MANAGED_CONNECTOR_EXPORT_TYPE,
+    configuration: {
+      name: connectorEntity.title ?? connectorEntity.name,
+      catalog_id: connectorEntity.catalog_id,
+      contract_slug: connectorEntity.manager_contract?.slug,
+      contract_version: connectorEntity.manager_contract?.contract_version,
+      manager_contract_image: connectorEntity.manager_contract_image,
+      manager_upgrade_strategy: connectorEntity.manager_upgrade_strategy,
+      confidence_level: connectorUser?.user_confidence_level?.max_confidence ?? null,
+      manager_contract_configuration: configurations
+        .filter((configuration) => !isSensitive(configuration) && configSchema.properties[configuration.key])
+        .map(({ key, value }) => ({ key, value })),
+      required_at_import: sensitiveKeys.filter((key) => configSchema.required.includes(key) || configurations.some((configuration) => configuration.key === key)),
+    },
+  });
+};
+
+export const managedConnectorAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file).catch(() => null);
+  const configuration = parsedData?.configuration;
+  if (parsedData?.type !== MANAGED_CONNECTOR_EXPORT_TYPE || isEmptyField(configuration?.manager_contract_image)) {
+    throw FunctionalError('Invalid file: this is not a managed connector configuration export', { type: parsedData?.type });
+  }
+  const targetContract = await findManagedConnectorTargetContract(context, user, configuration.manager_contract_image);
+  const contract = await queryContractBySlug(context, user, targetContract.slug);
+  if (!contract) {
+    throw UnsupportedError('Target contract not found');
+  }
+  // The contract may have changed since the export: only the parameters it still defines are kept
+  const configSchema = getContractConfigSchemaWithoutExcludedRuntimeVars(targetContract.config_schema);
+  const importedConfigurations: { key: string; value: string }[] = configuration.manager_contract_configuration ?? [];
+  return {
+    name: configuration.name,
+    catalog_id: contract.catalog_id,
+    contract: contract.contract,
+    confidence_level: configuration.confidence_level ?? null,
+    manager_contract_configuration: importedConfigurations
+      .filter((importedConfiguration) => configSchema.properties[importedConfiguration.key])
+      .map(({ key, value }) => ({ key, value })),
+    required_at_import: (configuration.required_at_import ?? []).filter((key: string) => configSchema.properties[key]),
+  };
+};
+// endregion
+
 export const syncCleanContext = async (context: AuthContext, user: AuthUser, syncId: string) => {
   await delEditContext(user, syncId);
   return storeLoadById(context, user, syncId, ENTITY_TYPE_SYNC)

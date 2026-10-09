@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import readline from 'node:readline';
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
 import type { FormattedExecutionResult } from 'graphql';
@@ -252,6 +253,20 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
   upload.promise = new Promise((executor) => {
     executor(fileUpload);
   });
+  upload.file = fileUpload;
+  return upload;
+};
+
+export const createUploadFromContent = (content: string, fileName: string, mimetype = 'application/json') => {
+  const upload = new Upload();
+  const fileUpload = {
+    fieldName: 'fieldName',
+    filename: fileName,
+    mimetype,
+    encoding: 'utf-8',
+    createReadStream: () => Readable.from([Buffer.from(content)]),
+  };
+  upload.promise = Promise.resolve(fileUpload);
   upload.file = fileUpload;
   return upload;
 };

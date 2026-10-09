@@ -1,10 +1,11 @@
 import fs from 'node:fs';
 import os from 'node:os';
-import { afterAll, describe, it, expect, vi } from 'vitest';
+import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import { ZipArchive } from 'archiver';
 import {
   buildUniqueNamePath,
   exportCategory,
+  exportConnectorsCategory,
   exportCustomViewsCategory,
   exportDashboardsCategory,
   exportFintelTemplatesCategory,
@@ -34,8 +35,9 @@ import { ingestionTaxiiAdd, ingestionTaxiiDelete } from '../../../../src/modules
 import { IngestionAuthType, TaxiiVersion } from '../../../../src/generated/graphql';
 import pjson from '../../../../package.json';
 import { getSettings } from '../../../../src/domain/settings';
-import { ADMIN_USER, AMBER_GROUP, GREEN_GROUP, ROLE_EDITOR, testContext } from '../../../utils/testQuery';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../../src/schema/internalObject';
+import { ADMIN_USER, AMBER_GROUP, GREEN_GROUP, ROLE_EDITOR, testContext, USER_CONNECTOR } from '../../../utils/testQuery';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../../src/schema/internalObject';
+import { createEntity, deleteElementById } from '../../../../src/database/middleware';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_PLAYBOOK } from '../../../../src/modules/playbook/playbook-types';
 import { ENTITY_TYPE_FORM } from '../../../../src/modules/form/form-types';
@@ -408,6 +410,112 @@ describe('Global configuration export', () => {
     });
   });
 
+  describe('Connector category functions', () => {
+    const managedConnector = {
+      title: 'Global Export Managed Connector',
+      name: 'global-export-managed-connector',
+      connector_type: 'EXTERNAL_IMPORT',
+      catalog_id: 'global-export-test-catalog',
+      connector_user_id: USER_CONNECTOR.id,
+      manager_contract_image: 'opencti/connector-global-export-test',
+      manager_contract: {
+        slug: 'global-export-test',
+        contract_version: '1.0.0',
+        config_schema: {
+          properties: {
+            CONNECTOR_LOG_LEVEL: { type: 'string' },
+            CONNECTOR_DURATION_PERIOD: { type: 'string', format: 'duration' },
+            API_KEY: { type: 'string', format: 'password' },
+            OPTIONAL_SECRET: { type: 'string', format: 'password' },
+          },
+          required: ['API_KEY'],
+        },
+      },
+      manager_contract_configuration: [
+        { key: 'CONNECTOR_LOG_LEVEL', value: 'info' },
+        { key: 'CONNECTOR_DURATION_PERIOD', value: 'PT1H' },
+        { key: 'API_KEY', value: 'encrypted-api-key-value', encrypted: true },
+      ],
+      manager_upgrade_strategy: 'latest',
+      manager_requested_status: 'stopped',
+      built_in: false,
+    };
+    let managedConnectorId: string;
+    let registeredConnectorId: string;
+
+    beforeAll(async () => {
+      const managed = await createEntity(testContext, ADMIN_USER, managedConnector, ENTITY_TYPE_CONNECTOR);
+      managedConnectorId = managed.id;
+      // A connector registered from outside the platform has no catalog_id
+      const registered = await createEntity(testContext, ADMIN_USER, {
+        name: 'global-export-registered-connector',
+        connector_type: 'EXTERNAL_IMPORT',
+        connector_user_id: USER_CONNECTOR.id,
+        built_in: false,
+      }, ENTITY_TYPE_CONNECTOR);
+      registeredConnectorId = registered.id;
+    });
+
+    afterAll(async () => {
+      await deleteElementById(testContext, ADMIN_USER, managedConnectorId, ENTITY_TYPE_CONNECTOR);
+      await deleteElementById(testContext, ADMIN_USER, registeredConnectorId, ENTITY_TYPE_CONNECTOR);
+    });
+
+    it('should only export the managed connectors', async () => {
+      const archive = createFakeArchive();
+      const count = await exportConnectorsCategory(testContext, ADMIN_USER, archive);
+
+      expect(count).toBeGreaterThan(0);
+      expect(archive.append).toHaveBeenCalledTimes(count);
+      const calls = (archive.append as ReturnType<typeof vi.fn>).mock.calls;
+      calls.forEach(([content, options]) => {
+        expect(options.name).toMatch(/^integrations\/connectors\/[^/]+\.json$/);
+        expect(JSON.parse(content).configuration.catalog_id).toBeDefined();
+      });
+      expect(calls.map(([, options]) => options.name)).not.toContain('integrations/connectors/global-export-registered-connector.json');
+    });
+
+    it('should export a managed connector without its credentials nor its runtime information', async () => {
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, ENTITY_TYPE_CONNECTOR, archive, [managedConnectorId]);
+
+      expect(count).toBe(1);
+      const [content, options] = (archive.append as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(options.name).toBe('integrations/connectors/global-export-managed-connector.json');
+      const parsed = JSON.parse(content);
+      expect(parsed.openCTI_version).toBe(pjson.version);
+      expect(parsed.type).toBe('connector');
+      const { confidence_level: confidenceLevel, ...configuration } = parsed.configuration;
+      // The confidence level is the one of the connector user
+      expect(confidenceLevel === null || typeof confidenceLevel === 'number').toBe(true);
+      expect(configuration).toEqual({
+        name: managedConnector.title,
+        catalog_id: managedConnector.catalog_id,
+        contract_slug: 'global-export-test',
+        contract_version: '1.0.0',
+        manager_contract_image: managedConnector.manager_contract_image,
+        manager_upgrade_strategy: 'latest',
+        manager_contract_configuration: [
+          { key: 'CONNECTOR_LOG_LEVEL', value: 'info' },
+          { key: 'CONNECTOR_DURATION_PERIOD', value: 'PT1H' },
+        ],
+        // The optional secret was never configured, so it is not required at import
+        required_at_import: ['API_KEY'],
+      });
+      expect(content).not.toContain('encrypted-api-key-value');
+      expect(content).not.toContain(managedConnectorId);
+      expect(content).not.toContain(USER_CONNECTOR.id);
+    });
+
+    it('should not export a registered connector even when explicitly selected', async () => {
+      const archive = createFakeArchive();
+      const count = await exportConnectorsCategory(testContext, ADMIN_USER, archive, [registeredConnectorId]);
+
+      expect(count).toBe(0);
+      expect(archive.append).not.toHaveBeenCalled();
+    });
+  });
+
   describe('exportCategory dispatch', () => {
     it('should route ENTITY_TYPE_PLAYBOOK to the playbook category export', async () => {
       const archive = createFakeArchive();
@@ -479,6 +587,12 @@ describe('Global configuration export', () => {
     it('should route SETTINGS_MESSAGES to the settings messages category export', async () => {
       const archive = createFakeArchive();
       const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_MESSAGES, archive);
+      expect(count).toBe(1);
+    });
+
+    it('should route SETTINGS_POLICIES to the settings policies category export', async () => {
+      const archive = createFakeArchive();
+      const count = await exportCategory(testContext, ADMIN_USER, SETTINGS_POLICIES, archive);
       expect(count).toBe(1);
     });
 

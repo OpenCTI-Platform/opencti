@@ -20,11 +20,12 @@ import useDeployedIntegrations from '@components/integrations/deployed/useDeploy
 import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
 import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
+import ManagedConnectorImport from '@components/integrations/deployed/ManagedConnectorImport';
 import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
-import useGranted, { MODULES } from '../../../../utils/hooks/useGranted';
+import useGranted, { CONNECTORAPI, MODULES } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { paperBg, paperBorder } from '../paperSurface';
@@ -58,6 +59,7 @@ const IntegrationsDeployedContent = ({
   const { isFeatureEnable } = useHelper();
   const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
+  const canImportConnector = useGranted([CONNECTORAPI]) && isFeatureEnable('GLOBAL_EXPORT_BUNDLE');
 
   const items = useDeployedIntegrations({
     connectorsListData,
@@ -192,6 +194,7 @@ const IntegrationsDeployedContent = ({
               </Tooltip>
             </ToggleButton>
           </ToggleButtonGroup>
+          {canImportConnector && <ManagedConnectorImport />}
         </Stack>
 
         {sections.length === 0 ? (

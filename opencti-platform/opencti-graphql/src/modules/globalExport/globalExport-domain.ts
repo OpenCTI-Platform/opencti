@@ -34,7 +34,9 @@ import {
   generateSettingsPoliciesExportConfiguration,
   generateSettingsThemeExportConfiguration,
 } from '../../domain/settings';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../schema/internalObject';
+import { managedConnectorExport } from '../../domain/connector';
+import type { BasicStoreEntityConnector } from '../../types/connector';
 import { generateGroupExportConfiguration } from '../../domain/group';
 import { generateRoleExportConfiguration } from '../user/user-domain';
 import { generateHiddenEntityTypesExportConfiguration } from '../entitySetting/entitySetting-domain';
@@ -73,6 +75,16 @@ const buildIdFilterGroup = (ids?: string[]): FilterGroup | undefined => {
     filterGroups: [],
   };
 };
+
+// Only the connectors deployed from the platform (managed by the connector manager) are exported
+const buildManagedConnectorsFilterGroup = (ids?: string[]): FilterGroup => ({
+  mode: FilterMode.And,
+  filters: [
+    { key: ['catalog_id'], values: ['EXISTS'] },
+    ...(ids && ids.length > 0 ? [{ key: ['internal_id'], values: ids }] : []),
+  ],
+  filterGroups: [],
+});
 
 export const SETTINGS_THEME = 'SettingsTheme';
 export const SETTINGS_LANGUAGE = 'SettingsLanguage';
@@ -202,6 +214,19 @@ export const exportRolesCategory = async (context: AuthContext, user: AuthUser, 
   );
 };
 
+export const exportConnectorsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
+  const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, user, [ENTITY_TYPE_CONNECTOR], {
+    filters: buildManagedConnectorsFilterGroup(ids),
+    noFiltersChecking: true,
+  });
+  return exportEntitiesToZip(
+    archive,
+    connectors,
+    (c) => managedConnectorExport(context, c),
+    buildUniqueNamePath('integrations/connectors'),
+  );
+};
+
 export const exportSettingsThemeCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exportedTheme = await generateSettingsThemeExportConfiguration(context);
   archive.append(exportedTheme, { name: 'parameters/theme/theme.json' });
@@ -253,6 +278,7 @@ export const exportCategory = async (
     case ENTITY_TYPE_INGESTION_TAXII: return exportIngestionTaxiiCategory(context, user, archive, ids);
     case ENTITY_TYPE_GROUP: return exportGroupsCategory(context, user, archive, ids);
     case ENTITY_TYPE_ROLE: return exportRolesCategory(context, user, archive, ids);
+    case ENTITY_TYPE_CONNECTOR: return exportConnectorsCategory(context, user, archive, ids);
     case SETTINGS_THEME: return exportSettingsThemeCategory(context, user, archive);
     case SETTINGS_LANGUAGE: return exportSettingsLanguageCategory(context, user, archive);
     case SETTINGS_MESSAGES: return exportSettingsMessagesCategory(context, user, archive);

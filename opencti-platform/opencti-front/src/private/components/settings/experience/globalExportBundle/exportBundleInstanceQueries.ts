@@ -98,3 +98,14 @@ export const rolesQuery = graphql`
     }
   }
 `;
+
+// The connectors list is not paginated: the managed ones are selected and searched in the front
+export const connectorsQuery = graphql`
+  query ExportBundleConnectorsQuery {
+    connectors {
+      id
+      title
+      is_managed
+    }
+  }
+`;

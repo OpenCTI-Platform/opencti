@@ -2021,6 +2021,15 @@ type ManagerContractConfiguration {
   value: String
 }
 
+type ManagedConnectorAddInputFromImport {
+  name: String!
+  catalog_id: String!
+  contract: String!
+  confidence_level: Int
+  manager_contract_configuration: [ManagerContractConfiguration!]!
+  required_at_import: [String!]!
+}
+
 type ManagerContractExcerpt {
   title: String!
   slug: String!
@@ -2143,6 +2152,7 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  toConfigurationExport: String
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -9106,6 +9116,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  managedConnectorAddInputFromImport(file: Upload!): ManagedConnectorAddInputFromImport!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection

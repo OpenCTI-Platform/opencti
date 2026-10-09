@@ -2,7 +2,14 @@ import { expect, it, describe, afterAll, beforeAll, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import { FEATURE_FLAG_ALL, ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
-import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  queryAsAdminWithError,
+  awaitUntilCondition,
+  createUploadFromContent,
+  queryAsAdminWithSuccess,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess,
+} from '../../utils/testQueryHelper';
 import { ADMIN_USER, USER_CONNECTOR, USER_EDITOR, testContext } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -201,6 +208,31 @@ const GET_CONNECTOR_MANAGER_CONTRACT_ENDPOINTS_QUERY = gql`
   }
 `;
 
+const CONNECTOR_CONFIGURATION_EXPORT_QUERY = gql`
+  query ConnectorConfigurationExport($id: String!) {
+    connector(id: $id) {
+      id
+      toConfigurationExport
+    }
+  }
+`;
+
+const MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY = gql`
+  query ManagedConnectorAddInputFromImport($file: Upload!) {
+    managedConnectorAddInputFromImport(file: $file) {
+      name
+      catalog_id
+      contract
+      confidence_level
+      manager_contract_configuration {
+        key
+        value
+      }
+      required_at_import
+    }
+  }
+`;
+
 const CONNECTOR_MIGRATION_ASSESSMENT_QUERY = gql`
   query ConnectorMigrationAssessment($connectorId: ID!, $containerImage: String!, $configuration: [ContractConfigInput!]) {
     connectorMigrationAssessment(connectorId: $connectorId, containerImage: $containerImage, configuration: $configuration) {
@@ -266,6 +298,10 @@ describe('Connector Composer and Managed Connectors', () => {
     ENABLED_FEATURE_FLAGS.push(...previousEnabledFeatureFlags.filter((flag) => flag !== FEATURE_FLAG_ALL));
     if (!ENABLED_FEATURE_FLAGS.includes('DECOUPLING_VERSIONS')) {
       ENABLED_FEATURE_FLAGS.push('DECOUPLING_VERSIONS');
+    }
+    // Managed connector configuration export / import
+    if (!ENABLED_FEATURE_FLAGS.includes('GLOBAL_EXPORT_BUNDLE')) {
+      ENABLED_FEATURE_FLAGS.push('GLOBAL_EXPORT_BUNDLE');
     }
     conf.set('app:custom_catalogs', []);
     conf.set('catalog_manager:custom_catalog_refresh_endpoint_uri', testCatalogUri);
@@ -1560,6 +1596,101 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(publishUserActionSpy).toHaveBeenCalled();
       publishUserActionSpy.mockRestore();
+    });
+
+    it('should export a managed connector configuration without its credentials', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const result = await queryAsAdminWithSuccess({
+        query: CONNECTOR_CONFIGURATION_EXPORT_QUERY,
+        variables: { id: managedConnectorId },
+      });
+
+      const exported = result.data?.connector.toConfigurationExport;
+      const parsed = JSON.parse(exported);
+      expect(parsed.type).toEqual('connector');
+      expect(parsed.configuration.name).toEqual('Updated IpInfo Connector');
+      expect(parsed.configuration.catalog_id).toEqual(catalogHelper.getCatalogId());
+      expect(parsed.configuration.contract_slug).toEqual(testConnector.slug);
+      expect(parsed.configuration.manager_contract_image).toEqual(testConnector.container_image);
+      expect(parsed.configuration.manager_upgrade_strategy).toEqual('latest');
+      const exportedKeys = parsed.configuration.manager_contract_configuration.map((c: { key: string }) => c.key);
+      expect(exportedKeys).toContain('CONNECTOR_LOG_LEVEL');
+      // Credentials and runtime information are never exported
+      expect(exportedKeys).not.toContain('IPINFO_TOKEN');
+      expect(exportedKeys).not.toContain('OPENCTI_TOKEN');
+      expect(exported).not.toContain('updated-token-456');
+      expect(parsed.configuration.required_at_import).toEqual(['IPINFO_TOKEN']);
+      ['id', 'connector_user_id', 'connector_state', 'manager_current_status', 'manager_requested_status', 'works'].forEach((runtimeField) => {
+        expect(parsed.configuration).not.toHaveProperty(runtimeField);
+      });
+    });
+
+    it('should prefill a managed connector creation from an exported configuration', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+      const exportResult = await queryAsAdminWithSuccess({
+        query: CONNECTOR_CONFIGURATION_EXPORT_QUERY,
+        variables: { id: managedConnectorId },
+      });
+      const exported = exportResult.data?.connector.toConfigurationExport;
+
+      const result = await queryAsAdminWithSuccess({
+        query: MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY,
+        variables: { file: createUploadFromContent(exported, 'connector.json') },
+      });
+
+      const imported = result.data?.managedConnectorAddInputFromImport;
+      expect(imported.name).toEqual('Updated IpInfo Connector');
+      expect(imported.catalog_id).toEqual(catalogHelper.getCatalogId());
+      expect(JSON.parse(imported.contract).container_image).toEqual(testConnector.container_image);
+      expect(imported.required_at_import).toEqual(['IPINFO_TOKEN']);
+      expect(imported.manager_contract_configuration).toEqual(JSON.parse(exported).configuration.manager_contract_configuration);
+    });
+
+    it('should reject the import of a file that is not a connector configuration export', async () => {
+      const notAConnector = JSON.stringify({ openCTI_version: '7.0.0', type: 'playbook', configuration: { name: 'playbook' } });
+      await queryAsAdminWithError(
+        {
+          query: MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY,
+          variables: { file: createUploadFromContent(notAConnector, 'playbook.json') },
+        },
+        'Invalid file: this is not a managed connector configuration export',
+      );
+      await queryAsAdminWithError(
+        {
+          query: MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY,
+          variables: { file: createUploadFromContent('not a json', 'connector.json') },
+        },
+        'Invalid file: this is not a managed connector configuration export',
+      );
+    });
+
+    it('should reject the configuration export and import when the feature flag is disabled', async () => {
+      const flagIndex = ENABLED_FEATURE_FLAGS.indexOf('GLOBAL_EXPORT_BUNDLE');
+      ENABLED_FEATURE_FLAGS.splice(flagIndex, 1);
+      try {
+        await queryAsAdminWithError({ query: CONNECTOR_CONFIGURATION_EXPORT_QUERY, variables: { id: managedConnectorId } }, 'Feature is disabled');
+        const exported = JSON.stringify({ openCTI_version: '7.0.0', type: 'connector', configuration: { name: 'connector' } });
+        await queryAsAdminWithError(
+          {
+            query: MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY,
+            variables: { file: createUploadFromContent(exported, 'connector.json') },
+          },
+          'Feature is disabled',
+        );
+      } finally {
+        ENABLED_FEATURE_FLAGS.push('GLOBAL_EXPORT_BUNDLE');
+      }
+    });
+
+    it('should reject the import of a connector unknown from the catalog', async () => {
+      const unknownConnector = JSON.stringify({ openCTI_version: '7.0.0', type: 'connector', configuration: { name: 'unknown', manager_contract_image: 'invalid-image' } });
+      await queryAsAdminWithError(
+        {
+          query: MANAGED_CONNECTOR_ADD_INPUT_FROM_IMPORT_QUERY,
+          variables: { file: createUploadFromContent(unknownConnector, 'connector.json') },
+        },
+        'Target contract not found',
+      );
     });
 
     it('should prevent creating managed connector with duplicate name', async () => {
