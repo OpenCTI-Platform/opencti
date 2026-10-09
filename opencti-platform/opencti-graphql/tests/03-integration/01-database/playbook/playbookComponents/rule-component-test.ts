@@ -4,7 +4,6 @@ import { stixLoadById } from '../../../../../src/database/middleware';
 import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
 import type { StixSighting } from '../../../../../src/types/stix-2-1-sro';
 import { testExecutor } from './playbook-components-test-utils';
-import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
 
 const PLAYBOOK_RULE_COMPONENT = PLAYBOOK_COMPONENTS.PLAYBOOK_RULE_COMPONENT;
 
@@ -13,10 +12,8 @@ describe('PLAYBOOK_RULE_COMPONENT', () => {
     it('should resolve sighting_of and where_sighted of a sighting', async () => {
       const sighting = await stixLoadById(testContext, ADMIN_USER, 'sighting--ee20065d-2555-424f-ad9e-0f8428623c75') as StixSighting;
       expect(sighting).toBeDefined();
-      const sightingId = sighting.extensions[STIX_EXT_OCTI].id;
-
       const result = await PLAYBOOK_RULE_COMPONENT.executor(testExecutor({
-        mainId: sightingId,
+        mainId: sighting.id,
         bundleObjects: [sighting],
         configuration: { rule: 'resolve_neighbors', inferences: false },
       }));
