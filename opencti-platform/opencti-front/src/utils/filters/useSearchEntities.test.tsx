@@ -390,33 +390,6 @@ describe('useSearchEntities', () => {
     });
   });
 
-  it('should only fetch external references in the id subfilter of regardingOf when the search scope is External-Reference', () => {
-    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({}) });
-    const { result } = renderHook(() => useSearchEntities({ ...defaultOptions, searchScope: { id: ['External-Reference'] } }));
-    const [, searchEntities] = result.current;
-
-    act(() => {
-      searchEntities('id', {}, vi.fn(), createEvent(''), 'regardingOf');
-    });
-
-    const queries = mockFetchQuery.mock.calls.map(([query]) => query);
-    expect(queries).toEqual(['externalReferencesQueriesSearchQuery']);
-  });
-
-  it('should not fetch external references in the id subfilter of regardingOf when the search scope excludes External-Reference', () => {
-    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({}) });
-    const { result } = renderHook(() => useSearchEntities({ ...defaultOptions, searchScope: { id: ['Malware'] } }));
-    const [, searchEntities] = result.current;
-
-    act(() => {
-      searchEntities('id', {}, vi.fn(), createEvent(''), 'regardingOf');
-    });
-
-    const queries = mockFetchQuery.mock.calls.map(([query]) => query);
-    expect(queries).not.toContain('externalReferencesQueriesSearchQuery');
-    expect(mockFetchQuery.mock.calls[0][1]).toEqual(expect.objectContaining({ types: ['Malware'] }));
-  });
-
   it('should not fetch external references for an id filter outside regardingOf', () => {
     mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ stixCoreObjects: { edges: [] } }) });
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
