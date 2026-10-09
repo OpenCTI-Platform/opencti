@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router';
 import Drawer from '../../../common/drawer/Drawer';
 import SecurityCoverageResultsDropdown from './SecurityCoverageResultsDropdown';
 import { useFormatter } from '../../../../../components/i18n';
@@ -16,6 +17,8 @@ import { UseEntityToggleType } from '../../../../../utils/hooks/useEntityToggle'
 import { StixCoreRelationshipCreationFormInput } from '../../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { formatDate } from '../../../../../utils/Time';
 import { CoverageInformation } from '../SecurityCoverage-types';
+import { MESSAGING$ } from '../../../../../relay/environment';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -31,6 +34,14 @@ const securityCoverageResultMutation = graphql`
   mutation SecurityCoverageResultCreationMutation($input: SecurityCoverageResultAddInput!) {
     securityCoverageResultAdd(input: $input) {
       id
+      # Refresh the list of results of the coverage in the store,
+      # so the results table includes the newly created one.
+      resultOf {
+        id
+        results {
+          id
+        }
+      }
     }
   }
 `;
@@ -43,6 +54,7 @@ const SecurityCoverageResultFormDrawer = ({
   data,
 }: SecurityCoverageResultFormDrawerProps) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const { objectCovered, id } = useFragment(fragment, data);
 
   const [activeStep, setActiveStep] = useState(0);
@@ -55,9 +67,26 @@ const SecurityCoverageResultFormDrawer = ({
 
   const [commitCreation, submitting] = useApiMutation<SecurityCoverageResultCreationMutation>(
     securityCoverageResultMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Security-Coverage-Result')} ${t_i18n('successfully created')}` },
   );
+
+  const notifyCreation = (hasRelatedEntities: boolean) => {
+    const successMessage = `${t_i18n('entity_Security-Coverage-Result')} ${t_i18n('successfully created')}`;
+    if (!hasRelatedEntities) {
+      MESSAGING$.notifySuccess(successMessage);
+      return;
+    }
+    const monitoringLink = !draftContext
+      ? <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
+      : t_i18n('the draft processes tab');
+    MESSAGING$.notifySuccess(
+      <span>
+        {successMessage}.{' '}
+        {t_i18n('Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on')}{' '}
+        {monitoringLink}
+        .
+      </span>,
+    );
+  };
 
   const close = () => {
     setActiveStep(0);
@@ -124,6 +153,7 @@ const SecurityCoverageResultFormDrawer = ({
         },
       },
       onCompleted: () => {
+        notifyCreation(!!related_entities);
         close();
       },
     });
