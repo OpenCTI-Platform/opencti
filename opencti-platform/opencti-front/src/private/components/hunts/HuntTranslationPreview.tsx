@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { Check, ContentCopyOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
-import { Alert, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text } from '@filigran/design-system';
+import { Alert, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Spinner, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import CodeBlock from '@components/common/CodeBlock';
 import { PATH_HUNT } from '../common/routes/paths';
 import { useFormatter } from '../../../components/i18n';
@@ -11,6 +13,7 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { copyToClipboard } from '../../../utils/utils';
 import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { prismLanguageOf } from './HuntCodeEditor';
 import { HuntRunStatusChip } from './HuntChips';
@@ -108,6 +111,36 @@ const PreviewFailure = ({ run }: { run: PreviewRun }) => {
         </>
       ) : undefined}
     />
+  );
+};
+
+// The translated query, wrapped and capped in height, with the copy button of ItemCopy
+const TranslatedQuery = ({ query, language }: { query: string; language: string }) => {
+  const { t_i18n } = useFormatter();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return undefined;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+  const copy = () => {
+    copyToClipboard(t_i18n, query);
+    setCopied(true);
+  };
+  return (
+    <div style={{ position: 'relative' }}>
+      <CodeBlock code={query} language={language} customHeight="auto" maxHeight="50vh" wrapLongLines showLineNumbers={false} />
+      <span style={{ position: 'absolute', top: 12, right: 12 }}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <IconButton onClick={copy} size="small" aria-label={t_i18n('Copy')} color={copied ? 'success' : 'primary'} keepMui data-testid="hunt-preview-copy">
+              {copied ? <Check sx={{ fontSize: 16 }} /> : <ContentCopyOutlined sx={{ fontSize: 16 }} />}
+            </IconButton>
+          </TooltipTrigger>
+          <TooltipContent>{copied ? t_i18n('Copied') : t_i18n('Copy')}</TooltipContent>
+        </Tooltip>
+      </span>
+    </div>
   );
 };
 
@@ -261,7 +294,7 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
             {run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled')}
           </Text>
         )}
-        {run.translated_query && <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />}
+        {run.translated_query && <TranslatedQuery query={run.translated_query} language={prismLanguageOf(run.query_language)} />}
       </>
     );
   }
