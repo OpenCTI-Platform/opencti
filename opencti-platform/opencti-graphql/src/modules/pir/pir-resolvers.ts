@@ -31,7 +31,7 @@ import {
 } from './pir-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getUserAccessRight } from '../../utils/access';
-import { getConnectorQueueSize } from '../../database/rabbitmq';
+import { getConnectorQueueSize } from '../connector/connector-rabbitmq';
 import { loadCreators } from '../../database/members';
 
 const pirResolvers: Resolvers = {

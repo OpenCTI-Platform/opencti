@@ -1,9 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
-import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
+import {
+  connector,
+  connectorDelete,
+  connectors,
+  isConnectorActive,
+  pingConnector,
+  registerConnector,
+  updateConnectorRequestedStatus,
+} from '../../../src/modules/connector/connector-domain';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
-import { notify, redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats, redisSetConnectorHeartbeat } from '../../../src/database/redis';
+import { notify } from '../../../src/database/redis';
+import {
+  redisDeleteConnectorHeartbeat,
+  redisGetConnectorHeartbeat,
+  redisGetConnectorsHeartbeats,
+  redisSetConnectorHeartbeat,
+} from '../../../src/modules/connector/connector-redis';
 import { ConnectorType } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -31,7 +44,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   topEntitiesList: vi.fn(),
 }));
 
-vi.mock('../../../src/database/rabbitmq', () => ({
+vi.mock('../../../src/modules/connector/connector-rabbitmq', () => ({
   registerConnectorQueues: vi.fn(),
   purgeConnectorQueues: vi.fn(),
   getConnectorQueueDetails: vi.fn(),
@@ -43,14 +56,18 @@ vi.mock('../../../src/database/rabbitmq', () => ({
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
   notify: vi.fn(),
+}));
+
+vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn(),
   redisGetConnectorsHeartbeats: vi.fn(),
   redisDeleteConnectorHeartbeat: vi.fn(),
 }));
 
-vi.mock('../../../src/connector/connector-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/connector/connector-domain')>()),
+vi.mock('../../../src/modules/connector/connector-built-in-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/connector/connector-built-in-domain')>()),
   builtInConnectorsRuntime: vi.fn().mockResolvedValue([]),
 }));
 

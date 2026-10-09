@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../src/modules/catalog/catalog-repository', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../src/modules/catalog/catalog-repository')>()),
+vi.mock('../../../../src/modules/catalog/catalog-repository', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/catalog/catalog-repository')>()),
   findCatalogContractsBySlugs: vi.fn(),
 }));
 
-import { findCatalogContractsBySlugs } from '../../../src/modules/catalog/catalog-repository';
-import { computeConnectorsUpdateStatus } from '../../../src/database/repository';
-import { DECOUPLING_VERSIONS_FEATURE_FLAG, ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
+import { findCatalogContractsBySlugs } from '../../../../src/modules/catalog/catalog-repository';
+import { computeConnectorsUpdateStatus } from '../../../../src/modules/connector/connector-domain';
+import { DECOUPLING_VERSIONS_FEATURE_FLAG, ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 
 const NO_UPDATE_STATUS = { update_available: false, latest_compatible_version: null, has_newer_incompatible_version: false };
 

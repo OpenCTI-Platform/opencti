@@ -3,7 +3,7 @@ import conf, { logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { isEngineAlive } from '../database/engine';
 import { isStorageAlive } from '../database/raw-file-storage';
-import { rabbitMQIsAlive } from '../database/rabbitmq';
+import { rabbitMQIsAlive } from '../modules/connector/connector-rabbitmq';
 import { redisGetPlatformUsageMetrics, redisIsAlive } from '../database/redis';
 
 export const HEALTH_DEPENDENCIES = ['elasticsearch', 'storage', 'rabbitmq', 'redis'] as const;
