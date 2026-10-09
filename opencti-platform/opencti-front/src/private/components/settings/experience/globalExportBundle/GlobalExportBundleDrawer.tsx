@@ -16,7 +16,6 @@ import { APP_BASE_PATH } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EXPORT_CATEGORIES, getDefaultCheckedCategoryItems } from './globalExportBundleDrawer-utils';
 import ExportBundleInstancesAccordion, { InstanceSelectionMode } from './ExportBundleInstancesAccordion';
-import ExportBundleCategoryPlaceholder from './ExportBundleCategoryPlaceholder';
 import ExportBundleCategoryChecklist from './ExportBundleCategoryChecklist';
 import { EXPORT_INSTANCE_CONFIGS } from './exportBundleInstances';
 import {
@@ -146,27 +145,15 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
               );
             })}
 
-            {EXPORT_CATEGORIES.map((category) => {
-              if (category.kind === 'placeholder') {
-                return (
-                  <ExportBundleCategoryPlaceholder
-                    key={category.key}
-                    category={category}
-                    accordionSx={accordionSx}
-                  />
-                );
-              }
-
-              return (
-                <ExportBundleCategoryChecklist
-                  key={category.key}
-                  category={category}
-                  checkedKeys={checkedCategoryItems[category.key] ?? []}
-                  onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
-                  accordionSx={accordionSx}
-                />
-              );
-            })}
+            {EXPORT_CATEGORIES.map((category) => (
+              <ExportBundleCategoryChecklist
+                key={category.key}
+                category={category}
+                checkedKeys={checkedCategoryItems[category.key] ?? []}
+                onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
+                accordionSx={accordionSx}
+              />
+            ))}
 
             <Alert
               icon={<WarningAmberOutlined fontSize="inherit" />}

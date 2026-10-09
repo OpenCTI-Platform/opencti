@@ -3,20 +3,16 @@ export interface GlobalExportBundleItem {
   label: string;
 }
 
-export type GlobalExportCategoryKind = 'children' | 'placeholder';
-
 export interface GlobalExportBundleCategory {
   key: string;
   label: string;
-  kind: GlobalExportCategoryKind;
-  items?: GlobalExportBundleItem[];
+  items: GlobalExportBundleItem[];
 }
 
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
     key: 'Data Model',
     label: 'Data Model',
-    kind: 'children',
     items: [
       { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
     ],
@@ -24,7 +20,6 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
     key: 'Settings',
     label: 'Platform Settings',
-    kind: 'children',
     items: [
       { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name...)' },
       { key: 'SettingsLanguage', label: 'Language' },
@@ -35,8 +30,6 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
 
 export const getDefaultCheckedCategoryItems = (): Record<string, string[]> => {
   return Object.fromEntries(
-    EXPORT_CATEGORIES
-      .filter((category) => category.kind !== 'placeholder')
-      .map((category) => [category.key, (category.items ?? []).map((item) => item.key)]),
+    EXPORT_CATEGORIES.map((category) => [category.key, category.items.map((item) => item.key)]),
   );
 };
