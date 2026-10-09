@@ -55,7 +55,7 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if explicitly asked for', async () => {
       const input = {
         ...BASE_INPUT(),
-        add_related_entities: { search: 'sc-covered-entities' },
+        add_related_entities: { selected_ids: ['my-selected-id'] },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       const results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
@@ -277,7 +277,7 @@ describe('SecurityCoverage domain', () => {
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        add_related_entities: { search: 'sc-covered-entities' },
+        add_related_entities: { selected_ids: ['my-selected-id'] },
       };
       const securityCoverage = await addSecurityCoverage(adminContext, ADMIN_USER, input);
       let results = await listSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);

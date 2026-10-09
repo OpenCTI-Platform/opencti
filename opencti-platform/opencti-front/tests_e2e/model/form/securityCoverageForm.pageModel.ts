@@ -40,7 +40,7 @@ export default class SecurityCoverageFormPage {
   }
 
   addMetric() {
-    return this.formLocator.getByRole('button', { name: 'Add coverage metric' }).click();
+    return this.formLocator.getByRole('button', { name: 'Add coverage score' }).click();
   }
 
   getCreateTitle() {

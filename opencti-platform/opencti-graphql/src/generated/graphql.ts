@@ -30828,6 +30828,7 @@ export type SecurityCoverageResultToStixArgs = {
 };
 
 export type SecurityCoverageResultAddInput = {
+  add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   coverage_last_result?: InputMaybe<Scalars['DateTime']['input']>;
@@ -30884,6 +30885,7 @@ export enum SecurityCoverageResultOrdering {
 export type SecurityCoverageSelectedEntitiesInput = {
   excluded_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   filters?: InputMaybe<Scalars['String']['input']>;
+  relationships_config?: InputMaybe<StixCoreRelationshipAddInput>;
   search?: InputMaybe<Scalars['String']['input']>;
   selected_ids?: InputMaybe<Array<Scalars['String']['input']>>;
 };

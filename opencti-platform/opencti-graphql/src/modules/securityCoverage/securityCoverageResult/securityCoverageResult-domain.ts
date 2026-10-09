@@ -80,14 +80,21 @@ export const addSecurityCoverageResult = async (
     throw FunctionalError('Security coverage not found', { securityCoverageResultInput });
   }
 
-  const input = {
-    ...securityCoverageResultInput,
-  };
+  const {
+    add_related_entities,
+    ...input
+  } = securityCoverageResultInput;
+
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
   const noEnrichOnUpdate = await isFromConnectorWork(context, user);
   const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrichOnUpdate);
+
+  if (add_related_entities) {
+    await createHasCoveredRelTask(context, user, result.id, add_related_entities);
+  }
+
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,
@@ -139,7 +146,11 @@ export const createHasCoveredRelTask = async (
   selection: SecurityCoverageSelectedEntitiesInput,
 ) => {
   const description = `Create has-covered relationships for SCR ${securityCoverageResultId}`;
-  const actions = [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }];
+  const actions = [{
+    type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+    id: securityCoverageResultId,
+    relationships_config: selection.relationships_config ?? undefined,
+  }];
 
   const selectedIds = selection.selected_ids ?? [];
   if (selectedIds.length > 0) {
@@ -160,7 +171,7 @@ export const createHasCoveredRelTask = async (
     ? JSON.parse(selection.filters as string)
     : emptyFilterGroup;
   const search = isNotEmptyField(selection.search) ? selection.search as string : undefined;
-  if (!isFilterGroupNotEmpty(filterGroup) && !search) {
+  if (!isFilterGroupNotEmpty(filterGroup)) {
     throw FunctionalError(
       'Cannot create has-covered relationships without any entity selection, please provide ids, filters or a search term.',
       { securityCoverageResultId },

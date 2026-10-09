@@ -3501,10 +3501,61 @@ class OpenCTIStix2:
             security_coverage_result_id = self.opencti.get_attribute_in_extension(
                 "security_coverage_result_id", item
             )
+            relationships_config = (
+                self.opencti.get_attribute_in_extension("relationships_config", item)
+                or {}
+            )
+            raw_coverages = relationships_config.get("coverage_information") or []
+            coverage_information = [
+                cov for cov in raw_coverages if "coverage_score" in cov
+            ]
             self.opencti.stix_core_relationship.create(
                 fromId=security_coverage_result_id,
                 toId=item["id"],
                 relationship_type="has-covered",
+                description=(
+                    self.opencti.stix2.convert_markdown(
+                        relationships_config["description"]
+                    )
+                    if "description" in relationships_config
+                    else None
+                ),
+                start_time=(
+                    relationships_config["start_time"]
+                    if "start_time" in relationships_config
+                    else None
+                ),
+                stop_time=(
+                    relationships_config["stop_time"]
+                    if "stop_time" in relationships_config
+                    else None
+                ),
+                coverage_information=coverage_information,
+                confidence=(
+                    relationships_config["confidence"]
+                    if "confidence" in relationships_config
+                    else None
+                ),
+                createdBy=(
+                    relationships_config["createdBy"]
+                    if "createdBy" in relationships_config
+                    else None
+                ),
+                objectMarking=(
+                    relationships_config["objectMarking"]
+                    if "objectMarking" in relationships_config
+                    else None
+                ),
+                objectLabel=(
+                    relationships_config["objectLabel"]
+                    if "objectLabel" in relationships_config
+                    else None
+                ),
+                externalReferences=(
+                    relationships_config["externalReferences"]
+                    if "externalReferences" in relationships_config
+                    else None
+                ),
             )
         elif operation == "enrichment":
             connector_ids = self.opencti.get_attribute_in_extension(
