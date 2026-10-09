@@ -52,7 +52,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
@@ -295,7 +295,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
           type: 'id',
           label: 'Entity',
           multiple: true,
-          elementsForFilterValuesSearch: ['Stix-Core-Object'],
+          elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_EXTERNAL_REFERENCE],
           subEntityTypes: [],
         },
       ],
@@ -321,7 +321,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
           type: 'filters',
           label: 'Filters',
           multiple: false,
-          elementsForFilterValuesSearch: ['Stix-Core-Object'],
+          elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_EXTERNAL_REFERENCE],
           subEntityTypes: [],
         },
       ],
@@ -522,7 +522,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       type: 'filters',
       label: 'Dynamic from',
       multiple: false,
-      elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
       subEntityTypes: [],
     });
     filterDefinitionsMap.set(RELATION_DYNAMIC_TO_FILTER, {
@@ -530,7 +530,7 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
       type: 'filters',
       label: 'Dynamic to',
       multiple: false,
-      elementsForFilterValuesSearch: ['Stix-Core-Object'],
+      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
       subEntityTypes: [],
     });
   }
