@@ -569,6 +569,7 @@ describe('Provider coverage', () => {
         headers: { 'x-forwarded-for': '127.0.0.1' },
         header: (_: string) => undefined,
         session: {
+          regenerate: (callback: (err: unknown) => void) => callback(null),
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore see user#sessionAuthenticateUser there is a session.save() there
           save: () => {},
