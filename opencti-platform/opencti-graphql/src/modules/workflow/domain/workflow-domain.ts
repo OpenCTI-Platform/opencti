@@ -49,7 +49,12 @@ import { computeStateOrder } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
-import { type ConvertStatusToDefinitionResult, convertStatusToDefinition } from '../migration/status-to-definition-converter';
+import {
+  type ConvertStatusToDefinitionResult,
+  buildMigrationDefinition,
+  convertStatusToDefinition,
+  getPublishBlockingDiagnostics,
+} from '../migration/status-to-definition-converter';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -528,6 +533,43 @@ export const getWorkflowMigrationPreview = async (
   // storeLoadByIds returns an undefined entry for each id it couldn't find — filter those out
   // before handing templates to the converter (a missing one becomes a MISSING_TEMPLATE diagnostic).
   return convertStatusToDefinition(statuses, templates.filter((template): template is BasicWorkflowTemplateEntity => template != null));
+};
+
+/**
+ * One-shot migration of an entity type's legacy `Status` set (GLOBAL scope) into a workflow
+ * definition: saved as a draft, then published when `publish` is true. Reuses
+ * `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation, EE checks and status
+ * locking are the same as a hand-authored workflow. Never overwrites an existing workflow, and
+ * never publishes a definition the preview flagged with a blocking diagnostic.
+ */
+export const migrateWorkflowFromStatuses = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  publish: boolean,
+): Promise<EntitySettingWithWorkflowResponse> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting) {
+    throw FunctionalError('Entity setting not found for type', { entityType });
+  }
+  if (entitySetting.workflow_id) {
+    throw FunctionalError('Entity type already has a workflow, migration would overwrite it', { entityType });
+  }
+
+  const { byScope } = await getWorkflowMigrationPreview(context, user, entityType);
+  const { definition, diagnostics } = buildMigrationDefinition(entityType, byScope);
+  if (publish) {
+    const blocking = getPublishBlockingDiagnostics(diagnostics);
+    if (blocking.length > 0) {
+      throw FunctionalError('Cannot publish migrated workflow: resolve the blocking diagnostics first, or migrate without publishing', {
+        entityType,
+        diagnostics: blocking.map((diagnostic) => diagnostic.message),
+      });
+    }
+  }
+
+  const draftResult = await setWorkflowDefinition(context, user, entityType, JSON.stringify(definition));
+  return publish ? publishWorkflowDefinition(context, user, entityType) : draftResult;
 };
 
 /**

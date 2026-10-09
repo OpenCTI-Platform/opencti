@@ -11,6 +11,7 @@ import {
   getWorkflowMigrationPreview,
   getWorkflowPublishedVersionId,
   hasPublishedWorkflowDefinition,
+  migrateWorkflowFromStatuses,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
@@ -50,6 +51,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowMigrate: (_: any, { entityType, publish = false }: { entityType: string; publish?: boolean }, context: AuthContext) => {
+      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish);
     },
     workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return restorePublishedWorkflowDefinition(context, context.user!, entityType);
