@@ -11,8 +11,7 @@ vi.mock('../../../src/modules/dashboard/dashboard-utils', async (importOriginal)
   return { ...actual, convertDashboardManifestIds: vi.fn(async (_context, _user, manifest) => manifest) };
 });
 
-// The export_id is exported next to the configuration, so that the current imports, which create the element
-// from the configuration, do not give the same export_id to several elements.
+// The export_id is exported next to the configuration.
 describe('Configuration export export_id', () => {
   it('should export the export_id of a playbook', async () => {
     const exported = JSON.parse(await playbookExport({ name: 'Playbook', export_id: 'playbook-export-id' } as never));

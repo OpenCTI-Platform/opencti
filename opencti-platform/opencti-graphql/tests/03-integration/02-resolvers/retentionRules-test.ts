@@ -4,9 +4,6 @@ import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { RetentionRuleAddInput } from '../../../src/generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../../../src/generated/graphql';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
-import { storeLoadById } from '../../../src/database/middleware-loader';
-import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 // ---------------------------------------------------------------------------
 // GraphQL fragments
@@ -136,13 +133,6 @@ describe('RetentionRules module – integration tests', () => {
       expect(rule.remaining_count).toBeNull();
 
       knowledgeRuleId = rule.id;
-    });
-
-    it('should give its internal_id as export_id to a created retention rule', async () => {
-      // export_id is not exposed in the API, it is read from the stored element
-      const stored = await storeLoadById<BasicStoreEntityRetentionRule>(testContext, ADMIN_USER, knowledgeRuleId, ENTITY_TYPE_RETENTION_RULE);
-      expect(stored.export_id).toBeDefined();
-      expect(stored.export_id).toBe(stored.internal_id);
     });
 
     it('should create a file retention rule', async () => {

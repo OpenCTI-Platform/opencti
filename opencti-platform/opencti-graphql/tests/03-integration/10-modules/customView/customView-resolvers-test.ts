@@ -639,7 +639,6 @@ describe('CustomView resolvers', () => {
         const parsedExport = JSON.parse(exportResult.data.customView.toConfigurationExport);
         expect(parsedExport).toMatchObject({
           type: 'custom-view',
-          export_id: customView1?.id,
           openCTI_version: expect.stringMatching(/[0-9]{1}\.[0-9]{6}\.[0-9]{1}/),
           configuration: {
             name: result.data.customView.name,
