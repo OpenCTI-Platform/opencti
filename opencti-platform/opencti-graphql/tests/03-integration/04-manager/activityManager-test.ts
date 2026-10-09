@@ -1,12 +1,18 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { pick } from 'ramda';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import activityManager, { buildActivityHistoryElements, getLiveActivityNotifications } from '../../../src/manager/activityManager';
 import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../../../src/database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import type { ActivityStreamEvent, SseEvent } from '../../../src/types/event';
 import { type ActionHandler, registerUserActionListener, type UserAction } from '../../../src/listener/UserActionListener';
-import { askEntityExport, askListExport } from '../../../src/domain/stix';
+import { askEntityExport, askListExport, EXPORT_CONNECTOR_ONLY_FIELDS } from '../../../src/domain/stix';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import * as connectorDomain from '../../../src/domain/connector';
+import * as workDomain from '../../../src/domain/work';
+import * as rabbitmq from '../../../src/database/rabbitmq';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { elIndexElements, elRawDeleteByQuery, elRawGet } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
@@ -220,33 +226,97 @@ describe('Activity manager - buildActivityHistoryElements', () => {
 describe('Activity manager - export events indexing', () => {
   const REPORT_ID = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
   const EXPORT_FORMAT = 'application/pdf';
+  const EXPORT_CONNECTOR = { id: 'export-connector-test', internal_id: 'export-connector-test', name: 'Export connector test' };
+  const SHARED_EXPORT_KEYS = ['format', 'export_type', 'entity_id', 'entity_name', 'entity_type'];
+  const CONCURRENT_EXPORTS = 5;
+  type ConnectorMessage = { event: Record<string, unknown> };
   const exportActions: UserAction[] = [];
+  const connectorMessages: ConnectorMessage[] = [];
   let exportListener: ActionHandler;
   let eventIds: string[] = [];
+  let report: BasicStoreEntity;
+  let tlpGreen: StoreMarkingDefinition;
+  let tlpClear: StoreMarkingDefinition;
+  let exportUser: typeof ADMIN_USER;
+
+  const leakedKeys = (value: unknown, leaked: string[] = []): string[] => {
+    if (Array.isArray(value)) {
+      value.forEach((item) => leakedKeys(item, leaked));
+    } else if (value && typeof value === 'object') {
+      for (const [key, nested] of Object.entries(value)) {
+        if (EXPORT_CONNECTOR_ONLY_FIELDS.includes(key)) leaked.push(key);
+        leakedKeys(nested, leaked);
+      }
+    }
+    return leaked;
+  };
+
+  const exportReport = () => askEntityExport(testContext, exportUser, EXPORT_FORMAT, report, 'simple', [tlpGreen.id], [tlpClear.id]);
 
   beforeAll(async () => {
+    vi.spyOn(connectorDomain, 'connectorsForExport').mockResolvedValue([EXPORT_CONNECTOR] as Awaited<ReturnType<typeof connectorDomain.connectorsForExport>>);
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'export-work-test' });
+    vi.spyOn(rabbitmq, 'pushToConnector').mockImplementation(async (_connectorId, message) => {
+      connectorMessages.push(message);
+      return true;
+    });
     exportListener = registerUserActionListener({
       id: 'TEST_EXPORT_ACTIONS',
       next: async (action) => {
         if (action.event_scope === 'export') exportActions.push(action);
       },
     });
-    const report = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, REPORT_ID, ENTITY_TYPE_CONTAINER_REPORT);
-    const tlpGreen = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_GREEN, ENTITY_TYPE_MARKING_DEFINITION);
-    const tlpClear = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_CLEAR, ENTITY_TYPE_MARKING_DEFINITION);
-    const exportUser = { ...ADMIN_USER, max_shareable_marking: [tlpGreen] };
-    await askEntityExport(testContext, exportUser, EXPORT_FORMAT, report, 'simple', [tlpGreen.id], [tlpClear.id]);
+    report = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, REPORT_ID, ENTITY_TYPE_CONTAINER_REPORT);
+    tlpGreen = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_GREEN, ENTITY_TYPE_MARKING_DEFINITION);
+    tlpClear = await storeLoadById<StoreMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_CLEAR, ENTITY_TYPE_MARKING_DEFINITION);
+    exportUser = { ...ADMIN_USER, max_shareable_marking: [tlpGreen] };
+    await exportReport();
     await askListExport(testContext, exportUser, { entity_type: ENTITY_TYPE_CONTAINER_REPORT }, EXPORT_FORMAT, [report.id], {}, 'simple', [], []);
     eventIds = exportActions.map((_, index) => `${EVENT_TIMESTAMP}-export-${index}`);
   });
 
   afterAll(async () => {
+    vi.restoreAllMocks();
     exportListener.unregister();
     await elRawDeleteByQuery({ index: READ_INDEX_HISTORY, refresh: true, body: { query: { ids: { values: eventIds } } } });
   });
 
-  it('should index entity and list export events with their filters and file markings', async () => {
+  it('should define an immutable list of connector only fields', () => {
+    expect(EXPORT_CONNECTOR_ONLY_FIELDS).toEqual(['file_markings', 'main_filter', 'access_filter']);
+    expect(Object.isFrozen(EXPORT_CONNECTOR_ONLY_FIELDS)).toBe(true);
+  });
+
+  it('should still send the connector export parameters to the export connector', () => {
+    expect(connectorMessages).toHaveLength(2);
+    const [entityMessage, listMessage] = connectorMessages;
+    expect(entityMessage.event).toMatchObject({ export_scope: 'single', file_markings: [tlpClear.id], main_filter: expect.any(Object), access_filter: expect.any(Object) });
+    expect(listMessage.event).toMatchObject({ export_scope: 'selection', file_markings: [], main_filter: expect.any(Object), access_filter: expect.any(Object) });
+  });
+
+  it('should publish the same export context as the connector receives, without the connector export parameters', () => {
     expect(exportActions).toHaveLength(2);
+    exportActions.forEach((action, index) => {
+      expect(pick(SHARED_EXPORT_KEYS, action.context_data)).toEqual(pick(SHARED_EXPORT_KEYS, connectorMessages[index].event));
+      expect(leakedKeys(action.context_data)).toEqual([]);
+    });
+  });
+
+  it('should keep the exported entity markings on the activity event to preserve its access control', () => {
+    const reportMarkings = report[RELATION_OBJECT_MARKING];
+    expect(reportMarkings).not.toHaveLength(0);
+    expect(exportActions[0].context_data).toMatchObject({ export_scope: 'single', entity_id: report.id, object_marking_refs_ids: reportMarkings });
+  });
+
+  it('should keep the connector export parameters out of the History and Activity mappings', () => {
+    for (const entityType of [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY]) {
+      const contextData = schemaAttributesDefinition.getAttribute(entityType, 'context_data');
+      const mappedNames = contextData && 'mappings' in contextData ? contextData.mappings.map(({ name }) => name) : [];
+      expect(mappedNames).toEqual(expect.arrayContaining(['format', 'export_type', 'entity_name']));
+      expect(mappedNames.filter((name) => EXPORT_CONNECTOR_ONLY_FIELDS.includes(name))).toEqual([]);
+    }
+  });
+
+  it('should index entity and list export events without storing the connector export parameters', async () => {
     const events = exportActions.map((action, index) => buildSseEvent(eventIds[index], {
       type: 'command',
       event_scope: 'export',
@@ -255,11 +325,23 @@ describe('Activity manager - export events indexing', () => {
     }));
     const elements = await buildActivityHistoryElements(testContext, events);
     await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, elements);
-    for (let index = 0; index < eventIds.length; index += 1) {
-      const { main_filter, access_filter, file_markings } = exportActions[index].context_data as Record<string, unknown>;
-      expect({ main_filter, access_filter, file_markings }).toEqual({ main_filter: expect.any(Object), access_filter: expect.any(Object), file_markings: expect.any(Array) });
-      const { _source } = await elRawGet({ id: eventIds[index], index: INDEX_HISTORY }) as { _source: { context_data: Record<string, unknown> } };
-      expect(_source.context_data).toMatchObject({ main_filter, access_filter, file_markings });
-    }
+    const [entityDocument, listDocument] = await Promise.all(eventIds.map((id) => elRawGet({ id, index: INDEX_HISTORY }))) as { _source: Record<string, unknown> }[];
+    expect(entityDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_id: report.id });
+    expect(entityDocument._source['rel_object-marking.internal_id']).toEqual(report[RELATION_OBJECT_MARKING]);
+    expect(listDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_name: 'global' });
+    expect(leakedKeys(entityDocument._source)).toEqual([]);
+    expect(leakedKeys(listDocument._source)).toEqual([]);
+  });
+
+  it('should keep the connector export parameters isolated across concurrent exports', async () => {
+    const actionsBefore = exportActions.length;
+    const messagesBefore = connectorMessages.length;
+    await Promise.all(Array.from({ length: CONCURRENT_EXPORTS }, exportReport));
+    const actions = exportActions.slice(actionsBefore);
+    const messages = connectorMessages.slice(messagesBefore);
+    expect(actions).toHaveLength(CONCURRENT_EXPORTS);
+    expect(messages).toHaveLength(CONCURRENT_EXPORTS);
+    actions.forEach((action) => expect(leakedKeys(action.context_data)).toEqual([]));
+    messages.forEach(({ event }) => expect(event).toMatchObject({ file_markings: [tlpClear.id], main_filter: expect.any(Object), access_filter: expect.any(Object) }));
   });
 });
