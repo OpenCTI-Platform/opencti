@@ -7,6 +7,7 @@ import { fullEntitiesList, internalLoadById, storeLoadById, storeLoadByIds } fro
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import * as ee from '../../../src/enterprise-edition/ee';
+import { StatusScope } from '../../../src/generated/graphql';
 import { lockResources } from '../../../src/lock/master-lock';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -35,7 +36,7 @@ import {
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
-import { FilterMode, StatusScope } from '../../../src/generated/graphql';
+import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
@@ -3493,9 +3494,7 @@ describe('cleanupEntityWorkflow', () => {
   });
 });
 
-// ====================================================================  });
-});
-
+// ===========================================================================
 // initializeEntityWorkflow — creation-time status resolution
 // (3 cases: explicit valid status / explicit unresolvable status / no status)
 // ===========================================================================
@@ -3911,7 +3910,9 @@ describe('getWorkflowInstance — read-repair', () => {
 
     expect(resolveMappedStatusId).not.toHaveBeenCalled();
     expect(projectWorkflowState).not.toHaveBeenCalled();
-=======
+  });
+});
+
 describe('getWorkflowMigrationPreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
