@@ -52,8 +52,8 @@ const workflowResolvers = {
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
     },
-    workflowMigrate: (_: any, { entityType, publish = false }: { entityType: string; publish?: boolean }, context: AuthContext) => {
-      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish);
+    workflowMigrate: (_: any, { entityType, publish = false, overwrite = false }: { entityType: string; publish?: boolean; overwrite?: boolean }, context: AuthContext) => {
+      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite);
     },
     workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return restorePublishedWorkflowDefinition(context, context.user!, entityType);

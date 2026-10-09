@@ -539,21 +539,24 @@ export const getWorkflowMigrationPreview = async (
  * One-shot migration of an entity type's legacy `Status` set (GLOBAL scope) into a workflow
  * definition: saved as a draft, then published when `publish` is true. Reuses
  * `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation, EE checks and status
- * locking are the same as a hand-authored workflow. Never overwrites an existing workflow, and
- * never publishes a definition the preview flagged with a blocking diagnostic.
+ * locking are the same as a hand-authored workflow. Refuses to replace an existing workflow unless
+ * `overwrite` is true (the migrated definition then becomes a new draft version, and publishing it
+ * keeps the usual guard against removing states still in use). Never publishes a definition the
+ * preview flagged with a blocking diagnostic.
  */
 export const migrateWorkflowFromStatuses = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   publish: boolean,
+  overwrite = false,
 ): Promise<EntitySettingWithWorkflowResponse> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting) {
     throw FunctionalError('Entity setting not found for type', { entityType });
   }
-  if (entitySetting.workflow_id) {
-    throw FunctionalError('Entity type already has a workflow, migration would overwrite it', { entityType });
+  if (entitySetting.workflow_id && !overwrite) {
+    throw FunctionalError('Entity type already has a workflow, migration would overwrite it (pass overwrite: true to replace it)', { entityType });
   }
 
   const { byScope } = await getWorkflowMigrationPreview(context, user, entityType);

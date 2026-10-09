@@ -9801,7 +9801,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
-  workflowMigrate(entityType: String!, publish: Boolean = false): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
