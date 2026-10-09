@@ -255,7 +255,7 @@ describe('Activity manager - export events indexing', () => {
 
   beforeAll(async () => {
     vi.spyOn(connectorDomain, 'connectorsForExport').mockResolvedValue([EXPORT_CONNECTOR] as Awaited<ReturnType<typeof connectorDomain.connectorsForExport>>);
-    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'export-work-test' });
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'export-work-test' } as Awaited<ReturnType<typeof workDomain.createWork>>);
     vi.spyOn(rabbitmq, 'pushToConnector').mockImplementation(async (_connectorId, message) => {
       connectorMessages.push(message);
       return true;
@@ -282,7 +282,7 @@ describe('Activity manager - export events indexing', () => {
   });
 
   it('should define an immutable list of connector only fields', () => {
-    expect(EXPORT_CONNECTOR_ONLY_FIELDS).toEqual(['file_markings', 'main_filter', 'access_filter']);
+    expect(EXPORT_CONNECTOR_ONLY_FIELDS).toEqual(['main_filter', 'access_filter']);
     expect(Object.isFrozen(EXPORT_CONNECTOR_ONLY_FIELDS)).toBe(true);
   });
 
@@ -296,9 +296,15 @@ describe('Activity manager - export events indexing', () => {
   it('should publish the same export context as the connector receives, without the connector export parameters', () => {
     expect(exportActions).toHaveLength(2);
     exportActions.forEach((action, index) => {
-      expect(pick(SHARED_EXPORT_KEYS, action.context_data)).toEqual(pick(SHARED_EXPORT_KEYS, connectorMessages[index].event));
+      expect(pick(SHARED_EXPORT_KEYS, action.context_data as Record<string, unknown>)).toEqual(pick(SHARED_EXPORT_KEYS, connectorMessages[index].event));
       expect(leakedKeys(action.context_data)).toEqual([]);
     });
+  });
+
+  it('should record the export parameters the user chose on the activity event', () => {
+    const [entityAction, listAction] = exportActions;
+    expect(entityAction.context_data).toMatchObject({ max_marking: [tlpGreen.id], file_markings: [tlpClear.id] });
+    expect(listAction.context_data).toMatchObject({ max_marking: [], file_markings: [], selected_ids: [report.id] });
   });
 
   it('should keep the exported entity markings on the activity event to preserve its access control', () => {
@@ -311,7 +317,7 @@ describe('Activity manager - export events indexing', () => {
     for (const entityType of [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY]) {
       const contextData = schemaAttributesDefinition.getAttribute(entityType, 'context_data');
       const mappedNames = contextData && 'mappings' in contextData ? contextData.mappings.map(({ name }) => name) : [];
-      expect(mappedNames).toEqual(expect.arrayContaining(['format', 'export_type', 'entity_name']));
+      expect(mappedNames).toEqual(expect.arrayContaining(['format', 'export_type', 'entity_name', 'max_marking', 'file_markings', 'selected_ids']));
       expect(mappedNames.filter((name) => EXPORT_CONNECTOR_ONLY_FIELDS.includes(name))).toEqual([]);
     }
   });
@@ -326,9 +332,9 @@ describe('Activity manager - export events indexing', () => {
     const elements = await buildActivityHistoryElements(testContext, events);
     await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, elements);
     const [entityDocument, listDocument] = await Promise.all(eventIds.map((id) => elRawGet({ id, index: INDEX_HISTORY }))) as { _source: Record<string, unknown> }[];
-    expect(entityDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_id: report.id });
+    expect(entityDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_id: report.id, max_marking: [tlpGreen.id], file_markings: [tlpClear.id] });
     expect(entityDocument._source['rel_object-marking.internal_id']).toEqual(report[RELATION_OBJECT_MARKING]);
-    expect(listDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_name: 'global' });
+    expect(listDocument._source.context_data).toMatchObject({ format: EXPORT_FORMAT, export_type: 'simple', entity_name: 'global', max_marking: [], file_markings: [], selected_ids: [report.id] });
     expect(leakedKeys(entityDocument._source)).toEqual([]);
     expect(leakedKeys(listDocument._source)).toEqual([]);
   });
