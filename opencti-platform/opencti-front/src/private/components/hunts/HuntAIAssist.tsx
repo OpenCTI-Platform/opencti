@@ -50,6 +50,7 @@ import {
   huntTechniqueOption,
 } from './hunt-ai-utils';
 import { HuntAIAssistMutation } from './__generated__/HuntAIAssistMutation.graphql';
+import { layerInputVars } from '../../../utils/fdsLayer';
 
 export const huntAIAssistMutation = graphql`
   mutation HuntAIAssistMutation($input: HuntAssistInput!) {
@@ -547,7 +548,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
 
   return (
     <Dialog open onOpenChange={(next) => !next && cancel()}>
-      <DialogContent size={request.kind === 'plan' ? 'lg' : 'md'} data-testid="hunt-ai-dialog">
+      <DialogContent size={request.kind === 'plan' ? 'lg' : 'md'} data-testid="hunt-ai-dialog" style={{ ...layerInputVars } as React.CSSProperties}>
         <DialogTitle>{t_i18n(DIALOG_TITLES[request.kind])}</DialogTitle>
         <DialogDescription>{t_i18n('Nothing changes in the form until you accept.')}</DialogDescription>
         <DialogBody>{renderBody()}</DialogBody>

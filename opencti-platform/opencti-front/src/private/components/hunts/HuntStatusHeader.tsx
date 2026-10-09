@@ -30,6 +30,7 @@ import {
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { HuntStatusHeader_hunt$data, HuntStatusHeader_hunt$key } from './__generated__/HuntStatusHeader_hunt.graphql';
 import { HuntStatusHeaderStatusMutation } from './__generated__/HuntStatusHeaderStatusMutation.graphql';
+import { layerInputVars } from '../../../utils/fdsLayer';
 
 export const HUNT_CONNECTORS_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/hunt-connectors/';
 export const HUNT_CONNECTORS_PATH = '/dashboard/data/ingestion/connectors';
@@ -348,7 +349,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
         </DialogContent>
       </Dialog>
       <Dialog open={previewing} onOpenChange={setPreviewing}>
-        <DialogContent size="lg">
+        <DialogContent size="lg" style={{ ...layerInputVars } as React.CSSProperties}>
           <DialogTitle>{t_i18n('Preview the query a connector would run')}</DialogTitle>
           <DialogDescription>{t_i18n('The hunt connector translates the saved logic of the hunt without running it.')}</DialogDescription>
           <DialogBody>

@@ -44,6 +44,7 @@ import { HUNT_CONNECTORS_PATH } from './HuntStatusHeader';
 import { HuntGuidedCreationConnectorsQuery } from './__generated__/HuntGuidedCreationConnectorsQuery.graphql';
 import { HuntGuidedCreationAddMutation, HuntGuidedCreationAddMutation$data } from './__generated__/HuntGuidedCreationAddMutation.graphql';
 import { HuntGuidedCreationRunMutation } from './__generated__/HuntGuidedCreationRunMutation.graphql';
+import { layerInputVars } from '../../../utils/fdsLayer';
 
 export type HuntGuidedKind = 'indicators' | 'sigma';
 
@@ -222,7 +223,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   const timeWindowLabel = (hours: number) => (hours === 24 ? t_i18n('The last 24 hours') : t_i18n('The last {count} days', { values: { count: String(hours / 24) } }));
   return (
     <Dialog open={open} onOpenChange={(next) => !next && close()}>
-      <DialogContent size="lg" data-testid={`hunt-guided-${kind}`}>
+      <DialogContent size="lg" data-testid={`hunt-guided-${kind}`} style={{ ...layerInputVars } as React.CSSProperties}>
         <DialogTitle>{kind === 'indicators' ? t_i18n('Hunt for indicators') : t_i18n('Hunt with a detection rule (Sigma)')}</DialogTitle>
         <DialogDescription>
           {t_i18n('Step {step} of {count}: {title}', { values: { step: String(step + 1), count: String(STEPS), title: stepTitles[step] } })}

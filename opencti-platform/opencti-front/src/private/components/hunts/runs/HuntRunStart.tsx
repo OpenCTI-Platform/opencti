@@ -36,6 +36,7 @@ import { PATH_HUNT } from '../../common/routes/paths';
 import { insertStartedHuntRuns } from './hunt-run-store';
 import { HuntRunStartConnectorsQuery } from './__generated__/HuntRunStartConnectorsQuery.graphql';
 import { HuntRunStartMutation } from './__generated__/HuntRunStartMutation.graphql';
+import { layerInputVars } from '../../../../utils/fdsLayer';
 
 const huntRunStartConnectorsQuery = graphql`
   query HuntRunStartConnectorsQuery {
@@ -237,7 +238,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
         </Tooltip>
       ) : runButton}
       <Dialog open={open} onOpenChange={openDialog}>
-        <DialogContent size="md" data-testid="hunt-run-start-dialog">
+        <DialogContent size="md" data-testid="hunt-run-start-dialog" style={{ ...layerInputVars } as React.CSSProperties}>
           <DialogTitle>{t_i18n('Run the hunt now')}</DialogTitle>
           <DialogDescription>
             {t_i18n('The hunt is dispatched to the hunt connectors of its scope; each platform gets its own run.')}

@@ -28,6 +28,7 @@ import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import HuntEntitiesField from './HuntEntitiesField';
 import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
+import { layerInputVars } from '../../../utils/fdsLayer';
 
 const PLAN_SUBJECT_TYPES = [...HUNT_TARGET_TYPES, ...HUNT_TECHNIQUE_TYPES, ...HUNT_SOURCE_TYPES];
 
@@ -202,7 +203,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
-      <DialogContent size="md" data-testid="hunt-plan-dialog">
+      <DialogContent size="md" data-testid="hunt-plan-dialog" style={{ ...layerInputVars } as React.CSSProperties}>
         <DialogTitle>{t_i18n('Plan a hunt with AI')}</DialogTitle>
         <DialogDescription>
           {t_i18n('An XTM One agent writes a hypothesis and the hunt logic from this knowledge. Nothing runs before you validate the draft.')}
