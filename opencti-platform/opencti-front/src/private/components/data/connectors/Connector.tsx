@@ -974,7 +974,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {managedConnectorDisplayName}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
             </TitleMainEntity>
