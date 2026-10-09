@@ -131,7 +131,7 @@ Will not be published.
 To render locally with your feature flag:
 
 ```sh
-export APP__ENABLED_DEV_FEATURES=MY_FEATURE_FLAG
+export APP__ENABLED_DEV_FEATURES='["MY_FEATURE_FLAG"]'
 mkdocs build
 mkdocs serve
 # unset APP__ENABLED_DEV_FEATURES // to remove it
