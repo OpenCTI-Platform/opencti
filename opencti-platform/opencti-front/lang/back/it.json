@@ -608,6 +608,7 @@
   "Login message": "Messaggio di login",
   "Logo URI in file storage": "URI del logo nell’archivio file",
   "Logout remote": "Logout remoto",
+  "Logout when the last tab is closed": "Logout alla chiusura dell'ultima scheda",
   "Longitude": "Longitudine",
   "LZJD": "LZJD",
   "Magic number hex": "Numero magico esadecimale",

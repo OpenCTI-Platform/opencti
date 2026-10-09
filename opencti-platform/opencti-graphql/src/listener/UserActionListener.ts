@@ -156,7 +156,8 @@ export interface UserLoginAction extends BasicUserAction {
 export interface UserLogoutAction extends BasicUserAction {
   event_type: 'authentication';
   event_scope: 'logout';
-  context_data: undefined;
+  // Only set for automatic logouts, an explicit logout carries no context
+  context_data: { reason: 'last_tab_closed' } | undefined;
 }
 
 export interface UserForgotPasswordAction extends BasicUserAction {

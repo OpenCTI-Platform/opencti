@@ -608,6 +608,7 @@
   "Login message": "登录信息",
   "Logo URI in file storage": "文件存储中的徽标 URI",
   "Logout remote": "远程注销",
+  "Logout when the last tab is closed": "关闭最后一个标签页时注销",
   "Longitude": "经度",
   "LZJD": "LZJD",
   "Magic number hex": "魔数十六进制",

@@ -38,6 +38,7 @@ const createApplicationSession = async () => {
       prefix: store.prefix,
       // the store interface allows an array or an object of sessions, depending on the implementation
       all: async () => Object.values(await promisify(store.all.bind(store))()),
+      get: promisify(store.get.bind(store)),
       destroy: promisify(store.destroy.bind(store)),
     },
     session: session({
@@ -90,6 +91,17 @@ export const findUserSessions = async (userId) => {
 export const killSession = async (sessionId) => {
   const store = await getSessionStore();
   return store.destroy(sessionId.split(store.prefix)[1]);
+};
+
+// Raw session ids, as given by req.sessionID, directly reach the store
+export const findSessionByRawId = async (rawSessionId) => {
+  const store = await getSessionStore();
+  return store.get(rawSessionId);
+};
+
+export const killSessionByRawId = async (rawSessionId) => {
+  const store = await getSessionStore();
+  return store.destroy(rawSessionId);
 };
 
 const killSessions = async (sessionsIds) => {

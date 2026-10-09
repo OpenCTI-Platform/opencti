@@ -608,6 +608,7 @@
   "Login message": "Сообщение о входе в систему",
   "Logo URI in file storage": "URI логотипа в хранилище файлов",
   "Logout remote": "Удаленный выход из системы",
+  "Logout when the last tab is closed": "Выход из системы при закрытии последней вкладки",
   "Longitude": "Долгота",
   "LZJD": "LZJD",
   "Magic number hex": "Магическое число hex",
