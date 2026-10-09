@@ -780,6 +780,8 @@
   "Participants": "Participants",
   "Password": "Password",
   "Password (encrypted)": "Password (encrypted)",
+  "Password history": "Password history",
+  "Password history count": "Password history count",
   "Password valid until": "Password valid until",
   "Password validity in days": "Password validity in days",
   "Path": "Path",

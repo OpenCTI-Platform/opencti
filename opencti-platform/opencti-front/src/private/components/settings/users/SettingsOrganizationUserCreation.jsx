@@ -203,7 +203,7 @@ const SettingsOrganizationUserCreation = ({
                 rows={4}
                 style={{ marginTop: 20 }}
               />
-              <PasswordPolicies />
+              <PasswordPolicies hideHistory />
               <Field
                 component={TextField}
                 variant="outlined"

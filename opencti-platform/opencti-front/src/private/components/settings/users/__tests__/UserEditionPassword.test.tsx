@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender from '../../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import UserEditionPassword from '../edition/UserEditionPassword';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 
@@ -31,7 +31,9 @@ vi.mock('../../../../../relay/environment', async (importOriginal) => {
 });
 
 vi.mock('../../../common/form/PasswordPolicies', () => ({
-  default: () => <div>PasswordPolicies</div>,
+  default: ({ audience, hideHistory }: { audience?: string; hideHistory?: boolean }) => (
+    <div>{`PasswordPolicies audience=${audience} hideHistory=${hideHistory}`}</div>
+  ),
 }));
 
 vi.mock('../../../../../utils/hooks/useGranted', () => ({
@@ -124,5 +126,23 @@ describe('UserEditionPassword', () => {
   it('does not render expiry for invalid date', () => {
     testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: 'not-a-date' }} />);
     expect(screen.queryByText(/^Expiry:/)).toBeNull();
+  });
+
+  it('words the password history rule for an admin setting the password of another user', () => {
+    testRender(<UserEditionPassword user={baseUser} />);
+    expect(screen.getByText('PasswordPolicies audience=admin hideHistory=false')).toBeDefined();
+  });
+
+  it('words the password history rule for the account of the admin', () => {
+    testRender(<UserEditionPassword user={baseUser} />, { userContext: createMockUserContext({ me: { id: 'user-1' } }) });
+    expect(screen.getByText('PasswordPolicies audience=self hideHistory=false')).toBeDefined();
+  });
+
+  it('hides the password history rule for accounts it does not apply to', () => {
+    const { unmount } = testRender(<UserEditionPassword user={{ ...baseUser, external: true }} />);
+    expect(screen.getByText(/hideHistory=true/)).toBeDefined();
+    unmount();
+    testRender(<UserEditionPassword user={{ ...baseUser, user_service_account: true }} />);
+    expect(screen.getByText(/hideHistory=true/)).toBeDefined();
   });
 });

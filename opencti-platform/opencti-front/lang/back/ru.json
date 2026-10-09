@@ -780,6 +780,8 @@
   "Participants": "Участники",
   "Password": "Пароль",
   "Password (encrypted)": "Пароль (зашифрован)",
+  "Password history": "История паролей",
+  "Password history count": "Количество паролей в истории",
   "Password valid until": "Пароль действителен до",
   "Password validity in days": "Срок действия пароля в днях",
   "Path": "Путь",

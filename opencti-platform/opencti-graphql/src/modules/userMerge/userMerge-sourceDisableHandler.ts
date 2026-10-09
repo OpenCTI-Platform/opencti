@@ -1,4 +1,6 @@
 import { ACCOUNT_STATUS_EXPIRED } from '../../config/conf';
+import { patchAttribute } from '../../database/middleware';
+import { isEmptyField } from '../../database/utils';
 import { storeLoadById } from '../../database/middleware-loader';
 import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -9,12 +11,14 @@ import { type UserMergeHandler, type UserMergeHandlerContext, type UserMergeHand
 import { USER_MERGED_INTO_FIELD } from './userMerge-types';
 
 const ACCOUNT_STATUS_FIELD = 'account_status';
+const PASSWORD_HISTORY_FIELD = 'password_history';
 const SOURCE_DISABLE_ROW = 'user.account-status';
 const DISABLED = 'source account disabled, its sessions killed, merge target recorded on it';
 
 interface SourceAccountState {
   account_status?: string;
   merged_into?: string;
+  password_history?: string[];
 }
 
 /**
@@ -26,7 +30,14 @@ interface SourceAccountState {
  */
 const readSourceAccountState = async (context: AuthContext, sourceId: string): Promise<SourceAccountState> => {
   const source = await storeLoadById<BasicStoreCommon & SourceAccountState>(context, SYSTEM_USER, sourceId, ENTITY_TYPE_USER);
-  return { account_status: source?.account_status, merged_into: source?.merged_into };
+  return { account_status: source?.account_status, merged_into: source?.merged_into, password_history: source?.password_history };
+};
+
+// Both conditions, not just the status: an account an administrator had already expired before
+// the merge would otherwise never get the mark, and the ordinary deletion path would stay open
+// on exactly the account the merge just emptied.
+const isDisabledForTarget = (state: SourceAccountState, targetId: string) => {
+  return state.account_status === ACCOUNT_STATUS_EXPIRED && state.merged_into === targetId;
 };
 
 /**
@@ -55,14 +66,12 @@ const readSourceAccountState = async (context: AuthContext, sourceId: string): P
 export const userMergeSourceDisableHandler: UserMergeHandler = {
   identifier: USER_MERGE_SOURCE_DISABLE_HANDLER,
   covers: [SOURCE_DISABLE_ROW],
-  reads: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`],
-  writes: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`],
+  reads: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`, `${ENTITY_TYPE_USER}.${PASSWORD_HISTORY_FIELD}`],
+  writes: [`${ENTITY_TYPE_USER}.${ACCOUNT_STATUS_FIELD}`, `${ENTITY_TYPE_USER}.${USER_MERGED_INTO_FIELD}`, `${ENTITY_TYPE_USER}.${PASSWORD_HISTORY_FIELD}`],
   compute: async ({ context, sourceId, targetId }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const state = await readSourceAccountState(context, sourceId);
-    // Both conditions, not just the status: an account an administrator had already expired before
-    // the merge would otherwise never get the mark, and the ordinary deletion path would stay open
-    // on exactly the account the merge just emptied.
-    const done = state.account_status === ACCOUNT_STATUS_EXPIRED && state.merged_into === targetId;
+    // The history is emptied in a second write: a run stopped between the two must still empty it on retry
+    const done = isDisabledForTarget(state, targetId) && isEmptyField(state.password_history);
     const count = done ? 0 : 1;
     return {
       handler: USER_MERGE_SOURCE_DISABLE_HANDLER,
@@ -81,10 +90,17 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
     if (!planned) {
       return 0;
     }
-    await userEditField(context, SYSTEM_USER, sourceId, [
-      { key: ACCOUNT_STATUS_FIELD, value: [ACCOUNT_STATUS_EXPIRED] },
-      { key: USER_MERGED_INTO_FIELD, value: [targetId] },
-    ], USER_MERGE_USER_WRITE);
+    // Only what is still missing: a retry after the disable does not disable, audit and kill sessions twice
+    const state = await readSourceAccountState(context, sourceId);
+    if (!isDisabledForTarget(state, targetId)) {
+      await userEditField(context, SYSTEM_USER, sourceId, [
+        { key: ACCOUNT_STATUS_FIELD, value: [ACCOUNT_STATUS_EXPIRED] },
+        { key: USER_MERGED_INTO_FIELD, value: [targetId] },
+      ], USER_MERGE_USER_WRITE);
+    }
+    // The disabled account keeps its password but none of the hashes of the passwords it used before.
+    // Written apart because userEditField refuses this field from any caller.
+    await patchAttribute(context, SYSTEM_USER, sourceId, ENTITY_TYPE_USER, { [PASSWORD_HISTORY_FIELD]: [] }, USER_MERGE_USER_WRITE);
     return 1;
   },
 };

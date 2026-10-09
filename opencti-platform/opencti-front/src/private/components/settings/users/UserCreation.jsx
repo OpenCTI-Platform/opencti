@@ -220,7 +220,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     rows={4}
                   />
                   <Stack sx={{ gap: 2.5 }}>
-                    <PasswordPolicies value={values.password} />
+                    <PasswordPolicies value={values.password} hideHistory />
                     <Field
                       component={TextField}
                       variant="outlined"

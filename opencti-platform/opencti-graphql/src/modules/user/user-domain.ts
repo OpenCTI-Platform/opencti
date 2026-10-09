@@ -15,7 +15,9 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
+  isFeatureEnabled,
   logApp,
+  PASSWORD_HISTORY_FEATURE_FLAG,
 } from '../../config/conf';
 import {
   AuthenticationFailure,
@@ -63,7 +65,9 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import { publishUserAction } from '../../listener/UserActionListener';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
-import { generateStandardId } from '../../schema/identifier';
+import { generateStandardId, getInstanceIds } from '../../schema/identifier';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../../database/redis/token_usage';
 import {
@@ -182,6 +186,8 @@ import { addOrganization } from '../organization/organization-domain';
 import { logAuthInfo } from '../authenticationProvider/providers-logger';
 import { hashSHA256 } from '../../utils/hash';
 import { normalizeEmail } from '../../utils/email';
+import { withoutUserSecrets } from '../../utils/redaction';
+import { checkPasswordNotReused, computeNextPasswordHistory, consumePasswordChangeAttempt, isLocalUser, readPasswordHistoryCount } from './user-password-history';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 
@@ -294,8 +300,7 @@ export const findById = async (context: AuthContext, user: AuthUser, userId: str
     return INTERNAL_USERS[userId];
   }
   const data = await storeLoadById<BasicStoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
-  const withoutPassword = data ? R.dissoc('password', data) : data;
-  return buildCompleteUser(context, withoutPassword);
+  return buildCompleteUser(context, data);
 };
 
 export const findAllUser = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityUser>) => {
@@ -1173,10 +1178,21 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
+  let clearPassword: string | undefined;
+  let passwordInput: { key: string; value: unknown[] } | undefined;
   const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  // A password change sent with other fields could be refused by one of them after the password checks ran,
+  // which would tell the caller what the checks decided without changing anything. The one field allowed
+  // alongside is the switch to a service account, which discards the password before any check of its history.
+  const passwordInputsCount = rawInputs.filter((input) => input.key === 'password').length;
+  const otherInputsCount = rawInputs.filter((input) => input.key !== 'password' && input.key !== 'user_service_account').length;
+  if (hasPasswordUpdate && (passwordInputsCount > 1 || otherInputsCount > 0)) {
+    throw FunctionalError('The password must be changed on its own', { userId });
+  }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
-    if (input.key === 'api_tokens') {
+    // The password history is only ever written by the password change below
+    if (input.key === 'api_tokens' || input.key === 'password_history') {
       throw ForbiddenAccess();
     }
     if (userToUpdate.external && input.key === 'name') {
@@ -1203,7 +1219,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
-        input.value = [bcrypt.hashSync(userPassword)];
+        clearPassword = userPassword;
+        // Hashed right before the save: a refused attempt costs no hash, and hashing blocks the event loop
+        passwordInput = input;
       } else {
         throw FunctionalError('Cannot update password for Service account', { userId });
       }
@@ -1254,6 +1272,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
+      inputs.push({ key: 'password_history', value: [] });
       await addUserIntoServiceAccountCount();
     }
     // Turn Service Account into User
@@ -1281,8 +1300,39 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
-  const input = updatedInputsToData(element, inputs);
+  // Password history, last before saving so that a refused password changes nothing
+  const tracksPasswordHistory = clearPassword !== undefined && !skipThisInput && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate);
+  let lock;
+  let lockedIds: string[] = [];
+  let element: StoreEntityUser;
+  try {
+    if (tracksPasswordHistory) {
+      // Two changes at the same moment would both check and rebuild the same old history, and the second
+      // save would drop the first password from it. The user is locked from the check to the save, the same
+      // lock the update takes, which it skips through `locks` since this call already holds it.
+      lockedIds = getInstanceIds(userToUpdate);
+      lock = await lockResources(lockedIds, { draftId: getDraftContext(editContext, editUser) });
+      const lockedUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      const passwordHistoryCount = readPasswordHistoryCount(settings);
+      if (passwordHistoryCount >= 1) {
+        await consumePasswordChangeAttempt(userId);
+        await checkPasswordNotReused(context, user, lockedUser, clearPassword!, passwordHistoryCount);
+      }
+      inputs.push({ key: 'password_history', value: computeNextPasswordHistory(lockedUser, passwordHistoryCount) });
+    }
+    // Every check passed: the clear text never goes further than this
+    if (passwordInput && clearPassword !== undefined) {
+      passwordInput.value = [bcrypt.hashSync(clearPassword)];
+    }
+    const updateOpts = lockedIds.length > 0 ? { ...opts, locks: [...(opts.locks ?? []), ...lockedIds] } : opts;
+    ({ element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, updateOpts));
+  } finally {
+    if (lock) await lock.unlock();
+  }
+  // The password history is internal bookkeeping of a password change: it never reaches the audit log
+  const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
+  const input = updatedInputsToData(element, auditedInputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
   await publishUserAction({
@@ -1290,7 +1340,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
+    message: `updates \`${auditedInputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -1364,7 +1414,7 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
   return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
-export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external' | 'password'>>, userId: string, inputs: any[], password: string | null = null) => {
+export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external'>>, userId: string, inputs: any[], password: string | null = null) => {
   inputs.forEach((input) => {
     const { key } = input;
     // Check if field can be updated by the user
@@ -1379,28 +1429,30 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
     if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
       throw ForbiddenAccess();
     }
-    // Check password confirmation in case of password change
-    if (key === 'password') {
-      // Skip current password check if the password is expired (force change scenario)
-      const passwordExpired = isPasswordExpired(user);
-      if (!passwordExpired) {
-        if (typeof password !== 'string' || password.length === 0) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-        const dbPassword = user.password;
-        const match = bcrypt.compareSync(password, dbPassword!);
-        if (!match) {
-          throw FunctionalError('The current password you have provided is not valid');
-        }
-      }
-    }
   });
-  // If password was expired, kill all other sessions of this user (force change scenario)
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
-  if (hasPasswordInput && isPasswordExpired(user)) {
+  // Check password confirmation in case of password change
+  // Skip current password check if the password is expired (force change scenario)
+  const passwordExpired = isPasswordExpired(user);
+  if (hasPasswordInput && !passwordExpired) {
+    if (typeof password !== 'string' || password.length === 0) {
+      throw FunctionalError('The current password you have provided is not valid');
+    }
+    // The context user carries no password hash: read it from the database
+    const dbUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+    const dbPassword = dbUser?.password;
+    const match = isNotEmptyField(dbPassword) && bcrypt.compareSync(password, dbPassword);
+    if (!match) {
+      throw FunctionalError('The current password you have provided is not valid');
+    }
+  }
+  const updatedUser = await userEditField(context, user, userId, inputs);
+  // If password was expired, kill all other sessions of this user (force change scenario),
+  // only once the new password is saved: a refused change leaves everything as it was
+  if (hasPasswordInput && passwordExpired) {
     await killOtherUserSessions(userId, context.req?.session?.id);
   }
-  return userEditField(context, user, userId, inputs);
+  return updatedUser;
 };
 
 export const isUserTheLastAdmin = (userId: string, authorized_members: AuthorizedMember[] | null | undefined) => {
@@ -1709,7 +1761,8 @@ export const loginFromProvider = async (userInfo: ProviderUserInfo, opts: LoginF
     });
   }
   // Update the basic information
-  const patch = { name, firstname, lastname, external: true };
+  // A local user switching to SSO has no local password history to keep
+  const patch = { name, firstname, lastname, external: true, ...(isNotEmptyField(user.password_history) ? { password_history: [] } : {}) };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
@@ -2115,7 +2168,8 @@ export const buildCompleteUsers = async (context: AuthContext, clients: any) => 
       capabilities.push(virtualOrganizationAdminCapability);
     }
     resolvedUsers.push({
-      ...client,
+      // Password hashes stay in the database: a context user, the user cache and the session never carry them
+      ...withoutUserSecrets(client),
       ...canManageSensitiveConfig,
       roles,
       capabilities,

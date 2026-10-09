@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import bcrypt from 'bcryptjs';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -2272,5 +2273,178 @@ describe('Bookmarks API', () => {
     // Verify the other bookmarks are still intact
     expect(idsAfter).toContain(malware1Id);
     expect(idsAfter).toContain(malware2Id);
+  });
+});
+
+describe('Password history', () => {
+  const PASSWORD_REUSED_MESSAGE = 'This password has already been used recently. Please choose a different one.';
+  const PASSWORD_THROTTLED_MESSAGE = 'Too many password change attempts. Please try again in a few minutes.';
+  let settings: BasicStoreSettings;
+  const createdUserIds: string[] = [];
+
+  const setHistoryCount = async (count: number) => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+      password_policy_history_count: count,
+    });
+  };
+
+  const createUser = async (suffix: string, password: string) => {
+    const result = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: `Password history ${suffix}`, password, user_email: `password_history_${suffix}@mail.com` } },
+    });
+    const id = result.data.userAdd.id;
+    createdUserIds.push(id);
+    return id;
+  };
+
+  const setPassword = (id: string, password: string) => queryAsAdmin({
+    query: UPDATE_QUERY,
+    variables: { id, input: [{ key: 'password', value: [password] }] },
+  });
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+  });
+
+  afterAll(async () => {
+    await setHistoryCount(0);
+    for (let i = 0; i < createdUserIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: createdUserIds[i] } });
+    }
+  });
+
+  it('refuses the current password and the ones still in the window, then throttles the account', async () => {
+    const id = await createUser('window', 'History-Pass-1!');
+    await setHistoryCount(2);
+    // The current password is one of the N
+    const current = await setPassword(id, 'History-Pass-1!');
+    expect(current.errors?.[0].message).toBe(PASSWORD_REUSED_MESSAGE);
+    expect(current.errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'History-Pass-2!')).errors).toBeUndefined();
+    // Window: Pass-2 (current) and Pass-1
+    expect((await setPassword(id, 'History-Pass-1!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'History-Pass-3!')).errors).toBeUndefined();
+    // Window: Pass-3 and Pass-2, so Pass-1 is allowed again
+    expect((await setPassword(id, 'History-Pass-1!')).errors).toBeUndefined();
+    // Five counted submissions in the window: the sixth is refused before any check, and before any hash
+    const hashSpy = vi.spyOn(bcrypt, 'hashSync');
+    try {
+      const throttled = await setPassword(id, 'History-Pass-6!');
+      expect(throttled.errors?.[0].message).toBe(PASSWORD_THROTTLED_MESSAGE);
+      expect(throttled.errors?.[0].extensions?.code).toBe('PASSWORD_CHANGE_THROTTLED');
+      expect(hashSpy).not.toHaveBeenCalled();
+    } finally {
+      hashSpy.mockRestore();
+    }
+  });
+
+  // Without the lock, both changes would check and rebuild the same old history: with N = 2, A -> B and
+  // A -> C would both save a history holding only A, and once C won, B could be reused at once.
+  it('keeps both passwords of two changes made at the same moment', async () => {
+    const id = await createUser('concurrent', 'Concurrent-Pass-A!');
+    await setHistoryCount(2);
+    const results = await Promise.all([setPassword(id, 'Concurrent-Pass-B!'), setPassword(id, 'Concurrent-Pass-C!')]);
+    results.forEach((result) => expect(result.errors).toBeUndefined());
+    // Whichever was saved last is the current password, and the other one is in the history
+    expect((await setPassword(id, 'Concurrent-Pass-B!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'Concurrent-Pass-C!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+  });
+
+  it('stores only bcrypt hashes, N - 1 at most, and trims them when N is lowered', async () => {
+    const id = await createUser('trim', 'Trim-Pass-1!');
+    await setHistoryCount(4);
+    await setPassword(id, 'Trim-Pass-2!');
+    await setPassword(id, 'Trim-Pass-3!');
+    await setPassword(id, 'Trim-Pass-4!');
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(before.password_history).toHaveLength(3);
+    before.password_history.forEach((hash: string) => expect(hash).toMatch(/^\$2[abxy]?\$\d{2}\$/));
+    expect(JSON.stringify(before.password_history)).not.toContain('Trim-Pass');
+    await setHistoryCount(2);
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password_history).toHaveLength(1);
+    expect(after.password_history[0]).toEqual(before.password_history[0]);
+  });
+
+  it('deletes every history when N is set back to 0, and then allows reuse', async () => {
+    const id = await createUser('reset', 'Reset-Pass-1!');
+    await setHistoryCount(3);
+    await setPassword(id, 'Reset-Pass-2!');
+    await setHistoryCount(0);
+    const stored: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(stored.password_history ?? []).toHaveLength(0);
+    expect((await setPassword(id, 'Reset-Pass-2!')).errors).toBeUndefined();
+    expect((await setPassword(id, 'Reset-Pass-1!')).errors).toBeUndefined();
+  });
+
+  it('refuses a password sent with another field, and saves nothing', async () => {
+    const id = await createUser('mixed', 'Mixed-Pass-1!');
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password', value: ['Mixed-Pass-2!'] }, { key: 'language', value: ['xx'] }] },
+    }, 'The password must be changed on its own');
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password).toEqual(before.password);
+  });
+
+  it('refuses any direct write of the history and never exposes it', async () => {
+    const id = await createUser('direct', 'Direct-Pass-1!');
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password_history', value: [] }] },
+    }, undefined, FORBIDDEN_ACCESS);
+    const exposed = await queryAsAdmin({ query: gql`query user($id: String!) { user(id: $id) { id password_history } }`, variables: { id } });
+    expect(exposed.errors?.length).toBeGreaterThan(0);
+  });
+
+  it('refuses a reused password on a profile change', async () => {
+    await setHistoryCount(1);
+    const ME_EDIT_HISTORY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) { id }
+      }
+    `;
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT_HISTORY,
+      variables: { input: [{ key: 'password', value: [USER_EDITOR.password] }], password: USER_EDITOR.password },
+    }, PASSWORD_REUSED_MESSAGE, 'PASSWORD_REUSED');
+    await setHistoryCount(0);
+  });
+
+  it('refuses to save the count through the generic settings mutation', async () => {
+    const SETTINGS_EDIT = gql`
+      mutation settingsEdit($id: ID!, $input: [EditInput]!) {
+        settingsEdit(id: $id) { fieldPatch(input: $input) { id } }
+      }
+    `;
+    await queryAsAdminWithError({
+      query: SETTINGS_EDIT,
+      variables: { id: settings.id, input: [{ key: 'password_policy_history_count', value: [100] }] },
+    }, 'The password history count can only be changed with the local authentication settings');
+  });
+
+  it('refuses an out-of-range count in the local authentication settings', async () => {
+    await expect(setHistoryCount(25)).rejects.toThrow('between 0 and 24');
+  });
+
+  it('gives the count to the settings screens and to the login page', async () => {
+    await setHistoryCount(3);
+    const result = await queryAsAdminWithSuccess({
+      query: gql`query { settings { password_policy_history_count } publicSettings { password_policy_history_count } }`,
+    });
+    expect(result.data?.settings.password_policy_history_count).toBe(3);
+    expect(result.data?.publicSettings.password_policy_history_count).toBe(3);
+    await setHistoryCount(0);
   });
 });

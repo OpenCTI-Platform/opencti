@@ -299,6 +299,10 @@ const buildAuthorizedSettingsKeys = (user) => {
 };
 
 export const settingsEditField = async (context, user, settingsId, input) => {
+  // Only updateLocalAuth writes it: it checks the bounds and the feature flag, and removes the hashes no longer needed
+  if (input.some((i) => i.key === 'password_policy_history_count')) {
+    throw FunctionalError('The password history count can only be changed with the local authentication settings');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);

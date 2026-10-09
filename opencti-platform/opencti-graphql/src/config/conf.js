@@ -599,6 +599,10 @@ export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 // User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
 export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
 
+// Password history feature flag (use isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) to check activation).
+// When disabled, local passwords can be reused as before and no password history is recorded.
+export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
+
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
 // entity types with a published WorkflowDefinition behave as before this change.

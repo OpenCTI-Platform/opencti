@@ -780,6 +780,8 @@
   "Participants": "Partecipanti",
   "Password": "Password",
   "Password (encrypted)": "Password (crittografata)",
+  "Password history": "Cronologia delle password",
+  "Password history count": "Numero di password nella cronologia",
   "Password valid until": "Password valida fino al",
   "Password validity in days": "Validità della password in giorni",
   "Path": "Percorso",

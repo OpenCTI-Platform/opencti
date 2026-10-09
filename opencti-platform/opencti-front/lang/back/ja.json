@@ -780,6 +780,8 @@
   "Participants": "参加者",
   "Password": "パスワード",
   "Password (encrypted)": "パスワード（暗号化済み）",
+  "Password history": "パスワード履歴",
+  "Password history count": "パスワード履歴の数",
   "Password valid until": "パスワードの有効期限",
   "Password validity in days": "パスワードの有効期間（日数）",
   "Path": "パス",
