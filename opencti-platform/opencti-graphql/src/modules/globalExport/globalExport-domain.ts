@@ -31,8 +31,12 @@ import {
   generateSettingsBrandingExportConfiguration,
   generateSettingsLanguageExportConfiguration,
   generateSettingsMessagesExportConfiguration,
+  generateSettingsPoliciesExportConfiguration,
   generateSettingsThemeExportConfiguration,
 } from '../../domain/settings';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../schema/internalObject';
+import { generateGroupExportConfiguration } from '../../domain/group';
+import { generateRoleExportConfiguration } from '../user/user-domain';
 import { generateHiddenEntityTypesExportConfiguration } from '../entitySetting/entitySetting-domain';
 import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 import { addGlobalExportPlatformCount } from '../../manager/telemetryManager';
@@ -43,6 +47,21 @@ const slugify = (name: string) => (name ?? 'unnamed')
   .replace(/[^a-z0-9-_]+/g, '-')
   .replace(/^-+|-+$/g, '')
   .slice(0, 80) || 'unnamed';
+
+export const buildUniqueNamePath = (directory: string) => {
+  const usedNames = new Set<string>();
+  return (entity: { name: string }): string => {
+    const baseName = slugify(entity.name);
+    let name = baseName;
+    let suffix = 2;
+    while (usedNames.has(name)) {
+      name = `${baseName}${suffix}`;
+      suffix += 1;
+    }
+    usedNames.add(name);
+    return `${directory}/${name}.json`;
+  };
+};
 
 const buildIdFilterGroup = (ids?: string[]): FilterGroup | undefined => {
   if (!ids || ids.length === 0) {
@@ -59,6 +78,7 @@ export const SETTINGS_THEME = 'SettingsTheme';
 export const SETTINGS_LANGUAGE = 'SettingsLanguage';
 export const SETTINGS_MESSAGES = 'SettingsMessages';
 export const SETTINGS_HIDDEN_ENTITY_TYPES = 'SettingsHiddenEntityTypes';
+export const SETTINGS_POLICIES = 'SettingsPolicies';
 
 // Adds the export_id that the import will use to find an element that already exists on the target platform.
 export const withExportId = (exported: string, entity: { export_id?: string }): string => {
@@ -162,6 +182,26 @@ export const exportIngestionTaxiiCategory = async (context: AuthContext, user: A
   );
 };
 
+export const exportGroupsCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
+  const groups = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_GROUP], { filters: buildIdFilterGroup(ids) });
+  return exportEntitiesToZip(
+    archive,
+    groups,
+    (g) => generateGroupExportConfiguration(context, user, g),
+    buildUniqueNamePath('security/groups'),
+  );
+};
+
+export const exportRolesCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive, ids?: string[]): Promise<number> => {
+  const roles = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_ROLE], { filters: buildIdFilterGroup(ids) });
+  return exportEntitiesToZip(
+    archive,
+    roles,
+    (r) => generateRoleExportConfiguration(context, user, r),
+    buildUniqueNamePath('security/roles'),
+  );
+};
+
 export const exportSettingsThemeCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exportedTheme = await generateSettingsThemeExportConfiguration(context);
   archive.append(exportedTheme, { name: 'parameters/theme/theme.json' });
@@ -179,6 +219,12 @@ export const exportSettingsLanguageCategory = async (context: AuthContext, _user
 export const exportSettingsMessagesCategory = async (context: AuthContext, _user: AuthUser, archive: ZipArchive): Promise<number> => {
   const exported = await generateSettingsMessagesExportConfiguration(context);
   archive.append(exported, { name: 'parameters/messages.json' });
+  return 1;
+};
+
+export const exportSettingsPoliciesCategory = async (context: AuthContext, user: AuthUser, archive: ZipArchive): Promise<number> => {
+  const exported = await generateSettingsPoliciesExportConfiguration(context, user);
+  archive.append(exported, { name: 'security/policies.json' });
   return 1;
 };
 
@@ -205,9 +251,12 @@ export const exportCategory = async (
     case ENTITY_TYPE_INGESTION_JSON: return exportIngestionJsonCategory(context, user, archive, ids);
     case ENTITY_TYPE_INGESTION_RSS: return exportIngestionRssCategory(context, user, archive, ids);
     case ENTITY_TYPE_INGESTION_TAXII: return exportIngestionTaxiiCategory(context, user, archive, ids);
+    case ENTITY_TYPE_GROUP: return exportGroupsCategory(context, user, archive, ids);
+    case ENTITY_TYPE_ROLE: return exportRolesCategory(context, user, archive, ids);
     case SETTINGS_THEME: return exportSettingsThemeCategory(context, user, archive);
     case SETTINGS_LANGUAGE: return exportSettingsLanguageCategory(context, user, archive);
     case SETTINGS_MESSAGES: return exportSettingsMessagesCategory(context, user, archive);
+    case SETTINGS_POLICIES: return exportSettingsPoliciesCategory(context, user, archive);
     case SETTINGS_HIDDEN_ENTITY_TYPES: return exportHiddenEntityTypesCategory(context, user, archive);
     default: throw Error(`Unknown configuration export entity_type: "${entityType}"`);
   }
@@ -235,6 +284,7 @@ export const generateGlobalConfigurationExport = async (
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();
   }
+  addGlobalExportPlatformCount();
 
   await deleteGlobalExportsNotModifiedSince(context, user, new Date(Date.now() - GLOBAL_EXPORT_FILE_TTL_MS)).catch((err) => {
     logApp.warn('[GLOBAL EXPORT] Failed to remove expired export files', { cause: err });
@@ -309,7 +359,6 @@ export const generateGlobalConfigurationExport = async (
       event_scope: 'create',
       context_data: contextData,
     });
-    addGlobalExportPlatformCount();
 
     return upload;
   } catch (error) {

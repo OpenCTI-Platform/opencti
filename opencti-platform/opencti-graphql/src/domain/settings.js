@@ -39,6 +39,8 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { toExportReference } from '../modules/globalExport/globalExport-utils';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -604,6 +606,33 @@ export const generateSettingsMessagesExportConfiguration = async (context) => {
       platform_consent_message: settings.platform_consent_message,
       platform_consent_confirm_text: settings.platform_consent_confirm_text,
       platform_no_access_message: settings.platform_no_access_message,
+    },
+  });
+};
+
+export const generateSettingsPoliciesExportConfiguration = async (context, user) => {
+  const settings = await getSettings(context);
+  const platformOrganization = settings.platform_organization
+    ? await storeLoadById(context, user, settings.platform_organization, ENTITY_TYPE_IDENTITY_ORGANIZATION)
+    : null;
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'settingsPolicies',
+    export_id: settings.export_id,
+    configuration: {
+      platform_organization: platformOrganization ? toExportReference(platformOrganization) : null,
+      view_all_users: settings.view_all_users,
+      platform_login_message: settings.platform_login_message,
+      platform_consent_message: settings.platform_consent_message,
+      platform_consent_confirm_text: settings.platform_consent_confirm_text,
+      password_policy_min_length: settings.password_policy_min_length,
+      password_policy_max_length: settings.password_policy_max_length,
+      password_policy_min_symbols: settings.password_policy_min_symbols,
+      password_policy_min_numbers: settings.password_policy_min_numbers,
+      password_policy_min_words: settings.password_policy_min_words,
+      password_policy_min_lowercase: settings.password_policy_min_lowercase,
+      password_policy_min_uppercase: settings.password_policy_min_uppercase,
+      password_policy_validity_days: settings.password_policy_validity_days,
     },
   });
 };

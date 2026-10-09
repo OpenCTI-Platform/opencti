@@ -80,3 +80,21 @@ export const fintelTemplatesQuery = graphql`
     }
   }
 `;
+
+export const groupsQuery = graphql`
+  query ExportBundleGroupsQuery($search: String, $count: Int!, $cursor: ID) {
+    groups(search: $search, first: $count, after: $cursor, orderBy: name, orderMode: asc) {
+      edges { node { id name } }
+      pageInfo { endCursor hasNextPage globalCount }
+    }
+  }
+`;
+
+export const rolesQuery = graphql`
+  query ExportBundleRolesQuery($search: String, $count: Int!, $cursor: ID) {
+    roles(search: $search, first: $count, after: $cursor, orderBy: name, orderMode: asc) {
+      edges { node { id name } }
+      pageInfo { endCursor hasNextPage globalCount }
+    }
+  }
+`;

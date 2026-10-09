@@ -26,6 +26,13 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
       { key: 'SettingsMessages', label: 'Messages (banner)' },
     ],
   },
+  {
+    key: 'Security',
+    label: 'Security',
+    items: [
+      { key: 'SettingsPolicies', label: 'Policies' },
+    ],
+  },
 ];
 
 export const getDefaultCheckedCategoryItems = (): Record<string, string[]> => {
