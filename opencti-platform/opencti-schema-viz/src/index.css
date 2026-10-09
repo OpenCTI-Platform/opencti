@@ -1,0 +1,347 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0d1117;
+  /* Deep GitHub-like dark */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Fallback */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #1a202c 0%, #0d1117 100%);
+  box-sizing: border-box;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  /* Ensure root is also clipped */
+}
+
+.react-flow__node-custom {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0;
+  min-width: 200px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  color: #fff;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.react-flow__node-custom:hover {
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.react-flow__node-custom.selected {
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+.node-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px 12px 0 0;
+}
+
+.node-header.relationship {
+  background: rgba(236, 72, 153, 0.1);
+  color: #f472b6;
+}
+
+.node-header.duplicate {
+  background: rgba(148, 163, 184, 0.1);
+  /* Slate/Gray */
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.node-header.entity {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+}
+
+.node-header.ref-attribute {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+
+.react-flow__node-custom.is-duplicate {
+  border-style: dashed;
+  opacity: 0.9;
+}
+
+.jump-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  border-radius: 4px;
+  margin-right: 6px;
+  transition: all 0.2s;
+}
+
+.jump-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: #fff;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.attributes-list {
+  padding: 8px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.attribute-item {
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.attribute-item:last-child {
+  border-bottom: none;
+}
+
+.attribute-name {
+  color: #e2e8f0;
+  font-family: 'Fira Code', monospace;
+}
+
+.attribute-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.type-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.stix-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.non-stix-badge {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+}
+
+/* React Flow overrides */
+.react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 1.5;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #94a3b8;
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  fill: #cbd5e1;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-bar {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  gap: 10px;
+  width: 600px;
+}
+
+.search-input {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  width: 100%;
+  outline: none;
+  box-sizing: border-box;
+  font-weight: 700;
+  /* Ensure padding doesn't affect width */
+}
+
+.search-input:focus {
+  border-color: #38bdf8;
+}
+
+.filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  flex: 1;
+  /* Distribute space evenly */
+  text-align: center;
+  white-space: nowrap;
+  /* Prevent text wrapping */
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.filter-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.stats-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  z-index: 5;
+  display: flex;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.stats-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.stats-value {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Simplified Mode Optimization */
+.react-flow__node-custom.simplified {
+  box-shadow: none !important;
+  background: #f8fafc !important;
+  /* Opaque slate-50 */
+  border: 1px solid #cbd5e1 !important;
+  backdrop-filter: none !important;
+}
+
+/* Ensure header is still readable but simpler */
+.simplified .node-header {
+  border-bottom: none !important;
+}
