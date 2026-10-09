@@ -1254,7 +1254,8 @@ export const getAllowedTransitions = async (
 
   // Pre-evaluate conditions against the requesting user so the frontend only
   // sees transitions the current user is actually allowed to trigger.
-  const conditionContext = { entity, user, triggeringUser: user };
+  // Entity attribute conditions read the live entity, like triggerWorkflowEvent does: workflow state is live only.
+  const conditionContext = { entity, user, triggeringUser: user, context: bypassDraftContext(context) };
   const resolvedTransitions = (await Promise.all(
     transitions.map(async (transition) => {
       for (const condition of (transition.conditions ?? [])) {
