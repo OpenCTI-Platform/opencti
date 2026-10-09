@@ -65,10 +65,6 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
     });
   };
 
-  const handleToggleCategoryAll = (categoryKey: string, allKeys: string[]) => (checked: boolean | 'indeterminate') => {
-    setCheckedCategoryItems((prev) => ({ ...prev, [categoryKey]: checked === true ? allKeys : [] }));
-  };
-
   const handleToggleCategoryItem = (categoryKey: string, itemKey: string) => (checked: boolean | 'indeterminate') => {
     setCheckedCategoryItems((prev) => {
       const current = prev[categoryKey] ?? [];
@@ -161,13 +157,11 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
                 );
               }
 
-              const items = category.items ?? [];
               return (
                 <ExportBundleCategoryChecklist
                   key={category.key}
                   category={category}
                   checkedKeys={checkedCategoryItems[category.key] ?? []}
-                  onToggleAll={handleToggleCategoryAll(category.key, items.map((item) => item.key))}
                   onToggleItem={(itemKey) => handleToggleCategoryItem(category.key, itemKey)}
                   accordionSx={accordionSx}
                 />

@@ -14,6 +14,14 @@ export interface GlobalExportBundleCategory {
 
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
+    key: 'Data Model',
+    label: 'Data Model',
+    kind: 'children',
+    items: [
+      { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
+    ],
+  },
+  {
     key: 'Settings',
     label: 'Platform Settings',
     kind: 'children',
@@ -21,7 +29,6 @@ export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
       { key: 'SettingsTheme', label: 'Theme (colors, logos, platform name...)' },
       { key: 'SettingsLanguage', label: 'Language' },
       { key: 'SettingsMessages', label: 'Messages (banner)' },
-      { key: 'SettingsHiddenEntityTypes', label: 'Hidden entity types' },
     ],
   },
 ];
