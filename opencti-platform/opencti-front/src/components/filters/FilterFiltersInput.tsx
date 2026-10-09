@@ -70,7 +70,6 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(1),
-        marginBottom: theme.spacing(0),
       }}
       >
         <Filters
