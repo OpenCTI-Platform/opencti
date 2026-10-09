@@ -11,7 +11,7 @@ import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import type { SxProps } from '@mui/material/styles';
 import { useFormatter } from 'src/components/i18n';
-import { fetchQuery } from '../../../../../relay/environment';
+import { fetchQuery, handleError } from '../../../../../relay/environment';
 import type { ExportInstanceConfig, InstanceItem } from './exportBundleInstanceTypes';
 
 export type InstanceSelectionMode = 'none' | 'all' | 'partial';
@@ -46,8 +46,12 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
   const [loadedOnce, setLoadedOnce] = useState(false);
 
   const searchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestGeneration = useRef(0);
 
   const loadEntities = (searchValue: string, cursor: string | null, append: boolean) => {
+    requestGeneration.current += 1;
+    const generation = requestGeneration.current;
+    const isLatestRequest = () => generation === requestGeneration.current;
     setLoading(true);
     fetchQuery(config.query, {
       search: searchValue,
@@ -57,6 +61,7 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
     })
       .toPromise()
       .then((response) => {
+        if (!isLatestRequest()) return;
         const data = config.extractData(response);
         const newItems = (data?.edges ?? [])
           .map((edge) => edge?.node)
@@ -67,7 +72,11 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
         setEndCursor(data?.pageInfo?.endCursor ?? null);
         setGlobalCount(data?.pageInfo?.globalCount ?? null);
       })
+      .catch((error) => {
+        if (isLatestRequest()) handleError(error);
+      })
       .finally(() => {
+        if (!isLatestRequest()) return;
         setLoading(false);
         setLoadedOnce(true);
       });
