@@ -1168,3 +1168,36 @@ describe('Workflow Validation – transition comment field', () => {
     expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
   });
 });
+
+describe('Workflow Validation – transition closingReason field', () => {
+  const makeDefinition = (closingReason: string) => ({
+    initialState: 'existing-state',
+    states: [{ statusId: 'existing-state' }, { statusId: 'closed' }],
+    transitions: [
+      { from: 'existing-state', to: 'closed', event: 'close', closingReason },
+    ],
+  });
+
+  it.each(['allowed', 'required', 'disabled'])('should pass with closing reason mode %s on a domain object type', async (mode) => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition(mode)), 'Incident');
+    expect(result).toHaveLength(0);
+  });
+
+  it('should fail when the closing reason mode is invalid', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('invalid_mode')), 'Incident');
+    expect(result.some((e) => e.type === 'SCHEMA_VALIDATION_FAILED')).toBe(true);
+  });
+
+  it('should fail when a closing reason is enabled on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('allowed')), 'DraftWorkspace');
+    expect(result).toContainEqual(expect.objectContaining({
+      type: 'CLOSING_REASON_NOT_SUPPORTED',
+      message: "Closing reason in transition 'close' is only supported for domain objects",
+    }));
+  });
+
+  it('should accept a disabled closing reason on a type without the closing reason attribute', async () => {
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('disabled')), 'DraftWorkspace');
+    expect(result.some((e) => e.type === 'CLOSING_REASON_NOT_SUPPORTED')).toBe(false);
+  });
+});

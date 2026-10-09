@@ -145,6 +145,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     status: Status
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 

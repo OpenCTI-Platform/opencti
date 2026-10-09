@@ -240,6 +240,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       'Approved for review',
       {},
+      undefined,
     );
   });
 
@@ -259,7 +260,31 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       undefined,
       {},
+      undefined,
     );
+  });
+});
+
+describe('Mutation.triggerWorkflowEvent resolver – closing reason forwarding', () => {
+  it('should forward the closing reason to the domain function', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'closed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'duplicate' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'close', undefined, {}, 'duplicate');
+  });
+
+  it('should reject a closing reason longer than 255 characters', () => {
+    expect(() => workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'a'.repeat(256) },
+      mockContext,
+    )).toThrow('Closing reason exceeds maximum allowed length of 255 characters.');
+    expect(triggerWorkflowEvent).not.toHaveBeenCalled();
   });
 });
 
@@ -331,7 +356,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     ).resolves.not.toThrow();
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {},
+      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {}, undefined,
     );
   });
 
@@ -345,7 +370,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {},
+      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {}, undefined,
     );
   });
 
@@ -359,7 +384,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', undefined, {},
+      mockContext, mockContext.user, 'entity-id', 'review', undefined, {}, undefined,
     );
   });
 });
@@ -610,6 +635,7 @@ describe('workflow-resolvers', () => {
           'close',
           undefined,
           {},
+          undefined,
         );
         expect(result).toBe(mockResult);
       });
@@ -659,6 +685,12 @@ describe('workflow-resolvers', () => {
   });
 
   describe('WorkflowTransition type resolvers', () => {
+    describe('closingReason', () => {
+      it('should return the closing reason mode or null', () => {
+        expect(workflowResolvers.WorkflowTransition.closingReason({ closingReason: 'required' })).toBe('required');
+        expect(workflowResolvers.WorkflowTransition.closingReason({})).toBeNull();
+      });
+    });
     describe('toStatus', () => {
       it('should return the complete mapped destination status', () => {
         const toStatus = { id: 'mapped-closed', template_id: 'closed', order: 2 };

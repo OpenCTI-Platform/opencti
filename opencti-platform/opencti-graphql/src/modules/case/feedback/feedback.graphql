@@ -160,6 +160,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   # Cases
   name: String!

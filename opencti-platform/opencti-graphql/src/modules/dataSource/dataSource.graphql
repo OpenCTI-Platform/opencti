@@ -138,6 +138,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     status: Status
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
     # Data Source
     name: String!

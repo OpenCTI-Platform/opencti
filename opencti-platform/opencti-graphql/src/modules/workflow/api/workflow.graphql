@@ -24,6 +24,7 @@ type WorkflowSerializedTransition {
     syncActions: [WorkflowActionConfig!]
     conditions: JSON
     comment: String
+    closingReason: String
 }
 
 type WorkflowSchema {
@@ -104,6 +105,7 @@ type WorkflowTransition {
     toState: String!
     toStatus: Status
     comment: String
+    closingReason: String
     actions: [String!]
     requiresShareOrganizationInput: Boolean
     requiresUnshareOrganizationInput: Boolean
@@ -154,7 +156,7 @@ extend type Mutation {
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
+    triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [BYPASS])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [BYPASS])
     reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean @auth(for: [BYPASS])

@@ -142,6 +142,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     status: Status
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
+    x_opencti_closing_reason: String
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 

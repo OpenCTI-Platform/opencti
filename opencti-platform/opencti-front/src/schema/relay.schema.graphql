@@ -2789,6 +2789,7 @@ interface StixDomainObject {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -2911,6 +2912,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3066,6 +3068,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -3182,6 +3185,7 @@ interface Container {
   workflowEnabled: Boolean
   status: Status
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
 }
 
 enum NotesOrdering {
@@ -3274,6 +3278,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3428,6 +3433,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3551,6 +3557,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3699,6 +3706,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
@@ -3829,6 +3837,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -3953,6 +3962,7 @@ interface Identity {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
 }
 
 input IdentityAddInput {
@@ -4076,6 +4086,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   isUser: Boolean
   pirInformation(pirId: ID!): PirInformation
 }
@@ -4206,6 +4217,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4329,6 +4341,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4459,6 +4472,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4590,6 +4604,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -4717,6 +4732,7 @@ interface Location {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
 }
 
 input LocationAddInput {
@@ -4841,6 +4857,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -4967,6 +4984,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5088,6 +5106,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5210,6 +5229,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5349,6 +5369,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5492,6 +5513,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5578,6 +5600,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5708,6 +5731,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -5842,6 +5866,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -10109,7 +10134,7 @@ type Mutation {
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
-  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
+  triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON, closingReason: String): WorkflowTriggerResult!
   setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
   reportWorkflowAsyncActionResult(workflowInstanceId: String!, workflowActionId: String!, status: String!, error: String): Boolean
@@ -10493,6 +10518,7 @@ type WorkflowSerializedTransition {
   syncActions: [WorkflowActionConfig!]
   conditions: JSON
   comment: String
+  closingReason: String
 }
 
 type WorkflowSchema {
@@ -10596,6 +10622,7 @@ type WorkflowTransition {
   toState: String!
   toStatus: Status
   comment: String
+  closingReason: String
   actions: [String!]
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
@@ -10715,6 +10742,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -10870,6 +10898,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -10989,6 +11018,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11119,6 +11149,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -11249,6 +11280,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -11536,6 +11568,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11654,6 +11687,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -11725,6 +11759,7 @@ enum VocabularyCategory {
   case_severity_ov
   case_priority_ov
   channel_types_ov
+  closing_reason_ov
   collection_layers_ov
   event_type_ov
   grouping_context_ov
@@ -11908,6 +11943,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -12027,6 +12063,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12187,6 +12224,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -12320,6 +12358,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
   name: String!
@@ -12470,6 +12509,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   name: String!
   description: String
   content: String
@@ -12613,6 +12653,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   name: String!
   description: String
   content: String
@@ -12752,6 +12793,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
@@ -13016,6 +13058,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
@@ -13274,6 +13317,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   securityCoverage: SecurityCoverage
 }
@@ -14106,6 +14150,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14308,6 +14353,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -14574,6 +14620,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15845,6 +15892,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
 }
 
@@ -15964,6 +16012,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
@@ -16141,6 +16190,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation
   coverage_last_result: DateTime
   coverage_valid_from: DateTime

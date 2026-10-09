@@ -2,7 +2,9 @@ import { logApp } from '../../../config/conf';
 import { updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { FilterMode, StatusScope } from '../../../generated/graphql';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { ENTITY_TYPE_STATUS } from '../../../schema/internalObject';
+import { schemaTypesDefinition } from '../../../schema/schema-types';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
@@ -60,6 +62,9 @@ export const resolveMappedStatusId = async (
  * A missing mapping (e.g. transient eventual-consistency window right after publish) is logged
  * and skipped rather than thrown — this is a projection best-effort write, not a hard invariant
  * check; callers (sync/async transition paths, read-repair) must not fail on it.
+ *
+ * `closingReason` is written in the same update on domain objects: a value sets it, `null` clears
+ * it, `undefined` leaves it untouched (creation and read-repair are not transitions).
  */
 export const projectWorkflowState = async (
   context: AuthContext,
@@ -67,6 +72,7 @@ export const projectWorkflowState = async (
   entity: BasicStoreEntity & { id?: string; internal_id?: string; entity_type: string },
   stateId: string,
   scope: StatusScope,
+  closingReason?: string | null,
 ): Promise<void> => {
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
@@ -74,15 +80,21 @@ export const projectWorkflowState = async (
   const entityId = entity.internal_id || entity.id;
 
   try {
+    const inputs = [];
     const statusId = await resolveMappedStatusId(executionContext, executionUser, entityType, scope, stateId);
-    if (!statusId) {
+    if (statusId) {
+      inputs.push({ key: 'x_opencti_workflow_id', value: [statusId] });
+    } else {
       logApp.warn('[OPENCTI-MODULE] No Status mapped for workflow state, skipping projection', { entityType, scope, stateId });
+    }
+    if (closingReason !== undefined && schemaTypesDefinition.isTypeIncludedIn(entityType, ABSTRACT_STIX_DOMAIN_OBJECT)) {
+      inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
+    }
+    if (inputs.length === 0) {
       return;
     }
 
-    await updateAttribute(executionContext, executionUser, entityId, entityType, [
-      { key: 'x_opencti_workflow_id', value: [statusId] },
-    ]);
+    await updateAttribute(executionContext, executionUser, entityId, entityType, inputs);
   } catch (error) {
     logApp.warn('[OPENCTI-MODULE] Failed to project workflow state onto entity', { cause: error, entityType, scope, stateId, entityId });
   }
