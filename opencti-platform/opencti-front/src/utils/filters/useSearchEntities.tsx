@@ -764,14 +764,11 @@ const useSearchEntities = ({
           buildOptionsFromIdentitySearchQuery(filterKey, ['Organization', 'Individual', 'System']);
           break;
         case 'id': {
+          buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
           // regardingOf can target an external reference via the 'external-reference' relationship type
           const idSearchScope = searchScope?.[filterKey] ?? [];
-          const isStixCoreObjectInScope = idSearchScope.length === 0 || idSearchScope.some((type) => type !== 'External-Reference');
           const isExternalReferenceInScope = parentFilterKey === 'regardingOf'
             && (idSearchScope.length === 0 || idSearchScope.includes('External-Reference'));
-          if (isStixCoreObjectInScope) {
-            buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
-          }
           if (isExternalReferenceInScope) {
             buildOptionsFromExternalReferencesSearchQuery(filterKey, displayEntityTypeForTranslation('External-Reference'));
           }
