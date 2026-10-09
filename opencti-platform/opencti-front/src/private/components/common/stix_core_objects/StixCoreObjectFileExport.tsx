@@ -1,6 +1,5 @@
 import React, { FC, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import { createSearchParams, useNavigate } from 'react-router';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
@@ -27,6 +26,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { insertOngoingExports } from '../../../../utils/store';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 
 export const BUILT_IN_HTML_TO_PDF = {
@@ -455,18 +455,7 @@ const StixCoreObjectFileExportComponent = ({
     };
     commitExport({
       variables: { id: scoId, input },
-      updater: (store) => {
-        // Insert the ongoing exports in the files list, so they are displayed in progress right away
-        const entity = store.get(scoId);
-        const conn = entity ? ConnectionHandler.getConnection(entity, 'Pagination_exportFiles') : null;
-        const payloads = store.getRootField('stixCoreObjectEdit')?.getLinkedRecords('exportAsk', { input }) ?? [];
-        if (conn) {
-          payloads.forEach((payload) => {
-            const newEdge = ConnectionHandler.createEdge(store, conn, payload, 'FileEdge');
-            ConnectionHandler.insertEdgeBefore(conn, newEdge);
-          });
-        }
-      },
+      updater: (store) => insertOngoingExports(store, scoId, 'stixCoreObjectEdit', input),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
