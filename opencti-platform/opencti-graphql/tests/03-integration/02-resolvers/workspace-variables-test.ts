@@ -52,6 +52,19 @@ const IMPORT_WIDGET = gql`
     workspaceWidgetConfigurationImport(id: $id, input: $input) { id manifest }
   }
 `;
+const DUPLICATE = gql`
+  mutation WorkspaceVariablesTestDuplicate($input: WorkspaceDuplicateInput!) {
+    workspaceDuplicate(input: $input) {
+      id
+      variables { id name defaultValue usedInWidgetIds }
+    }
+  }
+`;
+const IMPORT_CONFIGURATION = gql`
+  mutation WorkspaceVariablesTestImportConfiguration($file: Upload!) {
+    workspaceConfigurationImport(file: $file)
+  }
+`;
 const PATCH = gql`
   mutation WorkspaceVariablesTestPatch($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) { id manifest }
@@ -208,5 +221,28 @@ describe('Dashboard variables API', () => {
     const after = await readWorkspace(id);
     expect(after.variables.map((v: { name: string }) => v.name)).toEqual(['Before import']);
     expect(Object.keys(fromB64(after.manifest).widgets)).toHaveLength(1);
+  });
+  it('should keep valid variables and their ids when duplicating a dashboard', async () => {
+    const variable = { id: '11111111-1111-4111-8111-111111111111', name: 'Type', type: 'entityType', restriction: { mode: 'none' }, defaultValue: 'Malware' };
+    const manifest = toB64({ widgets: { 'widget-1': widgetUsing(variable.id) }, config: {}, variables: [variable] });
+    const { data } = await queryAsAdminWithSuccess({ query: DUPLICATE, variables: { input: { type: 'dashboard', name: 'Variables duplicate', manifest } } });
+    createdIds.push(data.workspaceDuplicate.id);
+    expect(data.workspaceDuplicate.variables).toEqual([{ id: variable.id, name: 'Type', defaultValue: 'Malware', usedInWidgetIds: ['widget-1'] }]);
+  });
+
+  it('should refuse to duplicate a dashboard with invalid variables', async () => {
+    const forged = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, name: `v${i}`, type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' }));
+    const manifest = toB64({ widgets: {}, config: {}, variables: forged });
+    await queryAsAdminWithError({ query: DUPLICATE, variables: { input: { type: 'dashboard', name: 'Variables duplicate forged', manifest } } }, 'A dashboard cannot hold more than 50 variables', 'FUNCTIONAL_ERROR');
+  });
+
+  it('should validate variables when importing a dashboard configuration', async () => {
+    const validFile = await createUploadFromTestDataFile('dashboard-variables/dashboard-import-valid-variables.json', 'valid.json', 'application/json');
+    const { data } = await queryAsAdminWithSuccess({ query: IMPORT_CONFIGURATION, variables: { file: validFile } });
+    createdIds.push(data.workspaceConfigurationImport);
+    const imported = await readWorkspace(data.workspaceConfigurationImport);
+    expect(imported.variables).toEqual([expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111', defaultValue: 'Malware', usedInWidgetIds: ['variable-widget'] })]);
+    const invalidFile = await createUploadFromTestDataFile('dashboard-variables/dashboard-import-invalid-variables.json', 'invalid.json', 'application/json');
+    await queryAsAdminWithError({ query: IMPORT_CONFIGURATION, variables: { file: invalidFile } }, 'A variable value cannot reference another variable', 'FUNCTIONAL_ERROR');
   });
 });
