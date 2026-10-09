@@ -4467,6 +4467,19 @@ describe('migrateWorkflowFromStatuses', () => {
     expect(createEntity).not.toHaveBeenCalled();
   });
 
+  it('adds the migrated definition as a new draft version of the existing workflow when overwrite is true', async () => {
+    const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] });
+
+    await migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false, true);
+
+    expect(createEntity).not.toHaveBeenCalled();
+    const draftCall = (updateAttribute as any).mock.calls.find(([, , id, , inputs]: any[]) => id === 'workflow-id' && inputs.some((i: any) => i.key === 'draft_version'));
+    const draft = draftCall[4].find((i: any) => i.key === 'draft_version').value[0];
+    expect(JSON.parse(draft.content).initialState).toBe('t1');
+  });
+
   it('throws when there are no GLOBAL legacy statuses', async () => {
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
     (fullEntitiesList as any).mockResolvedValue([legacyStatuses[2]]);
