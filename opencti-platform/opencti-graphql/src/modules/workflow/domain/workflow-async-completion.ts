@@ -234,7 +234,7 @@ const completeWorkflowAsyncActionResult = async (
   // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
   if (fullEntity) {
     const scope = resolveProjectionScope(instanceEntity.scope);
-    await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason ?? null);
+    await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
   }

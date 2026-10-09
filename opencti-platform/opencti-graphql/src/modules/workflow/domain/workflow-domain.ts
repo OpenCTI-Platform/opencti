@@ -1278,15 +1278,23 @@ export const getAllowedTransitions = async (
   return resolvedTransitions;
 };
 
-// A transition that does not capture a closing reason clears it, so a reopened entity has none.
+const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
+
+// A closing state is the target of a transition capturing a closing reason: leaving it (e.g. reopen) clears the reason.
+const leavesClosingState = (transitions: Array<{ to: string | null; closingReason?: string }> | undefined, fromState: string, toState: string) => {
+  return fromState !== toState && (transitions ?? []).some((t) => t.to === fromState && isClosingReasonMode(t.closingReason));
+};
+
 const resolveTransitionClosingReason = (
   user: AuthUser,
   mode: string | undefined,
   closingReason: string | undefined,
-): { closingReason: string | null } | { error: string } => {
+  clearsClosingReason: boolean,
+): { closingReason: string | null | undefined } | { error: string } => {
   const value = closingReason?.trim() || null;
-  if (mode !== 'allowed' && mode !== 'required') {
-    return value ? { error: 'Closing reason is not enabled for this transition' } : { closingReason: null };
+  if (!isClosingReasonMode(mode)) {
+    if (value) return { error: 'Closing reason is not enabled for this transition' };
+    return { closingReason: clearsClosingReason ? null : undefined };
   }
   if (mode === 'required' && !value && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
     return { error: 'A closing reason is required for this transition' };
@@ -1355,7 +1363,8 @@ export const triggerWorkflowEvent = async (
       const fromStates = Array.isArray(t.from) ? t.from : [t.from];
       return fromStates.includes(currentStateId) && t.event === eventName;
     });
-    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason);
+    const clearsClosingReason = !!targetTransition?.to && leavesClosingState(definitionData.transitions, currentStateId, targetTransition.to);
+    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clearsClosingReason);
     if ('error' in resolvedClosingReason) {
       return { success: false, reason: resolvedClosingReason.error };
     }
@@ -1431,7 +1440,7 @@ export const triggerWorkflowEvent = async (
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
-        ...(resolvedClosingReason.closingReason ? { closingReason: resolvedClosingReason.closingReason } : {}),
+        ...(resolvedClosingReason.closingReason !== undefined ? { closingReason: resolvedClosingReason.closingReason } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
@@ -1610,6 +1619,7 @@ const executeWorkflowBypass = async (
     triggeredAt: new Date().toISOString(),
     runtimeParams,
     ...(normalizedComment ? { comment: normalizedComment } : {}),
+    ...(leavesClosingState(definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
     asyncActions: [],
     syncActions: applyTransitionActions ? [
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
@@ -1666,7 +1676,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [null] },
       { key: 'pendingTransition', value: [null] },
     ]);
-    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, null);
+    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
