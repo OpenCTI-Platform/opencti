@@ -25,7 +25,7 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
-import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
+import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -2506,7 +2506,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   initial: T,
   inputs: EditInput[],
   opts: UpdateAttributeMetaResolvedOpts = {},
-): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean }> => {
+): Promise<{ element: T; event?: UpdateEvent | null; isCreation?: boolean; workflowStatusChanged?: boolean }> => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2944,7 +2944,8 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage as BasicStoreBase);
       }
       // endregion
-      return { element: updatedInstance as T, event, isCreation: false };
+      const workflowStatusChanged = updatedInputs.some((input) => input.key === X_WORKFLOW_ID);
+      return { element: updatedInstance as T, event, isCreation: false, workflowStatusChanged };
     }
     // Return updated element after waiting for it.
     return { element: updatedInstance as T, event: null, isCreation: false };
@@ -2997,7 +2998,10 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  // Set by the workflow projection so its own write is not synced back as an external write
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3018,6 +3022,9 @@ export const updateAttribute = async <T extends StoreObject>(
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+  }
+  if (data.workflowStatusChanged && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await syncWorkflowInstanceFromExternalWrite(context, user, data.element, (data.element as BasicStoreBase).x_opencti_workflow_id);
   }
   return data;
 };
@@ -4081,8 +4088,13 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  } else { // upsert
+    if (data.event !== null && !opts.noEnrichOnUpdate) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    }
+    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
+    }
   }
   return isCompleteResult ? data : data.element;
 };

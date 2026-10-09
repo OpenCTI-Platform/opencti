@@ -1,12 +1,14 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { loadEntity } from '../../../src/database/middleware';
+import { createEntity, loadEntity } from '../../../src/database/middleware';
 import { findHistory } from '../../../src/domain/log';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
-import { FilterMode, LogsOrdering, OrderingMode } from '../../../src/generated/graphql';
+import { FilterMode, LogsOrdering, OrderingMode, StatusScope } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { findByType } from '../../../src/domain/status';
+import { createStatus, createStatusTemplate, findByType } from '../../../src/domain/status';
+import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { wait } from '../../../src/database/utils';
 
@@ -1084,5 +1086,207 @@ describe('Workflow projection onto legacy Status field (Report)', () => {
       .flatMap((edge) => edge.node.context_data.history_changes)
       .find((change) => change.field?.includes('x_opencti_workflow_id'));
     expect(workflowFieldChange).toBeDefined();
+  });
+});
+
+describe('Workflow instance sync from external status writes (Report)', () => {
+  let reportInternalId: string;
+  let openStatusId: string;
+  let validatedStatusId: string;
+  const reportName = `Workflow External Write Test Report ${Date.now()}`;
+  const reportPublished = new Date().toISOString();
+  const reportWorkflowDefinition = JSON.stringify({
+    id: 'report-external-write-workflow',
+    name: 'Report External Write Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'validated' }],
+    transitions: [
+      { from: 'open', to: 'validated', event: 'validate_event' },
+      { from: 'validated', to: 'open', event: 'reopen_event' },
+    ],
+  });
+  const REPORT_STATUS_PATCH_MUTATION = gql`
+    mutation ReportStatusPatchForWorkflowTest($id: ID!, $input: [EditInput]!) {
+      stixDomainObjectEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+        }
+      }
+    }
+  `;
+  const REPORT_STATUS_QUERY = gql`
+    query ReportStatusForExternalWriteTest($id: String!) {
+      report(id: $id) {
+        status {
+          id
+        }
+        workflowInstance {
+          currentState
+        }
+      }
+    }
+  `;
+  const loadReport = () => storeLoadById<any>(testContext, ADMIN_USER, reportInternalId, ENTITY_TYPE_CONTAINER_REPORT);
+  const patchStatus = (statusId: string) => queryAsAdminWithSuccess({
+    query: REPORT_STATUS_PATCH_MUTATION,
+    variables: { id: reportInternalId, input: [{ key: 'x_opencti_workflow_id', value: [statusId] }] },
+  });
+  const readInstance = async () => {
+    const instance = await findWorkflowInstance(reportInternalId) as any;
+    return { currentState: instance.currentState, history: JSON.parse(instance.history || '[]') };
+  };
+
+  beforeAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_ADD_MUTATION,
+      variables: { entityType: 'Report', definition: reportWorkflowDefinition },
+    });
+    await queryAsAdminWithSuccess({
+      query: WORKFLOW_DEFINITION_PUBLISH_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+    const reportResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation ReportAddForExternalWriteTest($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: { name: reportName, published: reportPublished },
+      },
+    });
+    reportInternalId = reportResult.data.reportAdd.id;
+    const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
+    openStatusId = statuses.find((status) => status.template_id === 'open')!.id;
+    validatedStatusId = statuses.find((status) => status.template_id === 'validated')!.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'Report' },
+    });
+    await queryAsAdmin({
+      query: gql`
+        mutation ReportDeleteForExternalWriteTest($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `,
+      variables: { id: reportInternalId },
+    });
+  });
+
+  it('should move the WorkflowInstance when the legacy status field is patched to a mapped Status', async () => {
+    await patchStatus(validatedStatusId);
+
+    const { currentState, history } = await readInstance();
+    expect(currentState).toBe('validated');
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'validated', event: 'event_external', user_id: ADMIN_USER.id }));
+  });
+
+  it('should not record a history entry when the patched Status is already the current one', async () => {
+    const before = await readInstance();
+
+    await patchStatus(validatedStatusId);
+
+    const after = await readInstance();
+    expect(after.history).toHaveLength(before.history.length);
+  });
+
+  it('should not record an external write for the projection of a workflow transition', async () => {
+    const triggerResult = await queryAsAdminWithSuccess({
+      query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+      variables: { entityId: reportInternalId, eventName: 'reopen_event' },
+    });
+    expect(triggerResult.data.triggerWorkflowEvent.success).toBe(true);
+
+    const { currentState, history } = await readInstance();
+    expect(currentState).toBe('open');
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'open', event: 'reopen_event' }));
+  });
+
+  it('should move the WorkflowInstance when an upsert changes the legacy status field', async () => {
+    await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, x_opencti_workflow_id: validatedStatusId }, ENTITY_TYPE_CONTAINER_REPORT);
+
+    const { currentState, history } = await readInstance();
+    expect(currentState).toBe('validated');
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'validated', event: 'event_external' }));
+  });
+
+  it('should not move the WorkflowInstance when an upsert keeps the legacy status field', async () => {
+    const before = await readInstance();
+
+    await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, description: 'upserted' }, ENTITY_TYPE_CONTAINER_REPORT);
+
+    const after = await readInstance();
+    expect(after.history).toHaveLength(before.history.length);
+    expect(openStatusId).toBeDefined();
+  });
+
+  it('should ignore a Status of another entity type sent along with another field change', async () => {
+    const before = await readInstance();
+    const statuses = await fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS]);
+    const otherTypeStatus = statuses.find((status) => status.type !== ENTITY_TYPE_CONTAINER_REPORT);
+
+    await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_PATCH_MUTATION,
+      variables: {
+        id: reportInternalId,
+        input: [
+          { key: 'x_opencti_workflow_id', value: [otherTypeStatus.id] },
+          { key: 'description', value: [`patched ${Date.now()}`] },
+        ],
+      },
+    });
+
+    const after = await readInstance();
+    expect(after.currentState).toBe(before.currentState);
+    expect(after.history).toHaveLength(before.history.length);
+  });
+
+  it('should ignore a cleared legacy status field', async () => {
+    const before = await readInstance();
+
+    await queryAsAdminWithSuccess({
+      query: REPORT_STATUS_PATCH_MUTATION,
+      variables: { id: reportInternalId, input: [{ key: 'x_opencti_workflow_id', value: [] }] },
+    });
+
+    const instance = await findWorkflowInstance(reportInternalId) as any;
+    expect(instance.currentState).toBe(before.currentState);
+    expect(instance.pendingError).toBeFalsy();
+  });
+
+  it('should keep a Status mapped to no workflow state and record a pendingError', async () => {
+    const before = await readInstance();
+    const template = await createStatusTemplate(testContext, ADMIN_USER, { name: `Unmapped ${Date.now()}`, color: '#000000' });
+    const unmappedStatus = await createStatus(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: template.id, order: 99, scope: StatusScope.Global });
+    // The new Status reaches the middleware cache asynchronously: retry until the write is applied.
+    let statusAfterPatch: string | undefined;
+    for (let attempt = 0; attempt < 20 && statusAfterPatch !== unmappedStatus.id; attempt += 1) {
+      if (attempt > 0) {
+        await wait(500);
+      }
+      await patchStatus(unmappedStatus.id);
+      statusAfterPatch = (await loadReport()).x_opencti_workflow_id;
+    }
+    expect(statusAfterPatch).toBe(unmappedStatus.id);
+    // Let the read-repair rate limit expire so the next read really evaluates a repair.
+    await wait(5500);
+
+    const report = await queryAsAdminWithSuccess({ query: REPORT_STATUS_QUERY, variables: { id: reportInternalId } });
+
+    expect(report.data.report.workflowInstance.currentState).toBe(before.currentState);
+    expect((await loadReport()).x_opencti_workflow_id).toBe(unmappedStatus.id);
+    const instance = await findWorkflowInstance(reportInternalId) as any;
+    expect(instance.pendingError).toContain(unmappedStatus.id);
   });
 });

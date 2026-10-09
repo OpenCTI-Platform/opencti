@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
-import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { appendWorkflowHistoryEntry, reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
 import { updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -918,5 +918,21 @@ describe('reportWorkflowAsyncActionResult', () => {
     await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
     expect(capturedRuntimeParams).toEqual({});
+  });
+});
+
+describe('appendWorkflowHistoryEntry', () => {
+  it('appends the entry at the end of the history', () => {
+    expect(appendWorkflowHistoryEntry([{ state: 'draft' }], { state: 'reviewing' })).toEqual([{ state: 'draft' }, { state: 'reviewing' }]);
+  });
+
+  it('keeps only the latest 200 entries', () => {
+    const fullHistory = Array.from({ length: 200 }, (_, i) => ({ state: `state-${i}` }));
+
+    const history = appendWorkflowHistoryEntry(fullHistory, { state: 'reviewing' });
+
+    expect(history).toHaveLength(200);
+    expect(history[0]).toEqual({ state: 'state-1' });
+    expect(history[199]).toEqual({ state: 'reviewing' });
   });
 });
