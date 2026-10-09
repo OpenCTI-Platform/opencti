@@ -32,7 +32,7 @@ import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIO
 import { stixLoadByIds } from '../../database/middleware';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
-import type { StixRelation } from '../../types/stix-2-1-sro';
+import type { StixRelation, StixSighting } from '../../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
@@ -584,6 +584,11 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       const baseDataRelation = baseData as StixRelation;
       if (baseDataRelation.source_ref && baseDataRelation.target_ref) {
         idsToResolve = R.uniq([...idsToResolve, baseDataRelation.source_ref, baseDataRelation.target_ref]);
+      }
+      // In case of sighting, we also resolve the sighting_of and where_sighted
+      const baseDataSighting = baseData as StixSighting;
+      if (baseDataSighting.sighting_of_ref && baseDataSighting.where_sighted_refs) {
+        idsToResolve = R.uniq([...idsToResolve, baseDataSighting.sighting_of_ref, ...baseDataSighting.where_sighted_refs]);
       }
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve) as StixObject[];
       if (elements.length > 0) {
