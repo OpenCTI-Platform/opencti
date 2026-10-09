@@ -52,6 +52,7 @@ describe('Workflow bypass API', () => {
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
         directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
+        enum StatusScope { GLOBAL REQUEST_ACCESS }
         scalar JSON
         scalar DateTime
         scalar BasicObject
