@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, fullEntitiesThroughRelationsToList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -9,6 +9,16 @@ import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCount
 import { RELATION_HAS_CAPABILITY } from '../../../src/schema/internalRelationship';
 import { listRules, deleteRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
+import { elList, elUpdate } from '../../../src/database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../../src/database/utils';
+import { generateBuiltInExportId } from '../../../src/schema/identifier';
+import { logMigration } from '../../../src/config/conf';
+import {
+  BUILT_IN_EXPORT_ID_TYPES,
+  computeMissingBuiltInExportIds,
+  findMissingBuiltInElements,
+  up as addExportIdMigration,
+} from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -168,5 +178,91 @@ describe('Data initialization test', () => {
 
     // Cleanup: delete the newly created duplicate rules
     await Promise.all(newRules.map((r) => deleteRetentionRule(testContext, ADMIN_USER, r.id)));
+  });
+});
+
+describe('Built-in entities export_id', () => {
+  const listBuiltInCandidates = () => {
+    return elList<any>(testContext, ADMIN_USER, [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS], { types: BUILT_IN_EXPORT_ID_TYPES });
+  };
+  const findElement = (elements: any[], entityType: string, predicate: (element: any) => boolean = () => true) => {
+    return elements.find((element) => element.entity_type === entityType && predicate(element));
+  };
+
+  it('should give a stable export_id to built-in entities at initialization', async () => {
+    const elements = await listBuiltInCandidates();
+    const expectations: [string, (element: any) => boolean, Record<string, string>][] = [
+      ['Settings', () => true, {}],
+      ['EntitySetting', (e) => e.target_type === 'Report', { target_type: 'Report' }],
+      ['ManagerConfiguration', (e) => e.manager_id === 'FILE_INDEX_MANAGER', { manager_id: 'FILE_INDEX_MANAGER' }],
+      ['Capability', (e) => e.name === 'BYPASS', { name: 'BYPASS' }],
+      ['Role', (e) => e.name === 'Administrator', { name: 'Administrator' }],
+      ['Group', (e) => e.name === 'Administrators', { name: 'Administrators' }],
+      ['StatusTemplate', (e) => e.name === 'IN_PROGRESS', { name: 'IN_PROGRESS' }],
+      ['Vocabulary', (e) => e.category === 'report_types_ov' && e.name === 'threat-report', { category: 'report_types_ov', name: 'threat-report' }],
+      ['Marking-Definition', (e) => e.definition === 'TLP:AMBER+STRICT', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }],
+      ['Theme', (e) => e.name === 'Filigran Light', { name: 'Filigran Light' }],
+      ['EmailTemplate', (e) => e.name === 'Built-In Template For Onboarding', { name: 'Built-In Template For Onboarding' }],
+      ['RetentionRule', (e) => e.scope === 'activity', { scope: 'activity' }],
+      ['Notifier', (e) => e.name === 'Sample of Microsoft Teams message for digest trigger', { name: 'Sample of Microsoft Teams message for digest trigger' }],
+    ];
+    expectations.forEach(([entityType, predicate, naturalKey]) => {
+      const builtIn = findElement(elements, entityType, predicate);
+      expect(builtIn, `Built-in ${entityType} is missing`).toBeDefined();
+      expect(builtIn.export_id, `Built-in ${entityType} has a wrong export_id`).toEqual(generateBuiltInExportId(entityType, naturalKey));
+    });
+    // Statuses are identified by the name of their template
+    const reportTemplate = findElement(elements, 'StatusTemplate', (e) => e.name === 'ANALYZED');
+    const reportStatus = findElement(elements, 'Status', (e) => e.type === 'Report' && e.template_id === reportTemplate.internal_id);
+    expect(reportStatus.export_id).toEqual(generateBuiltInExportId('Status', { type: 'Report', scope: 'GLOBAL', template: 'ANALYZED' }));
+    // Every capability and entity setting is built-in
+    const allBuiltIn = elements.filter((e) => ['Capability', 'EntitySetting'].includes(e.entity_type));
+    expect(allBuiltIn.filter((e) => !e.export_id)).toEqual([]);
+  });
+
+  it('should compute in the migration the same export_id as the initialization', async () => {
+    const elements = await listBuiltInCandidates();
+    const initializationExportIds = new Map(elements.map((e) => [e.internal_id, e.export_id]));
+    const elementsWithoutExportId = elements.map(({ export_id: _, ...element }) => element);
+    const assignments = computeMissingBuiltInExportIds(elementsWithoutExportId);
+    // Sanity floor, mostly made of the built-in vocabularies
+    expect(assignments.length).toBeGreaterThan(450);
+    // Every element the migration recognizes gets the value computed at creation
+    assignments.forEach(({ element, export_id }) => {
+      expect(export_id, `${element.entity_type} ${element.internal_id}`).toEqual(initializationExportIds.get(element.internal_id));
+    });
+    // The migration finds every built-in element it expects. A failure means a built-in element was renamed or removed:
+    // its export_id must stay the one of platforms created before. Fintel templates are not created by the test platform setup.
+    expect(findMissingBuiltInElements(elements).filter((missing) => missing.entity_type !== 'FintelTemplate')).toEqual([]);
+  });
+
+  it('should add the missing export_id to built-in entities with the migration', async () => {
+    const elements = await listBuiltInCandidates();
+    const targets = [
+      findElement(elements, 'Group', (e) => e.name === 'Connectors'),
+      findElement(elements, 'Theme', (e) => e.name === 'Filigran Dark'),
+      findElement(elements, 'Vocabulary', (e) => e.category === 'report_types_ov' && e.name === 'threat-report'),
+      findElement(elements, 'RetentionRule', (e) => e.scope === 'file'),
+      findElement(elements, 'Status', (e) => e.type === 'Case-Rfi'),
+    ];
+    // Simulate built-in entities created before the export_id existed
+    for (let index = 0; index < targets.length; index += 1) {
+      const target = targets[index];
+      expect(target.export_id).toBeDefined();
+      await elUpdate(testContext, target._index, target.internal_id, { script: { source: 'ctx._source.remove(\'export_id\')' } });
+    }
+    const withoutExportId = await listBuiltInCandidates();
+    expect(computeMissingBuiltInExportIds(withoutExportId)).toHaveLength(targets.length);
+    const warnSpy = vi.spyOn(logMigration, 'warn');
+    await addExportIdMigration(() => {});
+    // The test platform setup does not create the fintel templates: the migration reports them
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('6 built-in FintelTemplate not found'));
+    warnSpy.mockRestore();
+    const migrated = await listBuiltInCandidates();
+    targets.forEach((target) => {
+      expect(findElement(migrated, target.entity_type, (e) => e.internal_id === target.internal_id).export_id).toEqual(target.export_id);
+    });
+    // Running it again changes nothing
+    expect(computeMissingBuiltInExportIds(migrated)).toEqual([]);
   });
 });

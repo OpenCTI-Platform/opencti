@@ -280,6 +280,7 @@ export const jsonFeedExport = async (context: AuthContext, user: AuthUser, inges
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
     type: 'jsonFeeds',
+    export_id: ingestionJson.export_id,
     configuration: {
       name,
       description,

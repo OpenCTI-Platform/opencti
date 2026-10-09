@@ -501,6 +501,11 @@ const generateStixId = (type, data) => {
 };
 
 export const generateInternalId = () => uuidv4();
+// Built-in elements get the same export_id on every platform: it only depends on the type and a natural key
+// known at creation time. It is computed once and never recomputed, so renaming the element does not change it.
+export const generateBuiltInExportId = (entityType, key = {}) => {
+  return uuidv5(jsonCanonicalize({ entity_type: entityType, ...key }), OPENCTI_NAMESPACE);
+};
 export const generateWorkId = (connectorId) => {
   const timestamp = now();
   return { id: `work_${connectorId}_${timestamp}`, timestamp };

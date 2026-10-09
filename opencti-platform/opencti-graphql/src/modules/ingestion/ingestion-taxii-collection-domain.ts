@@ -102,6 +102,7 @@ export const taxiiCollectionExport = async (ingestionTaxiiCollection: BasicStore
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
     type: 'taxiiPushCollections',
+    export_id: ingestionTaxiiCollection.export_id,
     configuration: {
       name,
       description,

@@ -401,6 +401,7 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
   return JSON.stringify({
     openCTI_version: PLATFORM_VERSION,
     type: 'csvFeeds',
+    export_id: ingestionCsv.export_id,
     configuration: {
       name,
       description,

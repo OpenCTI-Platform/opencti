@@ -56,7 +56,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
 };
 
 // input { name, filters }
-export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput) => {
+export const createRetentionRule = async (context: AuthContext, user: AuthUser, input: RetentionRuleAddInput & { export_id?: string }) => {
   // filters must be a valid json
   let { filters } = input;
   if (!filters) { // filters is undefined or an empty string
