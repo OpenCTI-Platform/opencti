@@ -16,6 +16,11 @@ export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = gra
         parent_types
         entity_type
       }
+      ... on ExternalReference {
+        id
+        parent_types
+        entity_type
+      }
       ... on SecurityCoverageResult {
         resultOf {
           id

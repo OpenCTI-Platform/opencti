@@ -64,6 +64,7 @@ import { uniqAsyncMap } from '../data-processing';
 import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
 
@@ -133,7 +134,8 @@ export const adaptFilterToRegardingOfFilterKey = async (
       connectionFormat: false,
       first: ES_MAX_PAGINATION,
       baseData: true,
-      filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT]),
+      // external references can be targeted via the 'external-reference' relationship type
+      filters: addFilter(dynamicFilter[0], TYPE_FILTER, [ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_EXTERNAL_REFERENCE]),
     }) as BasicStoreBase[];
     if (relatedEntities.length > 0) {
       const relatedIds = relatedEntities.map((n) => n.id);

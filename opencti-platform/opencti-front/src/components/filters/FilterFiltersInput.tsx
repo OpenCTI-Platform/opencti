@@ -8,6 +8,10 @@ import FilterIconButton from '../FilterIconButton';
 import { useTheme } from '@mui/material/styles';
 import { WidgetHost } from '../../utils/widget/widget';
 
+const STIX_CORE_OBJECT_TYPES = ['Stix-Core-Object'];
+// dynamicRegardingOf can also target external references (via the 'external-reference' relationship type)
+const DYNAMIC_REGARDING_OF_TYPES = ['Stix-Core-Object', 'External-Reference'];
+
 interface BasicFilterInputProps {
   filter?: Filter;
   filterKey: string;
@@ -20,6 +24,7 @@ interface BasicFilterInputProps {
 
 const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   filter,
+  filterKey,
   childKey,
   helpers,
   filterValues,
@@ -27,7 +32,8 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   disabled = false,
 }) => {
   const theme = useTheme();
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
+  const entityTypes = filterKey === 'dynamicRegardingOf' ? DYNAMIC_REGARDING_OF_TYPES : STIX_CORE_OBJECT_TYPES;
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
   const [filters, filterHelpers] = useFiltersState(filterValues ?? emptyFilterGroup);
   const handleFiltersChange = (currentFilter: FilterGroup | undefined) => {
     if (currentFilter) {
@@ -64,13 +70,12 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(1),
-        marginBottom: theme.spacing(1),
       }}
       >
         <Filters
           availableFilterKeys={availableFilterKeys}
           helpers={filterHelpers}
-          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+          searchContext={{ entityTypes }}
           disabled={disabled}
           disableAddFilterGroup
         />
@@ -80,7 +85,8 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         helpers={filterHelpers}
         availableFilterKeys={availableFilterKeys}
         redirection
-        searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+        entityTypes={entityTypes}
+        searchContext={{ entityTypes }}
         host={host}
       />
     </>

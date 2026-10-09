@@ -17,6 +17,7 @@ interface SearchScopeElementProps {
   searchScope: Record<string, string[]>;
   setSearchScope: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
   availableRelationFilterTypes?: Record<string, string[]>;
+  additionalEntityTypes?: string[]; // types searchable in addition to the stix core object types
 }
 
 const SearchScopeElement = ({
@@ -25,6 +26,7 @@ const SearchScopeElement = ({
   searchScope,
   setSearchScope,
   availableRelationFilterTypes,
+  additionalEntityTypes = [],
 }: SearchScopeElementProps) => {
   const { t_i18n } = useFormatter();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<PopoverProps['anchorEl']>();
@@ -33,7 +35,7 @@ const SearchScopeElement = ({
     entityTypes.push('User');
     entityTypes.push('Group');
   }
-  const entitiesTypes = entityTypes
+  const entitiesTypes = [...entityTypes, ...additionalEntityTypes]
     .filter((n) => (availableRelationFilterTypes && availableRelationFilterTypes[name]
       ? availableRelationFilterTypes[name].includes(n)
       : true))
