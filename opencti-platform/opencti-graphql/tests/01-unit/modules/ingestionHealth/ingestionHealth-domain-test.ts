@@ -7,10 +7,13 @@ import {
   buildIngestionHealthInput,
   collectIngestionSources,
   isIngestionConnector,
+  readIngestionHealthCache,
+  resolveFeedIngestionWarnings,
   resolveIngestionHealth,
   resolveIngestionWarnings,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-domain';
 import { redisGetIngestionHealthObservation } from '../../../../src/modules/ingestionHealth/ingestionHealth-redis';
+import { OPENCTI_SYSTEM_UUID } from '../../../../src/schema/general';
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...(await importOriginal<any>()),
@@ -118,6 +121,12 @@ describe('Ingestion health domain', () => {
       expect(resolveIngestionHealth(connector())).toEqual({ status: 'unknown', summary: 'Not evaluated yet', checks: [], since: null });
     });
 
+    it('should read the same cache on a feed or a sync, which carries no connector field', () => {
+      expect(readIngestionHealthCache({})).toEqual({ status: 'unknown', summary: 'Not evaluated yet', checks: [], since: null });
+      const cachedFeed = { ingestion_health_status: 'critical' as const, ingestion_health_since: RECENT, ingestion_health_summary: 'Feed down', ingestion_health_checks: '[]' };
+      expect(readIngestionHealthCache(cachedFeed)).toEqual({ status: 'critical', summary: 'Feed down', checks: [], since: new Date(RECENT) });
+    });
+
     it('should read unreadable cached checks as no check', () => {
       expect(resolveIngestionHealth(connector({ ingestion_health_status: 'unknown', ingestion_health_checks: 'not json' }))?.checks).toEqual([]);
     });
@@ -141,6 +150,17 @@ describe('Ingestion health domain', () => {
       expect(await codesOf({ connector_user_id: 'deleted-user' })).toEqual(['USER_MISSING']);
       expect(await codesOf({ connector_user_id: 'service-user' })).toEqual([]);
       expect(await codesOf({ connector_user_id: 'personal-user' })).toEqual(['USER_NOT_SERVICE_ACCOUNT']);
+    });
+
+    it('should run the connector user checks on a feed or a sync, an empty user running as system without warning', async () => {
+      const codesOf = async (userId: string | null | undefined) => (await resolveFeedIngestionWarnings({} as any, { user_id: userId })).map((warning) => warning.code);
+      expect(await codesOf(undefined)).toEqual([]);
+      expect(await codesOf(null)).toEqual([]);
+      expect(await codesOf('')).toEqual([]);
+      expect(await codesOf(OPENCTI_SYSTEM_UUID)).toEqual([]);
+      expect(await codesOf('deleted-user')).toEqual(['USER_MISSING']);
+      expect(await codesOf('service-user')).toEqual([]);
+      expect(await codesOf('personal-user')).toEqual(['USER_NOT_SERVICE_ACCOUNT']);
     });
 
     it('should resolve nothing for a connector that is not an ingestion source', async () => {

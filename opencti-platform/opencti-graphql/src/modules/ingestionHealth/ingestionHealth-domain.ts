@@ -2,6 +2,7 @@ import { getEntitiesMapFromCache } from '../../database/cache';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { isStopRequestedByUser } from '../../database/connector-liveness';
 import { redisGetConnectorsHeartbeats } from '../../database/redis';
+import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -11,8 +12,17 @@ import { computeIngestionWarnings, isPingingRegularly, nextHeartbeatObservation,
 import { redisGetIngestionHealthObservation } from './ingestionHealth-redis';
 import type { HeartbeatObservation, IngestionActingUser, IngestionCheck, IngestionHealth, IngestionHealthInput, IngestionHealthStatus } from './ingestionHealth-types';
 
+// Cached health, written by the ingestion health manager on change only.
+// Registered on connectors, feeds and syncs (ingestionHealth-attributes.ts)
+export interface IngestionHealthCache {
+  ingestion_health_status?: IngestionHealthStatus;
+  ingestion_health_since?: string;
+  ingestion_health_summary?: string;
+  ingestion_health_checks?: string; // JSON array of IngestionCheck
+}
+
 // Stored connector fields read by the health evaluation
-export interface IngestionHealthConnector {
+export interface IngestionHealthConnector extends IngestionHealthCache {
   internal_id: string;
   name: string;
   _index: string;
@@ -23,11 +33,11 @@ export interface IngestionHealthConnector {
   manager_requested_status?: string | null;
   manager_current_status?: string | null;
   connector_info?: { run_and_terminate?: boolean } | null;
-  // Cached health, written by the ingestion health manager on change only
-  ingestion_health_status?: IngestionHealthStatus;
-  ingestion_health_since?: string;
-  ingestion_health_summary?: string;
-  ingestion_health_checks?: string; // JSON array of IngestionCheck
+}
+
+// Stored feed or sync field read by the configuration checks
+export interface IngestionHealthFeed extends IngestionHealthCache {
+  user_id?: string | null;
 }
 
 export interface IngestionSourceSnapshot {
@@ -60,9 +70,13 @@ export const buildIngestionHealthInput = (connector: IngestionHealthConnector, l
   pings_regularly: isPingingRegularly(heartbeat),
 });
 
-export const buildActingUser = (connector: IngestionHealthConnector, usersById: Map<string, AuthUser>): IngestionActingUser | undefined => {
-  const user = connector.connector_user_id ? usersById.get(connector.connector_user_id) : undefined;
+const toActingUser = (userId: string | null | undefined, usersById: Map<string, AuthUser>): IngestionActingUser | undefined => {
+  const user = userId ? usersById.get(userId) : undefined;
   return user ? { service_account: user.user_service_account === true } : undefined;
+};
+
+export const buildActingUser = (connector: IngestionHealthConnector, usersById: Map<string, AuthUser>): IngestionActingUser | undefined => {
+  return toActingUser(connector.connector_user_id, usersById);
 };
 
 const getUsersById = (context: AuthContext) => getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -82,20 +96,25 @@ const parseCachedChecks = (rawChecks: string | undefined): IngestionCheck[] => {
 // Read from the cache written by the ingestion health manager, the only evaluator (RFC 0001 §4.4).
 // No Redis and no evaluation here: the deployed list polls this field every 5 seconds per open tab,
 // and any GraphQL error would break the whole page.
-export const resolveIngestionHealth = (connector: IngestionHealthConnector): IngestionHealth | null => {
-  if (!isIngestionConnector(connector)) {
-    return null;
-  }
-  if (!connector.ingestion_health_status) {
+// Any source: connector, feed or sync. Feeds and syncs are not evaluated yet, so they always read unknown.
+export const readIngestionHealthCache = (source: IngestionHealthCache): IngestionHealth => {
+  if (!source.ingestion_health_status) {
     // Not evaluated by the manager yet, at activation for instance: never painted red
     return { status: 'unknown', summary: 'Not evaluated yet', checks: [], since: null };
   }
   return {
-    status: connector.ingestion_health_status,
-    summary: connector.ingestion_health_summary ?? 'Not evaluated yet',
-    checks: parseCachedChecks(connector.ingestion_health_checks),
-    since: toDate(connector.ingestion_health_since),
+    status: source.ingestion_health_status,
+    summary: source.ingestion_health_summary ?? 'Not evaluated yet',
+    checks: parseCachedChecks(source.ingestion_health_checks),
+    since: toDate(source.ingestion_health_since),
   };
+};
+
+export const resolveIngestionHealth = (connector: IngestionHealthConnector): IngestionHealth | null => {
+  if (!isIngestionConnector(connector)) {
+    return null;
+  }
+  return readIngestionHealthCache(connector);
 };
 
 // Configuration warnings: a direct uncached read, never part of the health verdict (RFC 0001 §4.1)
@@ -104,6 +123,16 @@ export const resolveIngestionWarnings = async (context: AuthContext, connector: 
     return null;
   }
   return computeIngestionWarnings(buildActingUser(connector, await getUsersById(context)));
+};
+
+// Configuration warnings of a feed or a sync, same checks as a connector except for an empty user:
+// the source then runs as the platform system user, a supported setup (validateIngestionExecutionIdentity), so no warning.
+// A user set but deleted fails the execution: USER_MISSING
+export const resolveFeedIngestionWarnings = async (context: AuthContext, feed: IngestionHealthFeed): Promise<IngestionCheck[]> => {
+  if (!feed.user_id || feed.user_id === OPENCTI_SYSTEM_UUID) {
+    return [];
+  }
+  return computeIngestionWarnings(toActingUser(feed.user_id, await getUsersById(context)));
 };
 
 // Every ingestion connector with its evaluation input, assembled once per manager cycle.

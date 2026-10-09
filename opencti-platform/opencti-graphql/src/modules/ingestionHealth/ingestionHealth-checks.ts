@@ -102,7 +102,8 @@ export const computeIngestionHealth = (input: IngestionHealthInput, now: Date): 
 // Configuration warnings (RFC 0001 §4.1): a second axis, shown on the source detail page only.
 // They never change the runtime status, are never cached and never notified.
 export const computeIngestionWarnings = (actingUser: IngestionActingUser | undefined): IngestionCheck[] => {
-  // No user at all, or a deleted one. Blocking, since a connector without a user cannot authenticate,
+  // No user at all, or a deleted one. Blocking, since a connector without a user cannot authenticate
+  // and a feed or a sync with a deleted user fails at execution (an empty one runs as system, see resolveFeedIngestionWarnings),
   // yet still no effect on the status. It excludes USER_NOT_SERVICE_ACCOUNT: a missing user cannot be a service account.
   // Neither the id nor the name of the user is given (see below)
   if (!actingUser) {

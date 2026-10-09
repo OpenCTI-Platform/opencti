@@ -682,6 +682,8 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestion_health: IngestionHealth @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  ingestion_warnings: [IngestionCheck!] @ff(flags: ["INGESTION_HEALTH"], softFail: true)
 }
 
 type SynchronizerEdge {

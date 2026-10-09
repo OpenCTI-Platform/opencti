@@ -724,6 +724,8 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type SynchronizerEdge {
@@ -13503,6 +13505,8 @@ type IngestionRss implements InternalObject & BasicObject {
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionRssOrdering {
@@ -13604,6 +13608,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionTaxiiOrdering {
@@ -13699,6 +13705,8 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user: Creator
   authorized_members: [MemberAccess!]
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13763,6 +13771,8 @@ type IngestionCsv implements InternalObject & BasicObject {
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionCsvOrdering {
@@ -13877,6 +13887,8 @@ type IngestionJson implements InternalObject & BasicObject {
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type IngestionJsonMapperFromImport {

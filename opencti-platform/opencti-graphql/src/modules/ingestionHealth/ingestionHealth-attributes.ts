@@ -4,6 +4,7 @@ import { INGESTION_HEALTH_STATUSES } from './ingestionHealth-types';
 
 // Health cache, written by the ingestion health manager on change only (RFC 0001 §4.4).
 // This is what the UI reads: the manager is the only evaluator.
+// Registered on connectors and on the feeds (CSV, JSON, RSS, TAXII, TAXII collection) and the syncs; only connectors are evaluated for now.
 // Not registered at all when the INGESTION_HEALTH feature flag is off.
 export const ingestionHealthAttributes: AttributeDefinition[] = [
   {

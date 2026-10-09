@@ -5,6 +5,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_RSS, type StixIngestionRss, type StoreEntityIngestionRss } from './ingestion-types';
 import { convertIngestionRssToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
 const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
   type: {
@@ -48,6 +49,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'ingestion_running', label: 'Ingestion running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ssl_verify', label: 'Verify SSL certificate', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    ...ingestionHealthAttributes,
   ],
   relations: [],
   representative: (stix: StixIngestionRss) => {
