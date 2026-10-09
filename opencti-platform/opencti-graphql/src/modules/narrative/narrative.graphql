@@ -146,6 +146,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
@@ -214,6 +215,7 @@ input NarrativeAddInput {
     x_opencti_modified_at: DateTime
     x_opencti_workflow_id: String
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

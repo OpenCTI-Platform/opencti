@@ -161,6 +161,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   # Cases
   name: String!
   description: String

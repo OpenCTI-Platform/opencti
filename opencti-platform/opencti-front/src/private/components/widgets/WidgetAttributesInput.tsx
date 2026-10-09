@@ -24,6 +24,7 @@ import type { Theme } from '../../../components/Theme';
 import { toCamelCase } from '../../../utils/String';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
+import useCustomFieldWidgetColumns from './useCustomFieldWidgetColumns';
 
 const stixCoreObjectsAvailableAttributesColumns: { attribute: string; label: string }[] = [
   { attribute: 'representative.main', label: 'Representative' },
@@ -179,8 +180,14 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
   );
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
+  const { columns: customFieldColumns } = useCustomFieldWidgetColumns(entityType);
+  const customFieldAttributes = customFieldColumns.map((column) => ({
+    attribute: column.attribute ?? '',
+    label: column.label ?? column.attribute ?? '',
+  }));
   const availableAttributes: { attribute: string; label: string }[] = stixCoreObjectsAvailableAttributesColumns
     .concat(specificAttributesOfType)
+    .concat(customFieldAttributes)
     .sort((a, b) => a.label.localeCompare(b.label));
 
   const findAttribute = (attributeName: string | null) => {

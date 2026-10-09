@@ -76,6 +76,7 @@ const stixSightingRelationshipResolvers = {
       const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
     },
+    customFieldValues: (rel) => rel.custom_field_values ?? [],
     // Figures
     containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
   },

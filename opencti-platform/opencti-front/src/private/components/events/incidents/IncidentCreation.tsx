@@ -1,7 +1,9 @@
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IncidentsLinesQuery$variables } from '@components/events/incidents/__generated__/IncidentsLinesQuery.graphql';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
 import { FunctionComponent } from 'react';
@@ -175,6 +177,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   });
   return (
     <Formik<IncidentAddInput>
+      entityType={INCIDENT_TYPE}
       initialValues={initialValues}
       validationSchema={incidentValidator}
       validateOnChange={true}
@@ -285,6 +288,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

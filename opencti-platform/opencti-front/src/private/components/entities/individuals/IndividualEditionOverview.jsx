@@ -17,6 +17,7 @@ import StatusField from '../../common/form/StatusField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextareaField from '../../../../components/TextareaField';
@@ -292,6 +293,13 @@ const IndividualEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={individual.entity_type}
+            entityId={individual.id}
+            values={individual.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -312,6 +320,7 @@ export default createFragmentContainer(IndividualEditionOverviewComponent, {
   individual: graphql`
       fragment IndividualEditionOverview_individual on Individual {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         description
         contact_information

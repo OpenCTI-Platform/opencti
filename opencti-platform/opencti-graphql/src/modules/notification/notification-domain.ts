@@ -88,7 +88,7 @@ export const addTrigger = async (
   const input = triggerInput as TriggerLiveAddInput;
   if (type === TriggerTypeValue.Live && input.filters) {
     const filters = JSON.parse(input.filters) as FilterGroup;
-    validateFilterGroupForStixMatch(filters);
+    await validateFilterGroupForStixMatch(context, user, filters);
   }
 
   let members;
@@ -193,7 +193,7 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
       // filters need to be validated before save, as we are limited in terms of compatible keys
       // this depends if it's an activity live trigger or knowledge live trigger
       if (trigger.trigger_scope === 'knowledge') {
-        validateFilterGroupForStixMatch(filterGroup);
+        await validateFilterGroupForStixMatch(context, user, filterGroup);
       }
       if (trigger.trigger_scope === 'activity') {
         validateFilterGroupForActivityEventMatch(filterGroup);

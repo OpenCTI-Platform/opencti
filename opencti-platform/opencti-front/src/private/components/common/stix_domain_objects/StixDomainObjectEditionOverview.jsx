@@ -18,6 +18,7 @@ import ConfidenceField from '../form/ConfidenceField';
 import { convertMarkings } from '../../../../utils/edition';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import DrawerHeader from '@common/drawer/DrawerHeader';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 
 const subscription = graphql`
   subscription StixDomainObjectEditionOverviewSubscription($id: ID!) {
@@ -410,6 +411,13 @@ const StixDomainObjectEditionContainer = (props) => {
                 setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />
+              <CustomFieldValuesEdition
+                entityType={stixDomainObject.entity_type}
+                entityId={stixDomainObject.id}
+                values={stixDomainObject.customFieldValues ?? []}
+                fieldPatch={(options) => commitMutation({ mutation: stixDomainObjectMutationFieldPatch, ...options })}
+                enableReferences={enableReferences}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
@@ -435,6 +443,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
     stixDomainObject: graphql`
       fragment StixDomainObjectEditionOverview_stixDomainObject on StixDomainObject {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         entity_type
         parent_types
         confidence

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Divider from '@mui/material/Divider';
 import Card from '@common/card/Card';
 import RelatedContainers from '../../common/containers/related_containers/RelatedContainers';
@@ -16,6 +17,9 @@ import { Stack } from '@mui/material';
 const ReportDetailsFragment = graphql`
   fragment ReportDetails_report on Report {
     id
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     entity_type
     published
     report_types
@@ -117,6 +121,7 @@ const ReportDetails = ({ report }) => {
               variant="inEntity"
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={reportData.entity_type} values={reportData.customFieldValues ?? []} />
         </Grid>
         <Divider sx={{ marginTop: 3 }} />
         <RelatedContainers

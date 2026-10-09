@@ -161,6 +161,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
   # Cases
   name: String!
@@ -173,8 +174,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
-  # Custom fields
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
