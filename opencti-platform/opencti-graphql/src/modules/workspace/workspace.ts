@@ -3,7 +3,6 @@ import { normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_WORKSPACE, type StixWorkspace, type StoreEntityWorkspace } from './workspace-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import convertWorkspaceToStix from './workspace-converter';
 import { authorizedMembers, draftChange } from '../../schema/attribute-definition';
 
@@ -43,5 +42,3 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
   },
   converter_2_1: convertWorkspaceToStix,
 };
-
-registerDefinition(WORKSPACE_DEFINITION);
