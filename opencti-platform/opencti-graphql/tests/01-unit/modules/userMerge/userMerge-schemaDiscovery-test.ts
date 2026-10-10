@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../../src/modules/index';
 import { USER_MERGE_FILTER_TARGETS } from '../../../../src/modules/userMerge/userMerge-filterTargets';
 import { registerModules } from '../../../../src/composition-root';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';

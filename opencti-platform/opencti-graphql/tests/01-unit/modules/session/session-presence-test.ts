@@ -7,10 +7,13 @@ import * as listener from '../../../../src/listener/UserActionListener';
 import * as redis from '../../../../src/database/redis';
 import * as userDomain from '../../../../src/modules/user/user-domain';
 import { getStoppingState, isFeatureEnabled } from '../../../../src/config/conf';
-import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { registerModules } from '../../../../src/composition-root';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
+
+// The abstract types only, among them the Activity attributes the presence events publish
+registerModules([]);
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import {
   getVocabulariesCategories,
   getVocabularyCategoryForField,
@@ -10,6 +10,8 @@ import {
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../../src/schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { VocabularyCategory } from '../../../../src/generated/graphql';
+
+registerModules();
 
 const SYSTEM_ASSET_FIELDS: Record<string, string> = {
   x_opencti_system_category: 'system_category_ov',

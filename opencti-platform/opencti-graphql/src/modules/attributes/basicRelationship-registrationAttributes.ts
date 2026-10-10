@@ -76,4 +76,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
   connections,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
+
+export const registerBasicRelationshipAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
+};

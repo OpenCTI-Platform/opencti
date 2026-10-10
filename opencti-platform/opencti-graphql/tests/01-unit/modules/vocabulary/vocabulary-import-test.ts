@@ -10,8 +10,8 @@ vi.mock('../../../../src/modules/vocabulary/vocabulary-domain', async (importOri
   editVocabulary: vi.fn(),
 }));
 
-// Registers the Vocabulary type, which the platform does at boot
-import '../../../../src/modules/vocabulary/vocabulary';
+import { registerModules } from '../../../../src/composition-root';
+import vocabularyModule from '../../../../src/modules/vocabulary/vocabulary-module';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { addVocabulary, editVocabulary } from '../../../../src/modules/vocabulary/vocabulary-domain';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -22,6 +22,9 @@ import { cleanVocabularyAliases, openVocabularies } from '../../../../src/module
 import { ENTITY_TYPE_VOCABULARY, type BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import { VocabularyCategory } from '../../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
+
+// Registers the Vocabulary type, which the platform does at boot
+registerModules([vocabularyModule]);
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;

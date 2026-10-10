@@ -13,4 +13,7 @@ const stixRelationshipAttributes: Array<AttributeDefinition> = [
   lang,
   relationshipType,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_RELATIONSHIP, stixRelationshipAttributes);
+
+export const registerStixRelationshipAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_RELATIONSHIP, stixRelationshipAttributes);
+};

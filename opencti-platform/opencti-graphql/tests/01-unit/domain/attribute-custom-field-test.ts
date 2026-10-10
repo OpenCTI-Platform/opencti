@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 // Registers the full schema (all entity types' attributes) as a side effect, required for
 // getSchemaAttributeNames/getSchemaAttributes to find any concrete entity type (e.g. Case-Incident).
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import * as cacheModule from '../../../src/database/cache';
 import { getSchemaAttributeNames, getSchemaAttributes } from '../../../src/domain/attribute';

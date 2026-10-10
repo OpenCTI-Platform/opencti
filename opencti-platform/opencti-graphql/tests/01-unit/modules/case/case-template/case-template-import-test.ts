@@ -14,8 +14,8 @@ vi.mock('../../../../../src/modules/case/case-template/case-template-domain', ()
 }));
 vi.mock('../../../../../src/modules/task/task-template/task-template-domain', () => ({ taskTemplateAdd: vi.fn(), taskTemplateEdit: vi.fn() }));
 
-// Registers the Task-Template type, which the platform does at boot
-import '../../../../../src/modules/task/task-template/task-template';
+import { registerModules } from '../../../../../src/composition-root';
+import taskTemplateModule from '../../../../../src/modules/task/task-template/task-template-module';
 import { storeLoadById } from '../../../../../src/database/middleware-loader';
 import { generateStandardId, normalizeName } from '../../../../../src/schema/identifier';
 import {
@@ -33,6 +33,9 @@ import { caseTemplateImportSchema } from '../../../../../src/modules/case/case-t
 import { TEMPLATE_TASK_RELATION, type BasicStoreEntityCaseTemplate } from '../../../../../src/modules/case/case-template/case-template-types';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../../../../src/modules/task/task-template/task-template-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+
+// Registers the Task-Template type, which the platform does at boot
+registerModules([taskTemplateModule]);
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;

@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';

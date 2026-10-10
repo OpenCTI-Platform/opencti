@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import type { StixNarrative } from '../../../src/modules/narrative/narrative-types';
 import type { StixChannel } from '../../../src/modules/channel/channel-types';
@@ -7,6 +7,8 @@ import type { StixEvent } from '../../../src/modules/event/event-types';
 import { NARRATIVE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/techniques/narrative';
 import { CHANNEL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/channel';
 import { EVENT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/entities/event';
+
+registerModules();
 
 // Narrative, Channel and Event store their aliases in `aliases` (see resolveAliasesField),
 // not in `x_opencti_aliases`: the STIX 2.1 output must expose them.

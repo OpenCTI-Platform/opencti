@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import type * as SDO from '../../../src/types/stix-2-1-sdo';
 import { POSITION_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/locations/position';
+
+registerModules();
 
 describe('STIX 2.1 converter - location coordinates', () => {
   it('should keep a latitude and a longitude equal to 0', () => {

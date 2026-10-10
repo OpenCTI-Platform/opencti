@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Registers all entity/relation modules so schemaAttributesDefinition / schemaRelationsRefDefinition
 // are populated, without requiring a live DB/ES stack (pure in-memory schema registration).
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { addFilter, booleanTrueFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
 import { buildRefRelationKey } from '../../../src/schema/general';

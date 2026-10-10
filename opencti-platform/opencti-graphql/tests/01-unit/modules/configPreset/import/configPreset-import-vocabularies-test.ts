@@ -5,13 +5,16 @@ vi.mock('../../../../../src/modules/vocabulary/vocabulary-import', async (import
   importVocabularyCategory: vi.fn(),
 }));
 
-// Registers the Vocabulary type, which the platform does at boot
-import '../../../../../src/modules/vocabulary/vocabulary';
+import { registerModules } from '../../../../../src/composition-root';
+import vocabularyModule from '../../../../../src/modules/vocabulary/vocabulary-module';
 import { importVocabularyCategory } from '../../../../../src/modules/vocabulary/vocabulary-import';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
+
+// Registers the Vocabulary type, which the platform does at boot
+registerModules([vocabularyModule]);
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;

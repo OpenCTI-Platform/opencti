@@ -4,8 +4,7 @@ import { print, type ASTNode } from 'graphql';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
-// region static graphql modules
-import '../../src/modules/index';
+// region model registration
 import { registerModules } from '../../src/composition-root';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';

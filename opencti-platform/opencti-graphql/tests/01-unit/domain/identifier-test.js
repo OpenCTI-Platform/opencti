@@ -4,7 +4,6 @@ import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,

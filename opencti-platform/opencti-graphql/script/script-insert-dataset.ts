@@ -1,5 +1,4 @@
 import fetch from 'node-fetch';
-import '../src/modules/index';
 import { executionContext } from '../src/utils/access';
 import { checkPythonAvailability, execChildPython } from '../src/python/pythonBridge';
 import conf, { logApp } from '../src/config/conf';

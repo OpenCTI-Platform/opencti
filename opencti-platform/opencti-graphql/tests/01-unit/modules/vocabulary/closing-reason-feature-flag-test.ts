@@ -16,7 +16,8 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
 // Turn the dev features off before the modules register their attributes
 const { ENABLED_FEATURE_FLAGS } = await import('../../../../src/config/conf');
 const enabledFeatureFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-await import('../../../../src/modules/index');
+const { registerModules } = await import('../../../../src/composition-root');
+registerModules();
 const { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } = await import('../../../../src/modules/case/case-incident/case-incident-types');
 const { getVocabulariesCategories, getVocabularyCategory, isEntityFieldAnOpenVocabulary } = await import('../../../../src/modules/vocabulary/vocabulary-utils');
 const { depsKeysRegister, schemaAttributesDefinition } = await import('../../../../src/schema/schema-attributes');
