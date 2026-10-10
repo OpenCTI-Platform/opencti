@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
+import userModule from './modules/user/user-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
 import reportModule from './modules/report/report-module';
 import noteModule from './modules/note/note-module';
@@ -25,6 +26,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
+  userModule,
   userMergeModule,
   reportModule,
   noteModule,

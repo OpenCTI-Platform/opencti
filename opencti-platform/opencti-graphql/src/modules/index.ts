@@ -90,7 +90,6 @@ import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
 import './xtm/hub/news-feed/news-feed';
-import './user/user';
 
 // incomplete modules
 // endregion
@@ -164,7 +163,6 @@ import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
-import './user/user-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
