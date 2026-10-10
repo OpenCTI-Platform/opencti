@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { USER_MERGE_FILTER_TARGETS } from '../../../../src/modules/userMerge/userMerge-filterTargets';
+import { registerModules } from '../../../../src/composition-root';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { discoverUserIdAttributes } from '../../../../src/modules/userMerge/userMerge-scalarDiscovery';
 import { userMergeScalarResolution } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import type { AttributeDefinition, MappingDefinition } from '../../../../src/schema/attribute-definition';
+
+registerModules();
 
 describe('userMerge schema discovery', () => {
   it('should give a disposition to every attribute the schema declares as a user reference', () => {
