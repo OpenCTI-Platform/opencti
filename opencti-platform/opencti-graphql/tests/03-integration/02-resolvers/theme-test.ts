@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const CREATE_THEME_MUTATION = gql`
   mutation ThemeAdd($input: ThemeAddInput!) {
@@ -178,6 +178,13 @@ describe('Themes resolver testing', () => {
     const themeNames = queryResult.data?.themes.edges.map((edge: any) => edge.node.name);
     expect(themeNames).toContain('Filigran Dark');
     expect(themeNames).toContain('Filigran Light');
+  });
+
+  it('should not list themes when not authenticated', async () => {
+    await queryUnauthenticatedIsExpectedForbidden({
+      query: LIST_THEMES_QUERY,
+      variables: { first: 10 },
+    });
   });
 
   it('should read a specific theme', async () => {
