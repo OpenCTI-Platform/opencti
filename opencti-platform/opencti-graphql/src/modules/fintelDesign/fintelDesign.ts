@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ENTITY_TYPE_FINTEL_DESIGN, type StixFintelDesign, type StoreEntityFintelDesign } from './fintelDesign-types';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { convertFintelDesignToStix } from './fintelDesign-converter';
 
@@ -41,5 +41,3 @@ export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign,
   },
   converter_2_1: convertFintelDesignToStix,
 };
-
-registerDefinition(FINTEL_DESIGN_DEFINITION);
