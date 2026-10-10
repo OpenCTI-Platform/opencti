@@ -148,7 +148,7 @@ const TasksListFragment = graphql`
             }
             status
             timestamp
-            draft_context  
+            draft_context
           }
         }
       }
@@ -290,7 +290,7 @@ const TasksList = ({ data, options }) => {
                               label={`${t_i18n('Search')}: ${task.task_search}`}
                             />
                             <Tag
-                              label={t_i18n('AND')}
+                              label={t_i18n('and').toUpperCase()}
                             />
                           </Stack>
                         )}

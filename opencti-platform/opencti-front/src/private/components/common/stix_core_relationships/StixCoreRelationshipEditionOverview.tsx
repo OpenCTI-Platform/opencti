@@ -18,6 +18,8 @@ import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatu
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import { CustomFieldStoredValue } from '../../../../utils/customFields';
+import CustomFieldValuesEdition from '../custom_fields/CustomFieldValuesEdition';
 import CommitMessage from '../form/CommitMessage';
 import ConfidenceField from '../form/ConfidenceField';
 import CreatedByField from '../form/CreatedByField';
@@ -41,6 +43,9 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
     description
     relationship_type
     is_inferred
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     coverage_information {
       coverage_name
       coverage_score
@@ -172,6 +177,7 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
+  custom_field_values?: readonly CustomFieldStoredValue[];
   coverage_information?: readonly CoverageInformation[] | undefined;
 }
 
@@ -427,6 +433,15 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
+            {!stixCoreRelationship.is_inferred && (
+              <CustomFieldValuesEdition
+                entityType={stixCoreRelationshipType}
+                entityId={stixCoreRelationship.id}
+                values={stixCoreRelationship.customFieldValues ?? []}
+                fieldPatch={editor.fieldPatch}
+                enableReferences={enableReferences}
+              />
+            )}
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"ISO2": "FR", "NAME": "France", "LON": 2.5, "LAT": 46.5},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0.0, 45.0], [2.0, 45.0], [2.0, 47.0], [0.0, 47.0], [0.0, 45.0]]]
+      }
+    }
+  ]
+}

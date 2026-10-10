@@ -59,7 +59,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -335,8 +335,10 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (element.fromId) elementIds.add(element.fromId);
-    if (element.toId) elementIds.add(element.toId);
+    if (operationType !== ACTION_TYPE_REMOVE || !isStixRelationship(element.entity_type)) {
+      if (element.fromId) elementIds.add(element.fromId);
+      if (element.toId) elementIds.add(element.toId);
+    }
   }
   if (withNeighbours) {
     const callback = (relations) => {

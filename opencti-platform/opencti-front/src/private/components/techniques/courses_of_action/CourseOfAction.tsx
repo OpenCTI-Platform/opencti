@@ -59,6 +59,7 @@ export const courssOfActionFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...CourseOfActionDetails_courseOfAction
   }
 `;

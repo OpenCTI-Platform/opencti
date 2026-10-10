@@ -30,6 +30,9 @@ what has no MUI counterpart at all. Record a gap in
 
 1. Read this file, then `.github/copilot-instructions.md`.
 2. Touching the front end? Run `--explain` above before writing UI code.
+   Touching the back end? Read `.github/instructions/backend.instructions.md`.
+   Adding or removing a feature flag? Follow `.github/skills/add-feature-flag/SKILL.md` —
+   new attribute definitions need `featureFlag`, not only `@ff` and `isFeatureEnabled`.
 3. Read `fds-migration/AGENTS.md` before changing anything under
    `fds-migration/` or any file listed in `migration-state.json`'s `wiredFiles`.
 

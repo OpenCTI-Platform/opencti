@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -30,6 +31,7 @@ class SectorDetailsComponent extends Component {
                 <SectorSubSectors sector={sector} />
               )}
             </Grid>
+            <CustomFieldValuesDisplay entityType={sector.entity_type} values={sector.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -47,6 +49,10 @@ const SectorDetails = createFragmentContainer(SectorDetailsComponent, {
   sector: graphql`
     fragment SectorDetails_sector on Sector {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       isSubSector
       ...SectorSubSectors_sector
