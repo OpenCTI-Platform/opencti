@@ -9,8 +9,13 @@ import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/typ
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
 import { validateUserAccessOperation } from '../../../src/utils/access';
 import { getDraftContext } from '../../../src/utils/draftContext';
-import '../../../src/modules/draftWorkspace/draftWorkspace';
-import '../../../src/modules/workflow/storage/workflow-instance-entity';
+import { registerDefinition } from '../../../src/schema/module';
+import { DRAFT_WORKSPACE_DEFINITION } from '../../../src/modules/draftWorkspace/draftWorkspace';
+import { WORKFLOW_INSTANCE_DEFINITION } from '../../../src/modules/workflow/storage/workflow-instance-entity';
+
+// The definitions alone: the workflow descriptor imports modules this file's mocks don't cover
+registerDefinition(DRAFT_WORKSPACE_DEFINITION);
+registerDefinition(WORKFLOW_INSTANCE_DEFINITION);
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(), createRelation: vi.fn(), deleteElementById: vi.fn(), loadEntity: vi.fn(), updateAttribute: vi.fn(),
