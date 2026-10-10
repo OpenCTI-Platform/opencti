@@ -122,7 +122,6 @@ import './ai/ai-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
-import './smtpConfiguration/smtpConfiguration-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
