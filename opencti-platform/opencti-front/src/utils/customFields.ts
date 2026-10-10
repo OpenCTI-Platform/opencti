@@ -41,14 +41,62 @@ export const getCustomFieldsInitialValues = (
   }),
 );
 
+// Integer values are stored as 32-bit signed integers (GraphQL Int, Elasticsearch integer):
+// without min/max on the definition, these are the bounds.
+const INTEGER_MIN = -2147483648;
+const INTEGER_MAX = 2147483647;
+const getIntegerBounds = (definition: CustomFieldDef) => ({
+  min: definition.min_value ?? INTEGER_MIN,
+  max: definition.max_value ?? INTEGER_MAX,
+});
+
+// Same rules as the creation schema below, for the edition which saves field by field without Yup.
+// An empty input is valid: it clears the value.
+export const getCustomFieldValueError = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+  t_i18n: (key: string) => string,
+): string | undefined => {
+  if (definition.field_type !== 'integer') return undefined;
+  const trimmed = String(rawValue).trim();
+  if (trimmed === '') return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
+  const { min, max } = getIntegerBounds(definition);
+  if (parsed < min || parsed > max) {
+    return t_i18n('The value must be between min and max value');
+  }
+  return undefined;
+};
+
+const buildIntegerValidationSchema = (
+  definition: CustomFieldDef,
+  isMandatory: boolean,
+  t_i18n: (key: string) => string,
+) => {
+  const { min, max } = getIntegerBounds(definition);
+  const schema = Yup.number()
+    // An empty input means "no value": only a mandatory field requires one
+    .transform((value, originalValue) => (originalValue === '' || originalValue === null ? undefined : value))
+    .typeError(t_i18n('The value must be an integer'))
+    .integer(t_i18n('The value must be an integer'))
+    .min(min, t_i18n('The value must be between min and max value'))
+    .max(max, t_i18n('The value must be between min and max value'));
+  return isMandatory ? schema.required(t_i18n('This field is required')) : schema.notRequired();
+};
+
 export const buildCustomFieldsValidationSchema = (
   definitions: readonly CustomFieldDef[],
   entityType: string,
-  requiredMessage: string,
+  t_i18n: (key: string) => string,
 ) => Yup.object().shape(
   Object.fromEntries(
     definitions.map((def) => {
       const isMandatory = getCustomFieldSetting(def, entityType)?.mandatory ?? false;
+      const requiredMessage = t_i18n('This field is required');
+      if (def.field_type === 'integer') {
+        return [def.id, buildIntegerValidationSchema(def, isMandatory, t_i18n)];
+      }
       if (def.field_type === 'multi_select') {
         return [def.id, isMandatory ? Yup.array().min(1, requiredMessage) : Yup.array().nullable()];
       }
@@ -90,8 +138,11 @@ export const getCustomFieldCurrentValue = (
 const parseCustomFieldRawValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
   switch (definition.field_type) {
     case 'integer': {
-      const parsed = parseInt(String(rawValue), 10);
-      return Number.isNaN(parsed) ? undefined : parsed;
+      // Number() (unlike parseInt) never truncates: '1e3' is 1000 like for Yup, '1.9' stays 1.9 for validation to reject.
+      // An empty input is "no value" (Number('') would be 0).
+      const trimmed = String(rawValue).trim();
+      const parsed = Number(trimmed);
+      return trimmed === '' || Number.isNaN(parsed) ? undefined : parsed;
     }
     case 'boolean':
       return rawValue === true;

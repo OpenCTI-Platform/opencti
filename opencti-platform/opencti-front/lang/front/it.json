@@ -2694,6 +2694,7 @@
   "instance_trigger": "trigger dell'istanza",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "sono già distribuite con il gestore. Se il connettore è già stato distribuito senza il gestore, non verrà conteggiato.",
   "instances deployed": "istanze distribuite",
+  "Integer": "Intero",
   "Integration documentation and code": "Documentazione e codice di integrazione",
   "Integration Manager": "Gestore dell'integrazione",
   "Integrations": "Integrazioni",

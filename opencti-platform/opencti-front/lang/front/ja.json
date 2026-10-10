@@ -2694,6 +2694,7 @@
   "instance_trigger": "インスタンストリガー",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "インスタンスがマネージャと共にデプロイ済みであることを示します。このコネクタをマネージャなしですでにデプロイしている場合は、カウントされません。",
   "instances deployed": "インスタンス",
+  "Integer": "整数",
   "Integration documentation and code": "統合ドキュメントとコード",
   "Integration Manager": "インテグレーションマネージャー",
   "Integrations": "インテグレーション",

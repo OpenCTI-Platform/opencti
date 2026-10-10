@@ -12,6 +12,7 @@ import {
   getCustomFieldLabel,
   getCustomFieldsInitialValues,
   getCustomFieldSetting,
+  getCustomFieldValueError,
   getCustomFieldValues,
   isCustomFieldValueSet,
   updateCustomFieldValues,
@@ -28,6 +29,8 @@ const definition = (fieldType: string, overrides: Partial<CustomFieldDef> = {}):
   entity_type_settings: null,
   ...overrides,
 });
+
+const translate = (key: string) => key;
 
 const valueCases: [string, CustomFieldValue, Partial<CustomFieldStoredValue>][] = [
   ['string', 'text', { string_value: 'text' }],
@@ -126,17 +129,63 @@ describe('customFields', () => {
       entity_type_settings: [{ entity_type: 'Report', mandatory: true, default_value: null }],
     });
     const emptyValue = type === 'multi_select' ? [] : '';
-    const schema = buildCustomFieldsValidationSchema([def], 'Report', 'Required');
-    expect(() => schema.validateSync({ [def.id]: emptyValue })).toThrow('Required');
+    const schema = buildCustomFieldsValidationSchema([def], 'Report', translate);
+    expect(() => schema.validateSync({ [def.id]: emptyValue })).toThrow('This field is required');
     expect(schema.isValidSync({ [def.id]: type === 'multi_select' ? ['one'] : '1' })).toBe(true);
-    expect(buildCustomFieldsValidationSchema([def], 'Malware', 'Required').isValidSync({ [def.id]: emptyValue })).toBe(true);
+    expect(buildCustomFieldsValidationSchema([def], 'Malware', translate).isValidSync({ [def.id]: emptyValue })).toBe(true);
   });
 
   it('allows false for a mandatory boolean', () => {
     const def = definition('boolean', {
       entity_type_settings: [{ entity_type: 'Report', mandatory: true, default_value: null }],
     });
-    expect(buildCustomFieldsValidationSchema([def], 'Report', 'Required').isValidSync({ boolean: false })).toBe(true);
+    expect(buildCustomFieldsValidationSchema([def], 'Report', translate).isValidSync({ boolean: false })).toBe(true);
+  });
+
+  it('keeps an optional integer optional', () => {
+    const schema = buildCustomFieldsValidationSchema([definition('integer')], 'Report', translate);
+    expect(schema.isValidSync({ integer: '' })).toBe(true);
+    expect(schema.isValidSync({ integer: '42' })).toBe(true);
+  });
+
+  it.each(['1.9', 'abc'])('rejects an integer value that is not an integer (%s)', (rawValue) => {
+    const schema = buildCustomFieldsValidationSchema([definition('integer')], 'Report', translate);
+    expect(() => schema.validateSync({ integer: rawValue })).toThrow('The value must be an integer');
+  });
+
+  it.each(['-1', '101'])('rejects an integer value outside the min/max bounds (%s)', (rawValue) => {
+    const schema = buildCustomFieldsValidationSchema([definition('integer', { min_value: 0, max_value: 100 })], 'Report', translate);
+    expect(() => schema.validateSync({ integer: rawValue })).toThrow('The value must be between min and max value');
+    expect(schema.isValidSync({ integer: '100' })).toBe(true);
+  });
+
+  it('converts integers without truncating them', () => {
+    expect(buildCustomFieldValueAddInputEntry(definition('integer'), '1e3')).toEqual({ field_name: 'custom_integer', value: [1000] });
+    expect(buildCustomFieldValueAddInputEntry(definition('integer'), '1.9')).toEqual({ field_name: 'custom_integer', value: [1.9] });
+  });
+
+  it('reports integer errors with the same rules as the creation schema', () => {
+    const bounded = definition('integer', { min_value: 0, max_value: 100 });
+    expect(getCustomFieldValueError(bounded, '', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(bounded, '42', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(bounded, '1.9', translate)).toBe('The value must be an integer');
+    expect(getCustomFieldValueError(bounded, 'abc', translate)).toBe('The value must be an integer');
+    expect(getCustomFieldValueError(bounded, '101', translate)).toBe('The value must be between min and max value');
+    expect(getCustomFieldValueError(definition('string'), '1.9', translate)).toBeUndefined();
+  });
+
+  it('bounds integers without min/max to the 32-bit range', () => {
+    const unbounded = definition('integer');
+    expect(getCustomFieldValueError(unbounded, '2147483647', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(unbounded, '3000000000', translate)).toBe('The value must be between min and max value');
+    const schema = buildCustomFieldsValidationSchema([unbounded], 'Report', translate);
+    expect(schema.isValidSync({ integer: '-2147483648' })).toBe(true);
+    expect(() => schema.validateSync({ integer: '3000000000' })).toThrow('The value must be between min and max value');
+  });
+
+  it('clears an integer value when the input is emptied', () => {
+    const stored = Object.freeze([{ field_id: 'integer', field_name: 'custom_integer', int_value: 5 }]);
+    expect(updateCustomFieldValues(definition('integer'), '', stored)).toEqual([]);
   });
 
   it.each(valueCases)('updates a %s value without changing unrelated stored fields', (type, rawValue, storedValue) => {
