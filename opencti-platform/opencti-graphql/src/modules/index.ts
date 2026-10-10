@@ -52,7 +52,6 @@ import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './managerConfiguration/managerConfiguration';
 import './notifier/notifier';
-import './threatActorIndividual/threatActorIndividual';
 
 // incomplete modules
 // endregion
@@ -83,7 +82,6 @@ import './workspace/workspace-graphql';
 import './malwareAnalysis/malwareAnalysis-graphql';
 import './managerConfiguration/managerConfiguration-graphql';
 import './notifier/notifier-graphql';
-import './threatActorIndividual/threatActorIndividual-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

@@ -1,6 +1,6 @@
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { bornIn, ethnicity, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
@@ -95,7 +95,7 @@ export const height: NestedObjectAttribute<Measurement> = {
   ],
 };
 
-const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
+export const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
     id: 'threat-actor-individual',
     name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
@@ -307,4 +307,3 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   converter_2_1: convertThreatActorIndividualToStix_2_1,
   converter_2_0: convertThreatActorIndividualToStix_2_0,
 };
-registerDefinition(THREAT_ACTOR_INDIVIDUAL_DEFINITION);
