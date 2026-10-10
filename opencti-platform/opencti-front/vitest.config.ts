@@ -9,6 +9,11 @@ export default defineConfig({
     setupFiles: './setup-vitest.ts',
     include: ['src/**/*.test.{ts,tsx}'],
     globals: true,
+    server: {
+      deps: {
+        inline: ['formik-mui'],
+      },
+    },
     coverage: {
       enabled: false,
       provider: 'v8',
