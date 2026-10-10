@@ -3437,9 +3437,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pyroscope/nodejs@npm:0.6.4":
-  version: 0.6.4
-  resolution: "@pyroscope/nodejs@npm:0.6.4"
+"@pyroscope/nodejs@npm:0.6.5":
+  version: 0.6.5
+  resolution: "@pyroscope/nodejs@npm:0.6.5"
   dependencies:
     "@datadog/pprof": "npm:5.14.4"
     debug: "npm:^4.4.3"
@@ -3455,7 +3455,7 @@ __metadata:
       optional: true
     fastify:
       optional: true
-  checksum: 10c0/c9b51d17771951108abfbfb810dcb1b6209b5aa68d6c173d0784e8aa6c599fbc4f53cb199607d6d6095c530ccfc090dc56e734830ddcd171ccec745a730dafe6
+  checksum: 10c0/2550145449b40c2e31993d46c8fed30359ac563b58e5062342e6323b5ebff397e5a7e22ebc0d8bd464cb001d1672cd358f9c9ed0285aac8ad83d037acb0b2d5f
   languageName: node
   linkType: hard
 
@@ -10303,7 +10303,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:2.11.0"
     "@opentelemetry/sdk-trace-node": "npm:2.11.0"
     "@opentelemetry/semantic-conventions": "npm:1.43.0"
-    "@pyroscope/nodejs": "npm:0.6.4"
+    "@pyroscope/nodejs": "npm:0.6.5"
     "@rollup/plugin-graphql": "npm:3.0.0"
     "@sesamecare-oss/redlock": "npm:1.4.0"
     "@stylistic/eslint-plugin": "npm:5.10.0"
