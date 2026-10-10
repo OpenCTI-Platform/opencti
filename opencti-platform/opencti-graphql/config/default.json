@@ -389,6 +389,16 @@
     "custom_catalog_refresh_endpoint_uri": null,
     "catalog_sync_remote_timeout": 30000
   },
+  "safe_ejs": {
+    "pool_size": 2,
+    "max_renders_per_worker": 1000,
+    "resource_limits": {
+      "max_old_generation_size_mb": 50,
+      "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
+  },
   "redis": {
     "mode": "single",
     "namespace": "",

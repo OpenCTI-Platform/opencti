@@ -1,10 +1,20 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterAll, describe, it, expect, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
 import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.client';
 import { customEscapeFunction } from '../../../src/utils/safeEjs.worker';
-import { safeName, safeRender, safeReservedPrefix, VerifierIllegalAccessError, VerifierParsingError, VerifierProcessingQuotaExceededError } from '../../../src/utils/safeEjs';
+import { shutdownSafeEjsPool } from '../../../src/utils/safeEjs.pool';
+import conf from '../../../src/config/conf';
+import {
+  createSafeEjsSandbox,
+  safeName,
+  safeRender,
+  safeReservedPrefix,
+  VerifierIllegalAccessError,
+  VerifierParsingError,
+  VerifierProcessingQuotaExceededError,
+} from '../../../src/utils/safeEjs';
 
 const testFilePath = fileURLToPath(import.meta.url);
 
@@ -90,7 +100,23 @@ describe('check safeRender on invalid cases', () => {
     'shorthand Reflect escape': '<% ({Reflect}).Reflect %>',
     'shorthand spread escape': '<% const o = { ...({process}) }; %>',
     'shorthand destructure escape': '<% const { process: p } = { process }; %>',
+    'with statement': '<% with (user) { } %>',
+    'with guard shadow': "<% const o = Object.fromEntries([['____safe____property', (n) => n]]); with (o) { const c = ({})['constructor']; } %>",
+    'include file read': "<% function dead(include){} %><%= include('x') %>",
+    'output tag goal class': '<%= class C { static valueOf() { return 1; } } /(process)/\n1 %>',
+    'output tag goal function': '<%= function f(){} /(process)/\n1 %>',
+    'astral char then output goal': '\u{1F600}<%= class C { static valueOf() { return 1; } } /(process)/\n1 %>',
+    'raw output tag goal': '<%- class C { static valueOf() { return 1; } } /(process)/\n1 %>',
+    'underscore after escaped output marker': '<% let _ = {} %><%=_["constructor"] %>',
+    'underscore after raw output marker': '<% let _ = {} %><%-_["constructor"] %>',
+    'legacy getter accessor': "<%= ({}).__lookupGetter__('__proto__') %>",
+    'legacy define accessor': '<%= ({}).__defineGetter__ %>',
+    'legacy accessor bracket': "<%= ({})['__lookupGetter__']('__proto__') %>",
   }).map(([name, template]) => ({ name, template }));
+
+  [{ label: 'CR', code: 13 }, { label: 'LS', code: 0x2028 }, { label: 'PS', code: 0x2029 }].forEach(({ label, code }) => {
+    illegalAccessCases.push({ name: `line comment ended by ${label}`, template: `<% //c${String.fromCharCode(code)}process %>` });
+  });
 
   it.each(illegalAccessCases)('safeRender should fail with VerifierIllegalAccessError for "$name" case', ({ template }) => {
     expect(() => safeRender(template, data)).toThrowError(VerifierIllegalAccessError);
@@ -157,6 +183,12 @@ describe('check safeRender on valid cases', () => {
       <%# Comment at end %>
     `,
     'ejs with comment between code': '<% const x = 1; %><%# Comment here %><%= x %>',
+    'no-space output tag': '<%=user.name%>',
+    'astral char before output tag': '\u{1F600}<%= user.name %>',
+    'raw output no-space': '<%-user.name%>',
+    'object literal output': '<%= ({ a: 1 }).a %>',
+    'js block comment': '<%= 1 /* c */ + 1 %>',
+    'js line comment': '<% // c\n %>ok',
     'whitespace slurp with underscore': '  <%_ JSON.stringify(user) _%>  ',
     'whitespace slurp with dash': '  <%- user.name -%>  ',
   }).map(([name, template]) => ({ name, template }));
@@ -344,15 +376,7 @@ describe('check safeRenderClient error handling and worker termination detection
     const data = {};
 
     await expect(
-      safeRenderClient(template, data, {
-        timeout: 5000,
-        resourceLimits: {
-          maxOldGenerationSizeMb: 10,
-          maxYoungGenerationSizeMb: 5,
-          codeRangeSizeMb: 5,
-          stackSizeMb: 2,
-        },
-      }),
+      safeRenderClient(template, data, { timeout: 5000 }),
     ).rejects.toThrow();
   });
 
@@ -603,4 +627,212 @@ describe('check safeRender on real files', () => {
       }
     },
   );
+});
+
+describe('check safeRenderClient worker pool', () => {
+  it('should render many templates in a row', async () => {
+    const rendered = [];
+    for (let i = 0; i < 12; i += 1) {
+      rendered.push(await safeRenderClient('<%= it.i %>', { it: { i } }));
+    }
+    expect(rendered).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+  });
+
+  it('should render concurrent templates without mixing up the replies', async () => {
+    const rendered = await Promise.all(
+      Array.from({ length: 12 }, (_, i) => safeRenderClient('<%= it.i %>', { it: { i } })),
+    );
+    expect(rendered).toEqual(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']);
+  });
+
+  it('should keep serving renders after a template failed', async () => {
+    await expect(safeRenderClient('<%= nonExistentVariable.property %>', {})).rejects.toThrow();
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'still alive' } })).toEqual('still alive');
+  });
+
+  it('should keep serving renders after a template timed out', async () => {
+    await expect(
+      safeRenderClient('<% while(true) {} %>', {}, { timeout: 100 }),
+    ).rejects.toThrow(/timeout after 100ms/i);
+    // The worker that hung is terminated, not handed to the next caller.
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'after timeout' } })).toEqual('after timeout');
+  });
+
+  it('should not make a render wait behind busy workers', async () => {
+    const poolSize: number = conf.get('safe_ejs:pool_size');
+    const busy = Array.from({ length: poolSize }, () => safeRenderClient('<% while(true) {} %>', {}, { timeout: 1500 }).catch(() => 'busy'));
+    const start = performance.now();
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'not queued' } }, { timeout: 1000 })).toEqual('not queued');
+    expect(performance.now() - start).toBeLessThan(500);
+    await Promise.all(busy);
+  });
+
+  it('should reject in-flight renders on shutdown and recover afterwards', async () => {
+    const poolSize: number = conf.get('safe_ejs:pool_size');
+    const settled = (promise: Promise<unknown>) => promise.then(() => 'resolved').catch(() => 'rejected');
+    const inFlight = Array.from({ length: poolSize + 1 }, () => settled(safeRenderClient('<% while(true) {} %>', {}, { timeout: 30000 })));
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await shutdownSafeEjsPool();
+    expect(await Promise.all(inFlight)).toEqual(Array.from({ length: poolSize + 1 }, () => 'rejected'));
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'after shutdown' } })).toEqual('after shutdown');
+  });
+
+  it('should reject renders started while a shutdown is in progress', async () => {
+    const shutdown = shutdownSafeEjsPool();
+    await expect(safeRenderClient('<%= 1 %>', {})).rejects.toThrow(/shutting down/i);
+    await shutdown;
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'recovered' } })).toEqual('recovered');
+  });
+
+  it('should not let async work left by one render starve the next', async () => {
+    await expect(safeRenderClient('<% (async () => { for (;;) { await 0; } })() %>ok', {}, { timeout: 1500 }))
+      .rejects.toThrow(/timeout/i);
+    expect(await safeRenderClient('<%= it.value %>', { it: { value: 'after poison' } }, { timeout: 1500 })).toEqual('after poison');
+    await shutdownSafeEjsPool();
+  }, 20000);
+
+  it('should return an empty string without reaching a worker', async () => {
+    expect(await safeRenderClient('', {})).toEqual('');
+  });
+
+  afterAll(async () => {
+    await shutdownSafeEjsPool();
+  });
+});
+
+describe('check render isolation between templates', () => {
+  const GLOBALS = ['Math', 'JSON', 'Date', 'Array', 'String', 'Number', 'Boolean', 'RegExp'];
+
+  it.each(GLOBALS)('should not carry a value written on %s into the next render', async (name) => {
+    expect(await safeRender(`<% ${name}.leaked = 'from-another-render' %>ok`, {})).toEqual('ok');
+    expect(await safeRender(`<%= typeof ${name}.leaked %>`, {})).toEqual('undefined');
+  });
+
+  it.each(GLOBALS)('should not leak a write on %s into the host', async (name) => {
+    await safeRender(`<% ${name}.leakedToHost = 'escaped' %>ok`, {});
+    expect((globalThis as Record<string, any>)[name].leakedToHost).toBeUndefined();
+  });
+
+  it('should not carry render data parked on a global into the next render', async () => {
+    await safeRender('<% Math.stash = it.secret %>ok', { it: { secret: 'tenant-a-payload' } });
+    expect(await safeRender('<%= typeof Math.stash %>', {})).toEqual('undefined');
+  });
+
+  it('should not expose a host global when a context variable shadowing it is deleted', async () => {
+    expect(await safeRender('<% delete process %><%= typeof process %>', { process: 'benign' })).toEqual('undefined');
+  });
+
+  it.each(['keys', 'values', 'entries', 'fromEntries'])('should not carry a write on Object.%s into the next render', async (member) => {
+    expect(await safeRender(`<% Object.${member}.leaked = 'from-another-render' %>ok`, {})).toEqual('ok');
+    expect(await safeRender(`<%= typeof Object.${member}.leaked %>`, {})).toEqual('undefined');
+  });
+
+  it.each(['keys', 'values', 'entries', 'fromEntries'])('should not leak a write on Object.%s into the host', async (member) => {
+    await safeRender(`<% Object.${member}.leaked = 'escaped' %>ok`, {});
+    expect(((Object as any)[member] as any).leaked).toBeUndefined();
+  });
+
+  it('should keep Object members isolated through the worker pool as well', async () => {
+    expect(await safeRenderClient("<% Object.keys.leaked = 'through-the-pool' %>ok", {})).toEqual('ok');
+    expect(await safeRenderClient('<%= typeof Object.keys.leaked %>', {})).toEqual('undefined');
+    await shutdownSafeEjsPool();
+  });
+
+  it('should not carry a write on octi.markdownToHtml into the next render', async () => {
+    expect(await safeRender("<% octi.markdownToHtml.leaked = 'from-another-render' %>ok", {}, { useNotificationTool: true })).toEqual('ok');
+    expect(await safeRender('<%= typeof octi.markdownToHtml.leaked %>', {}, { useNotificationTool: true })).toEqual('undefined');
+  });
+
+  it('should keep octi isolated through the worker pool as well', async () => {
+    expect(await safeRenderClient("<% octi.markdownToHtml.leaked = 'through-the-pool' %>ok", {}, { useNotificationTool: true })).toEqual('ok');
+    expect(await safeRenderClient('<%= typeof octi.markdownToHtml.leaked %>', {}, { useNotificationTool: true })).toEqual('undefined');
+    await shutdownSafeEjsPool();
+  });
+
+  it('should keep renders isolated through the worker pool as well', async () => {
+    expect(await safeRenderClient("<% Math.leaked = 'through-the-pool' %>ok", {})).toEqual('ok');
+    expect(await safeRenderClient('<%= typeof Math.leaked %>', {})).toEqual('undefined');
+    await shutdownSafeEjsPool();
+  });
+});
+
+describe('check createSafeEjsSandbox', () => {
+  it('should share globals between renders of the same sandbox', async () => {
+    const sandbox = createSafeEjsSandbox();
+    expect(await sandbox.safeRender("<% Math.shared = 'same-sandbox' %>ok", {})).toEqual('ok');
+    expect(await sandbox.safeRender('<%= Math.shared %>', {})).toEqual('same-sandbox');
+  });
+
+  it('should not share globals between two sandboxes', async () => {
+    const first = createSafeEjsSandbox();
+    const second = createSafeEjsSandbox();
+    expect(await first.safeRender("<% Math.shared = 'first-sandbox' %>ok", {})).toEqual('ok');
+    expect(await second.safeRender('<%= typeof Math.shared %>', {})).toEqual('undefined');
+  });
+
+  it('should not leak a write made in a sandbox into the host', async () => {
+    const sandbox = createSafeEjsSandbox();
+    await sandbox.safeRender("<% JSON.leakedToHost = 'escaped' %>ok", {});
+    expect((JSON as Record<string, any>).leakedToHost).toBeUndefined();
+  });
+
+  it('should enforce quotas on every render of a sandbox', async () => {
+    const sandbox = createSafeEjsSandbox();
+    const quotas = { maxExecutedStatementCount: 100 };
+    expect(await sandbox.safeRender('<% let i=0; while(i<10) i=i+1; %><%= i %>', {}, quotas)).toEqual('10');
+    expect(() => sandbox.safeRender('<% while(true); %>', {}, quotas)).toThrow(VerifierProcessingQuotaExceededError);
+    expect(await sandbox.safeRender('<%= 1 + 1 %>', {}, quotas)).toEqual('2');
+  });
+});
+
+describe('check loop execution quotas', () => {
+  const QUOTAS = { delimiter: '?', async: true, maxExecutedStatementCount: 10000, maxExecutionDuration: 2000 } as any;
+
+  it.each([
+    ['while without a body', '<? while(true); ?>'],
+    ['while with a single statement', '<? let i=0; while(true) i=i+1; ?>'],
+    ['while with a block', '<? let i=0; while(true) { i=i+1; } ?>'],
+    ['do while', '<? do; while(true); ?>'],
+    ['for without any slot', '<? for(;;); ?>'],
+    ['for with a declared initialiser', '<? let x=0; for(let i=0;;) { x=x+1; } ?>'],
+    ['for with an assigned initialiser', '<? let i=0; for(i=0;;) { i=i+1; } ?>'],
+    ['for with an update only', '<? let i=0; for(;;i=i+1) { } ?>'],
+    ['for-of no-brace body growing the iterable', '<? let a=[1]; for (const x of a) a.push(1); ?>'],
+    ['for with a declared initialiser, empty condition and no-brace body', '<? for (let i=0;;i+=1) i+=1; ?>'],
+  ])('should stop an endless %s', async (_label, template) => {
+    await expect(safeRender(template, {}, QUOTAS)).rejects.toThrow(VerifierProcessingQuotaExceededError);
+  });
+
+  it.each([
+    ['while without a body', '<? while(true); ?>'],
+    ['for without any slot', '<? for(;;); ?>'],
+    ['while with a block', '<? let i=0; while(true) { i=i+1; } ?>'],
+  ])('should stop an endless %s rendered through the worker pool', async (_label, template) => {
+    // The pool timeout is well above the quota, so only the quota can stop the loop in time.
+    await expect(safeRenderClient(template, {}, { ...QUOTAS, timeout: 30000 }))
+      .rejects.toThrow(/Max (executed statement count|execution duration) exceeded/);
+    expect(await safeRenderClient('<?= it.value ?>', { it: { value: 'after quota' } }, { delimiter: '?' })).toEqual('after quota');
+  });
+
+  it.each([
+    ['declared initialiser', '<? let s=0; for(let i=0;i<3;i=i+1) { s=s+i; } ?><?= s ?>', '3'],
+    ['assigned initialiser', '<? let s=0; let i; for(i=0;i<3;i=i+1) { s=s+i; } ?><?= s ?>', '3'],
+    ['no initialiser', '<? let s=0; let i=0; for(;i<3;i=i+1) { s=s+i; } ?><?= s ?>', '3'],
+    ['no braces', '<? let s=0; for(let i=0;i<3;i=i+1) s=s+i; ?><?= s ?>', '3'],
+    ['for of', '<? let s=0; for(const x of [1,2,3]) { s=s+x; } ?><?= s ?>', '6'],
+    ['for-of no braces', '<? let s=0; for (const x of [1,2,3]) s=s+x; ?><?= s ?>', '6'],
+    ['for-in no braces', '<? let s=0; const o={ a:1, b:2 }; for (const k in o) s=s+o[k]; ?><?= s ?>', '3'],
+    ['while', '<? let s=0; let i=0; while(i<3) { s=s+i; i=i+1; } ?><?= s ?>', '3'],
+  ])('should leave a terminating loop with a %s alone', async (_label, template, expected) => {
+    expect(await safeRender(template, {}, QUOTAS)).toEqual(expected);
+  });
+
+  it('renders a nested synchronous function in async mode', async () => {
+    expect(await safeRender('<? function f(){ return 1; } ?><?= f() ?>', {}, QUOTAS)).toEqual('1');
+    expect(await safeRender('<? const g = () => 2; ?><?= g() ?>', {}, QUOTAS)).toEqual('2');
+  });
+
+  afterAll(async () => {
+    await shutdownSafeEjsPool();
+  });
 });
