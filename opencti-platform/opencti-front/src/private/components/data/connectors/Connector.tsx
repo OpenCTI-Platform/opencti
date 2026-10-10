@@ -1,5 +1,6 @@
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
@@ -977,6 +978,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               <div style={{ display: 'flex', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
+              {connector.ingestion_health && (
+                <div style={{ display: 'inline-block', flexShrink: 0 }}>
+                  <IngestionHealthChip
+                    status={connector.ingestion_health.status}
+                    summary={connector.ingestion_health.summary}
+                    since={connector.ingestion_health.since}
+                    details={[
+                      // The headline check is already the summary
+                      ...connector.ingestion_health.checks.map((check) => check.message).filter((message) => message !== connector.ingestion_health?.summary),
+                      ...(connector.ingestion_warnings ?? []).map((warning) => `⚠ ${warning.message}`),
+                    ]}
+                  />
+                </div>
+              )}
             </TitleMainEntity>
           </Box>
         </Stack>
@@ -1144,6 +1159,17 @@ const Connector = createRefetchContainer(
           push_exchange
         }
         built_in
+        ingestion_health {
+          status
+          summary
+          since
+          checks {
+            message
+          }
+        }
+        ingestion_warnings {
+          message
+        }
       }
     `,
   },

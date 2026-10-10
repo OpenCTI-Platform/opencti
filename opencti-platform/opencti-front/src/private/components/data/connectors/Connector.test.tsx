@@ -133,4 +133,40 @@ describe('Connector', () => {
     const versionContainer = versionLabel.closest('.MuiGrid-item');
     expect(versionContainer?.textContent).toContain('-');
   });
+
+  it('should display the ingestion health chip with its details in the tooltip', async () => {
+    const { relayEnv, user } = testRender(<ConnectorTestWrapper connectorId="connector-id" />, {
+      userContext: createMockUserContext({
+        schema: { scos: [], sdos: [], smos: [], scrs: [], schemaRelationsTypesMapping: new Map(), schemaRelationsRefTypesMapping: new Map(), filterKeysSchema: new Map() },
+      }),
+    });
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Connector: () => ({
+          ...baseMockConnector,
+          ingestion_health: { status: 'critical', summary: 'No ping received since 2026-10-07T10:00:00.000Z', since: null, checks: [{ message: 'No ping received since 2026-10-07T10:00:00.000Z' }] },
+          ingestion_warnings: [{ message: 'User is not a service account' }],
+        }),
+      }));
+    });
+    const chip = await screen.findByTestId('ingestion-health-chip');
+    expect(chip).toHaveTextContent('Critical');
+    await user.hover(chip);
+    expect((await screen.findAllByText('⚠ User is not a service account')).length).toBeGreaterThan(0);
+  });
+
+  it('should display no ingestion health chip when the flag is off', async () => {
+    const { relayEnv } = testRender(<ConnectorTestWrapper connectorId="connector-id" />, {
+      userContext: createMockUserContext({
+        schema: { scos: [], sdos: [], smos: [], scrs: [], schemaRelationsTypesMapping: new Map(), schemaRelationsRefTypesMapping: new Map(), filterKeysSchema: new Map() },
+      }),
+    });
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Connector: () => ({ ...baseMockConnector, ingestion_health: null, ingestion_warnings: null }),
+      }));
+    });
+    await waitFor(() => expect(screen.getByText('State')).toBeTruthy());
+    expect(screen.queryByTestId('ingestion-health-chip')).toBeNull();
+  });
 });

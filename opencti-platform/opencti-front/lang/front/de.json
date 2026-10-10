@@ -2677,6 +2677,7 @@
   "Ingestion manager is disabled or not configured, please go to the platform settings to enable it.": "Der Ingestion Manager ist deaktiviert oder nicht konfiguriert, bitte gehen Sie zu den Plattformeinstellungen, um ihn zu aktivieren.",
   "Ingestion monitoring": "Ingestion-Überwachung",
   "Ingestion monitoring | Ingestion | Data": "Ingestion-Überwachung | Ingestion | Daten",
+  "INGESTION_HEALTH_MANAGER": "Ingestion-Health-Manager",
   "INGESTION_MANAGER": "Ingestion-Manager",
   "Initial score": "Anfangspunktzahl",
   "Initiator": "Initiator",

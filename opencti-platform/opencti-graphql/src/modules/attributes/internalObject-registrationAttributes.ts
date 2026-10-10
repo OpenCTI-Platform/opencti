@@ -28,6 +28,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { CATALOG_CONTRACT_MAPPINGS } from '../catalog/catalog';
+import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -361,6 +362,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'manager_contract_configuration', label: 'Connector manager', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'manager_contract', label: 'Connector manager contract', type: 'object', format: 'standard', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, mappings: CATALOG_CONTRACT_MAPPINGS },
     { name: 'manager_upgrade_strategy', label: 'Connector upgrade strategy', type: 'string', format: 'enum', values: ['latest'], mandatoryType: 'no', defaultValue: 'latest', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    ...ingestionHealthAttributes,
 
     // endregion
   ],
@@ -464,6 +466,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'last_execution_status', label: 'Last execution status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'listen_deletion', label: 'Listen deletion', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'no_dependencies', label: 'No dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    ...ingestionHealthAttributes,
   ],
   [ENTITY_TYPE_HISTORY]: HistoryDefinition,
   [ENTITY_TYPE_PIR_HISTORY]: HistoryDefinition,

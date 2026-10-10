@@ -724,6 +724,8 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type SynchronizerEdge {
@@ -2143,6 +2145,8 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -13584,6 +13588,8 @@ type IngestionRss implements InternalObject & BasicObject {
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionRssOrdering {
@@ -13685,6 +13691,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionTaxiiOrdering {
@@ -13780,6 +13788,8 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user: Creator
   authorized_members: [MemberAccess!]
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13844,6 +13854,8 @@ type IngestionCsv implements InternalObject & BasicObject {
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 enum IngestionCsvOrdering {
@@ -13958,6 +13970,8 @@ type IngestionJson implements InternalObject & BasicObject {
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestion_health: IngestionHealth
+  ingestion_warnings: [IngestionCheck!]
 }
 
 type IngestionJsonMapperFromImport {
@@ -17190,6 +17204,46 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
+
+enum IngestionHealthStatus {
+  healthy
+  idle
+  degraded
+  critical
+  stopped
+  unknown
+}
+
+enum IngestionCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionCheckSeverity {
+  advisory
+  blocking
+}
+
+enum IngestionCheckCode {
+  NO_HEARTBEAT
+  USER_MISSING
+  USER_NOT_SERVICE_ACCOUNT
+}
+
+type IngestionCheck {
+  kind: IngestionCheckKind!
+  code: IngestionCheckCode!
+  severity: IngestionCheckSeverity!
+  params: JSON
+  message: String!
+}
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  summary: String!
+  checks: [IngestionCheck!]!
+  since: DateTime
 }
 
 enum UsersOrdering {

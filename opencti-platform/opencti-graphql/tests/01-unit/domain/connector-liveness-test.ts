@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectorDelete, pingConnector, registerConnector, updateConnectorRequestedStatus } from '../../../src/domain/connector';
+import { CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS, isManagedConnectorStopped, isStopRequestedByUser } from '../../../src/database/connector-liveness';
 import { connector, connectors, isConnectorActive } from '../../../src/database/repository';
 import { createEntity, internalDeleteElementById, patchAttribute, updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById, topEntitiesList } from '../../../src/database/middleware-loader';
@@ -91,6 +92,19 @@ describe('isConnectorActive', () => {
     expect(isConnectorActive(baseConnector, minutesAgo(6))).toBe(false);
   });
 
+  it('should be active just under the heartbeat timeout and inactive from it', () => {
+    vi.useFakeTimers();
+    try {
+      const nowMs = new Date('2026-10-07T12:00:00.000Z').getTime();
+      vi.setSystemTime(nowMs);
+      const secondsAgo = (seconds: number) => new Date(nowMs - seconds * 1000).toISOString();
+      expect(isConnectorActive(baseConnector, secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS - 1))).toBe(true);
+      expect(isConnectorActive(baseConnector, secondsAgo(CONNECTOR_HEARTBEAT_TIMEOUT_SECONDS))).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('should not be active when a managed connector is stopped, whatever its heartbeat', () => {
     const managedConnector = { ...baseConnector, catalog_id: 'catalog-1', manager_current_status: 'stopped' };
     expect(isConnectorActive(managedConnector, minutesAgo(0))).toBe(false);
@@ -99,6 +113,28 @@ describe('isConnectorActive', () => {
   it('should rely on the active flag for built-in connectors', () => {
     expect(isConnectorActive({ ...baseConnector, built_in: true }, null)).toBe(true);
     expect(isConnectorActive({ ...baseConnector, built_in: true, active: false }, minutesAgo(0))).toBe(false);
+  });
+});
+
+describe('managed connector stop rules', () => {
+  // [connector, stop requested by a user, managed connector stopped]
+  const cases: Array<[string, Record<string, unknown>, boolean, boolean]> = [
+    ['is_managed only, requested stopping', { is_managed: true, manager_requested_status: 'stopping' }, true, true],
+    ['is_managed only, requested stopped', { is_managed: true, manager_requested_status: 'stopped' }, true, true],
+    ['catalog_id only, requested stopping', { catalog_id: 'catalog-1', manager_requested_status: 'stopping' }, true, true],
+    ['catalog_id only, requested stopped', { catalog_id: 'catalog-1', manager_requested_status: 'stopped' }, true, true],
+    ['managed, requested starting', { catalog_id: 'catalog-1', manager_requested_status: 'starting' }, false, false],
+    ['managed, no status', { catalog_id: 'catalog-1' }, false, false],
+    ['managed, current stopped and requested starting (crashed container)', { catalog_id: 'catalog-1', manager_requested_status: 'starting', manager_current_status: 'stopped' }, false, true],
+    ['is_managed only, current stopped alone', { is_managed: true, manager_current_status: 'stopped' }, false, true],
+    ['managed, current started', { catalog_id: 'catalog-1', manager_requested_status: 'starting', manager_current_status: 'started' }, false, false],
+    ['empty catalog_id, requested stopped', { catalog_id: '', manager_requested_status: 'stopped' }, false, false],
+    ['null catalog_id, current stopped', { catalog_id: null, manager_current_status: 'stopped' }, false, false],
+    ['self-hosted, requested stopped and current stopped', { manager_requested_status: 'stopped', manager_current_status: 'stopped' }, false, false],
+  ];
+  it.each(cases)('should apply the rules for %s', (_name, managedConnector, stopRequested, stopped) => {
+    expect(isStopRequestedByUser(managedConnector)).toBe(stopRequested);
+    expect(isManagedConnectorStopped(managedConnector)).toBe(stopped);
   });
 });
 

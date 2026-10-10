@@ -25,6 +25,8 @@ export interface DeployedIntegrationItem {
   logo?: string;
   status: DeployedIntegrationStatus;
   statusLabel: string;
+  // Runtime ingestion health (RFC 0001), connectors only, null when INGESTION_HEALTH is off
+  health?: { status: string; summary: string } | null;
   running?: boolean;
   messagesCount: number | null;
   // Current bundles/second consumed from the integration queues (RabbitMQ ack
@@ -157,6 +159,7 @@ const useDeployedIntegrations = ({
         logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
         status: itemStatus,
         statusLabel: label,
+        health: state?.ingestion_health ?? null,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,

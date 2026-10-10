@@ -1,0 +1,47 @@
+# Ingestion health (RFC 0001), evaluated by the ingestion health manager every minute
+# and read from its cache on the source.
+
+enum IngestionHealthStatus {
+  healthy
+  idle
+  degraded
+  critical
+  stopped
+  unknown
+}
+
+enum IngestionCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionCheckSeverity {
+  advisory
+  blocking
+}
+
+enum IngestionCheckCode {
+  NO_HEARTBEAT
+  USER_MISSING
+  USER_NOT_SERVICE_ACCOUNT
+}
+
+type IngestionCheck {
+  kind: IngestionCheckKind!
+  code: IngestionCheckCode!
+  severity: IngestionCheckSeverity!
+  # Values of the message placeholders, so each surface can render the check in its own locale
+  params: JSON
+  # English sentence
+  message: String!
+}
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  # The most diagnostic check as one sentence, or what is known when nothing failed
+  summary: String!
+  # Runtime checks only, most diagnostic first
+  checks: [IngestionCheck!]!
+  # Since when the source is in this status, null when not known yet
+  since: DateTime
+}

@@ -67,6 +67,7 @@ const DOMAIN_BY_MANAGER: Record<string, ManagerDomain> = {
   CONNECTOR_MANAGER: 'ingestion',
   SYNC_MANAGER: 'ingestion',
   INGESTION_MANAGER: 'ingestion',
+  INGESTION_HEALTH_MANAGER: 'ingestion',
   CATALOG_MANAGER: 'ingestion',
   SOURCE_INTELLIGENCE_MANAGER: 'ingestion',
   NOTIFICATION_MANAGER: 'notifications',
