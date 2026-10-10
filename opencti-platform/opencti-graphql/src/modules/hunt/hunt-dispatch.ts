@@ -6,7 +6,7 @@ import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { huntRunTransitionLockKey, withHuntLock } from './hunt-lock';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { completeConnector } from '../../database/repository';
+import { completeConnector, loadConnectorsHeartbeats } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -53,17 +53,17 @@ export interface HuntConnectorTarget {
 }
 
 /**
- * Active hunt connectors, completed with their liveness (a connector pings every minute).
- * Read from the database, never from the entity cache: a ping refreshes updated_at in the database only, so the cached
- * copy of a live connector looks dead 5 minutes after the cache was last loaded.
+ * Active hunt connectors, completed with their liveness: the heartbeat of their pings (a connector pings every minute).
+ * Read from the database, never from the entity cache, whose copy of a connector can be minutes old.
  */
 export const listHuntConnectors = async (context: AuthContext, onlyAlive = true): Promise<BasicStoreEntityConnector[]> => {
   const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], {
     filters: { mode: FilterMode.And, filters: [{ key: ['connector_type'], values: [CONNECTOR_INTERNAL_HUNT] }], filterGroups: [] },
     noFiltersChecking: true,
   });
+  const heartbeats = await loadConnectorsHeartbeats();
   return connectors
-    .map((connector) => completeConnector(connector) as BasicStoreEntityConnector)
+    .map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)) as BasicStoreEntityConnector)
     .filter((connector) => !onlyAlive || connector.active === true);
 };
 

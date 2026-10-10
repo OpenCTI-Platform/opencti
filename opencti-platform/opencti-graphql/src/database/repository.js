@@ -78,7 +78,7 @@ export const loadConnectorHeartbeat = async (connectorId) => {
   }
 };
 
-const loadConnectorsHeartbeats = async () => {
+export const loadConnectorsHeartbeats = async () => {
   try {
     return await redisGetConnectorsHeartbeats();
   } catch (err) {

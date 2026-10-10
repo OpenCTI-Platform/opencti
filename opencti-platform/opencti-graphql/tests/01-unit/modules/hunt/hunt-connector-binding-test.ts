@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { elCount } from '../../../../src/database/engine';
+import { redisGetConnectorsHeartbeats } from '../../../../src/database/redis';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { generateStandardId } from '../../../../src/schema/identifier';
@@ -40,6 +41,7 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/redis')>(),
   notify: vi.fn(async (_topic, instance) => instance),
+  redisGetConnectorsHeartbeats: vi.fn(async () => new Map()),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-lock', async (importOriginal) => ({
@@ -69,9 +71,11 @@ const SPLUNK_PROD = connector('connector-splunk', 'splunk', 'platform-prod');
 const SENTINEL_LAB = connector('connector-sentinel', 'sentinel', 'platform-lab');
 const TRACKER = connector('connector-tracker', 'internet', null);
 
-// The registered hunt connectors, and the active runs a cancellation reads
+// The registered hunt connectors, their last ping (updated_at here), and the active runs a cancellation reads
 const serving = (connectors: object[], runs: object[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_context, _user, types) => (types?.includes('Connector') ? connectors : runs) as never);
+  const pings = (connectors as { internal_id: string; updated_at: string }[]).map(({ internal_id, updated_at }): [string, string] => [internal_id, updated_at]);
+  vi.mocked(redisGetConnectorsHeartbeats).mockResolvedValue(new Map(pings));
 };
 
 // The connector a registration reads, and the security platform its name stands for when it exists
