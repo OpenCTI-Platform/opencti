@@ -83,7 +83,6 @@ import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
-import './securityCoverage/securityCoverageResult/securityCoverageResult';
 
 // incomplete modules
 // endregion
@@ -143,7 +142,6 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './securityCoverage/securityCoverage-graphql';
-import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
 import './dataSharing/taxiiCollection-graphql';

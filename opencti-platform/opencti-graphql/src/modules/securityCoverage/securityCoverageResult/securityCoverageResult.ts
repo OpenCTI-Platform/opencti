@@ -1,4 +1,4 @@
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
 import { createdAt, creators, coverageInformation, updatedAt } from '../../../schema/attribute-definition';
@@ -22,7 +22,7 @@ import {
 } from './securityCoverageResult-types';
 import convertSecurityCoverageResultToStix from './securityCoverageResult-converter';
 
-const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult> = {
+export const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult> = {
   type: {
     id: 'security-coverage-result',
     name: ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
@@ -96,5 +96,3 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
   },
   converter_2_1: convertSecurityCoverageResultToStix,
 };
-
-registerDefinition(SECURITY_COVERAGE_RESULT_DEFINITION);
