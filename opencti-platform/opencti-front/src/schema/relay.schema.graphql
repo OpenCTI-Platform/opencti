@@ -16685,6 +16685,7 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation
+  customFieldValues: [CustomFieldValue!]
 }
 
 enum HuntsOrdering {
