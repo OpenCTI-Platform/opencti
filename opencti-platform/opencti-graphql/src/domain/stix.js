@@ -1,5 +1,5 @@
 import mime from 'mime-types';
-import { invertObj, map } from 'ramda';
+import { invertObj, map, omit } from 'ramda';
 import { deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
@@ -91,6 +91,9 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
   }
 };
 
+// Filters derived for the connector from the audited export parameters, kept out of the activity event.
+export const EXPORT_CONNECTOR_ONLY_FIELDS = Object.freeze(['main_filter', 'access_filter']);
+
 export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
   if (!exportContext || !exportContext?.entity_type) {
     throw FunctionalError('entity_type is missing from askListExport');
@@ -175,7 +178,7 @@ export const askListExport = async (context, user, exportContext, format, select
     event_access: 'extended',
     event_type: 'command',
     event_scope: 'export',
-    context_data: baseEvent,
+    context_data: { ...omit(EXPORT_CONNECTOR_ONLY_FIELDS, baseEvent), max_marking: contentMaxMarkings, selected_ids: selectedIds },
   });
   return worksForExport;
 };
@@ -235,7 +238,7 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       return work;
     }, connectors),
   );
-  const contextData = completeContextDataForEntity(baseEvent, entity);
+  const contextData = completeContextDataForEntity({ ...omit(EXPORT_CONNECTOR_ONLY_FIELDS, baseEvent), max_marking: contentMaxMarkings }, entity);
   await publishUserAction({
     user,
     event_access: 'extended',

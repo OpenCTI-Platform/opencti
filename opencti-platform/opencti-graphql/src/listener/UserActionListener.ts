@@ -71,7 +71,8 @@ export interface UserExportActionContextData extends ElementContextData {
   export_scope: 'query' | 'single' | 'selection';
   export_type: 'simple' | 'full';
   element_id: string; // Same as id
-  max_marking: string;
+  max_marking: string[];
+  file_markings: string[];
   list_params?: unknown;
   selected_ids?: string[];
 }
