@@ -14,7 +14,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 
 let modulesRegistered = false;
 
-// Each phase runs for every module before the next phase starts: definitions, graphql schemas,
+// Each phase runs for every module before the next phase starts: data model, graphql schemas,
 // managers, then init. The whole of it runs after modules/index, so a migrated definition is
 // registered after the graphql of the modules still registered on import, against the order
 // modules/index documents. That is safe only while nothing reads the model at import time:
@@ -25,7 +25,7 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
     return;
   }
   modulesRegistered = true;
-  descriptors.forEach(({ definitions = [] }) => definitions.forEach((definition) => registerDefinition(definition)));
+  descriptors.forEach(({ dataModel = [] }) => dataModel.forEach((definition) => registerDefinition(definition)));
   descriptors.forEach(({ graphqlSchemas = [] }) => graphqlSchemas.forEach((graphqlSchema) => registerGraphqlSchema(graphqlSchema)));
   descriptors.forEach(({ managers = [] }) => managers.forEach((manager) => registerManager(manager)));
   descriptors.forEach(({ init }) => init?.());

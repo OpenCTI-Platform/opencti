@@ -13,7 +13,7 @@ export interface GraphqlSchemaDefinition {
 // decides when each part is registered.
 export interface ModuleDescriptor {
   id: string;
-  definitions?: ModuleDefinition<any, any>[];
+  dataModel?: ModuleDefinition<any, any>[];
   graphqlSchemas?: GraphqlSchemaDefinition[];
   managers?: ManagerDefinition[];
   // Runs once every module is registered: the schema is complete and may be read.
