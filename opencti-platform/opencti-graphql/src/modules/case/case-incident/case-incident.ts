@@ -2,12 +2,11 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type Stix2CaseIncident, type StixC
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
 import { convertCaseIncidentToStix_2_0, convertCaseIncidentToStix_2_1 } from './case-incident-converter';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
-const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCaseIncident, Stix2CaseIncident> = {
+export const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCaseIncident, Stix2CaseIncident> = {
   type: {
     id: 'case-incident',
     name: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
@@ -50,5 +49,3 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
   converter_2_1: convertCaseIncidentToStix_2_1,
   converter_2_0: convertCaseIncidentToStix_2_0,
 };
-
-registerDefinition(CASE_INCIDENT_DEFINITION);
