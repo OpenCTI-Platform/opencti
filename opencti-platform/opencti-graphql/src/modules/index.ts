@@ -78,7 +78,6 @@ import './exclusionList/exclusionList';
 import './draftWorkspace/draftWorkspace';
 import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
-import './savedFilter/savedFilter';
 
 // incomplete modules
 // endregion
@@ -133,7 +132,6 @@ import './smtpConfiguration/smtpConfiguration-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
-import './savedFilter/savedFilter-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
