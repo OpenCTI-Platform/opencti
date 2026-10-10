@@ -30,7 +30,6 @@ import './channel/channel';
 import './connector/connector';
 import './ingestionHealth/ingestionHealth';
 import './language/language';
-import './event/event';
 
 // incomplete modules
 // endregion
@@ -40,6 +39,5 @@ import './connector/connector-graphql';
 import './ingestionHealth/ingestionHealth-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
-import './event/event-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
