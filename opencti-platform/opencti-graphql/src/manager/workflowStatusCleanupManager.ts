@@ -1,4 +1,4 @@
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, booleanConf, logApp } from '../config/conf';
 import { internalDeleteElementById } from '../database/middleware';
 import { fullEntitiesList, internalLoadById } from '../database/middleware-loader';
 import { notify } from '../database/redis';
@@ -9,7 +9,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import type { BasicWorkflowStatus } from '../types/store';
 import { executionContext, WORKFLOW_MANAGER_USER } from '../utils/access';
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 
 const WORKFLOW_STATUS_CLEANUP_MANAGER_ENABLED = booleanConf('workflow_status_cleanup_manager:enabled', true);
 const WORKFLOW_STATUS_CLEANUP_MANAGER_KEY = conf.get('workflow_status_cleanup_manager:lock_key') || 'workflow_status_cleanup_manager_lock';
@@ -67,7 +67,7 @@ export const workflowStatusCleanupHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] Workflow status cleanup manager process complete', { count: candidates.length });
 };
 
-const WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
+export const WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'WORKFLOW_STATUS_CLEANUP_MANAGER',
   label: 'Workflow status cleanup manager',
   executionContext: 'workflow_status_cleanup_manager',
@@ -84,7 +84,3 @@ const WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-  registerManager(WORKFLOW_STATUS_CLEANUP_MANAGER_DEFINITION);
-}
