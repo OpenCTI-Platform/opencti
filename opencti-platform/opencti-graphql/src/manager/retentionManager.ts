@@ -10,7 +10,6 @@ import { READ_INDEX_HISTORY, READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import type { ManagerDefinition } from './managerModule';
-import { registerManager } from './managerModule';
 import type { AuthContext } from '../types/user';
 import type { FileEdge, RetentionRule } from '../generated/graphql';
 import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
@@ -189,7 +188,7 @@ const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promi
   }
 };
 
-const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
+export const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'RETENTION_MANAGER',
   label: 'Retention manager',
   executionContext: 'retention_manager',
@@ -211,5 +210,3 @@ const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(RETENTION_MANAGER_DEFINITION);
