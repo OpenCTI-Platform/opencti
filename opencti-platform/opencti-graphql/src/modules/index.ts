@@ -94,7 +94,6 @@ import './user/user';
 
 // incomplete modules
 import './report/report';
-import './note/note';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
