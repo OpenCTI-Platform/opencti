@@ -5,6 +5,7 @@ import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
+import externalReferenceModule from './modules/externalReference/externalReference-module';
 import incidentModule from './modules/incident/incident-module';
 import observedDataModule from './modules/observedData/observedData-module';
 import stixCyberObservableModule from './modules/stixCyberObservable/stixCyberObservable-module';
@@ -23,6 +24,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
   userMergeModule,
+  externalReferenceModule,
   incidentModule,
   observedDataModule,
   stixCyberObservableModule,
