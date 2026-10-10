@@ -40,3 +40,6 @@ fds-migration/reports/
 # Env local files
 .env.local
 .env.development.local
+
+# Docs
+__pycache__

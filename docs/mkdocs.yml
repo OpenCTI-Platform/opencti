@@ -66,6 +66,11 @@ plugins:
       enable_creation_date: true
       type: timeago
   - glightbox
+  - macros:
+      module_name: macros
+      render_by_default: false
+      on_undefined: strict
+      on_error_fail: true
 
 # Extensions
 markdown_extensions:
@@ -106,6 +111,10 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.snippets:
       url_download: true
+
+draft_docs: |
+  feature-flags/
+  _*.md
 
 # Page tree
 nav:
