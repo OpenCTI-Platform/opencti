@@ -93,7 +93,6 @@ import './xtm/hub/news-feed/news-feed';
 import './user/user';
 
 // incomplete modules
-import './report/report';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
