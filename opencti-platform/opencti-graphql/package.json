@@ -138,7 +138,7 @@
     "ipaddr.js": "2.5.0",
     "jose": "6.2.12",
     "js-deep-equals": "2.1.1",
-    "jsonpath-plus": "11.1.1",
+    "jsonpath-plus": "11.2.0",
     "jwt-decode": "4.0.0",
     "lru-cache": "11.5.3",
     "luxon": "3.7.2",
