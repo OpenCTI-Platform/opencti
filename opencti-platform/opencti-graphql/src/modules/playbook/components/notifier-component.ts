@@ -21,7 +21,7 @@ import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { checkUserCanAccessStixElement, executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, type DigestEvent } from '../../../manager/notificationManager';
+import { canReceiveNotifications, convertToNotificationUser, EVENT_NOTIFICATION_VERSION, type DigestEvent } from '../../../manager/notificationManager';
 import { generateCreateMessage, generateDeleteMessage } from '../../../database/data-changes';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/stream/stream-handler';
@@ -100,11 +100,11 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
     const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
 
-    const targetUsers = await convertMembersToUsersFromElements(
+    const targetUsers = (await convertMembersToUsersFromElements(
       authorized_members as { value: string }[],
       sourceElements.length > 0 ? sourceElements : [baseData],
       bundle,
-    );
+    )).filter(canReceiveNotifications);
 
     const notificationsCall = [];
 
