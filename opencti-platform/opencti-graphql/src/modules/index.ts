@@ -40,7 +40,6 @@ import './administrativeArea/administrativeArea';
 import './task/task';
 import './task/task-template/task-template';
 import './case/case';
-import './case/case-template/case-template';
 
 // incomplete modules
 // endregion
@@ -61,6 +60,5 @@ import './administrativeArea/administrativeArea-graphql';
 import './task/task-graphql';
 import './task/task-template/task-template-graphql';
 import './case/case-graphql';
-import './case/case-template/case-template-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
