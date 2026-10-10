@@ -17,6 +17,7 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import CaseRft from './CaseRft';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -173,6 +174,11 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
             />
           ),
           ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Rft" /> } : {}),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
+            />
+          ),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}

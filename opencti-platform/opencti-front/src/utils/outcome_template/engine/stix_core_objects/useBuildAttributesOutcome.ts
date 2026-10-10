@@ -6,6 +6,7 @@ import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { SELF_ID } from '../../../filters/filtersUtils';
+import { getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from '../../../customFields';
 import { useFormatter } from '../../../../components/i18n';
 
 // A nested object read by a column (the latest investigation run of a case)
@@ -69,7 +70,9 @@ const useBuildAttributesOutcome = () => {
       }
       let result;
       try {
-        result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
+        result = isCustomFieldAttribute(col.attribute)
+          ? getCustomFieldRawValueByFieldName(data.stixCoreObject?.customFieldValues, col.attribute ?? '') ?? ''
+          : getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
       } catch (_e) {
         result = '';
       }

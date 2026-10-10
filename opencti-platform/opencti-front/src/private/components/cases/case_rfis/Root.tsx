@@ -19,6 +19,7 @@ import { RootCaseRfiCaseQuery } from './__generated__/RootCaseRfiCaseQuery.graph
 import { RootCaseRfiCaseSubscription } from './__generated__/RootCaseRfiCaseSubscription.graphql';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -174,6 +175,11 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
             />
           ),
           ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Rfi" /> } : {}),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
+            />
+          ),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}

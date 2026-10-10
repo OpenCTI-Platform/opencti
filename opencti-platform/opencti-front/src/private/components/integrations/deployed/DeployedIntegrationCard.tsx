@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -236,21 +237,20 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             {item.lastRunDate && (
               <Metric label={t_i18n('Last run')} value={nsdt(item.lastRunDate)} />
             )}
-            {!item.lastRunDate && item.updatedAt && (
-              // The connector updated_at is refreshed by pings: it is a last
-              // seen date, unlike the feed entities modification date.
-              <Metric
-                label={item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified')}
-                value={nsdt(item.updatedAt)}
-              />
+            {!item.lastRunDate && item.lastSeenAt && (
+              <Metric label={t_i18n('Last seen')} value={nsdt(item.lastSeenAt)} />
+            )}
+            {!item.lastRunDate && !item.lastSeenAt && item.updatedAt && (
+              <Metric label={t_i18n('Modified')} value={nsdt(item.updatedAt)} />
             )}
             {item.userName && (
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+          <Stack direction="column" alignItems="flex-end" gap={0.75} onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
+            {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
-          </Box>
+          </Stack>
         </Stack>
       </Card>
     </Box>

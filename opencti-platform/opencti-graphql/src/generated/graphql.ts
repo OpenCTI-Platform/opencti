@@ -323,6 +323,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -543,6 +544,7 @@ export type AdministrativeAreaAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -951,6 +953,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   dataComponents?: Maybe<DataComponentConnection>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -1207,6 +1210,7 @@ export type AttackPatternAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -2158,6 +2162,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -2379,6 +2384,7 @@ export type CampaignAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -2566,6 +2572,7 @@ export type Case = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -3165,6 +3172,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -3419,6 +3427,7 @@ export type CaseRfiAddInput = {
   content_mapping?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -3495,6 +3504,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -3746,6 +3756,7 @@ export type CaseRftAddInput = {
   content_mapping?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -3937,6 +3948,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -4155,6 +4167,7 @@ export type ChannelAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -4237,6 +4250,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -4457,6 +4471,7 @@ export type CityAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -4594,9 +4609,12 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
+  last_seen_at?: Maybe<Scalars['DateTime']['output']>;
+  latest_compatible_version?: Maybe<Scalars['String']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
@@ -4617,6 +4635,7 @@ export type Connector = BasicObject & InternalObject & {
   slug?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
+  update_available?: Maybe<Scalars['Boolean']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   version?: Maybe<Scalars['String']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
@@ -5059,6 +5078,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -5280,6 +5300,7 @@ export type CountryAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -5365,6 +5386,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -5585,6 +5607,7 @@ export type CourseOfActionAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -6486,6 +6509,7 @@ export type CurrentConnectorStatusInput = {
 
 export type CustomFieldDefinition = BasicObject & InternalObject & {
   __typename?: 'CustomFieldDefinition';
+  aliases?: Maybe<Array<Scalars['String']['output']>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -6507,6 +6531,7 @@ export type CustomFieldDefinition = BasicObject & InternalObject & {
 };
 
 export type CustomFieldDefinitionAddInput = {
+  aliases?: InputMaybe<Array<Scalars['String']['input']>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -6559,14 +6584,8 @@ export type CustomFieldValue = {
 };
 
 export type CustomFieldValueAddInput = {
-  boolean_value?: InputMaybe<Scalars['Boolean']['input']>;
-  date_value?: InputMaybe<Scalars['DateTime']['input']>;
-  field_id: Scalars['ID']['input'];
   field_name: Scalars['String']['input'];
-  int_value?: InputMaybe<Scalars['Int']['input']>;
-  select_value?: InputMaybe<Scalars['String']['input']>;
-  select_values?: InputMaybe<Array<Scalars['String']['input']>>;
-  string_value?: InputMaybe<Scalars['String']['input']>;
+  value: Array<InputMaybe<Scalars['Any']['input']>>;
 };
 
 export type CustomView = BasicObject & InternalObject & {
@@ -6657,6 +6676,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   dataSource?: Maybe<DataSource>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -6875,6 +6895,7 @@ export type DataComponentAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   dataSource?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
@@ -6976,6 +6997,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   dataComponents?: Maybe<DataComponentConnection>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -7196,6 +7218,7 @@ export type DataSourceAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   dataComponents?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
@@ -8970,6 +8993,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -9191,6 +9215,7 @@ export type EventAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   event_types?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -9610,6 +9635,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -9857,6 +9883,7 @@ export type FeedbackAddInput = {
   content_mapping?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -10346,6 +10373,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -10594,6 +10622,7 @@ export type GroupingAddInput = {
   context: Scalars['String']['input'];
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -12224,6 +12253,7 @@ export type Identity = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -12437,6 +12467,7 @@ export type IdentityAddInput = {
   contact_information?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -12546,6 +12577,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -12772,6 +12804,7 @@ export type IncidentAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -12915,6 +12948,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   decayChartData?: Maybe<DecayChartData>;
   decayLiveDetails?: Maybe<DecayLiveDetails>;
   decay_applied_rule?: Maybe<IndicatorDecayRule>;
@@ -13159,6 +13193,7 @@ export type IndicatorAddInput = {
   createObservables?: InputMaybe<Scalars['Boolean']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -13265,6 +13300,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -13490,6 +13526,7 @@ export type IndividualAddInput = {
   contact_information?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -13601,6 +13638,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -13822,6 +13860,7 @@ export type InfrastructureAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -14398,6 +14437,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -14624,6 +14664,7 @@ export type IntrusionSetAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -15612,6 +15653,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -15828,6 +15870,7 @@ export type LanguageAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -15982,6 +16025,7 @@ export type Location = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -16194,6 +16238,7 @@ export type LocationAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -16556,6 +16601,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -16783,6 +16829,7 @@ export type MalwareAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -16848,6 +16895,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -17081,6 +17129,7 @@ export type MalwareAnalysisAddInput = {
   configuration_version?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -18214,6 +18263,7 @@ export type Mutation = {
   securityPlatformRelationDelete?: Maybe<SecurityPlatform>;
   sendUserMail?: Maybe<Scalars['Boolean']['output']>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
+  setWorkflowStatus: WorkflowTriggerResult;
   settingsEdit?: Maybe<SettingsEditMutations>;
   setupEnterpriseLicense?: Maybe<Settings>;
   smtpConfigurationDelete?: Maybe<Scalars['Boolean']['output']>;
@@ -18311,6 +18361,7 @@ export type Mutation = {
   userAdminTokenRevoke?: Maybe<Scalars['ID']['output']>;
   userEdit?: Maybe<UserEditMutations>;
   userMerge: UserMergeResult;
+  userMergeDeleteSource: Scalars['ID']['output'];
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
@@ -20468,6 +20519,15 @@ export type MutationSessionKillArgs = {
 };
 
 
+export type MutationSetWorkflowStatusArgs = {
+  applyTransitionActions: Scalars['Boolean']['input'];
+  comment?: InputMaybe<Scalars['String']['input']>;
+  entityId: Scalars['String']['input'];
+  runtimeParams?: InputMaybe<Scalars['JSON']['input']>;
+  targetStatusId: Scalars['String']['input'];
+};
+
+
 export type MutationSettingsEditArgs = {
   id: Scalars['ID']['input'];
 };
@@ -21071,6 +21131,12 @@ export type MutationUserMergeArgs = {
 };
 
 
+export type MutationUserMergeDeleteSourceArgs = {
+  sourceId: Scalars['ID']['input'];
+  targetId: Scalars['ID']['input'];
+};
+
+
 export type MutationUserNoteAddArgs = {
   input: NoteUserAddInput;
 };
@@ -21450,6 +21516,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -21671,6 +21738,7 @@ export type NarrativeAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -22020,6 +22088,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -22265,6 +22334,7 @@ export type NoteAddInput = {
   content: Scalars['String']['input'];
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -22340,6 +22410,7 @@ export type NoteUserAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content: Scalars['String']['input'];
   created?: InputMaybe<Scalars['DateTime']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   likelihood?: InputMaybe<Scalars['Int']['input']>;
@@ -22528,6 +22599,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -22774,6 +22846,7 @@ export type ObservedDataAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -22928,6 +23001,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -23171,6 +23245,7 @@ export type OpinionAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   explanation?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -23244,6 +23319,7 @@ export type OpinionUserAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   explanation?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
@@ -23304,6 +23380,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   default_dashboard?: Maybe<Workspace>;
   default_hidden_types?: Maybe<Array<Scalars['String']['output']>>;
   description?: Maybe<Scalars['String']['output']>;
@@ -23545,6 +23622,7 @@ export type OrganizationAddInput = {
   contact_information?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -24710,6 +24788,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -24932,6 +25011,7 @@ export type PositionAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -25472,6 +25552,7 @@ export type Query = {
   customFieldDefinition?: Maybe<CustomFieldDefinition>;
   customFieldDefinitions?: Maybe<CustomFieldDefinitionConnection>;
   customFieldDefinitionsForEntityType?: Maybe<CustomFieldDefinitionConnection>;
+  customFieldStixFilterKeys?: Maybe<Array<Scalars['String']['output']>>;
   customView?: Maybe<CustomView>;
   customViews: CustomViewsConnection;
   customViewsSettings: CustomViewsSettings;
@@ -25824,6 +25905,7 @@ export type Query = {
   vulnerabilities?: Maybe<VulnerabilityConnection>;
   vulnerability?: Maybe<Vulnerability>;
   work?: Maybe<Work>;
+  workflowBypassStatuses: Array<WorkflowBypassStatus>;
   workflowDefinition?: Maybe<WorkflowSchema>;
   workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
@@ -26327,6 +26409,11 @@ export type QueryCustomFieldDefinitionsArgs = {
 
 export type QueryCustomFieldDefinitionsForEntityTypeArgs = {
   entityType: Scalars['String']['input'];
+};
+
+
+export type QueryCustomFieldStixFilterKeysArgs = {
+  entityType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -29089,6 +29176,11 @@ export type QueryWorkArgs = {
 };
 
 
+export type QueryWorkflowBypassStatusesArgs = {
+  entityId: Scalars['String']['input'];
+};
+
+
 export type QueryWorkflowDefinitionArgs = {
   allowDraft?: InputMaybe<Scalars['Boolean']['input']>;
   entityType: Scalars['String']['input'];
@@ -29234,6 +29326,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -29456,6 +29549,7 @@ export type RegionAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -29584,6 +29678,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   deleteWithElementsCount?: Maybe<Scalars['Int']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -29834,6 +29929,7 @@ export type ReportAddInput = {
   content_mapping?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30574,6 +30670,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -30799,6 +30896,7 @@ export type SectorAddInput = {
   contact_information?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -30902,6 +31000,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   duration?: Maybe<Scalars['String']['output']>;
@@ -31202,6 +31301,7 @@ export type SecurityCoverageAddInput = {
   coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   duration?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
@@ -31278,6 +31378,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -31570,6 +31671,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -31790,6 +31892,7 @@ export type SecurityPlatformAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -31898,6 +32001,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_ip_whitelist_exclusions?: Maybe<Array<Member>>;
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
+  platform_map_countries_custom_file?: Maybe<MapCustomFile>;
   platform_map_custom_file?: Maybe<MapCustomFile>;
   /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
@@ -31946,6 +32050,7 @@ export type SettingsEditMutations = {
   __typename?: 'SettingsEditMutations';
   contextClean?: Maybe<Settings>;
   contextPatch?: Maybe<Settings>;
+  deleteCountriesCustomFile?: Maybe<Settings>;
   deleteMapCustomFile?: Maybe<Settings>;
   deleteMessage?: Maybe<Settings>;
   editMessage?: Maybe<Settings>;
@@ -31953,6 +32058,7 @@ export type SettingsEditMutations = {
   updateCertAuth?: Maybe<Settings>;
   updateHeaderAuth?: Maybe<Settings>;
   updateLocalAuth?: Maybe<Settings>;
+  uploadCountriesCustomFile?: Maybe<Settings>;
   uploadMapCustomFile?: Maybe<Settings>;
 };
 
@@ -31989,6 +32095,11 @@ export type SettingsEditMutationsUpdateHeaderAuthArgs = {
 
 export type SettingsEditMutationsUpdateLocalAuthArgs = {
   input: LocalAuthConfigInput;
+};
+
+
+export type SettingsEditMutationsUploadCountriesCustomFileArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -32797,6 +32908,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -32914,6 +33026,7 @@ export type StixCoreRelationshipAddInput = {
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
@@ -33399,6 +33512,7 @@ export type StixDomainObject = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -33614,6 +33728,7 @@ export type StixDomainObjectAddInput = {
   context?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -34425,6 +34540,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -34515,6 +34631,7 @@ export type StixSightingRelationshipAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -35067,6 +35184,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -35291,6 +35409,7 @@ export type SystemAddInput = {
   contact_information?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -35391,6 +35510,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   due_date?: Maybe<Scalars['DateTime']['output']>;
@@ -35632,6 +35752,7 @@ export type TaskToStixArgs = {
 export type TaskAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   due_date?: InputMaybe<Scalars['DateTime']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
@@ -36093,6 +36214,7 @@ export type ThreatActor = {
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -36342,6 +36464,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -36571,6 +36694,7 @@ export type ThreatActorGroupAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -36667,6 +36791,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   date_of_birth?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -36906,6 +37031,7 @@ export type ThreatActorIndividualAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
@@ -37034,6 +37160,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -37254,6 +37381,7 @@ export type ToolAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -38812,6 +38940,7 @@ export type VocabularyConnection = {
 
 export type VocabularyDefinition = {
   __typename?: 'VocabularyDefinition';
+  closed: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_types: Array<Scalars['String']['output']>;
   fields: Array<VocabularyFieldDefinition>;
@@ -38866,6 +38995,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  customFieldValues?: Maybe<Array<CustomFieldValue>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -39144,6 +39274,7 @@ export type VulnerabilityAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -39876,6 +40007,15 @@ export type WorkflowActionError = {
   message: Scalars['String']['output'];
   source?: Maybe<Scalars['String']['output']>;
   timestamp?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type WorkflowBypassStatus = {
+  __typename?: 'WorkflowBypassStatus';
+  onEnter: Array<WorkflowActionConfig>;
+  onExit: Array<WorkflowActionConfig>;
+  requiresShareOrganizationInput: Scalars['Boolean']['output'];
+  requiresUnshareOrganizationInput: Scalars['Boolean']['output'];
+  status: Status;
 };
 
 export type WorkflowDefinitionMutationResult = {
@@ -42198,7 +42338,7 @@ export type ResolversTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversTypes['Member']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversTypes['Member']>>, platform_messages?: Maybe<Array<ResolversTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversTypes['Organization']>, platform_theme?: Maybe<ResolversTypes['Theme']> }>;
-  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversTypes['Settings']> }>;
+  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteCountriesCustomFile' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadCountriesCustomFile' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteCountriesCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']>, updateCertAuth?: Maybe<ResolversTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversTypes['Settings']>, updateLocalAuth?: Maybe<ResolversTypes['Settings']>, uploadCountriesCustomFile?: Maybe<ResolversTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversTypes['Member']>> }>;
   SettingsMessageInput: SettingsMessageInput;
   SmtpAuthType: SmtpAuthType;
@@ -42475,6 +42615,7 @@ export type ResolversTypes = ResolversObject<{
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionError: ResolverTypeWrapper<WorkflowActionError>;
+  WorkflowBypassStatus: ResolverTypeWrapper<Omit<WorkflowBypassStatus, 'status'> & { status: ResolversTypes['Status'] }>;
   WorkflowDefinitionMutationResult: ResolverTypeWrapper<WorkflowDefinitionMutationResult>;
   WorkflowEntityRef: ResolverTypeWrapper<WorkflowEntityRef>;
   WorkflowExecutionStatus: WorkflowExecutionStatus;
@@ -43301,7 +43442,7 @@ export type ResolversParentTypes = ResolversObject<{
   SendUserMailInput: SendUserMailInput;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<ResolversParentTypes['Member']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, messages_administration?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_critical_alerts: Array<ResolversParentTypes['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<ResolversParentTypes['Member']>>, platform_messages?: Maybe<Array<ResolversParentTypes['SettingsMessage']>>, platform_organization?: Maybe<ResolversParentTypes['Organization']>, platform_theme?: Maybe<ResolversParentTypes['Theme']> };
-  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversParentTypes['Settings']> };
+  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteCountriesCustomFile' | 'deleteMapCustomFile' | 'deleteMessage' | 'editMessage' | 'fieldPatch' | 'updateCertAuth' | 'updateHeaderAuth' | 'updateLocalAuth' | 'uploadCountriesCustomFile' | 'uploadMapCustomFile'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteCountriesCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMapCustomFile?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']>, updateCertAuth?: Maybe<ResolversParentTypes['Settings']>, updateHeaderAuth?: Maybe<ResolversParentTypes['Settings']>, updateLocalAuth?: Maybe<ResolversParentTypes['Settings']>, uploadCountriesCustomFile?: Maybe<ResolversParentTypes['Settings']>, uploadMapCustomFile?: Maybe<ResolversParentTypes['Settings']> };
   SettingsMessage: Omit<SettingsMessage, 'recipients'> & { recipients?: Maybe<Array<ResolversParentTypes['Member']>> };
   SettingsMessageInput: SettingsMessageInput;
   SmtpConfiguration: SmtpConfiguration;
@@ -43529,6 +43670,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
   WorkflowActionError: WorkflowActionError;
+  WorkflowBypassStatus: Omit<WorkflowBypassStatus, 'status'> & { status: ResolversParentTypes['Status'] };
   WorkflowDefinitionMutationResult: WorkflowDefinitionMutationResult;
   WorkflowEntityRef: WorkflowEntityRef;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
@@ -43668,6 +43810,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -43898,6 +44041,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -44330,6 +44474,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -44448,6 +44593,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -44615,6 +44761,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -44702,6 +44849,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -44846,6 +44994,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -44925,6 +45074,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -45048,9 +45198,12 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_seen_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  latest_compatible_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
@@ -45071,6 +45224,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  update_available?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
@@ -45256,6 +45410,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -45344,6 +45499,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -45681,6 +45837,7 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type CustomFieldDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldDefinition'] = ResolversParentTypes['CustomFieldDefinition']> = ResolversObject<{
+  aliases?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45779,6 +45936,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -45890,6 +46048,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -46630,6 +46789,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -46855,6 +47015,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -47164,6 +47325,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -47633,6 +47795,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -47722,6 +47885,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -47837,6 +48001,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   decayChartData?: Resolver<Maybe<ResolversTypes['DecayChartData']>, ParentType, ContextType>;
   decayLiveDetails?: Resolver<Maybe<ResolversTypes['DecayLiveDetails']>, ParentType, ContextType>;
   decay_applied_rule?: Resolver<Maybe<ResolversTypes['IndicatorDecayRule']>, ParentType, ContextType>;
@@ -47947,6 +48112,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -48049,6 +48215,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -48429,6 +48596,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -49067,6 +49235,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -49186,6 +49355,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -49348,6 +49518,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -49425,6 +49596,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50260,6 +50432,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityPlatformRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   sendUserMail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendUserMailArgs, 'input'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
+  setWorkflowStatus?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationSetWorkflowStatusArgs, 'applyTransitionActions' | 'entityId' | 'targetStatusId'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
   setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
   smtpConfigurationDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -50357,6 +50530,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userAdminTokenRevoke?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationUserAdminTokenRevokeArgs, 'id' | 'userId'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userMerge?: Resolver<ResolversTypes['UserMergeResult'], ParentType, ContextType, RequireFields<MutationUserMergeArgs, 'sourceId' | 'targetId'>>;
+  userMergeDeleteSource?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUserMergeDeleteSourceArgs, 'sourceId' | 'targetId'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
@@ -50456,6 +50630,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -50638,6 +50813,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50829,6 +51005,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50947,6 +51124,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -51042,6 +51220,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51562,6 +51741,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -51876,6 +52056,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   customFieldDefinition?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionArgs, 'id'>>;
   customFieldDefinitions?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, Partial<QueryCustomFieldDefinitionsArgs>>;
   customFieldDefinitionsForEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionsForEntityTypeArgs, 'entityType'>>;
+  customFieldStixFilterKeys?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType, Partial<QueryCustomFieldStixFilterKeysArgs>>;
   customView?: Resolver<Maybe<ResolversTypes['CustomView']>, ParentType, ContextType, RequireFields<QueryCustomViewArgs, 'id'>>;
   customViews?: Resolver<ResolversTypes['CustomViewsConnection'], ParentType, ContextType, Partial<QueryCustomViewsArgs>>;
   customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
@@ -52228,6 +52409,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType, Partial<QueryVulnerabilitiesArgs>>;
   vulnerability?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<QueryVulnerabilityArgs>>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<QueryWorkArgs, 'id'>>;
+  workflowBypassStatuses?: Resolver<Array<ResolversTypes['WorkflowBypassStatus']>, ParentType, ContextType, RequireFields<QueryWorkflowBypassStatusesArgs, 'entityId'>>;
   workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
   workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
@@ -52314,6 +52496,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -52413,6 +52596,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   deleteWithElementsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -52795,6 +52979,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -52895,6 +53080,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   duration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52987,6 +53173,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -53067,6 +53254,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -53189,6 +53377,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_ip_whitelist_exclusions?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_map_countries_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
   platform_map_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -53235,6 +53424,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
 export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsEditMutations'] = ResolversParentTypes['SettingsEditMutations']> = ResolversObject<{
   contextClean?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, Partial<SettingsEditMutationsContextPatchArgs>>;
+  deleteCountriesCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   deleteMapCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   deleteMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsDeleteMessageArgs, 'input'>>;
   editMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsEditMessageArgs, 'input'>>;
@@ -53242,6 +53432,7 @@ export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends
   updateCertAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateCertAuthArgs, 'input'>>;
   updateHeaderAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateHeaderAuthArgs, 'input'>>;
   updateLocalAuth?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUpdateLocalAuthArgs, 'input'>>;
+  uploadCountriesCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUploadCountriesCustomFileArgs, 'file'>>;
   uploadMapCustomFile?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsUploadMapCustomFileArgs, 'file'>>;
 }>;
 
@@ -53471,6 +53662,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -53628,6 +53820,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -53989,6 +54182,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -54256,6 +54450,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -54348,6 +54543,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   due_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54586,6 +54782,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -54671,6 +54868,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -54768,6 +54966,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -54875,6 +55074,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -55434,6 +55634,7 @@ export type VocabularyConnectionResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type VocabularyDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyDefinition'] = ResolversParentTypes['VocabularyDefinition']> = ResolversObject<{
+  closed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['VocabularyFieldDefinition']>, ParentType, ContextType>;
@@ -55463,6 +55664,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  customFieldValues?: Resolver<Maybe<Array<ResolversTypes['CustomFieldValue']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -55820,6 +56022,14 @@ export type WorkflowActionErrorResolvers<ContextType = any, ParentType extends R
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowBypassStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowBypassStatus'] = ResolversParentTypes['WorkflowBypassStatus']> = ResolversObject<{
+  onEnter?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
+  onExit?: Resolver<Array<ResolversTypes['WorkflowActionConfig']>, ParentType, ContextType>;
+  requiresShareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  requiresUnshareOrganizationInput?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
 }>;
 
 export type WorkflowDefinitionMutationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowDefinitionMutationResult'] = ResolversParentTypes['WorkflowDefinitionMutationResult']> = ResolversObject<{
@@ -56816,6 +57026,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkTracking?: WorkTrackingResolvers<ContextType>;
   WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
   WorkflowActionError?: WorkflowActionErrorResolvers<ContextType>;
+  WorkflowBypassStatus?: WorkflowBypassStatusResolvers<ContextType>;
   WorkflowDefinitionMutationResult?: WorkflowDefinitionMutationResultResolvers<ContextType>;
   WorkflowEntityRef?: WorkflowEntityRefResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;

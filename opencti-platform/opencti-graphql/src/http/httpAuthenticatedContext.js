@@ -22,6 +22,7 @@ import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns }
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
+import { computeConnectorsUpdateStatus } from '../database/repository';
 import { batchLatestInvestigationRuns, batchServedInvestigationRuns } from '../modules/investigationRun/investigationRun-domain';
 
 export const computeLoaders = (executeContext, user) => {
@@ -47,6 +48,7 @@ export const computeLoaders = (executeContext, user) => {
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
+    connectorUpdateStatusBatchLoader: batchLoader(computeConnectorsUpdateStatus, executeContext, user),
     latestInvestigationRunBatchLoader: batchLoader(batchLatestInvestigationRuns, executeContext, user),
     investigationRunServedBatchLoader: batchLoader(batchServedInvestigationRuns, executeContext, user),
   };

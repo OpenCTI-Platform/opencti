@@ -15,6 +15,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
@@ -182,6 +183,11 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
             />
           ),
           ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Incident" /> } : {}),
+          relationships: (
+            <ContainerStixCoreRelationships
+              containerId={caseData.id}
+            />
+          ),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}

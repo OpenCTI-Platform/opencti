@@ -84,6 +84,11 @@ const useBuildReadableAttribute = () => {
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
       if (DATE_ATTRIBUTES.includes(attribute)) attributeType = 'date';
     }
+    // Attributes unknown to the standard schema (e.g. custom fields) carry their own
+    // attributeType directly on the column: use it as a fallback.
+    if (!attributeType && displayInfo.attributeType) {
+      attributeType = displayInfo.attributeType;
+    }
 
     let readableAttribute;
     if (Array.isArray(attributeData)) {
