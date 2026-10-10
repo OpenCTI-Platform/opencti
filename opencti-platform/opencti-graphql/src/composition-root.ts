@@ -5,6 +5,7 @@ import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
+import vulnerabilityModule from './modules/vulnerability/vulnerability-module';
 import attackPatternModule from './modules/attackPattern/attackPattern-module';
 import courseOfActionModule from './modules/courseOfAction/courseOfAction-module';
 import customFieldModule from './modules/customField/custom-field-module';
@@ -14,6 +15,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
   userMergeModule,
+  vulnerabilityModule,
   attackPatternModule,
   courseOfActionModule,
   customFieldModule,
