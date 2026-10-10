@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import convertStreamCollectionToStix from './streamCollection-converter';
 import { ENTITY_TYPE_STREAM_COLLECTION, type StoreEntityStreamCollection, type StixStreamCollection } from './streamCollection-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const STREAM_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityStreamCollection, StixStreamCollection> = {
+export const STREAM_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityStreamCollection, StixStreamCollection> = {
   type: {
     id: 'stream-collection',
     name: ENTITY_TYPE_STREAM_COLLECTION,
@@ -34,5 +34,3 @@ const STREAM_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityStreamCollection
   },
   converter_2_1: convertStreamCollectionToStix,
 };
-
-registerDefinition(STREAM_COLLECTION_DEFINITION);
