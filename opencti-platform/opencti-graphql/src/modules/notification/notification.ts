@@ -10,7 +10,6 @@ import {
 } from './notification-types';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { authorizedAuthorities, authorizedMembers, created } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
@@ -21,7 +20,7 @@ import { MEMBERS_ENTITY_TYPES } from '../../utils/access';
 // TODO
 
 // Triggers
-const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
+export const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   type: {
     id: 'triggers',
     name: ENTITY_TYPE_TRIGGER,
@@ -57,10 +56,9 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   },
   converter_2_1: convertTriggerToStix,
 };
-registerDefinition(TRIGGER_DEFINITION);
 
 // Notifications
-const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNotification> = {
+export const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNotification> = {
   type: {
     id: 'notifications',
     name: ENTITY_TYPE_NOTIFICATION,
@@ -128,4 +126,3 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
   },
   converter_2_1: convertNotificationToStix,
 };
-registerDefinition(NOTIFICATION_DEFINITION);
