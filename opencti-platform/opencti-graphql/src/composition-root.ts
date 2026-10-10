@@ -3,6 +3,7 @@ import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import requestAccessModule from './modules/requestAccess/requestAccess-module';
 import pirModule from './modules/pir/pir-module';
 import fintelDesignModule from './modules/fintelDesign/fintelDesign-module';
 import securityPlatformModule from './modules/securityPlatform/securityPlatform-module';
@@ -39,6 +40,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  requestAccessModule,
   pirModule,
   fintelDesignModule,
   securityPlatformModule,
