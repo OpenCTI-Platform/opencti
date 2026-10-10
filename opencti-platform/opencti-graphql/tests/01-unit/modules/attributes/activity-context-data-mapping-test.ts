@@ -6,10 +6,13 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => ({
   isFeatureEnabled: () => false,
 }));
 
-import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { registerModules } from '../../../../src/composition-root';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
+
+// Registers the abstract types too, among them the Activity attributes
+registerModules();
 
 describe('Activity context data mapping without feature flags', () => {
   const contextDataAttribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_ACTIVITY, 'context_data') as ObjectAttribute;

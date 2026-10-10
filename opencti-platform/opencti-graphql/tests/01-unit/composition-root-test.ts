@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { printSchema } from 'graphql';
 // Most of the src/back.ts import graph (src/boot needs the builder's migrations glob):
 // registration must still be allowed once all of it is evaluated
-import '../../src/modules/index';
 import '../../src/manager/index';
 import '../../src/managers';
 import '../../src/http/httpServer';

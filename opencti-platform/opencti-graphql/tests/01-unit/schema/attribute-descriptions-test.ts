@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { ATTRIBUTE_DESCRIPTIONS, ATTRIBUTE_DESCRIPTIONS_BY_TYPE, isDescribedType, resolveAttributeDescription } from '../../../src/schema/attribute-descriptions';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';

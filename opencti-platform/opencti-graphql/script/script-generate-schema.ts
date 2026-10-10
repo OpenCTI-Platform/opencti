@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import { lexicographicSortSchema, printSchema } from 'graphql';
-import '../src/modules/index';
 import createSchema from '../src/graphql/schema';
 import { registerModules } from '../src/composition-root';
 

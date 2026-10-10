@@ -34,8 +34,7 @@ vi.mock('../../../src/config/conf', async () => {
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-// The registered schema, for the checks of the date attributes
-import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import * as engine from '../../../src/database/engine';
 import * as accessModule from '../../../src/utils/access';
 import {
@@ -66,6 +65,9 @@ import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relatio
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
 import { FunctionalError } from '../../../src/config/errors';
 import stixObjectOrStixRelationshipOrCreatorResolvers from '../../../src/resolvers/stixObjectOrStixRelationshipOrCreator';
+
+// The registered schema, for the checks of the date attributes
+registerModules();
 
 // ── Shared fixtures ──────────────────────────────────────────────────────────
 

@@ -91,4 +91,7 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
     authorizedAuthorities,
   ],
 };
-R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalRelationshipsAttributes);
+
+export const registerInternalRelationshipAttributes = () => {
+  R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalRelationshipsAttributes);
+};
