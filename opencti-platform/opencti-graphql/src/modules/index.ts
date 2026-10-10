@@ -33,7 +33,6 @@ import './language/language';
 import './event/event';
 import './grouping/grouping';
 import './narrative/narrative';
-import './notification/notification';
 
 // incomplete modules
 // endregion
@@ -46,6 +45,5 @@ import './language/language-graphql';
 import './event/event-graphql';
 import './grouping/grouping-graphql';
 import './narrative/narrative-graphql';
-import './notification/notification-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
