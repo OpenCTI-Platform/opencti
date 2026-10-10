@@ -1,6 +1,6 @@
 # Filigran
 boto3>=1.38.27,<1.44
-datefinder~=0.7.3
+datefinder~=1.0.0
 pika~=1.4.4
 python_json_logger~=4.0.0
 PyYAML~=6.0
