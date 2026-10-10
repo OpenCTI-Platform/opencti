@@ -63,7 +63,6 @@ import './dataSharing/taxiiCollection';
 import './dataSharing/streamCollection';
 import './indicator/indicator';
 import './decayRule/decayRule';
-import './decayRule/exclusions/decayExclusionRule';
 
 // incomplete modules
 // endregion
@@ -103,7 +102,6 @@ import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
 import './decayRule/decayRule-graphql';
-import './decayRule/exclusions/decayExclusionRule-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';

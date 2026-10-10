@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StixDecayExclusionRule, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import convertDecayExclusionRuleToStix from './decayExclusionRule-converter';
 
-const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusionRule, StixDecayExclusionRule> = {
+export const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusionRule, StixDecayExclusionRule> = {
   type: {
     id: 'decayExclusionRule',
     name: ENTITY_TYPE_DECAY_EXCLUSION_RULE,
@@ -28,5 +28,3 @@ const DECAY_EXCLUSION_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayExclusio
   },
   converter_2_1: convertDecayExclusionRuleToStix,
 };
-
-registerDefinition(DECAY_EXCLUSION_RULE_DEFINITION);

@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import decayExclusionRuleModule from './modules/decayRule/exclusions/decayExclusionRule-module';
 import organizationModule from './modules/organization/organization-module';
 import csvMapperModule from './modules/internal/csvMapper/csvMapper-module';
 import jsonMapperModule from './modules/internal/jsonMapper/jsonMapper-module';
@@ -56,6 +57,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  decayExclusionRuleModule,
   organizationModule,
   csvMapperModule,
   jsonMapperModule,
