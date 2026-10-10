@@ -6,7 +6,7 @@ import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterOperatorSelect from './FilterOperatorSelect';
 import FilterValueInput from './FilterValueInput';
-import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './filterFieldLayout';
+import { FILTER_VALUE_POPOVER_WIDTH } from './filterFieldLayout';
 
 export interface CompositeRegardingOfFilterEditorProps {
   filter?: Filter;
@@ -81,7 +81,9 @@ const CompositeRegardingOfFilterEditor: FunctionComponent<CompositeRegardingOfFi
   return (
     <div
       style={{
-        minWidth: FILTER_VALUE_POPOVER_MIN_WIDTH,
+        width: FILTER_VALUE_POPOVER_WIDTH,
+        maxWidth: '100%',
+        boxSizing: 'border-box',
         padding: 8,
         display: 'flex',
         flexDirection: 'column',

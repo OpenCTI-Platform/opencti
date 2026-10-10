@@ -6,7 +6,7 @@ import { useFormatter } from '../../i18n';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../utils/fdsLayer';
 import FilterValueInput from './FilterValueInput';
-import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './filterFieldLayout';
+import { FILTER_VALUE_POPOVER_WIDTH } from './filterFieldLayout';
 
 export interface FilterRowCompositeValueProps {
   filter: Filter;
@@ -71,7 +71,7 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
           paper: {
             elevation: 1,
             className: fdsLayerClass(FILTER_POPOVER_LAYER),
-            sx: { ...filterPopoverPaperSx, marginTop: theme.spacing(1.25), minWidth: FILTER_VALUE_POPOVER_MIN_WIDTH, padding: 1 },
+            sx: { ...filterPopoverPaperSx, marginTop: theme.spacing(1.25), width: FILTER_VALUE_POPOVER_WIDTH, boxSizing: 'border-box', padding: 1 },
           },
         }}
       >

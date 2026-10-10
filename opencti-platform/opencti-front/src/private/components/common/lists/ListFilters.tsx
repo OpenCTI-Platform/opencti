@@ -47,6 +47,8 @@ type ListFiltersProps = {
   disabled?: boolean;
   hideSavedFilters?: boolean;
   disableAddFilterGroup?: boolean;
+  /** Stretches the "Add filter" picker over the free width of its row instead of the fixed 200px. */
+  expandAddFilter?: boolean;
 };
 
 type ParametersType = {
@@ -84,6 +86,7 @@ const ListFilters = ({
   disabled = false,
   hideSavedFilters = false,
   disableAddFilterGroup = false,
+  expandAddFilter = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -189,7 +192,7 @@ const ListFilters = ({
             // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the whole line and
             // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
             // reported on the Triggers page and the threat- actor card page.
-            className="w-50 shrink-0"
+            className={expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0'}
             options={allOptions}
             filterOptions={filterOptions}
             labelPosition="none"
@@ -227,7 +230,7 @@ const ListFilters = ({
           >
             {/* The declared width was shrunk to 119px by the flex row, which cut the label off at 95px of the 101px
                 it needs. flexShrink keeps it at 200. */}
-            <ComboboxField style={{ width: 200, flexShrink: 0 }}>
+            <ComboboxField style={expandAddFilter ? { width: '100%' } : { width: 200, flexShrink: 0 }}>
               <ComboboxInput
                 placeholder={placeholder}
                 aria-label={placeholder}
