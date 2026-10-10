@@ -14,8 +14,11 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 
 let modulesRegistered = false;
 
-// Each phase runs for every module before the next phase starts, keeping the order
-// the import barrels enforced: definitions, graphql schemas, managers, then init.
+// Each phase runs for every module before the next phase starts: definitions, graphql schemas,
+// managers, then init. The whole of it runs after modules/index, so a migrated definition is
+// registered after the graphql of the modules still registered on import, against the order
+// modules/index documents. That is safe only while nothing reads the model at import time:
+// usageProtection catches an early read of attributes or refs, not of types, converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
 export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIPTORS) => {
   if (modulesRegistered) {

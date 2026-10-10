@@ -1,3 +1,6 @@
+// The modules below register themselves on import, so the order of this file is their registration order.
+// Modules migrated to a descriptor register later, when back.ts calls registerModules() (src/composition-root.ts):
+// nothing imported here may read their registrations at import time.
 // region registration attributes, need to be imported before any other modules
 import './attributes/basicObject-registrationAttributes';
 import './attributes/stixObject-registrationAttributes';
