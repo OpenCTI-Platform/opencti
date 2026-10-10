@@ -8,6 +8,7 @@ import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR,
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { resetCacheForEntity } from '../../../../src/database/cache';
+import { redisSetConnectorHeartbeat } from '../../../../src/database/redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
 import {
@@ -21,7 +22,7 @@ import { internalLoadById, storeLoadById } from '../../../../src/database/middle
 import { createRelation, patchAttribute } from '../../../../src/database/middleware';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
+import type { BasicStoreRelation } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 
@@ -555,8 +556,7 @@ describe('IOC validation requests', () => {
     };
     await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
     // A registered connector is alive while it pings: its last ping is set beyond the liveness window
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
-    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    await redisSetConnectorHeartbeat(WAITING_IOC_VALIDATION_CONNECTOR, new Date(Date.now() - 10 * 60 * 1000).toISOString());
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const indicator = await queryAsAdminWithSuccess({
       query: INDICATOR_ADD,
@@ -610,8 +610,7 @@ describe('IOC validation requests', () => {
       auto_update: false,
     };
     await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, UNREADABLE_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
-    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    await redisSetConnectorHeartbeat(UNREADABLE_IOC_VALIDATION_CONNECTOR, new Date(Date.now() - 10 * 60 * 1000).toISOString());
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const hidden = await queryAsAdminWithSuccess({
       query: INDICATOR_ADD,
@@ -672,8 +671,7 @@ describe('IOC validation requests', () => {
       auto_update: false,
     };
     await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
-    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    await redisSetConnectorHeartbeat(NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR, new Date(Date.now() - 10 * 60 * 1000).toISOString());
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const hidden = await queryAsAdminWithSuccess({
       query: INDICATOR_ADD,
@@ -741,8 +739,7 @@ describe('IOC validation requests', () => {
       auto_update: false,
     };
     await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, UNPUBLISHED_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
-    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    await redisSetConnectorHeartbeat(UNPUBLISHED_IOC_VALIDATION_CONNECTOR, new Date(Date.now() - 10 * 60 * 1000).toISOString());
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const publish = rabbitmq.pushToConnector;
     let id: string | undefined;
@@ -837,8 +834,7 @@ describe('IOC validation requests', () => {
       auto_update: false,
     }, { connector_user_id: connectorUserId });
     // A registered connector is alive while it pings: its last ping is set beyond the liveness window
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
-    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    await redisSetConnectorHeartbeat(NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR, new Date(Date.now() - 10 * 60 * 1000).toISOString());
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     let id: string | undefined;
     try {
