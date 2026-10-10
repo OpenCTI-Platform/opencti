@@ -60,6 +60,7 @@ export const narrativeFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...NarrativeDetails_narrative
   }
 `;

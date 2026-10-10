@@ -1,6 +1,9 @@
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { memoizeAsync } from '../utils/memoize';
 import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import * as s3 from '@aws-sdk/client-s3';
 import {
   CopyObjectCommand,
@@ -215,6 +218,12 @@ export const downloadFileRange = async (id: string, range?: string): Promise<Ran
   }
 };
 
+const localFileEtag = memoizeAsync(async (filePath: string): Promise<string> => {
+  const hash = createHash('sha256');
+  await pipeline(createReadStream(filePath), hash);
+  return `"bundled-${hash.digest('hex').slice(0, 32)}"`;
+}, (filePath) => filePath);
+
 export const downloadLocalFileRange = async (filePath: string, range?: string): Promise<RangeDownloadResult | null> => {
   let fileStat;
   try {
@@ -223,7 +232,7 @@ export const downloadLocalFileRange = async (filePath: string, range?: string): 
     return null;
   }
   const totalSize = fileStat.size;
-  const etag = `"bundled-${fileStat.mtimeMs}"`;
+  const etag = await localFileEtag(filePath);
   if (range) {
     const match = range.match(/bytes=(\d+)-(\d*)/);
     if (match) {
@@ -308,9 +317,10 @@ export const rawUpload = async (key: string, body: string | Readable | Buffer) =
 export interface FileMetadata {
   contentDisposition?: string;
   contentLength?: number;
+  etag?: string;
 }
 
-export const rawUploadWithMetadata = async (key: string, body: Readable, contentDisposition?: string) => {
+export const rawUploadWithMetadata = async (key: string, body: Readable | Buffer, contentDisposition?: string, contentEncoding?: string) => {
   const s3Upload = new Upload({
     client: s3Client,
     params: {
@@ -318,6 +328,7 @@ export const rawUploadWithMetadata = async (key: string, body: Readable, content
       Key: key,
       Body: body,
       ContentDisposition: contentDisposition,
+      ContentEncoding: contentEncoding,
     },
   });
   await s3Upload.done();
@@ -329,6 +340,7 @@ export const getFileMetadata = async (key: string): Promise<FileMetadata | null>
     return {
       contentDisposition: head.ContentDisposition,
       contentLength: head.ContentLength,
+      etag: head.ETag,
     };
   } catch (err: any) {
     if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {

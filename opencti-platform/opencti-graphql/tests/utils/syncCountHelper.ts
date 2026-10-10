@@ -15,7 +15,7 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 22;
 testCreatedCounter.campaign = 6;
-testCreatedCounter['case-incident'] = 7;
+testCreatedCounter['case-incident'] = 9;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -60,7 +60,7 @@ testCreatedCounter['ssh-key'] = 1;
 // + 2 created by timeMachine-test
 testCreatedCounter.relationship = 148;
 // + 1 created by timeMachine-test
-testCreatedCounter.report = 56;
+testCreatedCounter.report = 58;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -85,9 +85,9 @@ testUpdatedCounter['intrusion-set'] = 7;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 11;
+testUpdatedCounter['case-incident'] = 13;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 18;
+testUpdatedCounter.report = 20;
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -129,7 +129,7 @@ export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 17;
 testDeletedCounter.campaign = 2;
-testDeletedCounter['case-incident'] = 7;
+testDeletedCounter['case-incident'] = 9;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
@@ -167,7 +167,7 @@ testDeletedCounter['phone-number'] = 2;
 // + 1 deleted by timeMachine-test
 testDeletedCounter.relationship = 5;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.report = 47;
+testDeletedCounter.report = 49;
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;

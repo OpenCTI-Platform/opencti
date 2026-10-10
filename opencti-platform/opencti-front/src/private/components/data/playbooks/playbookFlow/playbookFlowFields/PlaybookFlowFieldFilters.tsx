@@ -17,7 +17,7 @@ import { Box, FormControl, FormLabel } from '@mui/material';
 import FilterIconButton from '../../../../../../components/FilterIconButton';
 import Filters from '../../../../common/lists/Filters';
 import useFiltersState from '../../../../../../utils/filters/useFiltersState';
-import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, useStixFilters } from '../../../../../../utils/filters/filtersUtils';
 import { useTheme } from '@mui/material/styles';
 
 interface PlaybookFlowFieldFiltersProps {
@@ -33,6 +33,7 @@ const PlaybookFlowFieldFilters = ({
 }: PlaybookFlowFieldFiltersProps) => {
   const theme = useTheme();
   const [filters, helpers] = filtersState;
+  const stixFilters = useStixFilters();
   const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(
     ['Stix-Core-Object', 'stix-core-relationship'],
   );
@@ -59,7 +60,7 @@ const PlaybookFlowFieldFilters = ({
   };
 
   return (
-    <FormControl sx={{ marginTop: 2 }}>
+    <FormControl fullWidth sx={{ marginTop: 2 }}>
       {label && (
         <FormLabel sx={{ fontSize: 12, marginBottom: theme.spacing(0.5) }}>
           {label}
@@ -81,6 +82,7 @@ const PlaybookFlowFieldFilters = ({
       <FilterIconButton
         filters={filters}
         helpers={helpers}
+        availableFilterKeys={availableFilterKeys}
         entityTypes={entityTypes}
         searchContext={searchContext}
         redirection
