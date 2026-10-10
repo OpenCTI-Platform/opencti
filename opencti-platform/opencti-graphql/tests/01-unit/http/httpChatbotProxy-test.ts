@@ -135,10 +135,12 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
 const mockPost = vi.fn();
 const mockGet = vi.fn();
 const mockDelete = vi.fn();
+const mockPatch = vi.fn();
 vi.mock('../../../src/utils/http-client', () => ({
   getHttpClient: vi.fn(() => ({
     get: mockGet,
     post: mockPost,
+    patch: mockPatch,
     delete: mockDelete,
     head: vi.fn(),
     call: vi.fn(),
@@ -161,19 +163,26 @@ import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
 import { getXtmOneIdentity } from '../../../src/domain/xtm-auth';
 import xtmOneClient from '../../../src/modules/xtm/one/xtm-one-client';
+import { getHttpClient } from '../../../src/utils/http-client';
 import {
   deleteChatbotMessageFeedback,
   deleteChatbotSession,
+  deleteChatbotWorkspace,
   getChatbotConfig,
   getChatbotFileDownload,
   getChatbotPendingApprovals,
   getChatbotPrompts,
   getChatbotQuota,
   getChatbotSessions,
+  getChatbotWorkspaces,
+  patchChatbotSession,
+  patchChatbotWorkspace,
   postAgentMessageStream,
   postChatbotMessageApprove,
   postChatbotMessageFeedback,
   postChatbotMessageSteer,
+  postChatbotSession,
+  postChatbotWorkspace,
 } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
@@ -1120,6 +1129,443 @@ describe('httpChatbotProxy: deleteChatbotSession', () => {
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotSession', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should forward the body whole, including the workspace the conversation is filed into', async () => {
+    mockPost.mockResolvedValue({ status: 200, data: { conversation_id: '44444444-4444-4444-4444-444444444444' } });
+    const body = { agent_slug: 'global.assistant', workspace_id: '55555555-5555-5555-5555-555555555555' };
+
+    await postChatbotSession(buildReq(body), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/sessions');
+    expect(sentBody).toEqual(body);
+  });
+});
+
+describe('httpChatbotProxy: patchChatbotSession', () => {
+  const VALID_CONVERSATION_ID = '22222222-2222-2222-2222-222222222222';
+  const VALID_WORKSPACE_ID = '66666666-6666-6666-6666-666666666666';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildPatchReq = (conversationId: string, body?: unknown) => ({ params: { conversationId }, body, headers: {} } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID conversation id without calling XTM One', async () => {
+    await patchChatbotSession(buildPatchReq('../../workspaces', { title: 'Renamed' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid conversation id' });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is not a JSON object', async () => {
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, [{ title: 'Renamed' }]), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body must be a JSON object' });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should forward a rename and the upstream answer', async () => {
+    const answer = { conversation_id: VALID_CONVERSATION_ID, title: 'Renamed', workspace_id: null };
+    mockPatch.mockResolvedValue({ status: 200, data: answer });
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
+
+    expect(mockPatch).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPatch.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/sessions/${VALID_CONVERSATION_ID}`);
+    expect(sentBody).toEqual({ title: 'Renamed' });
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(answer);
+  });
+
+  it('should forward a null workspace id, which takes the conversation out of every workspace', async () => {
+    mockPatch.mockResolvedValue({ status: 200, data: { conversation_id: VALID_CONVERSATION_ID, title: 'T', workspace_id: null } });
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { workspace_id: null }), res);
+
+    const [, sentBody] = mockPatch.mock.calls[0];
+    expect(sentBody).toEqual({ workspace_id: null });
+  });
+
+  it('should forward a move into a workspace', async () => {
+    mockPatch.mockResolvedValue({ status: 200, data: { conversation_id: VALID_CONVERSATION_ID, title: 'T', workspace_id: VALID_WORKSPACE_ID } });
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { workspace_id: VALID_WORKSPACE_ID }), res);
+
+    const [, sentBody] = mockPatch.mock.calls[0];
+    expect(sentBody).toEqual({ workspace_id: VALID_WORKSPACE_ID });
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('should forward an upstream 404 with its JSON body', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Conversation not found' } };
+    mockPatch.mockRejectedValue(httpError);
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ detail: 'Conversation not found', status: 'error', error: 'Conversation not found' });
+  });
+
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
+    mockPatch.mockRejectedValue(new Error('Network failure'));
+
+    await patchChatbotSession(buildPatchReq(VALID_CONVERSATION_ID, { title: 'Renamed' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotWorkspaces', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 without calling XTM One when the chatbot is not enabled', async () => {
+    withoutOwnLicense();
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Chatbot is not enabled' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the list as the calling user, with the upstream status and body', async () => {
+    const workspaces = { workspaces: [{ id: '77777777-7777-7777-7777-777777777777', name: 'Default', is_default: true }] };
+    mockGet.mockResolvedValue({ status: 200, data: workspaces });
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockGet.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/workspaces');
+    expect(opts.timeout).toBeGreaterThan(0);
+    const clientOptions = vi.mocked(getHttpClient).mock.calls.at(-1)?.[0];
+    expect(clientOptions?.headers).toMatchObject({ Authorization: 'Bearer jwt-token-123', 'Content-Type': 'application/json' });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(workspaces);
+  });
+
+  it('should forward an upstream 403 (XTM One not licensed) with its JSON body', async () => {
+    const httpError = new Error('Request failed with status code 403') as any;
+    httpError.response = { status: 403, data: { detail: 'XTM One requires an Enterprise Edition license' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: 'XTM One requires an Enterprise Edition license',
+      status: 'error',
+      error: 'XTM One requires an Enterprise Edition license',
+    });
+  });
+
+  it('should not forward a non-JSON upstream error body', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, data: '<html>Bad Gateway</html>' };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One could not complete the request' });
+    expect(res.send).not.toHaveBeenCalled();
+  });
+
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
+    mockGet.mockRejectedValue(new Error('<img src=x onerror=alert(1)>'));
+
+    await getChatbotWorkspaces(buildReq(), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
+    expect(res.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('httpChatbotProxy: postChatbotWorkspace', () => {
+  let res: ReturnType<typeof buildRes>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await postChatbotWorkspace(buildReq({ name: 'Incident 42' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is missing', async () => {
+    await postChatbotWorkspace(buildReq(undefined), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body is missing' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should forward the body and the upstream 201', async () => {
+    const created = { id: '88888888-8888-8888-8888-888888888888', name: 'Incident 42', is_default: false };
+    mockPost.mockResolvedValue({ status: 201, data: created });
+    const body = { name: 'Incident 42', description: 'Ransomware case' };
+
+    await postChatbotWorkspace(buildReq(body), res);
+
+    expect(mockPost).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPost.mock.calls[0];
+    expect(url).toBe('/api/v1/platform/chat/workspaces');
+    expect(sentBody).toEqual(body);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(created);
+  });
+
+  it('should forward an upstream validation error with its JSON body', async () => {
+    const validation = [{ loc: ['body', 'name'], msg: 'Field required', type: 'missing' }];
+    const httpError = new Error('Request failed with status code 422') as any;
+    httpError.response = { status: 422, data: { detail: validation } };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotWorkspace(buildReq({ description: 'no name' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(422);
+    expect(res.json).toHaveBeenCalledWith({ detail: validation, status: 'error', error: 'XTM One could not complete the request' });
+  });
+});
+
+describe('httpChatbotProxy: patchChatbotWorkspace', () => {
+  const VALID_WORKSPACE_ID = '99999999-9999-9999-9999-999999999999';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildPatchReq = (workspaceId: string, body?: unknown) => ({ params: { workspaceId }, body, headers: {} } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await patchChatbotWorkspace(buildPatchReq(VALID_WORKSPACE_ID, { name: 'Renamed' }), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID workspace id without calling XTM One', async () => {
+    await patchChatbotWorkspace(buildPatchReq('default?archived=true', { name: 'Renamed' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid workspace id' });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when the body is not a JSON object', async () => {
+    await patchChatbotWorkspace(buildPatchReq(VALID_WORKSPACE_ID, 'Renamed'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request body must be a JSON object' });
+    expect(mockPatch).not.toHaveBeenCalled();
+  });
+
+  it('should forward the body and the upstream answer', async () => {
+    const updated = { id: VALID_WORKSPACE_ID, name: 'Renamed', description: 'New description' };
+    mockPatch.mockResolvedValue({ status: 200, data: updated });
+    const body = { name: 'Renamed', description: 'New description' };
+
+    await patchChatbotWorkspace(buildPatchReq(VALID_WORKSPACE_ID, body), res);
+
+    expect(mockPatch).toHaveBeenCalledTimes(1);
+    const [url, sentBody, opts] = mockPatch.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/workspaces/${VALID_WORKSPACE_ID}`);
+    expect(sentBody).toEqual(body);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(updated);
+  });
+
+  it('should forward an upstream refusal with its JSON body', async () => {
+    const httpError = new Error('Request failed with status code 403') as any;
+    httpError.response = { status: 403, data: { detail: 'Only an administrator can edit a company-managed workspace' } };
+    mockPatch.mockRejectedValue(httpError);
+
+    await patchChatbotWorkspace(buildPatchReq(VALID_WORKSPACE_ID, { name: 'Renamed' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: 'Only an administrator can edit a company-managed workspace',
+      status: 'error',
+      error: 'Only an administrator can edit a company-managed workspace',
+    });
+  });
+});
+
+describe('httpChatbotProxy: deleteChatbotWorkspace', () => {
+  const VALID_WORKSPACE_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildDeleteReq = (workspaceId: string) => ({ params: { workspaceId }, headers: {} } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 for a non-UUID workspace id without calling XTM One', async () => {
+    await deleteChatbotWorkspace(buildDeleteReq('../sessions/22222222-2222-2222-2222-222222222222'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid workspace id' });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('should forward an upstream 204 with an empty body', async () => {
+    mockDelete.mockResolvedValue({ status: 204, data: '' });
+
+    await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
+
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    const [url, opts] = mockDelete.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/workspaces/${VALID_WORKSPACE_ID}`);
+    expect(opts.timeout).toBeGreaterThan(0);
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(res.sendStatus).not.toHaveBeenCalled();
+  });
+
+  it('should forward an upstream 409 with its JSON body so the panel can say why', async () => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = { status: 409, data: { detail: 'This workspace still holds work items' } };
+    mockDelete.mockRejectedValue(httpError);
+
+    await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: 'This workspace still holds work items',
+      status: 'error',
+      error: 'This workspace still holds work items',
+    });
+  });
+
+  it('should forward an upstream 400 for the default workspace with its JSON body', async () => {
+    const httpError = new Error('Request failed with status code 400') as any;
+    httpError.response = { status: 400, data: { detail: 'The default workspace cannot be deleted' } };
+    mockDelete.mockRejectedValue(httpError);
+
+    await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      detail: 'The default workspace cannot be deleted',
+      status: 'error',
+      error: 'The default workspace cannot be deleted',
+    });
+  });
+
+  it('should answer 503 with a fixed message, never the exception text, when no HTTP response is available', async () => {
+    mockDelete.mockRejectedValue(new Error('Network failure'));
+
+    await deleteChatbotWorkspace(buildDeleteReq(VALID_WORKSPACE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'XTM One is unreachable' });
   });
 });
 
