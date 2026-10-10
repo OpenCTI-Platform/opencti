@@ -4,6 +4,7 @@ import {
   baseType,
   createdAt,
   creators,
+  customFieldValues,
   draftChange,
   draftIds,
   entityLocationType,
@@ -71,6 +72,7 @@ export const INTERNAL_ATTRIBUTES = [
   'connections',
   'i_attributes',
   'pir_information',
+  customFieldValues.name,
   // Threat Pulse network data (src/modules/xtm/pulse)
   'pulse_keys',
   'pulse_prevalence',

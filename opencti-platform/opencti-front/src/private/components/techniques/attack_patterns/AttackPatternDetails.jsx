@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import inject18n from '../../../../components/i18n';
@@ -84,6 +85,7 @@ class AttackPatternDetailsComponent extends Component {
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={attackPattern.entity_type} values={attackPattern.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -104,6 +106,10 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         description
         x_mitre_platforms
         x_mitre_permissions_required

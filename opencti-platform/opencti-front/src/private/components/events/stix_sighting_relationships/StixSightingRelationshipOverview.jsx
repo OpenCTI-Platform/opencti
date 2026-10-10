@@ -32,6 +32,7 @@ import { truncate } from '../../../../utils/String';
 import StixSightingRelationshipExternalReferences from '../../analyses/external_references/StixSightingRelationshipExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import CustomFieldValuesDisplay from '../../common/custom_fields/CustomFieldValuesDisplay';
 import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
 import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
@@ -486,6 +487,10 @@ class StixSightingRelationshipContainer extends Component {
                     creators={stixSightingRelationship.creators ?? []}
                   />
                 </Grid>
+                <CustomFieldValuesDisplay
+                  entityType="stix-sighting-relationship"
+                  values={stixSightingRelationship.customFieldValues ?? []}
+                />
               </Grid>
             </Card>
           </Grid>
@@ -579,6 +584,9 @@ const StixSightingRelationshipOverview = createFragmentContainer(
     stixSightingRelationship: graphql`
       fragment StixSightingRelationshipOverview_stixSightingRelationship on StixSightingRelationship {
         id
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         entity_type
         parent_types
         confidence

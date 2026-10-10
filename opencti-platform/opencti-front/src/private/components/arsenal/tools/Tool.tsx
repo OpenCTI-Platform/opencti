@@ -61,6 +61,7 @@ const toolFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...ToolDetails_tool
   }
 `;

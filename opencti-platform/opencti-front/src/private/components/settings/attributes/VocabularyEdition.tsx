@@ -122,7 +122,7 @@ const VocabularyEdition = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
-            disabled={vocab.builtIn}
+            disabled={vocab.builtIn || vocab.category.closed}
           />
           <Field
             component={TextField}

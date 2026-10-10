@@ -63,6 +63,7 @@ const indicatorFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...IndicatorDetails_indicator
   }
 `;

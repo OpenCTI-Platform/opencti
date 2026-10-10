@@ -82,7 +82,7 @@ const Vocabularies = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
   const params = useParams() as { category: string };
-  const { typeToCategory } = useVocabularyCategory();
+  const { typeToCategory, isClosedCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
   const LOCAL_STORAGE_KEY = `vocabulary-${category}`;
 
@@ -186,7 +186,7 @@ const Vocabularies = () => {
           actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Vocabulary'] }}
           icon={() => <ShortTextOutlined sx={{ color: theme.palette.primary.main }} />}
-          createButton={(
+          createButton={!isClosedCategory(category) && (
             <VocabularyCreation
               category={category}
               paginationOptions={queryPaginationOptions}

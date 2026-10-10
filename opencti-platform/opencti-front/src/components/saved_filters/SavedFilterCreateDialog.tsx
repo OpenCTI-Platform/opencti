@@ -18,6 +18,10 @@ import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
 import Security from '../../utils/Security';
 import { Input } from '@filigran/design-system';
+import { serializeSavedFilterGroup } from './savedFiltersUtils';
+
+// Kept for backward compatibility: the helper now lives in savedFiltersUtils (pure, testable).
+export { serializeSavedFilterGroup } from './savedFiltersUtils';
 
 const savedFilterCreateDialogMutation = graphql`
   mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
@@ -90,7 +94,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       variables: {
         input: {
           name: filterName,
-          filters: JSON.stringify(filters),
+          filters: serializeSavedFilterGroup(filters),
           scope: localStorageKey,
           authorized_members: restrictedMembers,
         },
