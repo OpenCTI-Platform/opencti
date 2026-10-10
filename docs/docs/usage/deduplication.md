@@ -63,6 +63,36 @@ The deduplication process of relationships is based on the following criteria:
 * Start time between -30 days / + 30 days
 * Stop time between -30 days / + 30 days
 
+Sightings use the same criteria with `first_seen` and `last_seen`. A relationship with the same standard or STIX ID is always merged, whatever its dates.
+
+The ±30 days window is the default value. You can change it globally or per relationship type with the `relations_deduplication` parameters (see [configuration](../deployment/configuration.md#functional-customization)). `past_days` and `next_days` accept:
+
+* a number of days, for example `30`. Decimal values are rounded to the nearest day.
+* an ISO 8601 duration, for example `PT30M`, `PT6H` or `P1DT12H`. Use days and time units only: years, months and weeks have no fixed length.
+
+The following configuration deduplicates sightings over a ±30 minutes window:
+
+```json
+"relations_deduplication": {
+  "types_overrides": {
+    "stix-sighting-relationship": { "past_days": "PT30M", "next_days": "PT30M" }
+  }
+}
+```
+
+With environment variables, set `RELATIONS_DEDUPLICATION__TYPES_OVERRIDES__STIX-SIGHTING-RELATIONSHIP__PAST_DAYS=PT30M` and `RELATIONS_DEDUPLICATION__TYPES_OVERRIDES__STIX-SIGHTING-RELATIONSHIP__NEXT_DAYS=PT30M` on every platform node.
+
+!!! warning "Values are not validated"
+
+    A value that is neither a number nor an ISO 8601 duration (for example `30m`) is silently ignored and gives a window of 0. After a change, check the result with a test relationship.
+
+!!! note "How the window applies"
+
+    * A relationship type override replaces the global configuration: a value missing from the override resolves to 0.
+    * The window is compared with the dates of the stored relationship. With a ±30 minutes window, a sighting of a single event (same `first_seen` and `last_seen`) is merged only if it is less than 30 minutes away from both the `first_seen` and the `last_seen` of the stored sighting. When all incoming sightings are single events, a stored sighting therefore always spans less than 30 minutes. A sighting that already covers a longer period is stored as received: the window does not truncate it. It is a sliding window, not a fixed clock grid.
+    * A window of 0 does not disable deduplication: relationships with identical dates share the same standard ID and are still merged.
+    * Changing the window does not split or merge relationships already stored.
+
 ### Observables
 
 For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the [STIX specification](https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607) using the "ID Contributing Properties" defined for each type of observable.
