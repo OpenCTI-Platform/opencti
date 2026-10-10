@@ -86,7 +86,6 @@ import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
 import './securityCoverage/securityCoverageResult/securityCoverageResult';
-import './authenticationProvider/authenticationProvider';
 
 // incomplete modules
 // endregion
@@ -151,7 +150,6 @@ import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
-import './authenticationProvider/authenticationProvider-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
