@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../../../schema/module';
+import type { ModuleDefinition } from '../../../../schema/module';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, type StixNewsFeedItem, type StoreEntityNewsFeedItem } from './news-feed-types';
 import { convertNewsFeedItemToStix } from './news-feed-converter';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../../schema/general';
 
-const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFeedItem> = {
+export const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFeedItem> = {
   type: {
     id: 'news-feed-item',
     name: ENTITY_TYPE_NEWS_FEED_ITEM,
@@ -32,5 +32,3 @@ const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFe
   },
   converter_2_1: convertNewsFeedItemToStix,
 };
-
-registerDefinition(NEWS_FEED_DEFINITION);
