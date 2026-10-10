@@ -102,7 +102,6 @@ import './intrusionSet/intrusionSet';
 import './campaign/campaign';
 import './malware/malware';
 import './tool/tool';
-import './vulnerability/vulnerability';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
@@ -139,7 +138,6 @@ import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
-import './vulnerability/vulnerability-graphql';
 import './decayRule/decayRule-graphql';
 import './decayRule/exclusions/decayExclusionRule-graphql';
 import './organization/organization-graphql';
