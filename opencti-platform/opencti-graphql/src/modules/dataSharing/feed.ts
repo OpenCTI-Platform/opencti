@@ -2,11 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import convertFeedToStix from './feed-converter';
 import { ENTITY_TYPE_FEED, type StoreEntityFeed, type StixFeed } from './feed-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
-const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
+export const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
   type: {
     id: 'feed',
     name: ENTITY_TYPE_FEED,
@@ -70,5 +70,3 @@ const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
   },
   converter_2_1: convertFeedToStix,
 };
-
-registerDefinition(FEED_DEFINITION);

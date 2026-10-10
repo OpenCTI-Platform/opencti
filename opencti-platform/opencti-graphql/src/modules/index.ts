@@ -58,9 +58,6 @@ import './ingestion/ingestion-taxii';
 import './ingestion/ingestion-csv';
 import './ingestion/ingestion-json';
 import './ingestion/ingestion-taxii-collection';
-import './dataSharing/feed';
-import './dataSharing/taxiiCollection';
-import './dataSharing/streamCollection';
 
 // incomplete modules
 // endregion
@@ -98,9 +95,6 @@ import './ingestion/ingestion-taxii-graphql';
 import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
-import './dataSharing/taxiiCollection-graphql';
-import './dataSharing/feed-graphql';
-import './dataSharing/streamCollection-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
