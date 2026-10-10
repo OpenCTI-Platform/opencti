@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, removeFrontendIdAndEmptyFiltersFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -109,14 +109,17 @@ export const huntRunsListQuery = graphql`
 const RUN_FILTER_KEYS = ['hunt_run_status', 'hunt_run_trigger', 'hunt_run_mode', 'verdict', 'verdict_source', 'hits_count', 'completed_at'];
 
 /** Runs are scoped to their hunt with a context filter the user cannot remove. */
-export const huntRunsContextFilters = (huntId: string, filters: FilterGroup | undefined): FilterGroup => ({
-  mode: 'and',
-  filters: [
-    { key: 'entity_type', values: [HUNT_RUN_ENTITY_TYPE], operator: 'eq', mode: 'or' },
-    { key: 'hunt_id', values: [huntId], operator: 'eq', mode: 'or' },
-  ],
-  filterGroups: filters && Object.keys(filters).length > 0 ? [filters] : [],
-});
+export const huntRunsContextFilters = (huntId: string, filters: FilterGroup | undefined): FilterGroup => {
+  const userFilters = removeFrontendIdAndEmptyFiltersFromFilterGroupObject(filters);
+  return {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [HUNT_RUN_ENTITY_TYPE], operator: 'eq', mode: 'or' },
+      { key: 'hunt_id', values: [huntId], operator: 'eq', mode: 'or' },
+    ],
+    filterGroups: userFilters && Object.keys(userFilters).length > 0 ? [userFilters] : [],
+  };
+};
 
 interface HuntRunsProps {
   hunt: {
