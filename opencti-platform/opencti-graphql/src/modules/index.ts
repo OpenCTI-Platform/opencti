@@ -96,7 +96,6 @@ import './note/note';
 import './externalReference/externalReference';
 import './incident/incident';
 import './observedData/observedData';
-import './stixCyberObservable/stixCyberObservable';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
