@@ -118,7 +118,6 @@ import './internal/csvMapper/csvMapper-graphql';
 import './internal/jsonMapper/jsonMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
 import './theme/theme-graphql';
-import './ai/ai-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
