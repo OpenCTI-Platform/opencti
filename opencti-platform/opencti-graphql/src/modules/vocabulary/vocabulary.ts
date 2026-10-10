@@ -2,14 +2,14 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_VOCABULARY, type StixVocabulary, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 
 const generateInputDependencyKeys = () => {
   return Object.values(vocabularyDefinitions)
     .flatMap(({ entity_types, fields }) => fields.map(({ key }) => ({ src: key, types: entity_types })));
 };
 
-const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabulary> = {
+export const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabulary> = {
   type: {
     id: 'vocabulary',
     name: ENTITY_TYPE_VOCABULARY,
@@ -41,5 +41,3 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
   },
   converter_2_1: convertVocabularyToStix,
 };
-
-registerDefinition(VOCABULARY_DEFINITION);

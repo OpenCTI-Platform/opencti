@@ -35,7 +35,6 @@ import './narrative/narrative';
 import './notification/notification';
 import './dataComponent/dataComponent';
 import './dataSource/dataSource';
-import './vocabulary/vocabulary';
 
 // incomplete modules
 // endregion
@@ -51,6 +50,5 @@ import './narrative/narrative-graphql';
 import './notification/notification-graphql';
 import './dataComponent/dataComponent-graphql';
 import './dataSource/dataSource-graphql';
-import './vocabulary/vocabulary-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
