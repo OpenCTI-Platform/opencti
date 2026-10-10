@@ -202,6 +202,15 @@ const SearchInput = (props) => {
     }
   };
 
+  // Emptying the field, by typing or clearing, must drop the keyword still active in the URL:
+  // otherwise it keeps filtering the results unseen, and adding filters afterwards finds nothing.
+  const handleValueChange = (value) => {
+    setSearchValue(value);
+    if (value === '' && keyword && typeof onSubmit === 'function') {
+      onSubmit('');
+    }
+  };
+
   // ── Non-topBar variant: keep the simple input ──────────────────────────
   if (variant !== 'topBar') {
     return (
@@ -306,12 +315,9 @@ const SearchInput = (props) => {
           value={searchValue}
           fullWidth
           placeholder={getPlaceholder()}
-          onChange={(event) => {
-            const { value } = event.target;
-            setSearchValue(value);
-          }}
+          onChange={(event) => handleValueChange(event.target.value)}
           onKeyDown={handleKeyDown}
-          onClear={() => setSearchValue('')}
+          onClear={() => handleValueChange('')}
           {...otherProps}
           autoComplete="off"
           label={t_i18n('Search')}

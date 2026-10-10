@@ -15,7 +15,7 @@ import { commitMutation, handleError } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { FormAddInput, FormBuilderData, FormFieldAttribute } from './Form.d';
 import FormSchemaEditor from './FormSchemaEditor';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import { convertFormBuilderDataToSchema, formatFormSchemaMappingError, normalizeDraftAuthorizedMembersDefaults, validateFormSchemaMappings } from './FormUtils';
 import TextareaField from '../../../../components/TextareaField';
 
 const formCreationMutation = graphql`
@@ -173,19 +173,9 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
       return;
     }
 
-    // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
-    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
-      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required when using parsed mode'));
-      setSubmitting(false);
-      return;
-    }
-
-    // Validate additionalEntities parseFieldMapping
-    const missingMappings = formBuilderData.additionalEntities
-      .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
-      .map((entity) => entity.label);
-    if (missingMappings.length > 0) {
-      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+    const mappingError = validateFormSchemaMappings(formBuilderData);
+    if (mappingError) {
+      setFieldError('form_schema', formatFormSchemaMappingError(mappingError, t_i18n));
       setSubmitting(false);
       return;
     }

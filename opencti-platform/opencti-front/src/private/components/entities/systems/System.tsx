@@ -60,6 +60,7 @@ const systemFragment = graphql`
         }
       }
       workflowEnabled
+      ...WorkflowStatusStixDomainObject_data
       ...SystemDetails_system
     }
 `;

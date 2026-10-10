@@ -1,5 +1,5 @@
 import { DatabaseError } from '../../config/errors';
-import { elBulk, elRawSearch, elRawUpdateByQuery } from '../../database/engine';
+import { elBulk, elRawSearch, elRawUpdateByQuery, elRefreshIndices } from '../../database/engine';
 import { logApp } from '../../config/conf';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
@@ -11,6 +11,60 @@ export interface UserMergeBulkResult {
   failures: unknown[];
   version_conflicts: number;
 }
+
+/** The counters a partial write leaves behind, read back from a rejected update. */
+export interface UserMergeBulkAbortReport {
+  message: string;
+  data: Record<string, unknown>;
+}
+
+interface AbortBody {
+  updated?: number;
+  total?: number;
+  version_conflicts?: number;
+  failures?: { index?: string; id?: string }[];
+}
+
+/**
+ * Turns a rejected update into what an operator needs to know.
+ *
+ * `_update_by_query` is not transactional: aborting on a conflict stops the pass, it does not undo
+ * the documents already written. Elasticsearch answers `409` with the counters of what it did get
+ * through, and the search client carries that body on the rejection. Reporting only that the call
+ * failed drops the one number that says how much of the platform was rewritten.
+ *
+ * Returns null when the rejection carries no such body — a timeout or a refused connection wrote
+ * nothing, and claiming `0 of 0 documents written` would replace one silence with one falsehood.
+ */
+export const userMergeBulkAbortReport = (label: string, err: unknown): UserMergeBulkAbortReport | null => {
+  const body = (err as { meta?: { body?: AbortBody } })?.meta?.body;
+  if (!body || typeof body.updated !== 'number') {
+    return null;
+  }
+  const updated = body.updated;
+  const total = body.total ?? 0;
+  const versionConflicts = body.version_conflicts ?? 0;
+  const failure = body.failures?.[0];
+  const parts = [`${updated} of ${total} documents written`];
+  if (versionConflicts > 0) {
+    // A version conflict means another process wrote to a document this pass had selected, which
+    // the merge's own precondition rules out. Naming it saves the operator the deduction.
+    parts.push(`${versionConflicts} version conflict${versionConflicts > 1 ? 's' : ''} (the platform was not at rest)`);
+  }
+  if (failure?.id) {
+    parts.push(`first on document ${failure.id} in ${failure.index}`);
+  }
+  return {
+    message: `User merge bulk update aborted on ${label}: ${parts.join(', ')}`,
+    data: {
+      label,
+      updated,
+      total,
+      version_conflicts: versionConflicts,
+      first_failure: failure ? { index: failure.index, id: failure.id } : undefined,
+    },
+  };
+};
 
 /**
  * Bulk update primitive for the merge engine.
@@ -41,6 +95,10 @@ export const userMergeBulkUpdate = async (
     wait_for_completion: true,
     body,
   }).catch((err) => {
+    const report = userMergeBulkAbortReport(label, err);
+    if (report) {
+      throw DatabaseError(report.message, { ...report.data, cause: err });
+    }
     throw DatabaseError('User merge bulk update failed', { label, cause: err });
   });
   const result: UserMergeBulkResult = {
@@ -62,7 +120,7 @@ export const userMergeBulkUpdate = async (
   return result;
 };
 
-/** Page size of the rewrite scan. The entities carrying filters are configuration objects. */
+/** Page size of the rewrite scan. */
 const USER_MERGE_REWRITE_PAGE_SIZE = 500;
 
 /** Documents selected for a rewrite the engine cannot express as a script. */
@@ -73,12 +131,16 @@ export interface UserMergeRewriteCandidate {
 }
 
 /**
- * Reads the documents a query selects, across every merge index.
+ * Reads the documents a query selects, across every merge index, one page at a time.
  *
- * `_update_by_query` covers the rewrites a painless script can express. A filter field holds a
- * serialized filter group, which has to be parsed, walked and re-serialized — so these targets
- * are read into memory, rewritten there, and written back. The volumes are those of the
- * configuration entities that carry filters, orders of magnitude below the data indices.
+ * `_update_by_query` covers the rewrites a painless script can express. The payloads this scan
+ * feeds — serialized filters, Base64 manifests, playbook and workflow definitions, draft patches
+ * — have to be parsed, walked and re-serialized, so they are read into memory, rewritten there,
+ * and written back.
+ *
+ * The page is handed to the caller rather than accumulated: a dashboard manifest carries every
+ * widget of the dashboard, and holding all of them at once would make the peak depend on how
+ * much the platform holds rather than on how much the merge rewrites.
  *
  * Paged with `search_after`, so the scan does not depend on `from`/`size` staying under the
  * result window. `internal_id` alone would not do as a sort key here: the merge scope spans the
@@ -89,12 +151,12 @@ export interface UserMergeRewriteCandidate {
  * concrete index name even when the search goes through an alias, which is what the candidate
  * carries anyway.
  */
-export const userMergeScanForRewrite = async (
+export const userMergeScanPagesForRewrite = async (
   context: AuthContext,
   indices: string[],
   query: Record<string, unknown>,
-): Promise<UserMergeRewriteCandidate[]> => {
-  const candidates: UserMergeRewriteCandidate[] = [];
+  onPage: (page: UserMergeRewriteCandidate[]) => Promise<void> | void,
+): Promise<void> => {
   let searchAfter: unknown[] | undefined;
   for (;;) {
     const body: Record<string, unknown> = {
@@ -112,14 +174,25 @@ export const userMergeScanForRewrite = async (
       throw DatabaseError('User merge rewrite scan failed', { cause: err });
     });
     const hits = page.hits?.hits ?? [];
-    hits.forEach((hit: any) => {
-      candidates.push({ id: hit._id, index: hit._index, source: hit._source });
-    });
+    await onPage(hits.map((hit: any) => ({ id: hit._id, index: hit._index, source: hit._source })));
     if (hits.length < USER_MERGE_REWRITE_PAGE_SIZE) {
-      return candidates;
+      return;
     }
     searchAfter = hits[hits.length - 1].sort;
   }
+};
+
+/** Collecting form of {@link userMergeScanPagesForRewrite}, for the small configuration entities. */
+export const userMergeScanForRewrite = async (
+  context: AuthContext,
+  indices: string[],
+  query: Record<string, unknown>,
+): Promise<UserMergeRewriteCandidate[]> => {
+  const candidates: UserMergeRewriteCandidate[] = [];
+  await userMergeScanPagesForRewrite(context, indices, query, (page) => {
+    candidates.push(...page);
+  });
+  return candidates;
 };
 
 /**
@@ -127,11 +200,15 @@ export const userMergeScanForRewrite = async (
  *
  * Partial documents rather than whole ones: a merge rewrites one field and must not resurrect
  * the rest of a document read a moment earlier.
+ *
+ * `refresh: false` is for a caller writing page by page, which then refreshes once with
+ * {@link userMergeRefresh} rather than on every page.
  */
 export const userMergeBulkRewrite = async (
   context: AuthContext,
   label: string,
   updates: { id: string; index: string; doc: Record<string, unknown> }[],
+  opts: { refresh?: boolean } = {},
 ): Promise<number> => {
   if (updates.length === 0) {
     return 0;
@@ -140,9 +217,36 @@ export const userMergeBulkRewrite = async (
     { update: { _index: update.index, _id: update.id } },
     { doc: update.doc },
   ]);
-  await elBulk(context, { refresh: true, timeout: '60m', body }).catch((err: unknown) => {
+  await elBulk(context, { refresh: opts.refresh ?? true, timeout: '60m', body }).catch((err: unknown) => {
     throw DatabaseError('User merge bulk rewrite failed', { label, cause: err });
   });
   logApp.info('[MERGE_USERS] bulk rewrite done', { label, updated: updates.length });
   return updates.length;
+};
+
+/** Makes the unrefreshed writes of a page-by-page rewrite visible to the reads that follow. */
+export const userMergeRefresh = async (label: string, indices: string[]): Promise<void> => {
+  if (indices.length === 0) {
+    return;
+  }
+  await elRefreshIndices(indices).catch((err: unknown) => {
+    throw DatabaseError('User merge refresh failed', { label, indices, cause: err });
+  });
+};
+
+/** Deletes the documents the caller selected, each in the index it was read from. */
+export const userMergeBulkDelete = async (
+  context: AuthContext,
+  label: string,
+  deletions: { id: string; index: string }[],
+): Promise<number> => {
+  if (deletions.length === 0) {
+    return 0;
+  }
+  const body = deletions.map((deletion) => ({ delete: { _index: deletion.index, _id: deletion.id } }));
+  await elBulk(context, { refresh: true, timeout: '60m', body }).catch((err: unknown) => {
+    throw DatabaseError('User merge bulk delete failed', { label, cause: err });
+  });
+  logApp.info('[MERGE_USERS] bulk delete done', { label, deleted: deletions.length });
+  return deletions.length;
 };
