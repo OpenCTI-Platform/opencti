@@ -101,7 +101,6 @@ import './threatActorGroup/threatActorGroup';
 import './intrusionSet/intrusionSet';
 import './campaign/campaign';
 import './malware/malware';
-import './tool/tool';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
