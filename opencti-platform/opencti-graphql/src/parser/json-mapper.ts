@@ -22,7 +22,6 @@ import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import { isNotEmptyField } from '../database/utils';
 import { handleInnerType } from '../domain/stixDomainObject';
-import '../modules';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
 import {
