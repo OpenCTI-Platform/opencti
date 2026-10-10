@@ -2,7 +2,7 @@ import conf, { booleanConf, logApp } from '../../config/conf';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { autoUpgradeManagedConnectors } from '../connector/connector-domain';
 import { synchronizeCatalogs } from './sync/catalog-sync-domain';
-import { registerManager, type ManagerDefinition } from '../../manager/managerModule';
+import type { ManagerDefinition } from '../../manager/managerModule';
 
 const CATALOG_MANAGER_ID = 'CATALOG_MANAGER';
 const CATALOG_MANAGER_LABEL = 'Catalog Manager';
@@ -46,7 +46,7 @@ export const catalogManagerHandler = async () => {
   }
 };
 
-const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
+export const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
   id: CATALOG_MANAGER_ID,
   label: CATALOG_MANAGER_LABEL,
   executionContext: CATALOG_MANAGER_CONTEXT,
@@ -65,6 +65,3 @@ const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
     lockKey: CATALOG_MANAGER_LOCK_KEY,
   },
 };
-
-// Automatically register manager on start.
-registerManager(CATALOG_MANAGER_DEFINITION);

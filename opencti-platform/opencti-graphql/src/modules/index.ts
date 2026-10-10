@@ -35,6 +35,5 @@ import './connector/connector';
 import './channel/channel-graphql';
 import './connector/connector-graphql';
 import './ingestionHealth/ingestionHealth-graphql';
-import './catalog/catalog-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
