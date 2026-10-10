@@ -9905,10 +9905,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.0.15":
-  version: 10.0.15
-  resolution: "nodemailer@npm:10.0.15"
-  checksum: 10c0/d91aa2d9f697143cce981f0208fe69c46690cb2392ba35e60adbb441ee5ef0edfc977c23d557b98f08e47f1fe64799fc2f34e7f0f2e50b0a1fd3eb6724b3c30d
+"nodemailer@npm:10.0.16":
+  version: 10.0.16
+  resolution: "nodemailer@npm:10.0.16"
+  checksum: 10c0/c2ce1f3df0b91a84807b7dc4f1e87ff05cb33d65cba678d305c2611eb71fc2df3d0ee69f47f1eadb5207f143eda7155ac437da0614a3b22d53f96aa170aa0ec0
   languageName: node
   linkType: hard
 
@@ -10416,7 +10416,7 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
     node-gyp-build: "npm:4.8.4"
-    nodemailer: "npm:10.0.15"
+    nodemailer: "npm:10.0.16"
     openai: "npm:7.30.0"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
