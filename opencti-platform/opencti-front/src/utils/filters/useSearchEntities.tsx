@@ -351,6 +351,24 @@ const useSearchEntities = ({
     value: 'object-label',
     type: 'stix-meta-relationship',
   };
+  // Ref relationships only offered in the relationship_type subfilter of regardingOf / dynamicRegardingOf
+  const regardingOfRefRelationshipTypes = [
+    {
+      label: t_i18n('relationship_external-reference'),
+      value: 'external-reference',
+      type: 'stix-meta-relationship',
+    },
+    {
+      label: t_i18n('relationship_object-covered'),
+      value: 'object-covered',
+      type: 'stix-ref-relationship',
+    },
+    {
+      label: t_i18n('relationship_result-of'),
+      value: 'result-of',
+      type: 'stix-ref-relationship',
+    },
+  ];
 
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -365,11 +383,12 @@ const useSearchEntities = ({
     cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
     setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
-    isSubKey?: boolean,
+    parentFilterKey?: string, // set when filterKey is the subKey of a nested filter (e.g. regardingOf)
   ) => {
     if (!event) {
       return;
     }
+    const isSubKey = !!parentFilterKey;
 
     const newInputValue = {
       key: filterKey,
@@ -466,7 +485,8 @@ const useSearchEntities = ({
     };
 
     // fetches external references and add them to the set
-    const buildOptionsFromExternalReferencesSearchQuery = (key: string) => {
+    // if group is set, the options are displayed under this group
+    const buildOptionsFromExternalReferencesSearchQuery = (key: string, group?: string) => {
       fetchQuery(externalReferencesQueriesSearchQuery, {
         search: event.target.value !== 0 ? event.target.value : '',
       })
@@ -480,6 +500,7 @@ const useSearchEntities = ({
               : n?.node.source_name,
             value: n?.node.id,
             type: 'External-Reference',
+            ...(group && { group }),
           }));
           unionSetEntities(key, externalRefByEntities);
         });
@@ -504,7 +525,8 @@ const useSearchEntities = ({
     // fetches stix core objects by entity type and add them to the set
     const buildOptionsFromStixCoreObjectTypes = (key: string, entityTypes: string[]) => {
       fetchQuery(filtersStixCoreObjectsSearchQuery, {
-        types: (searchScope && searchScope[key]) || entityTypes,
+        // the search scope can also contain non stix core object types (e.g. External-Reference for regardingOf ids)
+        types: searchScope?.[key]?.filter((type) => type !== 'External-Reference') || entityTypes,
         search: event.target.value !== 0 ? event.target.value : '',
         count: 100,
       })
@@ -756,7 +778,17 @@ const useSearchEntities = ({
         case 'contextCreatedBy':
           buildOptionsFromIdentitySearchQuery(filterKey, ['Organization', 'Individual', 'System']);
           break;
-        case 'id':
+        case 'id': {
+          buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
+          // regardingOf can target an external reference via the 'external-reference' relationship type
+          const idSearchScope = searchScope?.[filterKey] ?? [];
+          const isExternalReferenceInScope = parentFilterKey === 'regardingOf'
+            && (idSearchScope.length === 0 || idSearchScope.includes('External-Reference'));
+          if (isExternalReferenceInScope) {
+            buildOptionsFromExternalReferencesSearchQuery(filterKey, displayEntityTypeForTranslation('External-Reference'));
+          }
+          break;
+        }
         case 'connectedToId':
           buildOptionsFromStixCoreObjectTypes(filterKey, ['Stix-Core-Object']);
           break;
@@ -977,6 +1009,7 @@ const useSearchEntities = ({
               abstractTypeFilterValue('stix-sighting-relationship'),
               objectRelationshipType,
               labelRelationshipType,
+              ...(isSubKey ? regardingOfRefRelationshipTypes : []),
             ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;

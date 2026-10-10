@@ -170,6 +170,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
     securityCoverage: SecurityCoverage
 }
 
@@ -279,6 +280,7 @@ input GroupingAddInput {
     embedded: [Boolean]
     authorized_members: [MemberAccessInput!]
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

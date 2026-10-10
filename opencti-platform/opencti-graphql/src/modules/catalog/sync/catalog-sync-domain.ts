@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import conf, { isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
+import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
@@ -33,8 +33,6 @@ import {
 } from '../catalog-repository';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
 import { type CatalogSyncSourceGatewayOptions, fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
-
-const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
 const getFiligranCatalogRemoteUri = (): string | undefined => {
   const xtmHubUrl = conf.get('xtm:xtmhub_url');

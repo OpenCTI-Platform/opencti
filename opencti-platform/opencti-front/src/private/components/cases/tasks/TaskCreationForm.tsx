@@ -1,5 +1,8 @@
 import Button from '@common/button/Button';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -103,6 +106,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
     { setSubmitting, resetForm, setErrors },
   ) => {
     const input: TaskCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
@@ -132,6 +136,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
   };
   return (
     <Formik
+      entityType={TASK_TYPE}
       initialValues={initialValues}
       onSubmit={onSubmit}
       onReset={onClose}
@@ -187,6 +192,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
             registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               onClick={handleReset}

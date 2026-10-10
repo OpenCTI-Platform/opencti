@@ -148,6 +148,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
@@ -217,6 +218,7 @@ input AdministrativeAreaAddInput {
     noTriggerImport: [Boolean]
     embedded: [Boolean]
     upsertOperations: [EditInput!]
+    customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

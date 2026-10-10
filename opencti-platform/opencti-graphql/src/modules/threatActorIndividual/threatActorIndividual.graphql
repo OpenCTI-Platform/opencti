@@ -175,6 +175,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   securityCoverage: SecurityCoverage
 }
 
@@ -249,6 +250,7 @@ input ThreatActorIndividualAddInput {
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Query {
