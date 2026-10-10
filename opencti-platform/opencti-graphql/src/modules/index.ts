@@ -151,7 +151,6 @@ import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
-import './xtm/hub/xtm-hub-graphql';
 import './xtm/hub/news-feed/news-feed-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';
