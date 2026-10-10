@@ -114,7 +114,7 @@ const StixCoreObjectsNumber = ({
 
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -135,8 +135,7 @@ const StixCoreObjectsNumber = ({
     >
       <div style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

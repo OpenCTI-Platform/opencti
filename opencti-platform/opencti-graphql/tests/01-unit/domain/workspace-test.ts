@@ -5,7 +5,8 @@ import * as redis from '../../../src/database/redis';
 import * as access from '../../../src/utils/access';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as engine from '../../../src/database/engine';
-import { investigationDuplicate } from '../../../src/modules/workspace/workspace-domain';
+import * as internalObject from '../../../src/domain/internalObject';
+import { investigationDuplicate, sanitizeManifestAuditInput, workspaceEditField } from '../../../src/modules/workspace/workspace-domain';
 
 const context = {} as any;
 const user = { id: 'user-id' } as any;
@@ -152,5 +153,23 @@ describe('workspace duplication', () => {
     expect(access.isUserHasCapability).toHaveBeenCalledWith(user, 'INVESTIGATION_INUPDATE');
     expect(engine.elFindByIds).not.toHaveBeenCalled();
     expect(middleware.createEntity).not.toHaveBeenCalled();
+  });
+});
+
+describe('workspace field patch audit', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('hides the manifest and keeps other edits', () => {
+    expect(sanitizeManifestAuditInput([{ key: 'manifest', value: ['huge-b64'] }, { key: 'name', value: ['New name'] }]))
+      .toEqual([{ key: 'manifest', value: ['[sanitized]'] }, { key: 'name', value: ['New name'] }]);
+  });
+
+  it('never publishes the manifest in the audit event of a field patch', async () => {
+    const editSpy = vi.spyOn(internalObject, 'editInternalObject').mockResolvedValue({ id: 'workspace-id' } as any);
+    await workspaceEditField(context, user, 'workspace-id', [{ key: 'name', value: ['New name'] }]);
+    const opts = editSpy.mock.calls[0][5];
+    expect(opts?.auditLogContextSanitizer?.([{ key: 'manifest', value: ['huge-b64'] }])).toEqual([{ key: 'manifest', value: ['[sanitized]'] }]);
   });
 });

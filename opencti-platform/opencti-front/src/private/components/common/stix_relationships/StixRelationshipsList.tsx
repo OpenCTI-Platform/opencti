@@ -4549,7 +4549,7 @@ const StixRelationshipsList = ({
 }: StixRelationshipsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -4570,8 +4570,7 @@ const StixRelationshipsList = ({
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

@@ -185,7 +185,7 @@ const StixRelationshipsRadar = ({
 }: StixRelationshipsRadarProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -206,8 +206,7 @@ const StixRelationshipsRadar = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

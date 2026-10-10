@@ -1,7 +1,18 @@
 import type { GqlWidgetDataSelection, WidgetLayout } from '../../utils/widget/widget';
 import { fromB64, toB64 } from '../../utils/String';
 import { normalizeFilterGroupForBackend, normalizeFilterGroupForFrontend } from '../../utils/filters/filtersUtils';
-import type { DashboardManifest, DashboardWidget } from './dashboard-types';
+import type { DashboardManifest, DashboardVariable, DashboardWidget } from './dashboard-types';
+
+/**
+ * Apply a filters normalization to the restriction filters of the dashboard variables,
+ * the same way it is applied to widget filters (backend and frontend formats differ).
+ */
+const normalizeVariablesFilters = <From, To>(
+  variables: DashboardVariable[] | undefined,
+  normalize: (filters: From) => To,
+) => variables?.map((variable) => (variable.restriction.mode === 'filters'
+  ? { ...variable, restriction: { ...variable.restriction, filters: normalize(variable.restriction.filters as From) } }
+  : variable));
 
 /**
  * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
@@ -27,9 +38,11 @@ export const serializeDashboardManifestForBackend = (
     };
   });
 
+  const variables = normalizeVariablesFilters(manifest.variables, normalizeFilterGroupForBackend);
   return toB64(JSON.stringify({
     ...manifest,
     widgets: newWidgets,
+    ...(variables ? { variables } : {}),
   }));
 };
 
@@ -74,10 +87,12 @@ export const deserializeDashboardManifestForFrontend = (
     };
   });
 
+  const variables = normalizeVariablesFilters(manifest.variables, normalizeFilterGroupForFrontend);
   return {
     config: {},
     ...manifest,
     widgets,
+    ...(variables ? { variables } : {}),
   };
 };
 

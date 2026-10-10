@@ -3,11 +3,20 @@ import Loader, { LoaderVariant } from '../Loader';
 import WidgetNoHostEntity from './WidgetNoHostEntity';
 import WidgetNoSavedFilters from './WidgetNoSavedFilters';
 import WidgetAccessDenied from './WidgetAccessDenied';
+import WidgetNoData from './WidgetNoData';
 import type { WidgetHost } from '../../utils/widget/widget';
 
-interface WidgetRenderContentProps {
+/**
+ * Conditions under which a widget cannot run its query safely.
+ * Returned as a whole by useDashboardViz so widgets can forward them with a spread.
+ */
+export interface WidgetRenderGuards {
   isMissingHostEntity: boolean;
   isMissingSavedFilters: boolean;
+  hasUnresolvedVariables: boolean;
+}
+
+interface WidgetRenderContentProps extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
   isGranted?: boolean;
@@ -18,12 +27,13 @@ interface WidgetRenderContentProps {
  * Generic guard component for dashboard widgets.
  *
  * Handles the common guard checks (missing host entity, missing saved filters,
- * access denied, loading state) and wraps children in a Suspense boundary
+ * unresolved dashboard variables, access denied, loading state) and wraps children in a Suspense boundary
  * when all guards pass.
  */
 const WidgetRenderContent = ({
   isMissingHostEntity,
   isMissingSavedFilters,
+  hasUnresolvedVariables,
   isGranted,
   queryRef,
   host,
@@ -35,6 +45,10 @@ const WidgetRenderContent = ({
 
   if (isMissingSavedFilters) {
     return <WidgetNoSavedFilters />;
+  }
+
+  if (hasUnresolvedVariables) {
+    return <WidgetNoData />;
   }
 
   if (isGranted === false) {

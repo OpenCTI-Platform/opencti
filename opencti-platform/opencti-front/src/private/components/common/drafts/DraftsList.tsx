@@ -168,7 +168,7 @@ const DraftsList = ({
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -189,8 +189,7 @@ const DraftsList = ({
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

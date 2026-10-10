@@ -175,7 +175,7 @@ const StixRelationshipsWordCloud = ({
   refreshRate = null,
 }: StixRelationshipsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -194,8 +194,7 @@ const StixRelationshipsWordCloud = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

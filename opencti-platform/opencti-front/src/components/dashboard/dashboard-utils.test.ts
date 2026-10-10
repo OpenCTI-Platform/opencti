@@ -200,3 +200,40 @@ describe('dashboard serialization', () => {
     });
   });
 });
+
+describe('dashboard manifest with variables', () => {
+  const backendRestriction = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+  const variable = { id: 'v1', name: 'Sector', type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'filters', filters: backendRestriction }, defaultValue: 'sector-id' };
+
+  it('should read a legacy manifest without variables identically', () => {
+    const manifest = deserializeDashboardManifestForFrontend(toB64(JSON.stringify({ config: {}, widgets: {} })));
+    expect(manifest).toEqual({ config: {}, widgets: {} });
+    expect('variables' in manifest).toBe(false);
+  });
+
+  it('should round-trip an empty variables list', () => {
+    const encoded = serializeDashboardManifestForBackend({ config: {}, widgets: {}, variables: [] });
+    expect(JSON.parse(fromB64(encoded))).toEqual({ config: {}, widgets: {}, variables: [] });
+    expect(deserializeDashboardManifestForFrontend(encoded)).toEqual({ config: {}, widgets: {}, variables: [] });
+  });
+
+  it('should normalize restriction filters in both directions', () => {
+    const front = deserializeDashboardManifestForFrontend(toB64(JSON.stringify({ config: {}, widgets: {}, variables: [variable] })));
+    const restriction = front.variables?.[0].restriction;
+    expect(restriction?.mode).toEqual('filters');
+    if (restriction?.mode !== 'filters') return;
+    expect(restriction.filters.filters[0].key).toEqual('entity_type');
+    const back = JSON.parse(fromB64(serializeDashboardManifestForBackend(front)));
+    expect(back.variables[0].restriction.filters.filters[0].key).toEqual(['entity_type']);
+    expect(back.variables[0]).toMatchObject({ id: 'v1', name: 'Sector', defaultValue: 'sector-id' });
+  });
+
+  it('should leave selection and none restrictions untouched', () => {
+    const variables = [
+      { id: 'v2', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' },
+      { id: 'v3', name: 'Pick', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' },
+    ];
+    const front = deserializeDashboardManifestForFrontend(toB64(JSON.stringify({ config: {}, widgets: {}, variables })));
+    expect(front.variables).toEqual(variables);
+  });
+});
