@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import feedbackModule from './modules/case/feedback/feedback-module';
 import entitySettingModule from './modules/entitySetting/entitySetting-module';
 import workflowModule from './modules/workflow/workflow-module';
 import workspaceModule from './modules/workspace/workspace-module';
@@ -69,6 +70,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  feedbackModule,
   entitySettingModule,
   workflowModule,
   workspaceModule,
