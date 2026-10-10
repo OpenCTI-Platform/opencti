@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DELETE_OPERATION, type StixDeleteOperation, type StoreEntityDeleteOperation } from './deleteOperation-types';
 import convertDeleteOperationToStix from './deleteOperation-converter';
 import { confidence, createdAt, creators, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 
-const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
+export const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
   type: {
     id: 'deleteOperation',
     name: ENTITY_TYPE_DELETE_OPERATION,
@@ -39,5 +39,3 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   },
   converter_2_1: convertDeleteOperationToStix,
 };
-
-registerDefinition(DELETE_OPERATION_DEFINITION);
