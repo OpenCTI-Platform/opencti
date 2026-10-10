@@ -185,6 +185,41 @@ describe('elBulk selective retry on partial (per-item) failures', () => {
     expect(testMocks.bulk).toHaveBeenCalledTimes(1);
   });
 
+  it('fails fast on PERMANENT circuit_breaking_exception items despite their 429 status', async () => {
+    testMocks.bulk.mockResolvedValue({
+      took: 1,
+      errors: true,
+      items: [
+        okItem('index', 'a'),
+        { index: { _id: 'b', status: 429, error: { type: 'circuit_breaking_exception', reason: '[fielddata] Data too large', durability: 'PERMANENT' } } },
+      ],
+    });
+    const bulkPromise = elBulk({} as any, { body: [...indexOp('a'), ...indexOp('b')] });
+    await expect(bulkPromise).rejects.toMatchObject({
+      message: 'Bulk indexing fail',
+      extensions: {
+        code: 'DATABASE_ERROR',
+        data: expect.objectContaining({ attempts: 1, errors: [expect.objectContaining({ durability: 'PERMANENT' })] }),
+      },
+    });
+    expect(testMocks.bulk).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries TRANSIENT circuit_breaking_exception items', async () => {
+    vi.useFakeTimers();
+    testMocks.bulk
+      .mockResolvedValueOnce({
+        took: 1,
+        errors: true,
+        items: [{ index: { _id: 'a', status: 429, error: { type: 'circuit_breaking_exception', reason: '[parent] Data too large', durability: 'TRANSIENT' } } }],
+      })
+      .mockResolvedValueOnce({ took: 1, errors: false, items: [okItem('index', 'a')] });
+    const bulkPromise = elBulk({} as any, { body: indexOp('a') });
+    await vi.advanceTimersByTimeAsync(500);
+    await expect(bulkPromise).resolves.toMatchObject({ errors: false });
+    expect(testMocks.bulk).toHaveBeenCalledTimes(2);
+  });
+
   it('fails fast when transient and permanent errors are mixed', async () => {
     testMocks.bulk.mockResolvedValue({
       took: 1,

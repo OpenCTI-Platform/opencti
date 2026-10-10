@@ -92,6 +92,16 @@ class StixCoreRelationship:
                 coverage_name
                 coverage_score
             }
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             status {
                 id
                 template {
@@ -896,6 +906,8 @@ class StixCoreRelationship:
         :type coverage_platforms_information: list
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: stix_core_relationship object
         :rtype: dict or None
         """
@@ -927,6 +939,7 @@ class StixCoreRelationship:
         )
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
+        custom_properties = kwargs.get("custom_properties", None)
 
         self.opencti.app_logger.info(
             "Creating stix_core_relationship",
@@ -972,6 +985,7 @@ class StixCoreRelationship:
             "coverage_information": coverage_information,
             "update": update,
             "upsertOperations": upsert_operations,
+            "customFieldValues": custom_properties,
         }
         # Only sent when supplied, and only to a platform that knows the field; an empty list is sent to clear a
         # previous per-platform attribution
@@ -1679,6 +1693,7 @@ class StixCoreRelationship:
                     if "opencti_upsert_operations" in stix_relation
                     else None
                 ),
+                custom_properties=extras.get("custom_properties", None),
             )
         else:
             self.opencti.app_logger.error(

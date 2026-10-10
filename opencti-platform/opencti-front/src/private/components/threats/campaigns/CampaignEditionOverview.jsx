@@ -18,6 +18,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const campaignMutationFieldPatch = graphql`
@@ -270,6 +271,13 @@ const CampaignEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={campaign.entity_type}
+            entityId={campaign.id}
+            values={campaign.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -290,6 +298,7 @@ export default createFragmentContainer(CampaignEditionOverviewComponent, {
   campaign: graphql`
     fragment CampaignEditionOverview_campaign on Campaign {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       confidence
       entity_type

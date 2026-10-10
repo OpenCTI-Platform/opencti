@@ -105,6 +105,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   fintelTemplates: [FintelTemplate!]
   filesFromTemplate(
     first: Int
@@ -263,6 +264,7 @@ input CaseRfiAddInput {
   authorized_members: [MemberAccessInput!]
   x_opencti_request_access: String
   upsertOperations: [EditInput!]
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 type Mutation {

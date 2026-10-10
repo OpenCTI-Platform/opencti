@@ -16,6 +16,7 @@ import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../.
 import { playbookBundleElementsToApply, type BasicStoreEntityPlaybook, type ExecutorParameters, type NodeInstance } from '../../../../../src/modules/playbook/playbook-types';
 import type { StreamDataEvent } from '../../../../../src/types/event';
 import { testExecutor } from '../../../../03-integration/01-database/playbook/playbookComponents/playbook-components-test-utils';
+import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_LOCKED } from '../../../../../src/config/conf';
 
 describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
   beforeEach(() => {
@@ -51,6 +52,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         name: 'Alice',
         groups: [{ internal_id: 'group-1' }],
         organizations: [],
+        account_status: ACCOUNT_STATUS_ACTIVE,
       } as unknown as AuthUser;
       const mockNotificationUser = { id: 'notif-user' } as unknown as notificationManager.NotificationUser;
 
@@ -263,9 +265,9 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
 
       beforeEach(() => {
         vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
-          { id: MAIN_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
-          { id: MALWARE_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
-          { id: CAMPAIGN_CREATOR_ID, groups: [], organizations: [] } as unknown as AuthUser,
+          { id: MAIN_CREATOR_ID, groups: [], organizations: [], account_status: ACCOUNT_STATUS_ACTIVE } as unknown as AuthUser,
+          { id: MALWARE_CREATOR_ID, groups: [], organizations: [], account_status: ACCOUNT_STATUS_ACTIVE } as unknown as AuthUser,
+          { id: CAMPAIGN_CREATOR_ID, groups: [], organizations: [], account_status: ACCOUNT_STATUS_ACTIVE } as unknown as AuthUser,
         ]);
         vi.spyOn(notificationManager, 'convertToNotificationUser').mockImplementation((targetUser) => ({
           user_id: targetUser.id,
@@ -379,6 +381,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         name: 'Alice',
         groups: [{ internal_id: 'group-1' }],
         organizations: [],
+        account_status: ACCOUNT_STATUS_ACTIVE,
       } as unknown as AuthUser;
 
       beforeEach(() => {
@@ -419,6 +422,43 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         } as unknown as ExecutorParameters<NotifierConfiguration>);
 
         expect(streamHandler.storeNotificationEvent).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('recipient eligibility', () => {
+      const bundle = { objects: [{ id: 'indicator--1', type: 'indicator' } as unknown as StixObject] } as unknown as StixBundle;
+      const groupMember = (id: string, over: Partial<AuthUser> = {}) => ({
+        id,
+        groups: [{ internal_id: 'group-1' }],
+        organizations: [],
+        account_status: ACCOUNT_STATUS_ACTIVE,
+        ...over,
+      } as unknown as AuthUser);
+
+      beforeEach(() => {
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+          groupMember('active-user'),
+          groupMember('service-account', { user_service_account: true }),
+          groupMember('locked-user', { account_status: ACCOUNT_STATUS_LOCKED }),
+        ]);
+        vi.spyOn(notificationManager, 'convertToNotificationUser')
+          .mockImplementation((targetUser) => ({ user_id: targetUser.id }) as notificationManager.NotificationUser);
+        vi.spyOn(playbookUtils, 'extractBundleBaseElement').mockReturnValue(bundle.objects[0]);
+        vi.spyOn(generateMessage, 'generateCreateMessage').mockReturnValue('generated create message');
+      });
+
+      it('should not notify service accounts nor inactive accounts of the targeted group', async () => {
+        await PLAYBOOK_NOTIFIER_COMPONENT.executor({
+          dataInstanceId: 'instance-id',
+          playbookId: 'playbook-id',
+          playbookNode,
+          bundle,
+          event: undefined,
+        } as unknown as ExecutorParameters<NotifierConfiguration>);
+
+        expect(streamHandler.storeNotificationEvent).toHaveBeenCalledTimes(1);
+        const notificationEvent = vi.mocked(streamHandler.storeNotificationEvent).mock.calls[0][1] as notificationManager.DigestEvent;
+        expect(notificationEvent.target.user_id).toEqual('active-user');
       });
     });
   });

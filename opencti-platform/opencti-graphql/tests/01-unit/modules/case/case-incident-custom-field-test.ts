@@ -77,32 +77,32 @@ describe('addCaseIncident — custom field values handling', () => {
     vi.mocked(Redis.notify).mockImplementation((_t, el) => Promise.resolve(el));
   });
 
-  it('stores normalized custom field values on the entity when feature is enabled and values are provided', async () => {
+  it('does not resolve custom_field_values at domain layer, letting middleware layer handle it', async () => {
     seed(makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer' }));
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
       name: 'Test',
-      customFieldValues: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 42 }],
+      customFieldValues: [{ field_name: 'x_opencti_cf_score', value: [42] }],
     } as any);
 
     const callArg = vi.mocked(Middleware.createEntity).mock.calls[0][2] as any;
-    expect(callArg.custom_field_values).toEqual([
-      expect.objectContaining({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 42 }),
-    ]);
+    expect(callArg.custom_field_values).toBeUndefined();
   });
 
-  it('removes the camelCase customFieldValues key before calling createEntity', async () => {
+  it('forward the camelCase customFieldValues key before calling createEntity', async () => {
     seed(makeDefinition());
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
       name: 'Test',
-      customFieldValues: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 5 }],
+      customFieldValues: [{ field_name: 'x_opencti_cf_score', value: [5] }],
     } as any);
 
     const callArg = vi.mocked(Middleware.createEntity).mock.calls[0][2] as any;
-    expect(callArg.customFieldValues).toBeUndefined();
+    expect(callArg.customFieldValues).toEqual([
+      expect.objectContaining({ field_name: 'x_opencti_cf_score', value: [5] }),
+    ]);
   });
 
   it('does not set custom_field_values on the entity when no values are provided', async () => {
@@ -112,33 +112,7 @@ describe('addCaseIncident — custom field values handling', () => {
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, { name: 'Test' } as any);
 
     const callArg = vi.mocked(Middleware.createEntity).mock.calls[0][2] as any;
+    expect(callArg.customFieldValues).toBeUndefined();
     expect(callArg.custom_field_values).toBeUndefined();
-  });
-
-  it('rejects an integer value out of bounds via validateCustomFieldValues', async () => {
-    seed(makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer', min_value: 0, max_value: 100 }));
-    const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
-
-    await expect(
-      addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
-        name: 'Test',
-        customFieldValues: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 999 }],
-      } as any),
-    ).rejects.toThrow('int_value is above maximum');
-  });
-
-  it('normalizes null GraphQL fields to undefined in the CustomFieldValue shape', async () => {
-    seed(makeDefinition({ field_type: 'integer' }));
-    const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
-
-    await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
-      name: 'Test',
-      customFieldValues: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 10, string_value: null, boolean_value: null }],
-    } as any);
-
-    const callArg = vi.mocked(Middleware.createEntity).mock.calls[0][2] as any;
-    expect(callArg.custom_field_values[0].string_value).toBeUndefined();
-    expect(callArg.custom_field_values[0].boolean_value).toBeUndefined();
-    expect(callArg.custom_field_values[0].int_value).toBe(10);
   });
 });

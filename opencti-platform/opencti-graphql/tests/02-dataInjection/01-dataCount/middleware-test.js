@@ -512,7 +512,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-03-01T00:00:00.000Z')).toEqual(1);
   });
   it('should start time relation time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -532,7 +532,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Campaign'], { ...options, filters });
     expect(series.length).toEqual(13);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(1);
   });
   it('should local filter time series', async () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -551,7 +551,7 @@ describe('Entities time series', () => {
     const series = await timeSeriesEntities(testContext, ADMIN_USER, ['Stix-Domain-Object'], { ...options, filters });
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(1);
   });
 });
 
@@ -573,7 +573,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
+    expect(aggregationMap.get('2020-02-01T00:00:00.000Z')).toEqual(3);
   });
   it('should relations time series with sightings relationship_type filter', async () => {
     const options = {
@@ -596,8 +596,8 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(13); // 13 months groups in the interval
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2016-04-30T23:00:00.000Z')).toEqual(0);
-    expect(aggregationMap.get('2016-07-31T23:00:00.000Z')).toEqual(2); // sighting--ee20065d-2555-424f-ad9e-0f8428623c75 and sighting--579a46af-a339-400d-809e-b92101fe7de8
+    expect(aggregationMap.get('2016-05-01T00:00:00.000Z')).toEqual(0);
+    expect(aggregationMap.get('2016-08-01T00:00:00.000Z')).toEqual(2); // sighting--ee20065d-2555-424f-ad9e-0f8428623c75 and sighting--579a46af-a339-400d-809e-b92101fe7de8
   });
   it('should relations with fromId time series', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
@@ -613,7 +613,7 @@ describe('Relations time series', () => {
     const series = await timeSeriesRelations(testContext, ADMIN_USER, options);
     expect(series.length).toEqual(3);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(2);
+    expect(aggregationMap.get('2020-01-01T00:00:00.000Z')).toEqual(2);
   });
 });
 

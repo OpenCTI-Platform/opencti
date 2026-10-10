@@ -62,6 +62,7 @@ const individualFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...IndividualDetails_individual
   }
 `;

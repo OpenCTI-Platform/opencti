@@ -7,7 +7,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -227,25 +227,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   host={host}
                 />
                 {last(filterValues) !== id && isRegardingOfFilter
-                  && (
-                    <Button
-                      type="button"
-                      sx={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        color: 'inherit',
-                        display: 'inline-block',
-                        height: '100%',
-                        borderRadius: 0,
-                        margin: '0 2px 0 0',
-                        fontFamily: 'Consolas, monaco, monospace',
-                      }}
-                      onClick={operatorOnClick}
-                    >
-                      ,
-                    </Button>
-                  )
+                  && <span style={{ marginRight: 2 }}>,</span>
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
@@ -309,7 +291,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               );
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
-                if (!isFilterGroupNotEmpty(dynamicValue)) {
+                if (!isFilterGroupNotEmptyShallow(dynamicValue)) {
                   return <div key={val.key} />;
                 }
                 return (

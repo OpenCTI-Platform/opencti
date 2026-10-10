@@ -19,6 +19,7 @@ const item: DeployedIntegrationItem = {
   messagesCount: null,
   throughputRate: null,
   lastRunDate: null,
+  lastSeenAt: null,
   updatedAt: null,
   updateAvailable: false,
   latestCompatibleVersion: null,
