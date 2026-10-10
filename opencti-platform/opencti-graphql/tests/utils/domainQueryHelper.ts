@@ -9,6 +9,9 @@ import { storeLoadById } from '../../src/database/middleware-loader';
 import type { Group } from '../../src/types/group';
 import type { AuthUser } from '../../src/types/user';
 import { ACCOUNT_STATUS_ACTIVE } from '../../src/config/conf';
+import { findDefaultIngestionGroups, groupAllowedMarkings, rolesPaginated } from '../../src/domain/group';
+import { roleCapabilities } from '../../src/modules/user/user-domain';
+import type { BasicGroupEntity } from '../../src/types/store';
 
 /**
  * Utilities and helper for test that are done at domain level (so direct to database, no graphQL query)
@@ -68,6 +71,22 @@ export const getFakeAuthUser = (userName: string) => {
     restrict_delete: false,
     no_creators: false,
   };
+  return user;
+};
+
+/**
+ * Grants a fake user the effective rights of the default ingestion group, so it legitimately covers
+ * the execution identity of the ingestion feeds it creates.
+ */
+export const grantDefaultIngestionRights = async (user: AuthUser, extraCapabilities: string[] = []) => {
+  const defaultIngestionGroups = await findDefaultIngestionGroups(testContext, ADMIN_USER) as BasicGroupEntity[];
+  const group = defaultIngestionGroups[0];
+  const roles = await rolesPaginated(testContext, ADMIN_USER, group.id, { first: 100 });
+  const capabilitiesByRole = await Promise.all(roles.edges.map(({ node }: any) => roleCapabilities(testContext, ADMIN_USER, node.id)));
+  const capabilityNames = [...new Set([...capabilitiesByRole.flat().map((capability: any) => capability.name), ...extraCapabilities])];
+  const markings = await groupAllowedMarkings(testContext, ADMIN_USER, group.id);
+  user.capabilities = capabilityNames.map((name) => ({ name })) as AuthUser['capabilities'];
+  user.allowed_marking = markings as AuthUser['allowed_marking'];
   return user;
 };
 

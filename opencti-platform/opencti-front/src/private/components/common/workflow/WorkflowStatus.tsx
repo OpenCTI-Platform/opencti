@@ -1,14 +1,18 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { useFragment } from 'react-relay';
 import { Box, Popover, Typography } from '@mui/material';
 import { CommentOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
-import { workflowStatusFragment } from './WorkflowStatus.graphql';
+import { workflowStatusFragment, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
 import { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import IconButton from '../../../../components/common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
+import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isBypassUser } from '../../../../utils/hooks/useGranted';
 export { WorkflowTransitions } from './WorkflowTransitions';
 
 interface WorkflowStatusProps {
@@ -16,17 +20,18 @@ interface WorkflowStatusProps {
   entityType?: string;
 }
 
-const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+const WorkflowStatusView = ({ workflowInstance, fallback = null, hideStatus = false }: {
+  workflowInstance: WorkflowStatusStixDomainObject_data$data['workflowInstance'];
+  fallback?: ReactNode;
+  hideStatus?: boolean;
+}) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const draft = useFragment(workflowStatusFragment, data);
   const [commentAnchorEl, setCommentAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  if (!draft.workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
-    return null;
+  if (!workflowInstance) {
+    return fallback;
   }
 
-  const { workflowInstance } = draft;
   const currentStatus = workflowInstance.currentStatus;
   const lastComment = workflowInstance.lastHistoryEntry?.comment ?? null;
 
@@ -37,7 +42,7 @@ const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityTy
           <IconButton
             aria-label={t_i18n('View last comment')}
             onClick={(e) => setCommentAnchorEl(e.currentTarget)}
-            sx={{ marginRight: 0.5 }}
+            className="p-4"
           >
             <CommentOutlined fontSize="small" />
           </IconButton>
@@ -56,9 +61,37 @@ const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityTy
           </Popover>
         </>
       )}
-      <ItemStatus status={currentStatus} />
+      {!hideStatus && (currentStatus || fallback === null ? <ItemStatus status={currentStatus} /> : fallback)}
     </>
   );
+};
+
+const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data, entityType = 'DraftWorkspace' }) => {
+  const { isFeatureEnable } = useHelper();
+  const draft = useFragment(workflowStatusFragment, data);
+  return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
+    ? <WorkflowStatusView workflowInstance={draft.workflowInstance} />
+    : null;
+};
+
+export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, children }: {
+  data: WorkflowStatusStixDomainObject_data$key;
+  entityType: string;
+  fallback?: ReactNode;
+  children?: ReactNode;
+}) => {
+  const { isFeatureEnable } = useHelper();
+  const { me } = useAuth();
+  const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
+  const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
+  return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
+    ? (
+        <>
+          {entity.workflowInstance && canEdit && children}
+          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={!!children && canEdit && isBypassUser(me)} />
+        </>
+      )
+    : fallback;
 };
 
 export default WorkflowStatus;

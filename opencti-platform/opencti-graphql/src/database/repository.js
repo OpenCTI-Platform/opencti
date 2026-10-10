@@ -13,16 +13,18 @@ import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '.
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf } from '../config/conf';
+import conf, { booleanConf, DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { SignJWT } from 'jose';
 import { memoize } from '../utils/memoize';
 import { addUserTokenByAdmin, revokeUserTokenByAdmin } from '../modules/user/user-domain';
-import { getClientBase } from './redis';
+import { getClientBase, redisGetConnectorHeartbeat, redisGetConnectorsHeartbeats } from './redis';
 import { lockResources } from '../lock/master-lock';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
+import { buildConnectorUpdateStatus, groupContractVersionsBySlug } from '../modules/catalog/catalog-version-utils';
+import { findCatalogContractsBySlugs } from '../modules/catalog/catalog-repository';
 
 const getJWTKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
@@ -41,7 +43,45 @@ export const issueConnectorJWT = async () => {
   return await keyPair.signJwt(jwt);
 };
 
-export const completeConnector = (connector) => {
+// lastSeenAt is the last connector heartbeat (ping or registration), stored in Redis.
+// Never derive it from updated_at: any write on the connector entity bumps it.
+export const isConnectorActive = (connector, lastSeenAt) => {
+  if (connector.built_in) {
+    return connector.active ?? true;
+  }
+  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
+    // return false if managed connector is stopped or stopping
+    const connectorStopped = connector.manager_requested_status === 'stopping'
+      || connector.manager_requested_status === 'stopped'
+      || connector.manager_current_status === 'stopped';
+    if (connectorStopped) {
+      return false;
+    }
+  }
+  return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
+};
+
+// Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors
+// (workers configuration, connectors selection, cache...). Connectors are then considered inactive.
+export const loadConnectorHeartbeat = async (connectorId) => {
+  try {
+    return await redisGetConnectorHeartbeat(connectorId);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to read connector heartbeat, connector considered inactive', { cause: err, connectorId });
+    return null;
+  }
+};
+
+const loadConnectorsHeartbeats = async () => {
+  try {
+    return await redisGetConnectorsHeartbeats();
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
+    return new Map();
+  }
+};
+
+export const completeConnector = (connector, lastSeenAt) => {
   if (connector) {
     const completed = { ...connector };
     completed.title = connector.title ? connector.title : connector.name;
@@ -56,7 +96,9 @@ export const completeConnector = (connector) => {
     }
 
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
-    completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
+    // Built-in connectors do not send heartbeats
+    completed.last_seen_at = connector.built_in ? null : (lastSeenAt ?? null);
+    completed.active = isConnectorActive(connector, lastSeenAt);
     return completed;
   }
   return null;
@@ -64,12 +106,12 @@ export const completeConnector = (connector) => {
 
 export const connector = async (context, user, id) => {
   // Database connector
-  const element = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR)
-    .then((conn) => completeConnector(conn));
+  const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
+  const element = conn ? completeConnector(conn, await loadConnectorHeartbeat(conn.internal_id)) : null;
   if (isEmptyField(element)) {
     // Built in connector
-    const conn = await builtInConnector(context, user, id);
-    return completeConnector(conn);
+    const builtIn = await builtInConnector(context, user, id);
+    return completeConnector(builtIn);
   }
 
   return element;
@@ -189,7 +231,8 @@ export const computeManagerContractHash = async (context, user, cn) => {
 export const connectors = async (context, user) => {
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
-  return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
+  const heartbeats = await loadConnectorsHeartbeats();
+  return map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)), [...elements, ...builtInElements]);
 };
 
 export const connectorManager = async (context, user, managerId) => {
@@ -210,7 +253,40 @@ export const connectorsForManagers = async (context, user) => {
     noFiltersChecking: true,
   };
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
-  return elements.map((conn) => completeConnector(conn));
+  const heartbeats = await loadConnectorsHeartbeats();
+  return elements.map((conn) => completeConnector(conn, heartbeats.get(conn.internal_id)));
+};
+
+const NO_UPDATE_STATUS = {
+  update_available: false,
+  latest_compatible_version: null,
+  has_newer_incompatible_version: false,
+};
+
+// Batched for connector lists: the catalog contracts of all the connectors are loaded at once, by slug.
+// Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
+// A catalog failure only removes the update hints: the connectors themselves still resolve.
+export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
+  // Without decoupled versions, the catalog only changes with the platform: no update to report
+  if (!isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)) {
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
+  try {
+    const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
+    const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
+    const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
+    const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
+    return connectorsToCheck.map((cn, index) => {
+      const slug = slugs[index];
+      if (!slug) {
+        return NO_UPDATE_STATUS;
+      }
+      return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
+    });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to compute the connectors update status', { module: 'connector', error });
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
 };
 
 export const connectorsForWorker = async (context, user) => {
