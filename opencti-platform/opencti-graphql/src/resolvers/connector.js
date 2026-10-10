@@ -125,6 +125,9 @@ const connectorResolvers = {
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
+    update_available: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).update_available,
+    latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
+    has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
   },
   ManagedConnector: { // For composer

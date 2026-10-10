@@ -19,6 +19,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -27,6 +28,7 @@ import TextareaField from '../../../../components/TextareaField';
 export const organizationEditionOverviewFragment = graphql`
   fragment OrganizationEditionOverview_organization on Organization {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -374,6 +376,13 @@ const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverview
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={organization.entity_type}
+            entityId={organization.id}
+            values={organization.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

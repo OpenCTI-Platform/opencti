@@ -11,7 +11,10 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { StixCoreRelationshipCreationQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { StixCoreRelationshipCreationMutation } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
+import {
+  CustomFieldValueAddInput,
+  StixCoreRelationshipCreationMutation,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationMutation.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
@@ -255,6 +258,7 @@ interface StixCoreRelationshipCreationFormInput {
   createdBy?: FieldOption;
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
+  customFieldValues?: CustomFieldValueAddInput[];
 }
 
 interface StixCoreRelationshipCreationAddInput {
@@ -268,6 +272,7 @@ interface StixCoreRelationshipCreationAddInput {
   createdBy?: string | null;
   objectMarking: (string | null | undefined)[];
   externalReferences: (string | null | undefined)[];
+  customFieldValues?: CustomFieldValueAddInput[];
 }
 
 interface StixCoreRelationshipCreationProps {

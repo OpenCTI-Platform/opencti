@@ -26,6 +26,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { insertOngoingExports } from '../../../../utils/store';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import { TIMELINE_EXPORT_MIME_TYPE_LIST, timelineExportErrorMessage, timelineFormatOfMimeType, useTimelineFileRenderer } from '../timeline/useContainerTimelineExport';
 import { TIMELINE_CONTAINER_TYPES } from '../timeline/timelineUtils';
@@ -465,16 +466,15 @@ const StixCoreObjectFileExportComponent = ({
     const { setSubmitting, setErrors, resetForm } = helpers;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitExport({
-      variables: {
-        id: scoId,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
-      },
+      variables: { id: scoId, input },
+      updater: (store) => insertOngoingExports(store, scoId, 'stixCoreObjectEdit', input),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);

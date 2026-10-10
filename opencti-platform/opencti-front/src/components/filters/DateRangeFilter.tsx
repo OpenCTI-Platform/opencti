@@ -1,13 +1,21 @@
 import React, { FunctionComponent, useState } from 'react';
-import RelativeDateInput from './RelativeDateInput';
+import Popover from '@mui/material/Popover';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
+import DateRangeFields from './DateRangeFields';
+import DateRangeFilterFields from './DateRangeFilterFields';
 import { useFormatter } from '../i18n';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+import { isDateIntervalTranslatable, isValidDate, translateDateInterval } from '../../utils/String';
+import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../utils/fdsLayer';
+import { filterFieldBoxStyle } from './fields/filterFieldLayout';
 
 interface DateRangeFilterProps {
   filter?: Filter;
   filterKey: string;
   helpers?: handleFilterHelpers;
   filterValues: string[];
+  showRelativeDateShortcuts?: boolean;
 }
 
 const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
@@ -15,30 +23,71 @@ const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
   filterKey,
   filterValues,
   helpers,
+  showRelativeDateShortcuts = false,
 }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, smhd } = useFormatter();
+  const theme = useTheme();
   const [dateInput, setDateInput] = useState(filterValues);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  if (!showRelativeDateShortcuts) {
+    return (
+      <DateRangeFields
+        filter={filter}
+        filterKey={filterKey}
+        helpers={helpers}
+        dateInput={dateInput}
+        setDateInput={setDateInput}
+      />
+    );
+  }
+
+  const formatValue = (value: string) => (isValidDate(value) ? smhd(value) : value);
+  const summary = isDateIntervalTranslatable(filterValues)
+    ? translateDateInterval(filterValues, t_i18n)
+    : `${formatValue(filterValues[0])} — ${formatValue(filterValues[1])}`;
+
   return (
     <>
-      <RelativeDateInput
-        filter={filter}
-        filterKey={filterKey}
-        helpers={helpers}
-        label={t_i18n('From')}
-        valueOrder={0}
-        autoFocus
-        dateInput={dateInput}
-        setDateInput={setDateInput}
-      />
-      <RelativeDateInput
-        filter={filter}
-        filterKey={filterKey}
-        helpers={helpers}
-        label={t_i18n('To')}
-        valueOrder={1}
-        dateInput={dateInput}
-        setDateInput={setDateInput}
-      />
+      <Box
+        component="button"
+        type="button"
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        sx={{
+          ...filterFieldBoxStyle(theme, false),
+          height: '100%',
+          padding: '0 14px',
+          background: 'transparent',
+          color: 'inherit',
+          font: 'inherit',
+          textAlign: 'left',
+          '&:hover': filterFieldBoxStyle(theme, true),
+        }}
+      >
+        {summary}
+      </Box>
+      <Popover
+        open={!!anchorEl}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        slotProps={{
+          paper: {
+            elevation: 1,
+            className: fdsLayerClass(FILTER_POPOVER_LAYER),
+            sx: { ...filterPopoverPaperSx, marginTop: '10px' },
+          },
+        }}
+      >
+        <DateRangeFilterFields
+          filter={filter}
+          filterKey={filterKey}
+          helpers={helpers}
+          dateInput={dateInput}
+          setDateInput={setDateInput}
+          handleClose={() => setAnchorEl(null)}
+        />
+      </Popover>
     </>
   );
 };

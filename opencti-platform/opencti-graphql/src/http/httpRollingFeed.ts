@@ -23,6 +23,7 @@ import { fullRelationsList } from '../database/middleware-loader';
 import type { FilterGroupWithNested, FiltersWithNested } from '../database/middleware-loader';
 import { elFindByIds } from '../database/engine';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { extractStringifiedCustomFieldValueFromStoreEntity } from '../modules/customField/custom-field-validator';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
@@ -214,7 +215,7 @@ export const resolveNeighborsForFeed = async (
   return neighborsMap;
 };
 
-export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): string[] => {
+export const buildCsvLines = async (context: any, user: any, elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): Promise<string[]> => {
   const lines: string[] = [];
   const separator = feed.separator ?? ',';
   for (let index = 0; index < elements.length; index += 1) {
@@ -264,7 +265,12 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
               dataElements.push(escapeCsvField(separator, String(data)));
             }
           } else {
-            dataElements.push(escapeCsvField(separator, ''));
+            const customFieldValue = await extractStringifiedCustomFieldValueFromStoreEntity(context, user, element, baseKey);
+            if (customFieldValue) {
+              dataElements.push(escapeCsvField(separator, customFieldValue));
+            } else {
+              dataElements.push(escapeCsvField(separator, ''));
+            }
           }
         }
       }
@@ -326,7 +332,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
       }
 
-      const lines = buildCsvLines(elements, feed, neighborsMap);
+      const lines = await buildCsvLines(context, context.user, elements, feed, neighborsMap);
       lines.forEach((l) => {
         res.write(l);
         res.write('\r\n');

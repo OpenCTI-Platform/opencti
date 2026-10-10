@@ -20,6 +20,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 const eventMutationFieldPatch = graphql`
@@ -328,6 +329,13 @@ const EventEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={event.entity_type}
+            entityId={event.id}
+            values={event.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -348,6 +356,7 @@ export default createFragmentContainer(EventEditionOverviewComponent, {
   event: graphql`
       fragment EventEditionOverview_event on Event {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         name
         event_types
         description
