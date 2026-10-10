@@ -4385,7 +4385,7 @@ export const deleteInferredRuleElement = async (
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
   } catch (err: any) {
-    if (err.name === ALREADY_DELETED_ERROR) {
+    if (err.extensions?.code === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
       logApp.error('Error handling inference', { cause: err });
