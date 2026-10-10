@@ -1,34 +1,80 @@
 # TAXII Push
 
-TAXII Push ingester enables users to import STIX 2.1 objects in OpenCTI through an exposed TAXII collection.
+TAXII Push exposes a TAXII 2.1 collection endpoint that authorized clients can use to add STIX objects to OpenCTI. Use it when an external producer must push intelligence rather than wait for OpenCTI to poll a source.
 
-<a id="best-practices-section"></a>
-## Best practices
+The endpoint implements the TAXII 2.1 [Add Objects](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107540) operation.
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+## Prerequisites and permissions
 
-Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
+Creating and managing a TAXII Push instance requires **Manage ingestion**. Before creation, identify the users, groups, or organizations that can authenticate to the generated collection.
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
-2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
+## Create a TAXII Push instance
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
-
-## Configuration
-
-TAXII Push ingester enables users to import STIX 2.1 objects in OpenCTI through an exposed TAXII collection, in compliance with the [“Add objects” part of the TAXII 2.1 specification](https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html#_Toc31107540).
-Here's a step-by-step guide to configure TAXII Push ingesters:
-
-1. Name: Enter a name for the TAXII Push ingester.
-2. Description (optional): Enter a description for the TAXII Push ingester.
-3. User responsible for data creation: Define the user responsible for creating data received from this TAXII Push ingester. Best practice is to dedicate one user per source for organizational clarity. Please [go to the page](getting-started.md) for more information.
-4. Accessible for: Enter the user, group or organization authorized to push data in the TAXII collection.
-5. Copy confidence level to OpenCTI scores for indicators: Enable this option to map the confidence level associate to STIX indicators to the OpenCTI scoring system.
+1. Go to **Integrations > Available**.
+2. Select **Built-in ingestion**, then find **TAXII Push**.
+3. Select **Create**.
+4. Enter a name and optional description.
+5. Optionally select the user responsible for created data. Leave it empty to use the System account.
+6. Under **Accessible for**, select at least one user, group, or organization authorized to push data.
+7. Choose whether to copy STIX Indicator confidence to OpenCTI scores.
+8. Select **Create**, then start the instance from **Integrations > Deployed**.
 
 ![TAXII Push configuration](../assets/taxii-push-configuration.png)
 
-After creating a new TAXII Push ingester, a TAXII endpoint is generated, which can be used to publish data in STIX 2.1 format.
-To start your new ingester, click on "Start", in the burger menu.
+## Configuration
 
-![TAXII Push creation: start](../assets/taxii-push-creation-start.png)
+| Setting | Description |
+| --- | --- |
+| Name | Required name displayed for the integration. |
+| Description | Optional purpose or producer information. |
+| User responsible for data creation | Local creator assigned to imported objects. Empty uses System. |
+| Accessible for | Required users, groups, or organizations allowed to push objects. |
+| Copy confidence level to OpenCTI scores for indicators | Maps STIX Indicator confidence to OpenCTI score. |
 
+TAXII Push controls authentication through **Accessible for**. It does not expose the authentication-mode selector used by polling feeds.
+
+## Use the generated endpoint
+
+After creation, OpenCTI generates a collection endpoint in this form:
+
+```text
+https://<opencti-base-url>/taxii2/root/collections/<ingester-id>/objects/
+```
+
+Start the TAXII Push instance before sending STIX 2.1 bundles to the endpoint.
+
+![Start TAXII Push](../assets/taxii-push-creation-start.png)
+
+## Manage and monitor TAXII Push
+
+The deployed instance action menu provides:
+
+- **Start** and **Stop**
+- **Update**
+- **Export**
+- **Delete**
+
+The detail page shows its status, description, creator, confidence-mapping option, dates, and technical connector Works when the user can access them. TAXII Push does not have an ingestion Logs tab.
+
+## Import and export
+
+Export downloads a JSON configuration named with the date and TAXII Push name.
+
+To import a configuration:
+
+1. Open **Integrations > Available** and find **TAXII Push**.
+2. Select the file-import action.
+3. Choose the JSON configuration.
+4. Select the local creator and authorized members.
+5. Create and start the instance.
+
+The file prefills the name, description, and confidence-mapping option. The creator and **Accessible for** values remain platform-specific and are not imported.
+
+TAXII Push supports file import but not **Import from Hub**.
+
+## Best practices
+
+- Grant access only to dedicated producer accounts or narrowly scoped groups.
+- Use a dedicated creator identity to make pushed data easy to audit and filter.
+- Distribute the collection endpoint only to authorized producers.
+- Stop the instance immediately if a producer credential is compromised.

@@ -1,51 +1,91 @@
 # TAXII Feeds
 
-TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collections from TAXII servers or other OpenCTI instances.
+TAXII Feeds poll a TAXII 2.1 collection and ingest its STIX objects into OpenCTI. Use them to consume standards-based threat intelligence from an ISAC, vendor, or another OpenCTI platform.
 
-<a id="best-practices-section"></a>
-## Best practices
+## Prerequisites
 
-In OpenCTI, the **Integrations** section — accessible from the main navigation bar on the left — provides users with built-in functions for automated data import. These functions are designed for specific purposes and can be configured to seamlessly ingest data into the platform. Feeds and connectors are managed from the **Integrations** page, which is split into a **Deployed** tab (the feeds and connectors running on your platform) and an **Available** tab (the catalog of connectors and built-in feeds you can deploy). To create a new feed, open the **Available** tab and use the creation button on the corresponding built-in card. For a detailed description of these two tabs and their filters, see [Getting started](getting-started.md#the-integrations-menu). Here, we'll explore the configuration process for the five built-in functions: Live Streams, TAXII Feeds, TAXII Push, RSS Feeds, and JSON/CSV Feeds.
+Obtain the TAXII server root URL, collection identifier, and any required credentials. For an OpenCTI TAXII collection, the root URL is typically `https://<domain>/taxii2/root`.
 
-Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:
+Creating and managing TAXII Feeds requires **Manage ingestion**.
 
-1. Create a dedicated user for each source: Generate a user specifically for feed import, following the convention `[F] Source name` for clear identification. Assign the user to the "Connectors" group to streamline user management and permission related to data creation. Please [see here](../../deployment/connectors.md#connector-token-section) for more information on this good practice.
-2. Establish a dedicated Organization for the source: Create an organization named after the data source for clear identification. Assign the newly created organization to the "Default author" field in feed import configuration if available.
+## Create a TAXII Feed
 
-By adhering to these best practices, you ensure independence in managing rights for each import source through dedicated user and organization structures. In addition, you enable clear traceability to the entity's creator, facilitating source evaluation, dashboard creation, data filtering and other administrative tasks.
+1. Go to **Integrations > Available**.
+2. Select **Built-in ingestion**, then find **TAXII Feed**.
+3. Select **Create**.
+4. Enter a name, server URL, TAXII version, and collection identifier.
+5. Configure authentication and the service account.
+6. Set the schedule and import start date.
+7. Select **Create**, then start the feed from **Integrations > Deployed**.
+
+!!! note "TAXII root URL"
+
+    Enter the TAXII API root, not a collection URL. For example, use `https://example.org/taxii2/root` rather than `https://example.org/taxii2/root/collections/<id>`.
 
 ## Configuration
 
-Here's a step-by-step guide to configure TAXII ingesters:
+| Setting | Description |
+| --- | --- |
+| Name | Required name displayed for the integration. |
+| Description | Optional purpose or source information. |
+| Schedule period | Platform default of approximately 30 seconds, or 5, 15, or 30 minutes; 1, 6, or 12 hours; or 24 hours. |
+| TAXII server URL | Required TAXII root API URL. |
+| TAXII version | Required protocol version. The current form supports TAXII 2.1. |
+| TAXII Collection | Required collection identifier. |
+| Authentication type | None, Basic, bearer token, or client certificate. |
+| Import from date | Oldest collection items to retrieve. Leave empty to retrieve all available items. |
+| Copy confidence level to OpenCTI scores for indicators | Maps STIX Indicator confidence to OpenCTI score. Disabled by default. |
+| Verify SSL certificate | Validates the TAXII server certificate. Enabled by default. |
 
-1. TAXII server URL: Provide the root API URL of the TAXII server. For collections from another OpenCTI instance, the URL is in the form `https://[domain]/taxii2/root`.
-2. TAXII collection: Enter the ID of the TAXII collection to be ingested. For collections from another OpenCTI instance, the ID follows the format `426e3acb-db50-4118-be7e-648fab67c16c`.
-3. Authentication type (if necessary): Enter the authentication type. For non-public collections from another OpenCTI instance, the authentication type is "Bearer token." Enter the token of a user with access to the collection (similar to the point 2 of the Live streams configuration above).
+![TAXII Feed configuration](../assets/taxii-feed-configuration.png)
 
-!!! note "TAXII root API URL"
+Authentication fields depend on the selected mode:
 
-    Many ISAC TAXII configuration instructions will provide the URL for the collection or discovery service. In these cases, remove the last path segment from the TAXII Server URL in order to use it in OpenCTI. eg. use https://[domain]/tipapi/tip21, and not https://[domain]/tipapi/tip21/collections.
+| Mode | Required values |
+| --- | --- |
+| None | No credentials |
+| Basic | Username and password |
+| Bearer token | Token |
+| Client certificate | Base64-encoded certificate, private key, and certificate authority certificate |
 
-Additional configuration options:
+## Configure the service account
 
-- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [go to the page](../getting-started.md) for more information.
-- Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
+By default, OpenCTI creates a service account named `[F] <feed name>` with confidence level `50`. Disable **Automatically create a service account** to select an existing account.
 
-![TAXII feed configuration](../assets/taxii-feed-configuration.png)
+Automatic creation requires a default ingestion group under **Settings > Accesses > Policies**.
 
-## Export a Taxii feed
-You can export your existing taxii feed from the platform, making it easy to share your configuration with others.
+## Manage and monitor a TAXII Feed
 
-To export your taxii feed, click on "Export", in the burger menu.
-![Taxii feed export](../assets/taxii-feeds-export.png)
+The deployed feed action menu provides:
 
-## Import a Taxii feed
+- **Start** and **Stop**
+- **Update**
+- **Export**
+- **Reset state**
+- **Delete**
 
-If you have a JSON Taxii feed file you can import it by clicking on the icon next to "Import from hub"
-![Taxii feed import button](../assets/taxii-feeds-import-icon.png)
+Resetting state makes the feed restart collection ingestion from the beginning, subject to its import date.
 
-When you click, you can select the desired file. After that, a drawer will open with the form pre-filled with the relevant information.
-If necessary, configure the authentication type. By default, a user is already provided.
+The detail page provides **Overview** and **Works**. When ingestion-feed logs are enabled on the platform, a **Logs** tab displays timestamp, severity, message, and expandable JSON details.
 
-You can select Taxii Feeds from the XTM Hub by clicking the ```Import from Hub``` button
+![TAXII Feed export action](../assets/taxii-feeds-export.png)
 
+## Import and export
+
+Export downloads the feed configuration as JSON. Authentication secrets and the local service account are not exported.
+
+To import a configuration, use the file-import action on the **TAXII Feed** card under **Integrations > Available**. The file can prefill the name, description, URL, schedule, version, collection, authentication type, and import date. Re-enter credentials, choose or create the service account, verify SSL behavior, and create the feed.
+
+![TAXII Feed configuration import action](../assets/taxii-feeds-import-icon.png)
+
+When XTM Hub is configured and accessible, the card also displays **Import from Hub**.
+
+## Best practices
+
+- Use a dedicated service account and organization for each TAXII source.
+- Keep SSL verification enabled for trusted production endpoints.
+- Use a conservative schedule for large collections.
+- Set an import date for the first run when ingesting the complete collection would be unnecessary.
+- Review feed logs and Works before resetting ingestion state.
+
+For platform-wide TAXII polling limits, see [Advanced feed configuration](advanced-feed-configuration.md#taxii-feed-settings).
