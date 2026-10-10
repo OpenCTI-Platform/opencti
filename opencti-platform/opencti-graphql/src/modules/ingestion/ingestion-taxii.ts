@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII, type StixIngestionTaxii, type StoreEntityIngestionTaxii } from './ingestion-types';
 import { convertIngestionTaxiiToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
+export const INGESTION_TAXII_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixIngestionTaxii> = {
   type: {
     id: 'ingestion-taxii',
     name: ENTITY_TYPE_INGESTION_TAXII,
@@ -64,5 +64,3 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
   },
   converter_2_1: convertIngestionTaxiiToStix,
 };
-
-registerDefinition(INGESTION_DEFINITION);

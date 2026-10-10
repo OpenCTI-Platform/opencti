@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_RSS, type StixIngestionRss, type StoreEntityIngestionRss } from './ingestion-types';
 import { convertIngestionRssToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
+export const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIngestionRss> = {
   type: {
     id: 'ingestion-rss',
     name: ENTITY_TYPE_INGESTION_RSS,
@@ -57,5 +57,3 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
   },
   converter_2_1: convertIngestionRssToStix,
 };
-
-registerDefinition(INGESTION_RSS_DEFINITION);

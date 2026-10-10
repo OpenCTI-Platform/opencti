@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollection, type StoreEntityIngestionTaxiiCollection } from './ingestion-types';
 import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
+export const INGESTION_TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
     id: 'ingestion-taxii-collection',
     name: ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
@@ -51,5 +51,3 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
   },
   converter_2_1: convertIngestionTaxiiCollectionToStix,
 };
-
-registerDefinition(INGESTION_DEFINITION);
