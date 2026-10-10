@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import caseIncidentModule from './modules/case/case-incident/case-incident-module';
 import caseRfiModule from './modules/case/case-rfi/case-rfi-module';
 import caseRftModule from './modules/case/case-rft/case-rft-module';
 import feedbackModule from './modules/case/feedback/feedback-module';
@@ -72,6 +73,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  caseIncidentModule,
   caseRfiModule,
   caseRftModule,
   feedbackModule,
