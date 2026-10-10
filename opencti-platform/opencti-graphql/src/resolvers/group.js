@@ -28,6 +28,8 @@ const groupResolvers = {
     groups: (_, args, context) => findGroupPaginated(context, context.user, args),
   },
   Group: {
+    // Optional attribute never backfilled: groups created before it was introduced don't have it
+    auto_integration_assignation: (group) => group.auto_integration_assignation ?? [],
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     allowed_marking: (group, _, context) => groupAllowedMarkings(context, context.user, group.id),
     not_shareable_marking_types: (group) => groupNotShareableMarkingTypes(group),
