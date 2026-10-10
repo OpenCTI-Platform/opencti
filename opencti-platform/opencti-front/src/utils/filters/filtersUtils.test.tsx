@@ -2464,8 +2464,12 @@ describe('isFilterGroupNotEmpty', () => {
     })).toBe(true);
   });
   it('should include the dissemination assurance filter keys used by triggers', () => {
-    expect(stixFilters).toContain('deployment_status');
-    expect(stixFilters).toContain('validation_status');
-    expect(stixFilters).toContain('deployment_platforms_count');
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('deployment_status');
+    expect(hook.result.current).toContain('validation_status');
+    expect(hook.result.current).toContain('deployment_platforms_count');
   });
 });

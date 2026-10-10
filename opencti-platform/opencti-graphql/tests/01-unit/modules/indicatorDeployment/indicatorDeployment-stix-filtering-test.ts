@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import * as cacheModule from '../../../../src/database/cache';
 import * as testers from '../../../../src/utils/filtering/filtering-stix/stix-testers';
-import { FILTER_KEY_TESTERS_MAP } from '../../../../src/utils/filtering/filtering-stix/stix-testers';
+import { getFullFilterKeyTestersMap } from '../../../../src/utils/filtering/filtering-stix/stix-testers';
 import type { Filter } from '../../../../src/generated/graphql';
 import type { ReadonlyStix } from '../../../../src/utils/filtering/boolean-logic-engine';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
+
+const loadFilterKeyTestersMap = () => {
+  vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([]);
+  return getFullFilterKeyTestersMap({} as AuthContext, {} as AuthUser);
+};
 
 const EXT = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
 
@@ -18,9 +25,10 @@ const uses = { id: 'relationship--1b1d3f5a-3333-4c4d-9e5f-fedcbafedcba', type: '
 const filter = (key: string, values: string[], operator = 'eq') => ({ key: [key], mode: 'or', operator, values }) as Filter;
 
 describe('Dissemination assurance stix filter testers (triggers)', () => {
-  it('should be registered for live triggers, streams and playbooks', () => {
-    expect(FILTER_KEY_TESTERS_MAP.deployment_status).toBeDefined();
-    expect(FILTER_KEY_TESTERS_MAP.validation_status).toBeDefined();
+  it('should be registered for live triggers, streams and playbooks', async () => {
+    const testersMap = await loadFilterKeyTestersMap();
+    expect(testersMap.deployment_status).toBeDefined();
+    expect(testersMap.validation_status).toBeDefined();
   });
 
   it('should match deployment failed and expired deployments', () => {
@@ -37,14 +45,15 @@ describe('Dissemination assurance stix filter testers (triggers)', () => {
     expect(testers.testValidationStatus(uses, filter('validation_status', [], 'nil'))).toEqual(true);
   });
 
-  it('should match revoked indicators still live on a platform', () => {
+  it('should match revoked indicators still live on a platform', async () => {
     const indicator = (revoked: boolean, count?: number) => ({
       id: 'indicator--4b1d3f5a-3333-4c4d-9e5f-fedcbafedcba',
       type: 'indicator',
       revoked,
       extensions: { [EXT]: count === undefined ? {} : { deployment_platforms_count: count } },
     }) as unknown as ReadonlyStix;
-    expect(FILTER_KEY_TESTERS_MAP.deployment_platforms_count).toBeDefined();
+    const testersMap = await loadFilterKeyTestersMap();
+    expect(testersMap.deployment_platforms_count).toBeDefined();
     expect(testers.testDeploymentPlatformsCount(indicator(true, 2), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(true);
     expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'gt'))).toEqual(false);
     expect(testers.testDeploymentPlatformsCount(indicator(true), filter('deployment_platforms_count', ['0'], 'eq'))).toEqual(true);
