@@ -33,8 +33,9 @@ runs:
           sh -c '
             apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl &&
             npm install -g node-gyp &&
-            cd /workspace/opencti-platform/opencti-graphql &&
-            yarn install --immutable &&
+            cd /workspace &&
+            YARN_ENABLE_IMMUTABLE_INSTALLS=true yarn workspaces focus opencti-graphql &&
+            cd opencti-platform/opencti-graphql &&
             yarn build
           '
 
@@ -46,7 +47,7 @@ runs:
         ls -lart
         rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
         cp -a ./opencti-platform/opencti-graphql release/opencti
-        cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        cp -a ./.yarnrc.yml release/opencti/
         cp -a ./opencti-worker/src release/opencti/worker
         git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/docker release/opencti/docker
         git clone --depth 1 --single-branch --branch master https://github.com/OpenCTI-Platform/connectors release/opencti/connectors
