@@ -1,4 +1,3 @@
-import '../../src/modules';
 import cacheManager from '../../src/manager/cacheManager';
 import { initializeRedisClients } from '../../src/database/redis';
 import { searchEngineInit } from '../../src/database/engine';

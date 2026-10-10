@@ -1,5 +1,4 @@
 import { expect, it } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';

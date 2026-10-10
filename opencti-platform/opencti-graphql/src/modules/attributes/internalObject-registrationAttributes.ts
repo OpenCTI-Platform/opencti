@@ -428,4 +428,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
   [ENTITY_TYPE_ACTIVITY]: HistoryDefinition,
 };
 
-R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalObjectsAttributes);
+export const registerInternalObjectAttributes = () => {
+  R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalObjectsAttributes);
+};

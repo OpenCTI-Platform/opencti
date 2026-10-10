@@ -1,3 +1,24 @@
+// Imported first, as modules/index used to be: the evaluation order of the schema files depends on it.
+import { registerBasicObjectAttributes } from './modules/attributes/basicObject-registrationAttributes';
+import { registerStixObjectAttributes } from './modules/attributes/stixObject-registrationAttributes';
+import { registerStixCoreObjectAttributes } from './modules/attributes/stixCoreObject-registrationAttributes';
+import { registerStixDomainObjectAttributes } from './modules/attributes/stixDomainObject-registrationAttributes';
+import { registerInternalObjectAttributes } from './modules/attributes/internalObject-registrationAttributes';
+import { registerBasicRelationshipAttributes } from './modules/attributes/basicRelationship-registrationAttributes';
+import { registerInternalRelationshipAttributes } from './modules/attributes/internalRelationship-registrationAttributes';
+import { registerStixRelationshipAttributes } from './modules/attributes/stixRelationship-registrationAttributes';
+import { registerStixCoreRelationshipAttributes } from './modules/attributes/stixCoreRelationship-registrationAttributes';
+import { registerStixRefRelationshipAttributes } from './modules/attributes/stixRefRelationship-registrationAttributes';
+import { registerStixSightingRelationshipAttributes } from './modules/attributes/stixSightingRelationship-registrationAttributes';
+import { registerStixCyberObservableAttributes } from './modules/attributes/stixCyberObservable-registrationAttributes';
+import { registerStixMetaObjectAttributes } from './modules/attributes/stixMetaObject-registrationAttributes';
+import { registerStixCoreObjectRelationsRefs } from './modules/relationsRef/stixCoreObject-registrationRef';
+import { registerStixDomainObjectRelationsRefs } from './modules/relationsRef/stixDomainObject-registrationRef';
+import { registerStixRelationshipRelationsRefs } from './modules/relationsRef/stixRelationship-registrationRef';
+import { registerInternalRelationshipRelationsRefs } from './modules/relationsRef/internalRelationship-registrationRef';
+import { registerInternalObjectRelationsRefs } from './modules/relationsRef/internalObject-registrationRef';
+import { registerStixMetaObjectRelationsRefs } from './modules/relationsRef/stixMetaObject-registrationRef';
+import { registerStixCyberObservableRelationsRefs } from './modules/relationsRef/stixCyberObservable-registrationRef';
 import type { ModuleDescriptor } from './modules/module-descriptor';
 import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
@@ -89,8 +110,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 import configPresetModule from './modules/configPreset/configPreset-module';
 
 // Every module, in the registration order modules/index used to enforce.
-// Still registered on import: the attributes and refs of the abstract types (modules/index)
-// and the managers that belong to no module (manager/index).
+// Still registered on import: the managers that belong to no module (manager/index).
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   channelModule,
   catalogModule,
@@ -179,9 +199,32 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 
 let modulesRegistered = false;
 
-// Each phase runs for every module before the next phase starts: data model (overview layouts,
-// attributes, then definitions), graphql schemas, managers, then init. It runs after modules/index,
-// which registers the attributes and refs of the abstract types the definitions inherit from.
+// Attributes, then refs, of the abstract types, which every module definition inherits from.
+const registerAbstractDataModel = () => {
+  registerBasicObjectAttributes();
+  registerStixObjectAttributes();
+  registerStixCoreObjectAttributes();
+  registerStixDomainObjectAttributes();
+  registerInternalObjectAttributes();
+  registerBasicRelationshipAttributes();
+  registerInternalRelationshipAttributes();
+  registerStixRelationshipAttributes();
+  registerStixCoreRelationshipAttributes();
+  registerStixRefRelationshipAttributes();
+  registerStixSightingRelationshipAttributes();
+  registerStixCyberObservableAttributes();
+  registerStixMetaObjectAttributes();
+  registerStixCoreObjectRelationsRefs();
+  registerStixDomainObjectRelationsRefs();
+  registerStixRelationshipRelationsRefs();
+  registerInternalRelationshipRelationsRefs();
+  registerInternalObjectRelationsRefs();
+  registerStixMetaObjectRelationsRefs();
+  registerStixCyberObservableRelationsRefs();
+};
+
+// The abstract data model comes first. Then each phase runs for every module before the next phase starts:
+// data model (overview layouts, attributes, then definitions), graphql schemas, managers, then init.
 // usageProtection catches a read of types, attributes or refs made earlier, not of converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
 export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIPTORS) => {
@@ -189,6 +232,7 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
     return;
   }
   modulesRegistered = true;
+  registerAbstractDataModel();
   descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
     attributes.forEach((definition) => schemaAttributesDefinition.registerAttributes(definition.entityType, definition.attributes));

@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../../src/modules/index';
 import { registerModules } from '../../../../src/composition-root';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { discoverUserIdAttributes } from '../../../../src/modules/userMerge/userMerge-scalarDiscovery';

@@ -39,7 +39,6 @@ vi.mock('../../../src/config/conf', async () => {
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { elFindByIds } from '../../../src/database/engine';
 import { fullRelationsList } from '../../../src/database/middleware-loader';

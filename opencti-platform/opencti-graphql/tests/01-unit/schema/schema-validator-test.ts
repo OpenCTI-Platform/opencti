@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { validateAndFormatSchemaAttribute } from '../../../src/schema/schema-validator';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';

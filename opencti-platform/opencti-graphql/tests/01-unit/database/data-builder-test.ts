@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import * as cacheModule from '../../../src/database/cache';
 import { buildRelationData } from '../../../src/database/data-builder';

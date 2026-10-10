@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { buildChanges } from '../../../src/database/data-changes';

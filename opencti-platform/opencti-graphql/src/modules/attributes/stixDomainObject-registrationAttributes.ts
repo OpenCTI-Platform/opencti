@@ -98,7 +98,6 @@ const stixDomainObjectAttributes: Array<AttributeDefinition<any>> = [
   },
   customFieldValues,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, stixDomainObjectAttributes);
 
 const stixDomainObjectIdentityAttributes: Array<AttributeDefinition> = [
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
@@ -107,7 +106,6 @@ const stixDomainObjectIdentityAttributes: Array<AttributeDefinition> = [
   { name: 'roles', label: 'Roles', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
   identityClass,
 ];
-schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_IDENTITY, stixDomainObjectIdentityAttributes);
 
 const stixDomainObjectLocationAttributes: Array<AttributeDefinition> = [
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
@@ -117,10 +115,8 @@ const stixDomainObjectLocationAttributes: Array<AttributeDefinition> = [
   { name: 'precision', label: 'Precision', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   entityLocationType,
 ];
-schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_LOCATION, stixDomainObjectLocationAttributes);
 
 const stixDomainObjectContainerAttributes: Array<AttributeDefinition> = [];
-schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_CONTAINER, stixDomainObjectContainerAttributes);
 
 const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> } = {
   [ENTITY_TYPE_ATTACK_PATTERN]: [
@@ -300,4 +296,11 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>
     { name: 'objective', label: 'Objective', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
 };
-R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+
+export const registerStixDomainObjectAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, stixDomainObjectAttributes);
+  schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_IDENTITY, stixDomainObjectIdentityAttributes);
+  schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_LOCATION, stixDomainObjectLocationAttributes);
+  schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_CONTAINER, stixDomainObjectContainerAttributes);
+  R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);
+};

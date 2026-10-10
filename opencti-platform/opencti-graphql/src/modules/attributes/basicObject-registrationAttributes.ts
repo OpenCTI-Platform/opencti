@@ -34,4 +34,7 @@ const basicObjectAttributes: Array<AttributeDefinition> = [
   creators,
   metrics,
 ];
-schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_OBJECT, basicObjectAttributes);
+
+export const registerBasicObjectAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_OBJECT, basicObjectAttributes);
+};

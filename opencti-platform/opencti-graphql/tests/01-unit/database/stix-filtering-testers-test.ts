@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 // import modules to be able to test correctly types
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 
 // basic set

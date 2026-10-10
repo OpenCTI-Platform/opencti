@@ -1,8 +1,6 @@
-// region static graphql modules, need to be imported before everything
-import '../../src/modules/index';
-// import managers
+import { registerModules } from '../../src/composition-root';
+// managers that belong to no module register on import
 import '../../src/manager/index';
-// endregion
 import { initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { elDeleteIndices, elPlatformIndices, initializeSchema } from '../../src/database/engine';
@@ -23,7 +21,6 @@ import { initializeStreamStack } from '../../src/database/stream/stream-handler'
 import { initializeAuthenticationProviders } from '../../src/modules/authenticationProvider/providers';
 import { initializeAdminUser } from '../../src/modules/user/user-domain';
 import { checkSystemDependencies } from '../../src/boot-utils';
-import { registerModules } from '../../src/composition-root';
 
 registerModules();
 
