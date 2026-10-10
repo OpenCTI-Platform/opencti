@@ -1,11 +1,9 @@
-import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
-import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, parentTypes, refreshedAt, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 import { UPLOAD_STATUS_VALUES } from './document-domain';
 
-const attributes: Array<AttributeDefinition> = [
+export const INTERNAL_FILE_ATTRIBUTES: Array<AttributeDefinition> = [
   id,
   internalId,
   standardId,
@@ -96,5 +94,3 @@ const attributes: Array<AttributeDefinition> = [
   { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 ];
-
-schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);
