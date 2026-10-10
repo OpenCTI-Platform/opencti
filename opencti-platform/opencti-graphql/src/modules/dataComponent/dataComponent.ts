@@ -7,11 +7,10 @@ import { RELATION_DERIVED_FROM, RELATION_DETECTS } from '../../schema/stixCoreRe
 import { REL_BUILT_IN, REL_EXTENDED } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { revoked } from '../../schema/attribute-definition';
 
-const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent, Stix2DataComponent> = {
+export const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent, Stix2DataComponent> = {
   type: {
     id: 'dataComponents',
     name: ENTITY_TYPE_DATA_COMPONENT,
@@ -84,5 +83,3 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   converter_2_1: convertDataComponentToStix_2_1,
   converter_2_0: convertDataComponentToStix_2_0,
 };
-
-registerDefinition(DATA_COMPONENT_DEFINITION);
