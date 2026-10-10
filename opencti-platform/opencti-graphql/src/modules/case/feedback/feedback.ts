@@ -1,13 +1,12 @@
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
 import { convertFeedbackToStix_2_0, convertFeedbackToStix_2_1 } from './feedback-converter';
 import { createdBy, objectAssignee, objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK, type Stix2Feedback, type StixFeedback, type StoreEntityFeedback } from './feedback-types';
 
-const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, Stix2Feedback> = {
+export const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, Stix2Feedback> = {
   type: {
     id: 'feedback',
     name: ENTITY_TYPE_CONTAINER_FEEDBACK,
@@ -50,5 +49,3 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback, S
   converter_2_1: convertFeedbackToStix_2_1,
   converter_2_0: convertFeedbackToStix_2_0,
 };
-
-registerDefinition(FEEDBACK_DEFINITION);
