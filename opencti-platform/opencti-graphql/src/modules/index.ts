@@ -29,7 +29,6 @@ import './relationsRef/stixCyberObservable-registrationRef';
 import './channel/channel';
 import './connector/connector';
 import './ingestionHealth/ingestionHealth';
-import './language/language';
 
 // incomplete modules
 // endregion
@@ -38,6 +37,5 @@ import './channel/channel-graphql';
 import './connector/connector-graphql';
 import './ingestionHealth/ingestionHealth-graphql';
 import './catalog/catalog-graphql';
-import './language/language-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
