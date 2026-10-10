@@ -3,7 +3,7 @@ import type { AttributeConfiguration, ScaleConfig, StixEntitySetting, StoreEntit
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntitySettingToStix from './entitySetting-converter';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
 
 const TARGET_TYPE = 'target_type';
@@ -123,5 +123,3 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
   },
   converter_2_1: convertEntitySettingToStix,
 };
-
-registerDefinition(ENTITY_SETTING_DEFINITION);
