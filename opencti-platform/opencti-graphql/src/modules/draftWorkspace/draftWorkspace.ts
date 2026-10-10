@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { authorizedMembers, authorizedMembersActivationDate, createdAt, creators, draftChange, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type StixDraftWorkspace, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import convertDraftWorkspaceToStix from './draftWorkspace-converter';
@@ -8,7 +8,7 @@ import { getDraftStatuses } from './draftStatuses';
 import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { createdBy, objectAssignee, objectParticipant } from '../../schema/stixRefRelationship';
 
-const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
+export const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
   type: {
     id: 'draftWorkspace',
     name: ENTITY_TYPE_DRAFT_WORKSPACE,
@@ -45,5 +45,3 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
   },
   converter_2_1: convertDraftWorkspaceToStix,
 };
-
-registerDefinition(DRAFT_WORKSPACE_DEFINITION);

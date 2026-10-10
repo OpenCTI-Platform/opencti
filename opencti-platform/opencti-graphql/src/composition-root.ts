@@ -3,6 +3,7 @@ import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import draftWorkspaceModule from './modules/draftWorkspace/draftWorkspace-module';
 import fintelTemplateModule from './modules/fintelTemplate/fintelTemplate-module';
 import disseminationListModule from './modules/disseminationList/disseminationList-module';
 import savedFilterModule from './modules/savedFilter/savedFilter-module';
@@ -43,6 +44,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  draftWorkspaceModule,
   fintelTemplateModule,
   disseminationListModule,
   savedFilterModule,
