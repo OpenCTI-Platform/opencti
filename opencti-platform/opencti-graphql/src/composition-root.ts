@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import eventModule from './modules/event/event-module';
 import groupingModule from './modules/grouping/grouping-module';
 import narrativeModule from './modules/narrative/narrative-module';
 import notificationModule from './modules/notification/notification-module';
@@ -84,6 +85,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  eventModule,
   groupingModule,
   narrativeModule,
   notificationModule,

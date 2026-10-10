@@ -5,10 +5,10 @@ import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT } from '../../schema/stixCor
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
-const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent, Stix2Event> = {
+export const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent, Stix2Event> = {
   type: {
     id: 'events',
     name: ENTITY_TYPE_EVENT,
@@ -59,5 +59,3 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent, Stix2Event
   converter_2_1: convertEventToStix,
   converter_2_0: convertEventToStix_2_0,
 };
-
-registerDefinition(EVENT_DEFINITION);
