@@ -1,5 +1,6 @@
 import type { DocumentNode } from 'graphql';
 import type { ModuleDefinition } from '../schema/module';
+import type { AttributeDefinition } from '../schema/attribute-definition';
 import type { ManagerDefinition } from '../manager/managerModule';
 import type { Resolvers } from '../generated/graphql';
 import type { OverviewLayoutCustomization } from './entitySetting/entitySetting-types';
@@ -7,6 +8,11 @@ import type { OverviewLayoutCustomization } from './entitySetting/entitySetting-
 export interface GraphqlSchemaDefinition {
   schema: DocumentNode;
   resolver: Resolvers;
+}
+
+export interface AttributesDefinition {
+  entityType: string;
+  attributes: AttributeDefinition[];
 }
 
 export interface OverviewLayoutDefinition {
@@ -21,6 +27,8 @@ export interface ModuleDescriptor {
   id: string;
   // Default overview layouts of entity types not defined through dataModel (yet)
   overviewLayouts?: OverviewLayoutDefinition[];
+  // Attributes of entity types not defined through dataModel (yet)
+  attributes?: AttributesDefinition[];
   dataModel?: ModuleDefinition<any, any>[];
   graphqlSchemas?: GraphqlSchemaDefinition[];
   managers?: ManagerDefinition[];

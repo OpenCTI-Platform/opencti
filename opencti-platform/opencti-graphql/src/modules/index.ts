@@ -69,7 +69,6 @@ import './ingestionDeduplication/ingestionDeduplicationRule';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
 import './internal/jsonMapper/jsonMapper';
-import './internal/document/document';
 
 // incomplete modules
 // endregion
