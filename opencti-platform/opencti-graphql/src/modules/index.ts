@@ -49,7 +49,6 @@ import './entitySetting/entitySetting';
 import './workflow/workflow';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
-import './managerConfiguration/managerConfiguration';
 
 // incomplete modules
 // endregion
@@ -78,7 +77,6 @@ import './case/feedback/feedback-graphql';
 import './entitySetting/entitySetting-graphql';
 import './workspace/workspace-graphql';
 import './malwareAnalysis/malwareAnalysis-graphql';
-import './managerConfiguration/managerConfiguration-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

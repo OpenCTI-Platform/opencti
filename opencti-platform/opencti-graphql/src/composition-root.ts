@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import managerConfigurationModule from './modules/managerConfiguration/managerConfiguration-module';
 import notifierModule from './modules/notifier/notifier-module';
 import threatActorIndividualModule from './modules/threatActorIndividual/threatActorIndividual-module';
 import playbookModule from './modules/playbook/playbook-module';
@@ -64,6 +65,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  managerConfigurationModule,
   notifierModule,
   threatActorIndividualModule,
   playbookModule,
