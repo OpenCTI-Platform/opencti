@@ -41,6 +41,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
+import { SENSITIVE_FIELD_NAME } from '../globalExport/globalExport-utils';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
@@ -250,9 +251,12 @@ export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, 
 // Header values commonly carry credentials (Authorization, API keys, cookies):
 // like authentication_value, sensitive ones are blanked in the export and must
 // be set again at import time.
-const SENSITIVE_HEADER_NAME = /authorization|token|key|secret|password|cookie|credential/i;
 export const sanitizeExportedHeaders = (headers: { name: string; value: string }[] | undefined) => {
-  return headers?.map((header) => (SENSITIVE_HEADER_NAME.test(header.name) ? { ...header, value: '' } : header));
+  return headers?.map((header) => (SENSITIVE_FIELD_NAME.test(header.name) ? { ...header, value: '' } : header));
+};
+
+export const sanitizeExportedQueryAttributes = (attributes: DataParam[] | undefined) => {
+  return attributes?.map((attribute) => (SENSITIVE_FIELD_NAME.test(attribute.to) ? { ...attribute, default: '' } : attribute));
 };
 
 // Exports the feed configuration with the JSON mapper embedded (a JSON feed
@@ -291,7 +295,7 @@ export const jsonFeedExport = async (context: AuthContext, user: AuthUser, inges
       pagination_with_sub_page_attribute_path,
       pagination_with_sub_page_query_verb,
       headers: sanitizeExportedHeaders(headers),
-      query_attributes,
+      query_attributes: sanitizeExportedQueryAttributes(query_attributes),
       authentication_type,
       authentication_value: '',
       ssl_verify,

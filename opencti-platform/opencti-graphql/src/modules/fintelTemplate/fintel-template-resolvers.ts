@@ -1,10 +1,19 @@
 import type { Resolvers } from '../../generated/graphql';
 import type { BasicStoreEntityFintelTemplate } from './fintelTemplate-types';
-import { addFintelTemplate, findById, fintelTemplateConfigurationImport, fintelTemplateDelete, fintelTemplateEditField, fintelTemplateExport } from './fintelTemplate-domain';
+import {
+  addFintelTemplate,
+  findById,
+  findFintelTemplatePaginated,
+  fintelTemplateConfigurationImport,
+  fintelTemplateDelete,
+  fintelTemplateEditField,
+  fintelTemplateExport,
+} from './fintelTemplate-domain';
 
 const fintelTemplateResolvers: Resolvers = {
   Query: {
     fintelTemplate: (_, { id }, context) => findById(context, context.user, id),
+    fintelTemplates: (_, args, context) => findFintelTemplatePaginated(context, context.user, args),
   },
   FintelTemplate: {
     includeCoverPageByDefault: (fintelTemplate: BasicStoreEntityFintelTemplate) => fintelTemplate.include_cover_page_by_default ?? true,

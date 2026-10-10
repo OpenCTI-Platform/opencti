@@ -6,6 +6,7 @@ import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { DateTime } from 'luxon';
 import * as crypto from 'crypto';
+import pjson from '../../../package.json';
 import conf, {
   ACCOUNT_STATUS_ACTIVE,
   ACCOUNT_STATUS_EXPIRED,
@@ -523,6 +524,22 @@ const getUserAndGlobalMarkings = async (
 
 export const roleCapabilities = async (context: AuthContext, user: AuthUser, roleId: string, relationshipType: string = RELATION_HAS_CAPABILITY) => {
   return await fullEntitiesThroughRelationsToList<BasicCapabilityEntity>(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
+};
+
+export const generateRoleExportConfiguration = async (context: AuthContext, user: AuthUser, role: BasicStoreEntity & { can_manage_sensitive_config?: boolean }) => {
+  const capabilities = await roleCapabilities(context, user, role.id);
+  const capabilitiesInDraft = await roleCapabilities(context, user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT);
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'role',
+    configuration: {
+      name: role.name,
+      description: role.description,
+      can_manage_sensitive_config: role.can_manage_sensitive_config,
+      capabilities: capabilities.map((capability) => capability.name),
+      capabilities_in_draft: capabilitiesInDraft.map((capability) => capability.name),
+    },
+  });
 };
 
 export const getDefaultHiddenTypes = (entities: { default_hidden_types?: string[] }[]) => {

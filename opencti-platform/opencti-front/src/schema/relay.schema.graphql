@@ -2021,6 +2021,15 @@ type ManagerContractConfiguration {
   value: String
 }
 
+type ManagedConnectorAddInputFromImport {
+  name: String!
+  catalog_id: String!
+  contract: String!
+  confidence_level: Int
+  manager_contract_configuration: [ManagerContractConfiguration!]!
+  required_at_import: [String!]!
+}
+
 type ManagerContractExcerpt {
   title: String!
   slug: String!
@@ -2143,6 +2152,7 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  toConfigurationExport: String
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -9159,6 +9169,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  managedConnectorAddInputFromImport(file: Upload!): ManagedConnectorAddInputFromImport!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
@@ -9487,6 +9498,7 @@ type Query {
   draftWorkspacesTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, filters: FilterGroup, search: String): [TimeSeries]
   draftWorkspacesDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, filters: FilterGroup, search: String): [Distribution]
   fintelTemplate(id: ID!): FintelTemplate
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelTemplateConnection
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilter(id: ID!): SavedFilter
@@ -10519,6 +10531,7 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!], bundleName: String): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -17593,4 +17606,9 @@ input CustomFieldDefinitionAddInput {
   min_value: Int
   max_value: Int
   select_options: [String!]
+}
+
+input GlobalExportSelectionInput {
+  entityType: String!
+  ids: [ID!]
 }

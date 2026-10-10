@@ -4630,6 +4630,7 @@ export type Connector = BasicObject & InternalObject & {
   slug?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   title: Scalars['String']['output'];
+  toConfigurationExport?: Maybe<Scalars['String']['output']>;
   update_available?: Maybe<Scalars['Boolean']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   version?: Maybe<Scalars['String']['output']>;
@@ -10241,6 +10242,11 @@ export enum FormsOrdering {
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
+};
+
+export type GlobalExportSelectionInput = {
+  entityType: Scalars['String']['input'];
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type Group = BasicObject & InternalObject & {
@@ -16676,6 +16682,16 @@ export type ManagedConnector = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
 };
 
+export type ManagedConnectorAddInputFromImport = {
+  __typename?: 'ManagedConnectorAddInputFromImport';
+  catalog_id: Scalars['String']['output'];
+  confidence_level?: Maybe<Scalars['Int']['output']>;
+  contract: Scalars['String']['output'];
+  manager_contract_configuration: Array<ManagerContractConfiguration>;
+  name: Scalars['String']['output'];
+  required_at_import: Array<Scalars['String']['output']>;
+};
+
 export type ManagerConfiguration = BasicObject & InternalObject & {
   __typename?: 'ManagerConfiguration';
   entity_type: Scalars['String']['output'];
@@ -17463,6 +17479,7 @@ export type Mutation = {
   formImport?: Maybe<Form>;
   formSubmit?: Maybe<FormSubmissionResponse>;
   frontendErrorLog?: Maybe<Scalars['Boolean']['output']>;
+  globalConfigurationExport: File;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -18727,6 +18744,13 @@ export type MutationFrontendErrorLogArgs = {
   codeStack?: InputMaybe<Scalars['String']['input']>;
   componentStack?: InputMaybe<Scalars['String']['input']>;
   message: Scalars['String']['input'];
+};
+
+
+export type MutationGlobalConfigurationExportArgs = {
+  bundleName?: InputMaybe<Scalars['String']['input']>;
+  entityTypes: Array<Scalars['String']['input']>;
+  selections?: InputMaybe<Array<GlobalExportSelectionInput>>;
 };
 
 
@@ -24962,6 +24986,7 @@ export type Query = {
   fintelDesign?: Maybe<FintelDesign>;
   fintelDesigns?: Maybe<FintelDesignConnection>;
   fintelTemplate?: Maybe<FintelTemplate>;
+  fintelTemplates?: Maybe<FintelTemplateConnection>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
   globalSearch?: Maybe<StixCoreObjectConnection>;
@@ -25027,6 +25052,7 @@ export type Query = {
   malwareAnalyses?: Maybe<MalwareAnalysisConnection>;
   malwareAnalysis?: Maybe<MalwareAnalysis>;
   malwares?: Maybe<MalwareConnection>;
+  managedConnectorAddInputFromImport: ManagedConnectorAddInputFromImport;
   managerConfiguration?: Maybe<ManagerConfiguration>;
   managerConfigurationByManagerId?: Maybe<ManagerConfiguration>;
   markingDefinition?: Maybe<MarkingDefinition>;
@@ -26155,6 +26181,16 @@ export type QueryFintelTemplateArgs = {
 };
 
 
+export type QueryFintelTemplatesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FintelTemplateOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryFormArgs = {
   id: Scalars['ID']['input'];
 };
@@ -26655,6 +26691,11 @@ export type QueryMalwaresArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryManagedConnectorAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -41089,6 +41130,7 @@ export type ResolversTypes = ResolversObject<{
   Format: Format;
   FormsOrdering: FormsOrdering;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: ResolverTypeWrapper<BasicGroupEntity>;
   GroupAddInput: GroupAddInput;
   GroupConnection: ResolverTypeWrapper<Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupEdge']>>> }>;
@@ -41285,6 +41327,7 @@ export type ResolversTypes = ResolversObject<{
   MalwareEditMutations: ResolverTypeWrapper<Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Malware']>, contextPatch?: Maybe<ResolversTypes['Malware']>, fieldPatch?: Maybe<ResolversTypes['Malware']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Malware']> }>;
   MalwaresOrdering: MalwaresOrdering;
   ManagedConnector: ResolverTypeWrapper<Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversTypes['User']> }>;
+  ManagedConnectorAddInputFromImport: ResolverTypeWrapper<ManagedConnectorAddInputFromImport>;
   ManagerConfiguration: ResolverTypeWrapper<BasicStoreEntityManagerConfiguration>;
   ManagerContractConfiguration: ResolverTypeWrapper<ManagerContractConfiguration>;
   ManagerContractExcerpt: ResolverTypeWrapper<ManagerContractExcerpt>;
@@ -42222,6 +42265,7 @@ export type ResolversParentTypes = ResolversObject<{
   FormSubmissionInput: FormSubmissionInput;
   FormSubmissionResponse: FormSubmissionResponse;
   GetMetrics: GetMetrics;
+  GlobalExportSelectionInput: GlobalExportSelectionInput;
   Group: BasicGroupEntity;
   GroupAddInput: GroupAddInput;
   GroupConnection: Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupEdge']>>> };
@@ -42390,6 +42434,7 @@ export type ResolversParentTypes = ResolversObject<{
   MalwareEdge: Omit<MalwareEdge, 'node'> & { node: ResolversParentTypes['Malware'] };
   MalwareEditMutations: Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Malware']>, contextPatch?: Maybe<ResolversParentTypes['Malware']>, fieldPatch?: Maybe<ResolversParentTypes['Malware']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Malware']> };
   ManagedConnector: Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversParentTypes['User']> };
+  ManagedConnectorAddInputFromImport: ManagedConnectorAddInputFromImport;
   ManagerConfiguration: BasicStoreEntityManagerConfiguration;
   ManagerContractConfiguration: ManagerContractConfiguration;
   ManagerContractExcerpt: ManagerContractExcerpt;
@@ -44420,6 +44465,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   update_available?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48549,6 +48595,15 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ManagedConnectorAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagedConnectorAddInputFromImport'] = ResolversParentTypes['ManagedConnectorAddInputFromImport']> = ResolversObject<{
+  catalog_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  confidence_level?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  contract?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  manager_contract_configuration?: Resolver<Array<ResolversTypes['ManagerContractConfiguration']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required_at_import?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type ManagerConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerConfiguration'] = ResolversParentTypes['ManagerConfiguration']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -49054,6 +49109,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   formImport?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<MutationFormImportArgs, 'file'>>;
   formSubmit?: Resolver<Maybe<ResolversTypes['FormSubmissionResponse']>, ParentType, ContextType, RequireFields<MutationFormSubmitArgs, 'input' | 'isDraft'>>;
   frontendErrorLog?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationFrontendErrorLogArgs, 'message'>>;
+  globalConfigurationExport?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationGlobalConfigurationExportArgs, 'entityTypes'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;
@@ -50945,6 +51001,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelDesign?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<QueryFintelDesignArgs, 'id'>>;
   fintelDesigns?: Resolver<Maybe<ResolversTypes['FintelDesignConnection']>, ParentType, ContextType, Partial<QueryFintelDesignsArgs>>;
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
+  fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<QueryFintelTemplatesArgs>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
   globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
@@ -51010,6 +51067,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   malwareAnalyses?: Resolver<Maybe<ResolversTypes['MalwareAnalysisConnection']>, ParentType, ContextType, Partial<QueryMalwareAnalysesArgs>>;
   malwareAnalysis?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<QueryMalwareAnalysisArgs, 'id'>>;
   malwares?: Resolver<Maybe<ResolversTypes['MalwareConnection']>, ParentType, ContextType, Partial<QueryMalwaresArgs>>;
+  managedConnectorAddInputFromImport?: Resolver<ResolversTypes['ManagedConnectorAddInputFromImport'], ParentType, ContextType, RequireFields<QueryManagedConnectorAddInputFromImportArgs, 'file'>>;
   managerConfiguration?: Resolver<Maybe<ResolversTypes['ManagerConfiguration']>, ParentType, ContextType, RequireFields<QueryManagerConfigurationArgs, 'id'>>;
   managerConfigurationByManagerId?: Resolver<Maybe<ResolversTypes['ManagerConfiguration']>, ParentType, ContextType, RequireFields<QueryManagerConfigurationByManagerIdArgs, 'managerId'>>;
   markingDefinition?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<QueryMarkingDefinitionArgs, 'id'>>;
@@ -55459,6 +55517,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MalwareEdge?: MalwareEdgeResolvers<ContextType>;
   MalwareEditMutations?: MalwareEditMutationsResolvers<ContextType>;
   ManagedConnector?: ManagedConnectorResolvers<ContextType>;
+  ManagedConnectorAddInputFromImport?: ManagedConnectorAddInputFromImportResolvers<ContextType>;
   ManagerConfiguration?: ManagerConfigurationResolvers<ContextType>;
   ManagerContractConfiguration?: ManagerContractConfigurationResolvers<ContextType>;
   ManagerContractExcerpt?: ManagerContractExcerptResolvers<ContextType>;

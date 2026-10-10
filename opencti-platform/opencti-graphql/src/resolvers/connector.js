@@ -13,7 +13,9 @@ import {
   findSyncById,
   findSyncPaginated,
   managedConnectorAdd,
+  managedConnectorAddInputFromImport,
   managedConnectorEdit,
+  managedConnectorExport,
   patchSync,
   pingConnector,
   queueDetails,
@@ -108,6 +110,7 @@ const connectorResolvers = {
     connectorMigrationAssessment: async (_, { connectorId, containerImage, configuration }, context) => {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     },
+    managedConnectorAddInputFromImport: (_, { file }, context) => managedConnectorAddInputFromImport(context, context.user, file),
     // endregion
   },
   Connector: { // For UI display
@@ -129,6 +132,7 @@ const connectorResolvers = {
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
+    toConfigurationExport: (cn, _, context) => (cn.is_managed ? managedConnectorExport(context, cn) : null),
   },
   ManagedConnector: { // For composer
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),

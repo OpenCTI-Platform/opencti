@@ -14,16 +14,31 @@ import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
+import fileDownload from 'js-file-download';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
+import useGranted, { CONNECTORAPI } from '../../../../utils/hooks/useGranted';
 import canDeleteConnector from './utils/canDeleteConnector';
+import { ConnectorPopoverExportQuery$data } from './__generated__/ConnectorPopoverExportQuery.graphql';
+
+const connectorPopoverExportQuery = graphql`
+  query ConnectorPopoverExportQuery($id: String!) {
+    connector(id: $id) {
+      id
+      title
+      toConfigurationExport
+    }
+  }
+`;
 
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
@@ -43,6 +58,8 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
   const [refreshingQueueDetails, setRefreshingQueueDetails] = useState(false);
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
+  const { isFeatureEnable } = useHelper();
+  const canExportConfiguration = useGranted([CONNECTORAPI]) && isFeatureEnable('GLOBAL_EXPORT_BUNDLE');
 
   const [commitDeleteConnector] = useApiMutation(connectorDeletionMutation);
   const [commitClearWorks] = useApiMutation(connectorWorkDeleteMutation);
@@ -63,6 +80,21 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
   const handleOpenEdit = () => {
     setAnchorEl(null);
     onOpenEditConfiguration?.();
+  };
+
+  const handleExport = async () => {
+    setAnchorEl(null);
+    const data = await fetchQuery(connectorPopoverExportQuery, { id: connector.id }).toPromise() as ConnectorPopoverExportQuery$data;
+    const exported = data?.connector?.toConfigurationExport;
+    if (!exported) {
+      return;
+    }
+    const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+    fileDownload(new Blob([exported], { type: 'text/json' }), `${year}${month}${day}_connector_${data.connector?.title}.json`);
+    const excludedCount = JSON.parse(exported).configuration.required_at_import.length;
+    if (excludedCount > 0) {
+      MESSAGING$.notifySuccess(t_i18n('Sensitive fields excluded from the export, to be provided again at import: {count}', { values: { count: excludedCount } }));
+    }
   };
 
   const handleOpenClearWorks = () => {
@@ -162,6 +194,9 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
       >
         {connector.is_managed && (
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        )}
+        {connector.is_managed && canExportConfiguration && (
+          <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
         )}
         {isSensitive ? (
           <DangerZoneBlock
