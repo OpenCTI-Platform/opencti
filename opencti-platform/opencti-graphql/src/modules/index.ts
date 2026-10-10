@@ -69,7 +69,6 @@ import './internal/csvMapper/csvMapper';
 import './internal/jsonMapper/jsonMapper';
 import './internal/document/document';
 import './publicDashboard/publicDashboard';
-import './theme/theme';
 
 // incomplete modules
 // endregion
@@ -114,7 +113,6 @@ import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
 import './internal/jsonMapper/jsonMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
-import './theme/theme-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
