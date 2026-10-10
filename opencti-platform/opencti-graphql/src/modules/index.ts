@@ -47,7 +47,6 @@ import './case/case-rft/case-rft';
 import './case/feedback/feedback';
 import './entitySetting/entitySetting';
 import './workflow/workflow';
-import './workspace/workspace';
 
 // incomplete modules
 // endregion
@@ -74,7 +73,6 @@ import './case/case-rfi/case-rfi-graphql';
 import './case/case-rft/case-rft-graphql';
 import './case/feedback/feedback-graphql';
 import './entitySetting/entitySetting-graphql';
-import './workspace/workspace-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
