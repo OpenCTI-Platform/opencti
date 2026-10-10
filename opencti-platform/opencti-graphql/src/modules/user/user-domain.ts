@@ -715,6 +715,73 @@ export const checkPasswordInlinePolicy = (context: AuthContext, policy: Password
   return errors;
 };
 
+const PASSWORD_UPPERCASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const PASSWORD_LOWERCASE_CHARS = 'abcdefghijklmnopqrstuvwxyz';
+const PASSWORD_NUMBER_CHARS = '0123456789';
+const PASSWORD_SYMBOL_CHARS = '!@#$%^&*()+=.?';
+const PASSWORD_WORD_SEPARATOR = '-';
+const GENERATED_PASSWORD_DEFAULT_LENGTH = 32;
+
+const randomCharsFrom = (chars: string, count: number) => {
+  return Array.from({ length: count }, () => chars[crypto.randomInt(chars.length)]);
+};
+
+// Fisher-Yates shuffle
+const shuffleInPlace = <T>(elements: T[]) => {
+  for (let i = elements.length - 1; i > 0; i -= 1) {
+    const j = crypto.randomInt(i + 1);
+    [elements[i], elements[j]] = [elements[j], elements[i]];
+  }
+  return elements;
+};
+
+// Generate a random password that satisfies the given password policy
+export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+  const minUppercase = positive(policy.password_policy_min_uppercase);
+  const minLowercase = positive(policy.password_policy_min_lowercase);
+  const minNumbers = positive(policy.password_policy_min_numbers);
+  const wordsCount = Math.max(positive(policy.password_policy_min_words), 1);
+  const separatorsCount = wordsCount - 1;
+  // Word separators are also symbols, use them to satisfy both constraints
+  const extraSymbolsCount = Math.max(positive(policy.password_policy_min_symbols) - separatorsCount, 0);
+  const requiredCharsCount = minUppercase + minLowercase + minNumbers + extraSymbolsCount;
+  // Each word must contain at least one random char
+  const minBodyLength = Math.max(requiredCharsCount, wordsCount);
+  const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
+  const maxLength = positive(policy.password_policy_max_length);
+  // Check policy feasibility before allocating anything
+  if (maxLength > 0 && maxLength < minLength) {
+    throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
+  }
+  let length = Math.max(minLength, GENERATED_PASSWORD_DEFAULT_LENGTH);
+  if (maxLength > 0) {
+    length = Math.min(length, maxLength);
+  }
+  const bodyLength = length - separatorsCount;
+  const bodyChars = shuffleInPlace([
+    ...randomCharsFrom(PASSWORD_UPPERCASE_CHARS, minUppercase),
+    ...randomCharsFrom(PASSWORD_LOWERCASE_CHARS, minLowercase),
+    ...randomCharsFrom(PASSWORD_NUMBER_CHARS, minNumbers),
+    ...randomCharsFrom(PASSWORD_SYMBOL_CHARS, extraSymbolsCount),
+    ...randomCharsFrom(PASSWORD_UPPERCASE_CHARS + PASSWORD_LOWERCASE_CHARS + PASSWORD_NUMBER_CHARS, bodyLength - requiredCharsCount),
+  ]);
+  // Split the body into non-empty words, by inserting separators at distinct random positions
+  const bodyPositions = Array.from({ length: bodyLength - 1 }, (_, index) => index + 1);
+  const separatorPositions = new Set(shuffleInPlace(bodyPositions).slice(0, separatorsCount));
+  return bodyChars.map((char, index) => (separatorPositions.has(index) ? `${PASSWORD_WORD_SEPARATOR}${char}` : char)).join('');
+};
+
+export const generatePasswordMatchingPolicy = async (context: AuthContext) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const password = generatePasswordFromPolicy(settings);
+  const errors = checkPasswordInlinePolicy(context, settings, password);
+  if (errors.length > 0) {
+    throw FunctionalError(`Unable to generate a password matching the password policy: ${errors.join(', ')}`);
+  }
+  return password;
+};
+
 export const checkPasswordFromPolicy = async (context: AuthContext, password: string) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const errors = checkPasswordInlinePolicy(context, settings, password);
@@ -1173,7 +1240,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
-  const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'api_tokens') {
@@ -1258,9 +1325,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     }
     // Turn Service Account into User
     if (input.key === 'user_service_account' && userToUpdate.user_service_account && input.value[0] === false) {
-      const userPassword = uuid();
-      await checkPasswordFromPolicy(context, userPassword);
+      // Password policy may have changed since the service account creation, generate a compliant random password
+      const userPassword = await generatePasswordMatchingPolicy(context);
       inputs.push({ key: 'password', value: [bcrypt.hashSync(userPassword)] });
+      hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
 
