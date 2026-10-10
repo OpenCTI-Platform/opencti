@@ -98,7 +98,6 @@ import './incident/incident';
 import './observedData/observedData';
 import './stixCyberObservable/stixCyberObservable';
 import './threatActorGroup/threatActorGroup';
-import './intrusionSet/intrusionSet';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
