@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
 import type { StixJsonMapper, StoreEntityJsonMapper } from './jsonMapper-types';
 import { ENTITY_TYPE_JSON_MAPPER } from './jsonMapper-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
 import convertJsonMapperToStix from './jsonMapper-converter';
 
-const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMapper> = {
+export const JSON_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMapper> = {
   type: {
     id: 'jsonmapper',
     name: ENTITY_TYPE_JSON_MAPPER,
@@ -35,5 +34,3 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMap
   },
   converter_2_1: convertJsonMapperToStix,
 };
-
-registerDefinition(CSV_MAPPER_DEFINITION);

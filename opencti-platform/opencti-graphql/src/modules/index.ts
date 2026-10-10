@@ -68,7 +68,6 @@ import './decayRule/exclusions/decayExclusionRule';
 import './ingestionDeduplication/ingestionDeduplicationRule';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
-import './internal/jsonMapper/jsonMapper';
 
 // incomplete modules
 // endregion
@@ -112,7 +111,6 @@ import './decayRule/exclusions/decayExclusionRule-graphql';
 import './ingestionDeduplication/ingestionDeduplicationRule-graphql';
 import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
-import './internal/jsonMapper/jsonMapper-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
