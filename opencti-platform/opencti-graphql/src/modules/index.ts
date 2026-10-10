@@ -134,7 +134,6 @@ import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
 import './savedFilter/savedFilter-graphql';
-import './requestAccess/requestAccess-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
