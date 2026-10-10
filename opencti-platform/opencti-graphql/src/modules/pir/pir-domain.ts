@@ -52,6 +52,7 @@ import { getPirWithAccessCheck } from './pir-checkPirAccess';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import {
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
@@ -196,6 +197,9 @@ export const findPirContainers = async (
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   await checkEnterpriseEdition(context);
+  // Pir filters are evaluated on stream events, they must be compatible with stix matching
+  validateFilterGroupForStixMatch(input.pir_filters);
+  input.pir_criteria.forEach((criterion) => validateFilterGroupForStixMatch(criterion.filters));
   // -- create Pir --
   const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const authorized_members = input.authorized_members ?? [
