@@ -71,7 +71,6 @@ import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './theme/theme';
 import './deleteOperation/deleteOperation';
-import './support/support';
 
 // incomplete modules
 // endregion
@@ -119,7 +118,6 @@ import './publicDashboard/publicDashboard-graphql';
 import './theme/theme-graphql';
 import './ai/ai-graphql';
 import './deleteOperation/deleteOperation-graphql';
-import './support/support-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';

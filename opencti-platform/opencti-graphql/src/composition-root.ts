@@ -3,6 +3,7 @@ import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import supportModule from './modules/support/support-module';
 import exclusionListModule from './modules/exclusionList/exclusionList-module';
 import smtpConfigurationModule from './modules/smtpConfiguration/smtpConfiguration-module';
 import draftWorkspaceModule from './modules/draftWorkspace/draftWorkspace-module';
@@ -46,6 +47,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  supportModule,
   exclusionListModule,
   smtpConfigurationModule,
   draftWorkspaceModule,
