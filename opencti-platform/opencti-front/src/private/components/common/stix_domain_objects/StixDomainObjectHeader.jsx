@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectVa
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
@@ -307,6 +307,7 @@ const StixDomainObjectHeader = (props) => {
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
+  const newAliasInputRef = useRef(null);
   const [openCommitCreate, setOpenCommitCreate] = useState(false);
   const [openCommitDelete, setOpenCommitDelete] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
@@ -680,6 +681,11 @@ const StixDomainObjectHeader = (props) => {
           onClose={handleToggleOpenAliases}
           title={t_i18n('Entity aliases')}
           size="small"
+          slotProps={{
+            // Focus the field once the dialog has fully entered (only action
+            // of this dialog, replacing autoFocus).
+            transition: { onEntered: () => newAliasInputRef.current?.focus() },
+          }}
         >
           <Formik
             initialValues={{ new_alias: '' }}
@@ -692,7 +698,9 @@ const StixDomainObjectHeader = (props) => {
                   component={TextField}
                   variant="outlined"
                   name="new_alias"
-                  autoFocus={true}
+                  innerRef={(node) => {
+                    newAliasInputRef.current = node;
+                  }}
                   placeholder={t_i18n('New alias')}
                   onChange={handleChangeNewAlias}
                   value={newAlias}
@@ -767,7 +775,6 @@ const StixDomainObjectHeader = (props) => {
                     component={TextField}
                     variant="outlined"
                     name="new_alias"
-                    autoFocus={true}
                     fullWidth={true}
                     placeholder={t_i18n('New aliases')}
                     sx={{

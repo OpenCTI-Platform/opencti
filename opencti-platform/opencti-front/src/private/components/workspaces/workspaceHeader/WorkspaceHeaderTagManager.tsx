@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import TextField from 'src/components/TextField';
 import { useFormatter } from 'src/components/i18n';
@@ -47,6 +47,17 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   const [commit] = useApiMutation(workspaceMutation);
 
+  const inlineTagInputId = 'inline-new-tag-input';
+  const inlineTagInputRef = useRef<HTMLInputElement | null>(null);
+
+  // The inline field appears in place (Slide) while the trigger button stays
+  // mounted, so removing autoFocus left it never reached nor announced.
+  useEffect(() => {
+    if (isTagInputOpen) {
+      inlineTagInputRef.current?.focus();
+    }
+  }, [isTagInputOpen]);
+
   // The header holds two chips; the counter's tooltip stands for the rest.
   const namedTags = tags.filter((tag) => tag.length > 0);
   const shownTags = namedTags.slice(0, 2);
@@ -57,6 +68,15 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   // The product field reports (name, value), not a DOM event.
   const handleChangeNewTag = (_: string, value: string) => setNewTag(value);
+
+  // Escape mirrors the toggle button: it dismisses the inline field without
+  // creating a tag, so keyboard users are not stuck once they have tabbed in.
+  const handleInlineTagInputKeyDown = (key: string) => {
+    if (key === 'Escape') {
+      setNewTag('');
+      setIsTagInputOpen(false);
+    }
+  };
 
   const handleManageTags = (tagList: string[], message: string) => {
     commit({
@@ -129,15 +149,18 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 onSubmit={onSubmitCreateTag}
               >
                 <Form>
-                  <label className="sr-only" htmlFor="inline-new-tag-input">{t_i18n('New tag')}</label>
+                  <label className="sr-only" htmlFor={inlineTagInputId}>{t_i18n('New tag')}</label>
                   <Field
-                    id="inline-new-tag-input"
+                    id={inlineTagInputId}
+                    innerRef={(node: HTMLInputElement | null) => {
+                      inlineTagInputRef.current = node;
+                    }}
                     component={TextField}
                     variant="outlined"
                     name="newTag"
-                    autoFocus
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
+                    onKeyDown={handleInlineTagInputKeyDown}
                     value={newTag}
                   />
                 </Form>
@@ -162,7 +185,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                   component={TextField}
                   variant="outlined"
                   name="newTag"
-                  autoFocus
                   placeholder={t_i18n('New tag')}
                   onChange={handleChangeNewTag}
                   value={newTag}
