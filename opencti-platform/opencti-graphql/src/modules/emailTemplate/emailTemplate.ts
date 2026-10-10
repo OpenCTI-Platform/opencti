@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_EMAIL_TEMPLATE, type StixEmailTemplate, type StoreEntityEmailTemplate } from './emailTemplate-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEmailTemplateToStix from './emailTemplate-converter';
 
-const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, StixEmailTemplate> = {
+export const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, StixEmailTemplate> = {
   type: {
     id: 'emailTemplate',
     name: ENTITY_TYPE_EMAIL_TEMPLATE,
@@ -44,5 +44,3 @@ const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, Stix
   },
   converter_2_1: convertEmailTemplateToStix,
 };
-
-registerDefinition(EMAIL_TEMPLATE_DEFINITION);
