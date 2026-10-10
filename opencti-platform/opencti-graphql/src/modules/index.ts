@@ -162,7 +162,6 @@ import './xtm/counterpart/core/counterpart-graphql';
 import './xtm/counterpart/xtmone/xtmone-provider';
 import './xtm/counterpart/openaev/openaev-provider';
 import './xtm/counterpart/opencrq/opencrq-provider';
-import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';
 import './dataSharing/taxiiCollection-graphql';
