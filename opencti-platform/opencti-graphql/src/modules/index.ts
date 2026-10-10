@@ -89,7 +89,6 @@ import './securityCoverage/securityCoverageResult/securityCoverageResult';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
-import './xtm/hub/news-feed/news-feed';
 
 // incomplete modules
 // endregion
@@ -154,7 +153,6 @@ import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
-import './xtm/hub/news-feed/news-feed-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';
 import './dataSharing/taxiiCollection-graphql';

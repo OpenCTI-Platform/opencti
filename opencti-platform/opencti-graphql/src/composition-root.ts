@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
+import newsFeedModule from './modules/xtm/hub/news-feed/news-feed-module';
 import xtmHubModule from './modules/xtm/hub/xtm-hub-module';
 import metricsModule from './modules/metrics/metrics-module';
 import userModule from './modules/user/user-module';
@@ -28,6 +29,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
+  newsFeedModule,
   xtmHubModule,
   metricsModule,
   userModule,
