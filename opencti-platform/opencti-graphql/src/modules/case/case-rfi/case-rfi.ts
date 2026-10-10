@@ -1,14 +1,13 @@
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
-import { registerDefinition } from '../../../schema/module';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import type { Stix2CaseRfi, StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import { convertCaseRfiToStix_2_0, convertCaseRfiToStix_2_1 } from './case-rfi-converter';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
-const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi, Stix2CaseRfi> = {
+export const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi, Stix2CaseRfi> = {
   type: {
     id: 'case-rfi',
     name: ENTITY_TYPE_CONTAINER_CASE_RFI,
@@ -53,5 +52,3 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi, Sti
   converter_2_1: convertCaseRfiToStix_2_1,
   converter_2_0: convertCaseRfiToStix_2_0,
 };
-
-registerDefinition(CASE_RFI_DEFINITION);

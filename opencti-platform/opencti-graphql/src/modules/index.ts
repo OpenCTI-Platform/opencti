@@ -43,7 +43,6 @@ import './task/task-template/task-template';
 import './case/case';
 import './case/case-template/case-template';
 import './case/case-incident/case-incident';
-import './case/case-rfi/case-rfi';
 
 // incomplete modules
 // endregion
@@ -66,6 +65,5 @@ import './task/task-template/task-template-graphql';
 import './case/case-graphql';
 import './case/case-template/case-template-graphql';
 import './case/case-incident/case-incident-graphql';
-import './case/case-rfi/case-rfi-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
