@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import convertUserToStix from '../../../../src/modules/user/user-converter';
 import { extractStixRepresentative } from '../../../../src/database/stix-representative';
 import { generateStandardId } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_USER, type StoreEntityUser } from '../../../../src/modules/user/user-types';
+
+registerModules();
 
 const buildUser = (name?: string) => ({
   id: 'a8f7e6b5-1111-4222-8333-944455556666',

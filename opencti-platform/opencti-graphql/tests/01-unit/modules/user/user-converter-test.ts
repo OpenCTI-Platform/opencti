@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
+import { registerModules } from '../../../../src/composition-root';
 import convertUserToStix from '../../../../src/modules/user/user-converter';
 import { convertStoreToStix_2_1 } from '../../../../src/database/stix-2-1-converter';
 import { ENTITY_TYPE_USER, type StoreEntityUser } from '../../../../src/modules/user/user-types';
+
+registerModules();
 
 describe('User STIX converter', () => {
   it('should produce the same output as the generic internal object conversion', () => {
