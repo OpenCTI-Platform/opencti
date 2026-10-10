@@ -3,9 +3,8 @@ import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_LANGUAGE, type StixLanguage, type StoreEntityLanguage } from './language-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 
-const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> = {
+export const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> = {
   type: {
     id: 'languages',
     name: ENTITY_TYPE_LANGUAGE,
@@ -31,5 +30,3 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
   },
   converter_2_1: convertLanguageToStix,
 };
-
-registerDefinition(LANGUAGE_DEFINITION);
