@@ -15,11 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DISSEMINATION_LIST, type StixDisseminationList, type StoreEntityDisseminationList } from './disseminationList-types';
 import convertDisseminationListToStix from './disseminationList-converter';
 
-const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationList, StixDisseminationList> = {
+export const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationList, StixDisseminationList> = {
   type: {
     id: 'disseminationList',
     name: ENTITY_TYPE_DISSEMINATION_LIST,
@@ -42,5 +42,3 @@ const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationLi
   },
   converter_2_1: convertDisseminationListToStix,
 };
-
-registerDefinition(DISSEMINATION_LIST_DEFINITION);
