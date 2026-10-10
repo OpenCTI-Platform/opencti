@@ -1,6 +1,5 @@
-// The modules below register themselves on import, so the order of this file is their registration order.
-// Modules migrated to a descriptor register later, when back.ts calls registerModules() (src/composition-root.ts):
-// nothing imported here may read their registrations at import time.
+// Attributes and refs of the abstract types, registered on import. Every module definition inherits from them:
+// this file is imported before registerModules() registers the modules (src/composition-root.ts).
 // region registration attributes, need to be imported before any other modules
 import './attributes/basicObject-registrationAttributes';
 import './attributes/stixObject-registrationAttributes';
@@ -24,10 +23,4 @@ import './relationsRef/internalRelationship-registrationRef';
 import './relationsRef/internalObject-registrationRef';
 import './relationsRef/stixMetaObject-registrationRef';
 import './relationsRef/stixCyberObservable-registrationRef';
-// endregion
-// region registration modules, need to be imported before graphql code registration
-
-// incomplete modules
-// endregion
-// region graphql registration
 // endregion
