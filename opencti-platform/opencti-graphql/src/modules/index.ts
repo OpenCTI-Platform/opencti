@@ -51,7 +51,6 @@ import './workflow/workflow';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './managerConfiguration/managerConfiguration';
-import './notifier/notifier';
 
 // incomplete modules
 // endregion
@@ -81,7 +80,6 @@ import './entitySetting/entitySetting-graphql';
 import './workspace/workspace-graphql';
 import './malwareAnalysis/malwareAnalysis-graphql';
 import './managerConfiguration/managerConfiguration-graphql';
-import './notifier/notifier-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
