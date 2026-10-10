@@ -1,0 +1,294 @@
+name: OpenCTI CD Release
+# Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
+#
+# DRY-RUN BY DEFAULT: nothing is published unless ALL of the following are true:
+#   - the run was started manually (workflow_dispatch). Tag pushes are ALWAYS dry-run.
+#   - the "dry_run" input is explicitly unchecked
+#   - the repository variable RELEASE_PUBLISH_ENABLED is set to 'true'
+# On top of that, publication jobs run in protected environments (e.g. "pypi") that hold the credentials,
+# so dry-run jobs never get access to them.
+#
+# /!\ The release repository looks up this workflow by its name: if you rename it, update the release scripts.
+
+on:
+  push:
+    tags:
+      # GitHub filter patterns are globs, the strict format is checked by the "validate" job
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-lts.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to build (e.g. 7.261002.0 or 7.260309.0-lts.7)"
+        type: string
+        required: true
+      dry_run:
+        description: "Dry run: build and verify everything but do not publish anything"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  # -----------------------
+  # Validate tag and versions, compute shared outputs
+  # -----------------------
+  validate:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      pycti_version: ${{ steps.tag.outputs.pycti_version }}
+      is_lts: ${{ steps.tag.outputs.is_lts }}
+      commit_sha: ${{ steps.versions.outputs.commit_sha }}
+      publish: ${{ steps.mode.outputs.publish }}
+    steps:
+      - name: Validate tag format
+        id: tag
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid release tag '${TAG}', expected X.Y.Z or X.Y.Z-lts.N"
+            exit 1
+          fi
+          # Transform tag version to expected PEP 440 package version:
+          #   7.260309.0          -> 7.260309.0    (standard release)
+          #   7.260309.0-lts.N    -> 7.260309.0.N  (lts bug fix N)
+          PYCTI_VERSION="${TAG/-lts./.}"
+          IS_LTS=false
+          [[ "${TAG}" == *-lts.* ]] && IS_LTS=true
+          {
+            echo "tag=${TAG}"
+            echo "pycti_version=${PYCTI_VERSION}"
+            echo "is_lts=${IS_LTS}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Always resolve as a tag, so a dispatch with a branch name cannot be used by mistake
+          ref: refs/tags/${{ steps.tag.outputs.tag }}
+
+      - name: Check versions in sources match the tag
+        id: versions
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          ERRORS=0
+
+          PACKAGE_PYCTI_VERSION="$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' client-python/pycti/__init__.py)"
+          if [ "${PACKAGE_PYCTI_VERSION}" != "${PYCTI_VERSION}" ]; then
+            echo "::error::client-python/pycti/__init__.py version is '${PACKAGE_PYCTI_VERSION}', expected '${PYCTI_VERSION}' for tag ${TAG}"
+            ERRORS=1
+          fi
+
+          for PACKAGE_JSON in opencti-platform/opencti-graphql/package.json opencti-platform/opencti-front/package.json; do
+            PACKAGE_VERSION="$(jq -r '.version' "${PACKAGE_JSON}")"
+            if [ "${PACKAGE_VERSION}" != "${TAG}" ]; then
+              echo "::error::${PACKAGE_JSON} version is '${PACKAGE_VERSION}', expected '${TAG}'"
+              ERRORS=1
+            fi
+          done
+
+          if [ "${ERRORS}" -ne 0 ]; then
+            exit 1
+          fi
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Compute run mode
+        id: mode
+        env:
+          # inputs.dry_run is empty on tag push, and in GitHub expressions null == false is TRUE:
+          # the event_name check is what guarantees tag pushes stay in dry-run.
+          PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == false && vars.RELEASE_PUBLISH_ENABLED == 'true' }}
+        run: |
+          set -euo pipefail
+          if [ "${PUBLISH}" == "true" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summary
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+          PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
+          IS_LTS: ${{ steps.tag.outputs.is_lts }}
+          COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
+          PUBLISH: ${{ steps.mode.outputs.publish }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          {
+            echo "## OpenCTI release ${TAG}"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Trigger | \`${EVENT_NAME}\` |"
+            echo "| Commit | \`${COMMIT_SHA}\` |"
+            echo "| pycti version | \`${PYCTI_VERSION}\` |"
+            echo "| LTS | ${IS_LTS} |"
+            if [ "${PUBLISH}" == "true" ]; then
+              echo "| Mode | 🚀 **PUBLISH** |"
+            else
+              echo "| Mode | 🧪 dry-run (nothing will be published) |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # -----------------------
+  # Client python (pycti)
+  # -----------------------
+  build-pycti:
+    name: Build pycti
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Use the commit validated above, not the tag, in case the tag is moved in between
+          ref: ${{ needs.validate.outputs.commit_sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Install build tools
+        run: pip install "build~=1.5.0" "twine>=6,<7"
+
+      - name: Build sdist and wheel
+        working-directory: client-python
+        run: SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python -m build
+
+      - name: Check distribution files
+        working-directory: client-python
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          ls -la dist/
+          for EXPECTED in "dist/pycti-${PYCTI_VERSION}-py3-none-any.whl" "dist/pycti-${PYCTI_VERSION}.tar.gz"; do
+            if [ ! -f "${EXPECTED}" ]; then
+              echo "::error::Expected distribution file not found: ${EXPECTED}"
+              exit 1
+            fi
+          done
+          if [ "$(find dist -type f | wc -l)" -ne 2 ]; then
+            echo "::error::Unexpected files in dist/"
+            exit 1
+          fi
+          twine check --strict dist/*
+
+      - name: Upload pycti distribution
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pycti-dist
+          path: client-python/dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  pycti-dry-run:
+    name: Publish pycti (dry-run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [validate, build-pycti]
+    if: needs.validate.outputs.publish != 'true'
+    steps:
+      - name: Download pycti distribution
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: pycti-dist
+          path: dist/
+
+      - name: Compare with the version already on PyPI (if any)
+        # Informative only: a dry run must not fail because PyPI is unreachable
+        continue-on-error: true
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          set -euo pipefail
+          HTTP_CODE=$(curl -sS -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/pycti/${PYCTI_VERSION}/json")
+          if [ "${HTTP_CODE}" == "404" ]; then
+            echo "pycti ${PYCTI_VERSION} is not on PyPI yet: it would be published by a real run."
+            echo "PYPI_STATUS=new version" >> "$GITHUB_ENV"
+            exit 0
+          elif [ "${HTTP_CODE}" != "200" ]; then
+            echo "::warning::Unable to query PyPI for pycti ${PYCTI_VERSION} (HTTP ${HTTP_CODE}), skipping comparison"
+            echo "PYPI_STATUS=unknown (HTTP ${HTTP_CODE})" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # Typically the case when dry-running on an already released tag: compare wheel contents.
+          echo "::warning::pycti ${PYCTI_VERSION} already exists on PyPI: a real run would fail to upload it."
+          echo "PYPI_STATUS=already published" >> "$GITHUB_ENV"
+          mkdir -p pypi
+          pip download "pycti==${PYCTI_VERSION}" --no-deps --only-binary :all: -d pypi/ --quiet
+          python3 - "dist/pycti-${PYCTI_VERSION}-py3-none-any.whl" "pypi/pycti-${PYCTI_VERSION}-py3-none-any.whl" <<'EOF'
+          import sys, zipfile
+          def record(path):
+              with zipfile.ZipFile(path) as z:
+                  name = next(n for n in z.namelist() if n.endswith(".dist-info/RECORD"))
+                  lines = z.read(name).decode().splitlines()
+              # path -> sha256, ignoring RECORD itself
+              return {l.split(",")[0]: l.split(",")[1] for l in lines if l and not l.endswith("RECORD,,")}
+          built, published = record(sys.argv[1]), record(sys.argv[2])
+          only_built = sorted(set(built) - set(published))
+          only_published = sorted(set(published) - set(built))
+          changed = sorted(p for p in set(built) & set(published) if built[p] != published[p])
+          for title, items in (("Only in built wheel", only_built), ("Only in PyPI wheel", only_published), ("Different content", changed)):
+              print(f"{title}: {len(items)}")
+              for item in items:
+                  print(f"  {item}")
+          if only_built or only_published or changed:
+              print("::warning::Built wheel differs from the one published on PyPI (see log above)")
+          else:
+              print("Built wheel content is identical to the one published on PyPI")
+          EOF
+
+      - name: Summary
+        env:
+          PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
+        run: |
+          {
+            echo "### 🧪 pycti (dry-run)"
+            echo ""
+            echo "Would publish to PyPI (status of pycti ${PYCTI_VERSION} on PyPI: **${PYPI_STATUS:-unknown}**):"
+            echo ""
+            echo '```'
+            (cd dist && sha256sum -- *)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish-pycti:
+    name: Publish pycti
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [validate, build-pycti]
+    if: needs.validate.outputs.publish == 'true'
+    # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
+    permissions:
+      id-token: write # PyPI trusted publishing (OIDC)
+    steps:
+      - name: Download pycti distribution
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+        with:
+          name: pycti-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          packages-dir: dist/
