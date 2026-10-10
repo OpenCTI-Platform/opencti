@@ -163,9 +163,9 @@ describe('WorkflowTransitions – error state UI', () => {
     expect(screen.getByText('Transition failed')).toBeDefined();
   });
 
-  it('renders only the Clear button in the error state', () => {
+  it('hides Clear from users without bypass permission in the error state', () => {
     testRender(<WorkflowTransitions data={makeErrorDraft()} />);
-    expect(screen.getByText('Clear')).toBeDefined();
+    expect(screen.queryByText('Clear')).toBeNull();
     expect(screen.queryByText('Retry')).toBeNull();
   });
 });
@@ -235,5 +235,38 @@ describe('WorkflowTransitions – validate draft dialog', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByText('approve'));
     expect(await screen.findByText('Ongoing processes')).toBeDefined();
+  });
+});
+
+describe('WorkflowTransitions — next status menu', () => {
+  const makeTransition = (event: string, actions: string[] = []) => ({
+    event,
+    toState: event,
+    actions,
+    comment: null,
+    requiresShareOrganizationInput: false,
+    requiresUnshareOrganizationInput: false,
+    toStatus: makeStatus(),
+  });
+
+  it('opens a menu listing every transition when there are three or more', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        pendingStatus: null,
+        pendingError: null,
+        pendingTransition: null,
+        allowedTransitions: [makeTransition('approve', ['validateDraft']), makeTransition('reject'), makeTransition('archive')],
+      },
+    });
+
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(3);
+    await user.click(screen.getByRole('menuitem', { name: /^approve/ }));
+    expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
   });
 });

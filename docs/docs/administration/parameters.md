@@ -6,7 +6,7 @@ This part of the interface, in **Settings > Parameters**, lets you configure glo
 
 It also gives you important information about the platform: its version and edition, the services it depends on and the status of every manager.
 
-The page reads from top to bottom: the platform summary, the Enterprise Edition and its license (when enabled), the configuration and appearance settings, the announcements and themes, the dependencies and the managers.
+The page reads from top to bottom: the platform summary, the Enterprise Edition and its license (when enabled), the configuration and appearance settings, the announcements and the map configuration next to the themes, the dependencies and the managers.
 
 ## OpenCTI platform
 ![parameters_platform](assets/parameters_platform.png)
@@ -37,7 +37,6 @@ The **Appearance** card groups the settings that change what users see:
 - Language
 - Hidden entity types: allows you to customize which types of entities you want to see or hide in the platform. This can help you focus on the relevant information and avoid cluttering the platform with unnecessary data.
 - Remove Filigran logos: hides the Filigran logo on the login page and the sidebar (Enterprise Edition).
-- Custom map: upload a `.pmtiles` file to replace the bundled world map, download the current one, or delete it (after a confirmation) to go back to the bundled map.
 
 
 ## Platform Announcement
@@ -221,6 +220,9 @@ To remove a custom theme:
 
 > **Important:** You cannot delete a theme that is currently in use. Apply a different theme first, then delete the unused theme.
 
+## Map configuration
+
+The **Map configuration** card, under the announcements, holds the two files map widgets are drawn from: the custom map (`.pmtiles` tiles) and the custom country boundaries (GeoJSON). Each row shows whether the bundled file or a custom one is used, and its `⋮` menu uploads, downloads, replaces or deletes the custom file. See [Map configuration](../deployment/advanced/map.md) for the file formats and the propagation delay.
 
 
 ## Dependencies

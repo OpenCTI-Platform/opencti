@@ -23,6 +23,15 @@ import bytes from 'bytes';
 import { getOperationAST, type GraphQLError, parse } from 'graphql';
 import { FunctionalError } from '../config/errors';
 
+export const isResponseWorthCompressing = (res: Response): boolean => {
+  const contentType = res.getHeader('Content-Type');
+  if (typeof contentType !== 'string') {
+    return true;
+  }
+  const mediaType = contentType.split(';')[0].trim().toLowerCase();
+  return mediaType !== 'text/event-stream' && mediaType !== 'application/octet-stream';
+};
+
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
   const normalized = (message || '').toLowerCase();

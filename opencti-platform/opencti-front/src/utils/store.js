@@ -64,6 +64,20 @@ export const insertNode = (
   // update: the list will be refetched on its next mount.
 };
 
+// Insert the ongoing exports returned by an exportAsk mutation in the entity
+// files list, so they are displayed in progress right away.
+export const insertOngoingExports = (store, entityId, rootField, input) => {
+  const entity = store.get(entityId);
+  const conn = entity ? ConnectionHandler.getConnection(entity, 'Pagination_exportFiles') : null;
+  // Files list not mounted: it will be refetched on its next mount.
+  if (!conn) return;
+  const payloads = store.getRootField(rootField)?.getLinkedRecords('exportAsk', { input }) ?? [];
+  payloads.forEach((payload) => {
+    const newEdge = ConnectionHandler.createEdge(store, conn, payload, 'FileEdge');
+    ConnectionHandler.insertEdgeBefore(conn, newEdge);
+  });
+};
+
 export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   const record = store.get(containerId);
   // Connections cannot use count as a filter because we NEED to update the count when we remove new elements

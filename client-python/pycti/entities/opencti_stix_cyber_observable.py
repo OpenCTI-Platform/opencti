@@ -2357,6 +2357,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         reports {
                             edges {
                                 node {
+                                    customFieldValues {
+                                        field_id
+                                        field_name
+                                        int_value
+                                        string_value
+                                        boolean_value
+                                        date_value
+                                        select_value
+                                        select_values
+                                    }
                                     id
                                     standard_id
                                     entity_type
@@ -2484,6 +2494,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         notes {
                             edges {
                                 node {
+                                    customFieldValues {
+                                        field_id
+                                        field_name
+                                        int_value
+                                        string_value
+                                        boolean_value
+                                        date_value
+                                        select_value
+                                        select_values
+                                    }
                                     id
                                     standard_id
                                     entity_type
@@ -2612,6 +2632,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                             observedData {
                                 edges {
                                     node {
+                                        customFieldValues {
+                                            field_id
+                                            field_name
+                                            int_value
+                                            string_value
+                                            boolean_value
+                                            date_value
+                                            select_value
+                                            select_values
+                                        }
                                         id
                                         standard_id
                                         entity_type
