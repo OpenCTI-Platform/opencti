@@ -632,8 +632,9 @@ export const upload = async (
   }
 
   // Stream the file content while incrementally computing the SHA256 hash to avoid holding the entire file twice in memory.
-  const hashReadStream = createReadStream();
+  // As the first full read of the file, it also rejects a file over the upload size limit before anything is stored.
   const hash = crypto.createHash('sha256');
+  const hashReadStream = createReadStream();
   for await (const chunk of hashReadStream) {
     hash.update(chunk);
   }

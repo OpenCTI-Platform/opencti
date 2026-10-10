@@ -52,6 +52,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:health_monitoring:usage_metrics_interval | APP__HEALTH_MONITORING__USAGE_METRICS_INTERVAL | 300000 | Interval in milliseconds between two collections of storage and ingestion usage metrics, collected by the `platform_usage_metrics_manager` (disabled by default, see `platform_usage_metrics_manager:enabled`) and shared across the cluster through Redis. Also the polling interval every node uses to adopt that shared value. Set to `0` to disable the collection.                                                 |
 | app:liveness_port            | APP__LIVENESS_PORT             | null (disabled)       | Port for the [liveness probe](advanced/liveness-probe.md) HTTP server. Starts immediately on process launch, before platform initialization.                                     |
 | app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE    |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html |
+| app:max_upload_file_size     | APP__MAX_UPLOAD_FILE_SIZE      | 1gb                   | Maximum size of a file uploaded to the platform (files, imports, artifacts...). Accepts a byte count or a unit suffix (`kb`, `mb`, `gb`). A larger file is rejected. Lower it if your platform does not ingest large artifacts (malware samples). |
+| app:max_upload_files         | APP__MAX_UPLOAD_FILES          | 20                    | Maximum number of files uploaded in a single request.                                                                                                                            |
 
 
 #### Network and security
