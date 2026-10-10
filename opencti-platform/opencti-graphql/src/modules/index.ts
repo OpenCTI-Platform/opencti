@@ -73,7 +73,6 @@ import './theme/theme';
 import './deleteOperation/deleteOperation';
 import './support/support';
 import './exclusionList/exclusionList';
-import './draftWorkspace/draftWorkspace';
 
 // incomplete modules
 // endregion
@@ -124,7 +123,6 @@ import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
 import './smtpConfiguration/smtpConfiguration-graphql';
-import './draftWorkspace/draftWorkspace-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
