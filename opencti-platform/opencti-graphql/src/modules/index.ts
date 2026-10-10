@@ -31,7 +31,6 @@ import './connector/connector';
 import './language/language';
 import './event/event';
 import './grouping/grouping';
-import './narrative/narrative';
 
 // incomplete modules
 // endregion
@@ -43,6 +42,5 @@ import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
 import './grouping/grouping-graphql';
-import './narrative/narrative-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

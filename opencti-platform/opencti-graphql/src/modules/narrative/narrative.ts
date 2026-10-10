@@ -4,10 +4,10 @@ import { ENTITY_TYPE_NARRATIVE, type Stix2Narrative, type StixNarrative, type St
 import { REL_BUILT_IN, REL_NEW } from '../../database/stix';
 import { RELATION_DERIVED_FROM, RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
-const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative, Stix2Narrative> = {
+export const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative, Stix2Narrative> = {
   type: {
     id: 'narratives',
     name: ENTITY_TYPE_NARRATIVE,
@@ -61,5 +61,3 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
   converter_2_1: convertNarrativeToStix_2_1,
   converter_2_0: convertNarrativeToStix_2_0,
 };
-
-registerDefinition(NARRATIVE_DEFINITION);

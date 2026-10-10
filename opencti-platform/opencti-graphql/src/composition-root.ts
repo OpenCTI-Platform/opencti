@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import narrativeModule from './modules/narrative/narrative-module';
 import notificationModule from './modules/notification/notification-module';
 import dataComponentModule from './modules/dataComponent/dataComponent-module';
 import dataSourceModule from './modules/dataSource/dataSource-module';
@@ -82,6 +83,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  narrativeModule,
   notificationModule,
   dataComponentModule,
   dataSourceModule,
