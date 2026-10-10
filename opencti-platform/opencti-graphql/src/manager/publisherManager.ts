@@ -262,6 +262,10 @@ export async function handleSimplifiedEmailNotification(
   }
 }
 
+// Header names are typed by users, often copied from a curl command ("Authorization:"),
+// node rejects such names as invalid HTTP tokens.
+export const normalizeWebhookHeaderName = (name: string) => (name ?? '').trim().replace(/:+$/, '').trim();
+
 export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
@@ -271,7 +275,9 @@ export async function handleWebhookNotification(configurationString: string | un
   });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
-  const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
+  const headersObject = Object.fromEntries((headers ?? [])
+    .map((header) => [normalizeWebhookHeaderName(header.attribute), header.value])
+    .filter(([name]) => name));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
 
   const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
