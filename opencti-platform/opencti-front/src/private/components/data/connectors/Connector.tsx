@@ -322,9 +322,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
               <Grid item xs={6}>
                 <Label>
-                  {t_i18n('Last update')}
+                  {t_i18n('Last seen')}
                 </Label>
-                {nsdt(connector.updated_at)}
+                {nsdt(connector.last_seen_at)}
               </Grid>
               <Grid item xs={6}>
                 <Label>
@@ -980,7 +980,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {managedConnectorDisplayName}
                 </span>
               </Tooltip>
-              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
             </TitleMainEntity>
@@ -1144,7 +1144,7 @@ const Connector = createRefetchContainer(
         update_available
         latest_compatible_version
         has_newer_incompatible_version
-        updated_at
+        last_seen_at
         created_at
         config {
           listen

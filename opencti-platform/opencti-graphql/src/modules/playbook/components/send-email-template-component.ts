@@ -7,7 +7,8 @@ import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { sendEmailToUser } from '../../user/user-domain';
-import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
+import { logApp } from '../../../config/conf';
+import { canReceiveNotifications } from '../../../manager/notificationManager';
 
 export interface SendEmailTemplateConfiguration {
   email_template: string;
@@ -69,7 +70,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
     const sendEmailUserIds = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
-      if (!targetUser.user_service_account && targetUser.account_status === ACCOUNT_STATUS_ACTIVE) {
+      if (canReceiveNotifications(targetUser)) {
         sendEmailUserIds.push(targetUser.id);
       }
     }

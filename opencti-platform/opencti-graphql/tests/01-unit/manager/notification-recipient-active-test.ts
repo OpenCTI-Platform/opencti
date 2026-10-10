@@ -18,7 +18,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-import { getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
+import { canReceiveNotifications, getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
 
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
@@ -36,6 +36,20 @@ const buildUser = (over: Partial<AuthUser>): AuthUser => ({
   personal_notifiers: [],
   ...over,
 } as unknown as AuthUser);
+
+describe('canReceiveNotifications', () => {
+  it('accepts an active regular user', () => {
+    expect(canReceiveNotifications(buildUser({}))).toBe(true);
+  });
+
+  it('rejects a service account, even when active', () => {
+    expect(canReceiveNotifications(buildUser({ user_service_account: true }))).toBe(false);
+  });
+
+  it('rejects an inactive account', () => {
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
+  });
+});
 
 describe('isNotificationRecipientActive', () => {
   it('accepts an active, non-expired account', () => {
@@ -139,6 +153,29 @@ describe('getNotifications — excludes inactive/expired accounts', () => {
     const definedUserIds = new Set((definedResolved?.users ?? []).map((u: AuthUser) => u.id));
     expect(definedUserIds.has('active')).toBe(true);
     expect(definedUserIds.has('disabled')).toBe(false);
+  });
+
+  it('excludes service accounts from native and defined triggers', async () => {
+    const activeUser = buildUser({ id: 'active', internal_id: 'active', groups: [{ internal_id: 'group-1' }] as any });
+    const serviceAccount = buildUser({ id: 'service', internal_id: 'service', user_service_account: true, groups: [{ internal_id: 'group-1' }] as any });
+    const definedTrigger = {
+      internal_id: 'trigger-1',
+      trigger_type: 'live',
+      trigger_scope: 'knowledge',
+      restricted_members: [{ id: 'group-1' }],
+    };
+
+    getEntitiesListFromCache.mockImplementation((_ctx: any, _user: any, type: string) => {
+      if (type === ENTITY_TYPE_USER) {
+        return Promise.resolve([activeUser, serviceAccount]);
+      }
+      return Promise.resolve([definedTrigger]);
+    });
+
+    const triggers = await getNotifications(context);
+    const ids = collectUserIds(triggers);
+    expect(ids.has('active')).toBe(true);
+    expect(ids.has('service')).toBe(false);
   });
 
   afterAll(() => {

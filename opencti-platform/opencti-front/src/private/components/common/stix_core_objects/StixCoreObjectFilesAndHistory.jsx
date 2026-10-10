@@ -4,7 +4,6 @@ import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'r
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
-import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -29,6 +28,7 @@ import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { convertMarkings } from '../../../../utils/edition';
+import { insertOngoingExports } from '../../../../utils/store';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
@@ -227,39 +227,16 @@ const StixCoreObjectFilesAndHistory = ({
   const onSubmitExport = (values, { setSubmitting, resetForm }) => {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
-
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitMutation({
       mutation: stixCoreObjectFilesAndHistoryExportMutation,
-      variables: {
-        id,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixDomainObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
-          input: {
-            format: values.format,
-            exportType: values.type,
-            contentMaxMarkings,
-            fileMarkings,
-          },
-        });
-        const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
-        for (let index = 0; index < payloads.length; index += 1) {
-          const payload = payloads[index];
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        }
-      },
+      variables: { id, input },
+      updater: (store) => insertOngoingExports(store, id, 'stixDomainObjectEdit', input),
       onError: (error) => {
         handleError(error);
       },

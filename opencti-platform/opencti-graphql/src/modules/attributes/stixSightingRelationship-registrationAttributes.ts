@@ -1,5 +1,5 @@
 import type { AttributeDefinition } from '../../schema/attribute-definition';
-import { entityType } from '../../schema/attribute-definition';
+import { customFieldValues, entityType } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
@@ -18,6 +18,7 @@ export const stixSightingRelationshipsAttributes: Array<AttributeDefinition> = [
   { name: 'x_opencti_hunt_id', label: 'Sighting hunt', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   workflowId,
   { ...connections, isFilterable: true },
+  customFieldValues,
 ];
 
 schemaAttributesDefinition.registerAttributes(STIX_SIGHTING_RELATIONSHIP, stixSightingRelationshipsAttributes);

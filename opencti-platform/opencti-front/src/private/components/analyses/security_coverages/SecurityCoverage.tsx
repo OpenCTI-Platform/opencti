@@ -69,6 +69,7 @@ const securityCoverageFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     objectCovered {
       ... on Report {
         id

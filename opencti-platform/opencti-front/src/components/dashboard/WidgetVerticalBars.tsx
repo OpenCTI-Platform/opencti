@@ -5,7 +5,7 @@ import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import type { Theme } from '../Theme';
-import { useFormatter } from '../i18n';
+import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
 interface WidgetVerticalBarsProps {
   series: ApexAxisChartSeries;
@@ -26,17 +26,9 @@ const WidgetVerticalBars = ({
   onMounted,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
-  const { fsd, mtdy, yd } = useFormatter();
+  const formatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    let formatter = fsd;
-    if (interval === 'month' || interval === 'quarter') {
-      formatter = mtdy;
-    }
-    if (interval === 'year') {
-      formatter = yd;
-    }
-
     // All intervals are rendered on a 'category' x-axis (isTimeSeries = false) with
     // tickAmount = 'dataPoints'. A 'datetime' axis (previously used for day/week) aligns its
     // ticks to calendar boundaries and does not guarantee a tick on the last data point, which
@@ -53,7 +45,7 @@ const WidgetVerticalBars = ({
       hasLegend,
       tickAmount ?? 'dataPoints',
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend, tickAmount]);
+  }, [theme, formatter, isStacked, hasLegend, tickAmount]);
 
   return (
     <Chart

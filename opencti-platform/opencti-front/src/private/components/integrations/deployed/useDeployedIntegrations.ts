@@ -31,6 +31,8 @@ export interface DeployedIntegrationItem {
   // rate); null when the queue never had traffic or is not resolvable.
   throughputRate: number | null;
   lastRunDate: string | null;
+  // Last heartbeat received from a connector (null for feeds)
+  lastSeenAt: string | null;
   updatedAt: string | null;
   updateAvailable: boolean;
   latestCompatibleVersion: string | null;
@@ -158,7 +160,8 @@ const useDeployedIntegrations = ({
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
-        updatedAt: connector.updated_at,
+        lastSeenAt: (state?.last_seen_at as string | null | undefined) ?? null,
+        updatedAt: null,
         updateAvailable: isConnectorUpdateEnabled && !!connector.update_available,
         latestCompatibleVersion: isConnectorUpdateEnabled ? (connector.latest_compatible_version ?? null) : null,
         hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
@@ -184,6 +187,7 @@ const useDeployedIntegrations = ({
         messagesCount: toSafeNumber(node.queue_messages),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: null,
         updateAvailable: false,
         latestCompatibleVersion: null,
@@ -220,6 +224,7 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
         updateAvailable: false,
         latestCompatibleVersion: null,
@@ -262,6 +267,7 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
         updateAvailable: false,
         latestCompatibleVersion: null,

@@ -186,8 +186,8 @@ const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdate
         return statusRank(a) - statusRank(b);
       }
       if (sort === 'lastRun') {
-        const aDate = a.lastRunDate ?? a.updatedAt ?? '';
-        const bDate = b.lastRunDate ?? b.updatedAt ?? '';
+        const aDate = a.lastRunDate ?? a.lastSeenAt ?? a.updatedAt ?? '';
+        const bDate = b.lastRunDate ?? b.lastSeenAt ?? b.updatedAt ?? '';
         if (aDate !== bDate) return bDate.localeCompare(aDate);
       }
       // Largest backlog first, to quickly spot integrations with queued messages.
@@ -196,7 +196,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdate
         const bMessages = b.messagesCount ?? 0;
         if (aMessages !== bMessages) return bMessages - aMessages;
       }
-      return a.name.localeCompare(b.name);
+      return (a.name ?? '').localeCompare(b.name ?? '');
     });
     return availableTypes
       .map((key) => ({
