@@ -5,6 +5,7 @@ import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
+import observedDataModule from './modules/observedData/observedData-module';
 import stixCyberObservableModule from './modules/stixCyberObservable/stixCyberObservable-module';
 import threatActorGroupModule from './modules/threatActorGroup/threatActorGroup-module';
 import intrusionSetModule from './modules/intrusionSet/intrusionSet-module';
@@ -21,6 +22,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
   userMergeModule,
+  observedDataModule,
   stixCyberObservableModule,
   threatActorGroupModule,
   intrusionSetModule,
