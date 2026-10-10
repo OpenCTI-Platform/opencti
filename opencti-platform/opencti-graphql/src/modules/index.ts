@@ -26,14 +26,12 @@ import './relationsRef/stixMetaObject-registrationRef';
 import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 // region registration modules, need to be imported before graphql code registration
-import './channel/channel';
 import './connector/connector';
 import './ingestionHealth/ingestionHealth';
 
 // incomplete modules
 // endregion
 // region graphql registration
-import './channel/channel-graphql';
 import './connector/connector-graphql';
 import './ingestionHealth/ingestionHealth-graphql';
 import './configPreset/configPreset-graphql';
