@@ -5,6 +5,7 @@ import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import userMergeModule from './modules/userMerge/userMerge-module';
+import intrusionSetModule from './modules/intrusionSet/intrusionSet-module';
 import campaignModule from './modules/campaign/campaign-module';
 import malwareModule from './modules/malware/malware-module';
 import toolModule from './modules/tool/tool-module';
@@ -18,6 +19,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   dataSanityModule,
   userMergeModule,
+  intrusionSetModule,
   campaignModule,
   malwareModule,
   toolModule,
