@@ -1,4 +1,5 @@
 import { getParentTypes } from './schemaUtils';
+import { withinRegistration } from './schema-types';
 import { UnsupportedError } from '../config/errors';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { RefAttribute } from './attribute-definition';
@@ -73,7 +74,7 @@ export const schemaRelationsRefDefinition = {
       }
     });
     // Register inheritance attributes
-    const parentRefs = new Map(getParentTypes(entityType)
+    const parentRefs = new Map(withinRegistration(() => getParentTypes(entityType))
       .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
       .flat().map((e) => [e.name, e]));
     const computedWithParentsRefs = new Map([...parentRefs, ...directRefs]);

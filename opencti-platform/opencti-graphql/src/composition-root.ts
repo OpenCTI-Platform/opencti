@@ -18,7 +18,7 @@ let modulesRegistered = false;
 // managers, then init. The whole of it runs after modules/index, so a migrated definition is
 // registered after the graphql of the modules still registered on import, against the order
 // modules/index documents. That is safe only while nothing reads the model at import time:
-// usageProtection catches an early read of attributes or refs, not of types, converters or validators.
+// usageProtection catches an early read of types, attributes or refs, not of converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
 export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIPTORS) => {
   if (modulesRegistered) {
