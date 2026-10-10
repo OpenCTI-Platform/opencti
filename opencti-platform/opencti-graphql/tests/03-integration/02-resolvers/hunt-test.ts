@@ -20,6 +20,7 @@ import { addObservedData } from '../../../src/domain/observedData';
 import { addStixSightingRelationship } from '../../../src/domain/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { getEntitiesListFromCache, resetCacheForEntity } from '../../../src/database/cache';
+import { redisSetConnectorHeartbeat } from '../../../src/database/redis';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import type { BasicStoreEntityConnector } from '../../../src/types/connector';
 import { importHuntPack, loadHuntPlanEntities, resolveHuntPlanPlatformIds } from '../../../src/modules/hunt/hunt-domain';
@@ -270,9 +271,9 @@ describe('Hunt resolvers', () => {
   });
 
   it('should keep a pinging hunt connector live while its cached copy is stale', async () => {
-    // The entity cache loads the connector as it was 10 minutes ago, and a ping never refreshes the cache
+    // The entity cache loads the connector as it was at its last ping 10 minutes ago, and a ping never refreshes the cache
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    await patchAttribute(testContext, ADMIN_USER, CONNECTOR_ID, ENTITY_TYPE_CONNECTOR, { updated_at: tenMinutesAgo });
+    await redisSetConnectorHeartbeat(CONNECTOR_ID, tenMinutesAgo);
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const cached = await getEntitiesListFromCache<BasicStoreEntityConnector>(testContext, ADMIN_USER, ENTITY_TYPE_CONNECTOR);
     expect(cached.find((c) => c.internal_id === CONNECTOR_ID)?.active).toBe(false);
