@@ -30,6 +30,7 @@ type WidgetCustomAttributesColumnsInputProps = {
   selectedPanelFlex?: number;
   landscapeWarningThreshold?: number;
   landscapeWarningMessage?: string;
+  isAvailableColumnsLoading?: boolean;
 };
 
 type DraggableColumnItemProps = {
@@ -208,6 +209,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   selectedPanelFlex = 2,
   landscapeWarningThreshold,
   landscapeWarningMessage,
+  isAvailableColumnsLoading = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -222,6 +224,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
     availableColumns,
     value,
     onChange,
+    isAvailableColumnsLoading,
   );
 
   const listSx = {

@@ -1,5 +1,5 @@
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { type AttributeDefinition, coverageInformation, entityType, opinionsMetrics } from '../../schema/attribute-definition';
+import { type AttributeDefinition, coverageInformation, customFieldValues, entityType, opinionsMetrics } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { RELATION_USES, STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
@@ -16,6 +16,7 @@ export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   workflowId,
   ...provenanceAttributes,
+  customFieldValues,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
 STIX_CORE_RELATIONSHIPS.map((type) => schemaAttributesDefinition.registerAttributes(

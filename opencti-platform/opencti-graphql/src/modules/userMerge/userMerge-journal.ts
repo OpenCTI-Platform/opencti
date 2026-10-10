@@ -11,6 +11,8 @@ export interface JournalEntryInput {
   targetId: string;
   handler: string;
   dryRun: boolean;
+  /** The history cut-off the run uses, recorded so that later runs on the pair reuse it. */
+  mergeStartedAt?: Date;
 }
 
 export interface UserMergeJournalRecord {
@@ -22,6 +24,8 @@ export interface UserMergeJournalRecord {
   dry_run: boolean;
   status: UserMergeStatus;
   started_at: string;
+  /** The history cut-off of the run, absent on the entries written before it was recorded. */
+  merge_started_at?: string;
   completed_at?: string;
   message?: string;
   /** JSON-serialized UserMergeHandlerOutcome. */
@@ -45,6 +49,7 @@ export const openJournalEntry = async (input: JournalEntryInput): Promise<string
     dry_run: input.dryRun,
     status: UserMergeStatus.Running,
     started_at: utcDate().toISOString(),
+    ...(input.mergeStartedAt ? { merge_started_at: input.mergeStartedAt.toISOString() } : {}),
   });
   return entryId;
 };
@@ -52,14 +57,14 @@ export const openJournalEntry = async (input: JournalEntryInput): Promise<string
 export const closeJournalEntry = async (
   entryId: string,
   mergeId: string,
-  result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome },
+  result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome; updatedCount?: number },
 ): Promise<void> => {
   await redisUserMergeJournalUpsert(entryId, mergeId, {
     status: result.status,
     completed_at: utcDate().toISOString(),
     message: result.message,
     output: result.outcome ? JSON.stringify(result.outcome) : undefined,
-    updated_count: result.outcome?.updated ?? 0,
+    updated_count: result.outcome?.updated ?? result.updatedCount ?? 0,
   });
 };
 
@@ -74,7 +79,7 @@ export const closeJournalEntry = async (
 const closeJournalEntrySafely = async (
   entryId: string,
   mergeId: string,
-  result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome },
+  result: { status: UserMergeStatus; message?: string; outcome?: UserMergeHandlerOutcome; updatedCount?: number },
 ): Promise<void> => {
   try {
     await closeJournalEntry(entryId, mergeId, result);
@@ -82,6 +87,18 @@ const closeJournalEntrySafely = async (
     const cause = err instanceof Error ? err.message : String(err);
     logApp.error('[MERGE_USERS] journal entry not closed', { entry_id: entryId, merge_id: mergeId, cause });
   }
+};
+
+/**
+ * How far a failed handler got, when its error says so.
+ *
+ * A bulk rewrite that aborts has already written part of what it selected. The count travels in
+ * the error data; without it the entry reports zero, which reads as "nothing was touched" — the
+ * one conclusion an operator must not draw before re-running.
+ */
+const partialUpdateCount = (err: unknown): number | undefined => {
+  const data = (err as { extensions?: { data?: { updated?: unknown } } })?.extensions?.data;
+  return typeof data?.updated === 'number' ? data.updated : undefined;
 };
 
 /**
@@ -100,7 +117,7 @@ export const withJournalEntry = async <T extends UserMergeHandlerOutcome>(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     logApp.error('[MERGE_USERS] handler failed', { handler: input.handler, merge_id: input.mergeId, cause: message });
-    await closeJournalEntrySafely(entryId, input.mergeId, { status: UserMergeStatus.Failed, message });
+    await closeJournalEntrySafely(entryId, input.mergeId, { status: UserMergeStatus.Failed, message, updatedCount: partialUpdateCount(err) });
     throw err;
   }
   await closeJournalEntrySafely(entryId, input.mergeId, { status: UserMergeStatus.Success, outcome });
@@ -126,4 +143,31 @@ export const readJournalEntries = async (mergeId?: string, first?: number): Prom
   const entries = await redisUserMergeJournalRead(mergeId) as UserMergeJournalRecord[];
   const sorted = [...entries].sort((a, b) => b.started_at.localeCompare(a.started_at));
   return first ? sorted.slice(0, first) : sorted;
+};
+
+/**
+ * The instant the first real merge on this pair started, or the given fallback when there is none.
+ *
+ * Handlers reading the history index cut on this to tell what named the source before the merge
+ * from what the merge itself wrote about the source. That boundary has to be a property of the
+ * pair, not of the run: the deletion gate answers by running a fresh dry-run, so a boundary set
+ * at the current instant would let the previous merge's own traces back in, count them as
+ * references still pending, and refuse the deletion forever.
+ *
+ * Dry-runs are skipped because they write nothing to bound, and so are refused real runs, which
+ * `journalRefusal` records as dry for that reason. The journal expires after 30 days, so
+ * a pair merged longer ago reads as never merged and the gate refuses — the safe way to be wrong.
+ *
+ * The boundary read back is the cut-off the first real run used, not the instant its first real
+ * entry opened: that one only opens once the dry pass and the recompute are done, so a record
+ * stamped in between would be left alone by the first run and counted as pending by every later
+ * one. Entries written before the cut-off was recorded fall back to their own start.
+ */
+export const resolveMergeStartedAt = async (sourceId: string, targetId: string, fallback: Date): Promise<Date> => {
+  const entries = await redisUserMergeJournalRead() as UserMergeJournalRecord[];
+  const starts = entries
+    .filter((entry) => !entry.dry_run && entry.source_user_id === sourceId && entry.target_user_id === targetId)
+    .map((entry) => new Date(entry.merge_started_at ?? entry.started_at).getTime())
+    .filter((time) => !Number.isNaN(time));
+  return starts.length > 0 ? new Date(Math.min(...starts)) : fallback;
 };

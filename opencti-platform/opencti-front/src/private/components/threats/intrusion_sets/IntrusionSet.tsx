@@ -61,6 +61,7 @@ const intrusionSetFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...IntrusionSetDetails_intrusionSet
   }
 `;

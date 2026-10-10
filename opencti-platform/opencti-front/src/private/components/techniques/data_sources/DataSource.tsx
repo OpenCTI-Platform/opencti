@@ -61,6 +61,7 @@ const dataSourceFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...DataSourceDetails_dataSource
   }
 `;

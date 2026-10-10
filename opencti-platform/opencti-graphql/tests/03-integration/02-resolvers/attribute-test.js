@@ -101,7 +101,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(48);
+    expect(attributes.length).toEqual(49);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('contact_information')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_firstname')).toBeTruthy(); // Direct attribute
@@ -112,7 +112,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_LOCATION_POSITION },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(48);
+    expect(attributes.length).toEqual(49);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('precision')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('postal_code')).toBeTruthy(); // Direct attribute
@@ -143,7 +143,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_HOSTS },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(41);
+    expect(attributes.length).toEqual(42);
     expect(attributes.map((node) => node.value).includes('x_opencti_workflow_id')).toBeTruthy(); // Direct attribute
     expect(attributes.map((node) => node.value).includes('procedures')).toBeFalsy(); // Only on uses relationships
 
@@ -163,7 +163,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: STIX_SIGHTING_RELATIONSHIP },
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(41);
+    expect(attributes.length).toEqual(42);
     expect(attributes.map((node) => node.value).includes('creator_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_negative')).toBeTruthy(); // Direct attribute
   });

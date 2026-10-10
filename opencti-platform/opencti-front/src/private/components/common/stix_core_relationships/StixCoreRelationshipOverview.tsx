@@ -46,6 +46,7 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { StixCoreRelationshipOverview_stixCoreRelationship$key } from './__generated__/StixCoreRelationshipOverview_stixCoreRelationship.graphql';
 import { useComputeLink } from 'src/utils/hooks/useAppData';
 import { Theme } from 'src/components/Theme';
+import CustomFieldValuesDisplay from '../custom_fields/CustomFieldValuesDisplay';
 
 const fragment = graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
@@ -67,6 +68,9 @@ const fragment = graphql`
         created_at
         updated_at
         is_inferred
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         coverage_information {
           coverage_name
           coverage_score
@@ -4529,11 +4533,11 @@ const StixCoreRelationshipOverview = ({
                 <div className={classes.content}>
                   <span className={classes.name}>
                     <Tooltip title={fromText}>
-                      <>
+                      <span>
                         {!fromRestricted
                           ? truncate(fromText, TRUNCATE_CHARS_COUNT)
                           : t_i18n('Restricted')}
-                      </>
+                      </span>
                     </Tooltip>
                     {!fromRestricted && from?.draftVersion && (<DraftChip />)}
                   </span>
@@ -4587,11 +4591,11 @@ const StixCoreRelationshipOverview = ({
                 <div className={classes.content}>
                   <span className={classes.name}>
                     <Tooltip title={toText}>
-                      <>
+                      <span>
                         {!toRestricted
                           ? truncate(toText, TRUNCATE_CHARS_COUNT)
                           : t_i18n('Restricted')}
-                      </>
+                      </span>
                     </Tooltip>
                     {!toRestricted && to?.draftVersion && (<DraftChip />)}
                   </span>
@@ -4720,6 +4724,10 @@ const StixCoreRelationshipOverview = ({
                     creators={stixCoreRelationship.creators ?? []}
                   />
                 </Grid>
+                <CustomFieldValuesDisplay
+                  entityType="stix-core-relationship"
+                  values={stixCoreRelationship.customFieldValues ?? []}
+                />
               </Grid>
             </Card>
           </ProvenanceOverviewColumn>

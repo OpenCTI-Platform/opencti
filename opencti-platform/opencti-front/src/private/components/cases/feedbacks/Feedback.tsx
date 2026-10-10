@@ -64,6 +64,7 @@ const feedbackFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...FeedbackDetails_case
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container

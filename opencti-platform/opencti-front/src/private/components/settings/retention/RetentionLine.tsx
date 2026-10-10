@@ -141,7 +141,6 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             {isFilterGroupNotEmpty(filters) ? (
               <FilterIconButton
                 filters={filters}
-                dataColumns={dataColumns}
                 variant="small"
                 redirection
               />

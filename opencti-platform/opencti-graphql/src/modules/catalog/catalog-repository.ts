@@ -215,6 +215,31 @@ export const findCatalogContractsBySlug = async (
   );
 };
 
+// Batched variant for connector lists: one query for all the slugs
+export const findCatalogContractsBySlugs = async (
+  context: AuthContext,
+  user: AuthUser,
+  contractSlugs: string[],
+) => {
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(
+    context,
+    user,
+    [ENTITY_TYPE_CATALOG_CONTRACT],
+    {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters: {
+        filters: [{
+          key: ['slug'],
+          values: contractSlugs,
+          mode: FilterMode.Or,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+};
+
 export const findLatestCompatibleCatalogContractBySlug = async (
   context: AuthContext,
   user: AuthUser,

@@ -226,7 +226,9 @@ const RetentionEditionContainer = (props) => {
                   <FilterIconButton
                     filters={filters}
                     helpers={helpers}
+                    availableFilterKeys={availableFilterKeys}
                     redirection
+                    entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
                 </>

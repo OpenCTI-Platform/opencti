@@ -23,6 +23,16 @@ class Task:
         """
         self.opencti = opencti
         self.properties = """
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
             id
             standard_id
             entity_type
@@ -520,6 +530,8 @@ class Task:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: Task object
         :rtype: dict or None
         """
@@ -542,6 +554,7 @@ class Task:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
+        custom_properties = kwargs.get("custom_properties", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Task", {"name": name})
@@ -578,6 +591,7 @@ class Task:
                         "noTriggerImport": no_trigger_import,
                         "embedded": embedded,
                         "upsertOperations": upsert_operations,
+                        "customFieldValues": custom_properties,
                     }
                 },
             )
@@ -759,6 +773,7 @@ class Task:
                     )
                 )
             return self.create(
+                custom_properties=extras.get("custom_properties", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None

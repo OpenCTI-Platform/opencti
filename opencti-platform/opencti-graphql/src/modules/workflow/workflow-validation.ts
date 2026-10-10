@@ -12,6 +12,7 @@ import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
+import { logApp } from '../../config/conf';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -157,6 +158,7 @@ export const validateWorkflowDefinitionData = async (
 
   const validationResult = workflowDefinitionSchema.safeParse(parsed);
   if (!validationResult.success) {
+    logApp.warn('[WORKFLOW] Workflow definition schema validation failed:', validationResult.error);
     errors.push({
       type: 'SCHEMA_VALIDATION_FAILED',
       message: 'Workflow definition schema validation failed',

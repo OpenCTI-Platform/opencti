@@ -224,7 +224,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ color }) => (
       <Tooltip title={color}>
-        <>
+        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
           <div
             style={{
               backgroundColor: color,
@@ -236,7 +236,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },
@@ -501,8 +501,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
-        <Tooltip title={file?.metaData?.mimetype}>
-          <>{b(file?.size)}</>
+        <Tooltip title={b(file?.size)}>
+          <span>{b(file?.size)}</span>
         </Tooltip>
       );
     },
@@ -849,7 +849,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ number_observed }, { n }) => (
       <Tooltip title={number_observed}>
-        <>{n(number_observed)}</>
+        <span>{n(number_observed)}</span>
       </Tooltip>
     ),
   },
@@ -917,7 +917,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ operatingSystem }) => (
       <Tooltip title={operatingSystem?.name}>
-        <>{operatingSystem?.name ?? EMPTY_VALUE}</>
+        <span>{operatingSystem?.name ?? EMPTY_VALUE}</span>
       </Tooltip>
     ),
   },
@@ -1455,7 +1455,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
-        <>
+        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
           <div
             style={{
               backgroundColor: x_opencti_color,
@@ -1467,7 +1467,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             }}
           />
           <Truncate>{x_opencti_color}</Truncate>
-        </>
+        </Stack>
       </Tooltip>
     ),
   },
