@@ -101,7 +101,6 @@ import './observedData/observedData';
 import './stixCyberObservable/stixCyberObservable';
 import './threatActorGroup/threatActorGroup';
 import './intrusionSet/intrusionSet';
-import './campaign/campaign';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
