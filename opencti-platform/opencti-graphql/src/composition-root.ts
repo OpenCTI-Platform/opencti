@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import decayRuleModule from './modules/decayRule/decayRule-module';
 import decayExclusionRuleModule from './modules/decayRule/exclusions/decayExclusionRule-module';
 import ingestionDeduplicationRuleModule from './modules/ingestionDeduplication/ingestionDeduplicationRule-module';
 import organizationModule from './modules/organization/organization-module';
@@ -58,6 +59,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  decayRuleModule,
   decayExclusionRuleModule,
   ingestionDeduplicationRuleModule,
   organizationModule,
