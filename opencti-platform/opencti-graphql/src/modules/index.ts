@@ -93,7 +93,6 @@ import './user/user';
 // incomplete modules
 import './report/report';
 import './note/note';
-import './externalReference/externalReference';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
