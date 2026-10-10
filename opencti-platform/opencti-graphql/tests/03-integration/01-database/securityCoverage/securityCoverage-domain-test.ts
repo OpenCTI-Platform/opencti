@@ -11,10 +11,21 @@ import { addAttackPattern } from '../../../../src/domain/attackPattern';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import { stixDomainObjectDelete } from '../../../../src/domain/stixDomainObject';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../../src/schema/stixDomainObject';
-import type { StoreEntityReport } from '../../../../src/types/store';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { addMalware } from '../../../../src/domain/malware';
+import { addOrganization } from '../../../../src/modules/organization/organization-domain';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
+import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
+import type { StoreEntity, StoreEntityReport } from '../../../../src/types/store';
 import type { StixSecurityCoverage } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { findBackgroundTaskPaginated } from '../../../../src/domain/backgroundTask';
+import { fullRelationsList } from '../../../../src/database/middleware-loader';
+import { storeLoadByIdWithRefs } from '../../../../src/database/middleware';
+import { isStixRefRelationship, RELATION_OBJECT } from '../../../../src/schema/stixRefRelationship';
+import { INPUT_OBJECTS } from '../../../../src/schema/general';
+import { addWorkspace, workspaceDelete } from '../../../../src/modules/workspace/workspace-domain';
+import { knowledgeAddFromInvestigation } from '../../../../src/domain/container';
 
 describe('SecurityCoverage domain', () => {
   // Creating has-covered relationships from filters spawns a QUERY background task,
@@ -166,6 +177,94 @@ describe('SecurityCoverage domain', () => {
       expect(bundleObjects.filter((o) => o.id === report.standard_id).length).toEqual(1);
 
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    // Expanding a report in an investigation also brings its "contains" (object) ref relationships,
+    // and "Add to a container" stores them in the container objects. Ref relationships have no
+    // standalone STIX representation, so building the bundle used to fail with
+    // "No relation converter_2_1 available".
+    it('should build the bundle when the covered container contains a ref relationship', async () => {
+      const attackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC ref-in-container AP' });
+      const innerReport = await addReport(testContext, ADMIN_USER, {
+        name: 'SC ref-in-container inner report',
+        published: '2026-04-24T19:15:00.000Z',
+        objects: [attackPattern.id],
+      });
+      const [objectRefRelation] = await fullRelationsList(testContext, ADMIN_USER, RELATION_OBJECT, {
+        fromId: innerReport.id,
+        toId: attackPattern.id,
+      });
+      expect(objectRefRelation).toBeDefined();
+      const container = await addReport(testContext, ADMIN_USER, {
+        name: 'SC ref-in-container outer container',
+        published: '2026-04-24T19:15:00.000Z',
+      });
+      // Investigation after expanding the inner report, then "Add to a container"
+      const investigation = await addWorkspace(testContext, ADMIN_USER, {
+        type: 'investigation',
+        name: 'SC ref-in-container investigation',
+        investigated_entities_ids: [innerReport.id, attackPattern.id, objectRefRelation.id],
+      });
+      await knowledgeAddFromInvestigation(testContext, ADMIN_USER, { containerId: container.id, workspaceId: investigation.id });
+
+      // The container now holds the "contains" ref relationship among its objects
+      const loadedContainer = await storeLoadByIdWithRefs<StoreEntity>(testContext, ADMIN_USER, container.id) as StoreEntity;
+      const refRelationsInContainer = (loadedContainer[INPUT_OBJECTS] ?? []).filter((o) => isStixRefRelationship(o.entity_type));
+      expect(refRelationsInContainer.map((o) => o.id)).toEqual([objectRefRelation.id]);
+
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        name: 'sc on container with ref relationship',
+        objectCovered: container.standard_id,
+      });
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleIds = (bundle.objects as { id: string }[]).map((o) => o.id);
+      expect(bundleIds).toContain(container.standard_id);
+      expect(bundleIds).toContain(attackPattern.standard_id);
+      // The "contains" link is never converted, and the nested report is not a has-covered target
+      expect(bundleIds).not.toContain(objectRefRelation.standard_id);
+      expect(bundleIds).not.toContain(innerReport.standard_id);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await workspaceDelete(testContext, ADMIN_USER, investigation.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, container.id, ENTITY_TYPE_CONTAINER_REPORT);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, innerReport.id, ENTITY_TYPE_CONTAINER_REPORT);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    });
+
+    it('should only bundle has-covered target types from the covered container refs', async () => {
+      const attackPattern = await addAttackPattern(testContext, ADMIN_USER, { name: 'SC target-types AP' });
+      const malware = await addMalware(testContext, ADMIN_USER, { name: 'SC target-types malware' });
+      const securityPlatform = await addSecurityPlatform(testContext, ADMIN_USER, { name: 'SC target-types security platform' });
+      const author = await addOrganization(testContext, ADMIN_USER, { name: 'SC target-types author' });
+      const container = await addReport(testContext, ADMIN_USER, {
+        name: 'SC target-types container',
+        published: '2026-04-24T19:15:00.000Z',
+        createdBy: author.id,
+        objects: [attackPattern.id, securityPlatform.id, malware.id],
+      });
+
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        name: 'sc on container with mixed refs',
+        objectCovered: container.standard_id,
+      });
+      const bundle = JSON.parse(await securityCoverageStixBundle(testContext, ADMIN_USER, securityCoverage.id));
+      const bundleIds = (bundle.objects as { id: string }[]).map((o) => o.id);
+      expect(bundleIds).toContain(container.standard_id);
+      // Attack pattern and security platform are has-covered target types
+      expect(bundleIds).toContain(attackPattern.standard_id);
+      expect(bundleIds).toContain(securityPlatform.standard_id);
+      // Contained malware (object_refs) and author (created_by_ref) are not
+      expect(bundleIds).not.toContain(malware.standard_id);
+      expect(bundleIds).not.toContain(author.standard_id);
+
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, container.id, ENTITY_TYPE_CONTAINER_REPORT);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, attackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, securityPlatform.id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, author.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     });
   });
 

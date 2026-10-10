@@ -6,6 +6,7 @@ import type { Widget } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { SELF_ID } from '../../../filters/filtersUtils';
+import { getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from '../../../customFields';
 
 const useBuildAttributesOutcome = () => {
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -27,7 +28,9 @@ const useBuildAttributesOutcome = () => {
     return (columns ?? []).map((col) => {
       let result;
       try {
-        result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
+        result = isCustomFieldAttribute(col.attribute)
+          ? getCustomFieldRawValueByFieldName(data.stixCoreObject?.customFieldValues, col.attribute ?? '') ?? ''
+          : getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
       } catch (_e) {
         result = '';
       }

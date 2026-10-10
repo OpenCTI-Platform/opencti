@@ -197,10 +197,10 @@ const DataTableBody = ({
       </div>
 
       <div ref={scrollContainerRef} style={containerLinesStyle}>
-        {resolvedData.length === 0 && isSearching && (
+        {resolvedData.length === 0 && !isLoading && isSearching && (
           <DataTableSearchEmptyState rawSearchTerm={tableSearchTerm} />
         )}
-        {resolvedData.length === 0 && !!emptyStateMessage && (
+        {resolvedData.length === 0 && !isLoading && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
         {enableInfiniteScroll ? (() => {

@@ -2,11 +2,15 @@ import React, { FunctionComponent, useEffect, useRef } from 'react';
 import Filters from '@components/common/lists/Filters';
 import Box from '@mui/material/Box';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, isFilterGroupNotEmpty, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmptyShallow, sanitizeFiltersStructure, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useFiltersState from '../../utils/filters/useFiltersState';
 import FilterIconButton from '../FilterIconButton';
 import { useTheme } from '@mui/material/styles';
 import { WidgetHost } from '../../utils/widget/widget';
+
+const STIX_CORE_OBJECT_TYPES = ['Stix-Core-Object'];
+// dynamicRegardingOf can also target external references (via the 'external-reference' relationship type)
+const DYNAMIC_REGARDING_OF_TYPES = ['Stix-Core-Object', 'External-Reference'];
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -20,6 +24,7 @@ interface BasicFilterInputProps {
 
 const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   filter,
+  filterKey,
   childKey,
   helpers,
   filterValues,
@@ -27,7 +32,8 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
   disabled = false,
 }) => {
   const theme = useTheme();
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
+  const entityTypes = filterKey === 'dynamicRegardingOf' ? DYNAMIC_REGARDING_OF_TYPES : STIX_CORE_OBJECT_TYPES;
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
   const [filters, filterHelpers] = useFiltersState(filterValues ?? emptyFilterGroup);
   const handleFiltersChange = (currentFilter: FilterGroup | undefined) => {
     if (currentFilter) {
@@ -35,7 +41,9 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
         const childFilter = childFilters && childFilters.length > 0 ? childFilters[0] : undefined;
         const sanitizedCurrentFilter = sanitizeFiltersStructure(currentFilter);
-        if (isFilterGroupNotEmpty(sanitizedCurrentFilter)) {
+        // live-editing gate: keep shallow "is there structure" semantics, not "is this complete" —
+        // a strict check would delete a filter/group the user just added but hasn't filled in yet.
+        if (isFilterGroupNotEmptyShallow(sanitizedCurrentFilter)) {
           const representation = { key: childKey, values: [sanitizedCurrentFilter] };
           helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representation);
         } else {
@@ -62,21 +70,23 @@ const FilterFiltersInput: FunctionComponent<BasicFilterInputProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(1),
-        marginBottom: theme.spacing(1),
       }}
       >
         <Filters
           availableFilterKeys={availableFilterKeys}
           helpers={filterHelpers}
-          searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+          searchContext={{ entityTypes }}
           disabled={disabled}
+          disableAddFilterGroup
         />
       </Box>
       <FilterIconButton
         filters={filters}
         helpers={filterHelpers}
+        availableFilterKeys={availableFilterKeys}
         redirection
-        searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+        entityTypes={entityTypes}
+        searchContext={{ entityTypes }}
         host={host}
       />
     </>

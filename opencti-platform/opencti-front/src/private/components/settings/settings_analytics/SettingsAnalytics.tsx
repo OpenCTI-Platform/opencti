@@ -9,9 +9,9 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { Stack } from '@mui/material';
 import { SettingsQuery$data } from '../__generated__/SettingsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
+import { useSubscriptionFocusHelper } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import Card from '../../../../components/common/card/Card';
+import SettingsOverline from '../settings_platform/SettingsOverline';
 
 const SettingsAnalyticsValidation = () => Yup.object().shape({
   analytics_google_analytics_v4: Yup.string().nullable(),
@@ -21,11 +21,12 @@ interface SettingsAnalyticsProps {
   settings: SettingsQuery$data['settings'] & {
     readonly id: string;
   };
-  handleChangeFocus: (id: string, name: string) => void;
-  handleSubmitField: (id: string, name: string, value: string | null) => void;
+  handleChangeFocus: (name: string) => void;
+  handleSubmitField: (name: string, value: string) => void;
   isEnterpriseEdition: boolean;
 }
 
+// Rendered inside the Configuration card of the Parameters page, as its last section.
 const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   settings,
   handleChangeFocus,
@@ -33,80 +34,65 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   isEnterpriseEdition,
 }) => {
   const { t_i18n } = useFormatter();
-  const { id, editContext } = settings;
+  const { editContext } = settings;
+  const focusHelper = useSubscriptionFocusHelper(editContext);
 
-  const title = (
+  const adornment = (
     <Stack direction="row" alignItems="center" gap={1}>
-      {t_i18n('Third-party analytics')}
-
-      <Stack direction="row" gap={1}>
-        <EEChip size="sm" />
-        <Tooltip
-          title={(
-            <>
-              {t_i18n('If needed, you can set a')}{' '}
-              <Link
-                to="/dashboard/settings/accesses/policies"
-                target="_blank"
-              >
-                {t_i18n('consent message')}
-              </Link>{' '}
-              {t_i18n('on user login.')}
-            </>
-          )}
-        >
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ paddingBottom: 2, paddingTop: 2 }}
-          />
-        </Tooltip>
-      </Stack>
+      <EEChip size="sm" />
+      <Tooltip
+        title={(
+          <>
+            {t_i18n('If needed, you can set a')}{' '}
+            <Link
+              to="/dashboard/settings/accesses/policies"
+              target="_blank"
+            >
+              {t_i18n('consent message')}
+            </Link>{' '}
+            {t_i18n('on user login.')}
+          </>
+        )}
+      >
+        <InformationOutline
+          fontSize="small"
+          color="primary"
+        />
+      </Tooltip>
     </Stack>
   );
 
   return (
-    <>
-
-      <Card title={title}>
-        <Formik
-          onSubmit={() => {}}
-          enableReinitialize={true}
-          initialValues={settings}
-          validationSchema={SettingsAnalyticsValidation()}
-        >
-          {() => (
-            <Form>
-              <EETooltip>
-                <span>
-                  <Field
-                    component={TextField}
-                    name="analytics_google_analytics_v4"
-                    label={t_i18n('Google Analytics (v4)')}
-                    placeholder={t_i18n('G-XXXXXXXXXX')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    fullWidth
-                    onFocus={(name: string) => handleChangeFocus(id, name)}
-                    onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)
-                    }
-                    disabled={!isEnterpriseEdition}
-                    variant="outlined"
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="analytics_google_analytics_v4"
-                      />
-                    )}
-                  />
-                </span>
-              </EETooltip>
-            </Form>
-          )}
-        </Formik>
-      </Card>
-    </>
+    <section data-testid="settings-analytics">
+      <SettingsOverline adornment={adornment}>{t_i18n('Third-party analytics')}</SettingsOverline>
+      <Formik
+        onSubmit={() => {}}
+        enableReinitialize={true}
+        initialValues={settings}
+        validationSchema={SettingsAnalyticsValidation()}
+      >
+        {() => (
+          <Form>
+            <EETooltip>
+              <span>
+                <Field
+                  component={TextField}
+                  name="analytics_google_analytics_v4"
+                  label={t_i18n('Google Analytics (v4)')}
+                  placeholder={t_i18n('G-XXXXXXXXXX')}
+                  fullWidth
+                  onFocus={(name: string) => handleChangeFocus(name)}
+                  onSubmit={(name: string, value: string | null) => handleSubmitField(name, value ?? '')}
+                  disabled={!isEnterpriseEdition}
+                  variant="outlined"
+                  helperText={focusHelper('analytics_google_analytics_v4')}
+                />
+              </span>
+            </EETooltip>
+          </Form>
+        )}
+      </Formik>
+    </section>
   );
 };
 

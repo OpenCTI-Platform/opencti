@@ -34,7 +34,12 @@ export interface DeployedIntegrationItem {
   // rate); null when the queue never had traffic or is not resolvable.
   throughputRate: number | null;
   lastRunDate: string | null;
+  // Last heartbeat received from a connector (null for feeds)
+  lastSeenAt: string | null;
   updatedAt: string | null;
+  updateAvailable: boolean;
+  latestCompatibleVersion: string | null;
+  hasNewerIncompatibleVersion: boolean;
   isManaged: boolean;
   uri?: string | null;
   userName?: string | null;
@@ -50,6 +55,8 @@ interface UseDeployedIntegrationsProps {
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
   logosByConnectorId: Map<string, string>;
+  // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
+  isConnectorUpdateEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -80,6 +87,7 @@ const useDeployedIntegrations = ({
   feedsData,
   formsData,
   logosByConnectorId,
+  isConnectorUpdateEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -156,7 +164,11 @@ const useDeployedIntegrations = ({
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
-        updatedAt: connector.updated_at,
+        lastSeenAt: (state?.last_seen_at as string | null | undefined) ?? null,
+        updatedAt: null,
+        updateAvailable: isConnectorUpdateEnabled && !!connector.update_available,
+        latestCompatibleVersion: isConnectorUpdateEnabled ? (connector.latest_compatible_version ?? null) : null,
+        hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type, identity?.title]),
@@ -179,7 +191,11 @@ const useDeployedIntegrations = ({
         messagesCount: toSafeNumber(node.queue_messages),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -212,7 +228,11 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -251,7 +271,11 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),
@@ -259,7 +283,7 @@ const useDeployedIntegrations = ({
     }
 
     return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosByConnectorId]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosByConnectorId, isConnectorUpdateEnabled]);
 };
 
 export default useDeployedIntegrations;

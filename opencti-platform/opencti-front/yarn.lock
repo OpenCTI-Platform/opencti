@@ -968,9 +968,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@filigran/design-system@npm:1.1.0"
+"@filigran/design-system@npm:1.2.0":
+  version: 1.2.0
+  resolution: "@filigran/design-system@npm:1.2.0"
   dependencies:
     "@radix-ui/react-accordion": "npm:^1.2.20"
     "@radix-ui/react-checkbox": "npm:^1.3.11"
@@ -983,6 +983,7 @@ __metadata:
     "@radix-ui/react-slot": "npm:^1.3.3"
     "@radix-ui/react-switch": "npm:^1.3.7"
     "@radix-ui/react-tabs": "npm:^1.1.21"
+    "@radix-ui/react-toast": "npm:^1.2.23"
     "@radix-ui/react-tooltip": "npm:^1.2.16"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
@@ -991,7 +992,9 @@ __metadata:
   peerDependencies:
     react: ^19.0.0
     react-dom: ^19.0.0
-  checksum: 10c0/5d542da5034e0e6ceb813c0da40a150767031ae3e115f81e0871f0e672b6ce5421ec702075a03af5b79f2601844df6e98a1fee8d672d7fa2199952fa52e3dd7d
+  bin:
+    filigran-design-system: bin/install-skills.mjs
+  checksum: 10c0/da4817edaf4ec9ea0e2e5ff9a46cad876354d28a389e7a6f0d080d78b25e743b5b17c6f5298d35f85837a463335e891a7a83a3a174a69e7443a3739935e11254
   languageName: node
   linkType: hard
 
@@ -1092,12 +1095,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/icu-messageformat-parser@npm:3.5.20":
-  version: 3.5.20
-  resolution: "@formatjs/icu-messageformat-parser@npm:3.5.20"
+"@formatjs/icu-messageformat-parser@npm:3.5.21":
+  version: 3.5.21
+  resolution: "@formatjs/icu-messageformat-parser@npm:3.5.21"
   dependencies:
     "@formatjs/icu-skeleton-parser": "npm:2.1.12"
-  checksum: 10c0/15e2f3e5ae350ce160bbe6e799f304ad532ca7e86c9e2b73b28413181c992f5c4afca5c76939c54b5e60a42a70318165407a22a68271812df549f02487106cc2
+  checksum: 10c0/4f94c09df9495fbf4d79eb458a85d8abbb10d288cdd8443f089b2c1748be74495f0bf2da154af81ced1a44896bc414421dbb5ebf1fdabd9f8175d23bcd3bffbc
   languageName: node
   linkType: hard
 
@@ -1108,14 +1111,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl@npm:6.1.2":
-  version: 6.1.2
-  resolution: "@formatjs/intl@npm:6.1.2"
+"@formatjs/intl@npm:6.1.3":
+  version: 6.1.3
+  resolution: "@formatjs/intl@npm:6.1.3"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
-    "@formatjs/icu-messageformat-parser": "npm:3.5.20"
-    intl-messageformat: "npm:12.1.2"
-  checksum: 10c0/fb782dd32ed9ab27ab5e8fbf57ac8fb9401d2b450d27ff051c598638d96b96cf3a40189870ef88fb0ae6507b42d1a3303208e0aad38cbc20959a3fc074413d55
+    "@formatjs/icu-messageformat-parser": "npm:3.5.21"
+    intl-messageformat: "npm:12.1.3"
+  checksum: 10c0/dcf0313463aaaca6bce320e633ace633a28d5f1c190e8a9ef5a810d8f1c559bc184c12145c01e79776e8fc07a3cc2fdaea11cbe9b4c5b2e0e59b2a1cdf613476
   languageName: node
   linkType: hard
 
@@ -1577,12 +1580,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/geojson-vt@npm:^6.1.1":
-  version: 6.1.1
-  resolution: "@maplibre/geojson-vt@npm:6.1.1"
+"@maplibre/geojson-vt@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@maplibre/geojson-vt@npm:6.1.2"
   dependencies:
     kdbush: "npm:^4.1.0"
-  checksum: 10c0/75f2fcfd0c25e1c92f83609affefa762aaf52995f86c6b5258d797050b39392b2f39bc7462ef015c82884e2b2c329bef823b614a1c9fbc8d98ddb8fa8c042854
+  checksum: 10c0/af3f63102079c2a2be9a2f8426b91f886ff1319f86f9ae36f625c71e5af6b67f8c91bfe27853095caba3317d06ea5751046c2d33475e86d5f9ea5aa0720f7207
   languageName: node
   linkType: hard
 
@@ -3480,6 +3483,36 @@ __metadata:
     "@types/react-dom":
       optional: true
   checksum: 10c0/9ed747ec592b04efc57bc1b124b9b4b4bb80011167ea5d87ea99955a88fa3a84df2e78a8ffaa1a15e2ba3d9598b6d8a8c28664fc3712aa8627c0e37267389652
+  languageName: node
+  linkType: hard
+
+"@radix-ui/react-toast@npm:^1.2.23":
+  version: 1.2.23
+  resolution: "@radix-ui/react-toast@npm:1.2.23"
+  dependencies:
+    "@radix-ui/primitive": "npm:1.1.7"
+    "@radix-ui/react-collection": "npm:1.1.15"
+    "@radix-ui/react-compose-refs": "npm:1.1.5"
+    "@radix-ui/react-context": "npm:1.2.2"
+    "@radix-ui/react-dismissable-layer": "npm:1.1.19"
+    "@radix-ui/react-portal": "npm:1.1.17"
+    "@radix-ui/react-presence": "npm:1.1.10"
+    "@radix-ui/react-primitive": "npm:2.1.10"
+    "@radix-ui/react-use-callback-ref": "npm:1.1.4"
+    "@radix-ui/react-use-controllable-state": "npm:1.2.6"
+    "@radix-ui/react-use-layout-effect": "npm:1.1.4"
+    "@radix-ui/react-visually-hidden": "npm:1.2.11"
+  peerDependencies:
+    "@types/react": "*"
+    "@types/react-dom": "*"
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    "@types/react-dom":
+      optional: true
+  checksum: 10c0/03c620101417b9641ed9ffc888966bd772e1c845f58b1b7b673165f7e886c3602af26eb55965e71513ab9be82dbc0a5b49c95004205b178256d12873733d29d0
   languageName: node
   linkType: hard
 
@@ -7187,10 +7220,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"earcut@npm:^3.2.3":
-  version: 3.2.3
-  resolution: "earcut@npm:3.2.3"
-  checksum: 10c0/38660ec1ce55eecbbbf11d5a0072934c9f33851527bf5e40923c6656c3a0c6b00bb449ae8f4b28f89a0b249fe18568e630a8ea9ee39ce2707a50a89531a2f995
+"earcut@npm:^3.2.4":
+  version: 3.2.4
+  resolution: "earcut@npm:3.2.4"
+  checksum: 10c0/c50c93a6a0b56aadbe9d225322184f93b6b6dff81f2ca6e6bd8bb1141eaefc5116aac4c969f576bc2569d9c6ddd5108d74bf3825b3fd5529ebcc59c9f2b55e5a
   languageName: node
   linkType: hard
 
@@ -9020,10 +9053,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-pdfmake@npm:2.5.34":
-  version: 2.5.34
-  resolution: "html-to-pdfmake@npm:2.5.34"
-  checksum: 10c0/20554b268ae7a13fffcecf7404c103c44c8cbc641445a97900dc9fcaf484b0e29b6e18b4a614dc28b44d11b8bdab945422569bd471e01d3411fbfc1f2d98f172
+"html-to-pdfmake@npm:2.5.35":
+  version: 2.5.35
+  resolution: "html-to-pdfmake@npm:2.5.35"
+  checksum: 10c0/e1c1cd9a73c9dffa53642a6e9b58713bbce85e90d49efce58c07616cdf57d32d36499328e63281cf10b0b48923e2ff96929b01714fc09905376ee4b004397651
   languageName: node
   linkType: hard
 
@@ -9277,13 +9310,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"intl-messageformat@npm:12.1.2":
-  version: 12.1.2
-  resolution: "intl-messageformat@npm:12.1.2"
+"intl-messageformat@npm:12.1.3":
+  version: 12.1.3
+  resolution: "intl-messageformat@npm:12.1.3"
   dependencies:
     "@formatjs/fast-memoize": "npm:3.1.7"
-    "@formatjs/icu-messageformat-parser": "npm:3.5.20"
-  checksum: 10c0/390b9f7415ba0a5fe88955bbde5942924b5aea7f92bcd77ad982123e8981e738436528c5fbcf545263616bb138e7e35c5ebe20f432ca8098cfa8b804abe9eb77
+    "@formatjs/icu-messageformat-parser": "npm:3.5.21"
+  checksum: 10c0/39e29ac1102cab336e9d1e78b1530fa6d32156f30dcaae4e8bb441bc68e49c797b4477a73ce68a16846d23495d98ec760c8165bf0d450589faa8b9a7e9763e01
   languageName: node
   linkType: hard
 
@@ -10575,21 +10608,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.11.2":
-  version: 6.11.2
-  resolution: "maplibre-gl@npm:6.11.2"
+"maplibre-gl@npm:6.13.0":
+  version: 6.13.0
+  resolution: "maplibre-gl@npm:6.13.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.2.0"
     "@mapbox/unitbezier": "npm:^1.0.0"
     "@mapbox/vector-tile": "npm:^3.0.0"
-    "@maplibre/geojson-vt": "npm:^6.1.1"
+    "@maplibre/geojson-vt": "npm:^6.1.2"
     "@maplibre/maplibre-gl-style-spec": "npm:^26.4.4"
     "@maplibre/mlt": "npm:^1.3.0"
     "@maplibre/vt-pbf": "npm:^4.3.2"
     "@types/geojson": "npm:^7946.0.16"
     bidi-js: "npm:^1.1.0"
-    earcut: "npm:^3.2.3"
+    earcut: "npm:^3.2.4"
     gl-matrix: "npm:^3.4.4"
     kdbush: "npm:^4.1.0"
     murmurhash-js: "npm:^1.0.0"
@@ -10597,7 +10630,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/c1fea2904b23ff42b5c4802547c460de40f0ea34eabee8291a922b653de0deffdcafc29862f7834481b5805ab91726382a9892134c752839c6f84bd95886a6d4
+  checksum: 10c0/99ffe17b4c7ad20782da9e670817abceb455d78a59c6a45f24d5124f9477a5933c052122dc1e5370176eac7963b974796f7cae5d36faab422ae8c5304536352e
   languageName: node
   linkType: hard
 
@@ -10644,12 +10677,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:18.0.14":
-  version: 18.0.14
-  resolution: "marked@npm:18.0.14"
+"marked@npm:18.1.0":
+  version: 18.1.0
+  resolution: "marked@npm:18.1.0"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/1214c7553fdcb1db6c5adad29a7d019f9350f861bc9783ed41a2d177f021551fb22884de012ea26be446af8650d8abbf76d822b9ad5b0c5d592628f66663c42e
+  checksum: 10c0/6022a30a15d25fe0eb2958f84ebb45518290e512b61afbf9a0b9452297b30cb5f1af8289fc0057a83fa8232e6115d902d85546aba5036063a97f93be88f4df70
   languageName: node
   linkType: hard
 
@@ -11945,7 +11978,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:3.12.2"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.1.0"
+    "@filigran/design-system": "npm:1.2.0"
     "@filigran/rich-text-editor": "npm:1.2.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -12014,7 +12047,7 @@ __metadata:
     graphql-ws: "npm:6.3.0"
     html-react-parser: "npm:6.1.8"
     html-to-image: "npm:1.11.13"
-    html-to-pdfmake: "npm:2.5.34"
+    html-to-pdfmake: "npm:2.5.35"
     i18n-auto-translation: "npm:2.2.3"
     invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.5.0"
@@ -12026,9 +12059,9 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.39.0"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.11.2"
+    maplibre-gl: "npm:6.13.0"
     markdown-to-jsx: "npm:9.10.3"
-    marked: "npm:18.0.14"
+    marked: "npm:18.1.0"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.31.0"
     monocart-reporter: "npm:2.14.0"
@@ -12047,8 +12080,8 @@ __metadata:
     react-draggable: "npm:4.7.2"
     react-force-graph-2d: "npm:1.29.2"
     react-force-graph-3d: "npm:1.29.2"
-    react-grid-layout: "npm:2.2.4"
-    react-intl: "npm:12.1.3"
+    react-grid-layout: "npm:2.3.0"
+    react-intl: "npm:12.1.4"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
@@ -13157,34 +13190,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:2.2.4":
-  version: 2.2.4
-  resolution: "react-grid-layout@npm:2.2.4"
+"react-grid-layout@npm:2.3.0":
+  version: 2.3.0
+  resolution: "react-grid-layout@npm:2.3.0"
   dependencies:
     clsx: "npm:^2.1.1"
     fast-equals: "npm:^4.0.3"
     prop-types: "npm:^15.8.1"
     react-draggable: "npm:^4.4.6"
-    react-resizable: "npm:^3.1.3"
+    react-resizable: "npm:^3.2.0"
     resize-observer-polyfill: "npm:^1.5.1"
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 10c0/cde80a1fa5aaa40ac5b42a0c99c7bb07436e14c5e076b11c6a66810665ff9e23c78cc5583e2edcabec57629801af976bf34c3345a25b85662aea470eca40813b
+  checksum: 10c0/7b9b960e17857868f729ecb20a4d8538295b923bd5c9ed105cd0808fb50c89a32469f454b9cf6b549bbaedce6fb1c3242847dfeebfbf08725d4c2fcf55ed8116
   languageName: node
   linkType: hard
 
-"react-intl@npm:12.1.3":
-  version: 12.1.3
-  resolution: "react-intl@npm:12.1.3"
+"react-intl@npm:12.1.4":
+  version: 12.1.4
+  resolution: "react-intl@npm:12.1.4"
   dependencies:
-    "@formatjs/icu-messageformat-parser": "npm:3.5.20"
-    "@formatjs/intl": "npm:6.1.2"
-    intl-messageformat: "npm:12.1.2"
+    "@formatjs/icu-messageformat-parser": "npm:3.5.21"
+    "@formatjs/intl": "npm:6.1.3"
+    intl-messageformat: "npm:12.1.3"
   peerDependencies:
     "@types/react": ">=18.0.0"
     react: ">=18.0.0"
-  checksum: 10c0/e831b6d93130e16f87ab42f3dccaaaabedebc0bfa74cce039c6f28eb6cef39c9a8ffc51cd182b73464739ddc587fe8dd8b68c6e35347093d45e80f23d7cd1a53
+  checksum: 10c0/499063b38ca6c69dde2af8773a78a3b70a1012d6bf65289b46201307b85c5a537b1f6a7e2a5cba8fd71f188b3438fbc787735bf2f7194b7c736871299671572f
   languageName: node
   linkType: hard
 
@@ -13426,7 +13459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-resizable@npm:^3.1.3":
+"react-resizable@npm:^3.2.0":
   version: 3.2.0
   resolution: "react-resizable@npm:3.2.0"
   dependencies:

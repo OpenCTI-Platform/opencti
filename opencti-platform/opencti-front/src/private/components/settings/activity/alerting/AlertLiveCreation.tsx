@@ -22,6 +22,7 @@ import Drawer from '../../../common/drawer/Drawer';
 import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
+import { ACTIVITY_FILTER_KEYS } from './activityFilterKeys';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import { useTheme } from '@mui/material/styles';
@@ -138,13 +139,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             }}
           >
             <Filters
-              availableFilterKeys={[
-                'event_type',
-                'event_scope',
-                'members_user',
-                'members_group',
-                'members_organization',
-              ]}
+              availableFilterKeys={ACTIVITY_FILTER_KEYS}
               helpers={helpers}
               searchContext={{ entityTypes: ['History'] }}
             />
@@ -180,6 +175,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         redirection
         helpers={helpers}
         entityTypes={['History']}
+        availableFilterKeys={ACTIVITY_FILTER_KEYS}
       />
     </React.Fragment>
   );

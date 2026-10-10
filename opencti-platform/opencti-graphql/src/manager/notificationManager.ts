@@ -128,6 +128,13 @@ export const isNotificationRecipientActive = (user: AuthUser): boolean => {
   return user.account_status === ACCOUNT_STATUS_ACTIVE;
 };
 
+// Single recipient check for every notification path (triggers, playbook notifier and email components):
+// inactive/expired/disabled accounts must no longer receive any notification,
+// and service accounts cannot receive notifications at all (the publisher rejects them).
+export const canReceiveNotifications = (user: AuthUser): boolean => {
+  return !user.user_service_account && isNotificationRecipientActive(user);
+};
+
 const generateAssigneeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'or',
@@ -193,9 +200,8 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
-  // Exclude inactive/expired/disabled accounts: they must no longer receive any notification.
   const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(isNotificationRecipientActive);
+    .filter(canReceiveNotifications);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];

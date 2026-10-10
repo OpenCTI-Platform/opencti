@@ -66,6 +66,7 @@ export const threatActorIndividualFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     eye_color
     hair_color
     height {

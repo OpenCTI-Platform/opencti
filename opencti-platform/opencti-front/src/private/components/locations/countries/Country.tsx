@@ -84,6 +84,7 @@ export const countryFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...LocationDetails_location
   }
 `;

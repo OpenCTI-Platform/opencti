@@ -69,6 +69,12 @@ const expectedWithoutNeighborsFieldPatch = [{
   operation: 'add',
   value: [element.id],
 }];
+const relationshipElement = {
+  ...element,
+  entity_type: 'stix-core-relationship',
+  fromId: 'malware-id',
+  toId: 'location-id',
+};
 
 vi.mock('../../../src/database/middleware-loader', () => {
   return {
@@ -98,6 +104,16 @@ describe('TaskMananger objectsFromElements tests', () => {
     const objectsWithout = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [element], false, 'ADD');
     expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_operation).toEqual('patch');
     expect(objectsWithout[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual(expectedWithoutNeighborsFieldPatch);
+  });
+
+  it('does not include relationship endpoints when removing a relationship from a container', async () => {
+    const objects = await buildContainersElementsBundle(testContext, ADMIN_USER, containers, [relationshipElement], false, 'REMOVE');
+
+    expect(objects[0].extensions[STIX_EXT_OCTI].opencti_field_patch).toEqual([{
+      key: 'objects',
+      operation: 'remove',
+      value: [relationshipElement.id],
+    }]);
   });
 });
 
