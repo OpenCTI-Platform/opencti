@@ -88,7 +88,6 @@ import './securityCoverage/securityCoverage';
 import './securityCoverage/securityCoverageResult/securityCoverageResult';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
-import './retentionRules/retentionRules';
 
 // incomplete modules
 // endregion
@@ -158,7 +157,6 @@ import './customView/customView-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
-import './retentionRules/retentionRules-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

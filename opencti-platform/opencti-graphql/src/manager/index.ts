@@ -6,7 +6,6 @@ import './indicatorDecayManager';
 import './ingestionHealthManager';
 import './pirManager';
 import './platformUsageMetricsManager';
-import './retentionManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';
