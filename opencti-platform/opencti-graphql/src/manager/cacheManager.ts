@@ -44,6 +44,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { normalizeInPirFilters } from '../modules/playbook/components/data-stream-pir-component';
 import { ENTITY_TYPE_DECAY_RULE, type BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
 import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
@@ -104,9 +105,7 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
-      .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
+      .flatMap((config) => normalizeInPirFilters(config.inPirFilters).map((pir) => pir.value));
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
