@@ -1,6 +1,5 @@
 import './connectorManager';
 import './garbageCollectionManager';
-import './indicatorDecayManager';
 import './ingestionHealthManager';
 import './platformUsageMetricsManager';
 import './telemetryManager';

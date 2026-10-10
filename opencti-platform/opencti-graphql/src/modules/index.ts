@@ -62,7 +62,6 @@ import './ingestion/ingestion-taxii-collection';
 import './dataSharing/feed';
 import './dataSharing/taxiiCollection';
 import './dataSharing/streamCollection';
-import './indicator/indicator';
 
 // incomplete modules
 // endregion
@@ -100,7 +99,6 @@ import './ingestion/ingestion-taxii-graphql';
 import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
-import './indicator/indicator-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
