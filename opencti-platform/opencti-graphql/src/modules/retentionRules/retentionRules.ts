@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import convertRetentionRuleToStix from './retentionRules-converter';
 import { ENTITY_TYPE_RETENTION_RULE, type StixRetentionRule, type StoreEntityRetentionRule } from './retentionRules-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
 
-const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, StixRetentionRule> = {
+export const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, StixRetentionRule> = {
   type: {
     id: 'retention-rule',
     name: ENTITY_TYPE_RETENTION_RULE,
@@ -124,5 +124,3 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
   },
   converter_2_1: convertRetentionRuleToStix,
 };
-
-registerDefinition(RETENTION_RULE_DEFINITION);
