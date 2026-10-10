@@ -38,7 +38,6 @@ import './dataComponent/dataComponent';
 import './dataSource/dataSource';
 import './vocabulary/vocabulary';
 import './administrativeArea/administrativeArea';
-import './task/task';
 
 // incomplete modules
 // endregion
@@ -56,6 +55,5 @@ import './dataComponent/dataComponent-graphql';
 import './dataSource/dataSource-graphql';
 import './vocabulary/vocabulary-graphql';
 import './administrativeArea/administrativeArea-graphql';
-import './task/task-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
