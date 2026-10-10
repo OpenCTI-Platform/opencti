@@ -26,7 +26,7 @@ import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-2-1-common';
-import { schemaTypesDefinition } from './schema-types';
+import { schemaTypesDefinition, withinRegistration } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
 import type { OverviewWidgetCustomization } from '../generated/graphql';
@@ -144,7 +144,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject, 
   const attributes: AttributeDefinition[] = [standardId];
   pushAll(attributes, definition.attributes.map((attr) => attr));
   if (definition.type.aliased) {
-    pushAll(attributes, [resolveAliasesField(definition.type.name), iAliasedIds]);
+    pushAll(attributes, [withinRegistration(() => resolveAliasesField(definition.type.name)), iAliasedIds]);
   }
   schemaAttributesDefinition.registerAttributes(definition.type.name, attributes);
 

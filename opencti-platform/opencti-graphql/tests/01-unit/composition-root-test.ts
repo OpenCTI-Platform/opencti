@@ -12,13 +12,15 @@ import { schemaAttributesDefinition } from '../../src/schema/schema-attributes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../src/schema/general';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from '../../src/modules/dataSanity/dataSanity-types';
 import createSchema from '../../src/graphql/schema';
+import { modules } from '../../src/schema/module';
 import { getAllDisabledManagers, getAllEnabledManagers } from '../../src/manager/managerModule';
 
 const registeredManagerIds = () => [...getAllEnabledManagers(), ...getAllDisabledManagers()].map(({ manager }) => manager.id);
 
 describe('Composition root', () => {
   it('should not register anything on import', () => {
-    expect(schemaTypesDefinition.get(ABSTRACT_INTERNAL_OBJECT)).not.toContain(ENTITY_TYPE_DATA_SANITY_EXECUTION);
+    // Not through schemaTypesDefinition: reading it would lock the types before registerModules()
+    expect(modules.has(ENTITY_TYPE_DATA_SANITY_EXECUTION)).toBe(false);
     expect(registeredManagerIds()).not.toContain('DATA_SANITY_MANAGER');
   });
 
