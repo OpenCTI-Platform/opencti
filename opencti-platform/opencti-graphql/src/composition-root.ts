@@ -3,6 +3,7 @@ import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import securityCoverageModule from './modules/securityCoverage/securityCoverage-module';
 import securityCoverageResultModule from './modules/securityCoverage/securityCoverageResult/securityCoverageResult-module';
 import authModule from './modules/auth/auth-module';
 import authenticationProviderModule from './modules/authenticationProvider/authenticationProvider-module';
@@ -33,6 +34,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  securityCoverageModule,
   securityCoverageResultModule,
   authModule,
   authenticationProviderModule,
