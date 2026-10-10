@@ -45,7 +45,6 @@ import './case/case-template/case-template';
 import './case/case-incident/case-incident';
 import './case/case-rfi/case-rfi';
 import './case/case-rft/case-rft';
-import './case/feedback/feedback';
 
 // incomplete modules
 // endregion
@@ -70,6 +69,5 @@ import './case/case-template/case-template-graphql';
 import './case/case-incident/case-incident-graphql';
 import './case/case-rfi/case-rfi-graphql';
 import './case/case-rft/case-rft-graphql';
-import './case/feedback/feedback-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
