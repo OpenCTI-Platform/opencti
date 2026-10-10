@@ -1,11 +1,14 @@
 import { expect, it } from 'vitest';
 import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { buildLocalMustFilter, elGenerateFullTextSearchShould, isSearchingRelationships, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 import { adaptFilterToIdsFilterKey } from '../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../../../src/schema/general';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { RELATION_RELATED_TO } from '../../../src/schema/stixCoreRelationship';
+
+registerModules();
 
 const parse = (search) => {
   const shouldSearch = elGenerateFullTextSearchShould(search);

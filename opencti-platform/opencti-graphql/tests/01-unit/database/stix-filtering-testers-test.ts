@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // import modules to be able to test correctly types
 import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 
 // basic set
 // import stixBundle from '../../data/DATA-TEST-STIX2_v2.json';
@@ -18,6 +19,8 @@ import stixObservables from '../../data/stream-events/stream-event-stix2-observa
 import * as testers from '../../../src/utils/filtering/filtering-stix/stix-testers';
 import type { Filter } from '../../../src/generated/graphql';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
+
+registerModules();
 
 describe('Stix filter testers', () => {
   describe('by Markings (key=objectMarking)', () => {

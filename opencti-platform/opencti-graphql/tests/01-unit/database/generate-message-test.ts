@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
 import {
@@ -29,6 +30,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import type { EntityFileReference } from '../../../src/modules/internal/document/document-types';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
+
+registerModules();
 
 describe('generateUpdatePatchMessage tests', () => {
   // generate
