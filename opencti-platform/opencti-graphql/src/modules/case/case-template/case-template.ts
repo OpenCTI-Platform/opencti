@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { StixCaseTemplate, StoreEntityCaseTemplate } from './case-template-types';
 import { ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
@@ -25,7 +25,7 @@ const CaseTemplateToTaskTemplateRelation: RefAttribute = {
   toTypes: [ENTITY_TYPE_TASK_TEMPLATE],
 };
 
-const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
+export const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
   type: {
     id: 'case-template',
     name: ENTITY_TYPE_CASE_TEMPLATE,
@@ -47,4 +47,3 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   },
   converter_2_1: convertCaseTemplateToStix,
 };
-registerDefinition(CASE_TEMPLATE_DEFINITION);
