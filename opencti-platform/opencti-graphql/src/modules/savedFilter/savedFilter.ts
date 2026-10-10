@@ -2,10 +2,10 @@ import { v4 as uuidv4 } from 'uuid';
 import convertSavedFiltersToStix from './savedFilter-converter';
 import { ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter, type StixSavedFilter } from './savedFilter-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { authorizedMembers, creators, createdAt } from '../../schema/attribute-definition';
 
-const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
+export const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
   type: {
     id: 'saved-filter',
     name: ENTITY_TYPE_SAVED_FILTER,
@@ -61,5 +61,3 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
   },
   converter_2_1: convertSavedFiltersToStix,
 };
-
-registerDefinition(SAVED_FILTER_DEFINITION);
