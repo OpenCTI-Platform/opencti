@@ -88,8 +88,9 @@ import courseOfActionModule from './modules/courseOfAction/courseOfAction-module
 import customFieldModule from './modules/customField/custom-field-module';
 import configPresetModule from './modules/configPreset/configPreset-module';
 
-// Modules migrated to explicit registration.
-// The others still register themselves on import, through modules/index and manager/index.
+// Every module, in the registration order modules/index used to enforce.
+// Still registered on import: the attributes and refs of the abstract types (modules/index)
+// and the managers that belong to no module (manager/index).
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   channelModule,
   catalogModule,
@@ -179,10 +180,9 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 let modulesRegistered = false;
 
 // Each phase runs for every module before the next phase starts: data model (overview layouts,
-// attributes, then definitions), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
-// registered after the graphql of the modules still registered on import, against the order
-// modules/index documents. That is safe only while nothing reads the model at import time:
-// usageProtection catches an early read of types, attributes or refs, not of converters or validators.
+// attributes, then definitions), graphql schemas, managers, then init. It runs after modules/index,
+// which registers the attributes and refs of the abstract types the definitions inherit from.
+// usageProtection catches a read of types, attributes or refs made earlier, not of converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
 export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIPTORS) => {
   if (modulesRegistered) {
