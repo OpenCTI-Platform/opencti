@@ -29,6 +29,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
+import { ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT } from '../citizenshipDocument/citizenshipDocument-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
@@ -117,6 +118,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'channel_types',
       required: false,
       multiple: true,
+    }],
+  },
+  citizenship_document_type_ov: {
+    description: 'A citizenship document is an official record issued by a government that proves a person is legally recognized as a citizen of that country.',
+    entity_types: [ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT],
+    fields: [{
+      key: 'x_opencti_citizenship_document_type',
+      required: false,
+      multiple: false,
     }],
   },
   collection_layers_ov: {

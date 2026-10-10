@@ -249,6 +249,12 @@ const StixCoreObjectKnowledgeBar = ({
           count: distributions.withoutRelated.Organization || 0,
         },
         {
+          label: 'CitizenshipDocuments',
+          iconType: 'CitizenshipDocument',
+          path: 'citizenshipDocuments',
+          count: distributions.withoutRelated.CitizenshipDocument || 0,
+        },
+        {
           label: 'Individuals',
           iconType: 'Individual',
           path: 'individuals',
@@ -295,7 +301,7 @@ const StixCoreObjectKnowledgeBar = ({
           path: 'victimology',
           count: sumEntitiesByKeys(
             distributions.withoutRelated,
-            ['Event', 'System', 'Sector', 'Organization', 'Individual', 'Region', 'Country', 'City', 'Position'],
+            ['Event', 'System', 'Sector', 'Organization', 'CitizenshipDocument', 'Individual', 'Region', 'Country', 'City', 'Position'],
           ),
         },
         {

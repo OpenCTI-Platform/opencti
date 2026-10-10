@@ -336,6 +336,11 @@ export const entitiesFragment = graphql`
     ... on Task {
       name
     }
+    ... on CitizenshipDocument {
+      name
+      description
+      x_opencti_citizenship_document_type
+    }
     createdBy {
       ... on Identity {
         name

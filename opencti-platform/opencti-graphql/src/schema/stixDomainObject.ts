@@ -22,6 +22,7 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndiv
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT } from '../modules/citizenshipDocument/citizenshipDocument-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
@@ -177,7 +178,13 @@ export const registerStixDomainAliased = (type: string) => {
   STIX_DOMAIN_OBJECT_ALIASED.push(type);
 };
 export const isStixObjectAliased = (type: string): boolean => {
-  return STIX_DOMAIN_OBJECT_ALIASED.includes(type) || (isStixDomainObjectIdentity(type) && type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) || isStixDomainObjectLocation(type);
+  return STIX_DOMAIN_OBJECT_ALIASED.includes(type)
+    || (
+      isStixDomainObjectIdentity(type)
+      && type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM
+      && type !== ENTITY_TYPE_IDENTITY_CITIZENSHIP_DOCUMENT
+    )
+    || isStixDomainObjectLocation(type);
 };
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {

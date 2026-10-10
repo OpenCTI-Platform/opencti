@@ -141,6 +141,11 @@ const publicStixCoreObjectsListQuery = graphql`
             modified
             x_opencti_aliases
           }
+          ... on CitizenshipDocument {
+            name
+            description
+            x_opencti_citizenship_document_type
+          }
           ... on Indicator {
             name
             description

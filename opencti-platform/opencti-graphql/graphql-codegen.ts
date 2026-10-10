@@ -90,6 +90,7 @@ const config: CodegenConfig = {
           UserSession: '../modules/user/user-types#StoreUserSession',
           Creator: '../modules/user/user-types#BasicStoreMember',
           Member: '../modules/user/user-types#BasicStoreMember',
+          CitizenshipDocument: '../modules/citizenshipDocument/citizenshipDocument-types#BasicStoreEntityCitizenshipDocument',
         },
       },
     },

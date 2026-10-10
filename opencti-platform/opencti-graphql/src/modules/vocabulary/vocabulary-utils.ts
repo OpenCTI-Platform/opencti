@@ -130,6 +130,28 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'Twitter' },
     { key: 'Facebook' },
   ],
+  citizenship_document_type_ov: [
+    {
+      key: 'birth-certificate',
+      description: 'A Birth Certificate shows that a person was born within a country or to citizens of that country.',
+    },
+    {
+      key: 'certificate-of-citizenship',
+      description: 'Certificate of Citizenship is issued to people who obtain citizenship through parents or other legal processes.',
+    },
+    {
+      key: 'certificate-of-naturalization',
+      description: 'Certificate of Naturalization is Given to individuals who become citizens through the naturalization process.',
+    },
+    {
+      key: 'national-Identity',
+      description: 'A national Identity (ID) is an official government-issued identification document (or number) used to verify a person\'s identity within their home country.',
+    },
+    {
+      key: 'passport',
+      description: 'Although primarily a travel document, it is also strong evidence of citizenship.',
+    },
+  ],
   // E
   event_type_ov: [
     {

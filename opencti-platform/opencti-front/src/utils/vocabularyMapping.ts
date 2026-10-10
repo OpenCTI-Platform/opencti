@@ -92,6 +92,9 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
 
   // Ingestion RSS attributes
   { attribute: 'ingestion_running', vocabularyType: 'ingestion_running_ov', label: 'Ingestion running', multiple: false },
+
+  // Security Platform attributes
+  { attribute: 'x_opencti_citizenship_document_type', vocabularyType: 'citizenship_document_type_ov', label: 'Citizenship document type', multiple: false },
 ];
 
 /**
