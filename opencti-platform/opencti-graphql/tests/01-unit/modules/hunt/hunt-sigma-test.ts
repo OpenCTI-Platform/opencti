@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SIGMA_RULE_MAX_LENGTH, validateSigmaRule, wildcardMatches } from '../../../../src/modules/hunt/hunt-sigma';
 import { huntSigmaRule } from '../../../../src/modules/hunt/hunt-utils';
 import { validateHuntState } from '../../../../src/modules/hunt/hunt-validators';
-import { testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 describe('Sigma condition wildcards', () => {
   it('should match identifiers segment by segment like a glob', () => {
@@ -126,12 +126,12 @@ describe('Sigma rule of a hunt by its type', () => {
   const BROKEN_RULE = 'title: [unclosed';
 
   it('should check the Sigma rule of a detection-rule hunt only', async () => {
-    await expect(validateHuntState(testContext, { hunt_type: 'telemetry', sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'telemetry', sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
     // A hunt stored without a type is a detection-rule hunt
-    await expect(validateHuntState(testContext, { sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
+    await expect(validateHuntState(testContext, ADMIN_USER, { sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
     // An indicator or internet infrastructure hunt is not refused for a rule it does not run and its form does not show
-    await expect(validateHuntState(testContext, { hunt_type: 'indicators', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
-    await expect(validateHuntState(testContext, { hunt_type: 'infrastructure', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'infrastructure', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
   });
 
   it('should run the Sigma rule of a detection-rule hunt only', () => {

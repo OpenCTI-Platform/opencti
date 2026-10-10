@@ -4,7 +4,7 @@ import { Text } from '@filigran/design-system';
 import FilterIconButton from '../../../components/FilterIconButton';
 import Filters from '../common/lists/Filters';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { stixFilters } from '../../../utils/filters/filtersUtils';
+import { useStixFilters } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { HUNT_DOCS } from './hunt-utils';
@@ -24,6 +24,7 @@ const HuntTriggerFiltersField = ({ filtersState }: HuntTriggerFiltersFieldProps)
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [filters, helpers] = filtersState;
+  const stixFilters = useStixFilters();
   const searchContext = { entityTypes: ENTITY_TYPES };
 
   return (

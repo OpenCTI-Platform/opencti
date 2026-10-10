@@ -91,7 +91,7 @@ export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>):
  * Logic is only required once the hunt is active: drafts and paused hunts can be saved incomplete, and every
  * executed run checks the logic again.
  */
-export const validateHuntState = async (context: AuthContext, state: HuntValidationState) => {
+export const validateHuntState = async (context: AuthContext, user: AuthUser, state: HuntValidationState) => {
   // A hunt is not refused for a rule its type does not run and its form does not show
   const sigmaError = sigmaRuleError(huntSigmaRule(state));
   if (sigmaError) {
@@ -124,7 +124,7 @@ export const validateHuntState = async (context: AuthContext, state: HuntValidat
   const triggerFilters = parseHuntFilterGroup(state.trigger_filters, 'trigger_filters');
   if (triggerFilters) {
     // Trigger filters are evaluated on stream events, only the keys supported by the stix matching are accepted
-    validateFilterGroupForStixMatch(triggerFilters);
+    await validateFilterGroupForStixMatch(context, user, triggerFilters);
   }
   // Autonomous execution (schedule, standing, PIR activation) is an Enterprise Edition capability
   if (state.hunt_status === HUNT_STATUS_ACTIVE && isAutonomousHunt({ hunt_schedule: schedule, hunt_pir_activation: state.hunt_pir_activation })) {
@@ -146,18 +146,18 @@ export const mergeHuntEdits = <T extends object>(hunt: T, editInputs: { key: str
   return { ...hunt, ...changes };
 };
 
-export const validateHuntCreation = async (context: AuthContext, _user: AuthUser, instance: Record<string, unknown>) => {
-  await validateHuntState(context, instance as HuntValidationState);
+export const validateHuntCreation = async (context: AuthContext, user: AuthUser, instance: Record<string, unknown>) => {
+  await validateHuntState(context, user, instance as HuntValidationState);
   return true;
 };
 
 export const validateHuntUpdate = async (
   context: AuthContext,
-  _user: AuthUser,
+  user: AuthUser,
   instance: Record<string, unknown>,
   initial: Record<string, unknown> | undefined,
 ) => {
   const changes = Object.fromEntries(Object.entries(instance).map(([key, value]) => [key, singleValue(key, value)]));
-  await validateHuntState(context, { ...(initial ?? {}), ...changes } as HuntValidationState);
+  await validateHuntState(context, user, { ...(initial ?? {}), ...changes } as HuntValidationState);
   return true;
 };

@@ -377,7 +377,7 @@ const validateHuntRefChange = async (context: AuthContext, user: AuthUser, huntI
   const elementId = element?.internal_id ?? toId;
   const current = (hunt as unknown as Record<string, string[] | undefined>)[relationshipType] ?? [];
   const next = add ? Array.from(new Set([...current, elementId])) : current.filter((id) => id !== elementId);
-  await validateHuntState(context, {
+  await validateHuntState(context, user, {
     ...hunt,
     [relationshipType]: next,
     ...(relationshipType === RELATION_HUNT_SOURCES ? { [INPUT_HUNT_SOURCES]: undefined } : {}),
@@ -851,7 +851,7 @@ export const importHuntPack = async (context: AuthContext, user: AuthUser, file:
           input[field] = existing[field];
         });
       }
-      await validateHuntState(context, input as HuntValidationState);
+      await validateHuntState(context, user, input as HuntValidationState);
       prepared.push({ input, labels: plan.labels, existing: !!existing, existingStatus: existing?.hunt_status ?? null });
     }
   }

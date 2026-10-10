@@ -6,7 +6,7 @@ import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { type BasicStoreEntityHunt, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from '../../../../src/modules/hunt/hunt-types';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { validateHuntState } from '../../../../src/modules/hunt/hunt-validators';
-import { testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/cache')>(),
@@ -133,9 +133,9 @@ describe('Sources of a hunt', () => {
   it('should refuse a hunt with more sources than a run looks up values', async () => {
     HUNT_CONFIG.maxIocsPerRun = 3;
     const ids = (count: number) => Array.from({ length: count }, (_, index) => `report-${index}`);
-    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
     // A source added to a stored hunt
-    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
-    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(3) })).resolves.toBeUndefined();
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(3) })).resolves.toBeUndefined();
   });
 });
