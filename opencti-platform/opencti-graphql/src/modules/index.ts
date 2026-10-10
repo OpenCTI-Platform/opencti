@@ -53,11 +53,6 @@ import './managerConfiguration/managerConfiguration';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
 import './playbook/playbook';
-import './ingestion/ingestion-rss';
-import './ingestion/ingestion-taxii';
-import './ingestion/ingestion-csv';
-import './ingestion/ingestion-json';
-import './ingestion/ingestion-taxii-collection';
 
 // incomplete modules
 // endregion
@@ -90,11 +85,6 @@ import './managerConfiguration/managerConfiguration-graphql';
 import './notifier/notifier-graphql';
 import './threatActorIndividual/threatActorIndividual-graphql';
 import './playbook/playbook-graphql';
-import './ingestion/ingestion-rss-graphql';
-import './ingestion/ingestion-taxii-graphql';
-import './ingestion/ingestion-taxii-collection-graphql';
-import './ingestion/ingestion-csv-graphql';
-import './ingestion/ingestion-json-graphql';
 import './workflow/api/workflow-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

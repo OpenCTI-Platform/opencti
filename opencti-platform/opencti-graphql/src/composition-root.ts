@@ -4,6 +4,7 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import ingestionModule from './modules/ingestion/ingestion-module';
 import dataSharingModule from './modules/dataSharing/dataSharing-module';
 import indicatorModule from './modules/indicator/indicator-module';
 import decayRuleModule from './modules/decayRule/decayRule-module';
@@ -60,6 +61,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  ingestionModule,
   dataSharingModule,
   indicatorModule,
   decayRuleModule,
