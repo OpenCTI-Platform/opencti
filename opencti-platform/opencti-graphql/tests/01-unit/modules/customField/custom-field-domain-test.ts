@@ -6,6 +6,7 @@ import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import * as Access from '../../../../src/utils/access';
 import * as CacheModule from '../../../../src/database/cache';
+import * as TelemetryManager from '../../../../src/manager/telemetryManager';
 import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   customFieldDefinitionAdd,
@@ -44,6 +45,10 @@ vi.mock('../../../../src/database/redis', () => ({
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
+}));
+
+vi.mock('../../../../src/manager/telemetryManager', () => ({
+  addCustomFieldCreatedCount: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', () => ({
@@ -161,6 +166,7 @@ describe('customFieldDefinitionAdd', () => {
     await expect(customFieldDefinitionAdd(mockContext, mockUser, { ...validInput, name: 'invalid_name' }))
       .rejects.toThrow('Technical name must start with "x_opencti_cf_"');
     expect(Middleware.createEntity).not.toHaveBeenCalled();
+    expect(TelemetryManager.addCustomFieldCreatedCount).not.toHaveBeenCalled();
   });
 
   it('throws when the technical name already exists', async () => {
@@ -218,6 +224,7 @@ describe('customFieldDefinitionAdd', () => {
       message: 'creates custom field definition `x_opencti_cf_tags`',
     }));
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), created, mockUser);
+    expect(TelemetryManager.addCustomFieldCreatedCount).toHaveBeenCalledTimes(1);
   });
 
   it('respects the provided multiple flag for a non-multi_select field type', async () => {
