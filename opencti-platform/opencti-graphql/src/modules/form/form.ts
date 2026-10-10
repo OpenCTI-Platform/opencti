@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { ModuleDefinition } from '../../schema/module';
-import { registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StixForm, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM } from './form-types';
@@ -90,5 +89,3 @@ export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
   },
   converter_2_1: convertFormToStix,
 };
-
-registerDefinition(FORM_DEFINITION);

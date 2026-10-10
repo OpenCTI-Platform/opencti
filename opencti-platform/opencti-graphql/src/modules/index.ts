@@ -81,7 +81,6 @@ import './pir/pir';
 import './fintelDesign/fintelDesign';
 import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
-import './form/form';
 
 // incomplete modules
 // endregion
@@ -141,7 +140,6 @@ import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
 import './emailTemplate/emailTemplate-graphql';
-import './form/form-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
