@@ -3,6 +3,7 @@ import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import customViewModule from './modules/customView/customView-module';
 import retentionRulesModule from './modules/retentionRules/retentionRules-module';
 import dataSanityModule from './modules/dataSanity/dataSanity-module';
 import newsFeedModule from './modules/xtm/hub/news-feed/news-feed-module';
@@ -29,6 +30,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  customViewModule,
   retentionRulesModule,
   dataSanityModule,
   newsFeedModule,
