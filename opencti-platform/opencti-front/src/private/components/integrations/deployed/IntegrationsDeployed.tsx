@@ -1,7 +1,7 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { useQueryLoader } from 'react-relay';

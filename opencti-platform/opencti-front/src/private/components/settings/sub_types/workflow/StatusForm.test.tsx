@@ -54,13 +54,13 @@ describe('StatusForm – EE / CE gating', () => {
 
     it('disables the "Update authorized members on enter" switch', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on enter/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on enter/i }) as HTMLInputElement;
       expect(sw.disabled).toBe(true);
     });
 
     it('disables the "Update authorized members on exit" switch', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on exit/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on exit/i }) as HTMLInputElement;
       expect(sw.disabled).toBe(true);
     });
 
@@ -70,7 +70,7 @@ describe('StatusForm – EE / CE gating', () => {
       expect(screen.getByText(/on enter actions/i)).toBeDefined();
       expect(screen.getByText(/on exit actions/i)).toBeDefined();
       // The switches must remain disabled
-      expect((screen.getByRole('checkbox', { name: /on enter/i }) as HTMLInputElement).disabled).toBe(true);
+      expect((screen.getByRole('switch', { name: /on enter/i }) as HTMLInputElement).disabled).toBe(true);
     });
   });
 
@@ -81,13 +81,13 @@ describe('StatusForm – EE / CE gating', () => {
 
     it('enables the "Update authorized members on enter" switch', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on enter/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on enter/i }) as HTMLInputElement;
       expect(sw.disabled).toBe(false);
     });
 
     it('enables the "Update authorized members on exit" switch', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on exit/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on exit/i }) as HTMLInputElement;
       expect(sw.disabled).toBe(false);
     });
 
@@ -109,25 +109,25 @@ describe('StatusForm – EE / CE gating', () => {
 
     it('"on enter" switch is unchecked when onEnter is empty', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on enter/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on enter/i }) as HTMLInputElement;
       expect(sw.checked).toBe(false);
     });
 
     it('"on enter" switch is checked when onEnter contains updateAuthorizedMembers', () => {
       renderForm({ onEnter: onEnterAction, onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on enter/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on enter/i }) as HTMLInputElement;
       expect(sw.checked).toBe(true);
     });
 
     it('"on exit" switch is unchecked when onExit is empty', () => {
       renderForm({ onEnter: [], onExit: [] });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on exit/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on exit/i }) as HTMLInputElement;
       expect(sw.checked).toBe(false);
     });
 
     it('"on exit" switch is checked when onExit contains updateAuthorizedMembers', () => {
       renderForm({ onEnter: [], onExit: onExitAction });
-      const sw = screen.getByRole('checkbox', { name: /update authorized members on exit/i }) as HTMLInputElement;
+      const sw = screen.getByRole('switch', { name: /update authorized members on exit/i }) as HTMLInputElement;
       expect(sw.checked).toBe(true);
     });
   });
@@ -141,7 +141,7 @@ describe('StatusForm – EE / CE gating', () => {
       const onSubmit = vi.fn();
       const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
 
-      await user.click(screen.getByRole('checkbox', { name: /update authorized members on enter/i }));
+      await user.click(screen.getByRole('switch', { name: /update authorized members on enter/i }));
 
       document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -160,7 +160,7 @@ describe('StatusForm – EE / CE gating', () => {
       const onSubmit = vi.fn();
       const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
 
-      await user.click(screen.getByRole('checkbox', { name: /update authorized members on exit/i }));
+      await user.click(screen.getByRole('switch', { name: /update authorized members on exit/i }));
 
       document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 

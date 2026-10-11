@@ -115,16 +115,16 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         container={true}
         spacing={3}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Configuration')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Description')}
                 </Label>
                 <ExpandableMarkdown source={decayRule.description} limit={300} />
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label action={(
                   <Tooltip title={t_i18n('Matches all indicator main observable types if none is listed.')}>
                     <InformationOutline fontSize="small" color="primary" />
@@ -147,19 +147,19 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   </Box>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Lifetime (in days)')}
                 </Label>
                 {decayRule.decay_lifetime}
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Decay factor')}
                 </Label>
                 {decayRule.decay_pound}
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Reaction points')}
                 </Label>
@@ -167,7 +167,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   <span>{decayRule.decay_points?.join(', ')}</span>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Label>
                   {t_i18n('Revoke score')}
                 </Label>
@@ -177,19 +177,18 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           </Card>
         </Grid>
         <Grid
-          item
-          xs={6}
           container={true}
+          size={6}
           sx={{
             gap: 2,
           }}
         >
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Card title={t_i18n('Impact')}>
               {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Card title={t_i18n('Life curve')}>
               <DecayChart
                 decayCurvePoint={chartCurvePoints}

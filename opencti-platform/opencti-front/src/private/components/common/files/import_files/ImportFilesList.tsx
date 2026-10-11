@@ -202,8 +202,8 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
           <Collapse key="header">
             <ListItem divider>
               <Grid container columnSpacing={2}>
-                <Grid item xs={0.5}></Grid>
-                <Grid item xs={fileNameColumnSize}>
+                <Grid size={0.5}></Grid>
+                <Grid size={fileNameColumnSize}>
                   <Typography sx={{
                     fontWeight: 'bold',
                   }}
@@ -213,7 +213,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                 </Grid>
                 {importMode !== 'auto' && (
                   <>
-                    <Grid item xs={3}>
+                    <Grid size={3}>
                       <Typography sx={{
                         fontWeight: 'bold',
                       }}
@@ -223,7 +223,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                     </Grid>
 
                     {isConfigurationColumn && (
-                      <Grid item xs={3}>
+                      <Grid size={3}>
                         <Typography sx={{
                           fontWeight: 'bold',
                         }}
@@ -234,7 +234,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                     )}
                   </>
                 )}
-                <Grid item xs={0.5}></Grid>
+                <Grid size={0.5}></Grid>
               </Grid>
             </ListItem>
           </Collapse>
@@ -255,12 +255,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   }}
                 >
                   {/* Column 1: File Icon */}
-                  <Grid item xs={0.5} sx={{ display: 'flex' }}>
+                  <Grid sx={{ display: 'flex' }} size={0.5}>
                     <UploadFileOutlined color="primary" />
                   </Grid>
 
                   {/* Column 2: File Name */}
-                  <Grid item xs={fileNameColumnSize}>
+                  <Grid size={fileNameColumnSize}>
                     <Tooltip title={file.name}>
                       <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                         {file.name}
@@ -273,7 +273,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                         canSelectConnectors ? (
                           <>
                             {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
-                            <Grid item xs={3}>
+                            <Grid size={3}>
                               <Combobox<string>
                                 multiple
                                 labelPosition="none"
@@ -311,7 +311,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                             {/* Column 4: Configuration (CSV Mapper or XTM One Agent) */}
                             {isConfigurationColumn
                               && (
-                                <Grid item xs={3}>
+                                <Grid size={3}>
                                   {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
                                     <FdsSelect
                                       value={configuration || ''}
@@ -360,7 +360,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                               )}
                           </>
                         ) : (
-                          <Grid item xs={isConfigurationColumn ? 6 : 3}>
+                          <Grid size={isConfigurationColumn ? 6 : 3}>
                             <Alert
                               variant="outlined"
                               severity="warning"
@@ -379,7 +379,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                     </>
                   )}
                   {/* Column 5: Delete Button */}
-                  <Grid item xs={0.5}>
+                  <Grid size={0.5}>
                     <IconButton
                       variant="default"
                       priority="tertiary"

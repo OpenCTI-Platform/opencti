@@ -54,25 +54,25 @@ const ExternalReferenceComponent: FunctionComponent<
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         {overviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'basicInformation':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceOverview externalReference={externalReference} />
                 </Grid>
               );
             case 'details':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceDetails externalReference={externalReference} />
                 </Grid>
               );
             case 'linkedObjects':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceStixCoreObjects
                     externalReference={externalReference}
                   />
@@ -80,7 +80,7 @@ const ExternalReferenceComponent: FunctionComponent<
               );
             case 'uploadedFiles':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceFileImportViewer
                     externalReference={externalReference}
                     connectorsImport={connectorsImport}

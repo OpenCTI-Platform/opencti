@@ -166,7 +166,7 @@ const DefaultDashboard = ({ timeField }) => {
       placeholder={<MarkdownDisplay content={noAccessMessage} />}
     >
       <Grid container={true} spacing={3}>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
             withoutContainerTitle
             entityType="Intrusion-Set"
@@ -189,7 +189,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
             withoutContainerTitle
             entityType="Malware"
@@ -212,7 +212,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
             withoutContainerTitle
             entityType="Report"
@@ -235,7 +235,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixCoreObjectsNumber
             withoutContainerTitle
             entityType="Indicator"
@@ -258,7 +258,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsHorizontalBars
             height={300}
             config={{
@@ -290,7 +290,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsHorizontalBars
             height={300}
             config={{
@@ -322,7 +322,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixRelationshipsMultiAreaChart
             height={300}
             config={{
@@ -350,7 +350,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsPolarArea
             height={400}
             config={{
@@ -381,7 +381,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid size={3}>
           <StixRelationshipsDistributionList
             overflow="hidden"
             parameters={{
@@ -414,7 +414,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Suspense
             fallback={(
               <LocationMiniMapTargets
@@ -426,7 +426,7 @@ const DefaultDashboard = ({ timeField }) => {
             <TargetedCountries timeField={timeField} />
           </Suspense>
         </Grid>
-        <Grid item xs={8}>
+        <Grid size={8}>
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             config={config}
@@ -457,7 +457,7 @@ const DefaultDashboard = ({ timeField }) => {
             }]}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <StixRelationshipsHorizontalBars
             height={410}
             config={{

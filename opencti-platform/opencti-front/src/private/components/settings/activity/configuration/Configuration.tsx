@@ -140,7 +140,7 @@ const ConfigurationComponent: FunctionComponent<
         <div className={classes.container}>
           <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Card title={t_i18n('Extended activity logging')}>
                 <Alert
                   icon={false}
@@ -163,12 +163,7 @@ const ConfigurationComponent: FunctionComponent<
                       return (
                         <Form style={{ margin: `${theme.spacing(1)} 0` }}>
                           <Grid container={true} spacing={0}>
-                            <Grid
-                              key="users"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="users" style={{ padding: 4 }} size={4}>
                               <CreatorField
                                 name="users"
                                 label={t_i18n('Add a user')}
@@ -176,12 +171,7 @@ const ConfigurationComponent: FunctionComponent<
                                 containerStyle={{ width: '100%' }}
                               />
                             </Grid>
-                            <Grid
-                              key="groups"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="groups" style={{ padding: 4 }} size={4}>
                               <GroupField
                                 name="groups"
                                 label={t_i18n('Add a group')}
@@ -189,12 +179,7 @@ const ConfigurationComponent: FunctionComponent<
                                 onChange={onChangeData(resetForm)}
                               />
                             </Grid>
-                            <Grid
-                              key="organizations"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="organizations" style={{ padding: 4 }} size={4}>
                               <ObjectOrganizationField
                                 alert={false}
                                 name="organizations"

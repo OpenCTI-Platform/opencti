@@ -307,7 +307,7 @@ const FileManager = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         <FileImportViewer
           entity={entity}

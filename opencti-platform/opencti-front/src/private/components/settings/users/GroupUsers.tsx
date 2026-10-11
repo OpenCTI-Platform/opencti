@@ -94,7 +94,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     },
   };
   return (
-    <Grid item xs={12} style={{ marginTop: 10 }}>
+    <Grid style={{ marginTop: 10 }} size={12}>
       <Card
         title={t_i18n('Members')}
         titleSx={{ alignItems: 'end' }}

@@ -43,7 +43,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -52,7 +52,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
               limit={400}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Organization type')}
             </Label>
@@ -62,7 +62,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Contact information')}
             </Label>

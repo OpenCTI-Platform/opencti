@@ -93,7 +93,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
   };
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <Card title={t_i18n('User policy')}>
         <Alert severity="info" variant="outlined">
           {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
