@@ -6,6 +6,7 @@ import { CalendarIcon } from '@mui/x-date-pickers/icons';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
+import { isAcceptedFromView } from '../../utils/Time';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface RelativeDateInputProps {
@@ -143,7 +144,11 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
           onChange={(value) => {
             pendingDate.current = value && !Number.isNaN(value.getTime()) ? value : null;
           }}
-          onAccept={(value) => {
+          onAccept={(value, context) => {
+            // Typed values are applied on blur.
+            if (!isAcceptedFromView(context)) {
+              return;
+            }
             pendingDate.current = null;
             if (value) {
               handleChangeRangeDateFilter(value.toISOString());
