@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import GraphContextMenu from './GraphContextMenu';
+import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections } from './GraphContextMenu';
 
 describe('GraphContextMenu', () => {
   it('lists the actions of each section under its name, says why one cannot run, and runs the chosen one', async () => {
@@ -74,5 +74,46 @@ describe('GraphContextMenu', () => {
     unmount();
     testRender(<GraphContextMenu anchor={{ x: 0, y: 0 }} label="Graph actions" onClose={vi.fn()} sections={[{ key: 'a', actions: [] }]} />);
     expect(screen.queryByRole('menu')).toBeNull();
+  });
+});
+
+describe('graphContextMenuSections', () => {
+  const section = (key: string, label: string, actionLabel: string): GraphContextMenuSection => ({
+    key,
+    label,
+    actions: [{ id: `${key}-action`, label: actionLabel, icon: <span />, onSelect: vi.fn() }],
+  });
+  const entity = section('node', 'APT-X', 'Hide');
+  const relationship = section('link', 'Uses', 'Select this relationship');
+  const graph = section('graph', 'Graph', 'Select all nodes');
+  const selection = section('selection', 'Selection', 'Invert selection');
+  const targets: [string, GraphContextMenuSection | undefined][] = [['an entity', entity], ['a relationship', relationship], ['the empty canvas', undefined]];
+  const renderMenu = (sections: GraphContextMenuSection[]) => testRender(
+    <GraphContextMenu anchor={{ x: 0, y: 0 }} label="Graph actions" onClose={vi.fn()} sections={sections} />,
+  );
+
+  it.each(targets)('offers the selection, and its inversion, on %s while something is selected', async (_, element) => {
+    renderMenu(graphContextMenuSections({ element, selection, graph }));
+    const menu = await screen.findByRole('menu', { name: 'Graph actions' });
+    expect(within(menu).getByText('Selection')).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: /Invert selection/ })).toBeInTheDocument();
+  });
+
+  it.each(targets)('offers no selection, nor its inversion, on %s while nothing is selected', async (_, element) => {
+    renderMenu(graphContextMenuSections({ element, graph }));
+    const menu = await screen.findByRole('menu', { name: 'Graph actions' });
+    expect(within(menu).queryByText('Selection')).toBeNull();
+    expect(within(menu).queryByRole('menuitem', { name: /Invert selection/ })).toBeNull();
+  });
+
+  it('puts the selection first on an element of a larger selection and on the empty canvas, after the element otherwise', () => {
+    const keys = (sections: GraphContextMenuSection[]) => sections.map(({ key }) => key);
+    expect(keys(graphContextMenuSections({ element: entity, selection, graph }))).toEqual(['node', 'selection']);
+    expect(keys(graphContextMenuSections({ element: entity, elementInSelection: true, selection, graph }))).toEqual(['selection', 'node']);
+    expect(keys(graphContextMenuSections({ element: relationship, selection, graph }))).toEqual(['link', 'selection']);
+    expect(keys(graphContextMenuSections({ element: relationship, elementInSelection: true, selection, graph }))).toEqual(['selection', 'link']);
+    expect(keys(graphContextMenuSections({ selection, graph }))).toEqual(['selection', 'graph']);
+    expect(keys(graphContextMenuSections({ element: entity, graph }))).toEqual(['node']);
+    expect(keys(graphContextMenuSections({ graph }))).toEqual(['graph']);
   });
 });

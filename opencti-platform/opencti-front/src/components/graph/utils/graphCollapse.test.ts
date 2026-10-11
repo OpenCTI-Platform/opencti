@@ -4,6 +4,7 @@ import {
   drawnOneByOne,
   drawnTypes,
   GROUP_NODE_PREFIX,
+  invertedSelection,
   isCollapsedMember,
   isGroupLink,
   isGroupNode,
@@ -188,5 +189,58 @@ describe('withCollapsedGroups', () => {
     expect(counted.entities.map((node) => node.id)).toEqual(['actor', 'm1', 'm2']);
     expect(counted.relationshipLinks).toHaveLength(data.links.length);
     expect(counted.relationshipNodes.map((node) => node.id)).toEqual(['nested']);
+  });
+});
+
+describe('invertedSelection', () => {
+  const [actorUsesM1, actorUsesM2, m1VariantOfM2] = data.links;
+  const ids = (elements: readonly { id: string }[]) => elements.map((element) => element.id);
+
+  it('inverts a selection of nodes to nodes only, among the nodes drawn', () => {
+    const inverted = invertedSelection({ nodes: [actor], links: [] }, data);
+    expect(ids(inverted.nodes)).toEqual(['m1', 'm2']);
+    expect(inverted.links).toEqual([]);
+  });
+
+  it('inverts a selection of relationships to relationships only, among the relationships drawn', () => {
+    const inverted = invertedSelection({ nodes: [], links: [actorUsesM1] }, data);
+    expect(inverted.nodes).toEqual([]);
+    expect(inverted.links).toEqual([actorUsesM2, m1VariantOfM2]);
+  });
+
+  it('inverts the nodes and the relationships of a mixed selection each on their own, and back', () => {
+    const inverted = invertedSelection({ nodes: [m1], links: [actorUsesM1] }, data);
+    expect(ids(inverted.nodes)).toEqual(['actor', 'm2']);
+    expect(inverted.links).toEqual([actorUsesM2, m1VariantOfM2]);
+    const back = invertedSelection(inverted, data);
+    expect(ids(back.nodes)).toEqual(['m1']);
+    expect(back.links).toEqual([actorUsesM1]);
+  });
+
+  it('keeps an empty selection empty and empties a selection of everything drawn', () => {
+    expect(invertedSelection({ nodes: [], links: [] }, data)).toEqual({ nodes: [], links: [] });
+    expect(invertedSelection(data, data)).toEqual({ nodes: [], links: [] });
+  });
+
+  it('selects only what is drawn one by one: no member of a group, group node, link towards a group or connector', () => {
+    const victim = graphNode({ id: 'victim', entity_type: 'Organization' });
+    const targets = graphLink(actor, victim, { id: 'targets-1', relationship_type: 'targets', entity_type: 'targets' });
+    const relatedTo = graphLink(victim, actor, { id: 'related-1', relationship_type: 'related-to', entity_type: 'related-to' });
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
+    const connectors = [graphLink(actor, nested, { id: 'nested', label: '' }), graphLink(nested, victim, { id: 'nested', label: '' })];
+    const grouped = withCollapsedGroups(
+      { nodes: [...data.nodes, victim, nested], links: [...data.links, targets, relatedTo, ...connectors] },
+      ['Malware'],
+      label,
+      createCollapseCache(),
+    );
+    // As the graph draws it: the members of the group left out, with the relationships touching them.
+    const drawnNodes = grouped.nodes.filter((node) => !isCollapsedMember(node, ['Malware']));
+    const drawnIds = new Set(ids(drawnNodes));
+    const drawnLinks = grouped.links.filter((link) => drawnIds.has(link.source_id) && drawnIds.has(link.target_id));
+    expect(drawnLinks.some(isGroupLink)).toBe(true);
+    const inverted = invertedSelection({ nodes: [actor], links: [targets] }, { nodes: drawnNodes, links: drawnLinks });
+    expect(ids(inverted.nodes)).toEqual(['victim', 'nested']);
+    expect(inverted.links).toEqual([relatedTo]);
   });
 });

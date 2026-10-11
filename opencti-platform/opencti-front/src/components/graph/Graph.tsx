@@ -23,7 +23,7 @@ import GraphAccessibleList, { graphElementKey } from './components/GraphAccessib
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
-import { createCollapseCache, drawnOneByOne, drawnTypes, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
+import { createCollapseCache, drawnOneByOne, drawnTypes, invertedSelection, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
 import { entityTier, hasCycle, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
@@ -51,7 +51,7 @@ import {
   VisibilityOutlined,
 } from '@mui/icons-material';
 import { SelectInverse } from 'mdi-material-ui';
-import GraphContextMenu, { type GraphContextMenuSection } from './components/GraphContextMenu';
+import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections } from './components/GraphContextMenu';
 import type { GraphMenuAction } from './components/GraphToolbarMoreActions';
 import useGraphToolbarActions from './components/useGraphToolbarActions';
 import useGraphContextMenuGesture, { isAdditiveClick, isMacContextClick } from './utils/useGraphContextMenuGesture';
@@ -696,8 +696,9 @@ const Graph = ({
   const typeFilterCount = disabledEntityTypes.filter((type) => typeInventory.entityTypes.includes(type)).length
     + disabledRelationshipTypes.filter((type) => typeInventory.relationshipTypes.includes(type)).length;
   const invertSelection = () => {
-    const selectedIds = new Set(selectedNodes.map((n) => n.id));
-    selectNodes(drawnOneByOne(shownNodes, []).entities.filter((n) => !selectedIds.has(n.id)));
+    const inverted = invertedSelection({ nodes: selectedNodes, links: selectedLinks }, { nodes: shownNodes, links: shownLinks });
+    setSelectedNodes(inverted.nodes);
+    setSelectedLinks(inverted.links);
   };
   const latestViewActions = useRef({ exportImage, toggleFullscreen, invertSelection, clearSelection, showHiddenNodes, ungroupAll });
   latestViewActions.current = { exportImage, toggleFullscreen, invertSelection, clearSelection, showHiddenNodes, ungroupAll };
@@ -714,7 +715,7 @@ const Graph = ({
     } : undefined,
     toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
     showShortcuts: () => setShortcutsOpen(true),
-    canvasActions: [
+    selectionActions: nothingSelected ? [] : [
       {
         id: 'invert-selection',
         group: 'selection',
@@ -723,6 +724,8 @@ const Graph = ({
         icon: <SelectInverse {...MENU_ICON} />,
         onSelect: () => latestViewActions.current.invertSelection(),
       },
+    ],
+    canvasActions: [
       {
         id: 'clear-selection',
         group: 'selection',
@@ -767,8 +770,8 @@ const Graph = ({
 
   const canRelate = context !== 'analyses' && context !== 'correlation';
 
-  // --- Context menu: what applies to the entity, group or relationship under the pointer, to the
-  // selection it belongs to, or to the graph itself on the empty canvas. The hover card only previews.
+  // --- Context menu: what applies to the entity, group or relationship under the pointer, or to the
+  // graph itself on the empty canvas, and to the selection while there is one. The hover card only previews.
   // An action registered, replaced or removed while the graph is open is in its next menu.
   useGraphNodeActionRegistryVersion();
   const toolbarActions = useGraphToolbarActions({ onUnfixNodes: () => onPositionsChanged?.({}) });
@@ -884,6 +887,7 @@ const Graph = ({
     toolbarAction('select-neighbours'),
     toolbarAction('shortest-path'),
     toolbarAction('select-relationships'),
+    ...(viewActions.selectionActions ?? []),
     toolbarAction('fit-selection'),
     selectedNodes.length > 0 && {
       id: 'hide-selection',
@@ -912,23 +916,31 @@ const Graph = ({
     toolbarAction('reset-layout'),
   ]);
   const menuSections = (target: GraphHoverTarget | null): GraphContextMenuSection[] => {
-    const selection = selectedEntities.length > 0 ? [{ key: 'selection', label: t_i18n('Selection'), actions: selectionMenuActions() }] : [];
+    const selection = selectedEntities.length > 0 ? { key: 'selection', label: t_i18n('Selection'), actions: selectionMenuActions() } : undefined;
+    const graph = { key: 'graph', label: t_i18n('Graph'), actions: canvasMenuActions() };
     if (target?.kind === 'node') {
       const node = shownNodes.find((n) => n.id === target.id);
       if (node) {
-        const own = { key: 'node', label: node.groupOf ? node.label : graphNodeTitle(node), actions: nodeMenuActions(node) };
-        // On an entity of a larger selection, the selection comes first.
-        const inSelection = selectedNodes.length > 1 && selectedNodes.some((n) => n.id === node.id);
-        return inSelection ? [...selection, own] : [own];
+        return graphContextMenuSections({
+          element: { key: 'node', label: node.groupOf ? node.label : graphNodeTitle(node), actions: nodeMenuActions(node) },
+          elementInSelection: selectedNodes.length > 1 && selectedNodes.some((n) => n.id === node.id),
+          selection,
+          graph,
+        });
       }
     }
     if (target?.kind === 'link') {
       const link = shownLinks.find((l) => isHoveredLink(target, linkHoverTarget(l)));
       if (link && !isGroupLink(link)) {
-        return [{ key: 'link', label: t_i18n(`relationship_${link.relationship_type || link.entity_type}`), actions: linkMenuActions(link) }];
+        return graphContextMenuSections({
+          element: { key: 'link', label: t_i18n(`relationship_${link.relationship_type || link.entity_type}`), actions: linkMenuActions(link) },
+          elementInSelection: selectedLinks.length > 1 && selectedLinks.some((l) => l.id === link.id),
+          selection,
+          graph,
+        });
       }
     }
-    return [...selection, { key: 'graph', label: t_i18n('Graph'), actions: canvasMenuActions() }];
+    return graphContextMenuSections({ selection, graph });
   };
 
   return (

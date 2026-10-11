@@ -140,6 +140,30 @@ export const drawnOneByOne = (nodes: readonly GraphNode[], links: readonly Graph
 });
 
 /**
+ * The selection inverted among the drawn `nodes` and `links`, the nodes and the links each on their
+ * own: the selected ones leave the selection and every other one drawn joins it, and a part that
+ * holds nothing stays empty, so that a selection of nodes only inverts to nodes. A group node, a link
+ * drawn towards a group and the connectors of a nested relationship (its node stands for it, and
+ * they share its id) are never selected by it.
+ */
+export const invertedSelection = (
+  selected: { nodes: readonly GraphNode[]; links: readonly GraphLink[] },
+  drawn: { nodes: readonly GraphNode[]; links: readonly GraphLink[] },
+): { nodes: GraphNode[]; links: GraphLink[] } => {
+  const selectedNodeIds = new Set(selected.nodes.map((node) => node.id));
+  const selectedLinkIds = new Set(selected.links.map((link) => link.id));
+  const drawnNodeIds = new Set(drawn.nodes.map((node) => node.id));
+  return {
+    nodes: selected.nodes.length > 0
+      ? drawn.nodes.filter((node) => !node.groupOf && !selectedNodeIds.has(node.id))
+      : [],
+    links: selected.links.length > 0
+      ? drawn.links.filter((link) => !isGroupLink(link) && !drawnNodeIds.has(link.id) && !selectedLinkIds.has(link.id))
+      : [],
+  };
+};
+
+/**
  * The entity and relationship types the drawn elements show, as the legend lists them, in the order
  * of the inventories of the graph: a group node shows the type of its members, and a nested
  * relationship drawn as a node is listed with the relationships.

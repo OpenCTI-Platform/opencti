@@ -9,6 +9,23 @@ export interface GraphContextMenuSection {
   actions: readonly GraphMenuAction[];
 }
 
+/**
+ * The sections of the context menu for what is under the pointer: the entity, group or relationship
+ * clicked, else the graph itself on the empty canvas, and the selection in every menu while there is
+ * one. The selection comes first on an element of a larger selection and on the empty canvas.
+ */
+export const graphContextMenuSections = ({ element, elementInSelection = false, selection, graph }: {
+  element?: GraphContextMenuSection;
+  elementInSelection?: boolean;
+  /** Absent while nothing is selected. */
+  selection?: GraphContextMenuSection;
+  graph: GraphContextMenuSection;
+}): GraphContextMenuSection[] => {
+  if (!element) return selection ? [selection, graph] : [graph];
+  if (!selection) return [element];
+  return elementInSelection ? [selection, element] : [element, selection];
+};
+
 export interface GraphContextMenuProps {
   /** Where the menu opens, in the coordinates of the graph container: nothing is open without it. */
   anchor: { x: number; y: number } | null;

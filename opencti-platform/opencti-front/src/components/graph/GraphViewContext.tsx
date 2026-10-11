@@ -8,10 +8,15 @@ import type { GraphToolbarAction } from './components/useGraphToolbarActions';
  */
 export interface GraphViewActions {
   /**
-   * The actions of the empty canvas that are not toolbar actions (invert or clear the selection,
-   * show the hidden entities, ungroup): its context menu lists them, and "More actions" in 3D, which has none.
+   * The actions of the empty canvas that are not toolbar actions (clear the selection, show the
+   * hidden entities, ungroup): its context menu lists them, and "More actions" in 3D, which has none.
    */
   canvasActions?: readonly GraphToolbarAction[];
+  /**
+   * The actions of the selection that are not toolbar actions (invert it), empty while nothing is
+   * selected: the context menu lists them wherever it opens, and "More actions" in 3D, which has none.
+   */
+  selectionActions?: readonly GraphToolbarAction[];
   counters: readonly GraphCounter[];
   /** The entity and relationship types drawn, as the legend lists them: what the type filter offers. */
   drawnTypes: { entityTypes: readonly string[]; relationshipTypes: readonly string[] };
