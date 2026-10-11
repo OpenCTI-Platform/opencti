@@ -77,7 +77,11 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
 
   await reportForm.publicationDateField.clear();
   await expect(page.getByText('This field is required')).toBeVisible();
+  // An empty field keeps no value until every section is typed, so it stays required.
   await reportForm.publicationDateField.fill('2023-12-05');
+  await expect(page.getByText('This field is required')).toBeVisible();
+  // A complete date that does not exist is kept as an invalid date.
+  await reportForm.publicationDateField.fill('2023-02-30 12:00:00 AM');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeVisible();
   await reportForm.publicationDateField.fill('2023-12-05 12:00:00 AM');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeHidden();
