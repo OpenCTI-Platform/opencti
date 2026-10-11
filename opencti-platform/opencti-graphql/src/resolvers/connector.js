@@ -1,4 +1,6 @@
 import {
+  computeWorkStatus,
+  connectorForWork,
   fetchRemoteStreams,
   findSyncById,
   findSyncPaginated,
@@ -13,7 +15,6 @@ import {
   synchronizerExport,
   testSync,
 } from '../domain/connector';
-import { computeWorkStatus, connectorForWork } from '../domain/connector';
 import {
   addDraftContext,
   createWork,
