@@ -108,7 +108,7 @@ import { logApp } from '../../../src/config/conf';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { getHttpClient } from '../../../src/utils/http-client';
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
+import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
 import {
   connectorConfig,
   consumeQueue,
@@ -118,7 +118,6 @@ import {
   getInternalBackgroundTaskQueues,
   getInternalQueues,
   initializeInternalQueues,
-  rabbitMQIsAlive,
   unregisterExchanges,
 } from '../../../src/modules/connector/connector-rabbitmq';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
@@ -867,6 +866,18 @@ describe('rabbitmq: executeRabbitmq', () => {
   });
 });
 
+describe('rabbitmq: rabbitMQIsAlive', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should report RabbitMQ as down when it cannot be reached', async () => {
+    vi.mocked(amqp.connect).mockImplementationOnce(failingConnect(new Error('Connection refused')) as never);
+
+    await expect(rabbitMQIsAlive()).rejects.toThrow('RabbitMQ seems down');
+  });
+});
+
 describe('connector rabbitmq: queues management', () => {
   const context = {} as AuthContext;
   const user = {} as AuthUser;
@@ -916,12 +927,6 @@ describe('connector rabbitmq: queues management', () => {
       'opencti_amqp.connector.exchange',
       'opencti_amqp.worker.exchange',
     ]);
-  });
-
-  it('should report RabbitMQ as down when it cannot be reached', async () => {
-    vi.mocked(amqp.connect).mockImplementationOnce(failingConnect(new Error('Connection refused')) as never);
-
-    await expect(rabbitMQIsAlive()).rejects.toThrow('RabbitMQ seems down');
   });
 
   it('should report empty queue details when the management API is unavailable', async () => {

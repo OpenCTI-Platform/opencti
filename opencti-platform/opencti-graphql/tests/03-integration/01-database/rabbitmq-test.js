@@ -1,15 +1,7 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import { v4 as uuid } from 'uuid';
-import { metrics } from '../../../src/database/rabbitmq';
-import {
-  getConnectorQueueDetails,
-  purgeConnectorQueues,
-  pushToConnector,
-  rabbitMQInit,
-  rabbitMQIsAlive,
-  registerConnectorQueues,
-  unregisterConnector,
-} from '../../../src/modules/connector/connector-rabbitmq';
+import { metrics, rabbitMQInit, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import { getConnectorQueueDetails, purgeConnectorQueues, pushToConnector, registerConnectorQueues, unregisterConnector } from '../../../src/modules/connector/connector-rabbitmq';
 import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../../src/schema/general';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { RABBIT_QUEUE_PREFIX, waitInSec } from '../../../src/database/utils';

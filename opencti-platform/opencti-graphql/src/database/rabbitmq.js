@@ -1,4 +1,5 @@
 import amqp from 'amqplib/callback_api';
+import util from 'util';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
@@ -10,6 +11,7 @@ import { getHttpClient } from '../utils/http-client';
 import { Stix2Splitter } from '../utils/stix2-splitter';
 import { updateExpectationsNumber } from '../domain/work';
 
+export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
@@ -386,6 +388,21 @@ export const executeRabbitmq = async (execute) => {
       reject(error);
     }
   });
+};
+
+export const rabbitMQIsAlive = async () => {
+  return executeRabbitmq(async (channel) => {
+    return util.promisify(channel.assertExchange).bind(channel)(CONNECTOR_EXCHANGE, 'direct', { durable: true });
+  }).catch((error) => {
+    throw DatabaseError('RabbitMQ seems down', { cause: error });
+  });
+};
+
+export const rabbitMQInit = async () => {
+  logApp.info('[CHECK] Checking if RabbitMq is available');
+  await rabbitMQIsAlive();
+  logApp.info('[CHECK] RabbitMq is alive');
+  return true;
 };
 
 /**

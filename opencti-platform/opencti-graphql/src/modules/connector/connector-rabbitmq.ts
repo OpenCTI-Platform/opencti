@@ -2,6 +2,7 @@ import amqp from 'amqplib/callback_api';
 import util from 'util';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from '../../database/utils';
 import {
+  CONNECTOR_EXCHANGE,
   executeRabbitmq,
   getCachedRabbitmqMetrics,
   rabbitmqConnectionConfig,
@@ -19,9 +20,6 @@ import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import type { BasicStoreEntityConnector } from './connector-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import conf, { logApp } from '../../config/conf';
-import { DatabaseError } from '../../config/errors';
-
-export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 
 interface RabbitmqQueueMetric {
   name: string;
@@ -120,21 +118,6 @@ export const unregisterConnector = async (id: string) => {
 export const unregisterExchanges = async () => {
   await executeRabbitmq(async (channel: any) => util.promisify(channel.deleteExchange).bind(channel)(CONNECTOR_EXCHANGE, {}));
   await executeRabbitmq(async (channel: any) => util.promisify(channel.deleteExchange).bind(channel)(WORKER_EXCHANGE, {}));
-};
-
-export const rabbitMQIsAlive = async () => {
-  return executeRabbitmq(async (channel: any) => {
-    return util.promisify(channel.assertExchange).bind(channel)(CONNECTOR_EXCHANGE, 'direct', { durable: true });
-  }).catch((error) => {
-    throw DatabaseError('RabbitMQ seems down', { cause: error });
-  });
-};
-
-export const rabbitMQInit = async () => {
-  logApp.info('[CHECK] Checking if RabbitMq is available');
-  await rabbitMQIsAlive();
-  logApp.info('[CHECK] RabbitMq is alive');
-  return true;
 };
 
 // TODO The background task, playbook, sync and deprecated queue definitions below belong to the modules that own
