@@ -53,7 +53,7 @@
     "@jsonforms/material-renderers": "3.8.0",
     "@jsonforms/react": "3.8.0",
     "@mui/icons-material": "7.3.9",
-    "@mui/lab": "5.0.0-alpha.177",
+    "@mui/lab": "7.0.1-beta.23",
     "@mui/material": "7.3.9",
     "@mui/styles": "6.5.0",
     "@mui/x-date-pickers": "8.27.2",

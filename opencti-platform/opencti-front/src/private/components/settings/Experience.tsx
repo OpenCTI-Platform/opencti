@@ -350,7 +350,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           alignItems: 'stretch',
         }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <ExperienceCard
             icon={<RocketLaunchOutlined />}
             overline={t_i18n('Filigran Experience')}
@@ -397,12 +397,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             </DialogActions>
           </Dialog>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <XtmHubSettings />
         </Grid>
 
         {isGrantedToSupport && (
-          <Grid item xs={12} style={{ marginTop: 15 }}>
+          <Grid style={{ marginTop: 15 }} size={12}>
             <SupportPackages />
           </Grid>
         )}

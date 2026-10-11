@@ -64,19 +64,19 @@ const GroupingDetailsComponent = (props) => {
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={grouping.description} limit={400} />
           </Grid>
-          <Grid item xs={6} ref={ref}>
+          <Grid ref={ref} size={6}>
             <Label>
               {t_i18n('Context')}
             </Label>
             <Tag label={grouping.context} />
           </Grid>
-          <Grid item xs={6} style={{ minHeight: 200, maxHeight: height }}>
+          <Grid style={{ minHeight: 200, maxHeight: height }} size={6}>
             <StixRelationshipsHorizontalBars
               config={{
                 startDate: null,

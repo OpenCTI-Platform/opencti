@@ -102,7 +102,7 @@ class StixDomainObjectKnowledge extends Component {
             mb: 3,
           }}
         >
-          <Grid item xs={4}>
+          <Grid size={4}>
             <QueryRenderer
               query={stixDomainObjectKnowledgeReportsNumberQuery}
               variables={{
@@ -139,7 +139,7 @@ class StixDomainObjectKnowledge extends Component {
               }}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <QueryRenderer
               query={
                 stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
@@ -179,7 +179,7 @@ class StixDomainObjectKnowledge extends Component {
               }}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <QueryRenderer
               query={
                 stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
@@ -225,7 +225,7 @@ class StixDomainObjectKnowledge extends Component {
           title={t('Distribution of reports')}
         />
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6} style={{ height: 350 }}>
+          <Grid style={{ height: 350 }} size={6}>
             <EntityStixCoreRelationshipsHorizontalBars
               toId={stixDomainObjectId}
               fromTypes={[
@@ -239,7 +239,7 @@ class StixDomainObjectKnowledge extends Component {
               field="internal_id"
             />
           </Grid>
-          <Grid item xs={6} style={{ height: 350 }}>
+          <Grid style={{ height: 350 }} size={6}>
             <EntityStixSightingRelationshipsDonut
               entityId={stixDomainObjectId}
               title={t('Sightings distribution')}

@@ -123,7 +123,7 @@ class StixCyberObservableOverview extends Component {
       <>
         <Card title={t('Basic information')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Marking')}
               </Label>
@@ -151,7 +151,7 @@ class StixCyberObservableOverview extends Component {
                 entity_type={stixCyberObservable.entity_type}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Observable type')}
               </Label>

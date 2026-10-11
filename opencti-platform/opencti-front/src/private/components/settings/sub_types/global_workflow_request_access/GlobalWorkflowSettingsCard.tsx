@@ -50,8 +50,8 @@ const GlobalWorkflowSettingsCard = () => {
 
   return (
     <Card title={t_i18n('Workflow')}>
-      <div style={{ display: 'flex' }}>
-        <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
+      <Grid container wrap="nowrap">
+        <Grid size={hasRequestAccessConfig ? 6 : 12}>
           {subType.settings?.availableSettings.includes('workflow_configuration')
             && (
               <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
@@ -90,7 +90,7 @@ const GlobalWorkflowSettingsCard = () => {
         </Grid>
         {hasRequestAccessConfig && requestAccessConfiguration && (
           <>
-            <Grid item>
+            <Grid>
               <Divider
                 orientation="vertical"
                 style={{
@@ -101,12 +101,12 @@ const GlobalWorkflowSettingsCard = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={requestAccessConfiguration} />
             </Grid>
           </>
         )}
-      </div>
+      </Grid>
     </Card>
   );
 };

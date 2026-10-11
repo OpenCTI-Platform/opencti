@@ -208,6 +208,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
             />
             {!isNow && (
               <DateTimePicker
+                enableAccessibleFieldDOMStructure={false}
                 value={defaultValue ? new Date(defaultValue) : null}
                 onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
                 label={t_i18n('Default value')}

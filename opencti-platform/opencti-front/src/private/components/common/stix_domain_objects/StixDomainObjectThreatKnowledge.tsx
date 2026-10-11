@@ -288,7 +288,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   return (
     <>
       <Grid container={true} spacing={3} sx={{ marginBottom: 3 }}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={stixDomainObjectThreatKnowledgeContainersNumberQuery}
             variables={{
@@ -329,7 +329,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             }}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={
               stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
@@ -387,7 +387,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             }}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <QueryRenderer
             query={
               stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery

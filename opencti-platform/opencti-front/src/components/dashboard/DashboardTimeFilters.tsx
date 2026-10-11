@@ -55,6 +55,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         }}
       />
       <DatePicker
+        enableAccessibleFieldDOMStructure={false}
         value={buildDate(config.startDate)}
         label={t_i18n('Start date')}
         disableFuture
@@ -63,6 +64,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
         onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
       />
       <DatePicker
+        enableAccessibleFieldDOMStructure={false}
         value={buildDate(config.endDate)}
         label={t_i18n('End date')}
         disabled={!!config.relativeDate}

@@ -4,7 +4,8 @@ import { act } from '@testing-library/react';
 import ReactDOM from 'react-dom/client';
 import { RelayEnvironmentProvider } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator } from 'relay-test-utils';
-import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../components/MuiThemeProvider';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
 import SettingsMessagesBanner, { settingsMessagesQuery } from './SettingsMessagesBanner';
 import AppIntlProvider from '../../../../components/AppIntlProvider';
@@ -48,9 +49,9 @@ describe('Settings Messages', () => {
     ReactDOM.createRoot(divElement).render(
       <RelayEnvironmentProvider environment={environment}>
         <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
-          <ThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
+          <MuiThemeProvider theme={createTheme(ThemeDark() as ThemeOptions)}>
             <SettingsMessagesBanner />
-          </ThemeProvider>
+          </MuiThemeProvider>
         </AppIntlProvider>
       </RelayEnvironmentProvider>,
     );
