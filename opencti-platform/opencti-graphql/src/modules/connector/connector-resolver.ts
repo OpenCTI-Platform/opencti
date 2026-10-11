@@ -35,12 +35,10 @@ import {
   updateConnectorRequestedStatus,
 } from './connector-domain';
 import { redisGetConnectorLogs } from './connector-redis';
-import pjson from '../../../package.json';
+import { PLATFORM_VERSION } from '../../config/conf';
 import { assessConnectorMigration, migrateConnectorToManaged } from './connector-migration';
 import { sinceNowInMinutes } from '../../utils/format';
 import { waitForManagedConnectorAutoUpgrade } from './managed-connector-auto-upgrade-readiness';
-
-export const PLATFORM_VERSION = pjson.version;
 
 const connectorResolvers: Resolvers = {
   Query: {
