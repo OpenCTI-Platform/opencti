@@ -4,7 +4,7 @@ import { fieldToTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
 import { useIntl } from 'react-intl';
-import { parse } from '../utils/Time';
+import { isAcceptedFromView, parse } from '../utils/Time';
 
 const timeFormatsMap = {
   'de-de': 'HH:mm',
@@ -43,7 +43,11 @@ const TimePickerField = (props) => {
   const [_field, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
-    (date) => {
+    (date, context) => {
+      // Typed values are applied on blur.
+      if (!isAcceptedFromView(context)) {
+        return;
+      }
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, date.toISOString());
