@@ -30,7 +30,13 @@ interface RabbitmqQueueMetric {
 const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
 const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
+const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE = { id: CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID, name: 'Bundle too large for ingestion', type: 'internal', scope: 'dead letter' };
 export const BACKGROUND_TASK_QUEUES = parseInt(conf.get('app:task_scheduler:max_queues_breakdown') ?? '4', 10);
+// TODO The deprecated playbook and sync queues belong to the playbook and sync modules (#18840)
+const DEPRECATED_INTERNAL_QUEUES = [
+  { id: 'playbook', name: 'Internal playbook manager', type: 'internal', scope: 'playbook' },
+  { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' },
+];
 
 const listenRouting = (connectorId: string) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
 const pushRouting = (connectorId: string) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
@@ -120,7 +126,7 @@ export const unregisterExchanges = async () => {
   await executeRabbitmq(async (channel: any) => util.promisify(channel.deleteExchange).bind(channel)(WORKER_EXCHANGE, {}));
 };
 
-// TODO The background task, playbook, sync and deprecated queue definitions below belong to the modules that own
+// TODO The background task, playbook and sync queue definitions below belong to the modules that own
 //  these queues, not to the connector RabbitMQ infrastructure. They will move there through the built-in connector
 //  registry (see connector-built-in-domain.ts, #18840).
 export const getInternalBackgroundTaskQueues = () => {
@@ -131,12 +137,6 @@ export const getInternalBackgroundTaskQueues = () => {
     scope: ENTITY_TYPE_BACKGROUND_TASK,
   }));
 };
-
-const DEPRECATED_INTERNAL_QUEUES = [
-  { id: 'playbook', name: 'Internal playbook manager', type: 'internal', scope: 'playbook' },
-  { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' },
-];
-const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE = { id: CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID, name: 'Bundle too large for ingestion', type: 'internal', scope: 'dead letter' };
 
 export const getInternalQueues = () => [
   CONNECTOR_QUEUE_BUNDLES_TOO_LARGE,
