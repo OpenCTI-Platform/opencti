@@ -63,7 +63,7 @@ export default class DateFieldPageModel {
     await this.getPickerButton().click();
     // Scoped to the popper: a bare day number would otherwise match anything
     // else on the page that happens to be labelled with the same digits.
-    const popper = this.page.locator('.MuiPickersPopper-root');
+    const popper = this.page.locator('.MuiPickerPopper-root');
     // Day cells are NOT `role=button` — MUI gives them `gridcell`, and their
     // accessible name is the full date ("14 December 2023"), not the number.
     // Matching the day class on its exact text is what actually selects one.
