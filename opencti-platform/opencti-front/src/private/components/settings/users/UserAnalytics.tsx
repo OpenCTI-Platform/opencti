@@ -67,9 +67,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         container
         rowSpacing={5}
         columnSpacing={2}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <AuditsMultiVerticalBars
             variant={undefined}
             startDate={undefined}
@@ -102,7 +102,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             config={EMPTY_DASHBOARD_CONFIG}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <AuditsMultiLineChart
             variant={undefined}
             startDate={undefined}
@@ -173,7 +173,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
           />
         </Grid>
         {!userServiceAccount && (
-          <Grid item xs={4}>
+          <Grid size={4}>
             <AuditsHorizontalBars
               variant={undefined}
               startDate={undefined}
@@ -205,7 +205,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             />
           </Grid>
         )}
-        <Grid item xs={4}>
+        <Grid size={4}>
           <AuditsDonut
             variant=""
             startDate={undefined}
@@ -242,7 +242,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         {!userServiceAccount && (
           <>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <AuditsRadar
                 variant={undefined}
                 startDate={undefined}
@@ -278,7 +278,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
-            <Grid item xs={8}>
+            <Grid size={8}>
               <AuditsList
                 variant={undefined}
                 startDate={undefined}
@@ -309,7 +309,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
                 config={EMPTY_DASHBOARD_CONFIG}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <AuditsHorizontalBars
                 variant={undefined}
                 startDate={undefined}

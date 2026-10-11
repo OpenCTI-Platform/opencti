@@ -1,9 +1,18 @@
 import React from 'react';
 import { DateTimePicker as MuiDateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import { useTheme } from '@mui/material/styles';
+import { TextFieldProps } from '@mui/material/TextField';
 import { Theme } from '../../Theme';
 
-const DateTimePicker: React.FC<DateTimePickerProps<Date>> = ({
+// The field renders a MUI TextField (enableAccessibleFieldDOMStructure is false),
+// so its slot props are TextField props rather than the v8 PickersTextField union.
+type FieldDateTimePickerProps = Omit<DateTimePickerProps<false>, 'slotProps'> & {
+  slotProps?: Omit<NonNullable<DateTimePickerProps<false>['slotProps']>, 'textField'> & {
+    textField?: Partial<TextFieldProps>;
+  };
+};
+
+const DateTimePicker: React.FC<FieldDateTimePickerProps> = ({
   slotProps,
   ...dateTimePickerProps
 }) => {
@@ -12,6 +21,7 @@ const DateTimePicker: React.FC<DateTimePickerProps<Date>> = ({
 
   return (
     <MuiDateTimePicker
+      enableAccessibleFieldDOMStructure={false}
       {...dateTimePickerProps}
       slotProps={{
         ...slotProps,

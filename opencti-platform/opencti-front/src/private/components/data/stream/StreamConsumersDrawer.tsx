@@ -224,35 +224,35 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
         </AccordionSummary>
         <AccordionDetails sx={{ paddingTop: 0 }}>
           <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Stream rate')}
                 value={`${consumer.productionRate} /s`}
                 theme={theme}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Processing rate')}
                 value={`${consumer.processingRate} /s`}
                 theme={theme}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Resolution rate')}
                 value={`${consumer.resolutionRate} /s`}
                 theme={theme}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Delivery rate')}
                 value={`${consumer.deliveryRate} /s`}
                 theme={theme}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Last event ID')}
                 value={eventIdToDate(consumer.lastEventId, nsdt) ?? '-'}
@@ -260,7 +260,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
                 theme={theme}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <MetricBlock
                 label={t_i18n('Time lag')}
                 value={consumer.timeLag > 0 ? formatDuration(consumer.timeLag) : t_i18n('None')}

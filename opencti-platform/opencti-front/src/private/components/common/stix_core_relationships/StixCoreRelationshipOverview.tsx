@@ -4465,9 +4465,9 @@ const StixCoreRelationshipOverview = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card
             title={<>{t_i18n('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}</>}
             action={!stixCoreRelationship.is_inferred && (
@@ -4621,7 +4621,7 @@ const StixCoreRelationshipOverview = ({
               <Divider />
 
               <Grid container={true} spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Marking')}
                   </Label>
@@ -4637,7 +4637,7 @@ const StixCoreRelationshipOverview = ({
                   </Label>
                   {nsdt(stixCoreRelationship.stop_time)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   {relationship_type === 'has-covered'
                     && (
                       <Box sx={{ marginBottom: 2 }}>
@@ -4657,10 +4657,10 @@ const StixCoreRelationshipOverview = ({
             </Stack>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Details')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Confidence level')}
                 </Label>
@@ -4697,7 +4697,7 @@ const StixCoreRelationshipOverview = ({
                 </Label>
                 {nsdt(stixCoreRelationship.updated_at)}
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Processing status')}
                 </Label>
@@ -4734,27 +4734,27 @@ const StixCoreRelationshipOverview = ({
         </Grid>
         {stixCoreRelationship.x_opencti_inferences == null && (
           <>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipStixCoreRelationships
                 entityId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreObjectOrStixRelationshipLastContainers
                 stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipExternalReferences
                 stixCoreRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <StixCoreRelationshipLatestHistory
                 stixCoreRelationshipId={stixCoreRelationship.id}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <StixCoreObjectOrStixCoreRelationshipNotes
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}

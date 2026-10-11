@@ -99,7 +99,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const renderFieldWithGrid = (content: React.ReactNode) => {
     if (useGridLayout) {
       return (
-        <Grid item xs={getGridSize()}>
+        <Grid size={getGridSize()}>
           {content}
         </Grid>
       );

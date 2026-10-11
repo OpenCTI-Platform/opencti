@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
-import { Box, Grid2 as Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
+import { Box, Grid, Stack, Tab, Tabs, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';

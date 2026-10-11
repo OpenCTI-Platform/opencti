@@ -98,7 +98,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
   return (
     <Card title={t_i18n('Details')}>
       <Grid container={true} spacing={2}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Label>
             {t_i18n('Description')}
           </Label>
@@ -107,14 +107,14 @@ const ThreatActorIndividualDetails: FunctionComponent<
             limit={hasImages ? 400 : 600}
           />
         </Grid>
-        <Grid item xs={hasImages ? 7 : 6}>
+        <Grid size={hasImages ? 7 : 6}>
           <Grid container={true} spacing={2}>
             {hasImages && (
-              <Grid item xs={4}>
+              <Grid size={4}>
                 <ImageCarousel data={imagesCarousel} />
               </Grid>
             )}
-            <Grid item xs={hasImages ? 8 : 12}>
+            <Grid size={hasImages ? 8 : 12}>
               <Label>
                 {t_i18n('Threat actor types')}
               </Label>
@@ -137,7 +137,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={hasImages ? 5 : 6}>
+        <Grid size={hasImages ? 5 : 6}>
           <ThreatActorIndividualDetailsChips
             data={data}
             relType="known-as"
@@ -158,7 +158,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
         </Grid>
       </Grid>
       <Grid container={true} spacing={2}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Sophistication')}
           </Label>
@@ -170,7 +170,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             />
           </FieldOrEmpty>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Resource level')}
           </Label>
@@ -182,7 +182,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             />
           </FieldOrEmpty>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Primary motivation')}
           </Label>
@@ -194,7 +194,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             />
           </FieldOrEmpty>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Roles')}
           </Label>
@@ -202,7 +202,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             list={data.roles}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Goals')}
           </Label>
@@ -210,7 +210,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             list={data.goals}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Secondary motivations')}
           </Label>
@@ -218,7 +218,7 @@ const ThreatActorIndividualDetails: FunctionComponent<
             list={data.secondary_motivations}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Personal motivations')}
           </Label>

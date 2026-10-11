@@ -77,7 +77,7 @@ describe('MainEntitySection', () => {
       handleFieldChange,
     });
 
-    const lookupToggle = screen.getByRole('checkbox', { name: 'Entity lookup (select existing entities)' });
+    const lookupToggle = screen.getByRole('switch', { name: 'Entity lookup (select existing entities)' });
     expect(lookupToggle).toBeChecked();
 
     fireEvent.click(lookupToggle);
@@ -91,8 +91,8 @@ describe('MainEntitySection', () => {
       isContainer: true,
     });
 
-    expect(screen.getByRole('checkbox', { name: 'Disable on-the-fly entity creation' })).toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Include entities in container' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Disable on-the-fly entity creation' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Include entities in container' })).toBeInTheDocument();
   });
 
   it('renders the lookup information alert', () => {
@@ -138,7 +138,7 @@ describe('MainEntitySection', () => {
     const handleFieldChange = vi.fn();
     renderSection({ handleFieldChange });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Allow multiple instances of main entity' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Allow multiple instances of main entity' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('mainEntityMultiple', true);
   });
@@ -235,10 +235,10 @@ describe('MainEntitySection', () => {
         handleFieldChange,
       });
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Automatically convert to STIX patterns' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Automatically convert to STIX patterns' }));
       expect(handleFieldChange).toHaveBeenCalledWith('mainEntityAutoConvertToStixPattern', true);
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Automatically create observables from indicators' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Automatically create observables from indicators' }));
       expect(handleFieldChange).toHaveBeenCalledWith('autoCreateObservableFromIndicator', true);
     });
 
@@ -249,7 +249,7 @@ describe('MainEntitySection', () => {
         handleFieldChange,
       });
 
-      fireEvent.click(screen.getByRole('checkbox', { name: 'Automatically create indicators from observables' }));
+      fireEvent.click(screen.getByRole('switch', { name: 'Automatically create indicators from observables' }));
 
       expect(handleFieldChange).toHaveBeenCalledWith('autoCreateIndicatorFromObservable', true);
     });

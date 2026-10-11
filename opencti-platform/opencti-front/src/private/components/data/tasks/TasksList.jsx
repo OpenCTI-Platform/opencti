@@ -270,16 +270,16 @@ const TasksList = ({ data, options }) => {
           return (
             <Card key={task.id}>
               <Grid container={true} spacing={3}>
-                <Grid item xs={5}>
+                <Grid size={5}>
                   <Grid container={true} spacing={1}>
                     {task.description && (
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <Typography variant="h3" gutterBottom={true}>
                           {`${t_i18n('Description')}: ${task.description}`}
                         </Typography>
                       </Grid>
                     )}
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                       <Stack sx={{
                         gap: 1,
                       }}
@@ -327,7 +327,7 @@ const TasksList = ({ data, options }) => {
                         )}
                       </Stack>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                       <Stack sx={{
                         gap: 1,
                       }}
@@ -372,9 +372,9 @@ const TasksList = ({ data, options }) => {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item xs={7}>
+                <Grid size={7}>
                   <Grid container={true} spacing={3}>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Initiator')}
                       </Typography>
@@ -382,13 +382,13 @@ const TasksList = ({ data, options }) => {
                         {truncate(task.initiator?.name, 15)}
                       </Tooltip>
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Task start time')}
                       </Typography>
                       {nsdt(task.created_at)}
                     </Grid>
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {task.completed
                           ? t_i18n('Task end time')
@@ -398,7 +398,7 @@ const TasksList = ({ data, options }) => {
                     </Grid>
                     {(task.scope ?? task.type)
                       && (
-                        <Grid item xs={2}>
+                        <Grid size={2}>
                           <Typography variant="h3" gutterBottom={true}>
                             {t_i18n('Scope')}
                           </Typography>
@@ -406,13 +406,13 @@ const TasksList = ({ data, options }) => {
                         </Grid>
                       )
                     }
-                    <Grid item xs={2}>
+                    <Grid size={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Status')}
                       </Typography>
                       <TaskStatus status={status} label={t_i18n(status)} />
                     </Grid>
-                    <Grid item xs={10}>
+                    <Grid size={10}>
                       <Typography variant="h3" gutterBottom={true}>
                         {progressFullText}
                       </Typography>
