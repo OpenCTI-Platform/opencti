@@ -25,12 +25,14 @@ const ALL_VISUALIZATION_TYPES = [
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
-    it('all visualization types but attribute or custom-attributes are available', () => {
+    it('all visualization types but attribute or custom-attributes are available, plus the Threat Pulse widgets', () => {
       expect(getVisualizationTypes({
         kind: 'workspace',
-      }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
-      );
+      }).map(({ key }) => key)).toStrictEqual([
+        ...ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
+        'pulse-trending',
+        'pulse-benchmark',
+      ]);
     });
   });
 

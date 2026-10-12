@@ -36,6 +36,7 @@ import ExperienceCard, { ExperienceHeadline } from './experience/ExperienceCard'
 import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
+import ThreatPulseSettings from './experience/ThreatPulseSettings';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export enum CGUStatus {
@@ -381,6 +382,9 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         </Grid>
         <Grid item xs={6}>
           <XtmHubSettings />
+        </Grid>
+        <Grid item xs={12}>
+          <ThreatPulseSettings />
         </Grid>
 
         {isGrantedToSupport && (

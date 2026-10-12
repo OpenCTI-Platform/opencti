@@ -103,6 +103,7 @@ import './vulnerability/vulnerability';
 import './attackPattern/attackPattern';
 import './courseOfAction/courseOfAction';
 import './customField/custom-field';
+import './xtm/pulse/pulse-attributes';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
@@ -177,6 +178,7 @@ import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './xtm/pulse/pulse-graphql';
 // endregion
 
 // region modules static init

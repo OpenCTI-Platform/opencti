@@ -134,6 +134,14 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   restricted_members?: Array<AuthorizedMember>;
   metrics?: Array<Metric>;
   pir_information?: Array<PirInformation>;
+  // Threat Pulse community signal of the scoped types (src/modules/xtm/pulse), written without stream events.
+  pulse_prevalence?: string;
+  pulse_trend?: string;
+  pulse_sector_trend?: string;
+  pulse_first_seen_network?: string;
+  pulse_community_uniqueness?: number;
+  pulse_prevalence_rank?: number;
+  pulse_information?: { preview?: boolean };
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {

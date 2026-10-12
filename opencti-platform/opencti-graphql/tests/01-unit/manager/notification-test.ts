@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { isTimeTrigger, type ResolvedDigest } from '../../../src/manager/notificationManager';
+import {
+  generateAssigneeTrigger,
+  generatePlatformNotificationTrigger,
+  isTimeTrigger,
+  type ResolvedDigest,
+  type ResolvedLive,
+  STREAM_TRIGGER_EVENT_TYPES,
+} from '../../../src/manager/notificationManager';
+import { isPulseTrendingTrigger } from '../../../src/modules/xtm/pulse/pulse-notifications';
+import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
+import type { AuthUser } from '../../../src/types/user';
 import { utcDate } from '../../../src/utils/format';
 import NotificationTool from '../../../src/utils/NotificationTool';
 
@@ -62,5 +72,28 @@ describe.concurrent('notification manager utils', () => {
       .toEqual('<p>Text in <strong>bold</strong>, <em>italics</em> and <del>crossed-out</del></p>\n');
     expect(octiTool.markdownToHtml('Description with a link: [clic](url)'))
       .toEqual('<p>Description with a link: <a href="url">clic</a></p>\n');
+  });
+});
+
+describe('notification manager generated triggers', () => {
+  const user = { id: 'user-1', internal_id: 'user-1', personal_notifiers: [] } as unknown as AuthUser;
+  const live = (trigger: Record<string, unknown>): ResolvedLive => ({ users: [user], trigger } as unknown as ResolvedLive);
+
+  it('should keep the triggers generated for every user to the stream operations', () => {
+    expect([...STREAM_TRIGGER_EVENT_TYPES].sort()).toEqual(['create', 'delete', 'update']);
+    expect(generateAssigneeTrigger(user).event_types).toEqual(STREAM_TRIGGER_EVENT_TYPES);
+    expect(generatePlatformNotificationTrigger(user).event_types).toEqual(STREAM_TRIGGER_EVENT_TYPES);
+  });
+
+  it('should send Threat Pulse trending notifications to the triggers users created with that event type only', () => {
+    const assignee = live(generateAssigneeTrigger(user) as unknown as Record<string, unknown>);
+    const generatedWithEveryType = live({ ...assignee.trigger, event_types: ['create', 'update', 'delete', 'pulse_trending'] });
+    const stored = live({ internal_id: 'trigger-1', entity_type: ENTITY_TYPE_TRIGGER, trigger_type: 'live', event_types: ['pulse_trending'] });
+    const storedWithoutPulse = live({ internal_id: 'trigger-2', entity_type: ENTITY_TYPE_TRIGGER, trigger_type: 'live', event_types: ['create'] });
+
+    expect(isPulseTrendingTrigger(assignee)).toBe(false);
+    expect(isPulseTrendingTrigger(generatedWithEveryType)).toBe(false);
+    expect(isPulseTrendingTrigger(stored)).toBe(true);
+    expect(isPulseTrendingTrigger(storedWithoutPulse)).toBe(false);
   });
 });

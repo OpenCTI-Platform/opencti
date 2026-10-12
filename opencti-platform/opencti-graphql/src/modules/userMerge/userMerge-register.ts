@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (41) ---------------------------------------------------------------------
+  // --- transfer (42) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -77,6 +77,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('public-dashboard.user-id', TRANSFER, 'PublicDashboard', 'user_id'),
   row('public-dashboard.manifests', TRANSFER, 'PublicDashboard', 'private_manifest / public_manifest (Base64)'),
   row('settings.activity-listeners-ids', TRANSFER, 'Settings', 'activity_listeners_ids[]'),
+  row('settings.pulse-consent-user-id', TRANSFER, 'Settings', 'pulse_consent_user_id'),
   row('settings.xtm-hub-registration-user-id', TRANSFER, 'Settings', 'xtm_hub_registration_user_id'),
   row('stream-collection.filters', TRANSFER, 'StreamCollection', 'filters'),
   row('stream-collection.origin-filters', TRANSFER, 'StreamCollection', 'origin_filters'),

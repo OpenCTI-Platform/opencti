@@ -49,6 +49,8 @@ Leveraging the filters, users can meticulously **define the criteria that activa
 
 Beyond filters, a trigger can be configured to **respond to three event types**: creation, modification, and deletion.
 
+Live triggers can also respond to the **Trending in my sector (Threat Pulse)** event type: a matching object of the platform starts rising in the platform's sector on [Threat Pulse](threat-pulse.md). An object notified as trending is not notified again for 7 days. This event type is part of the full Threat Pulse experience: on a platform running the Threat Pulse preview, it is listed but cannot be selected, with the reason and the step to unlock it.
+
 ![Trigger configuration](assets/trigger-configuration.png)
 
 ### Instance triggers

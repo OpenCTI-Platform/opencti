@@ -2,7 +2,7 @@ import moment from 'moment';
 import { dispatch } from './hooks/useBus';
 import { isNotEmptyField } from './utils';
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
-import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY } from './bannerConstants';
+import { REGISTER_BANNER_DISMISSED_BUS, REGISTER_BANNER_DISMISSED_KEY, THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS } from './bannerConstants';
 
 export const SMTP_REFRESH_TOKEN_EXPIRATION_WARNING_DAYS = 7;
 
@@ -13,6 +13,18 @@ export const readRegisterDismissed = (): boolean => localStorage.getItem(REGISTE
 export const resetRegisterBannerDismiss = () => {
   localStorage.removeItem(REGISTER_BANNER_DISMISSED_KEY);
   dispatch(REGISTER_BANNER_DISMISSED_BUS, false);
+};
+
+// -- Threat Pulse preview banner visibility store --
+
+// The bus does not replay: the last report is kept so that a top banner consumer mounted later starts from it.
+let threatPulsePreviewBannerVisible = false;
+
+export const readThreatPulsePreviewBannerVisible = (): boolean => threatPulsePreviewBannerVisible;
+
+export const reportThreatPulsePreviewBannerVisible = (visible: boolean) => {
+  threatPulsePreviewBannerVisible = visible;
+  dispatch(THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, visible);
 };
 
 // -- Display conditions --

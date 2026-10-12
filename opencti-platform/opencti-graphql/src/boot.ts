@@ -8,6 +8,7 @@ import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
+import { initializePulseStixPolicy } from './modules/xtm/pulse/pulse-domain';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -62,6 +63,8 @@ const doPlatformStart = async () => {
       logApp.error('[OPENCTI] Platform default initialization failed', { cause: platformError });
       throw platformError;
     }
+    // The STIX conversion is synchronous and reads the Threat Pulse policy snapshot: loaded before anything is converted
+    await initializePulseStixPolicy();
     // Start the platform health monitoring before the API so /health can answer from collected state
     try {
       await startPlatformHealthMonitor();

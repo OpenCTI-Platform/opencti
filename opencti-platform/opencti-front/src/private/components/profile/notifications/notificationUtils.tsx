@@ -1,5 +1,5 @@
-import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { deepPurple, green, indigo, orange, red } from '@mui/material/colors';
+import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline, TrendingUp } from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 
@@ -9,6 +9,7 @@ export const colors: Record<string, string> = {
   update: deepPurple[500],
   delete: red[500],
   multiple: indigo[500],
+  pulse_trending: orange[500],
 };
 
 export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
@@ -30,6 +31,8 @@ export const iconSelector = (operation: string) => {
       return (
         <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
       );
+    case 'pulse_trending':
+      return <TrendingUp style={{ color: colors[operation] }} />;
     default:
       return <BellOutline style={{ color: colors[operation] }} />;
   }
