@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { Field } from 'formik';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
@@ -110,7 +110,11 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
       : []),
   ] : [];
   const [members, setMembers] = useState<OptionMember[]>(dynamicMembers);
+  // Only the latest search may update the options, older responses can resolve out of order
+  const lastSearchId = useRef(0);
   const searchMembers = (search: string) => {
+    lastSearchId.current += 1;
+    const searchId = lastSearchId.current;
     fetchQuery(objectMembersFieldSearchQuery, {
       search,
       first: 50,
@@ -118,6 +122,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     })
       .toPromise()
       .then((data) => {
+        if (searchId !== lastSearchId.current) return;
         const NewMembers = (
           (data as ObjectMembersFieldSearchQuery$data)?.members?.edges ?? []
         ).map((n) => ({
