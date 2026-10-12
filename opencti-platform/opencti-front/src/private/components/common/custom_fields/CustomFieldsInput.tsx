@@ -77,6 +77,7 @@ interface CustomFieldInputProps {
   definition: CustomFieldDef;
   mandatory: boolean;
   value: CustomFieldValue;
+  error?: string;
   onChange?: (val: CustomFieldValue) => void;
   onSubmit?: (val: CustomFieldValue) => void;
 }
@@ -85,9 +86,10 @@ const TextInputCustomField: FunctionComponent<{
   definition: CustomFieldDef;
   label: string;
   value: CustomFieldValue;
+  error?: string;
   onChange?: (val: CustomFieldValue) => void;
   onSubmit?: (val: CustomFieldValue) => void;
-}> = ({ definition, label, value, onChange, onSubmit }) => {
+}> = ({ definition, label, value, error, onChange, onSubmit }) => {
   const [localValue, setLocalValue] = useState(value);
 
   useEffect(() => {
@@ -119,6 +121,7 @@ const TextInputCustomField: FunctionComponent<{
         isTypeNumber={definition.field_type === 'integer'}
         min={definition.field_type === 'integer' ? definition.min_value ?? undefined : undefined}
         max={definition.field_type === 'integer' ? definition.max_value ?? undefined : undefined}
+        error={error}
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
@@ -133,6 +136,7 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
   definition,
   mandatory,
   value,
+  error,
   onChange,
   onSubmit,
 }) => {
@@ -239,6 +243,7 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
       definition={definition}
       label={label}
       value={value}
+      error={error}
       onChange={onChange}
       onSubmit={onSubmit}
     />

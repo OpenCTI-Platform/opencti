@@ -2694,6 +2694,7 @@
   "instance_trigger": "Desencadenador de instancia",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instancias ya están desplegadas con el gestor. Si ya has desplegado este conector sin el gestor, no se tendrá en cuenta.",
   "instances deployed": "instancias desplegadas",
+  "Integer": "Entero",
   "Integration documentation and code": "Documentación y código de integración",
   "Integration Manager": "Gestor de integración",
   "Integrations": "Integraciones",

@@ -2694,6 +2694,7 @@
   "instance_trigger": "实例触发器",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "实例已与管理器一起部署。如果您已经部署了该连接器，但没有管理器，则不会计算在内。",
   "instances deployed": "部署的实例",
+  "Integer": "整数",
   "Integration documentation and code": "集成文档和代码",
   "Integration Manager": "集成管理器",
   "Integrations": "集成",

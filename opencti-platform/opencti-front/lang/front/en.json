@@ -2694,6 +2694,7 @@
   "instance_trigger": "Instance trigger",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.",
   "instances deployed": "instances deployed",
+  "Integer": "Integer",
   "Integration documentation and code": "Integration documentation and code",
   "Integration Manager": "Integration Manager",
   "Integrations": "Integrations",

@@ -2694,6 +2694,7 @@
   "instance_trigger": "인스턴스 트리거",
   "instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.": "인스턴스가 이미 관리자와 함께 배포된 경우입니다. 매니저 없이 이 커넥터를 이미 배포한 경우에는 카운트되지 않습니다.",
   "instances deployed": "배포된 인스턴스",
+  "Integer": "정수",
   "Integration documentation and code": "통합 문서 및 코드",
   "Integration Manager": "통합 관리자",
   "Integrations": "통합",

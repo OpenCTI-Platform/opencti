@@ -16294,6 +16294,7 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+  customFieldValues: [CustomFieldValueAddInput!]
 }
 
 input AskSendOtpInput {
