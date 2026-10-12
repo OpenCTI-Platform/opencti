@@ -1751,6 +1751,7 @@
   "elementId": "Entidad relacionada",
   "Elements deleted by connectors or during platform synchronization are not put into the trash.": "Los elementos eliminados por los conectores o durante la sincronización de la plataforma no se depositan en la papelera.",
   "Elements successfully copied": "Elementos copiados correctamente",
+  "Elements touched by this enrichment": "Elementos afectados por este enriquecimiento",
   "elementWithTargetTypes": "Tipos de objetivo",
   "Email": "Correo electrónico",
   "Email address": "Dirección de correo electrónico",

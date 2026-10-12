@@ -1751,6 +1751,7 @@
   "elementId": "相关实体",
   "Elements deleted by connectors or during platform synchronization are not put into the trash.": "连接器或平台同步过程中删除的元素不会放入垃圾桶。",
   "Elements successfully copied": "已成功复制元素",
+  "Elements touched by this enrichment": "受此补充影响的元素",
   "elementWithTargetTypes": "目标类型",
   "Email": "电子邮箱",
   "Email address": "邮件地址",

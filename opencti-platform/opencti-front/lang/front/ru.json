@@ -1751,6 +1751,7 @@
   "elementId": "elementId",
   "Elements deleted by connectors or during platform synchronization are not put into the trash.": "Элементы, удаленные коннекторами или во время синхронизации платформы, не попадают в корзину.",
   "Elements successfully copied": "Элементы успешно скопированы",
+  "Elements touched by this enrichment": "Элементы, затронутые этим обогащением",
   "elementWithTargetTypes": "elementWithTargetTypes",
   "Email": "Электронная почта",
   "Email address": "Адрес электронной почты",

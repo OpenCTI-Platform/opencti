@@ -1751,6 +1751,7 @@
   "elementId": "関連エンティティ",
   "Elements deleted by connectors or during platform synchronization are not put into the trash.": "コネクタやプラットフォーム同期中に削除された要素はゴミ箱に入れられません。",
   "Elements successfully copied": "要素が正常にコピーされました",
+  "Elements touched by this enrichment": "このエンリッチメントの影響を受けた要素",
   "elementWithTargetTypes": "ターゲットタイプ",
   "Email": "Eメール",
   "Email address": "Eメールアドレス",

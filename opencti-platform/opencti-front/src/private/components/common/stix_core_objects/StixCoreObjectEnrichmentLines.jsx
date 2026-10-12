@@ -10,7 +10,6 @@ import withStyles from '@mui/styles/withStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import { v4 as uuid } from 'uuid';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
@@ -19,6 +18,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
+import StixCoreObjectEnrichmentWorkTouchedElements, { TOUCHED_ELEMENTS_PAGE_SIZE } from './StixCoreObjectEnrichmentWorkTouchedElements';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -218,59 +218,61 @@ const StixCoreObjectEnrichment = ({
                     </div>
                   );
                   return (
-                    <Tooltip
-                      title={messageToDisplay}
-                      key={uuid()}
-                      classes={{ tooltip: classes.tooltip }}
-                    >
-                      <ListItem
-                        dense={true}
-                        divider={true}
-                        disablePadding
-                        secondaryAction={(
-                          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                            <div style={{ right: 0 }}>
-                              <IconButton
-                                aria-label={t('Delete')}
-                                onClick={() => deleteWork(work.id)}
-                              >
-                                <DeleteOutlined />
-                              </IconButton>
-                            </div>
-                          </Security>
-                        )}
+                    <div key={work.id}>
+                      <Tooltip
+                        title={messageToDisplay}
+                        classes={{ tooltip: classes.tooltip }}
                       >
-                        <ListItemButton classes={{ root: classes.nested }}>
-                          <ListItemIcon>
-                            {isFail && (
-                              <WarningOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.error.main,
-                                }}
-                              />
-                            )}
-                            {!isFail && work.status === 'complete' && (
-                              <CheckCircleOutlined
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.success.main,
-                                }}
-                              />
-                            )}
-                            {((!isFail && work.status === 'wait')
-                              || work.status === 'progress') && (
-                              <CircularProgress
-                                size={20}
-                                thickness={2}
-                                style={{ marginRight: 10 }}
-                              />
-                            )}
-                          </ListItemIcon>
-                          <ListItemText primary={nsdt(work.timestamp)} />
-                        </ListItemButton>
-                      </ListItem>
-                    </Tooltip>
+                        <ListItem
+                          dense={true}
+                          divider={true}
+                          disablePadding
+                          secondaryAction={(
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <div style={{ right: 0 }}>
+                                <IconButton
+                                  aria-label={t('Delete')}
+                                  onClick={() => deleteWork(work.id)}
+                                >
+                                  <DeleteOutlined />
+                                </IconButton>
+                              </div>
+                            </Security>
+                          )}
+                        >
+                          <ListItemButton classes={{ root: classes.nested }}>
+                            <ListItemIcon>
+                              {isFail && (
+                                <WarningOutlined
+                                  style={{
+                                    fontSize: 15,
+                                    color: theme.palette.error.main,
+                                  }}
+                                />
+                              )}
+                              {!isFail && work.status === 'complete' && (
+                                <CheckCircleOutlined
+                                  style={{
+                                    fontSize: 15,
+                                    color: theme.palette.success.main,
+                                  }}
+                                />
+                              )}
+                              {((!isFail && work.status === 'wait')
+                                || work.status === 'progress') && (
+                                <CircularProgress
+                                  size={20}
+                                  thickness={2}
+                                  style={{ marginRight: 10 }}
+                                />
+                              )}
+                            </ListItemIcon>
+                            <ListItemText primary={nsdt(work.timestamp)} />
+                          </ListItemButton>
+                        </ListItem>
+                      </Tooltip>
+                      <StixCoreObjectEnrichmentWorkTouchedElements work={work} first={TOUCHED_ELEMENTS_PAGE_SIZE} />
+                    </div>
                   );
                 })}
               </List>
@@ -309,6 +311,29 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
             message
           }
           status
+          touchedElementsTruncated
+          # first must match TOUCHED_ELEMENTS_PAGE_SIZE (GraphQL literals cannot reference JS constants)
+          touchedElements(first: 100) {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixObject {
+              representative {
+                main
+              }
+            }
+            ... on StixRelationship {
+              representative {
+                main
+              }
+            }
+          }
         }
         connectors(onlyAlive: false) {
           id

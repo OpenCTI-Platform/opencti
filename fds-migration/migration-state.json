@@ -459,35 +459,9 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover. Also the selected-value tags of the entity autocomplete's renderTags: each holds its own onDelete, and the locked sole value of a disabled composite subfilter renders without one instead of a dead click. Also the 'Click to display filters' info chip of FilterGroupSummaryButton, which opens the read-only dialog showing the full filter content.",
+      "reason": "Enrichment drawer: count of the elements touched by a completed enrichment work",
       "files": [
-        "opencti-platform/opencti-front/src/components/filters/fields/CompositeRegardingOfFilterEditor.tsx",
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx",
-        "opencti-platform/opencti-front/src/components/filters/FilterGroupSummaryButton.tsx"
-      ]
-    },
-    {
-      "component": "Button",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "nested filter group support: the trigger that opens the nested-group row's dynamic-filter popover, styled tertiary/sm to read as a chip in the row rather than as a button.",
-      "files": [
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterRowCompositeValue.tsx"
-      ]
-    },
-    {
-      "component": "Tooltip",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "nested filter group support: full-value hover tooltip on a top-level filter chip in the filter line (regardingOf/dynamicRegardingOf chips excluded, handled by their own composite editor instead), and the full-label tooltip on a truncated entity option row in the filter value autocomplete. Also the locked-value tag of the entity autocomplete (composite subfilter, isChangeBlocked): explains why that tag's delete icon is absent instead of silently doing nothing.",
-      "files": [
-        "opencti-platform/opencti-front/src/components/filters/FilterChipLine.tsx",
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectEnrichmentWorkTouchedElements.tsx"
       ]
     }
   ]
