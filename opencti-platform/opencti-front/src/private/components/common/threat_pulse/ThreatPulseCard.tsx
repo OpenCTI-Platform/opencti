@@ -75,18 +75,23 @@ const ThreatPulseCardTitle = ({ preview = false }: { preview?: boolean }) => {
   );
 };
 
-// The card takes the height of its content, whatever the widget next to it in the overview layout: a short state stays
-// a short card instead of a tall, mostly empty panel.
-const ThreatPulseCardFrame = ({ preview = false, children }: { preview?: boolean; children: ReactNode }) => (
-  <Box data-testid="threat-pulse-card-container">
-    <Card title={<ThreatPulseCardTitle preview={preview} />} fullHeight={false}>
+// A state that carries data (the published signal, the preview, and the skeleton holding their place) fills its cell of
+// the overview layout like the widget next to it, its footer on the bottom edge. A compact state (below the anonymity
+// threshold, a one-line notice, the error) takes the height of its content instead of a tall, mostly empty panel.
+const ThreatPulseCardFrame = ({ preview = false, compact = false, children }: { preview?: boolean; compact?: boolean; children: ReactNode }) => (
+  <Box sx={compact ? undefined : { height: '100%' }} data-testid="threat-pulse-card-container">
+    <Card
+      title={<ThreatPulseCardTitle preview={preview} />}
+      fullHeight={!compact}
+      sx={compact ? undefined : { display: 'flex', flexDirection: 'column' }}
+    >
       {children}
     </Card>
   </Box>
 );
 
 const ThreatPulseNoticeCard = (props: React.ComponentProps<typeof ThreatPulseNotice>) => (
-  <ThreatPulseCardFrame>
+  <ThreatPulseCardFrame compact>
     <ThreatPulseNotice {...props} />
   </ThreatPulseCardFrame>
 );
@@ -204,7 +209,7 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
     />
   );
   return (
-    <ThreatPulseCardFrame>
+    <ThreatPulseCardFrame compact={!information.published}>
       {information.published
         ? <ThreatPulsePublishedSignal information={information} sectorBucket={pulseEntity.sector_bucket} footer={footer} />
         : <ThreatPulseBelowThreshold information={information} footer={footer} />}

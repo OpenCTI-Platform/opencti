@@ -82,6 +82,9 @@ const OUT_OF_SCOPE = { access: 'preview', readable: false, unavailable_reason: '
 
 const UPDATED = /^Updated /;
 
+// The frame of the card in its cell of the overview layout.
+const frameHeight = () => getComputedStyle(screen.getByTestId('threat-pulse-card-container')).height;
+
 describe('ThreatPulseCard', () => {
   describe('signal published', () => {
     it('should lead with the platforms that observed the object, its prevalence, its trend and what its uniqueness means', async () => {
@@ -112,6 +115,14 @@ describe('ThreatPulseCard', () => {
       expect(within(card).getByTestId('threat-pulse-freshness').textContent).toMatch(UPDATED);
       expect(screen.queryByTestId('threat-pulse-preview-chip')).toBeNull();
       expect(screen.queryByTestId('threat-pulse-locked')).toBeNull();
+    });
+
+    it('should fill its cell of the overview row, the freshness on the bottom edge', async () => {
+      renderCard(FULL, PUBLISHED);
+      const card = await screen.findByTestId('threat-pulse-card');
+      expect(frameHeight()).toBe('100%');
+      expect(getComputedStyle(card).flexGrow).toBe('1');
+      expect(getComputedStyle(within(card).getByTestId('threat-pulse-freshness')).marginTop).toBe('auto');
     });
 
     it('should draw two weeks as two bars side by side, never as a chart line', async () => {
@@ -167,6 +178,8 @@ describe('ThreatPulseCard', () => {
     expect(screen.queryByTestId('threat-pulse-sparkline')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-facts')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-uniqueness-meaning')).toBeNull();
+    // A short card, whatever the height of the widget next to it
+    expect(frameHeight()).not.toBe('100%');
   });
 
   describe('preview', () => {
@@ -184,6 +197,9 @@ describe('ThreatPulseCard', () => {
       expect(within(preview).getByTestId('threat-pulse-freshness').textContent).toMatch(UPDATED);
       expect(screen.queryByTestId('threat-pulse-sparkline')).toBeNull();
       expect(screen.queryByRole('meter')).toBeNull();
+      // The preview fills its cell of the overview row like the published signal
+      expect(frameHeight()).toBe('100%');
+      expect(getComputedStyle(preview).flexGrow).toBe('1');
     });
 
     it('should tell a non-administrator whom to ask, and say when the object is not in the digest', async () => {
@@ -192,6 +208,7 @@ describe('ThreatPulseCard', () => {
       expect(screen.queryByTestId('threat-pulse-prevalence')).toBeNull();
       expect(screen.getByTestId('threat-pulse-ask-administrator').textContent).toContain('Settings > Filigran Experience');
       expect(screen.queryByTestId('threat-pulse-unlock-cta')).toBeNull();
+      expect(frameHeight()).toBe('100%');
     });
   });
 
@@ -203,6 +220,8 @@ describe('ThreatPulseCard', () => {
       expect(within(off).getByTestId('threat-pulse-settings-cta').textContent).toBe('Open Threat Pulse settings');
       expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
       expect(screen.queryByTestId('threat-pulse-preview')).toBeNull();
+      // One line, in a card of its height
+      expect(frameHeight()).not.toBe('100%');
     });
 
     it('should say that Threat Pulse is turned off without an action a non-administrator cannot take', async () => {
@@ -229,6 +248,7 @@ describe('ThreatPulseCard', () => {
       expect((await screen.findByTestId('threat-pulse-unavailable')).textContent).toBe(message);
       expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
       expect(screen.queryByText(reason)).toBeNull();
+      expect(frameHeight()).not.toBe('100%');
     });
 
     it('should say why an object without anything to match has no community data', async () => {
@@ -260,6 +280,8 @@ describe('ThreatPulseCard', () => {
     const skeleton = screen.getByTestId('threat-pulse-skeleton');
     expect(skeleton.getAttribute('aria-busy')).toBe('true');
     expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
+    // The place of the published signal: the card does not grow when it lands
+    expect(frameHeight()).toBe('100%');
   });
 
   it('should keep the card and say so in one line when the community data cannot be loaded', async () => {
@@ -273,6 +295,7 @@ describe('ThreatPulseCard', () => {
     expect(within(error).getByTestId('threat-pulse-error-message').textContent).toBe('The community data of this object could not be loaded. Reload the page to try again.');
     expect(screen.getByText('Threat Pulse')).toBeDefined();
     expect(screen.queryByTestId('threat-pulse-skeleton')).toBeNull();
+    expect(frameHeight()).not.toBe('100%');
     consoleError.mockRestore();
   });
 });

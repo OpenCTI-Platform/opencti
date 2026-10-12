@@ -29,7 +29,9 @@ export const THREAT_PULSE_FACTS_GRID_SX: SxProps = {
   rowGap: 2,
 };
 
+// On the bottom edge of a card that fills its cell: the height it gains goes above the divider.
 export const THREAT_PULSE_FOOTER_SX = {
+  marginTop: 'auto',
   paddingTop: 1.5,
   borderTop: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
 };
@@ -122,7 +124,7 @@ export const ThreatPulsePublishedSignal = ({ information, sectorBucket, footer }
   const showSector = isPulseSectorDisclosed(sectorBucket) || !!information.sector_trend;
   const uniqueness = information.community_uniqueness;
   return (
-    <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+    <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, flexGrow: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', flexWrap: 'wrap', columnGap: 3, rowGap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flex: '1 1 260px', minWidth: 0 }}>
           <ThreatPulseSignalIcon icon={MonitorHeartOutlined} />
@@ -227,7 +229,7 @@ const ThreatPulseLockedLine = () => {
 export const ThreatPulsePreviewSignal = ({ information }: { information: PulseInformation | null }) => {
   const { t_i18n } = useFormatter();
   return (
-    <Box data-testid="threat-pulse-preview" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box data-testid="threat-pulse-preview" sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexGrow: 1 }}>
       {information ? (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
           <ThreatPulseSignalIcon icon={MonitorHeartOutlined} muted />

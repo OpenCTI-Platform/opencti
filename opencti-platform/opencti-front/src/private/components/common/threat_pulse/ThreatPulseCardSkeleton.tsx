@@ -14,7 +14,7 @@ const ThreatPulseCardSkeleton = () => {
       aria-busy="true"
       aria-label={t_i18n('Loading')}
       data-testid="threat-pulse-skeleton"
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, flexGrow: 1 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
         <Skeleton variant="rounded" width={36} height={36} sx={{ flexShrink: 0 }} />
