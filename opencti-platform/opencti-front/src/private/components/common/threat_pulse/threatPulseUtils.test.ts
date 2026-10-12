@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildSparklinePoints,
   formatPulseGrowth,
   formatPulseRatio,
+  isPulseSectorDisclosed,
   PULSE_EVENT_KIND_LABELS,
   PULSE_CONTRIBUTION_STATUS_LABELS,
   PULSE_MODE_LABELS,
@@ -12,12 +12,17 @@ import {
   PULSE_REGION_LABELS,
   PULSE_SECTOR_LABELS,
   PULSE_TREND_LABELS,
+  PULSE_TREND_SENTENCES,
   PULSE_TREND_SEVERITIES,
   PULSE_UNAVAILABLE_MESSAGES,
   prevalenceGaugeValue,
+  pulseObservedHeadline,
   pulsePeriodFromDateRange,
   pulsePlatformsBucketLabel,
   pulseRatioSeverity,
+  pulseSectorLabel,
+  pulseTrendBarHeights,
+  pulseUniquenessMeaning,
 } from './threatPulseUtils';
 import { buildPulseBriefingContext } from './ThreatPulseBriefing';
 
@@ -75,12 +80,32 @@ describe('Threat Pulse utils', () => {
     expect(prevalenceGaugeValue(null)).toBe(0);
   });
 
-  it('should scale a sparkline to its box with a vertical margin', () => {
-    expect(buildSparklinePoints([], 100, 20)).toBe('');
-    expect(buildSparklinePoints([5], 100, 20)).toBe('50,2');
-    expect(buildSparklinePoints([0, 5, 10], 100, 20)).toBe('0,18 50,10 100,2');
-    // An all-zero series stays on the baseline instead of dividing by zero.
-    expect(buildSparklinePoints([0, 0], 100, 20)).toBe('0,18 100,18');
+  it('should scale the weekly trend bars to the busiest week', () => {
+    expect(pulseTrendBarHeights([], 32)).toEqual([]);
+    expect(pulseTrendBarHeights([0, 5, 10], 32)).toEqual([2, 16, 32]);
+    // A week without platforms stays on the baseline, a quiet week stays visible, an all-zero series never divides by zero.
+    expect(pulseTrendBarHeights([1, 100], 32)).toEqual([4, 32]);
+    expect(pulseTrendBarHeights([0, 0], 32)).toEqual([2, 2]);
+  });
+
+  it('should say how many platforms observed a published object, and what its uniqueness means', () => {
+    const translate = (message: string, options?: { values?: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [name, value]) => text.replace(`{${name}}`, String(value)), message);
+    expect(pulseObservedHeadline(translate, '<5')).toBe('Observed on fewer than 5 platforms');
+    expect(pulseObservedHeadline(translate, '10-24')).toBe('Observed on 10 to 24 platforms');
+    expect(pulseObservedHeadline(translate, '250+')).toBe('Observed on 250 platforms or more');
+    expect(pulseObservedHeadline(translate, null)).toBe('Observed across the community');
+    expect(Object.keys(PULSE_TREND_SENTENCES)).toEqual(['rising', 'stable', 'falling']);
+    expect(pulseUniquenessMeaning(100)).toMatch(/^Below the anonymity threshold/);
+    expect(pulseUniquenessMeaning(75)).toMatch(/^Held by few platforms/);
+    expect(pulseUniquenessMeaning(50)).toBe('Held by part of the community.');
+    expect(pulseUniquenessMeaning(25)).toBe('Held by a large part of the community.');
+    expect(pulseUniquenessMeaning(0)).toMatch(/^Held across the community/);
+    expect(pulseSectorLabel(translate, 'energy_utilities')).toBe('Energy and utilities');
+    expect(pulseSectorLabel(translate, null)).toBe('Undisclosed');
+    expect(isPulseSectorDisclosed('finance')).toBe(true);
+    expect(isPulseSectorDisclosed('undisclosed')).toBe(false);
+    expect(isPulseSectorDisclosed(null)).toBe(false);
   });
 
   it('should format multipliers and rate them against the sector median', () => {

@@ -18,10 +18,10 @@ import {
   PULSE_EVENT_KIND_LABELS,
   PULSE_PERIOD_LABELS,
   PULSE_PERIODS,
-  PULSE_SECTOR_LABELS,
   PULSE_UNAVAILABLE_MESSAGES,
   pulsePlatformsBucketLabel,
   pulseRatioSeverity,
+  pulseSectorLabel,
   type PulsePeriodValue,
 } from './threatPulseUtils';
 
@@ -102,7 +102,7 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
       <Text variant="content-compact" style={secondary}>
         {t_i18n('Sector: {sector} - {platforms}', {
           values: {
-            sector: t_i18n(PULSE_SECTOR_LABELS[pulseBenchmark.sector_bucket ?? 'undisclosed'] ?? 'Undisclosed'),
+            sector: pulseSectorLabel(t_i18n, pulseBenchmark.sector_bucket),
             platforms: pulsePlatformsBucketLabel(t_i18n, pulseBenchmark.sector_platforms_bucket) ?? t_i18n('below the anonymity threshold'),
           },
         })}

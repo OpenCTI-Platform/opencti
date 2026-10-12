@@ -38,27 +38,81 @@ export const PULSE_TREND_SEVERITIES: Record<string, ChipSeverity> = {
   falling: 'low',
 };
 
+// The community trend as a sentence, under the headline of the card.
+export const PULSE_TREND_SENTENCES: Record<string, string> = {
+  rising: 'Reported by a growing number of platforms.',
+  stable: 'Reported by a steady number of platforms.',
+  falling: 'Reported by a shrinking number of platforms.',
+};
+
+// What a community uniqueness score means for the analyst: 100 below the anonymity threshold, then 75 (rare) down to
+// 0 (widespread).
+export const pulseUniquenessMeaning = (score: number) => {
+  if (score >= 100) return 'Below the anonymity threshold: possibly unique to this platform.';
+  if (score >= 75) return 'Held by few platforms: possibly specific to your sector or environment.';
+  if (score >= 50) return 'Held by part of the community.';
+  if (score >= 25) return 'Held by a large part of the community.';
+  return 'Held across the community: broadly shared, not specific to you.';
+};
+
 type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
 
-// The coarse platforms range XTM Hub publishes ("10-24", "250+", "<5"), in words: never the raw bucket on screen.
-export const pulsePlatformsBucketLabel = (t_i18n: Translate, bucket: string | null | undefined): string | null => {
-  if (!bucket) {
-    return null;
-  }
-  const below = /^<(\d+)$/.exec(bucket);
+type PulsePlatformsBucket
+  = | { kind: 'below'; count: number }
+    | { kind: 'range'; min: number; max: number }
+    | { kind: 'atLeast'; count: number };
+
+// The coarse platforms range XTM Hub publishes: "<5", "10-24" or "250+".
+const parsePulsePlatformsBucket = (bucket: string | null | undefined): PulsePlatformsBucket | null => {
+  const below = /^<(\d+)$/.exec(bucket ?? '');
   if (below) {
-    return t_i18n('Fewer than {count} platforms', { values: { count: Number(below[1]) } });
+    return { kind: 'below', count: Number(below[1]) };
   }
-  const range = /^(\d+)-(\d+)$/.exec(bucket);
+  const range = /^(\d+)-(\d+)$/.exec(bucket ?? '');
   if (range) {
-    return t_i18n('{min} to {max} platforms', { values: { min: Number(range[1]), max: Number(range[2]) } });
+    return { kind: 'range', min: Number(range[1]), max: Number(range[2]) };
   }
-  const atLeast = /^(\d+)\+$/.exec(bucket);
-  if (atLeast) {
-    return t_i18n('{count} platforms or more', { values: { count: Number(atLeast[1]) } });
+  const atLeast = /^(\d+)\+$/.exec(bucket ?? '');
+  return atLeast ? { kind: 'atLeast', count: Number(atLeast[1]) } : null;
+};
+
+// The coarse platforms range XTM Hub publishes, in words: never the raw bucket on screen.
+export const pulsePlatformsBucketLabel = (t_i18n: Translate, bucket: string | null | undefined): string | null => {
+  const parsed = parsePulsePlatformsBucket(bucket);
+  if (parsed?.kind === 'below') {
+    return t_i18n('Fewer than {count} platforms', { values: { count: parsed.count } });
+  }
+  if (parsed?.kind === 'range') {
+    return t_i18n('{min} to {max} platforms', { values: { min: parsed.min, max: parsed.max } });
+  }
+  if (parsed?.kind === 'atLeast') {
+    return t_i18n('{count} platforms or more', { values: { count: parsed.count } });
   }
   return null;
 };
+
+// The headline of a published object: how many platforms observed it, as a sentence.
+export const pulseObservedHeadline = (t_i18n: Translate, bucket: string | null | undefined): string => {
+  const parsed = parsePulsePlatformsBucket(bucket);
+  if (parsed?.kind === 'below') {
+    return t_i18n('Observed on fewer than {count} platforms', { values: { count: parsed.count } });
+  }
+  if (parsed?.kind === 'range') {
+    return t_i18n('Observed on {min} to {max} platforms', { values: { min: parsed.min, max: parsed.max } });
+  }
+  if (parsed?.kind === 'atLeast') {
+    return t_i18n('Observed on {count} platforms or more', { values: { count: parsed.count } });
+  }
+  return t_i18n('Observed across the community');
+};
+
+// The sector bucket of the platform in words; an absent bucket reads as undisclosed.
+export const pulseSectorLabel = (t_i18n: Translate, sector: string | null | undefined): string => {
+  return t_i18n(PULSE_SECTOR_LABELS[sector ?? 'undisclosed'] ?? 'Undisclosed');
+};
+
+// A platform that chose a sector: the only one with a sector trend to read.
+export const isPulseSectorDisclosed = (sector: string | null | undefined) => !!sector && sector !== 'undisclosed';
 
 export const PULSE_PERIOD_LABELS: Record<PulsePeriodValue, string> = {
   last_7_days: '7 days',
@@ -169,18 +223,11 @@ export const prevalenceGaugeValue = (prevalence: string | null | undefined) => {
   return index < 0 ? 0 : Math.round(((index + 0.5) / PULSE_PREVALENCE_ORDER.length) * 100);
 };
 
-// SVG polyline points of a sparkline, the series scaled to the box with a small vertical margin.
-export const buildSparklinePoints = (series: readonly number[], width: number, height: number, margin = 2) => {
-  if (series.length === 0) {
-    return '';
-  }
-  const max = Math.max(...series, 1);
-  const step = series.length > 1 ? width / (series.length - 1) : 0;
-  return series.map((value, index) => {
-    const x = series.length > 1 ? index * step : width / 2;
-    const y = height - margin - (value / max) * (height - 2 * margin);
-    return `${Number(x.toFixed(2))},${Number(y.toFixed(2))}`;
-  }).join(' ');
+// Bar heights of the weekly trend chart: each week scaled to the busiest one, a week without platforms on the baseline
+// and a week with some never thinner than twice the baseline.
+export const pulseTrendBarHeights = (series: readonly number[], height: number, baseline = 2) => {
+  const max = Math.max(0, ...series);
+  return series.map((value) => (value > 0 ? Math.max(2 * baseline, Math.round((value / max) * height)) : baseline));
 };
 
 // A multiplier, "x2.4" or "x12" above ten.

@@ -90,6 +90,20 @@ const FULL_INFORMATION = {
   updated_at: '2026-10-03T08:00:00.000Z',
 };
 
+const BELOW_THRESHOLD_INFORMATION = {
+  ...FULL_INFORMATION,
+  published: false,
+  prevalence: null,
+  platforms_bucket: null,
+  first_seen_network: null,
+  last_seen_network: null,
+  trend: null,
+  trend_series: [],
+  sector_trend: null,
+  sector_platforms_bucket: null,
+  community_uniqueness: 100,
+};
+
 // The queries reading pulseStatus share one record of the Relay store: each of them answers the same access, otherwise
 // the answer of the e2e platform (not registered on XTM Hub) to the one left unmocked replaces the access under test.
 const pulseStatusAnswers = (access: string, banner: { preview_entities: number; preview_since: string | null } = { preview_entities: 0, preview_since: null }) => {
@@ -123,23 +137,32 @@ test('Show the Threat Pulse card in its preview, full and not connected states',
   await openNewIntrusionSet(page);
   const overviewUrl = page.url();
 
-  // Preview: the real coarse signal, the rows of the full experience locked, one step to unlock them
+  // Preview: the real coarse signal, what contributing adds in one line, one step to unlock it
   const preview = page.getByTestId('threat-pulse-preview');
   await expect(preview).toBeVisible();
   await expect(page.getByTestId('threat-pulse-preview-chip')).toBeVisible();
-  await expect(preview.getByTestId('threat-pulse-prevalence-gauge')).toHaveAttribute('aria-valuetext', 'Widespread');
-  await expect(preview.getByTestId('threat-pulse-locked-row')).toHaveCount(4);
+  await expect(preview.getByTestId('threat-pulse-prevalence')).toHaveText('Widespread');
+  await expect(preview.getByTestId('threat-pulse-locked').getByTestId('threat-pulse-unlock-cta')).toBeVisible();
   await expect(preview.getByTestId('threat-pulse-sparkline')).toHaveCount(0);
 
-  // Full: every community fact, no preview label
+  // Full: the platforms that observed the object first, then every community fact, no preview label
   await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null), ...pulseStatusAnswers('full') });
   await page.goto(overviewUrl);
   const card = page.getByTestId('threat-pulse-card');
   await expect(card).toBeVisible();
-  await expect(card.getByTestId('threat-pulse-prevalence-gauge')).toHaveAttribute('aria-valuetext', 'Common');
-  await expect(card.getByText('25 to 49 platforms')).toBeVisible();
+  await expect(card.getByTestId('threat-pulse-headline')).toHaveText('Observed on 25 to 49 platforms');
+  await expect(card.getByTestId('threat-pulse-prevalence')).toHaveText('Common');
+  await expect(card.getByTestId('threat-pulse-sparkline-bar')).toHaveCount(12);
+  await expect(card.getByRole('meter', { name: 'Community uniqueness' })).toHaveAttribute('aria-valuenow', '25');
   await expect(page.getByTestId('threat-pulse-preview-chip')).toHaveCount(0);
-  await expect(card.getByTestId('threat-pulse-locked-row')).toHaveCount(0);
+  await expect(card.getByTestId('threat-pulse-locked')).toHaveCount(0);
+
+  // Below the anonymity threshold: a short card saying so, its uniqueness at 100, no count or trend
+  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', BELOW_THRESHOLD_INFORMATION, null), ...pulseStatusAnswers('full') });
+  await page.goto(overviewUrl);
+  await expect(page.getByTestId('threat-pulse-below-threshold')).toBeVisible();
+  await expect(page.getByRole('meter', { name: 'Community uniqueness' })).toHaveAttribute('aria-valuenow', '100');
+  await expect(page.getByTestId('threat-pulse-prevalence')).toHaveCount(0);
 
   // Not connected: what Threat Pulse would add and the connection step
   await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('not_connected', null, 'not_registered'), ...pulseStatusAnswers('not_connected') }, { hubReachable: true });
@@ -394,7 +417,7 @@ test.describe('Threat Pulse documentation images', () => {
   test('Capture the Threat Pulse surfaces of the documentation in each of their states', { tag: ['@ce'] }, async ({ page }, testInfo) => {
     // Every surface in two themes: more page loads than any functional test of this file.
     test.slow();
-    // Overview card in its three states (not connected, preview, contribution), in the dark then the light theme
+    // Overview card in each of its states, in the dark then the light theme
     const cardStates = [
       {
         name: 'not-connected',
@@ -413,6 +436,12 @@ test.describe('Threat Pulse documentation images', () => {
         answers: { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null), ...pulseStatusAnswers('full') },
         hubReachable: false,
         loaded: 'threat-pulse-card',
+      },
+      {
+        name: 'below-threshold',
+        answers: { ThreatPulseCardQuery: pulseEntity('full', BELOW_THRESHOLD_INFORMATION, null), ...pulseStatusAnswers('full') },
+        hubReachable: false,
+        loaded: 'threat-pulse-below-threshold',
       },
       {
         name: 'off',

@@ -20,7 +20,7 @@ import {
   PULSE_PERIOD_LABELS,
   PULSE_PERIODS,
   PULSE_PREVALENCE_LABELS,
-  PULSE_SECTOR_LABELS,
+  pulseSectorLabel,
   PULSE_TREND_LABELS,
   PULSE_TREND_SEVERITIES,
   PULSE_UNAVAILABLE_MESSAGES,
@@ -83,7 +83,7 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
   }
   const notHeld = Math.max(0, pulseTrending.network_items_count - pulseTrending.entries.length);
   const sectorLabel = pulseTrending.sector_bucket
-    ? t_i18n(PULSE_SECTOR_LABELS[pulseTrending.sector_bucket] ?? 'Undisclosed')
+    ? pulseSectorLabel(t_i18n, pulseTrending.sector_bucket)
     : t_i18n('Every sector');
   const scope = t_i18n(
     'Sector: {sector} - {period, select, last_30_days {last 30 days} last_90_days {last 90 days} other {last 7 days}}',
