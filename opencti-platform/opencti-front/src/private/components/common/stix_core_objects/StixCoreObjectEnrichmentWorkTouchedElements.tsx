@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Chip } from '@filigran/design-system';
+// FDS-WORKAROUND #67: no List/ListItem/Collapse in @filigran/design-system yet, see fds-migration/LIBRARY-FEEDBACK.md #67
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
