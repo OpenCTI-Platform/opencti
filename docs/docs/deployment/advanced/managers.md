@@ -90,6 +90,10 @@ The trash manager is responsible to delete permanently elements stored in the [t
 The data sanity manager runs periodic or on demand operations to improve data consistency.
 There is no UI yet, but some GraphQL operations can be found in the dedicated page: [Data sanity manager](../../usage/dataSanityManager.md).
 
+## Graph analytics manager
+
+The graph analytics manager computes the [graph analytics](../../usage/graph-analytics.md) of the knowledge graph: the degree of every entity, the top similar entities of threats, malware, infrastructure, observables and reports, and the infrastructure clusters. It recomputes the entities touched by the stream after a debounce delay, refreshes the degree metrics during a nightly pass, and leaves the clusters to the optional analytics process when that process is deployed. Its configuration is described in [Graph analytics](../graph-analytics.md).
+
 ## Filigran telemetry manager
 
 The telemetry manager collects periodically statistical data about platform usage.

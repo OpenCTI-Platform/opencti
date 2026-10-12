@@ -78,6 +78,18 @@ type Query {
     startDate: DateTime
     endDate: DateTime
   ): [MultiTimeSeries] @public
+  publicGraphSimilarityMatrix(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): GraphSimilarityMatrix @public
+  publicGraphClustersSizeTimeSeries(
+    uriKey: String!
+    widgetId : String!
+    startDate: DateTime
+    endDate: DateTime
+  ): [GraphClusterTimeSeries!] @public
   publicStixRelationshipsMultiTimeSeries(
     uriKey: String!
     widgetId : String!

@@ -85,6 +85,10 @@ An instance trigger set on an entity X actively monitors the following events:
 - Creation/Deletion of related entities: Be alerted when entities that have X in its refs - i.e. contains X, is shared with X, is created by X, etc. - are created or deleted.
 - Adding/Removing X in ref: Stay in the loop when X is included or excluded from the ref of other entities - i.e. adding X in the author of an entity, adding X in a report, etc.).
 
+### Graph analytics events
+
+Live triggers, on filters or on instances, can also listen to **Joined a graph cluster**: you are notified when an entity matching the trigger joins a [graph cluster](graph-analytics.md#clusters), once the clustering run that assigned it is published. The notification names the entity and the cluster. A run that moves more than 1,000 entities to new clusters is a recomputation of the whole graph and sends no notification.
+
 !!! note "Entity deletion notification"
 
     It's important to note that the notification of entity deletion can occur in two scenarios:

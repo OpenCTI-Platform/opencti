@@ -1,0 +1,40 @@
+---
+opencti:
+  url: 'http://localhost:8080'
+  # API token of the service account (BYPASS capability: completing a run requires unrestricted access)
+  token: 'ChangeMe'
+  json_logging: true
+
+analytics:
+  log_level: 'info'
+  enabled: true
+  run_interval_hours: 24
+  run_on_start: true
+  # Below this number of edges the run is skipped: the platform graph analytics
+  # manager already covers small platforms. Set force to true to run anyway.
+  min_edges: 50000
+  force: false
+  relationship_types:
+    - 'communicates-with'
+    - 'resolves-to'
+    - 'consists-of'
+    - 'uses'
+    - 'attributed-to'
+    - 'related-to'
+    - 'based-on'
+    - 'object'
+  include_inferred: false
+  max_edges: 5000000
+  max_container_size: 500
+  max_node_degree: 10000
+  min_cluster_size: 3
+  max_cluster_size: 5000
+  betweenness_sample_size: 500
+  betweenness_cutoff:
+  batch_size: 2000
+  cluster_batch_size: 200
+  engine: 'auto'
+  seed: 42
+  telemetry_enabled: false
+  telemetry_prometheus_port: 14271
+  telemetry_prometheus_host: '0.0.0.0'

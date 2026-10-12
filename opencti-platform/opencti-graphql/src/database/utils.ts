@@ -78,6 +78,10 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 
+// Graph analytics: precomputed top-N similarity (ids only, never part of the data indices)
+export const INDEX_GRAPH_SIMILARITY = `${ES_INDEX_PREFIX}_graph_similarity`;
+export const READ_INDEX_GRAPH_SIMILARITY = `${INDEX_GRAPH_SIMILARITY}*`;
+
 export const isInferredIndex = (
   index: string | undefined | null,
 ): boolean => !!index && (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
@@ -102,6 +106,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_DRAFT_OBJECTS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
+  INDEX_GRAPH_SIMILARITY,
 ];
 
 export const READ_STIX_INDICES = [

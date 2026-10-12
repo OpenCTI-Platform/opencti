@@ -116,6 +116,9 @@
   "telemetry_manager": {
     "enabled": false
   },
+  "graph_analytics_manager": {
+    "enabled": false
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"

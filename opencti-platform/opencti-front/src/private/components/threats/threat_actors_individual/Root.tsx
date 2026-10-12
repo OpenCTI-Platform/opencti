@@ -9,6 +9,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectSimilar from '../../common/graph_analytics/StixCoreObjectSimilar';
 import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorIndividualQuery.graphql';
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
 import ThreatActorIndividual from './ThreatActorIndividual';
@@ -215,6 +216,8 @@ const RootThreatActorIndividualComponent = ({
                     entity={threatActorIndividual}
                   />
                 ),
+                similar:
+                  <StixCoreObjectSimilar stixCoreObjectId={threatActorIndividualId} />,
                 history:
                   <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />,
               }}

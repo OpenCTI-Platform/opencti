@@ -1,0 +1,10 @@
+.flake8
+.isort.cfg
+mypy.ini
+pylintrc
+.venv
+.pytest_cache
+**/__pycache__
+tests
+config.yml
+src/config.yml

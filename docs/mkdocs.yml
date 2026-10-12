@@ -136,6 +136,7 @@ nav:
       - Other resources: deployment/resources.md
     - Advanced:
       - Platform managers: deployment/advanced/managers.md
+      - Graph analytics: deployment/graph-analytics.md
       - Security configuration: deployment/advanced/security-configuration.md
       - Liveness probe: deployment/advanced/liveness-probe.md
       - Clustering: deployment/advanced/clustering.md
@@ -180,6 +181,7 @@ nav:
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
       - Pivot and investigate: usage/pivoting.md
+      - Graph analytics: usage/graph-analytics.md
     - Create knowledge:
       - Automated import:
         - Getting started: usage/import/getting-started.md

@@ -55,6 +55,9 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   ],
   common: [
     ...defaultWidgetColumns.common,
+    { attribute: 'graph_degree', label: 'Graph degree' },
+    { attribute: 'graph_betweenness', label: 'Approximate betweenness' },
+    { attribute: 'graph_cluster_size', label: 'Graph cluster size' },
   ],
   Report: [
     { attribute: 'report_types', label: 'Report type' },

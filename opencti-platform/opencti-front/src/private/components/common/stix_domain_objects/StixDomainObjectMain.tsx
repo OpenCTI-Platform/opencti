@@ -52,6 +52,9 @@ const StixDomainObjectMain = ({
         {tabs.includes('observables') && (
           <Route path="/observables" element={pages.observables} />
         )}
+        {tabs.includes('similar') && (
+          <Route path="/similar" element={pages.similar} />
+        )}
         {tabs.includes('relationships') && (
           <Route path="/relationships" element={pages.relationships} />
         )}

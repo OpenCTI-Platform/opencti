@@ -59,3 +59,29 @@ jobs:
           checkout_ref: ${{ github.sha }}
           client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
+
+  # -----------------------
+  # Build analytics images
+  # -----------------------
+  build-analytics:
+    name: Build analytics (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+      - uses: ./.github/actions/docker-build-analytics
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}

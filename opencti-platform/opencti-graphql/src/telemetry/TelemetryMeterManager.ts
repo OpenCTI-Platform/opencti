@@ -247,6 +247,26 @@ export class TelemetryMeterManager {
 
   workflowPublishCount = 0;
 
+  // region graph analytics
+  // Number of path finder queries
+  graphPathQueryCount = 0;
+
+  // Number of similar entities queries
+  graphSimilarityQueryCount = 0;
+
+  // Number of pivots from graph analytics results (open, compare, add to investigation)
+  graphAnalyticsPivotCount = 0;
+
+  // Number of graph clusters promoted to a Grouping or a Campaign
+  graphClusterPromotionCount = 0;
+
+  // Number of graph clusters
+  graphClusterCount = 0;
+
+  // Whether the opencti-analytics process wrote results recently (0 or 1)
+  isGraphAnalyticsProcessActive = 0;
+  // endregion
+
   // endregion providers usage
 
   // region AI usage (backend-agnostic: no legacy/xtm_one dimension anywhere)
@@ -563,6 +583,30 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setGraphPathQueryCount(n: number) {
+    this.graphPathQueryCount = n;
+  }
+
+  setGraphSimilarityQueryCount(n: number) {
+    this.graphSimilarityQueryCount = n;
+  }
+
+  setGraphAnalyticsPivotCount(n: number) {
+    this.graphAnalyticsPivotCount = n;
+  }
+
+  setGraphClusterPromotionCount(n: number) {
+    this.graphClusterPromotionCount = n;
+  }
+
+  setGraphClusterCount(n: number) {
+    this.graphClusterCount = n;
+  }
+
+  setIsGraphAnalyticsProcessActive(n: number) {
+    this.isGraphAnalyticsProcessActive = n;
+  }
+
   setChatbotMessageCount(n: number) {
     this.chatbotMessageCount = n;
   }
@@ -772,6 +816,12 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('graph_path_query_count', 'Number of graph path finder queries', 'graphPathQueryCount');
+    this.registerGauge('graph_similarity_query_count', 'Number of similar entities queries', 'graphSimilarityQueryCount');
+    this.registerGauge('graph_analytics_pivot_count', 'Number of pivots from graph analytics results', 'graphAnalyticsPivotCount');
+    this.registerGauge('graph_cluster_promotion_count', 'Number of graph clusters promoted to a Grouping or a Campaign', 'graphClusterPromotionCount');
+    this.registerGauge('graph_cluster_count', 'Number of graph clusters', 'graphClusterCount');
+    this.registerGauge('is_graph_analytics_process_active', 'Whether the opencti-analytics process wrote results recently', 'isGraphAnalyticsProcessActive', { unit: 'boolean' });
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
     this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
