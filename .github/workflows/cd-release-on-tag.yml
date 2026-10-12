@@ -1,9 +1,12 @@
 name: OpenCTI CD Release
 # Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
 #
-# DRY-RUN BY DEFAULT: nothing is published unless ALL of the following are true:
+# DRY-RUN ONLY for now: the publish-pycti job is commented out, nothing can be published.
+#
+# When publication is enabled, it must require ALL of the following:
 #   - the run was started manually (workflow_dispatch). Tag pushes are ALWAYS dry-run.
-#   - the "dry_run" input is explicitly unchecked
+#   - a "dry_run" boolean input (default true) explicitly unchecked. On tag push it is empty, and in
+#     GitHub expressions null == false is TRUE: the event_name check is what keeps tag pushes in dry-run.
 #   - the repository variable RELEASE_PUBLISH_ENABLED is set to 'true'
 # On top of that, publication jobs run in protected environments (e.g. "pypi") that hold the credentials,
 # so dry-run jobs never get access to them.
@@ -22,10 +25,6 @@ on:
         description: "Existing release tag to build (e.g. 7.261002.0 or 7.260309.0-lts.7)"
         type: string
         required: true
-      dry_run:
-        description: "Dry run: build and verify everything but do not publish anything"
-        type: boolean
-        default: true
 
 permissions:
   contents: read
@@ -47,7 +46,6 @@ jobs:
       pycti_version: ${{ steps.tag.outputs.pycti_version }}
       is_lts: ${{ steps.tag.outputs.is_lts }}
       commit_sha: ${{ steps.versions.outputs.commit_sha }}
-      publish: ${{ steps.mode.outputs.publish }}
     steps:
       - name: Validate tag format
         id: tag
@@ -105,27 +103,12 @@ jobs:
           fi
           echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Compute run mode
-        id: mode
-        env:
-          # inputs.dry_run is empty on tag push, and in GitHub expressions null == false is TRUE:
-          # the event_name check is what guarantees tag pushes stay in dry-run.
-          PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run == false && vars.RELEASE_PUBLISH_ENABLED == 'true' }}
-        run: |
-          set -euo pipefail
-          if [ "${PUBLISH}" == "true" ]; then
-            echo "publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Summary
         env:
           TAG: ${{ steps.tag.outputs.tag }}
           PYCTI_VERSION: ${{ steps.tag.outputs.pycti_version }}
           IS_LTS: ${{ steps.tag.outputs.is_lts }}
           COMMIT_SHA: ${{ steps.versions.outputs.commit_sha }}
-          PUBLISH: ${{ steps.mode.outputs.publish }}
           EVENT_NAME: ${{ github.event_name }}
         run: |
           {
@@ -137,11 +120,7 @@ jobs:
             echo "| Commit | \`${COMMIT_SHA}\` |"
             echo "| pycti version | \`${PYCTI_VERSION}\` |"
             echo "| LTS | ${IS_LTS} |"
-            if [ "${PUBLISH}" == "true" ]; then
-              echo "| Mode | 🚀 **PUBLISH** |"
-            else
-              echo "| Mode | 🧪 dry-run (nothing will be published) |"
-            fi
+            echo "| Mode | 🧪 dry-run (nothing will be published) |"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # -----------------------
@@ -202,7 +181,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [validate, build-pycti]
-    if: needs.validate.outputs.publish != 'true'
     steps:
       - name: Download pycti distribution
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
@@ -269,29 +247,30 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  publish-pycti:
-    name: Publish pycti
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [validate, build-pycti]
-    if: needs.validate.outputs.publish == 'true'
-    # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
-    environment:
-      name: pypi
-      url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
-    permissions:
-      id-token: write # PyPI trusted publishing (OIDC)
-    steps:
-      - name: Download pycti distribution
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
-        with:
-          name: pycti-dist
-          path: dist/
+  # Publication disabled until the dry run is validated: no job of this workflow can publish anything.
+  # publish-pycti:
+  #   name: Publish pycti
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: [validate, build-pycti]
+  #   if: needs.validate.outputs.publish == 'true'
+  #   # Protected environment: holds the PyPI trusted publisher binding, can require reviewers.
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/project/pycti/${{ needs.validate.outputs.pycti_version }}/
+  #   permissions:
+  #     id-token: write # PyPI trusted publishing (OIDC)
+  #   steps:
+  #     - name: Download pycti distribution
+  #       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
+  #       with:
+  #         name: pycti-dist
+  #         path: dist/
 
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
-        with:
-          packages-dir: dist/
+  #     - name: Publish to PyPI
+  #       uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+  #       with:
+  #         packages-dir: dist/
 
   # -----------------------
   # Wait for the connectors release
@@ -464,7 +443,6 @@ jobs:
     name: Build and generate app SBOM
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    # wait-connectors: "yarn install:python" installs pycti==<tag> from PyPI
     needs: [validate, wait-connectors, build-builder]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -683,12 +661,6 @@ jobs:
     timeout-minutes: 45
     needs: [validate, build-platform, build-worker, build-tar, merge-sbom]
     steps:
-      - name: Free disk space
-        # About ten image archives are downloaded at once
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-          df -h /
-
       - name: Download platform images
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
         with:
@@ -837,17 +809,14 @@ jobs:
       - name: List artifacts of this run
         env:
           GH_TOKEN: ${{ github.token }}
-          PUBLISH: ${{ needs.validate.outputs.publish }}
           TAG: ${{ needs.validate.outputs.tag }}
         run: |
           set -euo pipefail
           {
             echo "## Artifacts for ${TAG}"
             echo ""
-            if [ "${PUBLISH}" != "true" ]; then
-              echo "🧪 Dry run: these are the files a publication would use. Images are published from the release repository, not from here."
-              echo ""
-            fi
+            echo "🧪 Dry run: these are the files a publication would use. Images are published from the release repository, not from here."
+            echo ""
             echo "| Artifact | Size (MB) |"
             echo "|---|---|"
             # shellcheck disable=SC2016 # backticks are Markdown inside a jq filter
