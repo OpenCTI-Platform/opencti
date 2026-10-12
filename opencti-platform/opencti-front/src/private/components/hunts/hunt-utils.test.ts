@@ -78,6 +78,7 @@ describe('Hunt utils', () => {
     it('should open the setup section of each hunt connector of the catalog', () => {
       expect(huntConnectorSetupDocumentation('splunk-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#splunk');
       expect(huntConnectorSetupDocumentation('crowdstrike-logscale-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#crowdstrike-logscale');
+      expect(huntConnectorSetupDocumentation('microsoft-defender-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#microsoft-defender-xdr');
       expect(huntConnectorSetupDocumentation('infrastructure-tracker')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#infrastructure-tracker');
     });
 
@@ -91,6 +92,7 @@ describe('Hunt utils', () => {
     const t = (key: string) => `t:${key}`;
     it('should name the platforms and languages instead of showing their slugs', () => {
       expect(huntPlatformLabel('microsoft-sentinel', t)).toEqual('Microsoft Sentinel');
+      expect(huntPlatformLabel('microsoft-defender', t)).toEqual('Microsoft Defender XDR');
       expect(huntPlatformLabel('crowdstrike-logscale', t)).toEqual('CrowdStrike Falcon LogScale');
       expect(huntQueryLanguageLabel('esql', t)).toEqual('ES|QL');
       expect(huntQueryLanguageLabel('yara-l', t)).toEqual('YARA-L');

@@ -6,6 +6,7 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 |---|---|---|
 | `splunk` | Splunk | SPL |
 | `microsoft-sentinel` | Microsoft Sentinel | KQL |
+| `microsoft-defender` | Microsoft Defender XDR | KQL |
 | `elastic-security` | Elastic Security | ES\|QL, EQL, Lucene |
 | `crowdstrike-logscale` | CrowdStrike Falcon LogScale | LogScale query language |
 | `google-secops` | Google SecOps | UDM search, YARA-L |
@@ -108,6 +109,43 @@ MICROSOFT_SENTINEL_HUNT_WORKSPACE_ID=ChangeMe
 Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token and runs one query on the workspace. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/microsoft-sentinel-hunt/README.md).
+
+### Microsoft Defender XDR
+
+| | |
+|---|---|
+| Credential | A Microsoft Entra ID app registration with a client secret. |
+| Console | Azure portal or Microsoft Entra admin center: **Microsoft Entra ID > App registrations**. Granting admin consent needs a Privileged Role Administrator, Cloud Application Administrator or Application Administrator. |
+| Network | `login.microsoftonline.com` and `graph.microsoft.com` reachable from the connector. |
+
+Step by step:
+
+1. In **Microsoft Entra ID > App registrations > New registration**, register `opencti-hunt` (single tenant); note its **Directory (tenant) ID** and **Application (client) ID**.
+2. In the app, **API permissions > Add a permission > Microsoft Graph > Application permissions**, select **ThreatHunting.Read.All**, then **Grant admin consent for &lt;tenant&gt;**.
+3. In the app, **Certificates & secrets > New client secret**, and copy its value.
+
+Least-privilege permissions:
+
+| Permission | Why |
+|---|---|
+| Microsoft Graph application permission `ThreatHunting.Read.All`, admin consent granted | Run read-only advanced hunting queries (`POST /security/runHuntingQuery`). |
+
+No other permission and no Azure role is required, and the connector never writes to the tenant. The connector spends the advanced hunting quotas of the tenant (45 calls per minute, 1,500 per hour) at most at that pace, and reads at most 10,000 rows per query.
+
+Copy-ready configuration (`.env` of the `docker-compose.yml`):
+
+```env
+OPENCTI_URL=https://opencti.example.com
+OPENCTI_TOKEN=ChangeMe
+CONNECTOR_ID=ChangeMe-UUIDv4
+MICROSOFT_DEFENDER_HUNT_TENANT_ID=ChangeMe
+MICROSOFT_DEFENDER_HUNT_CLIENT_ID=ChangeMe
+MICROSOFT_DEFENDER_HUNT_CLIENT_SECRET=ChangeMe
+```
+
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token from Microsoft Entra ID, then runs `DeviceInfo | take 1` over the last 7 days. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence. A tenant without device telemetry passes with a warning.
+
+Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/microsoft-defender-hunt/README.md).
 
 ### Elastic Security
 

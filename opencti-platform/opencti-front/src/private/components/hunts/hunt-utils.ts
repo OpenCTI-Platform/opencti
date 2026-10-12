@@ -43,6 +43,7 @@ export const isHuntPreviewConnector = (
 export const HUNT_PLATFORMS = [
   'splunk',
   'microsoft-sentinel',
+  'microsoft-defender',
   'elastic-security',
   'crowdstrike-logscale',
   'google-secops',
@@ -69,6 +70,7 @@ export const HUNT_QUERY_LANGUAGES = [
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   splunk: 'spl',
   'microsoft-sentinel': 'kql',
+  'microsoft-defender': 'kql',
   'elastic-security': 'esql',
   'crowdstrike-logscale': 'logscale',
   'google-secops': 'yara-l',
@@ -82,6 +84,7 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
 const HUNT_PLATFORM_NAMES: Record<string, string> = {
   splunk: 'Splunk',
   'microsoft-sentinel': 'Microsoft Sentinel',
+  'microsoft-defender': 'Microsoft Defender XDR',
   'elastic-security': 'Elastic Security',
   'crowdstrike-logscale': 'CrowdStrike Falcon LogScale',
   'google-secops': 'Google SecOps',
@@ -308,6 +311,7 @@ export const huntHitRecurrence = (
 const HUNT_CONNECTOR_SETUP_SECTIONS: Record<string, string> = {
   'splunk-hunt': 'splunk',
   'microsoft-sentinel-hunt': 'microsoft-sentinel',
+  'microsoft-defender-hunt': 'microsoft-defender-xdr',
   'elastic-security-hunt': 'elastic-security',
   'crowdstrike-logscale-hunt': 'crowdstrike-logscale',
   'google-secops-hunt': 'google-secops',

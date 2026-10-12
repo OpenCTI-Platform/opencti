@@ -36,7 +36,7 @@ The first rule guarantees that a run never discloses an indicator to the readers
 4. It reports the keys of the hits holding each value. OpenCTI keeps one **sighting** per indicator or observable a seen value comes from and security platform, whichever hunt found it, updated in place at each run: its count holds the distinct hits of its values recorded so far, so a second run over the same events adds nothing, its dates the first and the latest hit, and it carries the markings and organizations of the run (see [Access rights](hunts.md#access-rights)). A pasted value is created as an observable by the connector, so that OpenCTI can sight it. A lookup that returns counts instead of events keeps the larger of the stored count and the count of the run.
 5. Each seen value gets one **observed data** per victim on the platform, counting its hits and dating its first and last hit over the whole run. It holds the observable of the value, typed by the pattern of its indicator (a domain is a Domain-Name, an address an IPv4-Addr), and the victim as a System related to its Hostname.
 
-Only hunt connectors that look up indicators run indicator hunts. The Splunk, CrowdStrike Falcon LogScale and Google SecOps hunt connectors do; the others run detection rule hunts. The checklist of the hunt says when no hunt connector of its scope supports indicator lookups.
+Only hunt connectors that look up indicators run indicator hunts. The Splunk, CrowdStrike Falcon LogScale, Google SecOps and Microsoft Defender XDR hunt connectors do; the others run detection rule hunts. The checklist of the hunt says when no hunt connector of its scope supports indicator lookups.
 
 ## Results and verdicts
 

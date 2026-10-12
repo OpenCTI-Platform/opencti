@@ -42,6 +42,7 @@ export const HUNT_PLATFORM_INTERNET = 'internet';
 export const HUNT_PLATFORMS = [
   'splunk',
   'microsoft-sentinel',
+  'microsoft-defender',
   'elastic-security',
   'crowdstrike-logscale',
   'google-secops',

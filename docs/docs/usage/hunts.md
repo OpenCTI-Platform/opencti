@@ -12,7 +12,7 @@ Hunts live in the **Defense** area of the navigation, under **Hunts**. The list 
 |---|---|
 | Hunt | The hypothesis and its logic: one or more [Sigma](https://sigmahq.io/) rules and, optionally, native queries per platform. A hunt is linked to the techniques (Attack Patterns) it covers, to the threats it targets (Intrusion Sets, Malware, Campaigns, Threat Actors) and to its sources (Indicators, Reports). |
 | Hunt run | One execution of a hunt by one hunt connector against one security platform over a time window. |
-| Hunt connector | A connector of type `INTERNAL_HUNT` executing hunts on one platform (Splunk, Microsoft Sentinel, Elastic Security, CrowdStrike Falcon LogScale, Google SecOps, OpenSearch, Internet infrastructure tracking). See [Hunt connectors](hunt-connectors.md). |
+| Hunt connector | A connector of type `INTERNAL_HUNT` executing hunts on one platform (Splunk, Microsoft Sentinel, Microsoft Defender XDR, Elastic Security, CrowdStrike Falcon LogScale, Google SecOps, OpenSearch, Internet infrastructure tracking). See [Hunt connectors](hunt-connectors.md). |
 | Verdict | The conclusion of a run: `pending`, `true_positive`, `benign` or `inconclusive`. |
 
 New to hunting? [Your first hunt](your-first-hunt.md) walks through an indicator hunt, then a hunt with a Sigma rule, in a few minutes.
