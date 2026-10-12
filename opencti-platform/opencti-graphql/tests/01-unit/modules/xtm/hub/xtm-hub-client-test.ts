@@ -29,6 +29,7 @@ const ECHOED_INPUT = '{ platformId: "platform-id", token: "platform-token", plat
 const UNKNOWN_FIELD_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; `
   + 'Field "platformContract" is not defined by type "RefreshPlatformRegistrationConnectivityStatusInput".';
 const OTHER_INPUT_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; Field "platformVersion" of required type "String!" was not provided.`;
+const CONTRACT_UPDATE_ERROR = 'Unable to update the "platformContract" of the platform';
 
 const statusResponse = (status: string) => ({ data: { data: { refreshPlatformRegistrationConnectivityStatus: { status } } } });
 const graphqlErrorResponse = (message: string) => ({ data: { data: null, errors: [{ message }] } });
@@ -99,10 +100,13 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     expect(vi.mocked(logApp.warn).mock.calls.filter(([message]) => message === FALLBACK_LOG)).toHaveLength(1);
   });
 
-  it('should return inactive without retrying when the hub rejects the refresh for another reason', async () => {
+  it.each([
+    { reason: 'another input error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(OTHER_INPUT_ERROR)) },
+    { reason: 'an error naming the edition field', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(CONTRACT_UPDATE_ERROR)) },
+  ])('should return inactive without retrying when the hub rejects the refresh with $reason', async ({ mockRejection }) => {
     // Given
     const { xtmHubClient } = await loadClient();
-    mockPost.mockRejectedValueOnce(badRequestError(OTHER_INPUT_ERROR));
+    mockRejection();
 
     // When
     const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });

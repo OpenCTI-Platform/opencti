@@ -16,10 +16,10 @@ interface RefreshRegistrationStatusResult {
   errors?: HubGraphQLError[];
 }
 
-// A hub older than the edition refresh rejects the unknown input field. GraphQL quotes the field name it rejects,
-// while the input value it echoes back holds an unquoted `platformContract` key on any other input error.
+// The input coercion error a hub older than the edition refresh (graphql-js 16) returns for the unknown field.
+const PLATFORM_CONTRACT_UNKNOWN_FIELD = 'Field "platformContract" is not defined by type "RefreshPlatformRegistrationConnectivityStatusInput"';
 const isPlatformContractRejected = (errors?: HubGraphQLError[]) => (errors ?? [])
-  .some((error) => typeof error?.message === 'string' && error.message.includes('"platformContract"'));
+  .some((error) => typeof error?.message === 'string' && error.message.includes(PLATFORM_CONTRACT_UNKNOWN_FIELD));
 
 // GraphQL input errors echo the submitted variables, the platform token included: never log their messages.
 const hubErrorCodes = (errors?: HubGraphQLError[]) => (errors ?? [])
