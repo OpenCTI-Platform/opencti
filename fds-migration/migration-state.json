@@ -489,6 +489,17 @@
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
       ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Enrichment drawer: count of the elements touched by a completed enrichment work",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/stix_core_objects/StixCoreObjectEnrichmentWorkTouchedElements.tsx"
+      ]
     }
   ]
 }

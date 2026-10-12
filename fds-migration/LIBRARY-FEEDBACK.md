@@ -2541,3 +2541,26 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+---
+
+## 67. No list row or disclosure primitive, so an expandable list of links stays MUI
+
+**Needed.** The enrichment drawer shows, under each completed enrichment work, a
+row that expands into the list of elements the enrichment touched. Each element
+row is a router link to the element.
+
+**Library today.** `@filigran/design-system` 1.2.0 exports no `List` / `ListItem`
+and no `Collapse` / accordion / disclosure component. `Tabs` and `Dialog` do not
+fit an inline expandable list, and `Chip` cannot be a link (entry 62).
+
+**What the product did.** `StixCoreObjectEnrichmentWorkTouchedElements.tsx` uses
+the library `Chip` for the count and keeps MUI `List`, `ListItem`,
+`ListItemButton`, `ListItemText` and `Collapse` for the rows and the toggle,
+marked `FDS-WORKAROUND #67`.
+
+**Ask.** A list row primitive that can render as a router link (`asChild` or a
+`linkComponent`), and a disclosure primitive (trigger + collapsible content).
+
+**Removal test.** `StixCoreObjectEnrichmentWorkTouchedElements.tsx` imports no
+list or collapse symbol from `@mui/material`.

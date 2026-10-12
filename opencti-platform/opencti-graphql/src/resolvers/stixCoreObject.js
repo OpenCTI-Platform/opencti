@@ -172,8 +172,8 @@ const stixCoreObjectResolvers = {
       restrictionOrganizationDelete: ({ organizationId, directContainerSharing }) => {
         return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
       },
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
+      askEnrichment: ({ connectorId, investigationId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId, { investigationId }),
+      askEnrichments: ({ connectorIds, investigationId }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds, { investigationId }),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       uploadAndAskJobImport: (args) => stixCoreObjectImportFile(context, context.user, id, args.file, args),
       askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),

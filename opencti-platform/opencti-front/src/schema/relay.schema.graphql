@@ -804,6 +804,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  touchedElementsTruncated: Boolean
 }
 
 type WorkEdge {
@@ -1133,6 +1135,7 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -9666,8 +9669,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File
 }
 
@@ -9722,8 +9725,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
@@ -12978,6 +12981,7 @@ type Workspace implements InternalObject & BasicObject {
   toConfigurationExport: String!
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
+  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
 }
 
 enum WorkspacesOrdering {
