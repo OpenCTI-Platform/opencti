@@ -900,7 +900,7 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
 
   return (
     <HuntEditContext.Provider value={canEdit}>
-      <div data-testid="hunt-run-page">
+      <div>
         <RunHeader
           run={run}
           huntId={huntId}

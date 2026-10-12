@@ -86,7 +86,7 @@ const RootHuntRunComponent = ({ queryRef, huntId, runId }: RootHuntRunComponentP
   }
   const title = t_i18n('Run of {date}', { values: { date: fldt(run.created_at) } });
   return (
-    <>
+    <div data-testid="hunt-run-page">
       <Breadcrumbs elements={[
         ...huntElements,
         { label: hunt.name, link: PATH_HUNT(huntId) },
@@ -94,7 +94,7 @@ const RootHuntRunComponent = ({ queryRef, huntId, runId }: RootHuntRunComponentP
       ]}
       />
       <HuntRun data={run} results={data} huntId={huntId} huntName={hunt.name} title={title} canEdit={canEdit} />
-    </>
+    </div>
   );
 };
 

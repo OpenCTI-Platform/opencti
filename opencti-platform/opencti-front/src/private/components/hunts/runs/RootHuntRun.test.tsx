@@ -40,12 +40,13 @@ const run = (overrides: Record<string, unknown> = {}) => ({
 describe('Hunt run route', () => {
   it('reads the run of the hunt in the URL, under the breadcrumbs of its hunt', async () => {
     await renderRunPage({ Hunt: hunt, HuntRun: () => run() });
-    const breadcrumbs = screen.getByTestId('navigation');
+    const page = screen.getByTestId('hunt-run-page');
+    const breadcrumbs = within(page).getByTestId('navigation');
     expect(breadcrumbs).toHaveTextContent('Defense');
     expect(within(breadcrumbs).getByRole('link', { name: 'Hunts' })).toHaveAttribute('href', '/dashboard/defense/hunts');
     expect(within(breadcrumbs).getByRole('link', { name: 'Encoded PowerShell' })).toHaveAttribute('href', '/dashboard/defense/hunts/hunt-1');
     expect(breadcrumbs).toHaveTextContent(/Run of .*2026/);
-    const body = screen.getByTestId('hunt-run-body');
+    const body = within(page).getByTestId('hunt-run-body');
     expect(body).toHaveTextContent(/^Run of .*2026/);
     // The edit right of the hunt, the user being able to change it
     expect(body).toHaveAttribute('data-can-edit', 'true');
