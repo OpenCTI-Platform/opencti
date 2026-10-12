@@ -62,6 +62,7 @@ import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '..
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_INVESTIGATION_POLICY } from '../modules/investigationRun/investigationRun-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
@@ -165,6 +166,11 @@ export const TELEMETRY_GAUGE_AI_INSIGHT_REQUEST = 'aiInsightRequestCount';
 export const TELEMETRY_GAUGE_ASK_AI_QUERY = 'askAiQueryCount';
 export const TELEMETRY_GAUGE_XTM_AGENT_CALL = 'xtmAgentCallCount';
 export const TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN = 'playbookAiAgentRunCount';
+// Case Autopilot (autonomous investigation runs) counters
+export const TELEMETRY_GAUGE_INVESTIGATION_RUN = 'investigationRunCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_RUN_OUTCOME = 'investigationRunOutcomeCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_FEEDBACK = 'investigationFeedbackCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_ENRICHMENT_JOB = 'investigationEnrichmentJobCount';
 // Product usage counters
 export const TELEMETRY_GAUGE_PLAYBOOK_EXECUTION = 'playbookExecutionCount';
 export const TELEMETRY_GAUGE_NOTIFICATION_SENT = 'notificationSentCount';
@@ -195,6 +201,10 @@ export const XTM_AGENT_CHANNELS = ['direct', 'direct_files'] as const;
 export type XtmAgentChannel = typeof XTM_AGENT_CHANNELS[number];
 export const NOTIFICATION_CHANNELS = ['email', 'webhook', 'ui'] as const;
 export type NotificationChannel = typeof NOTIFICATION_CHANNELS[number];
+export const INVESTIGATION_RUN_TRIGGERS = ['manual', 'playbook', 'case_rfi_creation'] as const;
+export const INVESTIGATION_RUN_OUTCOMES = ['completed', 'failed', 'cancelled'] as const;
+export const INVESTIGATION_FEEDBACK_ITEMS = ['hypothesis', 'recommendation'] as const;
+export const INVESTIGATION_FEEDBACK_DECISIONS = ['accepted', 'rejected'] as const;
 // Providers supported by the built-in LLM configuration (see database/ai-llm.ts).
 // Any other configured value is exported as 'other' to keep the is_ai_enabled
 // type dimension bounded.
@@ -332,6 +342,35 @@ export const addXtmAgentCallCount = (channel: XtmAgentChannel) => {
 export const addPlaybookAiAgentRunCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN, 1)
     .catch((reason) => logApp.warn('Error adding playbook AI agent run count to telemetry', { reason }));
+};
+
+// Fire-and-forget: a telemetry failure must never break an investigation.
+// Dimension values outside the bounded lists are ignored (cardinality discipline).
+export const addInvestigationRunCount = (trigger: string) => {
+  if (!(INVESTIGATION_RUN_TRIGGERS as readonly string[]).includes(trigger)) return;
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_INVESTIGATION_RUN}:${trigger}`, 1)
+    .catch((reason) => logApp.warn('Error adding investigation run count to telemetry', { reason }));
+};
+
+export const addInvestigationRunOutcomeCount = (outcome: string) => {
+  if (!(INVESTIGATION_RUN_OUTCOMES as readonly string[]).includes(outcome)) return;
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_INVESTIGATION_RUN_OUTCOME}:${outcome}`, 1)
+    .catch((reason) => logApp.warn('Error adding investigation run outcome count to telemetry', { reason }));
+};
+
+export const addInvestigationFeedbackCount = (item: string, decision: string) => {
+  if (!(INVESTIGATION_FEEDBACK_ITEMS as readonly string[]).includes(item) || !(INVESTIGATION_FEEDBACK_DECISIONS as readonly string[]).includes(decision)) return;
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_INVESTIGATION_FEEDBACK}:${item}:${decision}`, 1)
+    .catch((reason) => logApp.warn('Error adding investigation feedback count to telemetry', { reason }));
+};
+
+export const addInvestigationEnrichmentJobCount = (count: number) => {
+  const jobs = Math.floor(count);
+  if (!Number.isFinite(jobs) || jobs <= 0) {
+    return;
+  }
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INVESTIGATION_ENRICHMENT_JOB, jobs)
+    .catch((reason) => logApp.warn('Error adding investigation enrichment job count to telemetry', { reason }));
 };
 
 export const addPlaybookExecutionCount = () => {
@@ -521,6 +560,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    const investigationPoliciesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_INVESTIGATION_POLICY] });
+    manager.setInvestigationPoliciesCount(investigationPoliciesCount);
     // endregion
 
     // region History retention rule status
@@ -799,6 +840,32 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setXtmAgentCallItems(xtmAgentItems);
     const playbookAiAgentRunCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN);
     manager.setPlaybookAiAgentRunCount(playbookAiAgentRunCountInRedis);
+    const investigationRunItems: DimensionalGaugeItem[] = [];
+    for (let triggerIndex = 0; triggerIndex < INVESTIGATION_RUN_TRIGGERS.length; triggerIndex += 1) {
+      const trigger = INVESTIGATION_RUN_TRIGGERS[triggerIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_INVESTIGATION_RUN}:${trigger}`);
+      investigationRunItems.push({ value, attributes: { trigger } });
+    }
+    manager.setInvestigationRunItems(investigationRunItems);
+    const investigationRunOutcomeItems: DimensionalGaugeItem[] = [];
+    for (let outcomeIndex = 0; outcomeIndex < INVESTIGATION_RUN_OUTCOMES.length; outcomeIndex += 1) {
+      const outcome = INVESTIGATION_RUN_OUTCOMES[outcomeIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_INVESTIGATION_RUN_OUTCOME}:${outcome}`);
+      investigationRunOutcomeItems.push({ value, attributes: { outcome } });
+    }
+    manager.setInvestigationRunOutcomeItems(investigationRunOutcomeItems);
+    const investigationFeedbackItems: DimensionalGaugeItem[] = [];
+    for (let itemIndex = 0; itemIndex < INVESTIGATION_FEEDBACK_ITEMS.length; itemIndex += 1) {
+      for (let decisionIndex = 0; decisionIndex < INVESTIGATION_FEEDBACK_DECISIONS.length; decisionIndex += 1) {
+        const item = INVESTIGATION_FEEDBACK_ITEMS[itemIndex];
+        const decision = INVESTIGATION_FEEDBACK_DECISIONS[decisionIndex];
+        const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_INVESTIGATION_FEEDBACK}:${item}:${decision}`);
+        investigationFeedbackItems.push({ value, attributes: { item, decision } });
+      }
+    }
+    manager.setInvestigationFeedbackItems(investigationFeedbackItems);
+    const investigationEnrichmentJobCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_ENRICHMENT_JOB);
+    manager.setInvestigationEnrichmentJobCount(investigationEnrichmentJobCountInRedis);
     const playbookExecutionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION);
     manager.setPlaybookExecutionCount(playbookExecutionCountInRedis);
     const notificationSentItems: DimensionalGaugeItem[] = [];

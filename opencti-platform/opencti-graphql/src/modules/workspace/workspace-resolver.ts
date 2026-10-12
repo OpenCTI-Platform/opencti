@@ -82,7 +82,9 @@ const workspaceResolvers: Resolvers = {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_WORKSPACE];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_WORKSPACE });
+        // Access is checked again on every event: an investigation graph withheld or restricted while it is
+        // listened to reaches its former readers no more.
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_WORKSPACE, recheckAccess: true });
       },
     },
   },

@@ -29,6 +29,11 @@ const CustomizationMenu: FunctionComponent = () => {
       isEE: true,
     },
     {
+      path: '/dashboard/settings/customization/case_autopilot',
+      label: 'Investigation policies',
+      isEE: true,
+    },
+    {
       path: '/dashboard/settings/customization/exclusion_lists',
       label: 'Exclusion lists',
     },

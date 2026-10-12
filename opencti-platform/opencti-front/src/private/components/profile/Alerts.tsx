@@ -132,13 +132,16 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
+// Case Autopilot runs: completed -> low, waiting for an approval -> medium, failed -> critical.
 const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
   switch (operation) {
     case 'update':
       return 'info';
     case 'delete':
+    case 'investigation_failed':
       return 'critical';
     case 'multiple':
+    case 'investigation_awaiting_approval':
       return 'medium';
     default:
       return 'low';
@@ -288,6 +291,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           create: t_i18n('Creation'),
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
+          investigation_awaiting_approval: t_i18n('Investigation awaiting approval'),
+          investigation_completed: t_i18n('Investigation completed'),
+          investigation_failed: t_i18n('Investigation failed'),
           none: t_i18n('Unknown'),
         };
         return (

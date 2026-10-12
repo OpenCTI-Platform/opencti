@@ -16,6 +16,7 @@ export type StixDomainObjectTabsBoxTab
     | 'sightings'
     | 'entities'
     | 'observables'
+    | 'autopilot'
     | 'relationships'
     | 'files'
     | 'history';
@@ -54,6 +55,10 @@ const TABS_INFO: readonly TabInfo[] = [{
   tab: 'content',
   path: 'content',
   label: 'Content',
+}, {
+  tab: 'autopilot',
+  path: 'autopilot',
+  label: 'Autopilot',
 }, {
   tab: 'analyses',
   path: 'analyses',

@@ -56,6 +56,44 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(typeof textAttribute2).toEqual('object');
     expect(textAttribute2).toEqual(result);
   });
+  it('should render the Case Autopilot report sections as sanitized HTML and its completion as a date', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    const table = '| Rank | Candidate |\n| --- | --- |\n| 1 | APT28 <script>alert(1)</script> |';
+    const section = buildReadableAttribute(table, { attribute: 'latestInvestigationRun.report_sections.hypotheses' }) as React.ReactElement<{ dangerouslySetInnerHTML: { __html: string } }>;
+    const html = section.props.dangerouslySetInnerHTML.__html;
+    expect(html).toContain('<table>');
+    expect(html).toContain('<td>APT28 </td>');
+    expect(html).not.toContain('<script>');
+    expect(buildReadableAttribute('2026-10-03T18:00:00.000Z', { attribute: 'latestInvestigationRun.completed_at' })).toEqual('2026-10-03');
+  });
+  it('should escape every other value of the Case Autopilot investigation, never inserting it as HTML', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    const sections = { hypotheses: '<script>alert(1)</script>', report: '<img src="x" onerror="alert(1)">' };
+    const whole = buildReadableAttribute({ report_sections: sections }, { attribute: 'latestInvestigationRun' }) as string;
+    expect(whole).not.toContain('<script>');
+    expect(whole).not.toContain('<img');
+    expect(whole).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    const together = buildReadableAttribute(sections, { attribute: 'latestInvestigationRun.report_sections' }) as string;
+    expect(together).not.toContain('<script>');
+    expect(buildReadableAttribute(['<b>one</b>', 'two'], { attribute: 'latestInvestigationRun.steps' })).toEqual('&lt;b&gt;one&lt;/b&gt;, two');
+    // A table cell or a list item is a text node escaped when rendered: escaped once, never twice
+    const cell = renderToString(<td>{buildReadableAttribute('<b>one</b>', { attribute: 'latestInvestigationRun.summary' }, true)}</td>);
+    expect(cell.replaceAll('\u200B', '')).toContain('&lt;b&gt;one&lt;/b&gt;');
+    const list = buildReadableAttribute(['<b>one</b>'], { attribute: 'latestInvestigationRun.steps', displayStyle: 'list' });
+    expect(list).toEqual('<ul><li>&lt;b&gt;one&lt;/b&gt;</li></ul>');
+  });
+  it('should export a missing date as an empty value', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    expect(buildReadableAttribute('', { attribute: 'latestInvestigationRun.completed_at' })).toEqual('');
+    expect(buildReadableAttribute(null, { attribute: 'latestInvestigationRun.completed_at' })).toEqual('');
+    expect(buildReadableAttribute(undefined, { attribute: 'published' })).toEqual('');
+  });
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
     const { buildReadableAttribute } = hook.result.current;

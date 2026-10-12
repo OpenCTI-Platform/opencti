@@ -26,6 +26,7 @@ import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { isElementWithheld, unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { filterUnwantedEntitiesOut } from '../../domain/container';
@@ -40,6 +41,24 @@ export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspa
   return { ...element, manifest: undefined };
 };
 
+// Every read of a workspace goes through here, the edits that return it included: a withheld investigation graph
+// answers as an unknown one.
+const loadWorkspace = (context: AuthContext, user: AuthUser, workspaceId: string) => {
+  return storeLoadById<BasicStoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+  ).then((workspace) => (workspace?.type === 'investigation' ? unlessWithheld(context, user, ENTITY_TYPE_WORKSPACE, workspace) : workspace));
+};
+
+// Any other workspace is left to the access checks of the edit itself.
+const checkWorkspaceNotWithheld = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
+  if (await isElementWithheld(context, user, ENTITY_TYPE_WORKSPACE, workspaceId)) {
+    throw FunctionalError(`Workspace ${workspaceId} cannot be found`);
+  }
+};
+
 export const findById = (
   context: AuthContext,
   user: AuthUser,
@@ -50,20 +69,17 @@ export const findById = (
       id: PLATFORM_DASHBOARD,
     } as BasicStoreEntityWorkspace;
   }
-  return storeLoadById<BasicStoreEntityWorkspace>(
-    context,
-    user,
-    workspaceId,
-    ENTITY_TYPE_WORKSPACE,
-  );
+  return loadWorkspace(context, user, workspaceId);
 };
 
-export const findAllWorkspaces = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  return fullEntitiesList(context, user, [ENTITY_TYPE_WORKSPACE], args);
+export const findAllWorkspaces = async (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
+  const filters = await withoutWithheldElements(context, user, ENTITY_TYPE_WORKSPACE, args.filters);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_WORKSPACE], { ...args, filters });
 };
 
-export const findWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
+export const findWorkspacePaginated = async (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
+  const filters = await withoutWithheldElements(context, user, ENTITY_TYPE_WORKSPACE, args.filters);
+  return pageEntitiesConnection<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], { ...args, filters });
 };
 
 export const workspaceEditAuthorizedMembers = async (
@@ -71,13 +87,16 @@ export const workspaceEditAuthorizedMembers = async (
   user: AuthUser,
   workspaceId: string,
   input: MemberAccessInput[],
+  options?: { skipAdminValidation?: boolean },
 ) => {
+  await checkWorkspaceNotWithheld(context, user, workspaceId);
   const args = {
     entityId: workspaceId,
     input,
     requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
     entityType: ENTITY_TYPE_WORKSPACE,
     busTopicKey: ENTITY_TYPE_WORKSPACE,
+    skipAdminValidation: options?.skipAdminValidation,
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);
@@ -248,6 +267,7 @@ export const workspaceEditField = async (
   workspaceId: string,
   inputs: EditInput[],
 ) => {
+  await checkWorkspaceNotWithheld(context, user, workspaceId);
   await checkInvestigatedEntitiesInputs(context, user, inputs);
   return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
 };
@@ -258,7 +278,7 @@ export const workspaceCleanContext = async (
   workspaceId: string,
 ) => {
   await delEditContext(user, workspaceId);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then(
+  return loadWorkspace(context, user, workspaceId).then(
     (userToReturn) => {
       return notify(
         BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
@@ -276,7 +296,7 @@ export const workspaceEditContext = async (
   input: EditContext,
 ) => {
   await setEditContext(user, workspaceId, input);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then(
+  return loadWorkspace(context, user, workspaceId).then(
     (workspaceToReturn) => notify(
       BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
       workspaceToReturn,

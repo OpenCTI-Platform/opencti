@@ -13694,6 +13694,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | Status
   | PublicDashboard
   | Pir
+  | InvestigationRun
+  | InvestigationPolicy
   | Theme
   | CustomView
   | IMEI
@@ -13790,6 +13792,8 @@ union StixObjectOrStixRelationship =
   | CsvMapper
   | PublicDashboard
   | Pir
+  | InvestigationRun
+  | InvestigationPolicy
   | SecurityCoverage
   | SecurityCoverageResult
   | CustomView

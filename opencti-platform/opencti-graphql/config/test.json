@@ -113,6 +113,9 @@
   "ingestion_manager": {
     "enabled": false
   },
+  "investigation_run_manager": {
+    "enabled": false
+  },
   "telemetry_manager": {
     "enabled": false
   },

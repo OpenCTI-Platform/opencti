@@ -8,6 +8,7 @@ import * as accessModule from '../../../src/utils/authorizedMembers';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
 import * as cacheModule from '../../../src/database/cache';
+import * as withheldElements from '../../../src/utils/withheldElements';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { OrderingMode } from '../../../src/generated/graphql';
@@ -109,6 +110,8 @@ describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () =
     vi.resetAllMocks();
     vi.spyOn(engine, 'elCount').mockResolvedValue(0);
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // The drafts withheld from readers are left out by withheldElements, tested on its own.
+    vi.spyOn(withheldElements, 'withoutWithheldElements').mockImplementation(async (_context, _user, _type, filters) => filters);
   });
 
   it('should not call fullEntitiesList when no workflowInstanceCurrentState filter is present', async () => {
@@ -205,6 +208,8 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // The drafts withheld from readers are left out by withheldElements, tested on its own.
+    vi.spyOn(withheldElements, 'withoutWithheldElements').mockImplementation(async (_context, _user, _type, filters) => filters);
   });
 
   it('should fall through to pageEntitiesConnection when orderBy is not workflowInstance', async () => {
@@ -320,6 +325,8 @@ describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)'
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // The drafts withheld from readers are left out by withheldElements, tested on its own.
+    vi.spyOn(withheldElements, 'withoutWithheldElements').mockImplementation(async (_context, _user, _type, filters) => filters);
   });
 
   it('should fall through to distributionEntities when field is not workflowInstance', async () => {
@@ -421,6 +428,8 @@ describe('resolveSortByRefUsers (via findDraftWorkspacePaginated with objectAssi
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // The drafts withheld from readers are left out by withheldElements, tested on its own.
+    vi.spyOn(withheldElements, 'withoutWithheldElements').mockImplementation(async (_context, _user, _type, filters) => filters);
     vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(mockUsers as any);
   });
 

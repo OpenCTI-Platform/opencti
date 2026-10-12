@@ -6,9 +6,41 @@ import { ForbiddenAccess } from '../config/errors';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserCanAccessStoreElement, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
-import type { BasicStoreSettingsMessage } from '../types/settings';
+import { isUserAccountValid, resolveUserByIdFromCache } from '../modules/user/user-domain';
+import { computeLoaders } from '../http/httpAuthenticatedContext';
+import { withoutWithheldHits } from '../utils/withheldElements';
+import type { BasicStoreSettings, BasicStoreSettingsMessage } from '../types/settings';
+
+/**
+ * Whether the subscriber may still receive an event of an instance it listens
+ * to. The user of a subscription context is a snapshot taken when the socket
+ * opened, with the account state, capabilities, groups, markings and
+ * organizations of that moment, and so is its membership of the platform
+ * organization: all are read again for every event, so an account locked or
+ * expired since then, a capability removed or an access lost stops the events.
+ * An event that passes is resolved with that current identity.
+ */
+export const canSubscriberStillAccess = async (context: any, instance: any, requiredCapabilities: string[] = []): Promise<boolean> => {
+  try {
+    const subscriber = context?.user?.id ? await resolveUserByIdFromCache(context, context.user.id) : undefined;
+    if (!subscriber) return false;
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    if (!isUserAccountValid(subscriber, settings)) return false;
+    if (!requiredCapabilities.every((capability) => isUserHasCapability(subscriber, capability))) return false;
+    const user = { ...context.user, ...subscriber, origin: context.user.origin };
+    const userInsidePlatformOrganization = isUserInPlatformOrganization(subscriber, settings);
+    const subscriberContext = { ...context, user, user_inside_platform_organization: userInsidePlatformOrganization };
+    if (!await isUserCanAccessStoreElement(subscriberContext, user, instance)) return false;
+    if ((await withoutWithheldHits(subscriberContext, user, [instance])).length === 0) return false;
+    Object.assign(context, { user, user_inside_platform_organization: userInsidePlatformOrganization, batch: computeLoaders(context, user) });
+    return true;
+  } catch {
+    // A throw here closes the socket (4500) and orphans the redis sub.
+    return false;
+  }
+};
 
 const withCancel = (asyncIterator: AsyncIterableIterator<any>, onCancel: () => void): AsyncIterable<any> => {
   const returnFn = asyncIterator.return;
@@ -62,27 +94,37 @@ export const subscribeToInstanceEvents = async (
     cleanFn?: () => void;
     notifySelf?: boolean;
     type?: string | string[];
+    // Check the subscriber's access on every event, for an instance whose markings can change while it is listened to.
+    recheckAccess?: boolean;
+    // The capabilities the subscription requires, checked again on every event with recheckAccess.
+    requiredCapabilities?: string[];
   } = {},
 ): Promise<AsyncIterable<any>> => {
-  const { preFn, cleanFn, notifySelf = false, type } = opts;
+  const { preFn, cleanFn, notifySelf = false, type, recheckAccess = false, requiredCapabilities = [] } = opts;
   if (preFn) preFn();
   const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
-  const filtering = await withFilter(
-    () => pubSubAsyncIterator(topics),
-    (payload) => {
-      // A throw here closes the socket (4500) and orphans the redis sub; guard before deref.
-      if (!payload || !payload.instance) {
+  const isEventOfInstance = (payload: any) => {
+    // A throw here closes the socket (4500) and orphans the redis sub; guard before deref.
+    if (!payload || !payload.instance) {
+      return false;
+    }
+    if (!notifySelf) {
+      // Only this branch needs the event user; a user-less (system) event must still reach notifySelf subs.
+      if (!payload.user) {
         return false;
       }
-      if (!notifySelf) {
-        // Only this branch needs the event user; a user-less (system) event must still reach notifySelf subs.
-        if (!payload.user) {
-          return false;
-        }
-        return payload.user.id !== context.user.id && payload.instance.id === id;
+      return payload.user.id !== context.user.id && payload.instance.id === id;
+    }
+    return payload.instance.id === id;
+  };
+  const filtering = await withFilter(
+    () => pubSubAsyncIterator(topics),
+    async (payload) => {
+      if (!isEventOfInstance(payload)) {
+        return false;
       }
-      return payload.instance.id === id;
+      return !recheckAccess || canSubscriberStillAccess(context, payload.instance, requiredCapabilities);
     },
   )(parent, { id }, context);
   if (cleanFn) {

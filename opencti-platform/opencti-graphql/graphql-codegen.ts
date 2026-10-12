@@ -69,6 +69,8 @@ const config: CodegenConfig = {
           SavedFilter: '../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter',
           FintelDesign: '../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign',
           Pir: '../modules/pir/pir-types#BasicStoreEntityPir',
+          InvestigationRun: '../modules/investigationRun/investigationRun-types#BasicStoreEntityInvestigationRun',
+          InvestigationPolicy: '../modules/investigationRun/investigationRun-types#BasicStoreEntityInvestigationPolicy',
           SecurityPlatform: '../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform',
           SecurityCoverage: '../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage',
           SecurityCoverageResult: '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult',
