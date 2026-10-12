@@ -3532,8 +3532,13 @@ class OpenCTIStix2:
             )
             if connector_ids is None:
                 connector_ids = item["connector_ids"]
+            investigation_id = self.opencti.get_attribute_in_extension(
+                "investigation_id", item
+            )
             self.opencti.stix_core_object.ask_enrichments(
-                element_id=item["id"], connector_ids=connector_ids
+                element_id=item["id"],
+                connector_ids=connector_ids,
+                investigation_id=investigation_id,
             )
         elif operation == "add_organizations":
             self.element_add_organizations(item)
