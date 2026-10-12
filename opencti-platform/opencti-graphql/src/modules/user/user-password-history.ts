@@ -9,6 +9,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { type BasicStoreEntityUser, ENTITY_TYPE_USER } from './user-types';
 
 // Password history: a new local password must differ from the current one and the N - 1 before it.
@@ -179,12 +180,28 @@ export const trimAllUsersPasswordHistory = async (n: number) => {
   });
 };
 
-// Run at startup: with the feature flag off, the stored value is reset and every history deleted,
+// With the feature flag off the setting is not part of the schema, so it is removed straight from the store
+const clearStoredPasswordHistoryCount = async () => {
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_INTERNAL_OBJECTS],
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: "ctx._source.remove('password_policy_history_count');" },
+      query: {
+        bool: {
+          must: [{ term: { 'entity_type.keyword': ENTITY_TYPE_SETTINGS } }],
+          filter: [{ exists: { field: 'password_policy_history_count' } }],
+        },
+      },
+    },
+  });
+  await publishCacheResetEvent(ENTITY_TYPE_SETTINGS);
+};
+
+// Run at startup: with the feature flag off, the stored value is removed and every history deleted,
 // so turning the flag back on later always starts from scratch.
-export const cleanUpPasswordHistoryWhenDisabled = async (
-  settings: Pick<BasicStoreSettings, 'password_policy_history_count'>,
-  resetStoredCount: () => Promise<unknown>,
-) => {
+export const cleanUpPasswordHistoryWhenDisabled = async (settings: Pick<BasicStoreSettings, 'password_policy_history_count'>) => {
   if (isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
     return;
   }
@@ -195,7 +212,7 @@ export const cleanUpPasswordHistoryWhenDisabled = async (
   }
   logApp.info('[PASSWORD_HISTORY] Feature disabled, removing stored password history', { storedCount, usersWithHistory });
   if (storedCount !== 0) {
-    await resetStoredCount();
+    await clearStoredPasswordHistoryCount();
   }
   if (usersWithHistory > 0) {
     await clearAllUsersPasswordHistory();

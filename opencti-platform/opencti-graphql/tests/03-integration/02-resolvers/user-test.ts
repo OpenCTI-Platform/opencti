@@ -2397,8 +2397,9 @@ describe('Password history', () => {
     expect((await setPassword(id, 'Reset-Pass-1!')).errors).toBeUndefined();
   });
 
-  it('refuses a password sent with another field, and saves nothing', async () => {
+  it('refuses a password sent with another field while the history applies, and saves nothing', async () => {
     const id = await createUser('mixed', 'Mixed-Pass-1!');
+    await setHistoryCount(1);
     const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
     await queryAsAdminWithError({
       query: UPDATE_QUERY,
@@ -2406,6 +2407,22 @@ describe('Password history', () => {
     }, 'The password must be changed on its own');
     const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
     expect(after.password).toEqual(before.password);
+    await setHistoryCount(0);
+  });
+
+  // Without a history there is nothing to learn from a refusal, so existing API calls keep working
+  it('accepts a password sent with another field while the history does not apply', async () => {
+    const id = await createUser('mixed-off', 'Mixed-Off-Pass-1!');
+    await setHistoryCount(0);
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password', value: ['Mixed-Off-Pass-2!'] }, { key: 'language', value: ['fr-fr'] }] },
+    });
+    expect(result.errors).toBeUndefined();
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password).not.toEqual(before.password);
+    expect(after.language).toEqual('fr-fr');
   });
 
   it('refuses any direct write of the history and never exposes it', async () => {
