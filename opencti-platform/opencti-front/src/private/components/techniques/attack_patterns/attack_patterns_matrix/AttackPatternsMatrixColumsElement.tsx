@@ -5,6 +5,7 @@ import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_p
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
+  applyCellDecoration,
   getBoxStyles,
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
@@ -13,9 +14,14 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { useFormatter } from '../../../../../components/i18n';
+import { MatrixConfig } from './attackPatternsMatrixConfig';
+import AttackPatternsMatrixCellTooltip from './AttackPatternsMatrixCellTooltip';
+import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
+  config: MatrixConfig;
+  decoration?: CellDecoration;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
@@ -26,6 +32,8 @@ interface AttackPatternsMatrixColumnsElementProps {
 
 const AttackPatternsMatrixColumnsElement = ({
   attackPattern,
+  config,
+  decoration,
   handleOpen,
   attackPatternIdsToOverlap,
   isSecurityPlatform,
@@ -92,9 +100,12 @@ const AttackPatternsMatrixColumnsElement = ({
   const styles = isCoverage
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
-  const { border, backgroundColor } = styles;
+  const { border, borderColor, backgroundColor, labelColor } = applyCellDecoration(styles, decoration);
 
   const a11yProps = () => {
+    if (decoration) {
+      return { 'aria-label': decoration.accessibleName };
+    }
     const scoreValue = getAvgCoverageScore();
     if (scoreValue) {
       return {
@@ -104,8 +115,17 @@ const AttackPatternsMatrixColumnsElement = ({
     return undefined;
   };
 
-  return (
+  // In keyboard mode the cell is a real button, so it is focusable and opens its menu with Enter or Space.
+  const buttonProps = config.keyboardCells
+    ? { component: 'button' as const, type: 'button' as const }
+    : {};
+  const buttonResetSx = config.keyboardCells
+    ? { font: 'inherit', color: 'inherit', textAlign: 'left', margin: 0, appearance: 'none' } as const
+    : {};
+
+  const cell = (
     <Box
+      {...buttonProps}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => handleOpen(attackPattern, e)}
@@ -114,6 +134,7 @@ const AttackPatternsMatrixColumnsElement = ({
         display: 'flex',
         cursor: 'pointer',
         border,
+        borderColor,
         backgroundColor,
         padding: 1.25,
         justifyContent: 'space-between',
@@ -122,10 +143,11 @@ const AttackPatternsMatrixColumnsElement = ({
         whiteSpace: 'normal',
         width: '100%',
         position: 'relative',
+        ...buttonResetSx,
       }}
     >
-      <Typography variant="body2" fontSize={10}>
-        {attackPattern.name}
+      <Typography variant="body2" fontSize={10} color={labelColor} component={config.keyboardCells ? 'span' : 'p'}>
+        {config.formatLabel(attackPattern)}
       </Typography>
 
       {isCoverage && attackPattern.isCovered && (
@@ -146,6 +168,8 @@ const AttackPatternsMatrixColumnsElement = ({
       )}
     </Box>
   );
+
+  return <AttackPatternsMatrixCellTooltip decoration={decoration}>{cell}</AttackPatternsMatrixCellTooltip>;
 };
 
 export default AttackPatternsMatrixColumnsElement;

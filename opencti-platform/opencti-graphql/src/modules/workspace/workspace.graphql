@@ -106,10 +106,17 @@ input ImportWidgetInput {
     dashboardManifest: String
 }
 
+enum InvestigationUsageEvent {
+    OPENED
+    MATRIX_VIEWED
+    HEATMAP_ENABLED
+}
+
 type Mutation {
     workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     investigationDuplicate(input: InvestigationDuplicateInput!): Workspace @auth(for: [INVESTIGATION_INUPDATE])
+    investigationUsageEvent(id: ID!, event: InvestigationUsageEvent!): Boolean @auth(for: [EXPLORE, INVESTIGATION])
     workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE, INVESTIGATION_INUPDATE_INDELETE])
     workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])

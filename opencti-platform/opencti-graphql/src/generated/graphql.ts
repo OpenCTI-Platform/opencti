@@ -14717,6 +14717,12 @@ export type InvestigationDuplicateInput = {
   name: Scalars['String']['input'];
 };
 
+export enum InvestigationUsageEvent {
+  HeatmapEnabled = 'HEATMAP_ENABLED',
+  MatrixViewed = 'MATRIX_VIEWED',
+  Opened = 'OPENED'
+}
+
 export type JsonAttributeBasedOn = {
   __typename?: 'JsonAttributeBasedOn';
   identifier?: Maybe<Array<Maybe<JsonIdentifier>>>;
@@ -17471,6 +17477,7 @@ export type Mutation = {
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
   investigationDuplicate?: Maybe<Workspace>;
+  investigationUsageEvent?: Maybe<Scalars['Boolean']['output']>;
   jsonMapperAdd?: Maybe<JsonMapper>;
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
   jsonMapperFieldPatch?: Maybe<JsonMapper>;
@@ -18970,6 +18977,12 @@ export type MutationIntrusionSetEditArgs = {
 
 export type MutationInvestigationDuplicateArgs = {
   input: InvestigationDuplicateInput;
+};
+
+
+export type MutationInvestigationUsageEventArgs = {
+  event: InvestigationUsageEvent;
+  id: Scalars['ID']['input'];
 };
 
 
@@ -34055,6 +34068,7 @@ export type SubAttackPatternForMatrix = {
   attack_pattern_id: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type SubType = {
@@ -41121,6 +41135,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
+  InvestigationUsageEvent: InvestigationUsageEvent;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
@@ -48986,6 +49001,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
   investigationDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationInvestigationDuplicateArgs, 'input'>>;
+  investigationUsageEvent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationInvestigationUsageEventArgs, 'event' | 'id'>>;
   jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
   jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
@@ -52985,6 +53001,7 @@ export type SubAttackPatternForMatrixResolvers<ContextType = any, ParentType ext
   attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{

@@ -13,6 +13,7 @@ import type {
   EditInput,
   ImportWidgetInput,
   InputMaybe,
+  InvestigationUsageEvent,
   MemberAccessInput,
   QueryWorkspacesArgs,
   WorkspaceAddInput,
@@ -30,6 +31,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
+import { addInvestigationHeatmapEnabledCount, addInvestigationMatrixViewedCount, addInvestigationOpenedCount } from '../../manager/telemetryManager';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 
@@ -401,6 +403,27 @@ export const investigationDuplicate = async (
     context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input: sanitizeElement },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+};
+
+const INVESTIGATION_USAGE_COUNTERS: Record<InvestigationUsageEvent, () => void> = {
+  OPENED: addInvestigationOpenedCount,
+  MATRIX_VIEWED: addInvestigationMatrixViewedCount,
+  HEATMAP_ENABLED: addInvestigationHeatmapEnabledCount,
+};
+
+export const investigationUsageEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  event: InvestigationUsageEvent,
+): Promise<boolean> => {
+  const workspace = await findById(context, user, id);
+  if (!workspace || workspace.type !== 'investigation') {
+    throw ForbiddenAccess();
+  }
+  // Fire-and-forget: a Redis failure is logged by the counter and never surfaced to the caller.
+  INVESTIGATION_USAGE_COUNTERS[event]();
+  return true;
 };
 
 export const workspaceImportWidgetConfiguration = async (

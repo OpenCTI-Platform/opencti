@@ -8,6 +8,9 @@ import {
   addAskAiQueryCount,
   addChatbotMessageCount,
   addDisseminationCount,
+  addInvestigationHeatmapEnabledCount,
+  addInvestigationMatrixViewedCount,
+  addInvestigationOpenedCount,
   addNotificationSentCount,
   ASK_AI_FEATURES,
   fetchTelemetryData,
@@ -16,6 +19,9 @@ import {
   TELEMETRY_GAUGE_DISSEMINATION,
   TELEMETRY_GAUGE_DRAFT_CREATION,
   TELEMETRY_GAUGE_EXPORT_GENERATED,
+  TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED,
+  TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED,
+  TELEMETRY_GAUGE_INVESTIGATION_OPENED,
   TELEMETRY_GAUGE_NLQ,
   TELEMETRY_GAUGE_NOTIFICATION_SENT,
 } from '../../../src/manager/telemetryManager';
@@ -39,6 +45,7 @@ import { askEntityExport, askListExport } from '../../../src/domain/stix';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
+import { addWorkspace, workspaceDelete } from '../../../src/modules/workspace/workspace-domain';
 
 describe('Telemetry manager test coverage', () => {
   let filigranTelemetryMeterManager: TelemetryMeterManager;
@@ -266,5 +273,54 @@ describe('Telemetry manager test coverage', () => {
     }
     expect(await redisGetTelemetry(TELEMETRY_GAUGE_NLQ)).toBe(1);
     expect(await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED)).toBe(2);
+  });
+
+  describe('Verify investigation telemetry metrics get collected', () => {
+    let investigationId: string;
+
+    beforeAll(async () => {
+      await redisClearTelemetry();
+      const investigation = await addWorkspace(testContext, ADMIN_USER, { name: 'telemetry-investigation', type: 'investigation' });
+      investigationId = investigation.id;
+    });
+
+    afterAll(async () => {
+      await workspaceDelete(testContext, ADMIN_USER, investigationId);
+    });
+
+    test('investigation counters are incremented in redis', async () => {
+      // WHEN each usage event is recorded twice
+      addInvestigationOpenedCount();
+      addInvestigationOpenedCount();
+      addInvestigationMatrixViewedCount();
+      addInvestigationMatrixViewedCount();
+      addInvestigationHeatmapEnabledCount();
+      addInvestigationHeatmapEnabledCount();
+      // THEN redis holds the totals (fire-and-forget writes, so poll)
+      const countersUpdated = async () => {
+        return await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED) === 2
+          && await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED) === 2
+          && await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED) === 2;
+      };
+      await awaitUntilCondition(countersUpdated, 3000, { message: 'Investigation telemetry counters were not updated in time' });
+      expect(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED)).toBe(2);
+      expect(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED)).toBe(2);
+      expect(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED)).toBe(2);
+    });
+
+    test('investigation gauge and counters are read by the telemetry manager', async () => {
+      // WHEN telemetry data is fetched
+      await awaitUntilCondition(async () => {
+        await fetchTelemetryData(filigranTelemetryMeterManager);
+        return filigranTelemetryMeterManager.investigationCount >= 1
+          && filigranTelemetryMeterManager.investigationOpenedCount === 2;
+      }, 3000, { message: 'Investigation telemetry data was not updated in time' });
+      // THEN the investigation workspaces are counted
+      expect(filigranTelemetryMeterManager.investigationCount).toBeGreaterThanOrEqual(1);
+      // AND the counters match the redis values
+      expect(filigranTelemetryMeterManager.investigationOpenedCount).toBe(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED));
+      expect(filigranTelemetryMeterManager.investigationMatrixViewedCount).toBe(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED));
+      expect(filigranTelemetryMeterManager.investigationHeatmapEnabledCount).toBe(await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED));
+    });
   });
 });
