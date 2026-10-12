@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 // The registry imports the hunt component, which imports it back through the playbook utilities: it is loaded first
 import '../../../../../src/modules/playbook/playbook-components';
+// A derived hunt is identified by its name, as the Hunt entity type defines it
+import '../../../../../src/modules/index';
 import { storeLoadById, topEntitiesList } from '../../../../../src/database/middleware-loader';
 import { ForbiddenAccess } from '../../../../../src/config/errors';
 import { checkHuntEditAccess, filterEditableHunts } from '../../../../../src/modules/hunt/hunt-access';
@@ -9,10 +11,14 @@ import { createHuntRuns, designateHuntPlaybookLeader } from '../../../../../src/
 import { findPlaybookHuntRuns, resumeHuntPlaybookStep } from '../../../../../src/modules/hunt/hunt-playbook';
 import {
   PLAYBOOK_HUNT_COMPONENT,
+  PLAYBOOK_HUNT_SOURCE_DERIVED,
   resolvePlaybookHunts,
   writePlaybookDefinitionHuntSteps,
   writePlaybookHuntStep,
 } from '../../../../../src/modules/playbook/components/hunt-component';
+import { deriveHuntContent } from '../../../../../src/modules/hunt/hunt-derivation';
+import { addHunt } from '../../../../../src/modules/hunt/hunt-domain';
+import { RELATION_OBJECT_MARKING } from '../../../../../src/schema/stixRefRelationship';
 import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { HUNT_MANAGER_USER } from '../../../../../src/utils/access';
@@ -47,6 +53,16 @@ vi.mock('../../../../../src/database/engine', async (importOriginal) => ({
 vi.mock('../../../../../src/modules/hunt/hunt-lock', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-lock')>(),
   withHuntLock: vi.fn(async (_key, action) => action()),
+}));
+
+vi.mock('../../../../../src/modules/hunt/hunt-derivation', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-derivation')>(),
+  deriveHuntContent: vi.fn(),
+}));
+
+vi.mock('../../../../../src/modules/hunt/hunt-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-domain')>(),
+  addHunt: vi.fn(),
 }));
 
 vi.mock('../../../../../src/modules/hunt/huntRun/huntRun-domain', async (importOriginal) => ({
@@ -226,5 +242,70 @@ describe('Run hunts playbook step access', () => {
     const anonymous = await PLAYBOOK_HUNT_COMPONENT.schema() as unknown as { properties: { hunt_ids: { items: { oneOf: unknown[] } } } };
     expect(anonymous.properties.hunt_ids.items.oneOf).toEqual([]);
     expect(topEntitiesList).not.toHaveBeenCalled();
+  });
+});
+
+describe('Run hunts playbook step deriving a hunt from each element', () => {
+  const context = { user: { id: 'user-1' } } as AuthContext;
+  const step = { applyToElements: 'only-main', hunt_source: PLAYBOOK_HUNT_SOURCE_DERIVED, hunt_ids: [], max_hunts: 10, author_id: 'user-1' } as unknown as Parameters<typeof resolvePlaybookHunts>[2];
+  const element = { id: 'report--1', type: 'report' } as unknown as StixObject;
+  const report = { internal_id: 'report-1', entity_type: 'Report', name: 'APT report', [RELATION_OBJECT_MARKING]: ['marking-amber'] };
+  const derived = {
+    entity: { id: 'report-1', name: 'APT report', entity_type: 'Report', relation: 'self' },
+    suggested_type: 'indicators',
+    sources: [{ id: 'report-1', name: 'APT report', entity_type: 'Report', relation: 'self' }],
+    targets: [],
+    elements: [],
+    elements_truncated: false,
+    unsupported_count: 0,
+    techniques: [],
+    rules: [],
+    rules_truncated: false,
+  };
+  const active = { internal_id: 'hunt-9', name: 'Hunt - APT report', hunt_status: 'active' };
+
+  afterEach(() => {
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(topEntitiesList).mockReset();
+    vi.mocked(addHunt).mockReset();
+    vi.mocked(deriveHuntContent).mockReset();
+  });
+
+  it('should create the hunt of a report with its markings, and run it', async () => {
+    vi.mocked(findByIds).mockResolvedValue([report] as never);
+    vi.mocked(deriveHuntContent).mockResolvedValue(derived as never);
+    vi.mocked(storeLoadById).mockResolvedValue(null as never);
+    vi.mocked(addHunt).mockResolvedValue(active as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([active] as never);
+    await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([active]);
+    expect(addHunt).toHaveBeenCalledWith(context, expect.objectContaining({ id: 'user-1' }), expect.objectContaining({
+      name: 'Hunt - APT report',
+      hunt_type: 'indicators',
+      huntSources: ['report-1'],
+      objectMarking: ['marking-amber'],
+    }));
+    const filters = vi.mocked(topEntitiesList).mock.calls[0][3]?.filters as { filters: { key: string[]; values: string[] }[] };
+    expect(filters.filters).toEqual(expect.arrayContaining([{ key: ['hunt_status'], values: ['active'] }, { key: ['id'], values: ['hunt-9'] }]));
+  });
+
+  it('should run again the hunt it derived before, found by its name, and create none', async () => {
+    vi.mocked(findByIds).mockResolvedValue([report] as never);
+    vi.mocked(deriveHuntContent).mockResolvedValue(derived as never);
+    vi.mocked(storeLoadById).mockResolvedValue(active as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([active] as never);
+    await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([active]);
+    expect(addHunt).not.toHaveBeenCalled();
+  });
+
+  it('should derive no hunt from an element restricted to its members, nor create one the writer could not read', async () => {
+    vi.mocked(findByIds).mockResolvedValue([{ ...report, restricted_members: [{ id: 'user-3', access_right: 'admin' }] }] as never);
+    await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([]);
+    expect(deriveHuntContent).not.toHaveBeenCalled();
+    // A hunt of that name the writer cannot read is left alone
+    vi.mocked(findByIds).mockResolvedValue([report] as never);
+    vi.mocked(deriveHuntContent).mockResolvedValue(derived as never);
+    vi.mocked(storeLoadById).mockImplementation((async (_context: AuthContext, user: AuthUser) => (user === HUNT_MANAGER_USER ? active : null)) as never);
+    await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([]);
+    expect(addHunt).not.toHaveBeenCalled();
   });
 });

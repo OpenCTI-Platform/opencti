@@ -24,8 +24,10 @@ import { storeLoadById, topEntitiesList } from '../../../database/middleware-loa
 import { elCount } from '../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
+import { generateStandardId } from '../../../schema/identifier';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
-import { executionContext, HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../../../utils/access';
+import { executionContext, HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNUPDATE, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../../utils/access';
 import { now } from '../../../utils/format';
 import { type ComponentDefinition, playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
@@ -37,6 +39,9 @@ import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
 import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
 import { checkHuntEditAccess, filterEditableHunts } from '../../hunt/hunt-access';
+import { deriveHuntContent, derivedHuntInput } from '../../hunt/hunt-derivation';
+import { addHunt } from '../../hunt/hunt-domain';
+import { isRestrictedToMembers } from '../../hunt/hunt-iocs';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 
 export const PLAYBOOK_HUNT_MAX_HUNTS = 20;
@@ -44,9 +49,15 @@ const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
 // A container can hold thousands of refs: the hunts referring to them are searched slice by slice to keep each filter bounded
 const PLAYBOOK_HUNT_IDS_PER_QUERY = 500;
 
+// The step runs existing hunts (the configured ones, or the active hunts of the elements), or derives a hunt from each
+// element, as "Hunt this" does, created or found again by its name, and runs it
+export const PLAYBOOK_HUNT_SOURCE_EXISTING = 'existing';
+export const PLAYBOOK_HUNT_SOURCE_DERIVED = 'derived';
+
 export interface HuntComponentConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
   applyWithFilters?: string;
+  hunt_source?: string;
   hunt_ids: string[];
   security_platform_ids: string[];
   time_window_hours: number;
@@ -69,6 +80,16 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
       ],
     },
     applyWithFilters: { type: 'string', nullable: true, default: '' },
+    hunt_source: {
+      type: 'string',
+      nullable: true,
+      default: PLAYBOOK_HUNT_SOURCE_EXISTING,
+      $ref: 'Hunts',
+      oneOf: [
+        { const: PLAYBOOK_HUNT_SOURCE_EXISTING, title: 'Run existing hunts' },
+        { const: PLAYBOOK_HUNT_SOURCE_DERIVED, title: 'Derive a hunt from each element (created, or found again by its name), then run it' },
+      ],
+    },
     hunt_ids: {
       type: 'array',
       uniqueItems: true,
@@ -225,10 +246,69 @@ const findPlaybookHunts = async (context: AuthContext, author: AuthUser, element
   return Array.from(hunts.values()).sort(byLastRunAt).slice(0, maxHunts);
 };
 
+const loadActiveHunts = async (context: AuthContext, author: AuthUser, huntIds: string[], first: number) => {
+  if (huntIds.length === 0) {
+    return [];
+  }
+  const hunts = await topEntitiesList<BasicStoreEntityHunt>(context, author, [ENTITY_TYPE_HUNT], {
+    first,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] }, { key: ['id'], values: huntIds }],
+      filterGroups: [],
+    },
+    // The dispatched runs carry the techniques, targets and sources of the hunts
+    withoutRels: false,
+  });
+  return filterEditableHunts(context, author, hunts);
+};
+
+/**
+ * The hunt of each element in scope, derived as "Hunt this" derives it (derivedHuntInput) and identified by its name: a
+ * hunt of that name is run again, else the hunt is created with the markings of the element, active when it can run
+ * (a draft runs nothing). An element restricted to authorized members gives no hunt, a hunt holding no such
+ * restriction. Only the hunts the writer of the step can read and change are run, at most max_hunts.
+ */
+const derivePlaybookHunts = async (context: AuthContext, author: AuthUser, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
+  const maxHunts = Math.min(PLAYBOOK_HUNT_MAX_HUNTS, Math.max(1, Math.round(configuration.max_hunts || 10)));
+  const entities = await findByIds<BasicStoreEntity>(context, author, elements.map((element) => element.id));
+  const huntIds = new Set<string>();
+  for (let index = 0; index < entities.length && huntIds.size < maxHunts; index += 1) {
+    const entity = entities[index];
+    try {
+      const derived = isRestrictedToMembers(entity) ? null : await deriveHuntContent(context, author, entity.internal_id);
+      const input = derived ? derivedHuntInput(derived) : null;
+      if (input) {
+        const standardId = generateStandardId(ENTITY_TYPE_HUNT, { name: input.name });
+        const existing = await storeLoadById<BasicStoreEntityHunt>(context, author, standardId, ENTITY_TYPE_HUNT);
+        if (existing) {
+          huntIds.add(existing.internal_id);
+        } else if (!await storeLoadById(context, HUNT_MANAGER_USER, standardId, ENTITY_TYPE_HUNT)) {
+          const organizations = isUserHasCapability(author, KNOWLEDGE_ORGANIZATION_RESTRICT) ? entity[RELATION_GRANTED_TO] ?? [] : [];
+          const created = await addHunt(context, author, {
+            ...input,
+            objectMarking: entity[RELATION_OBJECT_MARKING] ?? [],
+            ...(organizations.length > 0 ? { objectOrganization: organizations } : {}),
+          });
+          huntIds.add(created.internal_id);
+        }
+      }
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Playbook hunt step could not derive the hunt of an element', { cause: error, entityId: entity.internal_id });
+    }
+  }
+  return loadActiveHunts(context, author, Array.from(huntIds), maxHunts);
+};
+
 /** Hunts a playbook step runs (findPlaybookHunts): a step whose writer is gone or can no longer start hunt runs runs none. */
 export const resolvePlaybookHunts = async (context: AuthContext, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
   const author = await resolvePlaybookHuntAuthor(context, configuration);
-  return author ? findPlaybookHunts(context, author, elements, configuration) : [];
+  if (!author) {
+    return [];
+  }
+  return configuration.hunt_source === PLAYBOOK_HUNT_SOURCE_DERIVED
+    ? derivePlaybookHunts(context, author, elements, configuration)
+    : findPlaybookHunts(context, author, elements, configuration);
 };
 
 const HUNT_PLAYBOOK_DEBOUNCE_LOCK = 'hunt_playbook_debounce';
@@ -332,8 +412,8 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
     try {
       const inScope = bundle.objects.filter((object) => isBundleElementInScope(object, configuration.applyToElements, dataInstanceId));
       const elements = await filterBundleElements(context, inScope, configuration.applyWithFilters);
-      const author = elements.length > 0 ? await resolvePlaybookHuntAuthor(context, configuration) : null;
-      const hunts = author ? await findPlaybookHunts(context, author, elements, configuration) : [];
+      const hunts = elements.length > 0 ? await resolvePlaybookHunts(context, elements, configuration) : [];
+      const author = hunts.length > 0 ? await resolvePlaybookHuntAuthor(context, configuration) : null;
       for (let index = 0; index < hunts.length; index += 1) {
         const hunt = hunts[index];
         // Check and creation are serialized per hunt: concurrent executions cannot both find no recent run and both start
