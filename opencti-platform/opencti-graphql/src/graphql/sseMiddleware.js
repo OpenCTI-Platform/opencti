@@ -46,7 +46,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -280,9 +280,23 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     }
     const newRefsToResolve = new Set();
     const elementsWithStix = [];
+    const batchIds = new Set(missingElements.map((element) => extractIdsFromStoreObject(element)).flat());
     for (let index = 0; index < missingElements.length; index += 1) {
       await doYield();
       const missingElement = missingElements[index];
+      // A ref relationship (e.g. email-message "to" email-addr, added to a container from its graph)
+      // has no STIX representation: its source already carries it as a *_ref(s) property.
+      // Resolving the source is enough, its refs (so the target) are resolved in turn.
+      // A source already in this batch must not be queued again: reloaded alone in a deeper pass,
+      // it would be published before its own refs.
+      if (isStixRefRelationship(missingElement.entity_type)) {
+        extractIdsFromStoreObject(missingElement).forEach((id) => resolvedIds.add(id));
+        const { fromId } = missingElement;
+        if (!cache.has(fromId) && !resolvedIds.has(fromId) && !batchIds.has(fromId)) {
+          newRefsToResolve.add(fromId);
+        }
+        continue;
+      }
       const stix = convertStoreToStix_2_1(missingElement);
       const instanceIds = [missingElement.internal_id, missingElement.standard_id, ...(missingElement.x_opencti_stix_ids ?? [])];
       elementsWithStix.push({ message: generateCreateMessage(missingElement), stix, instanceIds });
