@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { connectorDelete, registerConnector } from '../../../src/domain/connector';
 import { connector as loadConnector } from '../../../src/database/repository';
 import { createWork, deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../../../src/domain/work';
@@ -50,22 +51,22 @@ const sleep = (ms: number) => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
+/**
+ * Creates a work and fails the test when the work cannot be created.
+ */
+const startWork = async (connectorEntity: any, name: string, sourceId: string, options: Record<string, unknown> = {}) => {
+  const work = await createWork(testContext, ADMIN_USER, connectorEntity, name, sourceId, options);
+  if (!work) {
+    throw new Error('Work creation failed');
+  }
+  workIds.push(work.id);
+  return work;
+};
+
 describe('Work completion with touched elements', () => {
   afterEach(() => {
     unregisterWorkCompletionHook('test-completion-hook');
   });
-
-  /**
-   * Creates a work and fails the test when the work cannot be created.
-   */
-  const startWork = async (connectorEntity: any, name: string, sourceId: string, options: Record<string, unknown> = {}) => {
-    const work = await createWork(testContext, ADMIN_USER, connectorEntity, name, sourceId, options);
-    if (!work) {
-      throw new Error('Work creation failed');
-    }
-    workIds.push(work.id);
-    return work;
-  };
 
   /**
    * Starts a work, performs one creation and one update under it, and declares one expectation.
@@ -173,5 +174,70 @@ describe('Work completion with touched elements', () => {
     expect(completed.touched_ids).toEqual([created.id]);
     expect(completed.draft_context).toEqual(draft.id);
     await deleteDraftWorkspace(testContext, ADMIN_USER, draft.id);
+  });
+});
+
+const TLP_RED = 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+
+const JOBS_QUERY = `
+  query WorkTouchedJobs($id: String!) {
+    stixCoreObject(id: $id) {
+      jobs(first: 20) {
+        id
+        touchedElementsTruncated
+        touchedElements { ... on BasicObject { id entity_type } }
+      }
+    }
+  }
+`;
+
+describe('Work touched elements in GraphQL', () => {
+  it('should expose touched elements filtered by the reader rights', async () => {
+    const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `GraphQL target ${Date.now()}` });
+    intrusionSetIds.push(target.id);
+    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id);
+    const workerContext = { ...testContext, workId: work.id };
+    const visible = await addIntrusionSet(workerContext, ADMIN_USER, { name: `GraphQL visible ${Date.now()}` });
+    const hidden = await addIntrusionSet(workerContext, ADMIN_USER, { name: `GraphQL hidden ${Date.now()}`, objectMarking: [TLP_RED] });
+    intrusionSetIds.push(visible.id, hidden.id);
+    await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
+    await reportExpectation(testContext, ADMIN_USER, work.id);
+
+    const asAdmin = await queryAsAdminWithSuccess({ query: JOBS_QUERY, variables: { id: target.id } });
+    const adminJob = asAdmin.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
+    expect(adminJob.touchedElements.map((e: any) => e.id).sort()).toEqual([visible.id, hidden.id].sort());
+    expect(adminJob.touchedElementsTruncated).toBe(false);
+
+    const asEditor = await queryAsUserWithSuccess(USER_EDITOR, { query: JOBS_QUERY, variables: { id: target.id } });
+    const editorJob = asEditor.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
+    expect(editorJob.touchedElements.map((e: any) => e.id)).toEqual([visible.id]);
+  });
+
+  it('should return null touched elements when they were never recorded', async () => {
+    const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Import target ${Date.now()}` });
+    intrusionSetIds.push(target.id);
+    const work = await startWork(importConnector, 'Import', target.standard_id);
+    const created = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Import created ${Date.now()}` });
+    intrusionSetIds.push(created.id);
+    await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
+    await reportExpectation(testContext, ADMIN_USER, work.id);
+
+    const result = await queryAsAdminWithSuccess({ query: JOBS_QUERY, variables: { id: target.id } });
+    const job = result.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
+    expect(job.touchedElements).toBeNull();
+  });
+
+  it('should skip deleted elements', async () => {
+    const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Deleted target ${Date.now()}` });
+    intrusionSetIds.push(target.id);
+    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id);
+    const created = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Deleted created ${Date.now()}` });
+    await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
+    await reportExpectation(testContext, ADMIN_USER, work.id);
+    await deleteElementById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INTRUSION_SET);
+
+    const result = await queryAsAdminWithSuccess({ query: JOBS_QUERY, variables: { id: target.id } });
+    const job = result.data?.stixCoreObject.jobs.find((j: any) => j.id === work.id);
+    expect(job.touchedElements).toEqual([]);
   });
 });

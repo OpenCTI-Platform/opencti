@@ -46,6 +46,7 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
+  workTouchedElements,
   worksForConnector,
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -150,6 +151,8 @@ const connectorResolvers = {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
     user: (work, _, context) => loadCreator(context, context.user, work.user_id),
     tracking: (work) => computeWorkStatus(work),
+    touchedElements: (work, { first }, context) => workTouchedElements(context, context.user, work.touched_ids, first),
+    touchedElementsTruncated: (work) => work.touched_ids_truncated ?? false,
   },
   Synchronizer: {
     user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),

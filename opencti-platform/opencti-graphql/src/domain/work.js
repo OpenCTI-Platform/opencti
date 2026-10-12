@@ -4,7 +4,7 @@ import { logApp } from '../config/conf';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
-import { internalLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById } from '../database/middleware-loader';
 import {
   redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
@@ -524,4 +524,20 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     dispatchWorkCompletion(workId, currentWork.event_type);
   }
   return workId;
+};
+
+/**
+ * Loads the elements touched by an enrichment work as the requesting user: elements the user cannot
+ * access (markings, organizations) and deleted elements are dropped.
+ * @returns null when the touched ids were never recorded (not an enrichment work, or a work completed
+ * before the feature existed or not completed yet), an empty list when recorded but empty
+ */
+export const workTouchedElements = async (context, user, ids, first = 100) => {
+  if (!ids) {
+    return null;
+  }
+  if (ids.length === 0) {
+    return [];
+  }
+  return internalFindByIds(context, user, ids.slice(0, first));
 };
