@@ -801,6 +801,14 @@ describe('CustomView and dashboard variables', () => {
     expect(edited).not.toHaveProperty('variables');
     expect(edited).not.toHaveProperty('presets');
 
+    await queryAsAdminWithSuccess({
+      query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+      variables: { id: customViewId, input: { file: createUploadFile('./tests/03-integration/10-modules/customView/data/', 'custom-view-widget.json'), manifest: withVariables(DASHBOARD_MANIFEST) } },
+    });
+    const withImportedWidget = await readStoredManifest(customViewId);
+    expect(Object.keys(withImportedWidget.widgets).length).toBeGreaterThan(Object.keys(fromB64(DASHBOARD_MANIFEST).widgets).length);
+    expect(withImportedWidget).not.toHaveProperty('variables');
+
     const duplicated = await queryAsAdminWithSuccess({
       query: DUPLICATE_CUSTOM_VIEW_QUERY,
       variables: { input: { name: 'Duplicated custom view with variables', manifest: withVariables(DASHBOARD_MANIFEST), targetEntityType: ENTITY_TYPE_INTRUSION_SET } },

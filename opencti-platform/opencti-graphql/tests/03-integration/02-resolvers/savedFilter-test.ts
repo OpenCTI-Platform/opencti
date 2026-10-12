@@ -352,8 +352,11 @@ describe('Saved filters and dashboard variables', () => {
     );
   });
 
+  // A JSON escape hides the token from a check on the raw string, JSON.parse restores it
+  const ESCAPED_TOKEN_FILTERS = '{"mode":"and","filters":[{"key":["createdBy"],"values":["\\u0024var:11111111-1111-4111-8111-111111111111"],"operator":"eq","mode":"or"}],"filterGroups":[]}';
+
   it('should reject a dashboard variable token hidden behind a JSON escape', async () => {
-    const escapedTokenFilters = '{"mode":"and","filters":[{"key":["createdBy"],"values":["\\u0024var:11111111-1111-4111-8111-111111111111"],"operator":"eq","mode":"or"}],"filterGroups":[]}';
+    const escapedTokenFilters = ESCAPED_TOKEN_FILTERS;
     expect(JSON.parse(escapedTokenFilters).filters[0].values[0]).toEqual('$var:11111111-1111-4111-8111-111111111111');
     await queryAsAdminWithError(
       { query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'with escaped variable', filters: escapedTokenFilters, scope: 'Report' } } },
@@ -367,6 +370,14 @@ describe('Saved filters and dashboard variables', () => {
     savedFilterId = data.savedFilterAdd.id;
     await queryAsAdminWithError(
       { query: EDIT_SAVED_FILTER_MUTATION, variables: { id: savedFilterId, input: [{ key: 'filters', value: [TOKEN_FILTERS] }] } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
+  });
+
+  it('should reject a dashboard variable token hidden behind a JSON escape on edition', async () => {
+    await queryAsAdminWithError(
+      { query: EDIT_SAVED_FILTER_MUTATION, variables: { id: savedFilterId, input: [{ key: 'filters', value: [ESCAPED_TOKEN_FILTERS] }] } },
       'Dashboard variables cannot be used in a saved filter',
       'FUNCTIONAL_ERROR',
     );
