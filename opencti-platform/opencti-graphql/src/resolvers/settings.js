@@ -35,7 +35,7 @@ import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
-import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 
 const settingsResolvers = {
   Query: {
@@ -68,6 +68,11 @@ const settingsResolvers = {
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
+    local_auth_lockout_enabled: (settings) => settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled,
+    local_auth_lockout_max_attempts: (settings) => settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
+    local_auth_lockout_window: (settings) => settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window,
+    local_auth_lockout_duration: (settings) => settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration,
+    local_auth_lockout_max_duration: (settings) => settings.local_auth_lockout_max_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration,
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
