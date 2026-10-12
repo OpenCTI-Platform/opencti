@@ -1,4 +1,5 @@
 import FilterDate from '@components/common/lists/FilterDate';
+import Box from '@mui/material/Box';
 import { addDays } from 'date-fns';
 import { Dispatch, FunctionComponent, ReactNode, SetStateAction } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
@@ -111,15 +112,17 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
       const finalComputedValues = computedValues.filter((v: object) => 'filters' in v); // we keep values of type FilterGroup
       const values = finalComputedValues.length > 0 ? finalComputedValues[0] : emptyFilterGroup;
       return (
-        <FilterFiltersInput
-          filter={filter}
-          filterKey={filterKey}
-          childKey={fSubKey}
-          filterValues={values}
-          helpers={helpers}
-          disabled={isDisabled}
-          host={host}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <FilterFiltersInput
+            filter={filter}
+            filterKey={filterKey}
+            childKey={fSubKey}
+            filterValues={values}
+            helpers={helpers}
+            disabled={isDisabled}
+            host={host}
+          />
+        </Box>
       );
     }
     if (isNumericFilter(fDefinition?.type)) {

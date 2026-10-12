@@ -62,6 +62,16 @@ class SecurityCoverageResult:
                 x_opencti_order
                 x_opencti_color
             }
+            customFieldValues {
+                field_id
+                field_name
+                int_value
+                string_value
+                boolean_value
+                date_value
+                select_value
+                select_values
+            }
         """
 
     @staticmethod
@@ -277,6 +287,8 @@ class SecurityCoverageResult:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
+        :param custom_properties: (optional) list of custom field name/value inputs
+        :type custom_properties: list
         :return: Security Coverage Result object
         :rtype: dict or None
         """
@@ -298,6 +310,7 @@ class SecurityCoverageResult:
         files_markings = kwargs.get("filesMarkings", None)
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
+        custom_properties = kwargs.get("custom_properties", None)
 
         if result_of is not None:
             self.opencti.app_logger.info(
@@ -335,6 +348,7 @@ class SecurityCoverageResult:
                         "filesMarkings": files_markings,
                         "noTriggerImport": no_trigger_import,
                         "embedded": embedded,
+                        "customFieldValues": custom_properties,
                     }
                 },
             )
@@ -438,6 +452,7 @@ class SecurityCoverageResult:
                 filesMarkings=extras.get("filesMarkings"),
                 noTriggerImport=extras.get("noTriggerImport", None),
                 embedded=extras.get("embedded", None),
+                custom_properties=extras.get("custom_properties", None),
             )
         else:
             self.opencti.app_logger.error(
