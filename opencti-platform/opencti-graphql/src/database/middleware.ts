@@ -3519,11 +3519,22 @@ export const createRelationRaw = async (
       let holder = from;
       let event;
       if (currentTarget.internal_id !== to.internal_id) {
-        await checkRefRelationNotCyclic(context, user, relationshipType, from, to);
+        // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
+        const target = await internalLoadById(context, user, to.internal_id);
+        await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
+        // The update of the source rebuilds the ref with the default dates, so the dates of the input are set on it afterward
+        const dateFields = schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType) ? ['start_time', 'stop_time', 'created', 'modified'] : [];
+        const refDates = R.pick(dateFields.filter((field) => isNotEmptyField(input[field])), input);
+        if (utcDate(refDates.start_time ?? FROM_START_STR).isAfter(utcDate(refDates.stop_time ?? UNTIL_END_STR))) {
+          throw DatabaseError('You cant create a relation with a stop_time less than the start_time', { from: input.fromId, to: input.toId, type: relationshipType });
+        }
         const { references, commitMessage, bypassValidation, publishStreamEvent } = opts;
         const updateOpts = { locks, references, commitMessage, bypassValidation, publishStreamEvent };
         ({ event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts));
         holder = await storeLoadByIdWithRefs(context, user, from.internal_id);
+        if (isNotEmptyField(refDates)) {
+          await patchAttribute(context, user, holder?.[key]?.i_relation?.internal_id, relationshipType, refDates);
+        }
       }
       const element = await storeLoadByIdWithRefs(context, user, holder?.[key]?.i_relation?.internal_id);
       return { element, event, isCreation: false };

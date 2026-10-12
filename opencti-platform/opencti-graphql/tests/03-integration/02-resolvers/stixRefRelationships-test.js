@@ -159,6 +159,8 @@ describe('StixRefRelationship added again on a single ref', () => {
     mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
       stixRefRelationshipAdd(input: $input) {
         id
+        start_time
+        stop_time
         to {
           ... on BasicObject {
             id
@@ -235,8 +237,8 @@ describe('StixRefRelationship added again on a single ref', () => {
     const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'StixFile', createdBy: ANSSI, StixFile } });
     fileId = data.stixCyberObservableAdd.id;
   };
-  const addRef = async (toId, relationshipType) => {
-    const input = { fromId: fileId, toId, relationship_type: relationshipType };
+  const addRef = async (toId, relationshipType, dates = {}) => {
+    const input = { fromId: fileId, toId, relationship_type: relationshipType, ...dates };
     const { data } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
     return data.stixRefRelationshipAdd;
   };
@@ -293,6 +295,18 @@ describe('StixRefRelationship added again on a single ref', () => {
     expect(relation.to.id).toEqual(directoryBId);
     const { parentRelations } = await loadFileRefs();
     expect(parentRelations).toEqual([{ id: relation.id, toId: directoryBId }]);
+  });
+
+  it('should keep the dates of the input when the parent directory is replaced', async () => {
+    const dates = { start_time: '2026-01-01T00:00:00.000Z', stop_time: '2026-06-01T00:00:00.000Z' };
+    const invalidInput = { fromId: fileId, toId: directoryAId, relationship_type: 'parent-directory', start_time: dates.stop_time, stop_time: dates.start_time };
+    await queryAsAdminWithError({ query: REF_ADD_QUERY, variables: { input: invalidInput } }, 'You cant create a relation with a stop_time less than the start_time');
+    expect((await loadFileRefs()).parentRelations.map(({ toId }) => toId)).toEqual([directoryBId]);
+    const relation = await addRef(directoryAId, 'parent-directory', dates);
+    expect(relation.to.id).toEqual(directoryAId);
+    expect({ start_time: relation.start_time, stop_time: relation.stop_time }).toEqual(dates);
+    const { parentRelations } = await loadFileRefs();
+    expect(parentRelations).toEqual([{ id: relation.id, toId: directoryAId }]);
   });
 
   it('should keep then replace the author the same way', async () => {
