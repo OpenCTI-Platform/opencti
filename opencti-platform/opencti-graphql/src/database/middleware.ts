@@ -3436,6 +3436,49 @@ const checkRefRelationNotCyclic = async (
     throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
   }
 };
+const replaceSingleRelationRef = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  from: any,
+  to: any,
+  key: string,
+  opts: CreateRelationRawOpts,
+) => {
+  const { relationship_type: relationshipType } = input;
+  const { locks = [], references, commitMessage, bypassValidation, publishStreamEvent } = opts;
+  // The update of the source rebuilds the ref with the default dates, so the dates of the input are set on it afterward
+  const dateFields = schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType) ? ['start_time', 'stop_time', 'created', 'modified'] : [];
+  const refDates = R.pick(dateFields.filter((field) => isNotEmptyField(input[field])), input);
+  if (utcDate(refDates.start_time ?? FROM_START_STR).isAfter(utcDate(refDates.stop_time ?? UNTIL_END_STR))) {
+    throw DatabaseError('You cant create a relation with a stop_time less than the start_time', { from: input.fromId, to: input.toId, type: relationshipType });
+  }
+  // The source stays locked until the dates are set on the ref created by its update
+  const participantIds = [from.internal_id].filter((id) => !locks.includes(id));
+  let lock;
+  try {
+    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
+    const target = await internalLoadById(context, user, to.internal_id);
+    await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
+    const updateOpts = { locks: [...locks, ...participantIds], references, commitMessage, bypassValidation, publishStreamEvent };
+    const { event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts);
+    const updated = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    const relationId = updated?.[key]?.i_relation?.internal_id;
+    if (isNotEmptyField(refDates)) {
+      await patchAttribute(context, user, relationId, relationshipType, refDates);
+    }
+    const element = await storeLoadByIdWithRefs(context, user, relationId);
+    return { element, event, isCreation: false };
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
 export const createRelationRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -3516,28 +3559,11 @@ export const createRelationRaw = async (
         const errorData = { from: input.fromId, to: input.toId, relationshipType };
         throw UnsupportedError('Cant add another relation on single ref', errorData);
       }
-      let holder = from;
-      let event;
       if (currentTarget.internal_id !== to.internal_id) {
-        // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
-        const target = await internalLoadById(context, user, to.internal_id);
-        await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
-        // The update of the source rebuilds the ref with the default dates, so the dates of the input are set on it afterward
-        const dateFields = schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType) ? ['start_time', 'stop_time', 'created', 'modified'] : [];
-        const refDates = R.pick(dateFields.filter((field) => isNotEmptyField(input[field])), input);
-        if (utcDate(refDates.start_time ?? FROM_START_STR).isAfter(utcDate(refDates.stop_time ?? UNTIL_END_STR))) {
-          throw DatabaseError('You cant create a relation with a stop_time less than the start_time', { from: input.fromId, to: input.toId, type: relationshipType });
-        }
-        const { references, commitMessage, bypassValidation, publishStreamEvent } = opts;
-        const updateOpts = { locks, references, commitMessage, bypassValidation, publishStreamEvent };
-        ({ event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts));
-        holder = await storeLoadByIdWithRefs(context, user, from.internal_id);
-        if (isNotEmptyField(refDates)) {
-          await patchAttribute(context, user, holder?.[key]?.i_relation?.internal_id, relationshipType, refDates);
-        }
+        return replaceSingleRelationRef(context, user, input, from, to, key, opts);
       }
-      const element = await storeLoadByIdWithRefs(context, user, holder?.[key]?.i_relation?.internal_id);
-      return { element, event, isCreation: false };
+      const element = await storeLoadByIdWithRefs(context, user, currentTarget.i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
     }
   }
 
