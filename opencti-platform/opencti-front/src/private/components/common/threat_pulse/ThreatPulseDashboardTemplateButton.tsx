@@ -5,8 +5,9 @@ import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import { useTheme } from '@mui/styles';
 import { ScaleBalance } from 'mdi-material-ui';
-import { Text, Thumbnail } from '@filigran/design-system';
+import { Text, Thumbnail, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -139,14 +140,22 @@ const ThreatPulseDashboardTemplateButtonComponent = () => {
     return null;
   }
   return (
-    <Button
-      variant="secondary"
-      onClick={openTemplate}
-      startIcon={<ScaleBalance fontSize="small" />}
-      data-testid="threat-pulse-dashboard-template"
-    >
-      {t_i18n('Sector benchmark template')}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span style={{ display: 'inline-flex' }}>
+          <IconButton
+            size="default"
+            variant="secondary"
+            onClick={openTemplate}
+            data-testid="threat-pulse-dashboard-template"
+            aria-label={t_i18n('Sector benchmark template')}
+          >
+            <ScaleBalance fontSize="small" color="primary" />
+          </IconButton>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{t_i18n('Sector benchmark template')}</TooltipContent>
+    </Tooltip>
   );
 };
 

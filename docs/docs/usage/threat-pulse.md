@@ -141,7 +141,7 @@ These values are written without creating a history entry, a stream event or a m
 
 ### Sector benchmark (Enterprise Edition)
 
-The "Sector benchmark template" button of the dashboards list opens the template card: its purpose, the widgets it creates and "Create a dashboard from this template". The dashboard holds the trending widget, the benchmark widget (the activity of the platform per object type and activity kind compared with the median of its sector, and the objects it reports well above that median) and knowledge widgets on the community signal, each titled with its measure and period. The comparison with the sector median counts what the platform reported in its current sector only.
+The "Sector benchmark template" button (the balance scale icon) of the dashboards list opens the template card: its purpose, the widgets it creates and "Create a dashboard from this template". The dashboard holds the trending widget, the benchmark widget (the activity of the platform per object type and activity kind compared with the median of its sector, and the objects it reports well above that median) and knowledge widgets on the community signal, each titled with its measure and period. The comparison with the sector median counts what the platform reported in its current sector only.
 
 On a dashboard with a period, the trending and benchmark widgets follow it: they show 7 days for a dashboard period of up to a week, 30 days up to a month and 90 days beyond (XTM Hub publishes no other period), in place of their own period selector. Without a dashboard period, each widget keeps its selector.
 
