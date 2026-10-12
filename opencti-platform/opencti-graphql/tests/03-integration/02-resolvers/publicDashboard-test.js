@@ -1486,6 +1486,21 @@ describe('Public dashboards and dashboard variables', () => {
     expect(privateManifest.variables).toBeUndefined();
   });
 
+  it('should not keep dashboard variables in the private manifest of a dashboard without widget', async () => {
+    const created = await queryAsAdmin({ query: CREATE_PRIVATE_DASHBOARD_QUERY, variables: { input: { type: 'dashboard', name: 'Dashboard variables without widget' } } });
+    const dashboardId = created.data.workspaceAdd.id;
+    extraDashboardIds.push(dashboardId);
+    const upsert = await queryAsAdmin({ query: UPSERT_VARIABLE_QUERY, variables: { id: dashboardId, input: { name: 'Type', type: 'entityType', defaultValue: 'Malware' } } });
+    expect(upsert.errors).toBeUndefined();
+    const published = await publish(dashboardId, 'public-dashboard-variables-no-widget');
+    expect(published.errors).toBeUndefined();
+    extraPublicDashboardIds.push(published.data.publicDashboardAdd.id);
+    const read = await queryAsAdmin({ query: READ_PRIVATE_MANIFEST_QUERY, variables: { id: published.data.publicDashboardAdd.id } });
+    const privateManifest = fromB64(read.data.publicDashboard.private_manifest);
+    expect(privateManifest.variables).toBeUndefined();
+    expect(privateManifest.presets).toBeUndefined();
+  });
+
   it.each(['eq', 'not_eq'])('should refuse to publish a widget using a variable without value (%s)', async (operator) => {
     const dashboardId = await createDashboardWithVariableWidget(`Dashboard variables orphan ${operator}`, operator, false);
     const published = await publish(dashboardId, `public-dashboard-variables-orphan-${operator}`);

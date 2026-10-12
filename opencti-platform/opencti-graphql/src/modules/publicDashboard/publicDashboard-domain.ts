@@ -166,7 +166,7 @@ const createPrivateManifest = async (
     }
     return toB64({ ...R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest), widgets });
   }
-  return toB64(parsedManifest ?? '{}');
+  return toB64(parsedManifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest) : '{}');
 };
 
 /**
