@@ -3490,12 +3490,26 @@ export const createRelationRaw = async (
     const errorData = { from: input.fromId, to: input.toId, relationshipType, doc_code: 'SELF_REFERENCING_RELATION' };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
-  // It's not possible to create a single ref relationship if one already exists
-  if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
-    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
-    if (key && isNotEmptyField(resolvedInput.from[key])) {
-      const errorData = { from: input.fromId, to: input.toId, relationshipType };
-      throw UnsupportedError('Cant add another relation on single ref', errorData);
+  // A single ref already set keeps its target when the same one is added again, and is replaced by another one.
+  // Rules and restorations must never overwrite the current target, so they still fail.
+  if (isSingleRelationsRef(from.entity_type, relationshipType)) {
+    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(from.entity_type, relationshipType);
+    const currentTarget = key ? from[key] : null;
+    if (key && isNotEmptyField(currentTarget)) {
+      if (fromRule || opts.restore) {
+        const errorData = { from: input.fromId, to: input.toId, relationshipType };
+        throw UnsupportedError('Cant add another relation on single ref', errorData);
+      }
+      let holder = from;
+      let event;
+      if (currentTarget.internal_id !== to.internal_id) {
+        const { references, commitMessage, bypassValidation, publishStreamEvent } = opts;
+        const updateOpts = { locks, references, commitMessage, bypassValidation, publishStreamEvent };
+        ({ event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts));
+        holder = await storeLoadByIdWithRefs(context, user, from.internal_id);
+      }
+      const element = await storeLoadByIdWithRefs(context, user, holder?.[key]?.i_relation?.internal_id);
+      return { element, event, isCreation: false };
     }
   }
 

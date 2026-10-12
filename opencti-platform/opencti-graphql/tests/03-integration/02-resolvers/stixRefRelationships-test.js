@@ -1,7 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { afterAll, beforeAll, expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { now } from 'moment';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
@@ -135,5 +135,133 @@ describe('StixRefRelationship', () => {
     });
     expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(1);
     expect(queryResult3.data.stixSchemaRefRelationshipsPossibleTypes[0]).toEqual(ABSTRACT_STIX_CORE_OBJECT);
+  });
+});
+
+describe('StixRefRelationship added again on a single ref', () => {
+  const OBSERVABLE_ADD_QUERY = gql`
+    mutation StixCyberObservableAdd($type: String!, $createdBy: String, $StixFile: StixFileAddInput, $Directory: DirectoryAddInput) {
+      stixCyberObservableAdd(type: $type, createdBy: $createdBy, StixFile: $StixFile, Directory: $Directory) {
+        id
+      }
+    }
+  `;
+  const OBSERVABLE_DELETE_QUERY = gql`
+    mutation StixCyberObservableDelete($id: ID!) {
+      stixCyberObservableEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+  const REF_ADD_QUERY = gql`
+    mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
+      stixRefRelationshipAdd(input: $input) {
+        id
+        to {
+          ... on BasicObject {
+            id
+          }
+        }
+      }
+    }
+  `;
+  const FILE_REFS_QUERY = gql`
+    query StixFileRefs($id: String!, $fromId: StixRef) {
+      stixCyberObservable(id: $id) {
+        createdBy {
+          id
+        }
+      }
+      stixNestedRefRelationships(fromId: $fromId, relationship_type: ["parent-directory"]) {
+        edges {
+          node {
+            id
+            to {
+              ... on BasicObject {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+  const ANSSI = 'identity--7b82b010-b1c0-4dae-981f-7756374a17df';
+  const JOHN_DOE = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f';
+  let directoryAId;
+  let directoryBId;
+  let fileId;
+  let firstParentRelationId;
+
+  const addDirectory = async (path) => {
+    const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'Directory', Directory: { path } } });
+    return data.stixCyberObservableAdd.id;
+  };
+  // Same calls as the python client for a file with a parent_directory_ref: the file upsert, then the nested ref
+  const importFileUnder = async (directoryId) => {
+    const StixFile = { name: 'single-ref-test.exe', hashes: [{ algorithm: 'MD5', hash: '5ad1e5ad1e5ad1e5ad1e5ad1e5ad1e50' }] };
+    const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'StixFile', createdBy: ANSSI, StixFile } });
+    fileId = data.stixCyberObservableAdd.id;
+    const input = { fromId: fileId, toId: directoryId, relationship_type: 'parent-directory' };
+    const { data: refData } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
+    return refData.stixRefRelationshipAdd;
+  };
+  const loadFileRefs = async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: FILE_REFS_QUERY, variables: { id: fileId, fromId: fileId } });
+    return {
+      createdById: data.stixCyberObservable.createdBy?.id,
+      parentRelations: data.stixNestedRefRelationships.edges.map(({ node }) => ({ id: node.id, toId: node.to.id })),
+    };
+  };
+  const addCreatedBy = async (identityId) => {
+    const input = { fromId: fileId, toId: identityId, relationship_type: 'created-by' };
+    const { data } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
+    return data.stixRefRelationshipAdd;
+  };
+
+  beforeAll(async () => {
+    directoryAId = await addDirectory('C:\\single-ref-test\\A');
+    directoryBId = await addDirectory('C:\\single-ref-test\\B');
+  });
+
+  afterAll(async () => {
+    for (const id of [fileId, directoryAId, directoryBId]) {
+      await queryAsAdmin({ query: OBSERVABLE_DELETE_QUERY, variables: { id } });
+    }
+  });
+
+  it('should set the parent directory on the first import', async () => {
+    const relation = await importFileUnder(directoryAId);
+    expect(relation.to.id).toEqual(directoryAId);
+    firstParentRelationId = relation.id;
+    const { parentRelations } = await loadFileRefs();
+    expect(parentRelations).toEqual([{ id: firstParentRelationId, toId: directoryAId }]);
+  });
+
+  it('should keep the parent directory when the file is imported again under the same directory', async () => {
+    const relation = await importFileUnder(directoryAId);
+    expect(relation.id).toEqual(firstParentRelationId);
+    expect(relation.to.id).toEqual(directoryAId);
+    const { parentRelations } = await loadFileRefs();
+    expect(parentRelations).toEqual([{ id: firstParentRelationId, toId: directoryAId }]);
+  });
+
+  it('should replace the parent directory when the file is imported under another directory', async () => {
+    const relation = await importFileUnder(directoryBId);
+    expect(relation.id).not.toEqual(firstParentRelationId);
+    expect(relation.to.id).toEqual(directoryBId);
+    const { parentRelations } = await loadFileRefs();
+    expect(parentRelations).toEqual([{ id: relation.id, toId: directoryBId }]);
+  });
+
+  it('should keep then replace the author the same way', async () => {
+    const { createdById: anssiId } = await loadFileRefs();
+    expect(anssiId).toBeDefined();
+    const sameAuthor = await addCreatedBy(ANSSI);
+    expect(sameAuthor.to.id).toEqual(anssiId);
+    expect((await loadFileRefs()).createdById).toEqual(anssiId);
+    const otherAuthor = await addCreatedBy(JOHN_DOE);
+    expect(otherAuthor.to.id).not.toEqual(anssiId);
+    expect((await loadFileRefs()).createdById).toEqual(otherAuthor.to.id);
   });
 });
