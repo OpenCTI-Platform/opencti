@@ -81,6 +81,12 @@ More information can be found:
 - [Decay rule configuration](../../administration/decay-rules.md).
 - [Indicator lifecycle](../../usage/indicators-lifecycle.md).
 
+## Source intelligence manager
+
+The source intelligence manager computes the scorecards of the sources (connectors, ingestion feeds, authors and analysts) once a day, keeps their counters current between two computations from the live stream, routes the knowledge of quarantined sources to their drafts and, in Enterprise Edition, proposes recommendations, applies the autonomy policy and computes collection gaps. Administrators turn the computation on or off in the source intelligence settings; when the manager is disabled in the configuration of every platform node (`source_intelligence_manager:enabled`), the Sources area says so and offers no recomputation.
+
+More information can be found [here](../../usage/source-intelligence.md).
+
 ## Trash manager
 
 The trash manager is responsible to delete permanently elements stored in the [trash](../../usage/delete-restore.md) after a specified period of time (7 days by default).

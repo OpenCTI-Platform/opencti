@@ -2,12 +2,13 @@ import Grid from '@mui/material/Grid';
 import CardContent from '@mui/material/CardContent';
 import { DatabaseOutline, FlaskOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
-import { LibraryBooksOutlined } from '@mui/icons-material';
+import { LibraryBooksOutlined, RssFeedOutlined } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import useAttributes from '../../../utils/hooks/useAttributes';
+import useGranted, { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { getCurrentIsSources, indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetHost, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
@@ -75,13 +76,16 @@ const WidgetCreationPerspective = () => {
 
   // Container and domain object have different filters for the perspective selection
   const { containerTypes } = useAttributes();
+  const isSourcesGranted = useGranted([MODULES, INGESTION]);
 
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
     const initialFilters = buildInitialFilters(containerTypes, host, perspective);
     const initialColumns = perspective === 'entities' || perspective === 'relationships'
       ? getDefaultWidgetColumns(perspective, host)
       : [];
-    const newDataSelection = dataSelection.map((n) => ({
+    // A source widget reads a single series, as when it is created: the others of a widget switched to it are dropped
+    const selections = perspective === 'sources' ? dataSelection.slice(0, 1) : dataSelection;
+    const newDataSelection = selections.map((n) => ({
       ...n,
       perspective,
       filters: perspective === n.perspective ? n.filters : initialFilters,
@@ -91,6 +95,20 @@ const WidgetCreationPerspective = () => {
       dynamicFrom_id: undefined,
       dynamicTo_id: undefined,
       columns: perspective === n.perspective ? n.columns : initialColumns,
+      // Source widgets select scorecard metrics: x / y / size for the bubble, a single metric otherwise
+      ...(perspective === 'sources' && n.perspective !== 'sources' ? {
+        attribute: type === 'bubble' ? 'cost_per_actionable_object' : 'value_score',
+        field: type === 'bubble' ? 'impact_score' : undefined,
+        sort_by: type === 'bubble' ? 'volume_total' : null,
+        sort_mode: type === 'number' || type === 'line' ? 'avg' : 'desc',
+      } : {}),
+      // Scorecard metrics mean nothing to the other perspectives: back to the defaults of a new widget
+      ...(n.perspective === 'sources' && perspective !== 'sources' ? {
+        attribute: 'entity_type',
+        field: undefined,
+        sort_by: 'created_at',
+        sort_mode: 'desc',
+      } : {}),
     }
     ));
     setConfigWidget({
@@ -110,9 +128,14 @@ const WidgetCreationPerspective = () => {
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
   };
+  // Source scorecards only feed dashboards, never fintel templates or custom views of an entity,
+  // and are readable with the connectors or ingestion capability only
+  const isSourcesAvailable = isSourcesGranted && host.kind === 'workspace' && getCurrentIsSources(type);
 
   let xs = 12;
-  if (
+  if (isSourcesAvailable) {
+    xs = 12 / [getCurrentIsEntities(), getCurrentIsRelationships(), getCurrentIsAudits(), true].filter(Boolean).length;
+  } else if (
     getCurrentIsEntities()
     && getCurrentIsRelationships()
     && getCurrentIsAudits()
@@ -215,6 +238,38 @@ const WidgetCreationPerspective = () => {
               <br />
               <Typography variant="body1">
                 {t_i18n('Display data related to the history and activity.')}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      )}
+      {isSourcesAvailable && (
+        <Grid item xs={xs}>
+          <Card
+            data-testid="sources-widget-perspective"
+            padding="none"
+            aria-label={t_i18n('Intelligence sources')}
+            onClick={() => handleSelectPerspective('sources')}
+            variant="outlined"
+            sx={{
+              textAlign: 'center',
+            }}
+          >
+            <CardContent>
+              <RssFeedOutlined
+                style={{ fontSize: 40 }}
+                color="primary"
+              />
+              <Typography
+                gutterBottom
+                variant="h2"
+                style={{ marginTop: 20 }}
+              >
+                {t_i18n('Intelligence sources')}
+              </Typography>
+              <br />
+              <Typography variant="body1">
+                {t_i18n('Display the scorecards of connectors, feeds and authors: value, uniqueness, lead time, accuracy, impact, noise and cost.')}
               </Typography>
             </CardContent>
           </Card>

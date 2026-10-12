@@ -13,22 +13,28 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
+import useGranted, { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
 
-export const getVisualizationTypes = (host: WidgetHost) => {
-  return host.kind === 'workspace'
-    ? workspacesWidgetVisualizationTypes
-    : host.kind === 'fintelTemplate'
-      ? fintelTemplatesWidgetVisualizationTypes
-      : host.kind === 'custom-view'
-        ? customViewsWidgetVisualizationTypes
-        : [];
+// The bubble chart only renders the Sources perspective, which needs the connectors or ingestion capability
+export const getVisualizationTypes = (host: WidgetHost, isSourcesGranted: boolean) => {
+  if (host.kind === 'workspace') {
+    return isSourcesGranted
+      ? workspacesWidgetVisualizationTypes
+      : workspacesWidgetVisualizationTypes.filter((w) => w.key !== 'bubble');
+  }
+  return host.kind === 'fintelTemplate'
+    ? fintelTemplatesWidgetVisualizationTypes
+    : host.kind === 'custom-view'
+      ? customViewsWidgetVisualizationTypes
+      : [];
 };
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
   const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
+  const isSourcesGranted = useGranted([MODULES, INGESTION]);
 
-  const visualizationTypes = getVisualizationTypes(host);
+  const visualizationTypes = getVisualizationTypes(host, isSourcesGranted);
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

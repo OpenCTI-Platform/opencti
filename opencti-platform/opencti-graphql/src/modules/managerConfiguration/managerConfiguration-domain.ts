@@ -5,7 +5,8 @@ import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../..
 import { getEntitiesListFromCache } from '../../database/cache';
 import { telemetry } from '../../config/tracing';
 import { type BasicStoreEntityManagerConfiguration, ENTITY_TYPE_MANAGER_CONFIGURATION, type StoreEntityManagerConfiguration } from './managerConfiguration-types';
-import { getAllDefaultManagerConfigurations, getDefaultManagerConfiguration } from './managerConfiguration-utils';
+import { getAllDefaultManagerConfigurations, getDefaultManagerConfiguration, hasDedicatedSettings } from './managerConfiguration-utils';
+import { ForbiddenAccess } from '../../config/errors';
 import type { EditInput, FilterGroup } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -38,6 +39,10 @@ export const findByManagerId = async (context: AuthContext, user: AuthUser, mana
 };
 
 export const managerConfigurationEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+  const current = await findById(context, user, id);
+  if (current && hasDedicatedSettings(current.manager_id)) {
+    throw ForbiddenAccess('This manager configuration is edited through the settings of its module', { manager_id: current.manager_id });
+  }
   const { element } = await updateAttribute<StoreEntityManagerConfiguration>(context, user, id, ENTITY_TYPE_MANAGER_CONFIGURATION, input);
   await publishUserAction({
     user,

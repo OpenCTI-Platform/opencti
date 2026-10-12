@@ -6,7 +6,7 @@ import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import { BYPASS, checkOTPValidationStatus, OTPValidationStatus, PUBLIC_DASHBOARD_REFERER, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
-import { getDraftContext } from '../utils/draftContext';
+import { checkDraftNotClosedByRequest, getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 /**
@@ -110,6 +110,9 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, LTS_PROTECT_DIRECTIVE)?.[0];
               if (blocked_for_lts_validation && !allowUnlicensedLTS) {
                 throw LtsRequiredActivation();
+              }
+              if (typeName === TYPE_MUTATION) {
+                checkDraftNotClosedByRequest(context);
               }
 
               if (requiredCapabilitiesBase.length === 0 && requiredCapabilitiesInDraft?.length === 0) {

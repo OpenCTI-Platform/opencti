@@ -176,6 +176,30 @@ export class TelemetryMeterManager {
   // Number of PIR
   pirCount = 0;
 
+  // Number of intelligence sources with a scorecard (Source Intelligence)
+  sourcesWithScorecardCount = 0;
+
+  // Number of intelligence sources with a declared cost
+  sourcesWithCostCount = 0;
+
+  // Number of PIR criteria flagged as collection gaps
+  collectionGapsCount = 0;
+
+  // Number of source recommendations applied by a user
+  sourceRecommendationAppliedCount = 0;
+
+  // Number of source recommendations applied by the autonomy policy
+  sourceRecommendationAutonomousCount = 0;
+
+  // Number of source recommendations reverted
+  sourceRecommendationRevertedCount = 0;
+
+  // Number of source recommendations dismissed
+  sourceRecommendationDismissedCount = 0;
+
+  // Number of Intelligence ROI dashboards created from the built-in template
+  sourceIntelligenceDashboardCount = 0;
+
   // Number of connectors deployed
   connectorDeployedCount = 0;
 
@@ -491,6 +515,38 @@ export class TelemetryMeterManager {
     this.pirCount = n;
   }
 
+  setSourcesWithScorecardCount(n: number) {
+    this.sourcesWithScorecardCount = n;
+  }
+
+  setSourcesWithCostCount(n: number) {
+    this.sourcesWithCostCount = n;
+  }
+
+  setCollectionGapsCount(n: number) {
+    this.collectionGapsCount = n;
+  }
+
+  setSourceRecommendationAppliedCount(n: number) {
+    this.sourceRecommendationAppliedCount = n;
+  }
+
+  setSourceRecommendationAutonomousCount(n: number) {
+    this.sourceRecommendationAutonomousCount = n;
+  }
+
+  setSourceRecommendationRevertedCount(n: number) {
+    this.sourceRecommendationRevertedCount = n;
+  }
+
+  setSourceRecommendationDismissedCount(n: number) {
+    this.sourceRecommendationDismissedCount = n;
+  }
+
+  setSourceIntelligenceDashboardCount(n: number) {
+    this.sourceIntelligenceDashboardCount = n;
+  }
+
   setConnectorDeployedCount(n: number) {
     this.connectorDeployedCount = n;
   }
@@ -744,6 +800,14 @@ export class TelemetryMeterManager {
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
+    this.registerGauge('sources_with_scorecard_count', 'Number of intelligence sources with a scorecard', 'sourcesWithScorecardCount');
+    this.registerGauge('sources_with_cost_count', 'Number of intelligence sources with a declared cost', 'sourcesWithCostCount');
+    this.registerGauge('collection_gaps_count', 'Number of PIR criteria flagged as collection gaps', 'collectionGapsCount');
+    this.registerGauge('source_recommendation_applied_count', 'Number of source recommendations applied by a user', 'sourceRecommendationAppliedCount');
+    this.registerGauge('source_recommendation_autonomous_count', 'Number of source recommendations applied by the autonomy policy', 'sourceRecommendationAutonomousCount');
+    this.registerGauge('source_recommendation_reverted_count', 'Number of source recommendations reverted', 'sourceRecommendationRevertedCount');
+    this.registerGauge('source_recommendation_dismissed_count', 'Number of source recommendations dismissed', 'sourceRecommendationDismissedCount');
+    this.registerGauge('source_intelligence_dashboard_count', 'Number of Intelligence ROI dashboards created from the template', 'sourceIntelligenceDashboardCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
     this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
     this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');

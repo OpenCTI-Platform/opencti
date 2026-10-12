@@ -78,6 +78,13 @@ interface AuthContext {
   tracing: TracingContext;
   user: AuthUser | undefined;
   draft_context?: string | undefined;
+  // The work was queued for a draft closed with no draft taking over from it (see draftWorkspace-closure)
+  draft_forward_closed?: boolean;
+  // Lease the request holds on its draft of a forwarding chain while it runs (see draftWorkspace-closure)
+  draft_writer_id?: string | null;
+  draft_writer_release?: () => Promise<void>;
+  // Drafts the request closed: its later mutations are refused in them (see checkDraftNotClosedByRequest)
+  draft_closed_ids?: string[];
   workId?: string;
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;

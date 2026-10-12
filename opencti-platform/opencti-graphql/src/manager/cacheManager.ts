@@ -57,6 +57,7 @@ import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-ty
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_SOURCE } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
@@ -349,6 +350,12 @@ const platformPirs = (context: AuthContext) => {
   };
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
+const platformSources = (context: AuthContext) => {
+  const reloadSources = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE]);
+  };
+  return { values: null, fn: reloadSources };
+};
 const platformCustomFieldDefinitions = (context: AuthContext) => {
   const reloadCustomFieldDefinitions = () => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]);
@@ -376,6 +383,7 @@ const CACHED_ENTITIES_MAP = {
   [ENTITY_TYPE_PIR]: platformPirs,
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: platformDecayExclusionRules,
   [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: platformCustomFieldDefinitions,
+  [ENTITY_TYPE_SOURCE]: platformSources,
 };
 // ABSTRACT_INTERNAL_OBJECT is always included
 // it's the shared bus used by some internal object types that the cache manager needs to listen to

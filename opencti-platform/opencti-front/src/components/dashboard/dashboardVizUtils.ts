@@ -61,6 +61,8 @@ export const resolveDataSelection = async ({
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
   } else if (perspective === 'audits') {
     mainEntityTypes = ['History'];
+  } else if (perspective === 'sources') {
+    mainEntityTypes = ['Source'];
   }
   const availableFilterKeysMain = getAvailableFilterKeysForEntityTypes(filterKeysSchema, mainEntityTypes, true);
   const availableFilterKeysSecondary = getAvailableFilterKeysForEntityTypes(filterKeysSchema, ['Stix-Core-Object'], true);

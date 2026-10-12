@@ -950,7 +950,13 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 
 type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+export const addUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  newUser: AddUserInput,
+  // Called right before the user is written: an error thrown before its call left nothing behind
+  options: { beforeWrite?: () => void } = {},
+) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -1022,6 +1028,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
     };
   }
 
+  options.beforeWrite?.();
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
@@ -2556,7 +2563,13 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
 };
 
 type OnTheFlyInput = { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined };
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: OnTheFlyInput) => {
+export const createOnTheFlyUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: OnTheFlyInput,
+  // Called right before the user is written: an error thrown before its call left nothing behind
+  options: { beforeWrite?: () => void } = {},
+) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
@@ -2587,7 +2600,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
     }
     userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
   }
-  return await addUser(context, user, userInput);
+  return await addUser(context, user, userInput, options);
 };
 
 // -- API Token Logic --
