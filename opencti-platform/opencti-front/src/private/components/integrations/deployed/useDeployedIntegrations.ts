@@ -4,6 +4,7 @@ import { ConnectorsListQuery } from '@components/data/connectors/__generated__/C
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
+import { ConnectorCatalogIdentitySource } from '@components/data/connectors/utils/connectorCatalogIdentity';
 import { computeConnectorStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
@@ -23,6 +24,8 @@ export interface DeployedIntegrationItem {
   name: string;
   description?: string | null;
   logo?: string;
+  // How the catalog entry behind the logo and the description was found
+  identitySource?: ConnectorCatalogIdentitySource;
   status: DeployedIntegrationStatus;
   statusLabel: string;
   running?: boolean;
@@ -51,7 +54,7 @@ interface UseDeployedIntegrationsProps {
   connectorsStateData?: ConnectorsStateQuery['response'] | null;
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
   // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
   isConnectorUpdateEnabled: boolean;
 }
@@ -83,7 +86,7 @@ const useDeployedIntegrations = ({
   connectorsStateData,
   feedsData,
   formsData,
-  logosBySlug,
+  logosByConnectorId,
   isConnectorUpdateEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
@@ -147,14 +150,15 @@ const useDeployedIntegrations = ({
       } else {
         itemStatus = 'inactive';
       }
-      const logoSlug = connector.manager_contract_excerpt?.slug;
+      const identity = connector.catalog_identity;
       items.push({
         id: connector.id,
         kind: 'connector',
         sectionKey: connector.connector_type ?? 'UNKNOWN',
         name: connector.title ?? connector.name,
-        description: connector.manager_contract_excerpt?.title,
-        logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
+        description: identity?.title,
+        logo: logosByConnectorId.get(connector.id),
+        identitySource: identity?.source,
         status: itemStatus,
         statusLabel: label,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
@@ -167,7 +171,7 @@ const useDeployedIntegrations = ({
         hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
-        searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
+        searchText: buildSearchText([connector.title, connector.name, connector.connector_type, identity?.title]),
         connector: merged,
       });
     }
@@ -279,7 +283,7 @@ const useDeployedIntegrations = ({
     }
 
     return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosByConnectorId, isConnectorUpdateEnabled]);
 };
 
 export default useDeployedIntegrations;
