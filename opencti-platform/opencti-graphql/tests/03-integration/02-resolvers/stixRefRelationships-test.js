@@ -181,6 +181,8 @@ describe('StixRefRelationship added again on a single ref', () => {
         edges {
           node {
             id
+            start_time
+            stop_time
             to {
               ... on BasicObject {
                 id
@@ -219,6 +221,7 @@ describe('StixRefRelationship added again on a single ref', () => {
   const JOHN_DOE = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f';
   let directoryAId;
   let directoryBId;
+  let directoryCId;
   let fileId;
   let firstParentRelationId;
   let authorId;
@@ -253,16 +256,21 @@ describe('StixRefRelationship added again on a single ref', () => {
       createdById: data.stixCyberObservable.createdBy?.id,
       updatedAt: data.stixCyberObservable.updated_at,
       parentRelations: data.stixNestedRefRelationships.edges.map(({ node }) => ({ id: node.id, toId: node.to.id })),
+      parentDates: data.stixNestedRefRelationships.edges.map(({ node }) => ({
+        start_time: new Date(node.start_time).toISOString(),
+        stop_time: new Date(node.stop_time).toISOString(),
+      })),
     };
   };
 
   beforeAll(async () => {
     directoryAId = await addDirectory('C:\\single-ref-test\\A');
     directoryBId = await addDirectory('C:\\single-ref-test\\B');
+    directoryCId = await addDirectory('C:\\single-ref-test\\C');
   });
 
   afterAll(async () => {
-    for (const id of [fileId, directoryAId, directoryBId]) {
+    for (const id of [fileId, directoryAId, directoryBId, directoryCId]) {
       await queryAsAdmin({ query: OBSERVABLE_DELETE_QUERY, variables: { id } });
     }
     for (const id of [authoredId, authorId]) {
@@ -308,6 +316,24 @@ describe('StixRefRelationship added again on a single ref', () => {
     expect(new Date(relation.stop_time).toISOString()).toEqual(dates.stop_time);
     const { parentRelations } = await loadFileRefs();
     expect(parentRelations).toEqual([{ id: relation.id, toId: directoryAId }]);
+  });
+
+  it('should serialize concurrent replacements of the parent directory', async () => {
+    const datesOne = { start_time: '2026-02-01T00:00:00.000Z', stop_time: '2026-03-01T00:00:00.000Z' };
+    const datesTwo = { start_time: '2026-04-01T00:00:00.000Z', stop_time: '2026-05-01T00:00:00.000Z' };
+    // Same target: one call replaces, the other finds the target already set and changes nothing
+    const sameTarget = await Promise.all([addRef(directoryBId, 'parent-directory', datesOne), addRef(directoryBId, 'parent-directory', datesTwo)]);
+    expect(sameTarget[1].id).toEqual(sameTarget[0].id);
+    const refsAfterSameTarget = await loadFileRefs();
+    expect(refsAfterSameTarget.parentRelations).toEqual([{ id: sameTarget[0].id, toId: directoryBId }]);
+    expect([datesOne, datesTwo]).toContainEqual(refsAfterSameTarget.parentDates[0]);
+    // Different targets: the last replacement wins, with its own dates
+    const requests = [{ toId: directoryAId, dates: datesOne }, { toId: directoryCId, dates: datesTwo }];
+    await Promise.all(requests.map(({ toId, dates }) => addRef(toId, 'parent-directory', dates)));
+    const refsAfterOtherTargets = await loadFileRefs();
+    expect(refsAfterOtherTargets.parentRelations).toHaveLength(1);
+    const winner = requests.find(({ toId }) => toId === refsAfterOtherTargets.parentRelations[0].toId);
+    expect(refsAfterOtherTargets.parentDates[0]).toEqual(winner.dates);
   });
 
   it('should keep then replace the author the same way', async () => {
