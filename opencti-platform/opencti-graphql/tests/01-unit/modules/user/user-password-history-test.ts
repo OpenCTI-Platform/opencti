@@ -187,12 +187,18 @@ describe('checkPasswordNotReused', () => {
 describe('consumePasswordChangeAttempt', () => {
   it('lets an attempt through within the limit', async () => {
     vi.mocked(redisConsumePasswordChangeAttempt).mockResolvedValue(true);
-    await expect(consumePasswordChangeAttempt('user-1')).resolves.toBeUndefined();
+    await expect(consumePasswordChangeAttempt('user-1', { id: 'admin-1' })).resolves.toBeUndefined();
   });
 
   it('refuses an attempt over the limit with PASSWORD_CHANGE_THROTTLED', async () => {
     vi.mocked(redisConsumePasswordChangeAttempt).mockResolvedValue(false);
-    await expect(consumePasswordChangeAttempt('user-1')).rejects.toMatchObject({ extensions: { code: 'PASSWORD_CHANGE_THROTTLED' } });
+    await expect(consumePasswordChangeAttempt('user-1', { id: 'admin-1' })).rejects.toMatchObject({ extensions: { code: 'PASSWORD_CHANGE_THROTTLED' } });
+  });
+
+  it('counts the attempts of each submitter on the account apart', async () => {
+    vi.mocked(redisConsumePasswordChangeAttempt).mockResolvedValue(true);
+    await consumePasswordChangeAttempt('user-1', { id: 'admin-1' });
+    expect(redisConsumePasswordChangeAttempt).toHaveBeenLastCalledWith('user-1', 'admin-1');
   });
 });
 

@@ -1316,7 +1316,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
       const passwordHistoryCount = readPasswordHistoryCount(settings);
       if (passwordHistoryCount >= 1) {
-        await consumePasswordChangeAttempt(userId);
+        await consumePasswordChangeAttempt(userId, user);
         await checkPasswordNotReused(context, user, lockedUser, clearPassword!, passwordHistoryCount);
       }
       inputs.push({ key: 'password_history', value: computeNextPasswordHistory(lockedUser, passwordHistoryCount) });

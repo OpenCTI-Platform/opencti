@@ -90,7 +90,7 @@ The history starts from the moment the rule is enabled: passwords set before tha
 
 - The password rules shown next to the password fields include "Must be different from your last N passwords" (or "your current password" when the value is `1`). This rule cannot be checked while typing, since only the platform knows the previous passwords.
 - A refused password shows: "This password has already been used recently. Please choose a different one." In the forgot password flow, the user stays on the new password step and can try again with the same code.
-- To limit guessing, a user can submit at most 5 password changes per 15 minutes, counted once the new password meets the other policies. Beyond that, the change is refused with "Too many password change attempts. Please try again in a few minutes." Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)).
+- To limit guessing, each person can submit at most 5 password changes on an account per 15 minutes, counted once the new password meets the other policies. The user, an administrator and the forgot password flow each have their own count, so nobody can block the others: an administrator can always reset the password of a compromised account. Beyond that, the change is refused with "Too many password change attempts. Please try again in a few minutes." Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)).
 
 ### Audit and alerting
 

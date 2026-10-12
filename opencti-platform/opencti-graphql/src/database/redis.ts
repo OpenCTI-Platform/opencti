@@ -772,10 +772,12 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 const PASSWORD_CHANGE_MAX_ATTEMPTS = Number(conf.get('app:password_change:max_attempts') || 5);
 const PASSWORD_CHANGE_WINDOW_SECONDS = Number(conf.get('app:password_change:window_seconds') || 900);
 
-// Counts one password change attempt for this account and tells whether it is still within the limit.
+// Counts one password change attempt on this account by this submitter and tells whether it is still within
+// the limit. One counter per submitter: whoever uses up their attempts on an account never blocks the others,
+// such as an administrator resetting the password of a compromised account.
 // The window starts with the first attempt and a success never resets it.
-export const redisConsumePasswordChangeAttempt = async (userId: string): Promise<boolean> => {
-  const keyName = `password_change_attempts_${userId}`;
+export const redisConsumePasswordChangeAttempt = async (targetUserId: string, submitterId: string): Promise<boolean> => {
+  const keyName = `password_change_attempts_${targetUserId}_${submitterId}`;
   const attempts = await getClientBase().incr(keyName);
   // Also set when a previous expire was lost, so the counter can never stay forever
   if (attempts === 1 || await getClientBase().ttl(keyName) < 0) {
