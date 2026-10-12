@@ -489,6 +489,12 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
     expect(nodemailerCreateTransport).toHaveBeenCalledTimes(3);
   });
 
+  it('should pass fail-fast connection and greeting timeouts to nodemailer', async () => {
+    await smtpIsAlive();
+    const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
+    expect(callOptions).toMatchObject({ connectionTimeout: 10000, greetingTimeout: 10000 });
+  });
+
   it('should use JSON config options when use_db_config is false', async () => {
     await smtpIsAlive();
     // The conf mock sets hostname to 'localhost', port to 25 — verify those are passed.

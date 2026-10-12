@@ -24,7 +24,7 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
+import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import { cleanupEntityWorkflow, initializeEntityWorkflow } from '../modules/workflow/domain/workflow-domain';
 import {
   computeAverage,
@@ -161,7 +161,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -176,6 +176,7 @@ import {
   isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
@@ -209,7 +210,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domai
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
@@ -237,7 +238,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields, MARKDOWN_FIELD_KEY_SET } from './markdown-embedded-images';
 import {
   collectTempImageTokensFromDescriptionFields,
   resolveEmbeddedImagesInDescriptionFieldsForExport,
@@ -282,6 +283,13 @@ import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import {
+  normalizeCustomFieldValuesDates,
+  resolveCustomFieldValuesIdentity,
+  transformCustomFieldValueAddInput,
+  validateCustomFieldValues,
+  validateCustomFieldValuesEditInput,
+} from '../modules/customField/custom-field-validator';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -886,7 +894,7 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
     const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
@@ -2576,12 +2584,6 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const updated = mergeInstanceWithUpdateInputs(initial, updates);
-  const removedEmbeddedStoragePaths = draftId
-    ? []
-    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
-        entityType: initial.entity_type,
-        entityId: initial.internal_id,
-      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2866,7 +2868,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
       }
     }
-    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+    if (updatedInputs.some((i) => MARKDOWN_FIELD_KEY_SET.has(i.key))) {
+      const removedEmbeddedStoragePaths = draftId
+        ? []
+        : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+            entityType: initial.entity_type,
+            entityId: initial.internal_id,
+          });
       for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
         const storagePath = removedEmbeddedStoragePaths[i];
         try {
@@ -3013,8 +3021,24 @@ export const updateAttribute = async <T extends StoreObject>(
   // Validate input attributes
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
+  // Validate custom field values against their definitions (mandatory / min-max / select options)
+  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
+    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
+  }
+  let finalInputs = inputs;
+  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
+  if (customFieldValuesInput) {
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(resolvedValues) };
+      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
+      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
+    } else {
+      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    }
+  }
   // Continue update
-  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
   if (!opts.noEnrich && data.event) {
     // If element really updated, try to enrich if needed
     await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
@@ -3212,6 +3236,12 @@ const validateEntityAndRelationCreation = async (
     await validateInputCreation(context, user, type, input, entitySetting, {
       bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
     });
+    // Custom field values are validated on the final values (default values included).
+    // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
+    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
+    }
   }
 };
 
@@ -3423,6 +3453,18 @@ export const createRelationRaw = async (
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* v8 ignore next */
@@ -3507,6 +3549,7 @@ export const createRelationRaw = async (
       // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, relationshipType, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, relationshipType, entitySetting, opts);
 
@@ -3742,6 +3785,18 @@ const internalCreateEntityRaw = async (
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
 
+  // region custom field values handling
+  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
+    const rawInputCustomFieldValues = input.customFieldValues ?? [];
+    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+    // Only keep empty custom fields values if it came from input
+    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+      (input as any).custom_field_values = customFieldValuesFromInput;
+    }
+  }
+  delete input.customFieldValues;
+  // endregion
+
   // validate user access to create the entity in draft
   const draftId = getDraftContext(context, user);
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
@@ -3802,6 +3857,7 @@ const internalCreateEntityRaw = async (
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
       resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
     // endregion

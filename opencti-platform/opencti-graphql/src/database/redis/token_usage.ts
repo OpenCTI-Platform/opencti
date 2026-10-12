@@ -29,6 +29,14 @@ export const updateTokenUsage = async (tokenRaw: UserApiToken) => {
   }
 };
 
+export const delTokensUsage = async (tokenIds: string[]): Promise<number> => {
+  if (tokenIds.length === 0) {
+    return 0;
+  }
+  const tokenKeys = tokenIds.map((tokenId) => `${REDIS_TOKEN_USAGE_PREFIX}${tokenId}`);
+  return getClientBase().del(...tokenKeys);
+};
+
 export const getTokensUsage = async (tokenIds: string[]): Promise<Record<string, string>> => {
   if (tokenIds.length === 0) {
     return {};

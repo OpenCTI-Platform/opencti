@@ -129,7 +129,7 @@ const extractSimpleMultiPathFromJson = (
     json: onBase ? base : record,
     wrap: attrDef.multiple ?? false,
     flatten: true,
-  });
+  }) as string | string[];
   if (Array.isArray(val)) {
     const formattedValues = val.map((value) => {
       const formatedData = format(value, attrDef, attribute);

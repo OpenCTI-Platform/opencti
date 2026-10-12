@@ -19,13 +19,21 @@ const GraphToolbarItem = ({
 }: GraphToolbarItemProps) => {
   return (
     <Tooltip title={title}>
-      <IconButton
-        color={color}
-        onClick={onClick}
-        disabled={disabled}
+      {/* A disabled button fires no pointer events, so the span carries the tooltip.
+          inline-flex keeps the button's size and alignment in the toolbar. */}
+      <span
+        style={{ display: 'inline-flex' }}
+        tabIndex={disabled ? 0 : undefined}
       >
-        {Icon}
-      </IconButton>
+        <IconButton
+          aria-label={title}
+          color={color}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {Icon}
+        </IconButton>
+      </span>
     </Tooltip>
   );
 };

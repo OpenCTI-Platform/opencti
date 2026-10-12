@@ -565,6 +565,7 @@ const FeedEditionContainer = (props) => {
                     <FilterIconButton
                       filters={filters}
                       helpers={helpers}
+                      availableFilterKeys={availableFilterKeys}
                       redirection
                       searchContext={{ entityTypes: selectedTypes }}
                     />

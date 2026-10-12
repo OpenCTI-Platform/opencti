@@ -24,7 +24,7 @@ import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/Vulnera
 import { CaseIncidentCreationForm } from '../../cases/case_incidents/CaseIncidentCreation';
 import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
-import { TaskCreationForm } from '../../cases/tasks/TaskCreation';
+import { TaskCreationForm } from '../../cases/tasks/TaskCreationForm';
 import { EventCreationForm } from '../../entities/events/EventCreation';
 import { IndividualCreationForm } from '../../entities/individuals/IndividualCreation';
 import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';

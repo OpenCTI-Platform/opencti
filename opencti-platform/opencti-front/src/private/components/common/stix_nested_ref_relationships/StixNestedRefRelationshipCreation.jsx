@@ -421,7 +421,7 @@ class StixNestedRefRelationshipCreation extends Component {
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
-              <Typography variant="h6">{t('Create a relationship')}</Typography>
+              <Typography id="drawer-title" variant="h6">{t('Create a relationship')}</Typography>
             </div>
             <div className={classes.container}>
               <div className={classes.relationCreate}>
@@ -607,7 +607,7 @@ class StixNestedRefRelationshipCreation extends Component {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Select a relationship')}</Typography>
+          <Typography id="drawer-title" variant="h6">{t('Select a relationship')}</Typography>
         </div>
         <List component="div" className={classes.container}>
           {existingRelations.map((relation) => (
@@ -839,10 +839,18 @@ class StixNestedRefRelationshipCreation extends Component {
       <Drawer
         open={open}
         anchor="right"
+        variant="temporary"
         elevation={1}
         // This creation drawer mounts MUI's Drawer directly instead of the shared one, so it has to declare its
         // own layer: a drawer is a layer-2 surface and its fields read the layer from the paper.
-        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
+        slotProps={{
+          paper: {
+            'aria-labelledby': step > 0 ? 'drawer-title' : undefined,
+            'aria-modal': 'true',
+            role: 'dialog',
+            className: fdsLayerClass(SURFACE_LAYER),
+            sx: { ...layerInputVars } },
+        }}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}

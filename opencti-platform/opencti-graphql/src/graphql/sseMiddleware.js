@@ -3,7 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -80,6 +80,27 @@ const sendErrorStatus = (_req, res, httpStatus) => {
     // We don't care but can be interesting for debug.
     logApp.info('Error when trying to kill a session', { error });
   }
+};
+
+/**
+ * Stream connections held for a user on this node.
+ *
+ * A connection authenticates once, when it opens, and then serves events for up to a day on that
+ * decision — nothing re-reads the account status afterwards. Disabling or merging the user away
+ * therefore does not interrupt an already open stream.
+ *
+ * `broadcastClients` is process memory, so this only ever sees the connections opened against the
+ * node it runs on. Making it exhaustive across a cluster would need a pub/sub round trip; the
+ * callers that matter run on a platform at rest, where there is no open connection to miss.
+ */
+export const userStreamConnections = (userId) => {
+  return Object.values(broadcastClients).filter((client) => client.userId === userId);
+};
+
+export const closeUserStreamConnections = (userId) => {
+  const clients = userStreamConnections(userId);
+  clients.forEach((client) => client.close());
+  return clients.length;
 };
 
 const createBroadcastClient = (channel) => {

@@ -23,7 +23,6 @@ import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationsh
 import { cleanObject } from '../database/stix-converter-utils';
 import nconf from 'nconf';
 import { pushAll } from '../utils/arrayUtil';
-import { normalizeEmail } from '../utils/email';
 
 // region hashes
 const MD5 = 'MD5';
@@ -189,7 +188,6 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_MIGRATION_STATUS]: () => uuidv4(),
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [{ src: 'title' }, { src: 'timestamp' }],
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),
@@ -269,9 +267,6 @@ const stixBaseEntityContribution = {
     },
     objects(data) {
       return data.map((o) => o.standard_id).sort();
-    },
-    user_email(data) {
-      return normalizeEmail(data);
     },
   },
 };

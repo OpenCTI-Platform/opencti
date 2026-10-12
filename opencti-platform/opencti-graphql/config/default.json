@@ -125,6 +125,7 @@
     },
     "performance_logger": false,
     "map_bundled_file_path": "./static/maps/world.pmtiles",
+    "map_countries_bundled_file_path": "./static/maps/countries.json",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
@@ -307,7 +308,7 @@
     "interval": 60000
   },
   "platform_usage_metrics_manager": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "platform_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {
@@ -446,7 +447,9 @@
     "username": "",
     "password": "",
     "forced_sender_email": "",
-    "email_max_cc_size": 500
+    "email_max_cc_size": 500,
+    "connection_timeout": 10000,
+    "greeting_timeout": 10000
   },
   "aws": {
     "proxy_enabled": false

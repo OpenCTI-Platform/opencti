@@ -72,6 +72,7 @@ RUN <<EOT
   set -euxo pipefail
 
   apk --no-cache add tini python3-dev
+  rm -f /usr/lib/python*/EXTERNALLY-MANAGED
   rm /var/log/apk.log
 EOT
 

@@ -6,16 +6,19 @@ import {
   type BasicStoreEntityCatalogContract,
   type BasicStoreEntityCatalog,
   type CatalogContract,
+  type CatalogContractCompatibility,
   type CatalogContractEntityFields,
   type GraphqlCatalog,
+  type GraphqlCatalogRevision,
   type GraphqlCatalogContract,
 } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
-import { findAllCatalogs, findCatalogByCatalogId, findLatestCompatibleCatalogContractBySlug, findLatestCompatibleCatalogContractsByCatalogId } from './catalog-repository';
+import { findAllCatalogs, findAllCatalogsRevisions, findCatalogByCatalogId, findCatalogContractsByCatalogId, findCatalogContractsBySlug } from './catalog-repository';
 import { logApp } from '../../config/conf';
+import { buildCatalogContractCompatibility, groupContractVersionsBySlug, selectLatestContractsBySlug } from './catalog-version-utils';
 
 const validatorCache = new Map<string, ValidateFunction>();
 const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
@@ -419,6 +422,8 @@ export const computeConnectorTargetContract = (
 const mapCatalogToGraphqlCatalog = (
   catalog: BasicStoreEntityCatalog,
   contracts: BasicStoreEntityCatalogContract[],
+  versionsBySlug: Map<string, GraphqlCatalogContract['versions']> = new Map(),
+  compatibilityBySlug: Map<string, CatalogContractCompatibility> = new Map(),
 ): GraphqlCatalog => {
   return {
     id: catalog.catalog_id,
@@ -428,7 +433,11 @@ const mapCatalogToGraphqlCatalog = (
     parent_types: catalog.parent_types,
     standard_id: catalog.standard_id,
     contracts: contracts.map((c) =>
-      JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(c, { excludeRuntimeConfigVars: true })),
+      JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(c, {
+        excludeRuntimeConfigVars: true,
+        versions: versionsBySlug.get(c.slug),
+        compatibility: compatibilityBySlug.get(c.slug),
+      })),
     ),
   };
 };
@@ -442,32 +451,62 @@ export const queryCatalogById = async (context: AuthContext, user: AuthUser, cat
     });
     return null;
   }
-  const contracts = await findLatestCompatibleCatalogContractsByCatalogId(context, user, catalogId);
+  const contractsById = await findCatalogContractsByCatalogId(context, user, catalogId);
+  const contracts = [...contractsById.values()];
+  const latestContracts = selectLatestContractsBySlug(contracts);
+  const versionsBySlug = groupContractVersionsBySlug(contracts);
+  const compatibilityBySlug = new Map(
+    [...versionsBySlug.entries()].map(([slug, versions]) => [slug, buildCatalogContractCompatibility(versions)]),
+  );
   logApp.debug('[OPENCTI-MODULE] Catalog query by id resolved', {
     module: 'catalog',
     catalogId,
-    contractsCount: contracts.size,
+    contractsCount: latestContracts.length,
   });
-  return mapCatalogToGraphqlCatalog(catalog, [...contracts.values()]);
+  return mapCatalogToGraphqlCatalog(catalog, latestContracts, versionsBySlug, compatibilityBySlug);
 };
 
 export const queryCatalogs = async (context: AuthContext, user: AuthUser) => {
   const catalogs = await findAllCatalogs(context, user);
-  const contracts = await Promise.all(catalogs.map((catalog) => findLatestCompatibleCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
-  const contractsTotalCount = contracts.reduce((total, contractsByCatalog) => total + contractsByCatalog.size, 0);
+  const contracts = await Promise.all(catalogs.map((catalog) => findCatalogContractsByCatalogId(context, user, catalog.catalog_id)));
+  const latestContractsByCatalog = contracts.map((contractsByCatalog) => selectLatestContractsBySlug([...contractsByCatalog.values()]));
+  const versionsBySlugByCatalog = contracts.map((contractsByCatalog) => groupContractVersionsBySlug([...contractsByCatalog.values()]));
+  const compatibilityBySlugByCatalog = versionsBySlugByCatalog.map((versionsBySlug) => new Map(
+    [...versionsBySlug.entries()].map(([slug, versions]) => [slug, buildCatalogContractCompatibility(versions)]),
+  ));
+  const contractsTotalCount = latestContractsByCatalog.reduce((total, contractsByCatalog) => total + contractsByCatalog.length, 0);
   logApp.debug('[OPENCTI-MODULE] Catalogs query resolved', {
     module: 'catalog',
     catalogsCount: catalogs.length,
     contractsTotalCount,
   });
   const ret = catalogs.map((catalog, idx) => {
-    return mapCatalogToGraphqlCatalog(catalog, [...contracts[idx].values()]);
+    return mapCatalogToGraphqlCatalog(catalog, latestContractsByCatalog[idx], versionsBySlugByCatalog[idx], compatibilityBySlugByCatalog[idx]);
   });
   return ret;
 };
 
+export const findCatalogRevisions = async (context: AuthContext, user: AuthUser): Promise<GraphqlCatalogRevision[]> => {
+  try {
+    const catalogsRevisions = await findAllCatalogsRevisions(context, user);
+    const revisions = catalogsRevisions.map((catalog) => ({
+      catalog_id: catalog.catalog_id,
+      revision: catalog.revision ?? null,
+    }));
+    logApp.debug('[OPENCTI-MODULE] [catalog] Catalog revisions query resolved', {
+      module: 'catalog',
+      catalogsCount: revisions.length,
+    });
+    return revisions;
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] [catalog] Catalog revisions query failed', { module: 'catalog', error });
+    throw error;
+  }
+};
+
 export const queryContractBySlug = async (context: AuthContext, user: AuthUser, contractSlug: string) => {
-  const contract = await findLatestCompatibleCatalogContractBySlug(context, user, contractSlug);
+  const contracts = await findCatalogContractsBySlug(context, user, contractSlug);
+  const contract = selectLatestContractsBySlug(contracts)[0];
   if (!contract) {
     logApp.debug('[OPENCTI-MODULE] Contract query by slug returned no contract', {
       module: 'catalog',
@@ -481,9 +520,17 @@ export const queryContractBySlug = async (context: AuthContext, user: AuthUser, 
     catalogId: contract.catalog_id,
     contractVersion: contract.contract_version,
   });
+  const versionsBySlug = groupContractVersionsBySlug(contracts);
+  const compatibilityBySlug = new Map(
+    [...versionsBySlug.entries()].map(([slug, versions]) => [slug, buildCatalogContractCompatibility(versions)]),
+  );
   return {
     catalog_id: contract.catalog_id,
-    contract: JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(contract, { excludeRuntimeConfigVars: true })),
+    contract: JSON.stringify(mapContractEntityFieldsToGraphqlCatalogContract(contract, {
+      excludeRuntimeConfigVars: true,
+      versions: versionsBySlug.get(contract.slug),
+      compatibility: compatibilityBySlug.get(contract.slug),
+    })),
   };
 };
 
@@ -494,12 +541,6 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
   logoUri: string | null;
 }): CatalogContractEntityFields => {
   const { catalogId, contractDto, contractContentHash, logoUri } = params;
-  const supportVersionValue = contractDto.support_version
-    ? contractDto.support_version.replace(/^\s*>=\s*/, '').trim()
-    : null;
-  const normalizedSupportVersion = supportVersionValue && supportVersionValue.length > 0
-    ? supportVersionValue
-    : null;
   return {
     catalog_id: catalogId,
     contract_id: `${contractDto.slug}-${contractDto.container_version}`,
@@ -514,7 +555,7 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
     last_verified_date: contractDto.last_verified_date ?? undefined,
     playbook_supported: contractDto.playbook_supported,
     max_confidence_level: contractDto.max_confidence_level,
-    support_version: normalizedSupportVersion ?? undefined,
+    support_version: contractDto.support_version ?? undefined,
     subscription_link: contractDto.subscription_link ?? undefined,
     source_code: contractDto.source_code ?? undefined,
     manager_supported: contractDto.manager_supported,
@@ -530,9 +571,13 @@ export const mapContractDtoV0ToContractEntityFields = (params: {
 
 export const mapContractEntityFieldsToGraphqlCatalogContract = (
   contract: CatalogContractEntityFields,
-  options: { excludeRuntimeConfigVars?: boolean } = {},
+  options: {
+    excludeRuntimeConfigVars?: boolean;
+    versions?: GraphqlCatalogContract['versions'];
+    compatibility?: GraphqlCatalogContract['compatibility'];
+  } = {},
 ): GraphqlCatalogContract => {
-  const { excludeRuntimeConfigVars = false } = options;
+  const { excludeRuntimeConfigVars = false, versions, compatibility } = options;
   const normalizedConfigSchema = normalizeContractConfigSchema(contract.config_schema);
   const configSchema = excludeRuntimeConfigVars
     ? getContractConfigSchemaWithoutExcludedRuntimeVars(normalizedConfigSchema)
@@ -549,10 +594,14 @@ export const mapContractEntityFieldsToGraphqlCatalogContract = (
     playbook_supported: contract.playbook_supported,
     max_confidence_level: contract.max_confidence_level,
     support_version: contract.support_version ?? null,
+    min_version: contract.min_version ?? null,
+    max_version: contract.max_version ?? null,
     subscription_link: contract.subscription_link ?? null,
     source_code: contract.source_code ?? '',
     manager_supported: contract.manager_supported,
     container_version: contract.contract_version,
+    versions,
+    compatibility: compatibility ?? null,
     container_image: contract.image,
     container_type: contract.connector_type,
     config_schema: configSchema,
@@ -580,6 +629,8 @@ export const mapContractEntityFieldsToEmbeddedConnectorManagerContract = (
     playbook_supported,
     max_confidence_level,
     support_version,
+    min_version,
+    max_version,
     subscription_link,
     source_code,
     manager_supported,
@@ -606,6 +657,8 @@ export const mapContractEntityFieldsToEmbeddedConnectorManagerContract = (
     playbook_supported,
     max_confidence_level,
     support_version,
+    min_version,
+    max_version,
     subscription_link,
     source_code,
     manager_supported,

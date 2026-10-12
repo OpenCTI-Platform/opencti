@@ -13,7 +13,7 @@ import { elDeleteElements, elIndexElements } from '../../../../src/database/engi
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import type { BasicStoreEntityAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-types';
-import { sessionLogin } from '../../../../src/domain/user';
+import { sessionLogin } from '../../../../src/modules/user/user-domain';
 import type { AuthContext } from '../../../../src/types/user';
 import type Express from 'express';
 

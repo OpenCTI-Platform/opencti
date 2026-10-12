@@ -5,7 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
 import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { resolveUserByIdFromCache } from '../domain/user';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
 import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
@@ -59,7 +59,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -335,8 +335,10 @@ export const buildContainersElementsBundle = async (context, user, containers, e
     const element = elements[index];
     elementIds.add(element.internal_id);
     elementStandardIds.add(element.standard_id);
-    if (element.fromId) elementIds.add(element.fromId);
-    if (element.toId) elementIds.add(element.toId);
+    if (operationType !== ACTION_TYPE_REMOVE || !isStixRelationship(element.entity_type)) {
+      if (element.fromId) elementIds.add(element.fromId);
+      if (element.toId) elementIds.add(element.toId);
+    }
   }
   if (withNeighbours) {
     const callback = (relations) => {
@@ -462,7 +464,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objects.push(stixRelation);
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
+        logApp.warn('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
           cause: e,
           taskId: task.internal_id,
           workId: task.work_id,
@@ -660,7 +662,7 @@ const taskHandlerGenerator = (context) => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
+      logApp.warn('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
       return;
     }
     // endregion

@@ -79,7 +79,7 @@ const openExport = async (entityType = 'Report', fromContentShortcut = false) =>
   await result.user.click(screen.getByRole('button', { name: fromContentShortcut ? 'Generate an export based on a template' : 'Export' }));
   if (fromContentShortcut) {
     expect(screen.getByLabelText('Export as fintel')).toBeChecked();
-    expect(screen.getByLabelText('Template')).toHaveValue('');
+    expect(screen.getByLabelText('Template')).toHaveValue('Briefing');
     expect(screen.getByLabelText('File to export')).toBeDisabled();
   }
   await result.user.click(screen.getByLabelText('Template'));

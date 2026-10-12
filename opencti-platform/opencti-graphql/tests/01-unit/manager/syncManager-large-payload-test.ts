@@ -71,7 +71,7 @@ describe('syncManager large payload safeguards', () => {
     const secondPayload = JSON.parse(encodeToBase64.mock.calls[1][0]);
     expect(firstPayload.data.extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
     expect(secondPayload.data.extensions[STIX_EXT_OCTI].files[0].data).toBeUndefined();
-    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
   });
 
   it('retries payload encoding after dropping attachment data on JSON.stringify RangeError', () => {
@@ -106,7 +106,7 @@ describe('syncManager large payload safeguards', () => {
     expect(encodeToBase64).toHaveBeenCalledTimes(2);
     const secondPayload = JSON.parse(encodeToBase64.mock.calls[1][0]);
     expect(secondPayload.data.extensions[STIX_EXT_OCTI].files[0].data).toBeUndefined();
-    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
   });
 
   it('rethrows ERR_STRING_TOO_LONG when no attachment data can be dropped', () => {

@@ -603,7 +603,7 @@ export const upload = async (
   fileUpload: FileUploadData,
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [], creatorId: creatorIdOpt } = opts;
   const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const normalized_file_markings = file_markings?.map((m) => {
     const marking = markings.get(m);
@@ -656,7 +656,7 @@ export const upload = async (
     }
   }
 
-  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
+  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id || creatorIdOpt || user.id;
 
   // Upload the data from the buffered content
   const uploadReadStream = createReadStream();
@@ -720,6 +720,7 @@ export interface FileUploadOpts {
   errorOnExisting?: boolean;
   file_markings?: string[];
   importContextEntities?: BasicStoreEntity[]; // entities used for import context
+  creatorId?: string; // user to register as file creator when uploading on behalf of someone else, defaults to the uploading user
 }
 
 export interface FileUploadData {

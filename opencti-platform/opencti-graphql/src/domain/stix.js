@@ -22,7 +22,7 @@ import { specialTypesExtensions } from '../database/file-storage';
 import { getExportFilter } from '../utils/getExportFilter';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { checkUserCanShareMarkings } from './user';
+import { checkUserCanShareMarkings } from '../modules/user/user-domain';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgroundTask-common';
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';

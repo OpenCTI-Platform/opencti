@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import IconButton from '@common/button/IconButton';
-import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -30,12 +29,6 @@ const useStyles = makeStyles((theme) => ({
     right: 30,
     zIndex: 1100,
   },
-  createButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 280,
-    zIndex: 1100,
-  },
   speedDial: {
     position: 'fixed',
     bottom: 30,
@@ -60,8 +53,6 @@ const ContainerAddStixCoreObjects = (props) => {
     knowledgeGraph,
     containerStixCoreObjects,
     confidence,
-    withPadding,
-    simple,
     paginationOptions,
     onAdd,
     onDelete,
@@ -393,28 +384,15 @@ const ContainerAddStixCoreObjects = (props) => {
         </Tooltip>
       );
     }
-    if (simple) {
-      return (
-        <IconButton
-          aria-label="Add"
-          onClick={() => setOpen(true)}
-          variant="tertiary"
-          size="small"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-      );
-    }
     return (
-      <Fab
-        /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
-        onClick={() => setOpen(true)}
-        color="primary"
+      <IconButton
         aria-label="Add"
-        className={withPadding ? classes.createButtonWithPadding : classes.createButton}
+        onClick={() => setOpen(true)}
+        variant="tertiary"
+        size="small"
       >
-        <Add />
-      </Fab>
+        <Add fontSize="small" />
+      </IconButton>
     );
   };
   return (

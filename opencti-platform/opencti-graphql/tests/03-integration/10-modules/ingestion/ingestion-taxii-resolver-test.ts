@@ -7,7 +7,7 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { now } from '../../../../src/utils/format';
 import { findTaxiiIngestionById as findIngestionById, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
-import { findById as findUserById } from '../../../../src/domain/user';
+import { findById as findUserById } from '../../../../src/modules/user/user-domain';
 import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
 
 const DELETE_USER_QUERY = gql`

@@ -18,6 +18,9 @@ import {
   uploadMapCustomFile,
   deleteMapCustomFile,
   getMapCustomFileInfo,
+  uploadCountriesCustomFile,
+  deleteCountriesCustomFile,
+  getCountriesCustomFileInfo,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -86,6 +89,15 @@ const settingsResolvers = {
         size: meta.contentLength ?? 0,
       };
     },
+    platform_map_countries_custom_file: async () => {
+      const meta = await getCountriesCustomFileInfo();
+      if (!meta) return null;
+      const nameMatch = meta.contentDisposition?.match(/filename="([^"]+)"/);
+      return {
+        name: nameMatch ? nameMatch[1] : 'countries.json',
+        size: meta.contentLength ?? 0,
+      };
+    },
   },
   AppInfo: {
     memory: getMemoryStatistics(),
@@ -107,6 +119,8 @@ const settingsResolvers = {
       updateHeaderAuth: ({ input }) => updateHeaderAuth(context, context.user, id, input),
       uploadMapCustomFile: ({ file }) => uploadMapCustomFile(context, context.user, file),
       deleteMapCustomFile: () => deleteMapCustomFile(context, context.user),
+      uploadCountriesCustomFile: ({ file }) => uploadCountriesCustomFile(context, context.user, file),
+      deleteCountriesCustomFile: () => deleteCountriesCustomFile(context, context.user),
     }),
   },
   Subscription: {

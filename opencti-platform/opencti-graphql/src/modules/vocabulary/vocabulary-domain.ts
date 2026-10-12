@@ -1,16 +1,17 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput } from '../../generated/graphql';
+import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
+import { getVocabulariesCategories, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { normalizeName } from '../../schema/identifier';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
@@ -65,7 +66,19 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   });
 };
 
+// A closed category only accepts its default values, new ones can't be added
+const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) => {
+  if (!vocabularyDefinitions[category]?.closed) {
+    return;
+  }
+  const allowedNames = (openVocabularies[category] ?? []).map(({ key }) => normalizeName(key));
+  if (!allowedNames.includes(normalizeName(name))) {
+    throw FunctionalError('This vocabulary category is closed, new values cannot be added', { category, name });
+  }
+};
+
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
+  checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
   const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
@@ -131,6 +144,7 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
     const name = input.find(({ key }) => key === 'name')?.value[0];
     const oldValue = await findById(context, user, id);
     if (name) {
+      checkVocabularyNameAllowed(oldValue.category, name);
       const completeCategory = getVocabulariesCategories().find(({ key }) => key === oldValue.category);
       if (completeCategory) {
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);

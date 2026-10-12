@@ -3,7 +3,7 @@ import { FunctionalError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
-import { completeConnector, connector, connectors } from '../database/repository';
+import { completeConnector, connector, connectors, loadConnectorHeartbeat } from '../database/repository';
 import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
@@ -17,7 +17,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
 import { isServiceAccountUser } from '../utils/access';
-import { resolveUserByIdFromCache, userEditField } from './user';
+import { resolveUserByIdFromCache, userEditField } from '../modules/user/user-domain';
 import { now } from '../utils/format';
 import { findLatestCompatibleCatalogContractByImageName } from '../modules/catalog/catalog-repository';
 
@@ -388,7 +388,7 @@ export const migrateConnectorToManaged = async (
     managedConnectorData,
   );
 
-  const completedConnector = completeConnector(element);
+  const completedConnector = completeConnector(element, await loadConnectorHeartbeat(existingConnector.internal_id));
 
   await addConnectorDeployedCount();
 

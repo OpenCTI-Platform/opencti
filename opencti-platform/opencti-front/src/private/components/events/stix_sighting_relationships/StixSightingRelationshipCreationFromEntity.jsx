@@ -3,7 +3,6 @@ import { Add } from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -386,8 +385,7 @@ const StixSightingRelationshipCreationFromEntity = ({
         );
       default:
         return (
-          <Fab
-            /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
+          <IconButton
             onClick={handleOpen}
             color="secondary"
             aria-label="Add"
@@ -395,7 +393,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             style={{ right: paddingRight || 30 }}
           >
             <Add />
-          </Fab>
+          </IconButton>
         );
     }
   };

@@ -145,7 +145,7 @@ const registerHealthGauges = () => {
   });
   const storageUsedSizeGauge = meter.createObservableGauge('opencti_storage_used_size_bytes', {
     valueType: ValueType.INT,
-    description: 'Total S3/MinIO bucket object size',
+    description: 'Total size of the files stored by the platform, summed from their indexed size',
   });
   storageUsedSizeGauge.addCallback((result) => {
     if (usageMetrics.s3_used_size !== null) {

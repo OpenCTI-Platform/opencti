@@ -134,6 +134,22 @@ describe('WidgetListsDefaultColumns', () => {
       expect(attributes).not.toContain('draft_status');
       expect(attributes).not.toContain('workflowInstance');
     });
+
+    it('returns fintel entities defaults for fintel template context', () => {
+      const columns = getDefaultWidgetColumns('entities', {
+        kind: 'fintelTemplate',
+        fintelWidgets: [],
+        fintelEntityType: 'Vulnerability',
+        fintelEditorValue: '',
+      });
+      expect(columns.map((c) => c.attribute)).toEqual([
+        'entity_type',
+        'name',
+        'description',
+        'created_at',
+        'createdBy',
+      ]);
+    });
   });
 
   describe('getCustomAttributesColumns (custom-attributes perspective)', () => {

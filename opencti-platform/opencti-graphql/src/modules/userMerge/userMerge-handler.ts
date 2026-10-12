@@ -38,18 +38,9 @@ export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETE
 export const USER_MERGE_SILENT_WRITE = { publishStreamEvent: false };
 
 /**
- * A merge write on a user account leaves the individual joined on its email alone.
- *
- * Any update on a user re-aligns that individual on the user's profile, whatever field changed. An
- * individual created on the fly for a first Note carries the name and the email but neither first
- * nor last name, so the first write on its user fills both — and that write is an event the history
- * manager records a few seconds later, attributed to the source, while the merge is still running.
- * Depending on when it lands, the history handler sees it between its two computations and aborts
- * the merge, writes more than it planned, or never sees it and leaves a reference to the source.
- *
- * Silencing the stream event would not be enough: the individual would still be rewritten, by a
- * write no dry run announces and no handler claims. The individual handler is the one place a merge
- * touches it, so the re-alignment is skipped instead of hidden. Outside the merge nothing changes.
+ * A merge write on a user leaves the individual joined on its email alone. Any user update
+ * re-aligns it, and on an individual created without first and last name that is a history event
+ * attributed to the source, landing while the merge runs. The individual handler owns that entity.
  */
 export const USER_MERGE_USER_WRITE = { skipUserIndividualSync: true };
 
@@ -129,6 +120,20 @@ export interface UserMergeHandlerContext {
    * engine aborts instead, so that shape cannot be written here.
    */
   rights: UserMergeRightsProjection;
+  /**
+   * When the *first* run on this pair began, not when the current one did.
+   *
+   * The merge writes activity traces of its own — the source disablement, and the
+   * "A merged into B" record the requirements ask for. Both name the source by construction, so
+   * a history rewrite that swept indiscriminately would erase the very proof of the operation.
+   * Handlers reading the history index cut on this instead of naming those traces: a structural
+   * boundary covers the ones we have not thought of, and makes a replay a no-op on them.
+   *
+   * Anchoring on the current run would only hide the traces of the run in progress. The deletion
+   * gate runs a fresh dry-run, so the previous merge's own traces would fall back under the cut,
+   * count as references still pending, and the gate could never open.
+   */
+  mergeStartedAt: Date;
 }
 
 export interface UserMergeRightsProjection {

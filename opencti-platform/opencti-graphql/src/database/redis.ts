@@ -73,7 +73,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
   const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
-  const omitTLSServerName = booleanConf('tls_cluster_node_mode');
+  const omitTLSServerName = booleanConf('redis:tls_cluster_node_mode');
   const redisOpts = await redisOptions(provider, false, omitTLSServerName ? undefined : tlsServername);
   return {
     keyPrefix: REDIS_PREFIX,
@@ -382,9 +382,20 @@ export const delEditContext = async (user: AuthUser, instanceId: string) => {
   const listIds = [`context:instance:${instanceId}`, `context:user:${user.id}`];
   return delKeyWithList(`edit:${instanceId}:${user.id}`, listIds);
 };
+export const fetchUserContextIds = async (userId: string) => {
+  return getClientBase().zrange(`context:user:${userId}`, 0, -1);
+};
 export const delUserContext = async (user: AuthUser) => {
-  const contextIds = await getClientBase().zrange(`context:user:${user.id}`, 0, -1);
-  return Promise.all(contextIds.map((id) => getClientBase().del(id)));
+  const contextIds = await fetchUserContextIds(user.id);
+  // Deleting the `edit:` key alone leaves its member in both sorted sets, and nothing prunes
+  // `context:user:*` by score the way `keysFromList` does for the instance side — so the user
+  // would keep being reported as holding locks it has already released.
+  const suffix = `:${user.id}`;
+  await Promise.all(contextIds.map((id) => {
+    const instanceId = id.slice('edit:'.length, id.length - suffix.length);
+    return delKeyWithList(id, [`context:instance:${instanceId}`, `context:user:${user.id}`]);
+  }));
+  return contextIds;
 };
 // endregion
 
@@ -926,6 +937,35 @@ export const redisSetConnectorHealthMetrics = async (connectorId: string, metric
 export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
   const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
   return rawMetrics ? JSON.parse(rawMetrics) : null;
+};
+// endregion
+
+// region connector heartbeats
+// Connector liveness is kept out of Elasticsearch so that no entity write (migration, auto-upgrade, edition...)
+// can make a connector look alive: only a connector ping or registration records a heartbeat.
+// Single sorted set (member: connector id, score: last heartbeat epoch ms) so that listing works in one call, cluster included.
+const CONNECTOR_HEARTBEATS_KEY = 'connector_heartbeats';
+
+export const redisSetConnectorHeartbeat = async (connectorId: string, lastSeenAt: string) => {
+  await getClientBase().zadd(CONNECTOR_HEARTBEATS_KEY, new Date(lastSeenAt).getTime(), connectorId);
+};
+
+export const redisGetConnectorHeartbeat = async (connectorId: string): Promise<string | null> => {
+  const score = await getClientBase().zscore(CONNECTOR_HEARTBEATS_KEY, connectorId);
+  return score ? new Date(Number(score)).toISOString() : null;
+};
+
+export const redisGetConnectorsHeartbeats = async (): Promise<Map<string, string>> => {
+  const membersWithScores = await getClientBase().zrange(CONNECTOR_HEARTBEATS_KEY, 0, -1, 'WITHSCORES');
+  const heartbeats = new Map<string, string>();
+  for (let i = 0; i < membersWithScores.length; i += 2) {
+    heartbeats.set(membersWithScores[i], new Date(Number(membersWithScores[i + 1])).toISOString());
+  }
+  return heartbeats;
+};
+
+export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
+  await getClientBase().zrem(CONNECTOR_HEARTBEATS_KEY, connectorId);
 };
 // endregion
 

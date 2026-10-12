@@ -151,14 +151,14 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             name="description"
             label={t_i18n('Description')}
             fullWidth={true}
-            className="mt-5"
+            style={fieldSpacingContainerStyle}
             onSubmit={handleSubmitField}
           />
           <Alert
             icon={false}
             sx={{
               width: '100%',
-              marginTop: 20,
+              marginTop: '20px',
               '& .MuiAlert-message': {
                 width: '100%',
                 overflow: 'hidden',
@@ -257,6 +257,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
           <FilterIconButton
             filters={filters}
             helpers={helpers}
+            availableFilterKeys={availableFilterKeys}
             redirection
             searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           />

@@ -390,11 +390,8 @@ const ThemeLight = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
-          // layer 2. A platform-customised paper colour still wins.
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? 'var(--bg-elevation-default)'
-            : (paper ?? 'var(--bg-elevation-default)'),
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at layer 2.
+          backgroundColor: 'var(--bg-elevation-default)',
           borderRadius: 4,
         },
       },
@@ -557,9 +554,7 @@ const ThemeLight = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? '#FFFFFF'
-            : (paper ?? '#FFFFFF'),
+          backgroundColor: 'var(--bg-input-default)',
         },
       },
     },
@@ -810,9 +805,7 @@ const ThemeLight = (
           },
           '& .MuiOutlinedInput-root': {
             // Same layer-aware background as every other outlined field.
-            backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-              ? 'var(--bg-input-default)'
-              : (paper ?? 'var(--bg-input-default)'),
+            backgroundColor: 'var(--bg-input-default)',
             '& fieldset': {
               borderColor: 'transparent',
             },

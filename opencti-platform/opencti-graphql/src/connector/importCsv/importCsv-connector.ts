@@ -8,7 +8,7 @@ import { downloadFile } from '../../database/raw-file-storage';
 import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
-import { resolveUserByIdFromCache } from '../../domain/user';
+import { resolveUserByIdFromCache } from '../../modules/user/user-domain';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { FunctionalError } from '../../config/errors';
