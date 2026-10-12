@@ -95,9 +95,8 @@ test('Hunt run page verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({ p
     await expect(huntDetails.getRunsPage()).toBeHidden();
     const header = huntDetails.getRunHeader();
     await expect(header.getByRole('heading', { name: /^Run of / })).toBeVisible();
-    await expect(header.getByTestId('hunt-run-hunt-name')).toHaveText(huntName);
     await expect(page.getByTestId('navigation').getByRole('link', { name: huntName })).toBeVisible();
-    await expect(page.getByTestId('hunt-run-status-sentence')).toContainText('3 hits');
+    await expect(header.getByTestId('hunt-run-status-sentence')).toContainText('3 hits');
     await expect(page.getByTestId('hunt-run-evidence')).toContainText('WS-E2E-01');
     await expect(huntDetails.getRunVerdictForm()).toBeVisible();
     // The pending run proposes a true positive, which offers the incident; another verdict does not

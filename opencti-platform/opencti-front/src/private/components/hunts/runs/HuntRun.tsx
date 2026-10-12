@@ -4,13 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import Grid2 from '@mui/material/Grid2';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/styles';
 import { ArrowBackOutlined, AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Alert, Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
@@ -60,10 +54,11 @@ import {
 import { HuntLearnMore } from '../HuntLearnMore';
 import { shortHash } from '../hunt-evidence-utils';
 import { huntRunsListOptions, insertStartedHuntRuns } from './hunt-run-store';
-import HuntRunResults from './HuntRunResults';
+import HuntRunResults, { useHuntRunKnowledge } from './HuntRunResults';
 import HuntRunIocResults from './HuntRunIocResults';
 import HuntRunRuleResults from './HuntRunRuleResults';
 import HuntRunHits from './HuntRunHits';
+import HuntRunTable, { HuntRunSortValue, huntRunTextCell, sortHuntRunRows, useHuntRunTableSort } from './HuntRunTable';
 import { HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
 import { HuntRun_run$data, HuntRun_run$key } from './__generated__/HuntRun_run.graphql';
 import { HuntRunVerdictMutation } from './__generated__/HuntRunVerdictMutation.graphql';
@@ -226,12 +221,12 @@ const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useCo
 const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
 
 /** A date shown relative to now, the absolute date in its tooltip. */
-const RelativeDate = ({ date }: { date: string }) => {
+const RelativeDate = ({ date, label }: { date: string; label?: (relative: string) => string }) => {
   const { fldt, rd } = useFormatter();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span tabIndex={0}>{rd(date)}</span>
+        <span tabIndex={0}>{label ? label(rd(date)) : rd(date)}</span>
       </TooltipTrigger>
       <TooltipContent>{fldt(date)}</TooltipContent>
     </Tooltip>
@@ -244,11 +239,11 @@ interface DetailRow {
   value: React.ReactNode;
 }
 
-/** Rows without a value are left out rather than shown as a dash. */
-const DetailGrid = ({ rows, testId }: { rows: DetailRow[]; testId: string }) => (
-  <Grid container spacing={2} data-testid={testId}>
+/** Rows without a value are left out rather than shown as a dash; four columns when the grid has the width. */
+const DetailGrid = ({ rows, testId, columns }: { rows: DetailRow[]; testId: string; columns: 2 | 4 }) => (
+  <Grid container spacing={2} data-testid={testId} data-columns={columns}>
     {rows.filter((row) => row.value !== null && row.value !== undefined && row.value !== '').map((row) => (
-      <Grid item xs={6} key={row.key}>
+      <Grid item xs={6} md={columns === 4 ? 3 : 6} key={row.key}>
         <Label>{row.label}</Label>
         <Text variant="content-compact">{row.value}</Text>
       </Grid>
@@ -278,7 +273,10 @@ const Disclosure = ({ label, openLabel, testId, children }: { label: string; ope
   );
 };
 
-const RunDetails = ({ run }: { run: Run }) => {
+// A card of the summary grid fills its cell, so the two cards of a row end at the same height
+const summaryCardSx = { display: 'flex', flexDirection: 'column' } as const;
+
+const RunDetails = ({ run, columns }: { run: Run; columns: 2 | 4 }) => {
   const { t_i18n, fldt, n } = useFormatter();
   const count = (value?: number | null) => (value === null || value === undefined ? null : n(value));
   const date = (value?: string | null) => (value ? <RelativeDate date={value} /> : null);
@@ -319,10 +317,10 @@ const RunDetails = ({ run }: { run: Run }) => {
   ];
   return (
     <Card title={t_i18n('Details')}>
-      <DetailGrid rows={essentials} testId="hunt-run-details" />
+      <DetailGrid rows={essentials} testId="hunt-run-details" columns={columns} />
       <Disclosure label={t_i18n('Show more details')} openLabel={t_i18n('Hide the details')} testId="hunt-run-more-details-toggle">
         <div style={{ marginTop: 8 }}>
-          <DetailGrid rows={more} testId="hunt-run-more-details" />
+          <DetailGrid rows={more} testId="hunt-run-more-details" columns={columns} />
         </div>
       </Disclosure>
     </Card>
@@ -411,44 +409,64 @@ const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
   );
 };
 
-const RunEvidence = ({ run, results }: { run: Run; results: HuntRunResults_data$key }) => {
+type EvidenceItem = NonNullable<Run['evidence_sample']>[number];
+type EvidenceRow = EvidenceItem & { id: string };
+
+const EVIDENCE_SORT_VALUES: Record<string, (row: EvidenceRow) => HuntRunSortValue> = {
+  field: (row) => row.field,
+  value_preview: (row) => row.value_preview,
+  count: (row) => row.count,
+};
+
+/** The masked values the run reported, as the Evidence tab of the hunt shows them across its runs. */
+const RunEvidence = ({ run }: { run: Run }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
-  const evidence = [...(run.evidence_sample ?? [])].sort((a, b) => b.count - a.count);
+  const storageKey = `hunt-run-${run.id}-evidence`;
+  const sort = useHuntRunTableSort(storageKey, { sortBy: 'count', orderAsc: false });
+  const evidence = sortHuntRunRows(
+    (run.evidence_sample ?? []).map((item) => ({ ...item, id: `${item.field}::${item.value_hash}` })),
+    sort.sortBy ? EVIDENCE_SORT_VALUES[sort.sortBy] : undefined,
+    sort.orderAsc,
+  );
   return (
-    <Card title={t_i18n('Evidence and results')} action={<HuntLearnMore href={HUNT_DOCS.runs} />}>
+    <Card title={t_i18n('Evidence')} action={<HuntLearnMore href={HUNT_DOCS.runs} />}>
       {evidence.length === 0 ? (
-        <Text variant="content-compact">{t_i18n('No evidence was reported for this run')}</Text>
+        <Text variant="content-compact" data-testid="hunt-run-evidence-empty">{t_i18n('No evidence was reported for this run')}</Text>
       ) : (
         <>
           <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1) }}>
             {t_i18n('OpenCTI hashes and masks the evidence values it receives before storing them; only a masked preview is kept')}
           </Text>
-          <TableContainer style={{ maxHeight: 360 }}>
-            <Table size="small" stickyHeader aria-label={t_i18n('Evidence and results')} data-testid="hunt-run-evidence">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Field')}</TableCell>
-                  <TableCell>{t_i18n('Value')}</TableCell>
-                  <TableCell>{t_i18n('Hash')}</TableCell>
-                  <TableCell align="right">{t_i18n('Count')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {evidence.map((item) => (
-                  <TableRow key={`${item.field}::${item.value_hash}`}>
-                    <TableCell>{item.field}</TableCell>
-                    <TableCell style={{ wordBreak: 'break-all' }}>{item.value_preview ?? t_i18n('No preview')}</TableCell>
-                    <TableCell title={item.value_hash}>{shortHash(item.value_hash)}</TableCell>
-                    <TableCell align="right">{n(item.count)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <HuntRunTable
+            storageKey={storageKey}
+            initialValues={sort.initialValues}
+            onSort={sort.onSort}
+            rows={evidence}
+            label={t_i18n('Evidence')}
+            testId="hunt-run-evidence"
+            disableNavigation
+            dataColumns={{
+              field: { id: 'field', label: 'Field', percentWidth: 28, isSortable: true, render: ({ field }: EvidenceRow) => huntRunTextCell(field) },
+              value_preview: {
+                id: 'value_preview',
+                label: 'Value',
+                percentWidth: 42,
+                isSortable: true,
+                render: ({ value_preview }: EvidenceRow) => huntRunTextCell(value_preview ?? t_i18n('No preview')),
+              },
+              value_hash: {
+                id: 'value_hash',
+                label: 'Hash',
+                percentWidth: 18,
+                isSortable: false,
+                render: ({ value_hash }: EvidenceRow) => huntRunTextCell(shortHash(value_hash)),
+              },
+              count: { id: 'count', label: 'Count', percentWidth: 12, isSortable: true, render: ({ count }: EvidenceRow) => n(count) },
+            }}
+          />
         </>
       )}
-      <HuntRunResults data={results} />
     </Card>
   );
 };
@@ -485,8 +503,8 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
     });
   };
   return (
-    <div ref={cardRef} data-testid="hunt-run-verdict">
-      <Card title={t_i18n('Verdict')} action={<HuntLearnMore href={HUNT_DOCS.runs} testId="hunt-run-verdict-learn-more" />}>
+    <div ref={cardRef} style={{ height: '100%' }} data-testid="hunt-run-verdict">
+      <Card title={t_i18n('Verdict')} action={<HuntLearnMore href={HUNT_DOCS.runs} testId="hunt-run-verdict-learn-more" />} sx={summaryCardSx}>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
           <HuntVerdictChip value={run.verdict} />
           <Text variant="content-caption">{t_i18n(huntVerdictSourceLabel(run.verdict_source))}</Text>
@@ -514,7 +532,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
               onSubmit={onSubmit}
             >
               {({ submitForm, isSubmitting, values }) => (
-                <Form style={{ marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-form">
+                <Form style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-form">
                   <Field component={SelectFieldFds} name="verdict" label={t_i18n('Your verdict')} required>
                     {HUNT_ANALYST_VERDICTS.map((verdict) => (
                       <SelectItem key={verdict} value={verdict}>{t_i18n(huntVerdictLabel(verdict))}</SelectItem>
@@ -536,7 +554,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                       />
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'auto', paddingTop: theme.spacing(2) }}>
                     <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-run-verdict-submit">
                       {t_i18n('Save the verdict')}
                     </Button>
@@ -580,8 +598,8 @@ const RunTriage = ({ run }: { run: Run }) => {
     unavailableReason = t_i18n('AI triage needs XTM One to be configured on the platform');
   }
   return (
-    <Card title={<>{t_i18n('AI triage')}<EEChip size="sm" /></>}>
-      <div data-testid="hunt-run-triage">
+    <Card title={<>{t_i18n('AI triage')}<EEChip size="sm" /></>} sx={summaryCardSx}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }} data-testid="hunt-run-triage">
         {unavailableReason && <Text variant="content-compact">{unavailableReason}</Text>}
         {!unavailableReason && !hasProposal && (
           <Text variant="content-compact">
@@ -619,7 +637,7 @@ const RunTriage = ({ run }: { run: Run }) => {
           </>
         )}
         <HuntEditControls>
-          <div style={{ display: 'flex', gap: theme.spacing(1), justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
+          <div style={{ display: 'flex', gap: theme.spacing(1), justifyContent: 'flex-end', marginTop: 'auto', paddingTop: theme.spacing(2) }}>
             {hasProposal && canSetHuntRunVerdict(run) && !proposalApplied && (
               <Button variant="secondary" onClick={accept} disabled={accepting} data-testid="hunt-run-triage-accept">
                 {t_i18n('Accept the proposal')}
@@ -647,9 +665,7 @@ const RunTriage = ({ run }: { run: Run }) => {
   );
 };
 
-const RunLinks = ({ run }: { run: Run }) => {
-  const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+const runLinks = (run: Run, t_i18n: (message: string) => string) => {
   const links: { key: string; to: string; label: string }[] = [];
   if (run.draft_id) {
     links.push({ key: 'draft', to: huntDraftWorkspacePath(run.draft_id), label: t_i18n('Open the incident draft') });
@@ -663,27 +679,66 @@ const RunLinks = ({ run }: { run: Run }) => {
   if (run.security_coverage_id) {
     links.push({ key: 'coverage', to: PATH_SECURITY_COVERAGE(run.security_coverage_id), label: t_i18n('Open the security coverage') });
   }
-  if (links.length === 0) {
-    return null;
-  }
+  return links;
+};
+
+interface RunKnowledgeProps {
+  run: Run;
+  knowledge: ReturnType<typeof useHuntRunKnowledge>['knowledge'];
+  total: number;
+  onViewResults: () => void;
+}
+
+/** What the run produced and why, the objects it is related to, and the way to the objects it wrote. */
+const RunKnowledge = ({ run, knowledge, total, onViewResults }: RunKnowledgeProps) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const links = runLinks(run, t_i18n);
+  const caption = { display: 'block', marginTop: theme.spacing(1) };
   return (
-    <Card title={t_i18n('Related')}>
-      <ul style={{ margin: 0, paddingLeft: theme.spacing(2) }} data-testid="hunt-run-links">
-        {links.map((link) => (
-          <li key={link.key} style={{ padding: theme.spacing(0.25, 0) }}>
-            <Link to={link.to}>{link.label}</Link>
-          </li>
-        ))}
-      </ul>
-      {run.incident_continued && (
-        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-run-incident-continued">
-          {t_i18n('The new hits of this run went to the incident still open from a previous run')}
-        </Text>
+    <Card title={knowledge ? t_i18n('Knowledge produced') : t_i18n('Related')} sx={summaryCardSx}>
+      {knowledge && (
+        <>
+          <Text variant="content-compact" data-testid="hunt-run-knowledge">
+            {knowledge.produced}
+            {' '}
+            <HuntLearnMore href={HUNT_DOCS.produces} />
+          </Text>
+          {knowledge.reasons.map((reason) => (
+            <Text key={reason} variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5) }} data-testid="hunt-run-knowledge-reason">
+              {reason}
+            </Text>
+          ))}
+        </>
       )}
-      {run.draft_id && (
-        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
-          {t_i18n('The incident stays in its draft until an analyst validates it into the knowledge graph')}
-        </Text>
+      {links.length > 0 && (
+        <>
+          {knowledge && <Label sx={{ marginTop: 2 }}>{t_i18n('Related')}</Label>}
+          <ul style={{ margin: 0, paddingLeft: theme.spacing(2) }} data-testid="hunt-run-links">
+            {links.map((link) => (
+              <li key={link.key} style={{ padding: theme.spacing(0.25, 0) }}>
+                <Link to={link.to}>{link.label}</Link>
+              </li>
+            ))}
+          </ul>
+          {run.incident_continued && (
+            <Text variant="content-caption" style={caption} data-testid="hunt-run-incident-continued">
+              {t_i18n('The new hits of this run went to the incident still open from a previous run')}
+            </Text>
+          )}
+          {run.draft_id && (
+            <Text variant="content-caption" style={caption}>
+              {t_i18n('The incident stays in its draft until an analyst validates it into the knowledge graph')}
+            </Text>
+          )}
+        </>
+      )}
+      {total > 0 && (
+        <div style={{ marginTop: 'auto', paddingTop: theme.spacing(2) }}>
+          <Button variant="tertiary" size="small" onClick={onViewResults} data-testid="hunt-run-view-results">
+            {t_i18n('{count, plural, one {View the # result} other {View the # results}}', { values: { count: total } })}
+          </Button>
+        </div>
       )}
     </Card>
   );
@@ -721,6 +776,39 @@ const RunPartialResultsAlert = ({ run, huntId }: { run: Run; huntId: string }) =
   );
 };
 
+/** Where the run stands in one sentence: the first thing the page answers, its verdict left to the chip next to it. */
+const useRunStatusSentence = (run: Run) => {
+  const { t_i18n, n, rd } = useFormatter();
+  const terminal = isTerminalHuntRun(run.hunt_run_status);
+  const [, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (terminal) return undefined;
+    const timer = setInterval(() => setNow(Date.now()), 15000);
+    return () => clearInterval(timer);
+  }, [terminal]);
+  const platform = runPlatformName(run, t_i18n);
+  const isExecution = run.hunt_run_mode !== 'preview';
+  if (run.hunt_run_status === 'completed' && !isExecution) {
+    return t_i18n('The translation for {platform} is ready', { values: { platform } });
+  }
+  if (run.hunt_run_status === 'completed') {
+    return huntRunOutcomeSentence({ ...run, verdict: null }, platform, t_i18n, n);
+  }
+  if (run.hunt_run_status === 'running') {
+    const since = run.started_at ?? run.dispatched_at ?? run.created_at;
+    const elapsed = formatHuntRunDuration(Math.max(0, Date.now() - new Date(since).getTime()));
+    return t_i18n('Running in {platform} for {duration}', { values: { platform, duration: elapsed } });
+  }
+  if (run.hunt_run_status === 'queued') {
+    return t_i18n('Queued {when}', { values: { when: rd(run.created_at) } });
+  }
+  if (run.hunt_run_status === 'cancelled') {
+    // The platform records why it cancelled the run as one of its sentences, the translation key of the reason
+    return run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled');
+  }
+  return null;
+};
+
 interface RunHeaderProps {
   run: Run;
   huntId: string;
@@ -736,8 +824,12 @@ interface RunHeaderProps {
 const RunHeader = ({ run, huntId, huntName, title, canRetry, retrying, onRetry, onSetVerdict }: RunHeaderProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const sentence = useRunStatusSentence(run);
   const failure = huntRunFailure(run.hunt_run_status, run.error_message);
   const isExecution = run.hunt_run_mode !== 'preview';
+  // A queued run says when it was queued, a running one for how long it runs
+  const started = run.hunt_run_status !== 'queued' && run.hunt_run_status !== 'running' ? run.started_at ?? run.created_at : null;
+  const secondary = { color: theme.palette.text.secondary };
   let primary: React.ReactNode = null;
   if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
     primary = (
@@ -746,7 +838,7 @@ const RunHeader = ({ run, huntId, huntName, title, canRetry, retrying, onRetry, 
       </HuntEditControls>
     );
   } else if (failure && canRetry) {
-    // The failure alert of the status carries the fix of its class (check the connector, edit the rule)
+    // The failure alert under the header carries the fix of its class (check the connector, edit the rule)
     primary = (
       <HuntEditControls>
         <Button startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
@@ -763,7 +855,7 @@ const RunHeader = ({ run, huntId, huntName, title, canRetry, retrying, onRetry, 
     );
   }
   return (
-    <div style={{ marginBottom: theme.spacing(2) }} data-testid="hunt-run-header">
+    <div data-testid="hunt-run-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap', marginBottom: theme.spacing(1) }}>
         <TitleMainEntity sx={{ flex: 1 }} preserveCase>{title}</TitleMainEntity>
         <Button variant="secondary" component={Link} to={`${PATH_HUNT(huntId)}/runs`} startIcon={<ArrowBackOutlined fontSize="small" />} data-testid="hunt-run-back">
@@ -771,86 +863,62 @@ const RunHeader = ({ run, huntId, huntName, title, canRetry, retrying, onRetry, 
         </Button>
         {primary}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid="hunt-run-status">
         <HuntRunStatusChip value={run.hunt_run_status} />
         {isExecution && <HuntVerdictChip value={run.verdict} />}
-        <Text variant="content-compact" data-testid="hunt-run-hunt-name">{huntName}</Text>
-        <Text variant="content-compact" as="span" aria-hidden style={{ color: theme.palette.text.secondary }}>-</Text>
-        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="hunt-run-platform">{runPlatformName(run, t_i18n)}</Text>
+        {sentence ? (
+          <Text variant="content-compact" data-testid="hunt-run-status-sentence">{sentence}</Text>
+        ) : (
+          <>
+            <Text variant="content-compact" data-testid="hunt-run-hunt-name">{huntName}</Text>
+            <Text variant="content-compact" as="span" aria-hidden style={secondary}>-</Text>
+            <Text variant="content-compact" style={secondary} data-testid="hunt-run-platform">{runPlatformName(run, t_i18n)}</Text>
+          </>
+        )}
+        {started && (
+          <>
+            <Text variant="content-compact" as="span" aria-hidden style={secondary}>-</Text>
+            <Text variant="content-compact" style={secondary} data-testid="hunt-run-started">
+              <RelativeDate date={started} label={(when) => t_i18n('Started {when}', { values: { when } })} />
+            </Text>
+          </>
+        )}
       </div>
+      {run.queue_reason && (
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), ...secondary }} data-testid="hunt-run-queue-reason">
+          {huntMessageText(run.queue_reason, t_i18n)}
+        </Text>
+      )}
     </div>
   );
 };
 
-/** Where the run stands in one sentence, and what keeps it from a complete answer: the first thing the page answers. */
-const RunStatus = ({ run, huntId }: { run: Run; huntId: string }) => {
+/** What keeps the run from a complete answer, one alert per cause, right under the header. */
+const RunAlerts = ({ run, huntId }: { run: Run; huntId: string }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, n, rd } = useFormatter();
-  const terminal = isTerminalHuntRun(run.hunt_run_status);
-  const [, setNow] = useState(Date.now());
-  useEffect(() => {
-    if (terminal) return undefined;
-    const timer = setInterval(() => setNow(Date.now()), 15000);
-    return () => clearInterval(timer);
-  }, [terminal]);
-  const platform = runPlatformName(run, t_i18n);
-  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
+  const { t_i18n } = useFormatter();
   const isExecution = run.hunt_run_mode !== 'preview';
-  let sentence: string | null = null;
-  if (run.hunt_run_status === 'completed' && !isExecution) {
-    sentence = t_i18n('The translation for {platform} is ready', { values: { platform } });
-  } else if (run.hunt_run_status === 'completed') {
-    sentence = huntRunOutcomeSentence(run, platform, t_i18n, n);
-  } else if (run.hunt_run_status === 'running') {
-    const since = run.started_at ?? run.dispatched_at ?? run.created_at;
-    const elapsed = formatHuntRunDuration(Math.max(0, Date.now() - new Date(since).getTime()));
-    sentence = t_i18n('Running in {platform} for {duration}', { values: { platform, duration: elapsed } });
-  } else if (run.hunt_run_status === 'queued') {
-    sentence = t_i18n('Queued {when}', { values: { when: rd(run.created_at) } });
-  } else if (run.hunt_run_status === 'cancelled') {
-    // The platform records why it cancelled the run as one of its sentences, the translation key of the reason
-    sentence = run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled');
-  }
   const unresolved = isExecution && run.unresolved_techniques.length > 0;
+  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
   const partial = isExecution && run.hunt_run_status === 'completed' && !!run.results_truncated;
-  if (!sentence && !run.queue_reason && !unresolved && !failure && !partial) {
-    return null;
-  }
   return (
-    <div style={{ marginBottom: theme.spacing(3) }}>
-      <Card aria-label={t_i18n('Run status')}>
-        <div data-testid="hunt-run-status">
-          {sentence && (
-            <Text variant="content-compact" style={{ display: 'block' }} data-testid="hunt-run-status-sentence">
-              {sentence}
-            </Text>
-          )}
-          {run.queue_reason && (
-            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-run-queue-reason">
-              {huntMessageText(run.queue_reason, t_i18n)}
-            </Text>
-          )}
-          {unresolved && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1), marginTop: theme.spacing(1) }} data-testid="hunt-run-unresolved-techniques">
-              <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
-              <Text variant="content-compact">{huntRunUnresolvedTechniquesSentence(run.unresolved_techniques, t_i18n)}</Text>
-            </div>
-          )}
-          {failure && (
-            <div style={{ marginTop: theme.spacing(1.5) }}>
-              <RunFailureAlert run={run} huntId={huntId} />
-            </div>
-          )}
-          {partial && (
-            <div style={{ marginTop: theme.spacing(1.5) }}>
-              <RunPartialResultsAlert run={run} huntId={huntId} />
-            </div>
-          )}
+    <>
+      {unresolved && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1) }} data-testid="hunt-run-unresolved-techniques">
+          <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
+          <Text variant="content-compact">{huntRunUnresolvedTechniquesSentence(run.unresolved_techniques, t_i18n)}</Text>
         </div>
-      </Card>
-    </div>
+      )}
+      {failure && <RunFailureAlert run={run} huntId={huntId} />}
+      {partial && <RunPartialResultsAlert run={run} huntId={huntId} />}
+    </>
   );
 };
+
+interface SummaryCard {
+  key: string;
+  render: (wide: boolean) => React.ReactNode;
+}
 
 interface HuntRunProps {
   data: HuntRun_run$key;
@@ -863,8 +931,9 @@ interface HuntRunProps {
 }
 
 /**
- * The page of a hunt run: its header, where it stands, then the verdict, the AI triage, the hits and what the run
- * found and produced, with its details and related objects on the side and the query it ran below.
+ * The page of a hunt run: its header and what keeps it from a complete answer, a grid of two balanced columns with the
+ * verdict, the AI triage, the details and what the run produced, then at full width the tables of what it found and
+ * the query it ran.
  */
 const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunProps) => {
   const theme = useTheme<Theme>();
@@ -872,11 +941,18 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
   const navigate = useNavigate();
   const draftContext = useDraftContext();
   const run = useFragment(huntRunFragment, data);
+  const { knowledge, total } = useHuntRunKnowledge(results);
+  const twoColumns = useMediaQuery(theme.breakpoints.up('lg'), { noSsr: true });
   const [commitRetry, retrying] = useApiMutation<HuntRunRetryMutation>(huntRunRetryMutation);
   const verdictRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const focusVerdict = () => {
     verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     verdictRef.current?.querySelector<HTMLElement>('[data-testid="hunt-run-verdict-form"] button, [data-testid="hunt-run-verdict-form"] textarea')?.focus();
+  };
+  const viewResults = () => {
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    resultsRef.current?.querySelector<HTMLElement>('a[href]')?.focus({ preventScroll: true });
   };
   const retry = () => {
     commitRetry({
@@ -896,11 +972,23 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
   };
   const canRetry = canRetryHuntRun(run) && canStartHuntRun(run.hunt?.hunt_status, !!draftContext);
   const isExecution = run.hunt_run_mode !== 'preview';
-  const column = { display: 'flex', flexDirection: 'column' as const, gap: theme.spacing(3) };
-
+  const showsHits = isExecution && run.hunt_run_status === 'completed' && ((run.hits_count ?? 0) > 0 || run.time_window_continued);
+  const summary: SummaryCard[] = [];
+  if (isExecution) {
+    summary.push({ key: 'verdict', render: () => <RunVerdict run={run} cardRef={verdictRef} /> });
+  }
+  if (isExecution && (canTriageHuntRun(run) || !!run.verdict_proposal)) {
+    summary.push({ key: 'triage', render: () => <RunTriage run={run} /> });
+  }
+  summary.push({ key: 'details', render: (wide) => <RunDetails run={run} columns={wide ? 4 : 2} /> });
+  if (knowledge || runLinks(run, t_i18n).length > 0) {
+    summary.push({ key: 'knowledge', render: () => <RunKnowledge run={run} knowledge={knowledge} total={total} onViewResults={viewResults} /> });
+  }
+  // The last card of an odd count takes the whole row rather than leave half of it empty
+  const spans = (index: number) => twoColumns && summary.length % 2 === 1 && index === summary.length - 1;
   return (
     <HuntEditContext.Provider value={canEdit}>
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) }}>
         <RunHeader
           run={run}
           huntId={huntId}
@@ -911,45 +999,46 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
           onRetry={retry}
           onSetVerdict={focusVerdict}
         />
-        <RunStatus run={run} huntId={huntId} />
-        <Grid2 container spacing={3}>
-          <Grid2 size={{ xs: 12, lg: 8 }}>
-            <div style={column}>
-              {isExecution && <RunVerdict run={run} cardRef={verdictRef} />}
-              {isExecution && (canTriageHuntRun(run) || !!run.verdict_proposal) && <RunTriage run={run} />}
-              {isExecution && run.hunt_run_status === 'completed' && ((run.hits_count ?? 0) > 0 || run.time_window_continued) && (
-                <HuntRunHits
-                  hitsCount={run.hits_count}
-                  newCount={run.hits_new_count}
-                  recurringCount={run.hits_recurring_count}
-                  identified={run.hits_identified}
-                  windowContinued={run.time_window_continued}
-                  platform={runPlatformName(run, t_i18n)}
-                  hits={run.hits_sample ?? []}
-                />
-              )}
-              {isExecution && <HuntRunIocResults data={run} />}
-              <HuntRunRuleResults data={run} />
-              {isExecution && <RunEvidence run={run} results={results} />}
+        <RunAlerts run={run} huntId={huntId} />
+        <div
+          style={{ display: 'grid', gridTemplateColumns: twoColumns ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)', gap: theme.spacing(3) }}
+          data-testid="hunt-run-summary"
+          data-columns={twoColumns ? 2 : 1}
+        >
+          {summary.map((card, index) => (
+            <div
+              key={card.key}
+              style={{ display: 'flex', flexDirection: 'column', minWidth: 0, gridColumn: spans(index) ? '1 / -1' : undefined }}
+              data-testid={`hunt-run-summary-${card.key}`}
+            >
+              {card.render(!twoColumns || spans(index))}
             </div>
-          </Grid2>
-          <Grid2 size={{ xs: 12, lg: 4 }}>
-            <div style={column}>
-              <RunLinks run={run} />
-              <RunDetails run={run} />
-            </div>
-          </Grid2>
-          {run.translated_query && (
-            <Grid2 size={12}>
-              <Card title={t_i18n('Translated query')}>
-                <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
-                  <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
-                  <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
-                </Disclosure>
-              </Card>
-            </Grid2>
-          )}
-        </Grid2>
+          ))}
+        </div>
+        {isExecution && <HuntRunIocResults data={run} />}
+        <HuntRunRuleResults data={run} />
+        {showsHits && (
+          <HuntRunHits
+            runId={run.id}
+            hitsCount={run.hits_count}
+            newCount={run.hits_new_count}
+            recurringCount={run.hits_recurring_count}
+            identified={run.hits_identified}
+            windowContinued={run.time_window_continued}
+            platform={runPlatformName(run, t_i18n)}
+            hits={run.hits_sample ?? []}
+          />
+        )}
+        {isExecution && <HuntRunResults data={results} runId={run.id} cardRef={resultsRef} />}
+        {isExecution && <RunEvidence run={run} />}
+        {run.translated_query && (
+          <Card title={t_i18n('Translated query')}>
+            <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
+              <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
+              <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
+            </Disclosure>
+          </Card>
+        )}
       </div>
     </HuntEditContext.Provider>
   );

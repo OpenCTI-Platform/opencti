@@ -1,18 +1,17 @@
 import React from 'react';
-import { graphql, usePaginationFragment } from 'react-relay';
-import { Link } from 'react-router';
+import { graphql, useFragment, usePaginationFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import Label from '../../../../components/common/label/Label';
+import Card from '../../../../components/common/card/Card';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
-import { HuntLearnMore } from '../HuntLearnMore';
-import { HUNT_DOCS, huntExtractsObservables } from '../hunt-utils';
+import { huntExtractsObservables } from '../hunt-utils';
+import HuntRunTable, { HuntRunCut, HuntRunDateCell, HuntRunSortValue, huntRunTextCell, sortHuntRunRows, useHuntRunTableSort } from './HuntRunTable';
 import { HuntRunResultsPaginationQuery } from './__generated__/HuntRunResultsPaginationQuery.graphql';
-import { HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
+import { HuntRunResults_data$data, HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
 
 export const HUNT_RUN_RESULTS_PAGE_SIZE = 25;
 
@@ -57,11 +56,15 @@ export const huntRunResultsFragment = graphql`
               representative {
                 main
               }
+              created_at
+              updated_at
             }
             ... on StixRelationship {
               representative {
                 main
               }
+              created_at
+              updated_at
             }
             ... on StixCoreRelationship {
               from {
@@ -158,72 +161,102 @@ export const huntRunKnowledge = (run: HuntRunKnowledgeInput, t_i18n: HuntRunTran
   return { produced: parts.length > 0 ? parts.join(', ') : t_i18n('Nothing'), reasons };
 };
 
-/** What a run produced, then the objects it created that the user can read, a page at a time, with their total. */
-const HuntRunResults = ({ data }: { data: HuntRunResults_data$key }) => {
+type ResultEdges = NonNullable<NonNullable<NonNullable<HuntRunResults_data$data['huntRun']>['results']>['edges']>;
+type Result = NonNullable<NonNullable<ResultEdges[number]>['node']>;
+type ResultRow = Result & { readonly id: string };
+
+const readableResults = (edges?: ResultEdges | null): ResultRow[] => (edges ?? [])
+  .map((edge) => edge?.node)
+  .filter((node): node is ResultRow => !!node?.id);
+
+/** What a run produced and how many objects it wrote that the user can read, for the summary of the run page. */
+export const useHuntRunKnowledge = (data: HuntRunResults_data$key) => {
+  const { t_i18n } = useFormatter();
+  const { huntRun } = useFragment(huntRunResultsFragment, data);
+  return {
+    knowledge: huntRun ? huntRunKnowledge(huntRun, t_i18n) : null,
+    total: huntRun?.results?.pageInfo.globalCount ?? readableResults(huntRun?.results?.edges).length,
+  };
+};
+
+interface HuntRunResultsProps {
+  data: HuntRunResults_data$key;
+  runId: string;
+  cardRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+/** The objects a run wrote that the user can read, a page at a time, with their total. */
+const HuntRunResults = ({ data, runId, cardRef }: HuntRunResultsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
   const { data: { huntRun }, hasNext, loadNext, isLoadingNext } = usePaginationFragment<HuntRunResultsPaginationQuery, HuntRunResults_data$key>(
     huntRunResultsFragment,
     data,
   );
-  const results = (huntRun?.results?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node?.id);
-  const knowledge = huntRun ? huntRunKnowledge(huntRun, t_i18n) : null;
-  if (results.length === 0 && !knowledge) {
+  const storageKey = `hunt-run-${runId}-results`;
+  const sort = useHuntRunTableSort(storageKey, { orderAsc: true });
+  const results = readableResults(huntRun?.results?.edges);
+  if (results.length === 0) {
     return null;
   }
+  const typeLabel = (result: ResultRow) => (result.entity_type ? t_i18n(`entity_${result.entity_type}`) : '');
+  const sortValues: Record<string, (row: ResultRow) => HuntRunSortValue> = {
+    entity_type: typeLabel,
+    name: (result) => result.representative?.main ?? result.id,
+    created_at: (result) => result.created_at,
+    updated_at: (result) => result.updated_at,
+  };
+  // A sort of the pages loaded so far would put rows first that the next pages may not
+  const sortable = !hasNext;
+  const rows = sortable ? sortHuntRunRows(results, sort.sortBy ? sortValues[sort.sortBy] : undefined, sort.orderAsc) : results;
   const total = huntRun?.results?.pageInfo.globalCount ?? results.length;
   return (
-    <>
-      {knowledge && (
-        <>
-          <Label sx={{ marginTop: 2 }}>{t_i18n('Knowledge produced')}</Label>
-          <Text variant="content-compact" data-testid="hunt-run-knowledge">
-            {knowledge.produced}
-            {' '}
-            <HuntLearnMore href={HUNT_DOCS.produces} />
+    <div ref={cardRef} data-testid="hunt-run-results">
+      <Card title={t_i18n('Results')}>
+        <HuntRunTable
+          storageKey={storageKey}
+          initialValues={sort.initialValues}
+          onSort={sort.onSort}
+          rows={rows}
+          label={t_i18n('Results')}
+          testId="hunt-run-results-table"
+          getComputeLink={(result: ResultRow) => huntRunResultLink(result) ?? undefined}
+          dataColumns={{
+            entity_type: {
+              id: 'entity_type',
+              label: 'Type',
+              percentWidth: 20,
+              isSortable: sortable,
+              render: (result: ResultRow) => (
+                <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), minWidth: 0 }}>
+                  <ItemIcon type={result.entity_type} size="small" />
+                  <HuntRunCut value={typeLabel(result)} />
+                </span>
+              ),
+            },
+            name: { id: 'name', label: 'Name', percentWidth: 44, isSortable: sortable, render: (result: ResultRow) => huntRunTextCell(result.representative?.main ?? result.id) },
+            created_at: { id: 'created_at', label: 'Created', percentWidth: 18, isSortable: sortable, render: (result: ResultRow) => <HuntRunDateCell date={result.created_at} /> },
+            updated_at: { id: 'updated_at', label: 'Updated', percentWidth: 18, isSortable: sortable, render: (result: ResultRow) => <HuntRunDateCell date={result.updated_at} /> },
+          }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), marginTop: theme.spacing(1) }}>
+          <Text variant="content-caption" as="span">
+            {t_i18n('{shown} of {total} results', { values: { shown: n(results.length), total: n(total) } })}
           </Text>
-          {knowledge.reasons.map((reason) => (
-            <Text key={reason} variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5) }} data-testid="hunt-run-knowledge-reason">
-              {reason}
-            </Text>
-          ))}
-        </>
-      )}
-      {results.length > 0 && (
-        <>
-          <Label sx={{ marginTop: 2 }}>{t_i18n('Results')}</Label>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="hunt-run-results">
-            {results.map((result) => {
-              if (!result) return null;
-              const link = huntRunResultLink(result);
-              const name = result.representative?.main ?? result.id;
-              return (
-                <li key={result.id} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), padding: theme.spacing(0.5, 0) }}>
-                  <ItemIcon type={result.entity_type} />
-                  {link ? <Link to={link}>{name}</Link> : <Text variant="content-compact" as="span">{name}</Text>}
-                </li>
-              );
-            })}
-          </ul>
-          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), marginTop: theme.spacing(1) }}>
-            <Text variant="content-caption" as="span">
-              {t_i18n('{shown} of {total} results', { values: { shown: n(results.length), total: n(total) } })}
-            </Text>
-            {hasNext && (
-              <Button
-                variant="secondary"
-                size="small"
-                disabled={isLoadingNext}
-                onClick={() => loadNext(HUNT_RUN_RESULTS_PAGE_SIZE)}
-                data-testid="hunt-run-results-more"
-              >
-                {t_i18n('Show more')}
-              </Button>
-            )}
-          </div>
-        </>
-      )}
-    </>
+          {hasNext && (
+            <Button
+              variant="secondary"
+              size="small"
+              disabled={isLoadingNext}
+              onClick={() => loadNext(HUNT_RUN_RESULTS_PAGE_SIZE)}
+              data-testid="hunt-run-results-more"
+            >
+              {t_i18n('Show more')}
+            </Button>
+          )}
+        </div>
+      </Card>
+    </div>
   );
 };
 

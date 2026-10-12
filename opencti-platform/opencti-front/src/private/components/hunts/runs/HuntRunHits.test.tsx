@@ -1,8 +1,14 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, within } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import HuntRunHits, { type HuntRunHit } from './HuntRunHits';
+
+// The data table reads the metrics and the links of the platform, which the application provides
+vi.mock('../../../../utils/hooks/useAppData', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../utils/hooks/useAppData')>();
+  return { ...original, useAppData: () => ({ metricsDefinition: [], computeLink: () => undefined }), useComputeLink: () => () => undefined };
+});
 
 const hit = (index: number, recurrence: Partial<HuntRunHit> = {}): HuntRunHit => ({
   event_id: `evt-${index}`,
@@ -15,9 +21,13 @@ const hit = (index: number, recurrence: Partial<HuntRunHit> = {}): HuntRunHit =>
 });
 
 describe('Hits of a hunt run', () => {
+  // The table keeps its sort in the local storage of the run
+  afterEach(() => localStorage.clear());
+
   it('should tell the new hits from the ones seen before, and tag each sampled hit', () => {
     testRender(
       <HuntRunHits
+        runId="run-1"
         hitsCount={120}
         newCount={12}
         recurringCount={108}
@@ -44,22 +54,32 @@ describe('Hits of a hunt run', () => {
   });
 
   it('should say nothing of a sample that holds every hit', () => {
-    testRender(<HuntRunHits hitsCount={2} newCount={2} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={[hit(1), hit(2)]} />);
+    testRender(<HuntRunHits runId="run-1" hitsCount={2} newCount={2} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={[hit(1), hit(2)]} />);
     expect(screen.queryByTestId('hunt-run-hits-sampled')).not.toBeInTheDocument();
   });
 
   it('should say every hit counts as new when the connector identifies none', () => {
-    testRender(<HuntRunHits hitsCount={7} newCount={7} recurringCount={0} identified={false} windowContinued={false} platform="Splunk prod" hits={[hit(1)]} />);
+    testRender(<HuntRunHits runId="run-1" hitsCount={7} newCount={7} recurringCount={0} identified={false} windowContinued={false} platform="Splunk prod" hits={[hit(1)]} />);
     expect(screen.getByTestId('hunt-run-hits-breakdown')).toHaveTextContent('7 hits');
     expect(screen.getByTestId('hunt-run-hits-unidentified')).toBeInTheDocument();
     expect(screen.queryByTestId('hunt-run-hit-recurrence')).not.toBeInTheDocument();
   });
 
-  it('should show the first sampled hits, then all of them on demand', () => {
-    const hits = Array.from({ length: 14 }, (_, index) => hit(index, { is_new: true }));
-    testRender(<HuntRunHits hitsCount={14} newCount={14} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={hits} />);
+  it('should show the most recent sampled hits first, then all of them on demand', () => {
+    // The hit of index 13 is the most recent
+    const hits = Array.from({ length: 14 }, (_, index) => hit(index, { is_new: true, timestamp: `2026-10-05T${String(index + 5).padStart(2, '0')}:00:00Z` }));
+    testRender(<HuntRunHits runId="run-1" hitsCount={14} newCount={14} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={hits} />);
+    const hosts = () => within(screen.getByTestId('hunt-run-hits')).getAllByRole('row').map((row) => within(row).getAllByRole('gridcell')[1].textContent);
+    expect(hosts()).toEqual(['ws-13', 'ws-12', 'ws-11', 'ws-10', 'ws-9', 'ws-8', 'ws-7', 'ws-6', 'ws-5', 'ws-4']);
     expect(screen.getAllByTestId('hunt-run-hit-recurrence')).toHaveLength(10);
     fireEvent.click(screen.getByTestId('hunt-run-hits-toggle'));
     expect(screen.getAllByTestId('hunt-run-hit-recurrence')).toHaveLength(14);
+    expect(hosts().slice(-1)).toEqual(['ws-0']);
+  });
+
+  it('should show the process of a hit that matched no value', () => {
+    testRender(<HuntRunHits runId="run-1" hitsCount={1} newCount={1} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={[hit(1, { matched: [] })]} />);
+    const [cells] = within(screen.getByTestId('hunt-run-hits')).getAllByRole('row').map((row) => within(row).getAllByRole('gridcell').map((cell) => cell.textContent));
+    expect(cells.slice(1, 5)).toEqual(['ws-1', 'jdoe', '', 'powershell.exe']);
   });
 });

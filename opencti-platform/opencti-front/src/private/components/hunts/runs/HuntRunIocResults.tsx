@@ -1,16 +1,17 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router';
 import { useTheme } from '@mui/styles';
-import { Chip, Text } from '@filigran/design-system';
+import { Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Card from '../../../../components/common/card/Card';
+import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { resolveLink } from '../../../../utils/Entity';
 import { iocTypeLabel } from '../hunt-ioc-utils';
 import { HUNT_DOCS } from '../hunt-utils';
 import { HuntLearnMore } from '../HuntLearnMore';
-import { HuntRunIocResults_run$key } from './__generated__/HuntRunIocResults_run.graphql';
+import HuntRunTable, { HuntRunCut, HuntRunDateCell, HuntRunSortValue, sortHuntRunRows, useHuntRunTableSort } from './HuntRunTable';
+import { HuntRunIocResults_run$data, HuntRunIocResults_run$key } from './__generated__/HuntRunIocResults_run.graphql';
 
 const huntRunIocResultsFragment = graphql`
   fragment HuntRunIocResults_run on HuntRun {
@@ -61,19 +62,44 @@ export const huntIocVerdictSeverity = (verdict: string) => {
 
 const VERDICT_ORDER: Record<string, number> = { seen: 0, not_searched: 1, pending: 2, not_seen: 3 };
 
+// The hosts a cell names before it counts the others
+const HOSTS_SHOWN = 2;
+
+type IocResult = NonNullable<HuntRunIocResults_run$data['ioc_results']>[number];
+
+interface IocRow {
+  id: string;
+  result: IocResult;
+}
+
+const dateValue = (date?: string | null) => (date ? new Date(date).getTime() : null);
+
+const IOC_SORT_VALUES: Record<string, (row: IocRow) => HuntRunSortValue> = {
+  value: (row) => row.result.value,
+  verdict: (row) => VERDICT_ORDER[row.result.verdict] ?? 9,
+  // Only a value seen has hits, the others sort with the empty values
+  hits_count: (row) => (row.result.verdict === 'seen' ? row.result.hits_count : null),
+  first_seen: (row) => dateValue(row.result.first_seen),
+  last_seen: (row) => dateValue(row.result.last_seen),
+};
+
 /** The result of each value an indicator hunt run looked up: seen or not, hits, first and last seen, hosts. */
 const HuntRunIocResults = ({ data }: { data: HuntRunIocResults_run$key }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, n, fldt } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const run = useFragment(huntRunIocResultsFragment, data);
+  const storageKey = `hunt-run-${run.id}-values`;
+  const sort = useHuntRunTableSort(storageKey, { sortBy: 'verdict', orderAsc: true });
   const results = [...(run.ioc_results ?? [])];
   if (results.length === 0) {
     return null;
   }
+  // Values that tie on the sorted column keep this order: by verdict, then the most hits first
   results.sort((a, b) => (VERDICT_ORDER[a.verdict] ?? 9) - (VERDICT_ORDER[b.verdict] ?? 9) || b.hits_count - a.hits_count);
+  const rows = sortHuntRunRows(results.map((result) => ({ id: result.key, result })), sort.sortBy ? IOC_SORT_VALUES[sort.sortBy] : undefined, sort.orderAsc);
   const count = (verdict: string) => results.filter((result) => result.verdict === verdict).length;
   const platform = run.securityPlatform?.name ?? '';
-  const cell = { padding: theme.spacing(0.75), verticalAlign: 'top' as const, borderBottom: `1px solid ${theme.palette.divider}` };
+  const secondary = { color: theme.palette.text.secondary };
   return (
     <Card title={t_i18n('Results per value')} action={<HuntLearnMore href={HUNT_DOCS.indicatorResults} testId="hunt-run-ioc-learn-more" />}>
       <div data-testid="hunt-run-ioc-results">
@@ -86,54 +112,113 @@ const HuntRunIocResults = ({ data }: { data: HuntRunIocResults_run$key }) => {
           ))}
         </div>
         {count('not_searched') > 0 && (
-          <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1), color: theme.palette.text.secondary }}>
+          <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1), ...secondary }}>
             {t_i18n('A run with values not searched proves nothing about them: without hits, its verdict is inconclusive.')}
           </Text>
         )}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {[t_i18n('Value'), t_i18n('Verdict'), t_i18n('Hits'), t_i18n('First seen'), t_i18n('Last seen'), t_i18n('Hosts'), t_i18n('From')].map((header) => (
-                  <th key={header} scope="col" style={{ ...cell, textAlign: 'left' }}><Text variant="content-caption">{header}</Text></th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((result) => (
-                <tr key={result.key} data-testid="hunt-run-ioc-row" data-verdict={result.verdict}>
-                  <td style={{ ...cell, wordBreak: 'break-all', minWidth: 180 }}>
-                    <Text variant="content-compact">{result.value}</Text>
-                    <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>{iocTypeLabel(result.observable_type, t_i18n, result.hash_algorithm)}</Text>
-                  </td>
-                  <td style={cell}>
-                    <Chip label={t_i18n(huntIocVerdictLabel(result.verdict))} severity={huntIocVerdictSeverity(result.verdict)} />
-                    {result.reason && <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }}>{result.reason}</Text>}
-                  </td>
-                  <td style={cell}><Text variant="content-compact">{result.verdict === 'seen' ? n(result.hits_count) : '-'}</Text></td>
-                  <td style={cell}><Text variant="content-compact">{result.first_seen ? fldt(result.first_seen) : '-'}</Text></td>
-                  <td style={cell}><Text variant="content-compact">{result.last_seen ? fldt(result.last_seen) : '-'}</Text></td>
-                  <td style={cell}>
-                    {result.hosts.length > 0
-                      ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.5) }}>{result.hosts.map((host) => <Chip key={host} label={host} />)}</div>
-                      : <Text variant="content-compact">-</Text>}
-                  </td>
-                  <td style={cell}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.5) }}>
-                      {result.sources.length === 0 && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Pasted value')}</Text>}
-                      {result.sources.map((source) => (
-                        <Link key={source.id} to={`${resolveLink(source.entity_type)}/${source.id}`}>
-                          <Chip label={source.representative.main} />
-                        </Link>
-                      ))}
-                      {result.deployed && <Chip label={t_i18n('Deployed on this platform')} severity="info" data-testid="hunt-run-ioc-deployed" />}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <HuntRunTable
+          storageKey={storageKey}
+          initialValues={sort.initialValues}
+          onSort={sort.onSort}
+          rows={rows}
+          label={t_i18n('Results per value')}
+          testId="hunt-run-ioc-table"
+          getComputeLink={({ result }: IocRow) => {
+            const [source] = result.sources;
+            if (!source) return undefined;
+            const route = resolveLink(source.entity_type);
+            return route ? `${route}/${source.id}` : undefined;
+          }}
+          dataColumns={{
+            value: {
+              id: 'value',
+              label: 'Value',
+              percentWidth: 26,
+              isSortable: true,
+              render: ({ result }: IocRow) => (
+                <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), minWidth: 0 }} data-testid="hunt-run-ioc-row" data-verdict={result.verdict}>
+                  <ItemIcon type={result.observable_type} size="small" />
+                  <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <HuntRunCut value={result.value} />
+                    <Text variant="content-caption" as="span" style={{ display: 'block', minWidth: 0, ...secondary }}>
+                      <HuntRunCut value={iocTypeLabel(result.observable_type, t_i18n, result.hash_algorithm)} />
+                    </Text>
+                  </span>
+                </span>
+              ),
+            },
+            verdict: {
+              id: 'verdict',
+              label: 'Verdict',
+              percentWidth: 12,
+              isSortable: true,
+              render: ({ result }: IocRow) => {
+                const chip = <Chip label={t_i18n(huntIocVerdictLabel(result.verdict))} severity={huntIocVerdictSeverity(result.verdict)} />;
+                if (!result.reason) return chip;
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {/* rounded-sm is the radius of the chip, so the focus ring follows its shape */}
+                      <span
+                        tabIndex={0}
+                        className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+                        data-testid="hunt-run-ioc-reason"
+                      >
+                        {chip}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>{result.reason}</TooltipContent>
+                  </Tooltip>
+                );
+              },
+            },
+            hits_count: {
+              id: 'hits_count',
+              label: 'Hits',
+              percentWidth: 8,
+              isSortable: true,
+              render: ({ result }: IocRow) => (result.verdict === 'seen' ? n(result.hits_count) : ''),
+            },
+            hosts: {
+              id: 'hosts',
+              label: 'Hosts',
+              percentWidth: 16,
+              isSortable: false,
+              render: ({ result }: IocRow) => {
+                if (result.hosts.length === 0) return '';
+                const items = result.hosts.slice(0, HOSTS_SHOWN).join(', ');
+                const value = result.hosts.length > HOSTS_SHOWN
+                  ? t_i18n('{items} and {count} more', { values: { items, count: n(result.hosts.length - HOSTS_SHOWN) } })
+                  : items;
+                return <HuntRunCut value={value} full={result.hosts.join(', ')} />;
+              },
+            },
+            first_seen: { id: 'first_seen', label: 'First seen', percentWidth: 11, isSortable: true, render: ({ result }: IocRow) => <HuntRunDateCell date={result.first_seen} /> },
+            last_seen: { id: 'last_seen', label: 'Last seen', percentWidth: 11, isSortable: true, render: ({ result }: IocRow) => <HuntRunDateCell date={result.last_seen} /> },
+            sources: {
+              id: 'sources',
+              label: 'From',
+              percentWidth: 16,
+              isSortable: false,
+              render: ({ result }: IocRow) => {
+                const [source] = result.sources;
+                return (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5), minWidth: 0 }}>
+                    {source ? (
+                      <>
+                        <ItemIcon type={source.entity_type} size="small" />
+                        <HuntRunCut value={result.sources.map(({ representative }) => representative.main).join(', ')} />
+                      </>
+                    ) : (
+                      <Text variant="content-caption" as="span" style={secondary}>{t_i18n('Pasted value')}</Text>
+                    )}
+                    {result.deployed && <Chip label={t_i18n('Deployed on this platform')} severity="info" data-testid="hunt-run-ioc-deployed" />}
+                  </span>
+                );
+              },
+            },
+          }}
+        />
       </div>
     </Card>
   );
