@@ -19,6 +19,7 @@ const GRACE_DAYS = 14;
 const RECORD_FIELDS = ['count', 'event_kind', 'hash', 'object_type'];
 const BATCH_FIELDS = ['batch_id', 'day', 'records', 'region_bucket', 'sector_bucket'];
 const BATCH_ID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const RATE_LIMIT_RETRY_AFTER_SECONDS = 60;
 
 export interface PulseLedgerRow {
   platformId: string;
@@ -93,6 +94,8 @@ export class PulseHubMock {
 
   private forcedErrors: Array<{ operation: string; code: string }> = [];
 
+  private quotas = new Map<string, number>();
+
   private refusedPurges = 0;
 
   private batchReceipts = new Map<string, number>();
@@ -130,6 +133,16 @@ export class PulseHubMock {
     this.forcedErrors.push({ operation, code });
   }
 
+  // As the hourly quota of XTM Hub: the next `calls` calls of the operation are answered, the ones after answer
+  // PULSE_RATE_LIMITED until the quota is lifted (undefined).
+  limitCalls(operation: string, calls: number | undefined) {
+    if (calls === undefined) {
+      this.quotas.delete(operation);
+    } else {
+      this.quotas.set(operation, calls);
+    }
+  }
+
   // The next purge answers success: false and deletes nothing.
   refuseNextPurge() {
     this.refusedPurges += 1;
@@ -163,6 +176,7 @@ export class PulseHubMock {
     this.salts.clear();
     this.platformBuckets.clear();
     this.forcedErrors = [];
+    this.quotas.clear();
     this.refusedPurges = 0;
     this.batchReceipts.clear();
     this.lostAnswers = [];
@@ -227,7 +241,14 @@ export class PulseHubMock {
     const forced = this.forcedErrors.findIndex((error) => error.operation === operation);
     if (forced >= 0) {
       const [{ code }] = this.forcedErrors.splice(forced, 1);
-      throw new GraphqlError(code, `Forced ${code}`, code === 'PULSE_RATE_LIMITED' ? { retry_after_seconds: 60 } : {});
+      throw new GraphqlError(code, `Forced ${code}`, code === 'PULSE_RATE_LIMITED' ? { retry_after_seconds: RATE_LIMIT_RETRY_AFTER_SECONDS } : {});
+    }
+    const quota = this.quotas.get(operation);
+    if (quota !== undefined) {
+      if (quota <= 0) {
+        throw new GraphqlError('PULSE_RATE_LIMITED', 'Rate limit reached', { retry_after_seconds: RATE_LIMIT_RETRY_AFTER_SECONDS });
+      }
+      this.quotas.set(operation, quota - 1);
     }
     switch (operation) {
       case 'pulseSalt':

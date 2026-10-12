@@ -1042,9 +1042,25 @@ const isPulsePassCurrent = async (generation: string, values: PulseSettingsValue
   return getPulseAccess(values, true, hasPulseReadAccess(await redisGetPulseState())) === access;
 };
 
+// Whether the nightly refresh waits for the instant XTM Hub gave with the rate limit that interrupted it: a run before
+// it would only spend the lookups XTM Hub frees meanwhile.
+export const isPulseRefreshDeferred = (state: Pick<PulseOperationalState, 'refresh_retry_at'>, now: number) => {
+  return state.refresh_retry_at !== undefined && now < Date.parse(state.refresh_retry_at);
+};
+
+// The instant XTM Hub gave with a rate limit; none for any other failure, which the next manager cycle retries.
+const pulseRetryAt = (error: unknown) => {
+  if (!(error instanceof PulseHubError) || error.code !== 'rate_limited' || !error.retryAfterSeconds || error.retryAfterSeconds <= 0) {
+    return undefined;
+  }
+  return new Date(Date.now() + error.retryAfterSeconds * 1000).toISOString();
+};
+
 // Nightly refresh of the network information of every object in scope: the keys of an object that never contributed,
 // matched or was read are computed here. A run handles up to REFRESH_MAX_ENTITIES objects and the next one goes on
-// after them, starting over once the scope is covered, so that no object waits for ever on a large platform.
+// after them, starting over once the scope is covered, so that no object waits for ever on a large platform. A run
+// that fails midway keeps what it refreshed as well, and one XTM Hub rate limited resumes at the instant it gave: a
+// scope that needs more lookups than the quota of XTM Hub is covered over several runs.
 export const runPulseRefresh = async (context: AuthContext, force = false) => {
   // Read before the settings, which come from the database: each page checks it under the lock of the configuration.
   const generation = await redisGetPulseConfigGeneration();
@@ -1053,6 +1069,9 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
     return 0;
   }
   if (!force && state.last_refresh_at && Date.now() - Date.parse(state.last_refresh_at) < REFRESH_INTERVAL_MS) {
+    return 0;
+  }
+  if (!force && isPulseRefreshDeferred(state, Date.now())) {
     return 0;
   }
   const day = utcDay();
@@ -1084,14 +1103,25 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
         remaining = eligible.length > start + room;
         const batch = eligible.slice(start, start + room);
         if (batch.length > 0) {
-          handled += batch.length;
           processed += await refreshPulseEntities(context, platform, day, salt, batch);
+          // Counted once written: a batch whose lookups failed is refreshed again by the next run.
+          handled += batch.length;
         }
         return !remaining;
       }),
     });
   } catch (error) {
     await handlePulseReadError(values, error);
+    // Under the lock of its pages and only while the pass is current, like the checkpoint of a run that ends: the next
+    // run goes on after the objects this one refreshed, at the instant XTM Hub gave when it limited the lookups.
+    const retryAt = pulseRetryAt(error);
+    if (handled > 0 || retryAt) {
+      await withPulsePushLock(async () => {
+        if (await isPulsePassCurrent(generation, values, access)) {
+          await redisSetPulseState({ ...(handled > 0 ? { refresh_offset: String(offset + handled) } : {}), refresh_retry_at: retryAt });
+        }
+      });
+    }
     throw error;
   }
   const covered = !remaining;
@@ -1101,7 +1131,11 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
     if (!(await isPulsePassCurrent(generation, values, access))) {
       return false;
     }
-    await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
+    await redisSetPulseState({
+      last_refresh_at: new Date().toISOString(),
+      refresh_offset: covered ? undefined : String(offset + handled),
+      refresh_retry_at: undefined,
+    });
     return true;
   });
   if (!recorded) {
@@ -1243,8 +1277,6 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
       scanned += entities.length;
       remaining = entities.length > start + room;
       const batch = entities.slice(start, start + room);
-      handled += batch.length;
-      reachedUntil = until !== undefined && offset + handled >= until;
       const updates: PulseDocumentUpdate[] = batch.flatMap((entity) => {
         const objectType = PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type];
         const keys = computeStableKeys(entity);
@@ -1265,8 +1297,22 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
         return Object.keys(keysDoc).length > 0 ? [{ entity, doc: keysDoc }] : [];
       });
       await writePulseDocuments(context, updates);
+      // Counted once written: a page whose write failed is matched again by the next pass.
+      handled += batch.length;
+      reachedUntil = until !== undefined && offset + handled >= until;
       return !remaining && !reachedUntil;
     }),
+  }).catch(async (error) => {
+    // Like the network refresh: an interrupted pass keeps the objects it matched, under the lock of its pages and only
+    // while the pass is current, and the next pass goes on after them.
+    if (handled > 0) {
+      await withPulsePushLock(async () => {
+        if (await isPulsePassCurrent(generation, values, access)) {
+          await redisSetPulseState({ ...pulsePreviewNextScan(range, handled, false), preview_digest_day: digest.day });
+        }
+      });
+    }
+    throw error;
   });
   if (stopped) {
     logApp.info('[THREAT PULSE] Configuration or access changed during the preview pass, the next pass reads under the new one');

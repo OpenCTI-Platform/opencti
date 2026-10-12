@@ -284,6 +284,8 @@ export interface PulseOperationalState {
   last_refresh_at?: string;
   // How many objects in scope the next nightly refresh skips: the ones the previous runs covered.
   refresh_offset?: string;
+  // The instant XTM Hub gave with the rate limit that interrupted the nightly refresh: it resumes then, not before.
+  refresh_retry_at?: string;
   last_error?: string;
   // 'true' once XTM Hub answered contribution_required to a contributing platform, until its next accepted push.
   contribution_lapsed?: string;

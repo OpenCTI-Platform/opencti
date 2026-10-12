@@ -1,9 +1,9 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext } from '../utils/access';
-import { runPulseContribution, runPulsePendingCleanup, runPulsePreview, runPulseRefresh } from '../modules/xtm/pulse/pulse-domain';
+import { isPulseRefreshDeferred, runPulseContribution, runPulsePendingCleanup, runPulsePreview, runPulseRefresh } from '../modules/xtm/pulse/pulse-domain';
 import { runPulseTrendingNotifications } from '../modules/xtm/pulse/pulse-notifications';
-import { redisGetPulseState, redisSetPulseState } from '../modules/xtm/pulse/pulse-cache';
+import { type PulseOperationalState, redisGetPulseState, redisSetPulseState } from '../modules/xtm/pulse/pulse-cache';
 
 const PULSE_MANAGER_ENABLED = booleanConf('pulse_manager:enabled', true);
 const PULSE_MANAGER_KEY = conf.get('pulse_manager:lock_key') || 'pulse_manager_lock';
@@ -13,13 +13,13 @@ const SCHEDULE_TIME = conf.get('pulse_manager:interval') || 60 * 60 * 1000; // 1
 // failed, and clears it once it succeeds again.
 const pulseStepErrorCode = (step: string) => `${step.toLowerCase().replaceAll(' ', '_')}_failed`;
 
-/** Runs one step of the cycle; whether it succeeded. */
-const runStep = async (step: string, run: () => Promise<unknown>): Promise<boolean> => {
+/** Runs one step of the cycle; whether it succeeded. A step still `waiting` to run again keeps the code it left. */
+const runStep = async (step: string, run: () => Promise<unknown>, waiting?: (state: PulseOperationalState) => boolean): Promise<boolean> => {
   const errorCode = pulseStepErrorCode(step);
   try {
     await run();
-    const { last_error: lastError } = await redisGetPulseState();
-    if (lastError === errorCode) {
+    const state = await redisGetPulseState();
+    if (state.last_error === errorCode && !waiting?.(state)) {
       await redisSetPulseState({ last_error: undefined });
     }
     return true;
@@ -37,13 +37,15 @@ const runStep = async (step: string, run: () => Promise<unknown>): Promise<boole
  * In preview (the default), it only downloads the daily digest and matches it locally, once a day: nothing leaves.
  * Contributing, it sends the activity of the last window (hashes and counts only), refreshes the network information
  * of the objects in scope once a day, and notifies the triggers listening to objects trending in the platform's sector.
+ * A network refresh XTM Hub rate limited resumes from its checkpoint at the instant XTM Hub gave, not before.
  * The preview step runs after the reads, so a contribution XTM Hub no longer accepts falls back to it in the same cycle.
  */
 export const pulseManager = async () => {
   const context = executionContext('pulse_manager');
   if (!(await runStep('Cleanup', () => runPulsePendingCleanup()))) return;
   await runStep('Contribution', () => runPulseContribution(context));
-  await runStep('Network refresh', () => runPulseRefresh(context));
+  // Until the instant XTM Hub gave, Settings still shows the failure of the network refresh.
+  await runStep('Network refresh', () => runPulseRefresh(context), (state) => isPulseRefreshDeferred(state, Date.now()));
   await runStep('Trending notifications', () => runPulseTrendingNotifications(context));
   await runStep('Preview refresh', () => runPulsePreview(context));
 };

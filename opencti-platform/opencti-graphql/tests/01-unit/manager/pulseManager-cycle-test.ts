@@ -6,6 +6,7 @@ const steps = vi.hoisted(() => ({
   runPulseRefresh: vi.fn(),
   runPulsePreview: vi.fn(),
   runPulseTrendingNotifications: vi.fn(),
+  isPulseRefreshDeferred: vi.fn(),
   redisGetPulseState: vi.fn(),
   redisSetPulseState: vi.fn(),
 }));
@@ -15,6 +16,7 @@ vi.mock('../../../src/modules/xtm/pulse/pulse-domain', () => ({
   runPulseContribution: steps.runPulseContribution,
   runPulseRefresh: steps.runPulseRefresh,
   runPulsePreview: steps.runPulsePreview,
+  isPulseRefreshDeferred: steps.isPulseRefreshDeferred,
 }));
 vi.mock('../../../src/modules/xtm/pulse/pulse-notifications', () => ({ runPulseTrendingNotifications: steps.runPulseTrendingNotifications }));
 vi.mock('../../../src/modules/xtm/pulse/pulse-cache', () => ({ redisGetPulseState: steps.redisGetPulseState, redisSetPulseState: steps.redisSetPulseState }));
@@ -41,5 +43,22 @@ describe('Threat Pulse manager cycle', () => {
     [steps.runPulseContribution, steps.runPulseRefresh, steps.runPulseTrendingNotifications, steps.runPulsePreview].forEach((step) => {
       expect(step).not.toHaveBeenCalled();
     });
+  });
+
+  it('keeps the failure of the network refresh while it waits for the instant XTM Hub gave with its rate limit', async () => {
+    const state = { last_error: 'network_refresh_failed', refresh_retry_at: '2026-10-12T13:00:00.000Z' };
+    steps.redisGetPulseState.mockResolvedValue(state);
+    steps.isPulseRefreshDeferred.mockReturnValue(true);
+    await pulseManager();
+    expect(steps.runPulseRefresh).toHaveBeenCalledTimes(1);
+    expect(steps.isPulseRefreshDeferred).toHaveBeenCalledWith(state, expect.any(Number));
+    expect(steps.redisSetPulseState).not.toHaveBeenCalledWith({ last_error: undefined });
+  });
+
+  it('clears the failure of the network refresh once it ran again', async () => {
+    steps.redisGetPulseState.mockResolvedValue({ last_error: 'network_refresh_failed' });
+    steps.isPulseRefreshDeferred.mockReturnValue(false);
+    await pulseManager();
+    expect(steps.redisSetPulseState).toHaveBeenCalledWith({ last_error: undefined });
   });
 });
