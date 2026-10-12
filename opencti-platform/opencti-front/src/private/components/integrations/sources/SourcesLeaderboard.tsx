@@ -33,13 +33,11 @@ const sourceLineFragment = graphql`
     latest_value_score
     latest_volume
     latest_unique_contribution
-    latest_corroboration_rate
     latest_lead_time_hours
     latest_accuracy
     latest_relevance
     latest_impact_score
     latest_noise
-    latest_freshness_hours
     latest_cost_per_actionable
     cost {
       amount
@@ -222,14 +220,6 @@ const SourcesLeaderboard = () => {
       isSortable: true,
       render: ({ latest_unique_contribution }: SourcesLeaderboard_source$data) => ratioCell(latest_unique_contribution),
     },
-    latest_corroboration_rate: {
-      id: 'latest_corroboration_rate',
-      label: 'Corroborated',
-      percentWidth: 8,
-      visible: false,
-      isSortable: true,
-      render: ({ latest_corroboration_rate }: SourcesLeaderboard_source$data) => ratioCell(latest_corroboration_rate),
-    },
     latest_lead_time_hours: {
       id: 'latest_lead_time_hours',
       label: 'Lead time',
@@ -269,14 +259,6 @@ const SourcesLeaderboard = () => {
       percentWidth: 7,
       isSortable: true,
       render: ({ latest_noise }: SourcesLeaderboard_source$data) => ratioCell(latest_noise),
-    },
-    latest_freshness_hours: {
-      id: 'latest_freshness_hours',
-      label: 'Last seen',
-      percentWidth: 8,
-      visible: false,
-      isSortable: true,
-      render: ({ latest_freshness_hours }: SourcesLeaderboard_source$data) => <SourceMetricValue value={format.hours(latest_freshness_hours)} />,
     },
     latest_cost_per_actionable: {
       id: 'latest_cost_per_actionable',

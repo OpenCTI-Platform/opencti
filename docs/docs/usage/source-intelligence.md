@@ -78,7 +78,7 @@ A value that could not be measured (for example lead time for a source that shar
 
 ### Leaderboard and scorecard page
 
-The **Leaderboard** tab lists the sources with their value score and their main metrics. You can sort, filter and search the list, and show the corroboration and last seen columns from the column settings. Click a source to open its scorecard page. Its header answers first: the value score, how it moved over the trend window, one sentence explaining it (how often other sources confirm its objects and how often it reports them first), and the next action, **Review the recommendations** when some are pending, otherwise **Set a cost** or **Edit the cost**. Below the header:
+The **Leaderboard** tab lists the sources with their value score and their main metrics. You can sort, filter and search the list. Click a source to open its scorecard page. Its header answers first: the value score, how it moved over the trend window, one sentence explaining it (how often other sources confirm its objects and how often it reports them first), and the next action, **Review the recommendations** when some are pending, otherwise **Set a cost** or **Edit the cost**. Below the header:
 
 - the value score with its components,
 - trends of any metric over the selected window,
