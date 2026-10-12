@@ -302,6 +302,27 @@ class TestHuntRun(TestCase):
         self.assertNotIn("first_hit_at", _variables(opencti)["input"])
         self.assertNotIn("last_hit_at", _variables(opencti)["input"])
 
+    def test_report_sends_the_rule_results_and_observations_only_when_known(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "completed"}}
+        )
+        rules = ({"key": "r-1", "status": "failed", "error": "HuntTranslationError"},)
+        observations = (
+            {"key": "r-1", "host": "ws1", "hits_count": 3, "hit_keys": ["a" * 64]},
+        )
+        HuntRun(opencti).report(
+            id="run-1",
+            status="completed",
+            rule_results=rules,
+            observations=observations,
+        )
+        report_input = _variables(opencti)["input"]
+        self.assertEqual(report_input["rule_results"], list(rules))
+        self.assertEqual(report_input["observations"], list(observations))
+        HuntRun(opencti).report(id="run-1", status="completed", hits_count=2)
+        self.assertNotIn("rule_results", _variables(opencti)["input"])
+        self.assertNotIn("observations", _variables(opencti)["input"])
+
     def test_report_sends_retryable_only_when_known(self):
         opencti = _opencti(
             {"huntRunReport": {"id": "run-1", "hunt_run_status": "failed"}}

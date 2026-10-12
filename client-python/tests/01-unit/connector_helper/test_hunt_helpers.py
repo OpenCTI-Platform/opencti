@@ -174,7 +174,20 @@ class TestHuntHelpers(TestCase):
             hit_keys=None,
             first_hit_at=None,
             last_hit_at=None,
+            rule_results=None,
+            observations=None,
         )
+
+    def test_report_hunt_run_forwards_the_results_per_rule_and_the_observations(self):
+        helper = _helper()
+        rules = [{"key": "r-1", "status": "completed", "hits_count": 2}]
+        observations = [{"key": "r-1", "host": "ws1", "hits_count": 2}]
+        helper.report_hunt_run(
+            "run-1", "completed", rule_results=rules, observations=observations
+        )
+        kwargs = helper.api.hunt_run.report.call_args.kwargs
+        self.assertEqual(kwargs["rule_results"], rules)
+        self.assertEqual(kwargs["observations"], observations)
 
     def test_report_hunt_run_forwards_the_hit_keys(self):
         helper = _helper()

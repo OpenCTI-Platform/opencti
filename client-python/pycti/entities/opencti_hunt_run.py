@@ -210,6 +210,12 @@ class HuntRun:
         :param first_hit_at: (optional) ISO 8601 date of the first matched event of the whole run, when hits_sample
             is only a sample; without it, OpenCTI dates the sightings and the incident of the run from the sample
         :param last_hit_at: (optional) ISO 8601 date of the last matched event of the whole run, same rule
+        :param rule_results: (optional) hunts holding several Sigma rules: one result per rule of the run
+            message, {key, title, status (completed or failed), translated_query, query_language, hits_count,
+            truncated, first_hit_at, last_hit_at, error}
+        :param observations: (optional) every hit the run read, grouped by rule (or indicator value) and victim:
+            {key, host, hits_count, first_seen, last_seen, hit_keys}; OpenCTI counts and dates the observed data
+            and the sightings of the run from them instead of the hits sample
         :param retryable: (optional) failed runs: False when the run fails again in the same way at every attempt
             (translation error, a query the platform rejects, an invalid run message), so it is not retried
         :return: the hunt run
@@ -258,6 +264,10 @@ class HuntRun:
             report_input["first_hit_at"] = kwargs.get("first_hit_at")
         if kwargs.get("last_hit_at", None) is not None:
             report_input["last_hit_at"] = kwargs.get("last_hit_at")
+        if kwargs.get("rule_results", None) is not None:
+            report_input["rule_results"] = list(kwargs.get("rule_results"))
+        if kwargs.get("observations", None) is not None:
+            report_input["observations"] = list(kwargs.get("observations"))
         if kwargs.get("retryable", None) is not None:
             report_input["retryable"] = bool(kwargs.get("retryable"))
         result = self.opencti.query(query, {"id": id, "input": report_input})

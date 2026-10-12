@@ -3349,6 +3349,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         hit_keys: Optional[List[str]] = None,
         first_hit_at: Optional[str] = None,
         last_hit_at: Optional[str] = None,
+        rule_results: Optional[List[Dict]] = None,
+        observations: Optional[List[Dict]] = None,
     ) -> Dict:
         """Report the outcome of a hunt run to OpenCTI (huntRunReport).
 
@@ -3383,6 +3385,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sample is only a sample; without it, OpenCTI dates the sightings and the incident of the
             run from the sample
         :param last_hit_at: ISO 8601 date of the last matched event of the whole run, same rule
+        :param rule_results: hunts holding several Sigma rules, one result per rule of the run message:
+            {key, title, status, translated_query, query_language, hits_count, truncated, first_hit_at,
+            last_hit_at, error}
+        :param observations: every hit the run read, grouped by rule (or indicator value) and victim:
+            {key, host, hits_count, first_seen, last_seen, hit_keys}; OpenCTI counts and dates the observed
+            data and the sightings of the run from them instead of the hits sample
         :return: the hunt run
         :rtype: Dict
         """
@@ -3405,6 +3413,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             hit_keys=hit_keys,
             first_hit_at=first_hit_at,
             last_hit_at=last_hit_at,
+            rule_results=rule_results,
+            observations=observations,
         )
 
     def listen_hunt(self, message_callback: Callable[[Dict], str]) -> None:
