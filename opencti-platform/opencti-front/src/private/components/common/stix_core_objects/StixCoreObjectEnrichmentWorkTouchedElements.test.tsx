@@ -11,7 +11,10 @@ const element = (id: string, main: string) => ({ id, entity_type: 'Intrusion-Set
 describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
   it('renders nothing while the work is running', () => {
     testRender(
-      <StixCoreObjectEnrichmentWorkTouchedElements work={{ status: 'progress', touchedElements: [element('1', 'APT1')] }} first={100} />,
+      <StixCoreObjectEnrichmentWorkTouchedElements
+        work={{ status: 'progress', touchedElements: [element('1', 'APT1')] }}
+        first={100}
+      />,
     );
     expect(screen.queryByText('Elements touched by this enrichment')).toBeNull();
   });
@@ -76,14 +79,20 @@ describe('StixCoreObjectEnrichmentWorkTouchedElements', () => {
 
   it('renders nothing when the touched elements were never recorded', () => {
     testRender(
-      <StixCoreObjectEnrichmentWorkTouchedElements work={{ status: 'complete', touchedElements: null, touchedElementsTruncated: false }} first={100} />,
+      <StixCoreObjectEnrichmentWorkTouchedElements
+        work={{ status: 'complete', touchedElements: null, touchedElementsTruncated: false }}
+        first={100}
+      />,
     );
     expect(screen.queryByText('Elements touched by this enrichment')).toBeNull();
   });
 
   it('shows a zero count without an expander when the enrichment touched nothing', () => {
     testRender(
-      <StixCoreObjectEnrichmentWorkTouchedElements work={{ status: 'complete', touchedElements: [], touchedElementsTruncated: false }} first={100} />,
+      <StixCoreObjectEnrichmentWorkTouchedElements
+        work={{ status: 'complete', touchedElements: [], touchedElementsTruncated: false }}
+        first={100}
+      />,
     );
     expect(screen.getByText('Elements touched by this enrichment')).toBeTruthy();
     expect(screen.getByText('0')).toBeTruthy();

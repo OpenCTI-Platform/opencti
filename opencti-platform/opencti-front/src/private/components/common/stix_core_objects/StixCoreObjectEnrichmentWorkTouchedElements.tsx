@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Chip } from '@filigran/design-system';
-// FDS-WORKAROUND #65: no List/ListItem/Collapse in @filigran/design-system yet, see fds-migration/LIBRARY-FEEDBACK.md #65
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -43,8 +42,11 @@ interface StixCoreObjectEnrichmentWorkTouchedElementsProps {
  * an entity label) use the `relationship_` keys, like the rest of the application.
  */
 const touchedElementTypeKey = (element: TouchedElement) => {
-  const isRelationship = element.parent_types?.includes('basic-relationship') && element.entity_type !== 'stix-sighting-relationship';
-  return isRelationship ? `relationship_${element.entity_type}` : `entity_${element.entity_type}`;
+  const isRelationship = element.parent_types?.includes('basic-relationship')
+    && element.entity_type !== 'stix-sighting-relationship';
+  return isRelationship
+    ? `relationship_${element.entity_type}`
+    : `entity_${element.entity_type}`;
 };
 
 /**
@@ -53,15 +55,21 @@ const touchedElementTypeKey = (element: TouchedElement) => {
  * (`touchedElements` is null: not an enrichment work, or a work completed before the feature existed).
  * A work that touched nothing visible shows a "0" count without an expander.
  */
-const StixCoreObjectEnrichmentWorkTouchedElements = ({ work, first }: StixCoreObjectEnrichmentWorkTouchedElementsProps) => {
+const StixCoreObjectEnrichmentWorkTouchedElements = ({
+  work,
+  first,
+}: StixCoreObjectEnrichmentWorkTouchedElementsProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
+
   if (work.status !== 'complete' || !work.touchedElements) {
     return null;
   }
+
   const touched = work.touchedElements.filter((e): e is IdentifiedTouchedElement => !!e?.id);
   // The list is capped by `first` and by the platform: say so instead of showing a wrong total
   const count = `${touched.length}${touched.length >= first || work.touchedElementsTruncated ? '+' : ''}`;
+
   if (touched.length === 0) {
     return (
       <ListItem dense={true} style={{ paddingLeft: 64, gap: 8 }}>
@@ -70,18 +78,36 @@ const StixCoreObjectEnrichmentWorkTouchedElements = ({ work, first }: StixCoreOb
       </ListItem>
     );
   }
+
   return (
     <>
-      <ListItemButton dense={true} aria-expanded={open} onClick={() => setOpen(!open)} style={{ paddingLeft: 64, gap: 8 }}>
+      <ListItemButton
+        dense={true}
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        style={{ paddingLeft: 64, gap: 8 }}
+      >
         <ListItemText primary={t_i18n('Elements touched by this enrichment')} />
         <Chip label={count} />
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding={true} style={{ paddingLeft: 64 }}>
+        <List
+          component="div"
+          disablePadding={true}
+          style={{ paddingLeft: 64 }}
+        >
           {touched.map((element) => (
-            <ListItemButton key={element.id} component={Link} to={`/dashboard/id/${element.id}`} dense={true}>
-              <ListItemText primary={element.representative?.main ?? element.id} secondary={t_i18n(touchedElementTypeKey(element))} />
+            <ListItemButton
+              key={element.id}
+              component={Link}
+              to={`/dashboard/id/${element.id}`}
+              dense={true}
+            >
+              <ListItemText
+                primary={element.representative?.main ?? element.id}
+                secondary={t_i18n(touchedElementTypeKey(element))}
+              />
             </ListItemButton>
           ))}
         </List>
