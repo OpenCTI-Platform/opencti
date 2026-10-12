@@ -218,7 +218,12 @@ export const validateWorkflowDefinitionData = async (
   const statesWithIncomingTransition = new Set<string>();
 
   for (const transition of transitions) {
-    if (transition.from === null || transition.to === null) {
+    // A null `to` is only a valid terminal transition (the engine keeps the instance in its
+    // current state, see `targetTransitionForSync?.to ?? instance.getCurrentState()`) when the
+    // transition explicitly completes the workflow via `validateDraft`. Otherwise it's an
+    // orphaned reference (e.g. an admin deleted the target status) and must still be reported.
+    const completesWorkflow = (transition.syncActions ?? []).some((action) => action.type === 'validateDraft');
+    if (transition.from === null || (transition.to === null && !completesWorkflow)) {
       errors.push({
         type: 'UNLINKED_TRANSITION',
         message: `Transition ${transition.event} should be linked to at least one status`,
@@ -454,7 +459,7 @@ export const validateWorkflowDefinitionData = async (
                 filterGroups: [],
               },
             });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId);
+            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === existingWorkflowId && !inst.completed);
 
             if (conflictingInstances.length > 0) {
               errors.push({
