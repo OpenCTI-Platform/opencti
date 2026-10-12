@@ -16163,6 +16163,7 @@ input SecurityCoverageSelectedEntitiesInput {
   filters: String
   excluded_ids: [String!]
   search: String
+  relationships_config: StixCoreRelationshipAddInput
 }
 
 type CoverageResult {
@@ -16295,6 +16296,7 @@ input SecurityCoverageResultAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
   customFieldValues: [CustomFieldValueAddInput!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
 input AskSendOtpInput {
