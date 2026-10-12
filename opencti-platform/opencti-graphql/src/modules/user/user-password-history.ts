@@ -86,8 +86,9 @@ export const isPasswordReused = async (user: PasswordHashes, clearPassword: stri
   return matches.some((match) => match);
 };
 
-export const consumePasswordChangeAttempt = async (userId: string) => {
-  const allowed = await redisConsumePasswordChangeAttempt(userId);
+// The forgot-password flow submits as SYSTEM, so it has its own counter on each account
+export const consumePasswordChangeAttempt = async (targetUserId: string, submitter: Pick<AuthUser, 'id'>) => {
+  const allowed = await redisConsumePasswordChangeAttempt(targetUserId, submitter.id);
   if (!allowed) {
     throw PasswordChangeThrottled();
   }

@@ -24,7 +24,7 @@ import {
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
+import { SYSTEM_USER, VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
   queryAsAdminWithError,
   queryAsAdminWithSuccess,
@@ -39,7 +39,14 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
+import {
+  clearAllUsersPasswordValidUntil,
+  adjustAllUsersPasswordValidUntil,
+  isPasswordExpired,
+  computePasswordValidUntilFromPolicy,
+  findById as findUserById,
+  meEditField,
+} from '../../../src/modules/user/user-domain';
 import { getSettingsFromDatabase } from '../../../src/domain/settings';
 import { updateLocalAuth } from '../../../src/domain/setting-auth';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -2398,6 +2405,9 @@ describe('Password history', () => {
     } finally {
       hashSpy.mockRestore();
     }
+    // The administrator used up their own attempts only: the user can still change their password
+    const self = await findUserById(testContext, SYSTEM_USER, id);
+    await expect(meEditField(testContext, self, id, [{ key: 'password', value: ['History-Pass-7!'] }], 'History-Pass-1!')).resolves.toBeDefined();
   });
 
   // Without the lock, both changes would check and rebuild the same old history: with N = 2, A -> B and
