@@ -28,6 +28,8 @@ const renderBenchmark = (expectedPeriod: PulsePeriodValue, period?: PulsePeriodV
   });
 };
 
+const titleLineOf = (title: string) => screen.getByText(title).parentElement as HTMLElement;
+
 describe('ThreatPulseBenchmark', () => {
   it('should read the last 30 days by default and let the user choose the period', async () => {
     renderBenchmark('last_30_days');
@@ -37,10 +39,17 @@ describe('ThreatPulseBenchmark', () => {
     expect(screen.getByRole('combobox', { name: 'Period' })).toBeDefined();
   });
 
+  it('should grow its title line with the period select so the select stays within the widget', async () => {
+    renderBenchmark('last_30_days');
+    expect(await screen.findByTestId('threat-pulse-benchmark-unavailable')).toBeDefined();
+    expect(getComputedStyle(titleLineOf('Sector benchmark')).alignItems).toBe('end');
+  });
+
   it('should follow the period of its dashboard instead of its own selector', async () => {
     renderBenchmark('last_90_days', 'last_90_days');
     expect(await screen.findByTestId('threat-pulse-benchmark-unavailable')).toBeDefined();
     expect(screen.getByTestId('threat-pulse-benchmark-period').textContent).toBe('90 days');
     expect(screen.queryByRole('combobox', { name: 'Period' })).toBeNull();
+    expect(getComputedStyle(titleLineOf('Sector benchmark')).alignItems).toBe('center');
   });
 });

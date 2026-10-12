@@ -221,7 +221,9 @@ const ThreatPulseTrending = ({ title, first = 10, period: dashboardPeriod, popov
     </Box>
   );
   return (
-    <Card title={title ?? t_i18n('Trending in your sector')} action={action}>
+    // The period select is taller than the 19px title line: the line grows with it instead of letting it rise over
+    // the dashboard controls above the widget.
+    <Card title={title ?? t_i18n('Trending in your sector')} action={action} titleAlignItems={dashboardPeriod ? undefined : 'end'}>
       <div data-testid="threat-pulse-trending">
         <Suspense fallback={<Spinner label={t_i18n('Loading')} />}>
           <ThreatPulseTrendingList period={period} first={first} />
