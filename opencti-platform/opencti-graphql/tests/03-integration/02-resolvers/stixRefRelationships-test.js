@@ -2,6 +2,8 @@ import { afterAll, beforeAll, expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { now } from 'moment';
 import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { createRelation } from '../../../src/database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
@@ -168,6 +170,7 @@ describe('StixRefRelationship added again on a single ref', () => {
   const FILE_REFS_QUERY = gql`
     query StixFileRefs($id: String!, $fromId: StixRef) {
       stixCyberObservable(id: $id) {
+        updated_at
         createdBy {
           id
         }
@@ -197,26 +200,28 @@ describe('StixRefRelationship added again on a single ref', () => {
     const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'Directory', Directory: { path } } });
     return data.stixCyberObservableAdd.id;
   };
-  // Same calls as the python client for a file with a parent_directory_ref: the file upsert, then the nested ref
-  const importFileUnder = async (directoryId) => {
+  const upsertFile = async () => {
     const StixFile = { name: 'single-ref-test.exe', hashes: [{ algorithm: 'MD5', hash: '5ad1e5ad1e5ad1e5ad1e5ad1e5ad1e50' }] };
     const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'StixFile', createdBy: ANSSI, StixFile } });
     fileId = data.stixCyberObservableAdd.id;
-    const input = { fromId: fileId, toId: directoryId, relationship_type: 'parent-directory' };
-    const { data: refData } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
-    return refData.stixRefRelationshipAdd;
+  };
+  const addRef = async (toId, relationshipType) => {
+    const input = { fromId: fileId, toId, relationship_type: relationshipType };
+    const { data } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
+    return data.stixRefRelationshipAdd;
+  };
+  // Same calls as the python client for a file with a parent_directory_ref: the file upsert, then the nested ref
+  const importFileUnder = async (directoryId) => {
+    await upsertFile();
+    return addRef(directoryId, 'parent-directory');
   };
   const loadFileRefs = async () => {
     const { data } = await queryAsAdminWithSuccess({ query: FILE_REFS_QUERY, variables: { id: fileId, fromId: fileId } });
     return {
       createdById: data.stixCyberObservable.createdBy?.id,
+      updatedAt: data.stixCyberObservable.updated_at,
       parentRelations: data.stixNestedRefRelationships.edges.map(({ node }) => ({ id: node.id, toId: node.to.id })),
     };
-  };
-  const addCreatedBy = async (identityId) => {
-    const input = { fromId: fileId, toId: identityId, relationship_type: 'created-by' };
-    const { data } = await queryAsAdminWithSuccess({ query: REF_ADD_QUERY, variables: { input } });
-    return data.stixRefRelationshipAdd;
   };
 
   beforeAll(async () => {
@@ -238,12 +243,15 @@ describe('StixRefRelationship added again on a single ref', () => {
     expect(parentRelations).toEqual([{ id: firstParentRelationId, toId: directoryAId }]);
   });
 
-  it('should keep the parent directory when the file is imported again under the same directory', async () => {
-    const relation = await importFileUnder(directoryAId);
+  it('should keep the parent directory without updating the file when it is imported again under the same directory', async () => {
+    await upsertFile();
+    const { updatedAt } = await loadFileRefs();
+    const relation = await addRef(directoryAId, 'parent-directory');
     expect(relation.id).toEqual(firstParentRelationId);
     expect(relation.to.id).toEqual(directoryAId);
-    const { parentRelations } = await loadFileRefs();
-    expect(parentRelations).toEqual([{ id: firstParentRelationId, toId: directoryAId }]);
+    const refs = await loadFileRefs();
+    expect(refs.parentRelations).toEqual([{ id: firstParentRelationId, toId: directoryAId }]);
+    expect(refs.updatedAt).toEqual(updatedAt);
   });
 
   it('should replace the parent directory when the file is imported under another directory', async () => {
@@ -255,13 +263,22 @@ describe('StixRefRelationship added again on a single ref', () => {
   });
 
   it('should keep then replace the author the same way', async () => {
-    const { createdById: anssiId } = await loadFileRefs();
+    const { createdById: anssiId, updatedAt } = await loadFileRefs();
     expect(anssiId).toBeDefined();
-    const sameAuthor = await addCreatedBy(ANSSI);
+    const sameAuthor = await addRef(ANSSI, 'created-by');
     expect(sameAuthor.to.id).toEqual(anssiId);
-    expect((await loadFileRefs()).createdById).toEqual(anssiId);
-    const otherAuthor = await addCreatedBy(JOHN_DOE);
+    const refsAfterSameAuthor = await loadFileRefs();
+    expect(refsAfterSameAuthor.createdById).toEqual(anssiId);
+    expect(refsAfterSameAuthor.updatedAt).toEqual(updatedAt);
+    const otherAuthor = await addRef(JOHN_DOE, 'created-by');
     expect(otherAuthor.to.id).not.toEqual(anssiId);
     expect((await loadFileRefs()).createdById).toEqual(otherAuthor.to.id);
+  });
+
+  it('should never let a restoration overwrite the current target', async () => {
+    const { createdById } = await loadFileRefs();
+    const input = { fromId: fileId, toId: ANSSI, relationship_type: 'created-by' };
+    await expect(createRelation(testContext, ADMIN_USER, input, { restore: true })).rejects.toThrow('Cant add another relation on single ref');
+    expect((await loadFileRefs()).createdById).toEqual(createdById);
   });
 });
