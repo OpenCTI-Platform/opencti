@@ -57,6 +57,9 @@ describe('buildDashboardVariable - creation', () => {
     expect(() => build({ type: 'entity', entityTypes: ['Sector'], defaultValue: 'id', restriction: { mode: 'filters', filters: '{not json' } })).toThrow('Invalid restriction filters');
     expect(() => build({ type: 'entity', entityTypes: ['Sector'], defaultValue: 'id', restriction: { mode: 'filters', filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['$var:11111111-1111-4111-8111-111111111111'] }], filterGroups: [] }) } }))
       .toThrow('A variable restriction cannot reference another variable');
+    // A JSON escape hides the token from a check on the raw string, JSON.parse restores it
+    expect(() => build({ type: 'entity', entityTypes: ['Sector'], defaultValue: 'id', restriction: { mode: 'filters', filters: '{"mode":"and","filters":[{"key":["entity_type"],"values":["\\u0024var:11111111-1111-4111-8111-111111111111"]}],"filterGroups":[]}' } }))
+      .toThrow('A variable restriction cannot reference another variable');
   });
   it('should store an entity variable with a filters restriction as an object', () => {
     const variable = build({ type: 'entity', entityTypes: ['Sector', 'Sector'], defaultValue: 'sector-id', restriction: { mode: 'filters', filters: SECTOR_FILTERS } });

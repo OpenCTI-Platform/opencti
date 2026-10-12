@@ -43,7 +43,15 @@ const initializeAuthorizedMembers = (
 
 // A saved filter is shareable and detached from any dashboard: a variable token would lose its context.
 const assertNoDashboardVariable = (filters: unknown) => {
-  if (typeof filters === 'string' && containsDashboardVariableToken(filters)) {
+  if (typeof filters !== 'string') return;
+  // Checked on the parsed structure: a JSON escape (\u0024var:) hides a token from the raw string
+  let serialized = filters;
+  try {
+    serialized = JSON.stringify(JSON.parse(filters));
+  } catch {
+    // Not JSON: checked as is
+  }
+  if (containsDashboardVariableToken(serialized)) {
     throw FunctionalError('Dashboard variables cannot be used in a saved filter');
   }
 };

@@ -59,16 +59,18 @@ const buildTypeSpecificFields = (type: DashboardVariableTypeName, input: Dashboa
 };
 
 const parseRestrictionFilters = (filters: string) => {
-  if (containsDashboardVariableToken(filters)) {
-    throw FunctionalError('A variable restriction cannot reference another variable');
-  }
+  let parsed;
   try {
-    const parsed = JSON.parse(filters);
+    parsed = JSON.parse(filters);
     checkFiltersFormat(parsed);
-    return parsed;
   } catch {
     throw FunctionalError('Invalid restriction filters');
   }
+  // Checked on the parsed structure: a JSON escape (\u0024var:) hides a token from the raw string
+  if (containsDashboardVariableToken(JSON.stringify(parsed))) {
+    throw FunctionalError('A variable restriction cannot reference another variable');
+  }
+  return parsed;
 };
 
 const buildRestriction = (type: DashboardVariableTypeName, input: DashboardVariableInputLike): StoreDashboardVariableRestriction => {

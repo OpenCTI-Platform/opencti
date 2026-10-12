@@ -352,6 +352,16 @@ describe('Saved filters and dashboard variables', () => {
     );
   });
 
+  it('should reject a dashboard variable token hidden behind a JSON escape', async () => {
+    const escapedTokenFilters = '{"mode":"and","filters":[{"key":["createdBy"],"values":["\\u0024var:11111111-1111-4111-8111-111111111111"],"operator":"eq","mode":"or"}],"filterGroups":[]}';
+    expect(JSON.parse(escapedTokenFilters).filters[0].values[0]).toEqual('$var:11111111-1111-4111-8111-111111111111');
+    await queryAsAdminWithError(
+      { query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'with escaped variable', filters: escapedTokenFilters, scope: 'Report' } } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
+  });
+
   it('should reject a dashboard variable token on edition', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'plain', filters: PLAIN_FILTERS, scope: 'Report' } } });
     savedFilterId = data.savedFilterAdd.id;
