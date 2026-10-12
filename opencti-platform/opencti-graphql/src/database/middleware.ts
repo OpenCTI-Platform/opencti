@@ -3458,6 +3458,12 @@ const replaceSingleRelationRef = async (
   let lock;
   try {
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    // A concurrent replacement may have set the same target while this one was waiting for the lock
+    const source = await storeLoadByIdWithRefs(context, user, from.internal_id) as Record<string, any>;
+    if (source?.[key]?.internal_id === to.internal_id) {
+      const element = await storeLoadByIdWithRefs(context, user, source[key].i_relation?.internal_id);
+      return { element, event: undefined, isCreation: false };
+    }
     // The cyclic check reads the denormalized refs of the target, that the resolution of the input does not load
     const target = await internalLoadById(context, user, to.internal_id);
     await checkRefRelationNotCyclic(context, user, relationshipType, from, target);
