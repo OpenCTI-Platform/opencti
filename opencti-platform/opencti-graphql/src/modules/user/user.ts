@@ -1,4 +1,4 @@
-import { computeAccountStatusChoices } from '../../config/conf';
+import { computeAccountStatusChoices, PASSWORD_HISTORY_FEATURE_FLAG } from '../../config/conf';
 import { draftChange, draftContext } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { registerDefinition, type ModuleDefinition } from '../../schema/module';
@@ -30,7 +30,7 @@ const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
     { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // { name: 'password', label: 'Password', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // bcrypt hashes of the previous passwords, newest first; never exposed through the API
-    { name: 'password_history', label: 'Password history', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'password_history', label: 'Password history', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag: PASSWORD_HISTORY_FEATURE_FLAG },
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'firstname', label: 'User firstname', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

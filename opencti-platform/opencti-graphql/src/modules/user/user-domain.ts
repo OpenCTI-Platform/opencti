@@ -1243,13 +1243,17 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   let clearPassword: string | undefined;
   let passwordInput: { key: string; value: unknown[] } | undefined;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
-  // A password change sent with other fields could be refused by one of them after the password checks ran,
-  // which would tell the caller what the checks decided without changing anything. The one field allowed
+  // While the password history applies, a password change sent with other fields could be refused by one of them
+  // after the reuse check ran, which would tell the caller what the check decided without changing anything.
+  // Without a history there is nothing to learn, so existing API calls keep working. The one field allowed
   // alongside is the switch to a service account, which discards the password before any check of its history.
-  const passwordInputsCount = rawInputs.filter((input) => input.key === 'password').length;
-  const otherInputsCount = rawInputs.filter((input) => input.key !== 'password' && input.key !== 'user_service_account').length;
-  if (hasPasswordUpdate && (passwordInputsCount > 1 || otherInputsCount > 0)) {
-    throw FunctionalError('The password must be changed on its own', { userId });
+  if (hasPasswordUpdate && isLocalUser(userToUpdate)) {
+    const historySettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const passwordInputsCount = rawInputs.filter((input) => input.key === 'password').length;
+    const otherInputsCount = rawInputs.filter((input) => input.key !== 'password' && input.key !== 'user_service_account').length;
+    if (readPasswordHistoryCount(historySettings) >= 1 && (passwordInputsCount > 1 || otherInputsCount > 0)) {
+      throw FunctionalError('The password must be changed on its own', { userId });
+    }
   }
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
@@ -1334,7 +1338,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
-      inputs.push({ key: 'password_history', value: [] });
+      if (isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
+        inputs.push({ key: 'password_history', value: [] });
+      }
       await addUserIntoServiceAccountCount();
     }
     // Turn Service Account into User
@@ -1825,7 +1831,8 @@ export const loginFromProvider = async (userInfo: ProviderUserInfo, opts: LoginF
   }
   // Update the basic information
   // A local user switching to SSO has no local password history to keep
-  const patch = { name, firstname, lastname, external: true, ...(isNotEmptyField(user.password_history) ? { password_history: [] } : {}) };
+  const clearsPasswordHistory = isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isNotEmptyField(user.password_history);
+  const patch = { name, firstname, lastname, external: true, ...(clearsPasswordHistory ? { password_history: [] } : {}) };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation

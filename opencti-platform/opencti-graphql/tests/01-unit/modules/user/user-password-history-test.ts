@@ -246,27 +246,34 @@ describe('cleanUpPasswordHistoryWhenDisabled', () => {
 
   it('does nothing while the feature flag is on', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
-    const reset = vi.fn();
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 }, reset);
-    expect(reset).not.toHaveBeenCalled();
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 });
     expect(elRawUpdateByQuery).not.toHaveBeenCalled();
   });
 
   it('does nothing when the flag is off and nothing is stored', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(false);
     vi.mocked(elRawCount).mockResolvedValue(0);
-    const reset = vi.fn();
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 }, reset);
-    expect(reset).not.toHaveBeenCalled();
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
     expect(elRawUpdateByQuery).not.toHaveBeenCalled();
   });
 
-  it('resets the stored value and deletes every history when the flag is off', async () => {
+  // The setting is not part of the schema with the flag off: it is removed from the store, not patched
+  it('removes the stored value and deletes every history when the flag is off', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(false);
     vi.mocked(elRawCount).mockResolvedValueOnce(3).mockResolvedValue(0);
-    const reset = vi.fn(async () => undefined);
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 }, reset);
-    expect(reset).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(elRawUpdateByQuery).mock.calls[0][0].body.script.source).toContain("remove('password_history')");
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 });
+    const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
+    expect(scripts[0]).toContain("remove('password_policy_history_count')");
+    expect(scripts[1]).toContain("remove('password_history')");
+    expect(publishCacheResetEvent).toHaveBeenCalledWith('Settings');
+  });
+
+  it('only deletes the histories when the stored value is already 0', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    vi.mocked(elRawCount).mockResolvedValueOnce(2).mockResolvedValue(0);
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
+    const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).toContain("remove('password_history')");
   });
 });

@@ -98,7 +98,7 @@ Each refused reuse is recorded in the audit log as an unauthorized action (`pass
 
 ### Backups and API
 
-Password hashes, current and previous, live in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API, and a password change must be sent on its own, without any other field in the same request.
+Password hashes, current and previous, live in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API. While password history is enabled (a value of 1 or more), a password change must be sent on its own, without any other field in the same request; with the rule off, existing API calls are unchanged.
 
 ## Login messages
 

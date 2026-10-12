@@ -28,6 +28,12 @@ vi.mock('../../../../src/modules/user/user-domain', () => ({
   },
 }));
 
+let passwordHistoryFlag = true;
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+  return { ...actual, isFeatureEnabled: () => passwordHistoryFlag };
+});
+
 const { userMergeSourceDisableHandler } = await import('../../../../src/modules/userMerge/userMerge-sourceDisableHandler');
 
 const handlerContext = { context: {}, sourceId: 'source-id', targetId: 'target-id' } as unknown as UserMergeHandlerContext;
@@ -38,6 +44,7 @@ const countOf = (plan: UserMergeHandlerPlan) => plan.changes[0].count;
 describe('source disable handler', () => {
   beforeEach(() => {
     stored = { account_status: 'Active' };
+    passwordHistoryFlag = true;
     edits.length = 0;
     patches.length = 0;
   });
@@ -99,6 +106,17 @@ describe('source disable handler', () => {
     expect(await userMergeSourceDisableHandler.apply(handlerContext, await compute())).toEqual(1);
     expect(edits).toEqual([]);
     expect(patches).toEqual([{ id: 'source-id', patch: { password_history: [] }, opts: { skipUserIndividualSync: true } }]);
+  });
+
+  // With the flag off the field is not part of the schema: writing it would fail the merge
+  it('should not touch the password history while the feature flag is off', async () => {
+    passwordHistoryFlag = false;
+    stored = { account_status: ACCOUNT_STATUS_EXPIRED, merged_into: 'target-id', password_history: ['$2a$10$hash'] };
+    expect(countOf(await compute())).toEqual(0);
+    stored = { account_status: 'Active' };
+    await userMergeSourceDisableHandler.apply(handlerContext, await compute());
+    expect(edits).toHaveLength(1);
+    expect(patches).toEqual([]);
   });
 
   it('should declare the password history it reads', () => {

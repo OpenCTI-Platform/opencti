@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import bcrypt from 'bcryptjs';
-import { askSendOtp, changePassword, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
+import { askSendOtp, changePassword, forgotPasswordActor, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { SYSTEM_USER } from '../../../src/utils/access';
 import { v4 as uuid, validate as uuidValidate } from 'uuid';
 import { OTP_TTL, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../../src/database/redis';
 import { addUser, userDelete } from '../../../src/modules/user/user-domain';
@@ -103,5 +104,19 @@ describe('changePassword with password history', () => {
         message: 'Password reset code expired or not found. Please request a new one.',
         extensions: { code: 'PASSWORD_RESET_EXPIRED' },
       });
+  });
+});
+
+describe('forgotPasswordActor', () => {
+  it('records the origin of the request on the SYSTEM user, since nobody is logged in', () => {
+    const req = { ip: '203.0.113.7', headers: { 'user-agent': 'reset-test' }, header: (name: string) => (name === 'user-agent' ? 'reset-test' : undefined) };
+    const actor = forgotPasswordActor({ ...testContext, req } as any);
+    expect(actor.id).toEqual(SYSTEM_USER.id);
+    expect(actor.origin).toMatchObject({ ip: '203.0.113.7', socket: 'query' });
+    expect(actor.origin.user_metadata).toMatchObject({ 'user-agent': 'reset-test' });
+  });
+
+  it('falls back to the SYSTEM user outside of a request', () => {
+    expect(forgotPasswordActor(testContext)).toBe(SYSTEM_USER);
   });
 });

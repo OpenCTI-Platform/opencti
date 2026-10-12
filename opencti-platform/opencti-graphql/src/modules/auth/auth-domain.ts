@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { findById, getUserByEmail, userEditField } from '../user/user-domain';
+import { findById, getUserByEmail, userEditField, userWithOrigin } from '../user/user-domain';
 import { AuthenticationFailure, PASSWORD_CHANGE_THROTTLED, PASSWORD_REUSED, PasswordResetExpired, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
@@ -20,6 +20,12 @@ import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 import { totp } from '../../utils/totp';
 import { normalizeEmail } from '../../utils/email';
+
+// Nobody is logged in during forgot password: its events are SYSTEM's, carrying the origin of the request
+// (IP address and traced headers), the only trace of who asked for the reset.
+export const forgotPasswordActor = (context: AuthContext) => {
+  return context.req ? userWithOrigin(context.req, SYSTEM_USER) : SYSTEM_USER;
+};
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -42,7 +48,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   const user: any = await getUserByEmail(input.email);
   if (!user || user.external) {
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -83,7 +89,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     await sendMail(sendMailArgs, { identifier: id, category: 'password-reset' });
     // Audit log for sending the OTP
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -93,7 +99,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   } catch (e) {
     logApp.error('Error occurred while sending password reset email:', { cause: e });
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -108,11 +114,11 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   return transactionId;
 };
 
-export const verifyOtp = async (input: VerifyOtpInput) => {
+export const verifyOtp = async (context: AuthContext, input: VerifyOtpInput) => {
   const { hashedOtp, email, mfa_activated } = await redisGetForgotPasswordOtp(input.transactionId);
   if (!hashedOtp) {
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -124,7 +130,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   if (!isMatch) {
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -134,7 +140,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   await publishUserAction({
-    user: SYSTEM_USER,
+    user: forgotPasswordActor(context),
     event_type: 'authentication',
     event_scope: 'forgot',
     event_access: 'administration',
@@ -165,7 +171,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   // The code may expire, or be replaced by a newer request, while the user is on the new-password step
   if (!hashedOtp) {
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -178,7 +184,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
   if (!isMatch || !isStateMfaValid) {
     await publishUserAction({
-      user: SYSTEM_USER,
+      user: forgotPasswordActor(context),
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
@@ -189,7 +195,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   }
   try {
     const authUser = await findById(context, SYSTEM_USER, userId);
-    await userEditField(context, SYSTEM_USER, authUser.id, [
+    await userEditField(context, forgotPasswordActor(context), authUser.id, [
       { key: 'password', value: [input.newPassword] },
     ]);
     await killUserSessions(authUser.id);

@@ -8,7 +8,7 @@ import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
-import { createEntity, loadEntity, patchAttribute } from './database/middleware';
+import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
@@ -72,9 +72,7 @@ const cleanUpPasswordHistory = async (context: AuthContext) => {
   if (!settings) {
     return;
   }
-  await cleanUpPasswordHistoryWhenDisabled(settings, () => {
-    return patchAttribute(context, SYSTEM_USER, settings.id, ENTITY_TYPE_SETTINGS, { password_policy_history_count: 0 });
-  });
+  await cleanUpPasswordHistoryWhenDisabled(settings);
 };
 
 const platformInit = async (withMarkings = true) => {
