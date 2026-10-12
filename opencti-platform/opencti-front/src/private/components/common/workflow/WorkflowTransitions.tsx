@@ -115,7 +115,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     const totalProcessed = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.processedCount ?? 0), 0) ?? 0;
     return (
       <>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-pending" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Text as="span" variant="content-compact" className="whitespace-nowrap">
             {pendingTransition?.event}
           </Text>
@@ -144,7 +144,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   if (isError) {
     return (
       <>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box data-testid="workflow-transitions-error" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Tooltip>
             <TooltipTrigger asChild>
               <ErrorOutline color="error" fontSize="small" />
@@ -183,67 +183,69 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
 
   return (
     <>
-      {workflowInstance.allowedTransitions.length > 1 ? (
-        <Menu open={menuOpen} onOpenChange={setMenuOpen}>
-          <MenuTrigger asChild>
-            <Button
-              disabled={approving || clearing || !!wizard}
-              endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
+      <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
+        {workflowInstance.allowedTransitions.length > 1 ? (
+          <Menu open={menuOpen} onOpenChange={setMenuOpen}>
+            <MenuTrigger asChild>
+              <Button
+                disabled={approving || clearing || !!wizard}
+                endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
+              >
+                {t_i18n('Next status')}
+              </Button>
+            </MenuTrigger>
+            <MenuContent
+              align="start"
+              sideOffset={6}
+              style={{ minWidth: 'var(--radix-dropdown-menu-trigger-width)', maxWidth: 'calc(100vw - 32px)' }}
             >
-              {t_i18n('Next status')}
-            </Button>
-          </MenuTrigger>
-          <MenuContent
-            align="start"
-            sideOffset={6}
-            style={{ minWidth: 'var(--radix-dropdown-menu-trigger-width)', maxWidth: 'calc(100vw - 32px)' }}
-          >
-            {workflowInstance.allowedTransitions.map((transition) => {
-              const actionCount = transition.actions?.length ?? 0;
-              return (
-                <MenuItem
-                  key={transition.event}
-                  disabled={approving || clearing || !!wizard}
-                  onSelect={() => handleTransition(
-                    transition.event,
-                    transition.actions ?? [],
-                    transition.comment,
-                    transition.requiresShareOrganizationInput,
-                    transition.requiresUnshareOrganizationInput,
-                  )}
-                  style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
-                  endIcon={actionCount > 0 ? (
-                    <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
-                      (+{actionCount} {t_i18n(actionCount === 1 ? 'action required' : 'actions required')})
-                    </span>
-                  ) : undefined}
-                >
-                  <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
-                </MenuItem>
-              );
-            })}
-          </MenuContent>
-        </Menu>
-      ) : (
-        <>
-          {workflowInstance.allowedTransitions.map((transition) => (
-            <Button
-              key={transition.event}
-              variant="primary"
-              onClick={() => handleTransition(
-                transition.event,
-                transition.actions ?? [],
-                transition.comment,
-                transition.requiresShareOrganizationInput,
-                transition.requiresUnshareOrganizationInput,
-              )}
-              disabled={approving || clearing || !!wizard}
-            >
-              {transition.event}
-            </Button>
-          ))}
-        </>
-      )}
+              {workflowInstance.allowedTransitions.map((transition) => {
+                const actionCount = transition.actions?.length ?? 0;
+                return (
+                  <MenuItem
+                    key={transition.event}
+                    disabled={approving || clearing || !!wizard}
+                    onSelect={() => handleTransition(
+                      transition.event,
+                      transition.actions ?? [],
+                      transition.comment,
+                      transition.requiresShareOrganizationInput,
+                      transition.requiresUnshareOrganizationInput,
+                    )}
+                    style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
+                    endIcon={actionCount > 0 ? (
+                      <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
+                        (+{actionCount} {t_i18n(actionCount === 1 ? 'action required' : 'actions required')})
+                      </span>
+                    ) : undefined}
+                  >
+                    <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
+                  </MenuItem>
+                );
+              })}
+            </MenuContent>
+          </Menu>
+        ) : (
+          <>
+            {workflowInstance.allowedTransitions.map((transition) => (
+              <Button
+                key={transition.event}
+                variant="primary"
+                onClick={() => handleTransition(
+                  transition.event,
+                  transition.actions ?? [],
+                  transition.comment,
+                  transition.requiresShareOrganizationInput,
+                  transition.requiresUnshareOrganizationInput,
+                )}
+                disabled={approving || clearing || !!wizard}
+              >
+                {transition.event}
+              </Button>
+            ))}
+          </>
+        )}
+      </Box>
       {wizard && (
         <Formik<TransitionFormValues>
           initialValues={{ comment: '', shareOrganizations: [], unshareOrganizations: [] }}
@@ -314,7 +316,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                             </div>
                             <ObjectOrganizationField
                               name="shareOrganizations"
-                              label={t_i18n('Organizations')}
+                              label={t_i18n('Organizations to share with')}
                               multiple={true}
                               disabled={disabled}
                               style={{ width: '100%' }}
@@ -330,7 +332,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                             </div>
                             <ObjectOrganizationField
                               name="unshareOrganizations"
-                              label={t_i18n('Organizations')}
+                              label={t_i18n('Organizations to unshare from')}
                               multiple={true}
                               disabled={disabled}
                               style={{ width: '100%' }}
