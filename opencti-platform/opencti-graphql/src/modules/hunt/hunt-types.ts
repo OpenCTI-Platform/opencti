@@ -57,6 +57,8 @@ export interface HuntNativeQuery {
   language: string;
   query: string;
   pipeline?: string | null;
+  // Key of the Sigma rule this query replaces on its platform (huntRuleKey); none: the first rule, or the logic itself
+  rule_key?: string | null;
 }
 
 /** A value pasted in an indicator hunt, typed as an observable. */
@@ -70,7 +72,9 @@ interface HuntAttributes {
   hunt_type: string;
   hunt_status: string;
   hunt_source_kind: string;
+  // The first rule of sigma_rules, kept for the clients that read one rule
   sigma_rule?: string;
+  sigma_rules?: string[];
   native_queries?: HuntNativeQuery[];
   hunt_ioc_filters?: string;
   hunt_ioc_values?: HuntIocValue[];
@@ -114,6 +118,7 @@ export interface StixHunt extends StixDomainObject {
   hunt_status: string;
   hunt_source_kind: string;
   sigma_rule: string;
+  sigma_rules?: string[];
   native_queries: HuntNativeQuery[];
   hunt_ioc_filters?: string;
   hunt_ioc_values?: HuntIocValue[];

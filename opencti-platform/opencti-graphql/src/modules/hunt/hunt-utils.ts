@@ -5,7 +5,7 @@ import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationSt
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type HuntNativeQuery } from './hunt-types';
-import type { HuntEvidence, HuntHit } from './huntRun/huntRun-types';
+import type { HuntEvidence, HuntHit, HuntRuleResult } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
 const numberConf = (key: string, fallback: number): number => {
@@ -77,6 +77,7 @@ const NATIVE_QUERY_MAX_LENGTH = 65536;
 const NATIVE_QUERY_LANGUAGE_MAX_LENGTH = 64;
 const NATIVE_QUERY_PIPELINE_MAX_LENGTH = 256;
 const EVIDENCE_FIELD_MAX_LENGTH = 256;
+const RULE_KEY_PATTERN = /^[0-9a-f]{24}$/;
 
 /**
  * A hunt is autonomous when it runs without a human action: cron schedule, standing hunt or PIR activation.
@@ -86,12 +87,43 @@ export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null; hunt_pir
   return isCronSchedule(hunt.hunt_schedule) || hunt.hunt_schedule === HUNT_SCHEDULE_STANDING || hunt.hunt_pir_activation === true;
 };
 
-/** The Sigma rule a hunt runs: an indicator or internet infrastructure hunt runs none, whatever rule it still carries. */
-export const huntSigmaRule = (hunt: { hunt_type?: string | null; sigma_rule?: string | null }): string | null => {
-  if (hunt.hunt_type === HUNT_TYPE_INDICATORS || hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
-    return null;
+// The Sigma rules a detection-rule hunt holds, each translated and run on its own
+export const HUNT_MAX_SIGMA_RULES = 100;
+
+type HuntSigmaRulesLike = { hunt_type?: string | null; sigma_rule?: string | null; sigma_rules?: ReadonlyArray<string | null> | null };
+
+const isFilledRule = (rule: unknown): rule is string => typeof rule === 'string' && rule.trim().length > 0;
+
+/** The Sigma rules a hunt holds, in order: its list, else its single rule (a hunt saved before rule lists). */
+export const storedSigmaRules = (hunt: Omit<HuntSigmaRulesLike, 'hunt_type'>): string[] => {
+  const listed = (hunt.sigma_rules ?? []).filter(isFilledRule);
+  if (listed.length > 0) {
+    return listed;
   }
-  return typeof hunt.sigma_rule === 'string' && hunt.sigma_rule.trim().length > 0 ? hunt.sigma_rule : null;
+  return isFilledRule(hunt.sigma_rule) ? [hunt.sigma_rule] : [];
+};
+
+/** The Sigma rules a hunt runs: an indicator or internet infrastructure hunt runs none, whatever rule it still carries. */
+export const huntSigmaRules = (hunt: HuntSigmaRulesLike): string[] => {
+  if (hunt.hunt_type === HUNT_TYPE_INDICATORS || hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
+    return [];
+  }
+  return storedSigmaRules(hunt);
+};
+
+/** The first Sigma rule a hunt runs, the one a connector that reads a single rule runs. */
+export const huntSigmaRule = (hunt: HuntSigmaRulesLike): string | null => huntSigmaRules(hunt)[0] ?? null;
+
+/** The key of a Sigma rule in the run message, its results and its native queries: stable as long as the rule is. */
+export const huntRuleKey = (rule: string) => createHash('sha256').update(rule.trim(), 'utf8').digest('hex').substring(0, 24);
+
+/** The Sigma rules of an input, trimmed, each once, at most HUNT_MAX_SIGMA_RULES. */
+export const normalizeSigmaRules = (rules: ReadonlyArray<string | null> | null | undefined): string[] => {
+  const distinct = Array.from(new Map((rules ?? []).filter(isFilledRule).map((rule) => [huntRuleKey(rule), rule.trim()])).values());
+  if (distinct.length > HUNT_MAX_SIGMA_RULES) {
+    throw ValidationError(`A hunt holds at most ${HUNT_MAX_SIGMA_RULES} Sigma rules`, 'sigma_rules');
+  }
+  return distinct;
 };
 
 const accessDecisionsInFlight = new Map<string, Promise<unknown>>();
@@ -258,15 +290,16 @@ export const sanitizeHitKeys = (keys: unknown, maxItems = HUNT_CONFIG.maxResults
 
 /**
  * The hit keys of a report when they identify its hits, null when they cannot: no list, an entry that is not a hit key,
- * no key for a report with hits, more distinct keys than hits, or a sampled hit whose key is not listed. A connector
- * reports one key per hit it read, distinct and bounded by the maximum results, so fewer keys than hits is expected
- * (hits of one detection, truncated results) and more is not (see splitHitsByKeys); a sampled hit is one of the hits
- * read, so its key is always listed. `extraKeys` are the keys an indicator hunt reports per value, hits of the report
- * as well.
+ * no key for a report with hits, or more distinct keys than hits. A connector reports one key per hit it read, distinct
+ * and bounded by the maximum results, so fewer keys than hits is expected (hits of one detection, truncated results)
+ * and more is not (see splitHitsByKeys). The key the platform computes for a sampled hit is not compared with them: a
+ * connector computes its keys over the identity values it reads (a long event id stands as its digest), which the
+ * sample does not always carry as they were read. `extraKeys` are the keys an indicator hunt reports per value, hits
+ * of the report as well.
  */
 export const identifyingHitKeys = (
   keys: unknown,
-  report: { hitsCount: number; sampledKeys?: ReadonlyArray<string | null | undefined>; extraKeys?: ReadonlyArray<string> },
+  report: { hitsCount: number; extraKeys?: ReadonlyArray<string> },
   maxItems = HUNT_CONFIG.maxResultsPerRun,
 ): string[] | null => {
   if (!Array.isArray(keys)) {
@@ -280,11 +313,117 @@ export const identifyingHitKeys = (
   if ((report.hitsCount > 0 && distinct.length === 0) || distinct.length > report.hitsCount) {
     return null;
   }
-  const listed = new Set(distinct);
-  if ((report.sampledKeys ?? []).some((key) => !!key && !listed.has(key))) {
+  return distinct.slice(0, maxItems);
+};
+
+const RULE_RESULT_STATUSES = ['completed', 'failed'];
+const RULE_TITLE_MAX_LENGTH = 256;
+const RULE_ERROR_MAX_LENGTH = 2000;
+const RULE_QUERY_MAX_LENGTH = 32768;
+const OBSERVATION_HOST_MAX_LENGTH = 256;
+
+export interface HuntRuleResultInputLike {
+  key?: string | null;
+  title?: string | null;
+  status?: string | null;
+  translated_query?: string | null;
+  query_language?: string | null;
+  hits_count?: number | null;
+  truncated?: boolean | null;
+  first_hit_at?: string | Date | null;
+  last_hit_at?: string | Date | null;
+  error?: string | null;
+}
+
+const nonNegativeCount = (value: unknown) => (typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.round(value)) : 0);
+const optionalText = (value: unknown, maxLength: number) => (typeof value === 'string' && value.trim().length > 0 ? truncate(value, maxLength) : null);
+
+/**
+ * The results a connector reports per Sigma rule, as the platform stores them: one per rule key, at most
+ * HUNT_MAX_SIGMA_RULES, a completed or failed status, bounded texts. Null when the connector sent none.
+ */
+export const sanitizeRuleResults = (results: ReadonlyArray<HuntRuleResultInputLike | null> | null | undefined): HuntRuleResult[] | null => {
+  if (!Array.isArray(results)) {
     return null;
   }
-  return distinct.slice(0, maxItems);
+  const byKey = new Map<string, HuntRuleResult>();
+  results.forEach((result) => {
+    const key = typeof result?.key === 'string' ? result.key.trim().toLowerCase() : '';
+    if (!RULE_KEY_PATTERN.test(key) || byKey.has(key) || byKey.size >= HUNT_MAX_SIGMA_RULES) {
+      return;
+    }
+    const status = typeof result?.status === 'string' && RULE_RESULT_STATUSES.includes(result.status) ? result.status : 'failed';
+    byKey.set(key, {
+      key,
+      title: optionalText(result?.title, RULE_TITLE_MAX_LENGTH),
+      status,
+      translated_query: optionalText(result?.translated_query, RULE_QUERY_MAX_LENGTH),
+      query_language: optionalText(result?.query_language, NATIVE_QUERY_LANGUAGE_MAX_LENGTH),
+      hits_count: status === 'completed' ? nonNegativeCount(result?.hits_count) : 0,
+      truncated: status === 'completed' && result?.truncated === true,
+      first_hit_at: toIsoDate(result?.first_hit_at),
+      last_hit_at: toIsoDate(result?.last_hit_at),
+      error: status === 'failed' ? optionalText(result?.error, RULE_ERROR_MAX_LENGTH) ?? 'Unknown error' : null,
+    });
+  });
+  return Array.from(byKey.values());
+};
+
+export interface HuntObservationInputLike {
+  key?: string | null;
+  host?: string | null;
+  hits_count?: number | null;
+  first_seen?: string | Date | null;
+  last_seen?: string | Date | null;
+  hit_keys?: ReadonlyArray<string | null> | null;
+}
+
+/** An observation group of a report as the platform reads it: what a value or a rule matched on one victim, over every hit. */
+export interface HuntObservationGroup {
+  key: string;
+  host: string | null;
+  hitsCount: number;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  // Null when the connector does not identify the hits of the group
+  hitKeys: string[] | null;
+}
+
+/**
+ * The observation groups a connector reports, one per value (or rule) and victim host, over every hit it read: merged
+ * when the connector sends a group twice, at most `maxItems`, the most observed first. Null when the connector sent none.
+ */
+export const sanitizeObservations = (
+  observations: ReadonlyArray<HuntObservationInputLike | null> | null | undefined,
+  maxItems = HUNT_CONFIG.maxResultsPerRun,
+): HuntObservationGroup[] | null => {
+  if (!Array.isArray(observations)) {
+    return null;
+  }
+  const groups = new Map<string, HuntObservationGroup>();
+  observations.forEach((observation) => {
+    const key = typeof observation?.key === 'string' ? observation.key.trim() : '';
+    const hitsCount = nonNegativeCount(observation?.hits_count);
+    if (key.length === 0 || key.length > OBSERVATION_HOST_MAX_LENGTH || hitsCount === 0) {
+      return;
+    }
+    const host = optionalText(observation?.host?.trim(), OBSERVATION_HOST_MAX_LENGTH);
+    const hitKeys = sanitizeHitKeys(observation?.hit_keys);
+    const groupKey = `${key}|${host ?? ''}`;
+    const known = groups.get(groupKey);
+    const dates = [known?.firstSeen, known?.lastSeen, toIsoDate(observation?.first_seen), toIsoDate(observation?.last_seen)]
+      .filter((date): date is string => !!date)
+      .sort();
+    groups.set(groupKey, {
+      key,
+      host,
+      hitsCount: (known?.hitsCount ?? 0) + hitsCount,
+      firstSeen: dates[0] ?? null,
+      lastSeen: dates[dates.length - 1] ?? null,
+      hitKeys: hitKeys === null || known?.hitKeys === null ? null : Array.from(new Set([...(known?.hitKeys ?? []), ...hitKeys])),
+    });
+  });
+  return Array.from(groups.values()).sort((a, b) => b.hitsCount - a.hitsCount || a.key.localeCompare(b.key)).slice(0, maxItems);
 };
 
 /**
@@ -451,10 +590,15 @@ export const normalizeNativeQueries = (nativeQueries: unknown): HuntNativeQuery[
     if (!HUNT_PLATFORMS.includes(platform)) {
       throw ValidationError(`Native query ${index + 1}: platform must be one of ${HUNT_PLATFORMS.join(', ')}`, 'native_queries');
     }
-    if (platforms.has(platform)) {
-      throw ValidationError(`Native query ${index + 1}: only one native query per platform is allowed (${platform})`, 'native_queries');
+    const ruleKey = typeof item.rule_key === 'string' && item.rule_key.trim().length > 0 ? item.rule_key.trim().toLowerCase() : null;
+    if (ruleKey && !RULE_KEY_PATTERN.test(ruleKey)) {
+      throw ValidationError(`Native query ${index + 1}: the rule key is not the key of a Sigma rule`, 'native_queries');
     }
-    platforms.add(platform);
+    const slot = `${platform}|${ruleKey ?? ''}`;
+    if (platforms.has(slot)) {
+      throw ValidationError(`Native query ${index + 1}: only one native query per platform and rule is allowed (${platform})`, 'native_queries');
+    }
+    platforms.add(slot);
     const language = typeof item.language === 'string' ? item.language.trim() : '';
     if (language.length === 0 || language.length > NATIVE_QUERY_LANGUAGE_MAX_LENGTH) {
       throw ValidationError(`Native query ${index + 1}: a language is required`, 'native_queries');
@@ -467,8 +611,18 @@ export const normalizeNativeQueries = (nativeQueries: unknown): HuntNativeQuery[
     if (pipeline && pipeline.length > NATIVE_QUERY_PIPELINE_MAX_LENGTH) {
       throw ValidationError(`Native query ${index + 1}: the pipeline name is too long`, 'native_queries');
     }
-    return { platform, language, query, pipeline };
+    return ruleKey ? { platform, language, query, pipeline, rule_key: ruleKey } : { platform, language, query, pipeline };
   });
+};
+
+/**
+ * The native query replacing a Sigma rule on a platform: the one of its key, else for the first rule (or a hunt without
+ * Sigma rule) the one without key, the meaning of a native query before rule lists.
+ */
+export const huntRuleNativeQuery = (queries: HuntNativeQuery[], platform: string | null, ruleKey: string | null, isFirstRule: boolean) => {
+  const onPlatform = queries.filter((query) => query.platform === platform);
+  const keyed = ruleKey ? onPlatform.find((query) => query.rule_key === ruleKey) : undefined;
+  return keyed ?? (isFirstRule || !ruleKey ? onPlatform.find((query) => !query.rule_key) ?? null : null);
 };
 
 const FILTER_GROUP_SHAPE_ERROR = 'Filters must be a filter group (mode, filters, filterGroups)';

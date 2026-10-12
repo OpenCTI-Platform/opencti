@@ -18,6 +18,8 @@ interface HuntHitRecordAttributes {
   counted_run_ids?: string[];
   // Indicator hunts: the keys of the values the hit holds (huntRun-iocs iocKey)
   ioc_keys?: string[];
+  // The objects the hit is a sighting of: the sources of the values it holds, or what a telemetry hunt sights
+  sighted_ids?: string[];
 }
 
 /** A hit a hunt already found on a security platform: the known hits ledger tells new hits from recurring ones. */

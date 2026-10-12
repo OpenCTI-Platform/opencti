@@ -1,4 +1,4 @@
-import type { Resolvers } from '../../../generated/graphql';
+import type { HuntRunRuleResult, Resolvers } from '../../../generated/graphql';
 import { storeLoadById } from '../../../database/middleware-loader';
 import { loadCreator, loadCreators } from '../../../database/members';
 import { ENTITY_TYPE_HUNT } from '../hunt-types';
@@ -29,6 +29,7 @@ import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { huntRunQueueReason } from '../hunt-dispatch';
 import { huntRunFailureReason } from '../hunt-logic';
 import { annotateHuntRunHits } from '../huntHitRecord/huntHitRecord-domain';
+import { resolveHuntRunIncidentLink } from '../hunt-incident';
 
 const huntRunResolvers: Resolvers = {
   Query: {
@@ -58,6 +59,9 @@ const huntRunResolvers: Resolvers = {
     ioc_results: (run, _, context) => resolveHuntRunIocResults(context, context.user, run) as any,
     hits_sample: (run, _, context) => annotateHuntRunHits(context, context.user, run) as any,
     time_window_continued: (run) => !!run.continues_run_id,
+    incident_id: async (run, _, context) => (await resolveHuntRunIncidentLink(context, context.user, run)).incident_id,
+    draft_id: async (run, _, context) => (await resolveHuntRunIncidentLink(context, context.user, run)).draft_id,
+    rule_results: (run) => (run.rule_results ?? []) as HuntRunRuleResult[],
   },
   // A telemetry hit in the program-wide evidence shape: a tool result labelled by its field, quoting its preview
   HuntEvidence: {

@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
-import { elAggregationCount, elBulk, elCount, elRawDeleteByQuery, prepareElementForIndexing } from '../../../database/engine';
+import { elAggregationCount, elBulk, elCardinalityCount, elCount, elRawDeleteByQuery, prepareElementForIndexing } from '../../../database/engine';
 import { buildEntityData } from '../../../database/data-builder';
-import { internalFindByIds, topEntitiesList } from '../../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, topEntitiesList } from '../../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { generateStandardId } from '../../../schema/identifier';
 import { FilterMode, FilterOperator, OrderingMode, type Filter, type FilterGroup } from '../../../generated/graphql';
@@ -132,6 +132,11 @@ const RECORD_UPDATE_SCRIPT = `
       for (key in params.ioc_keys) { if (!keys.contains(key)) { keys.add(key); } }
       ctx._source.ioc_keys = keys;
     }
+    if (params.sighted_ids.size() > 0) {
+      def sighted = ctx._source.sighted_ids == null ? new ArrayList() : new ArrayList(ctx._source.sighted_ids);
+      for (id in params.sighted_ids) { if (!sighted.contains(id)) { sighted.add(id); } }
+      ctx._source.sighted_ids = sighted;
+    }
   }
 `;
 
@@ -142,6 +147,8 @@ export interface HuntHitsRecordInput {
   keys: string[];
   // Indicator hunts: the keys of the values each hit holds, by hit key
   iocKeysByHit?: Map<string, string[]>;
+  // The objects each hit is a sighting of, by hit key
+  sightedIdsByHit?: Map<string, string[]>;
   seenAt: string;
   // Late evidence of a run the records may have forgotten (isHuntRunRemembered): the known records are left as they are
   keepKnown?: boolean;
@@ -215,6 +222,7 @@ export const recordHuntHits = async (
       await doYield();
       const key = toWrite[index];
       const iocKeys = input.iocKeysByHit?.get(key) ?? [];
+      const sightedIds = input.sightedIdsByHit?.get(key) ?? [];
       const { standardId, internalId } = huntHitRecordId(input.huntId, input.securityPlatformId, key);
       const { element } = await buildEntityData(context, HUNT_MANAGER_USER, R.reject(R.isNil, {
         internal_id: internalId,
@@ -230,11 +238,12 @@ export const recordHuntHits = async (
         last_run_id: input.runId,
         counted_run_ids: [input.runId],
         ioc_keys: iocKeys,
+        sighted_ids: sightedIds,
         created_at: recordedAt,
         updated_at: recordedAt,
       }), ENTITY_TYPE_HUNT_HIT_RECORD);
       const { _index: _ignored, ...upsert } = await prepareElementForIndexing(element);
-      const params = { run_id: input.runId, seen_at: seenAt, recorded_at: recordedAt, ioc_keys: iocKeys, counted_runs_max: COUNTED_RUNS_MAX };
+      const params = { run_id: input.runId, seen_at: seenAt, recorded_at: recordedAt, ioc_keys: iocKeys, sighted_ids: sightedIds, counted_runs_max: COUNTED_RUNS_MAX };
       operations.push(
         { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
         { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params }, upsert },
@@ -279,6 +288,59 @@ export const countHuntHitRecords = async (context: AuthContext, huntId: string, 
     filters: recordFilters(huntId, securityPlatformIds, iocKeys),
     noFiltersChecking: true,
   });
+};
+
+const platformFilter = (securityPlatformId: string | null | undefined): Filter => (securityPlatformId
+  ? { key: ['security_platform_id'], values: [securityPlatformId], mode: FilterMode.Or, operator: FilterOperator.Eq }
+  : { key: ['security_platform_id'], values: [], mode: FilterMode.Or, operator: FilterOperator.Nil });
+
+/**
+ * Distinct hits known on a security platform for a sighted object, whichever hunt found them: the count of the sighting
+ * every hunt finding the object on the platform shares. `sightedIds` are the ids the records may name the object by.
+ */
+export const countSightedHuntHits = async (context: AuthContext, securityPlatformId: string, sightedIds: string[]) => {
+  if (sightedIds.length === 0) {
+    return 0;
+  }
+  const count = await elCardinalityCount(context, HUNT_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, 'hit_key', {
+    types: [ENTITY_TYPE_HUNT_HIT_RECORD],
+    filters: {
+      mode: FilterMode.And,
+      filters: [platformFilter(securityPlatformId), { key: ['sighted_ids'], values: sightedIds, mode: FilterMode.Or, operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  return Number(count) || 0;
+};
+
+/**
+ * The hits of a run that no run found before on its security platform, whichever hunt: a hit is new when no record
+ * holds it, or when only records this very run created hold it (a run processed again counts the same hits).
+ */
+export const findHitKeysNewOnPlatform = async (context: AuthContext, securityPlatformId: string | null | undefined, runId: string, keys: string[]) => {
+  const distinct = Array.from(new Set(keys));
+  const knownBefore = new Set<string>();
+  const chunks = R.splitEvery(IDS_CHUNK_SIZE, distinct);
+  for (let index = 0; index < chunks.length; index += 1) {
+    const records = await fullEntitiesList<BasicStoreEntityHuntHitRecord>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_HIT_RECORD], {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          platformFilter(securityPlatformId),
+          { key: ['hit_key'], values: chunks[index], mode: FilterMode.Or, operator: FilterOperator.Eq },
+          { key: ['first_run_id'], values: [runId], mode: FilterMode.And, operator: FilterOperator.NotEq },
+        ],
+        filterGroups: [],
+      },
+      noFiltersChecking: true,
+      baseData: true,
+      baseFields: ['internal_id', 'hit_key'],
+    } as never);
+    records.forEach((record) => knownBefore.add(record.hit_key));
+  }
+  return new Set(distinct.filter((key) => !knownBefore.has(key)));
 };
 
 /** What a hunt knows of its hits on the given security platforms: distinct hits, and when the first and last new hits were found. */

@@ -130,6 +130,31 @@ export interface HuntIocResult {
   deployment_ids?: string[];
 }
 
+/** What one Sigma rule of a detection-rule hunt run translated to and found. */
+export interface HuntRuleResult {
+  key: string;
+  title: string | null;
+  status: string;
+  translated_query: string | null;
+  query_language: string | null;
+  hits_count: number;
+  truncated: boolean;
+  first_hit_at: string | null;
+  last_hit_at: string | null;
+  error: string | null;
+}
+
+/** Every hit of a run for one value (or rule) on one victim host, as the platform keeps it for the observed data. */
+export interface HuntObservation {
+  key: string;
+  host: string | null;
+  hits_count: number;
+  // Hits no run found before on the security platform; null when the connector cannot tell the hits apart
+  new_hits_count: number | null;
+  first_seen: string | null;
+  last_seen: string | null;
+}
+
 interface HuntRunAttributes {
   hunt_id: string;
   // The hunt of the run no longer exists (deleted, in the trash): the statistics leave the run out
@@ -147,6 +172,7 @@ interface HuntRunAttributes {
   translated_query?: string | null;
   query_language?: string | null;
   ioc_results?: HuntIocResult[] | null;
+  rule_results?: HuntRuleResult[] | null;
   hits_count?: number | null;
   // Hits never seen before for the hunt on the security platform of the run, and hits already known (Hunt-Hit-Record).
   // A run whose connector identifies no hit (hits_identified false) counts every hit as new
@@ -167,6 +193,8 @@ interface HuntRunAttributes {
   first_hit_at?: string | null;
   last_hit_at?: string | null;
   hit_observation_ids?: string[];
+  // What each value (or rule) matched on each victim, over every hit, when the connector reports it
+  observations?: HuntObservation[] | null;
   result_ids?: string[];
   verdict: string;
   verdict_source?: string | null;
@@ -178,6 +206,8 @@ interface HuntRunAttributes {
   verdict_proposal_agent?: string | null;
   incident_proposal?: string | null;
   incident_id?: string | null;
+  // The STIX id of the incident: the incident of a validated draft has another internal id in the knowledge graph
+  incident_stix_id?: string | null;
   draft_id?: string | null;
   aev_inject_id?: string | null;
   security_coverage_id?: string | null;

@@ -18,22 +18,25 @@ import { findByIds } from './hunt-loaders';
 import { isDisclosableByHunt } from './hunt-iocs';
 import { type BasicStoreEntityHunt, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, HUNT_IOC_VERDICT_SEEN, HUNT_RUN_STATUS_COMPLETED, type HuntIocResult } from './huntRun/huntRun-types';
-import { countHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
+import { countHuntHitRecords, countSightedHuntHits } from './huntHitRecord/huntHitRecord-domain';
 import { withHuntLock } from './hunt-lock';
 import { truncate } from './hunt-utils';
 
 const HUNT_SIGHTINGS_LOCK = 'hunt_sightings';
 
-// The sighting of the hunt names the hunt it belongs to: one per hunt, sighted object and security platform
+// The sighting names the hunt that updated it last: one per sighted object and security platform, whichever hunt found it
 export const ATTRIBUTE_HUNT_ID = 'x_opencti_hunt_id';
 // The run that updated the sighting last
 const ATTRIBUTE_HUNT_RUN_ID_KEY = 'x_opencti_hunt_run_id';
 
-type HuntSighting = BasicStoreRelation & { attribute_count?: number; first_seen?: string; last_seen?: string; x_opencti_hunt_run_id?: string };
+type HuntSighting = BasicStoreRelation & { attribute_count?: number; first_seen?: string; last_seen?: string; x_opencti_hunt_id?: string; x_opencti_hunt_run_id?: string };
 
 /** What the run says of one sighted object: when its hits were seen, how many the run found, which values hold it. */
 export interface HuntSightingTarget {
   id: string;
+  // The ids the hit records name the object by (sighted_ids): its internal id, and the standard id of the observable of a
+  // pasted value, known before the observable is
+  matchIds: string[];
   firstSeen: string;
   lastSeen: string;
   runHits: number;
@@ -52,27 +55,20 @@ const latest = (dates: (string | null | undefined)[]) => dates.filter((date): da
 const sameIds = (left: string[] = [], right: string[] = []) => left.length === right.length && left.every((id) => right.includes(id));
 
 /**
- * The count of a sighting after a run. A run whose hits are identified recounts the distinct hits known for the object,
- * never below the stored count (forgotten hits stay counted). A run whose hits are not identified adds its hits once:
- * the sighting it last updated already holds them.
+ * The count of a sighting after a run, never below the stored count (forgotten hits stay counted). A run whose hits are
+ * identified recounts the distinct hits known for the object on the platform, all hunts together. A run whose hits are
+ * not identified cannot tell its hits from those already counted: the count becomes the hits of the run when they are
+ * more, never their sum, so that the same hits found again, by the same run or another, never count twice.
  */
 export const nextHuntSightingCount = (
-  stored: Pick<HuntSighting, 'attribute_count' | 'x_opencti_hunt_run_id'> | null,
-  runId: string,
+  stored: Pick<HuntSighting, 'attribute_count'> | null,
   outcome: { identified: boolean; knownHits: number; runHits: number },
 ) => {
-  const storedCount = stored?.attribute_count ?? 0;
-  if (outcome.identified) {
-    return Math.max(storedCount, outcome.knownHits, 1);
-  }
-  if (stored && stored.x_opencti_hunt_run_id === runId) {
-    return Math.max(storedCount, 1);
-  }
-  return Math.max(storedCount + outcome.runHits, 1);
+  return Math.max(stored?.attribute_count ?? 0, outcome.identified ? outcome.knownHits : outcome.runHits, 1);
 };
 
 // A pasted value comes from no object: the observable its connector created for it is the one sighted
-const pastedValueObservableId = (result: HuntIocResult) => {
+export const pastedValueObservableId = (result: Pick<HuntIocResult, 'observable_type' | 'hash_algorithm' | 'value'>) => {
   try {
     const data = result.observable_type === 'StixFile'
       ? { hashes: { [result.hash_algorithm ?? 'SHA-256']: result.value } }
@@ -98,10 +94,12 @@ export const resolveHuntSightingTargets = async (context: AuthContext, hunt: Bas
     for (let index = 0; index < seen.length; index += 1) {
       const result = seen[index];
       let ids = result.source_ids ?? [];
+      let aliasIds: string[] = [];
       if (ids.length === 0) {
         const standardId = pastedValueObservableId(result);
         const observable = standardId ? await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, standardId) : null;
         ids = observable ? [observable.internal_id] : [];
+        aliasIds = standardId ? [standardId] : [];
       }
       ids.forEach((id) => {
         const target = byObject.get(id);
@@ -109,6 +107,7 @@ export const resolveHuntSightingTargets = async (context: AuthContext, hunt: Bas
         const last = result.last_seen ?? runLast;
         byObject.set(id, {
           id,
+          matchIds: Array.from(new Set([...(target?.matchIds ?? [id]), ...aliasIds])),
           firstSeen: earliest([target?.firstSeen, first]) as string,
           lastSeen: latest([target?.lastSeen, last]) as string,
           runHits: (target?.runHits ?? 0) + (result.hits_count ?? 0),
@@ -126,16 +125,49 @@ export const resolveHuntSightingTargets = async (context: AuthContext, hunt: Bas
   const disclosable = (element: BasicStoreEntity) => isDisclosableByHunt(hunt, element, markings as Map<string, BasicStoreEntityMarkingDefinition>);
   const sighted = [...techniques, ...sources.filter((source) => source.entity_type === ENTITY_TYPE_INDICATOR)].filter(disclosable);
   return Array.from(new Set(sighted.map((element) => element.internal_id)))
-    .map((id) => ({ id, firstSeen: runFirst, lastSeen: runLast, runHits: run.hits_count ?? 0 }));
+    .map((id) => ({ id, matchIds: [id], firstSeen: runFirst, lastSeen: runLast, runHits: run.hits_count ?? 0 }));
 };
 
 /**
- * The STIX id of the sighting a hunt keeps of an object on a security platform: derived from the three, not from its
- * dates like other sightings, so that it never merges with the sighting of another hunt or of a connector that has
- * the same dates, and stays the same when its dates move.
+ * The objects each hit of a run is a sighting of, by hit key, as its hit records keep them: for an indicator hunt the
+ * sources of the values the hit holds (the observable of a pasted value by its standard id, which exists before the
+ * observable does), for a telemetry hunt what the run sights.
  */
-export const huntSightingStandardId = (huntId: string, sightedId: string, securityPlatformId: string) => {
-  return `${STIX_TYPE_SIGHTING}--${uuidv5(`hunt-sighting|${huntId}|${sightedId}|${securityPlatformId}`, OPENCTI_NAMESPACE)}`;
+export const huntSightedIdsByHit = (
+  hunt: Pick<BasicStoreEntityHunt, 'hunt_type'>,
+  keys: string[],
+  input: { iocResults?: ReadonlyArray<HuntIocResult> | null; iocKeysByHit?: Map<string, string[]>; telemetryTargetIds?: string[] },
+) => {
+  const byHit = new Map<string, string[]>();
+  if (hunt.hunt_type === HUNT_TYPE_INDICATORS) {
+    const byIocKey = new Map<string, string[]>();
+    (input.iocResults ?? []).forEach((result) => {
+      const sources = result.source_ids ?? [];
+      const pasted = sources.length === 0 ? pastedValueObservableId(result) : null;
+      byIocKey.set(result.key, sources.length > 0 ? sources : (pasted ? [pasted] : []));
+    });
+    keys.forEach((key) => {
+      const ids = (input.iocKeysByHit?.get(key) ?? []).flatMap((iocKey) => byIocKey.get(iocKey) ?? []);
+      if (ids.length > 0) {
+        byHit.set(key, Array.from(new Set(ids)));
+      }
+    });
+    return byHit;
+  }
+  const targetIds = input.telemetryTargetIds ?? [];
+  if (targetIds.length > 0) {
+    keys.forEach((key) => byHit.set(key, targetIds));
+  }
+  return byHit;
+};
+
+/**
+ * The STIX id of the sighting of an object on a security platform found by hunts: derived from the two, not from its
+ * dates like other sightings, so that every hunt finding the object on the platform updates the same sighting, it
+ * never merges with the sighting of a connector that has the same dates, and stays the same when its dates move.
+ */
+export const huntSightingStandardId = (sightedId: string, securityPlatformId: string) => {
+  return `${STIX_TYPE_SIGHTING}--${uuidv5(`hunt-sighting|${sightedId}|${securityPlatformId}`, OPENCTI_NAMESPACE)}`;
 };
 
 const findHuntSighting = async (context: AuthContext, standardId: string) => {
@@ -143,8 +175,9 @@ const findHuntSighting = async (context: AuthContext, standardId: string) => {
 };
 
 const sightingDescription = (hunt: BasicStoreEntityHunt, platformName: string, count: number) => {
-  return truncate(`Hunt "${hunt.name}" found ${count} distinct hit(s) on ${platformName}. Each run of the hunt updates this sighting: `
-    + 'its count holds the distinct hits found so far, its first and last seen dates the first and latest hit.', 2000);
+  return truncate(`Hunts found ${count} distinct hit(s) on ${platformName}, the latest by hunt "${hunt.name}". Every run of a hunt `
+    + 'finding this object on this platform updates this sighting: its count holds the distinct hits found so far, its first and '
+    + 'last seen dates the first and latest hit.', 2000);
 };
 
 /**
@@ -180,13 +213,17 @@ const keepHuntSightings = async (
   const runOrganizations = run[RELATION_GRANTED_TO] ?? [];
   for (let index = 0; index < targets.length; index += 1) {
     const target = targets[index];
-    const standardId = huntSightingStandardId(hunt.internal_id, target.id, platform.internal_id);
+    const standardId = huntSightingStandardId(target.id, platform.internal_id);
     const stored = await findHuntSighting(context, standardId);
     const { objectMarking, objectOrganization } = stored
       ? await accumulatedHuntSightingAccess(context, stored, runMarkings, runOrganizations)
       : { objectMarking: runMarkings, objectOrganization: runOrganizations };
-    const knownHits = identified ? await countHuntHitRecords(context, hunt.internal_id, [platform.internal_id], target.iocKeys) : 0;
-    const count = nextHuntSightingCount(stored, run.internal_id, { identified, knownHits, runHits: target.runHits });
+    // The hits of every hunt that sighted the object, and those of this hunt recorded before hit records named the objects
+    const knownHits = identified ? Math.max(
+      await countSightedHuntHits(context, platform.internal_id, target.matchIds),
+      await countHuntHitRecords(context, hunt.internal_id, [platform.internal_id], target.iocKeys),
+    ) : 0;
+    const count = nextHuntSightingCount(stored, { identified, knownHits, runHits: target.runHits });
     const firstSeen = earliest([stored?.first_seen, target.firstSeen]) as string;
     const lastSeen = latest([stored?.last_seen, target.lastSeen, firstSeen]) as string;
     const description = sightingDescription(hunt, platform.name, count);
@@ -195,12 +232,13 @@ const keepHuntSightings = async (
       const organizationsChanged = !sameIds(stored[RELATION_GRANTED_TO], objectOrganization);
       const unchanged = stored.attribute_count === count && stored.first_seen === firstSeen && stored.last_seen === lastSeen
         && stored.x_opencti_hunt_run_id === run.internal_id && !markingsChanged && !organizationsChanged;
-      // Its id stays the one derived from the hunt, whatever its dates become
+      // Its id stays the one derived from the object and the platform, whatever its dates become
       const element = unchanged ? stored : (await patchAttribute(context, HUNT_MANAGER_USER, stored.internal_id, STIX_SIGHTING_RELATIONSHIP, {
         attribute_count: count,
         first_seen: firstSeen,
         last_seen: lastSeen,
         description,
+        ...(stored.x_opencti_hunt_id !== hunt.internal_id ? { [ATTRIBUTE_HUNT_ID]: hunt.internal_id } : {}),
         [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
         ...(markingsChanged ? { objectMarking } : {}),
         // Organizations can only be written in Enterprise Edition: sent only when they change
@@ -233,10 +271,10 @@ const keepHuntSightings = async (
 };
 
 /**
- * One sighting per hunt, sighted object and security platform, kept by the platform: a completed run with hits creates it
- * or updates it in place (count, first and last seen, the run that updated it last), never a sighting per run. Runs a
- * second time over the same run give the same sightings. The runs of a hunt on a platform keep its sightings one at a
- * time, so two runs finalized together never both create one. Returns the sightings of the run.
+ * One sighting per sighted object and security platform, whichever hunt found it, kept by the platform: a completed run
+ * with hits creates it or updates it in place (count, first and last seen, the hunt and run that updated it last), never
+ * a sighting per run or per hunt. Runs a second time over the same run give the same sightings. The runs on a platform
+ * keep its sightings one at a time, so two runs finalized together never both create one. Returns the sightings of the run.
  */
 export const upsertHuntSightings = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun): Promise<HuntSightingsOutcome> => {
   const outcome: HuntSightingsOutcome = { ids: [], created: 0, updated: 0 };
@@ -247,5 +285,5 @@ export const upsertHuntSightings = async (context: AuthContext, hunt: BasicStore
   if (!platform) {
     return outcome;
   }
-  return withHuntLock(`${HUNT_SIGHTINGS_LOCK}_${hunt.internal_id}_${platform.internal_id}`, () => keepHuntSightings(context, hunt, run, platform, outcome));
+  return withHuntLock(`${HUNT_SIGHTINGS_LOCK}_${platform.internal_id}`, () => keepHuntSightings(context, hunt, run, platform, outcome));
 };

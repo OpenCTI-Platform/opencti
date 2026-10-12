@@ -17,7 +17,16 @@ import {
   type HuntNativeQuery,
   RELATION_HUNT_SOURCES,
 } from './hunt-types';
-import { HUNT_CONFIG, HUNT_MAX_ESCALATION_THRESHOLD, huntSigmaRule, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import {
+  HUNT_CONFIG,
+  HUNT_MAX_ESCALATION_THRESHOLD,
+  HUNT_MAX_SIGMA_RULES,
+  huntSigmaRules,
+  isAutonomousHunt,
+  normalizeNativeQueries,
+  parseHuntFilterGroup,
+  storedSigmaRules,
+} from './hunt-utils';
 import { HUNT_MESSAGES, renderHuntMessage } from './hunt-messages';
 import { hasHuntIocLogic, normalizeHuntIocValues } from './hunt-iocs';
 
@@ -25,6 +34,7 @@ export interface HuntValidationState {
   hunt_type?: string | null;
   hunt_status?: string | null;
   sigma_rule?: string | null;
+  sigma_rules?: string[] | null;
   native_queries?: unknown;
   hunt_ioc_filters?: string | null;
   hunt_ioc_values?: unknown;
@@ -69,11 +79,10 @@ export const sigmaRuleError = (sigmaRule: string | null | undefined): string | n
  */
 export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>): { message: string; field: string } | null => {
   const huntType = state.hunt_type ?? HUNT_TYPE_TELEMETRY;
-  const sigmaRule = typeof state.sigma_rule === 'string' ? state.sigma_rule : '';
   const nativeQueries: HuntNativeQuery[] = normalizeNativeQueries(state.native_queries);
   if (huntType === HUNT_TYPE_TELEMETRY) {
     const hasTelemetryQuery = nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
-    if (sigmaRule.trim().length === 0 && !hasTelemetryQuery) {
+    if (storedSigmaRules(state).length === 0 && !hasTelemetryQuery) {
       return { message: HUNT_MESSAGES.logicTelemetryMissing, field: 'sigma_rule' };
     }
   }
@@ -93,10 +102,16 @@ export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>):
  */
 export const validateHuntState = async (context: AuthContext, user: AuthUser, state: HuntValidationState) => {
   // A hunt is not refused for a rule its type does not run and its form does not show
-  const sigmaError = sigmaRuleError(huntSigmaRule(state));
-  if (sigmaError) {
-    throw ValidationError(sigmaError, 'sigma_rule');
+  const rules = huntSigmaRules(state);
+  if (rules.length > HUNT_MAX_SIGMA_RULES) {
+    throw ValidationError(`A hunt holds at most ${HUNT_MAX_SIGMA_RULES} Sigma rules`, 'sigma_rules');
   }
+  rules.forEach((rule, index) => {
+    const sigmaError = sigmaRuleError(rule);
+    if (sigmaError) {
+      throw ValidationError(rules.length > 1 ? `Sigma rule ${index + 1}: ${sigmaError}` : sigmaError, rules.length > 1 ? 'sigma_rules' : 'sigma_rule');
+    }
+  });
   if (state.hunt_ioc_values !== undefined) {
     normalizeHuntIocValues(state.hunt_ioc_values);
   }

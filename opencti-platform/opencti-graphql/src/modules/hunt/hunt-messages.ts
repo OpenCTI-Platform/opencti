@@ -9,6 +9,7 @@ export const HUNT_MESSAGES = {
   logicIndicatorsEmpty: 'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators',
   sigmaInvalid: 'Invalid Sigma rule: {errors}',
   sigmaValid: 'Valid Sigma rule',
+  sigmaRulesValid: '{count} valid Sigma rules, each run on its own',
   nativeQueries: 'Native query for {platforms}',
   iocCount: '{count} values to look for',
   iocTruncated: 'Only the first {max} values are looked for: narrow the list',
@@ -45,6 +46,9 @@ export const HUNT_MESSAGES = {
   translationReady: '{connector} translated the hunt logic',
   translationChecking: '{connector} is checking the translation of the hunt logic',
   translationFailed: '{connector} cannot translate the hunt logic: {error}',
+  translationRulesFailed: '{connector} cannot translate {failed} of the {total} Sigma rules, the others run: {error}',
+  translationUnknown: 'The translation of the hunt logic is not checked yet: no hunt connector of its scope previewed it',
+  connectorTranslationFailed: '{connectors} cannot translate the hunt logic: edit the Sigma rules or add a native query',
 } as const;
 
 export type HuntMessageValues = Record<string, string | number>;

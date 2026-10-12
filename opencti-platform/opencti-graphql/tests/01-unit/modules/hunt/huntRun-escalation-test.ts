@@ -55,7 +55,7 @@ vi.mock('../../../../src/modules/hunt/hunt-dispatch', async (importOriginal) => 
 vi.mock('../../../../src/modules/hunt/hunt-incident', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-incident')>(),
   createHuntIncidentWorkspace: vi.fn(async (_context: unknown, _run: unknown, record: (draftId: string) => Promise<unknown>) => record('draft-1')),
-  createHuntIncidentInWorkspace: vi.fn(async () => 'incident-1'),
+  createHuntIncidentInWorkspace: vi.fn(async () => ({ incidentId: 'incident-1', incidentStixId: 'incident--1' })),
   findOpenHuntIncident: vi.fn(async () => null),
   continueHuntIncident: vi.fn(async () => undefined),
 }));
@@ -73,6 +73,12 @@ vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => {
 vi.mock('../../../../src/modules/hunt/hunt-sightings', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-sightings')>(),
   upsertHuntSightings: vi.fn(async () => ({ ids: [], created: 0, updated: 0 })),
+  resolveHuntSightingTargets: vi.fn(async () => []),
+}));
+
+vi.mock('../../../../src/modules/hunt/hunt-hit-observations', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-hit-observations')>(),
+  createHuntHitObservations: vi.fn(async () => ({ observedDataIds: [], observableIds: [] })),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-stats', async (importOriginal) => ({
@@ -188,7 +194,7 @@ describe('Escalation at the end of a run above the threshold', () => {
     loading({ ...running, hunt_run_trigger: 'schedule', auto_escalation: true });
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);
     expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
-    expect(finalState()).toMatchObject({ draft_id: 'draft-1', incident_id: 'incident-1' });
+    expect(finalState()).toMatchObject({ draft_id: 'draft-1', incident_id: 'incident-1', incident_stix_id: 'incident--1' });
   });
 
   it('should keep the distinct entities unknown when the connector does not count them', async () => {
@@ -295,12 +301,12 @@ describe('Hits counted once across the runs of a hunt', () => {
   it('should add the hits to the incident still open from a previous run instead of opening a new one', async () => {
     loading(autonomous);
     vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 12, recurringCount: 16 });
-    vi.mocked(findOpenHuntIncident).mockResolvedValue({ incidentId: 'incident-0', draftId: 'draft-0' });
+    vi.mocked(findOpenHuntIncident).mockResolvedValue({ incidentId: 'incident-0', incidentStixId: 'incident--0', draftId: 'draft-0' });
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
     expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
     expect(createHuntIncidentInWorkspace).not.toHaveBeenCalled();
-    expect(continueHuntIncident).toHaveBeenCalledWith(testContext, hunt, expect.objectContaining({ internal_id: 'run-1' }), { incidentId: 'incident-0', draftId: 'draft-0' });
-    expect(finalState()).toMatchObject({ incident_id: 'incident-0', draft_id: 'draft-0', incident_continued: true });
+    expect(continueHuntIncident).toHaveBeenCalledWith(testContext, hunt, expect.objectContaining({ internal_id: 'run-1' }), { incidentId: 'incident-0', incidentStixId: 'incident--0', draftId: 'draft-0' });
+    expect(finalState()).toMatchObject({ incident_id: 'incident-0', incident_stix_id: 'incident--0', draft_id: 'draft-0', incident_continued: true });
   });
 
   it('should split the hits a key stands for like the keys, so the new and known hits add up to the hits of the run', async () => {
@@ -415,7 +421,7 @@ describe('Hits counted once across the runs of a hunt', () => {
     });
     vi.mocked(createHuntIncidentInWorkspace).mockImplementation(async () => {
       heldWhen.open = held.includes(lock);
-      return 'incident-1';
+      return { incidentId: 'incident-1', incidentStixId: 'incident--1' };
     });
     const recordingIncident = () => {
       const patchRun = vi.mocked(patchAttribute).getMockImplementation();
@@ -441,7 +447,7 @@ describe('Hits counted once across the runs of a hunt', () => {
       expect(heldWhen).toEqual({ find: true, open: true, record: true });
     } finally {
       vi.mocked(withHuntLock).mockImplementation(async (_key, action) => action());
-      vi.mocked(createHuntIncidentInWorkspace).mockImplementation(async () => 'incident-1');
+      vi.mocked(createHuntIncidentInWorkspace).mockImplementation(async () => ({ incidentId: 'incident-1', incidentStixId: 'incident--1' }));
     }
   });
 
@@ -462,7 +468,6 @@ describe('Hits counted once across the runs of a hunt', () => {
     const reports = [
       { hit_keys: [] },
       { hit_keys: [...KEYS.slice(1), 'not a key'] },
-      { hit_keys: KEYS.slice(1), hits_sample: [{ event_id: 'evt-1', host: 'FIN-WS-0142' }] },
     ];
     for (let index = 0; index < reports.length; index += 1) {
       vi.mocked(patchAttribute).mockReset();
@@ -473,6 +478,18 @@ describe('Hits counted once across the runs of a hunt', () => {
       expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
     }
     expect(recordHuntHits).not.toHaveBeenCalled();
+  });
+
+  it('should identify the hits by the reported keys even when the sampled hits carry none of them', async () => {
+    // The connector keys an event over identity fields its sampled preview may not carry: a second run over the
+    // same events is recognized, and opens nothing
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 27 });
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(createHuntIncidentWorkspace).mockClear();
+    loading(autonomous);
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS.slice(1), hits_sample: [{ event_id: 'evt-1', host: 'FIN-WS-0142' }] } as never);
+    expect(finalState()).toMatchObject({ hits_new_count: 0, hits_recurring_count: 28, hits_identified: true });
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
   });
 
   it('should keep the evidence attached while the run was running and add the report to it', async () => {

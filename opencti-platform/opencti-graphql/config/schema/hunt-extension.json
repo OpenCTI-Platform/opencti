@@ -23,7 +23,12 @@
     },
     "hunt_status": { "enum": ["draft", "active", "paused", "retired"] },
     "hunt_source_kind": { "enum": ["analyst", "agent", "hub"], "description": "Who wrote the hunt: an analyst, an agent or the XTM Hub." },
-    "sigma_rule": { "type": "string", "description": "The canonical logic of the hunt, as a Sigma rule in YAML." },
+    "sigma_rule": { "type": "string", "description": "The first Sigma rule of the hunt, in YAML (the first item of sigma_rules)." },
+    "sigma_rules": {
+      "type": "array",
+      "description": "The canonical logic of a detection-rule hunt: Sigma rules in YAML, each translated and run on its own.",
+      "items": { "type": "string" }
+    },
     "native_queries": {
       "type": "array",
       "description": "The logic of the hunt translated for each platform it runs on.",
@@ -34,7 +39,8 @@
           "platform": { "type": "string" },
           "language": { "type": "string" },
           "query": { "type": "string" },
-          "pipeline": { "type": "string", "description": "The Sigma processing pipeline the query was translated with." }
+          "pipeline": { "type": "string", "description": "The Sigma processing pipeline the query was translated with." },
+          "rule_key": { "type": "string", "description": "The Sigma rule this query replaces on its platform: the first 24 hexadecimal characters of the SHA-256 of the trimmed rule. Absent: the first rule." }
         }
       }
     },

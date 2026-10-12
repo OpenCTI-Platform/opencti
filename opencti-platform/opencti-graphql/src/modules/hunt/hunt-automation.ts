@@ -316,8 +316,35 @@ export const reconcileOrphanedHuntRuns = async (context: AuthContext): Promise<n
 };
 
 /**
+ * Whether a preview still waits behind executions its connector received before it and still runs: its timeout counts
+ * from when the connector can read it, never while the connector is busy with earlier runs.
+ */
+export const isQueuedBehindExecutions = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+  if (run.hunt_run_mode !== HUNT_RUN_MODE_PREVIEW || !run.dispatched_at || !run.connector_id) {
+    return false;
+  }
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_QUEUED) {
+    // Started late: the preview timeout counts from its start
+    return !!run.started_at && run.started_at > minutesAgo(HUNT_CONFIG.previewTimeoutMinutes);
+  }
+  const earlier = await elCount(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_HUNT_RUN],
+    filters: andFilters([
+      { key: ['connector_id'], values: [run.connector_id] },
+      { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+      { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
+      { key: ['dispatched_at'], values: [run.dispatched_at], operator: FilterOperator.Lte },
+      { key: ['dispatched_at'], values: [minutesAgo(HUNT_CONFIG.runTimeoutMinutes)], operator: FilterOperator.Gt },
+    ]),
+    noFiltersChecking: true,
+  });
+  return earlier > 0;
+};
+
+/**
  * Runs the platform stops waiting for: dispatched and not reported within the run timeout (the preview timeout for
- * translation previews), or never accepted by a live connector within the queue expiry.
+ * translation previews, counted once the executions sent before it are done), or never accepted by a live connector
+ * within the queue expiry.
  */
 export const expireStaleHuntRuns = async (context: AuthContext): Promise<number> => {
   const active = { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES };
@@ -327,7 +354,7 @@ export const expireStaleHuntRuns = async (context: AuthContext): Promise<number>
   const notDispatched = { key: ['dispatched_at'], values: [], operator: FilterOperator.Nil };
   const dispatchedBefore = (minutes: number) => ({ key: ['dispatched_at'], values: [minutesAgo(minutes)], operator: FilterOperator.Lte });
   const createdBefore = (minutes: number) => ({ key: ['created_at'], values: [minutesAgo(minutes)], operator: FilterOperator.Lte });
-  const phases = [
+  const phases: { filters: FilterGroup['filters']; reason: string; waiting?: (run: BasicStoreEntityHuntRun) => Promise<boolean> }[] = [
     {
       filters: [active, execute, dispatchedBefore(HUNT_CONFIG.runTimeoutMinutes)],
       reason: `The hunt connector did not complete the run within ${HUNT_CONFIG.runTimeoutMinutes} minutes`,
@@ -335,6 +362,8 @@ export const expireStaleHuntRuns = async (context: AuthContext): Promise<number>
     {
       filters: [active, preview, dispatchedBefore(HUNT_CONFIG.previewTimeoutMinutes)],
       reason: `The hunt connector did not translate the query within ${HUNT_CONFIG.previewTimeoutMinutes} minutes`,
+      // A connector reads its queue one message at a time: a preview waits behind the executions sent before it
+      waiting: (run) => isQueuedBehindExecutions(context, run),
     },
     {
       filters: [queued, execute, notDispatched, createdBefore(HUNT_CONFIG.queueExpiryHours * 60)],
@@ -347,10 +376,13 @@ export const expireStaleHuntRuns = async (context: AuthContext): Promise<number>
   ];
   let expired = 0;
   for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex += 1) {
-    const { filters, reason } = phases[phaseIndex];
+    const { filters, reason, waiting } = phases[phaseIndex];
     const runs = await listRuns(context, filters);
     for (let index = 0; index < runs.length; index += 1) {
       try {
+        if (waiting && await waiting(runs[index])) {
+          continue;
+        }
         await expireHuntRun(context, runs[index], reason);
         expired += 1;
       } catch (error) {

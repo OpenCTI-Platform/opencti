@@ -58,6 +58,7 @@ const HUNT_DEFINITION: ModuleDefinition<StoreEntityHunt, StixHunt> = {
     { name: 'hunt_status', label: 'Hunt status', type: 'string', format: 'enum', values: HUNT_STATUSES, defaultValue: 'active', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'hunt_source_kind', label: 'Hunt origin', type: 'string', format: 'enum', values: HUNT_SOURCE_KINDS, defaultValue: 'analyst', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'sigma_rule', label: 'Hunt Sigma rule', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'sigma_rules', label: 'Hunt Sigma rules', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
     { name: 'native_queries', label: 'Hunt native queries', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
     { name: 'hunt_ioc_filters', label: 'Hunt indicator filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'hunt_ioc_values', label: 'Hunt pasted values', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },

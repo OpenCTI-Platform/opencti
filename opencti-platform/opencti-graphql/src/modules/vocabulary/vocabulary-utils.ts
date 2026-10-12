@@ -313,6 +313,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
       key: 'cybercrime',
       description: 'Related to cybercrime.',
     },
+    {
+      key: 'hunting',
+      description: 'Found by a threat hunt.',
+    },
   ],
   incident_severity_ov: [
     { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },

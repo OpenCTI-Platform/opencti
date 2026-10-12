@@ -3,6 +3,7 @@ import { createRelation, patchAttribute } from '../../../../src/database/middlew
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { huntSightingStandardId, upsertHuntSightings } from '../../../../src/modules/hunt/hunt-sightings';
+import { countSightedHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { type BasicStoreEntityHunt, RELATION_HUNT_TECHNIQUES } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
@@ -39,6 +40,12 @@ vi.mock('../../../../src/modules/hunt/hunt-lock', () => ({
   withHuntLock: async <T>(_key: string, action: () => Promise<T>) => action(),
 }));
 
+vi.mock('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain')>(),
+  countSightedHuntHits: vi.fn(async () => 0),
+  countHuntHitRecords: vi.fn(async () => 0),
+}));
+
 const hunt = {
   internal_id: 'hunt-1',
   name: 'Encoded PowerShell',
@@ -65,7 +72,7 @@ const loadWith = (sighting: Record<string, unknown> | null) => {
     if (id === platform.internal_id) {
       return platform;
     }
-    return id === huntSightingStandardId(hunt.internal_id, 'technique-1', platform.internal_id) ? sighting : null;
+    return id === huntSightingStandardId('technique-1', platform.internal_id) ? sighting : null;
   }) as never);
 };
 
@@ -73,6 +80,7 @@ describe('Hunt sightings access', () => {
   beforeEach(() => {
     vi.mocked(createRelation).mockClear();
     vi.mocked(patchAttribute).mockClear();
+    vi.mocked(countSightedHuntHits).mockResolvedValue(0);
     vi.mocked(findByIds).mockResolvedValue([{ internal_id: 'technique-1', entity_type: 'Attack-Pattern' }] as never);
   });
 
@@ -98,8 +106,9 @@ describe('Hunt sightings access', () => {
     });
     const outcome = await upsertHuntSightings({} as AuthContext, hunt, run);
     expect(outcome.updated).toEqual(1);
+    // Hits the run cannot identify may be those already counted: the larger count stays
     expect(patchAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'sighting-1', expect.anything(), expect.objectContaining({
-      attribute_count: 5,
+      attribute_count: 3,
       objectMarking: ['marking-red', 'marking-statement'],
       objectOrganization: ['organization-1'],
     }), expect.anything());
@@ -119,7 +128,7 @@ describe('Hunt sightings access', () => {
     await upsertHuntSightings({} as AuthContext, hunt, lessRestricted);
     expect(patchAttribute).toHaveBeenCalledTimes(1);
     const patch = vi.mocked(patchAttribute).mock.calls[0][4];
-    expect(patch).toEqual(expect.objectContaining({ attribute_count: 5 }));
+    expect(patch).toEqual(expect.objectContaining({ attribute_count: 3 }));
     expect(patch).not.toHaveProperty('objectMarking');
     expect(patch).not.toHaveProperty('objectOrganization');
   });
@@ -176,6 +185,7 @@ describe('Hunt sightings access', () => {
       attribute_count: 3,
       first_seen: '2026-10-05T08:00:00.000Z',
       last_seen: '2026-10-05T09:00:00.000Z',
+      x_opencti_hunt_id: 'hunt-1',
       x_opencti_hunt_run_id: 'run-2',
       [RELATION_OBJECT_MARKING]: ['marking-red'],
       [RELATION_GRANTED_TO]: ['organization-1'],
@@ -183,5 +193,44 @@ describe('Hunt sightings access', () => {
     const outcome = await upsertHuntSightings({} as AuthContext, hunt, run);
     expect(patchAttribute).not.toHaveBeenCalled();
     expect(outcome.ids).toEqual(['sighting--kept']);
+  });
+
+  it('should add nothing to the count when a second run reports the same identified hits', async () => {
+    const stored = {
+      internal_id: 'sighting-1',
+      standard_id: 'sighting--kept',
+      attribute_count: 3,
+      first_seen: '2026-10-05T08:00:00.000Z',
+      last_seen: '2026-10-05T09:00:00.000Z',
+      x_opencti_hunt_id: 'hunt-1',
+      x_opencti_hunt_run_id: 'run-2',
+      [RELATION_OBJECT_MARKING]: ['marking-red'],
+      [RELATION_GRANTED_TO]: ['organization-1'],
+    };
+    loadWith(stored);
+    // The hit records already hold the 3 hits: the second run finds them again
+    vi.mocked(countSightedHuntHits).mockResolvedValue(3);
+    const secondRun = { ...run, internal_id: 'run-3', hits_identified: true } as BasicStoreEntityHuntRun;
+    await upsertHuntSightings({} as AuthContext, hunt, secondRun);
+    expect(patchAttribute).toHaveBeenCalledTimes(1);
+    const patch = vi.mocked(patchAttribute).mock.calls[0][4];
+    // The count is written as it is, never summed with the hits of the second run
+    expect(patch).toEqual(expect.objectContaining({ attribute_count: 3, x_opencti_hunt_run_id: 'run-3' }));
+  });
+
+  it('should name the hunt that found the hits last on a sighting another hunt created', async () => {
+    loadWith({
+      internal_id: 'sighting-1',
+      attribute_count: 3,
+      first_seen: '2026-10-05T08:00:00.000Z',
+      last_seen: '2026-10-05T09:00:00.000Z',
+      x_opencti_hunt_id: 'hunt-0',
+      x_opencti_hunt_run_id: 'run-0',
+      [RELATION_OBJECT_MARKING]: ['marking-red'],
+      [RELATION_GRANTED_TO]: ['organization-1'],
+    });
+    const outcome = await upsertHuntSightings({} as AuthContext, hunt, run);
+    expect(outcome.created).toEqual(0);
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toEqual(expect.objectContaining({ x_opencti_hunt_id: 'hunt-1', x_opencti_hunt_run_id: 'run-2' }));
   });
 });

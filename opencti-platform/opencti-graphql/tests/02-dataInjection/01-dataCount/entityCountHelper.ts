@@ -43,7 +43,7 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 356,
+  Vocabulary: 357,
   EmailTemplate: 1,
   RetentionRule: 4,
   SecurityCoverage: 1,

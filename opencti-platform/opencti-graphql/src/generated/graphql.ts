@@ -11258,8 +11258,12 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   revoked: Scalars['Boolean']['output'];
   runs?: Maybe<HuntRunConnection>;
   scopePlatforms?: Maybe<Array<SecurityPlatform>>;
+  /** The validation of the first Sigma rule */
   sigmaValidation?: Maybe<HuntSigmaValidation>;
+  /** The first Sigma rule of sigma_rules */
   sigma_rule?: Maybe<Scalars['String']['output']>;
+  /** Detection-rule hunts: the Sigma rules, each translated and run on its own */
+  sigma_rules: Array<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   statistics?: Maybe<HuntStatistics>;
@@ -11271,6 +11275,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   time_window_hours: Scalars['Int']['output'];
   toStix?: Maybe<Scalars['String']['output']>;
   toStixBundle?: Maybe<Scalars['String']['output']>;
+  /** The last translation of the current logic on each security platform, the most recent first */
+  translations: Array<HuntTranslation>;
   trigger_filters?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -11501,7 +11507,10 @@ export type HuntAddInput = {
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
+  /** A hunt of one Sigma rule; ignored when sigma_rules is given */
   sigma_rule?: InputMaybe<Scalars['String']['input']>;
+  /** Detection-rule hunts: the Sigma rules, each translated and run on its own */
+  sigma_rules?: InputMaybe<Array<Scalars['String']['input']>>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   time_window_hours?: InputMaybe<Scalars['Int']['input']>;
   trigger_filters?: InputMaybe<Scalars['String']['input']>;
@@ -11575,8 +11584,14 @@ export type HuntConfiguration = {
   __typename?: 'HuntConfiguration';
   /** The observable types a run extracts from its hits when its hunt names none */
   default_expected_observables: Array<Scalars['String']['output']>;
+  /** The most values an indicator hunt run looks up */
+  max_iocs_per_run: Scalars['Int']['output'];
+  /** The malware and tools a threat uses, and the threats attributed to it, followed by a hunt started from it (each list) */
+  max_related_sources: Scalars['Int']['output'];
   /** The most results a hunt asks of the hunt connector in one run */
   max_results_per_run: Scalars['Int']['output'];
+  /** The most Sigma rules a detection-rule hunt holds */
+  max_sigma_rules: Scalars['Int']['output'];
   /** The longest time window a hunt or a run searches, in hours */
   max_time_window_hours: Scalars['Int']['output'];
   min_schedule_interval_minutes: Scalars['Int']['output'];
@@ -11667,6 +11682,8 @@ export type HuntDerivedContent = {
   elements_truncated: Scalars['Boolean']['output'];
   entity: HuntDerivedSource;
   rules: Array<HuntDerivedRule>;
+  /** More detection rules than a hunt holds */
+  rules_truncated: Scalars['Boolean']['output'];
   /** Entities an indicator hunt takes its values from, read again at every run */
   sources: Array<HuntDerivedSource>;
   /** The hunt type the content supports: indicators when indicators or observables are found, telemetry when only detection rules are, null for neither */
@@ -11698,6 +11715,8 @@ export type HuntDerivedRule = {
   name: Scalars['String']['output'];
   pattern: Scalars['String']['output'];
   pattern_type: Scalars['String']['output'];
+  /** The rule is the entity the hunt starts from: listed first, never left out by the limit */
+  pinned: Scalars['Boolean']['output'];
   /** Ids of the techniques of the entity it indicates */
   technique_ids: Array<Scalars['ID']['output']>;
 };
@@ -11708,12 +11727,13 @@ export type HuntDerivedSource = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  /** self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it */
+  /** self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it; flagged: a threat the PIR flags */
   relation: HuntDerivedSourceRelation;
 };
 
 export enum HuntDerivedSourceRelation {
   Attributed = 'attributed',
+  Flagged = 'flagged',
   Self = 'self',
   Uses = 'uses'
 }
@@ -11929,6 +11949,8 @@ export type HuntNativeQuery = {
   pipeline?: Maybe<Scalars['String']['output']>;
   platform: Scalars['String']['output'];
   query: Scalars['String']['output'];
+  /** The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule */
+  rule_key?: Maybe<Scalars['String']['output']>;
 };
 
 export type HuntNativeQueryInput = {
@@ -11936,6 +11958,8 @@ export type HuntNativeQueryInput = {
   pipeline?: InputMaybe<Scalars['String']['input']>;
   platform: Scalars['String']['input'];
   query: Scalars['String']['input'];
+  /** The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule */
+  rule_key?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type HuntPackImportResult = {
@@ -12040,7 +12064,7 @@ export type HuntRun = BasicObject & InternalObject & {
   hits_new_count?: Maybe<Scalars['Int']['output']>;
   /** Hits earlier runs of the hunt already found on this platform */
   hits_recurring_count?: Maybe<Scalars['Int']['output']>;
-  /** One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample */
+  /** One evidence item per hit (a sample of hits_count: one per value or rule and victim first, then the earliest), in time order */
   hits_sample?: Maybe<Array<HuntHit>>;
   /** The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it */
   hunt?: Maybe<Hunt>;
@@ -12056,6 +12080,8 @@ export type HuntRun = BasicObject & InternalObject & {
   incident_continued?: Maybe<Scalars['Boolean']['output']>;
   incident_id?: Maybe<Scalars['String']['output']>;
   incident_proposal?: Maybe<Scalars['String']['output']>;
+  /** STIX id of the incident of the run: it still finds the incident once its draft is validated */
+  incident_stix_id?: Maybe<Scalars['String']['output']>;
   /** Indicator hunts: one result per value looked up */
   ioc_results?: Maybe<Array<HuntIocResult>>;
   last_evidence_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12074,7 +12100,10 @@ export type HuntRun = BasicObject & InternalObject & {
   results?: Maybe<StixObjectOrStixRelationshipConnection>;
   /** What the run produced: its results counted by kind, over the same objects as results */
   results_summary: HuntRunResultsSummary;
+  /** The platform returned partial results (hits_count is a lower bound), never the cap of the hit sample */
   results_truncated?: Maybe<Scalars['Boolean']['output']>;
+  /** Detection-rule hunts: one result per Sigma rule, null when the connector ran the first rule only */
+  rule_results?: Maybe<Array<HuntRunRuleResult>>;
   securityPlatform?: Maybe<SecurityPlatform>;
   security_coverage_id?: Maybe<Scalars['String']['output']>;
   security_platform_id?: Maybe<Scalars['String']['output']>;
@@ -12138,6 +12167,19 @@ export enum HuntRunMode {
   Preview = 'preview'
 }
 
+/** Every hit of the run for one value (or rule) on one victim host, never a sample */
+export type HuntRunObservationInput = {
+  first_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  /** Keys of the hits of the group (same rule as hit_keys of the report), null when they cannot be told apart */
+  hit_keys?: InputMaybe<Array<Scalars['String']['input']>>;
+  hits_count: Scalars['Int']['input'];
+  /** Victim host, null when the hits name none */
+  host?: InputMaybe<Scalars['String']['input']>;
+  /** Key of the value (indicator hunts) or of the rule (detection-rule hunts) in the run message */
+  key: Scalars['String']['input'];
+  last_seen?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
 export type HuntRunReportInput = {
   cost_ms?: InputMaybe<Scalars['Int']['input']>;
   distinct_entities?: InputMaybe<Scalars['Int']['input']>;
@@ -12153,10 +12195,14 @@ export type HuntRunReportInput = {
   /** Indicator hunts: the result of each value of the run message */
   ioc_results?: InputMaybe<Array<HuntIocResultInput>>;
   last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  /** The hits of the run grouped by value (or rule) and victim host, over every hit read: the counts and dates of the observed data and sightings */
+  observations?: InputMaybe<Array<HuntRunObservationInput>>;
   query_language?: InputMaybe<Scalars['String']['input']>;
   result_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried */
   retryable?: InputMaybe<Scalars['Boolean']['input']>;
+  /** Detection-rule hunts: the result of each Sigma rule of the run message, in its order */
+  rule_results?: InputMaybe<Array<HuntRunRuleResultInput>>;
   status: HuntRunStatus;
   translated_query?: InputMaybe<Scalars['String']['input']>;
   truncated?: InputMaybe<Scalars['Boolean']['input']>;
@@ -12171,6 +12217,39 @@ export type HuntRunResultsSummary = {
   /** Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt */
   others: Scalars['Int']['output'];
   sightings: Scalars['Int']['output'];
+};
+
+/** What one Sigma rule of a detection-rule hunt run translated to and found */
+export type HuntRunRuleResult = {
+  __typename?: 'HuntRunRuleResult';
+  error?: Maybe<Scalars['String']['output']>;
+  first_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  hits_count: Scalars['Int']['output'];
+  /** Key of the rule (first 24 hexadecimal characters of the SHA-256 of the trimmed rule) */
+  key: Scalars['String']['output'];
+  last_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  query_language?: Maybe<Scalars['String']['output']>;
+  /** completed, or failed with its error: the other rules of the run still ran */
+  status: HuntRunStatus;
+  title?: Maybe<Scalars['String']['output']>;
+  translated_query?: Maybe<Scalars['String']['output']>;
+  /** The platform returned partial results for the rule */
+  truncated: Scalars['Boolean']['output'];
+};
+
+/** What one Sigma rule of the run message translated to and found */
+export type HuntRunRuleResultInput = {
+  error?: InputMaybe<Scalars['String']['input']>;
+  first_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  hits_count?: InputMaybe<Scalars['Int']['input']>;
+  /** Key of the rule in the run message */
+  key: Scalars['String']['input'];
+  last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  query_language?: InputMaybe<Scalars['String']['input']>;
+  status: HuntRunStatus;
+  title?: InputMaybe<Scalars['String']['input']>;
+  translated_query?: InputMaybe<Scalars['String']['input']>;
+  truncated?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type HuntRunStartInput = {
@@ -12297,6 +12376,29 @@ export enum HuntTechniqueValidationStatus {
   NotDetected = 'not_detected',
   NotValidated = 'not_validated',
   Validated = 'validated'
+}
+
+/** The last translation of the current logic of a hunt on a security platform, by a translation preview or a run */
+export type HuntTranslation = {
+  __typename?: 'HuntTranslation';
+  connector_name?: Maybe<Scalars['String']['output']>;
+  error?: Maybe<Scalars['String']['output']>;
+  query_language?: Maybe<Scalars['String']['output']>;
+  /** Detection-rule hunts: the translation of each Sigma rule */
+  rules: Array<HuntRunRuleResult>;
+  run_id: Scalars['String']['output'];
+  securityPlatform?: Maybe<SecurityPlatform>;
+  security_platform_id?: Maybe<Scalars['String']['output']>;
+  state: HuntTranslationState;
+  translated_at?: Maybe<Scalars['DateTime']['output']>;
+  /** The queries of the rules, each after a comment line naming its rule */
+  translated_query?: Maybe<Scalars['String']['output']>;
+};
+
+export enum HuntTranslationState {
+  Checking = 'checking',
+  Failed = 'failed',
+  Translated = 'translated'
 }
 
 export enum HuntType {
@@ -42586,8 +42688,11 @@ export type ResolversTypes = ResolversObject<{
   HuntRunEdge: ResolverTypeWrapper<Omit<HuntRunEdge, 'node'> & { node: ResolversTypes['HuntRun'] }>;
   HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
   HuntRunMode: HuntRunMode;
+  HuntRunObservationInput: HuntRunObservationInput;
   HuntRunReportInput: HuntRunReportInput;
   HuntRunResultsSummary: ResolverTypeWrapper<HuntRunResultsSummary>;
+  HuntRunRuleResult: ResolverTypeWrapper<HuntRunRuleResult>;
+  HuntRunRuleResultInput: HuntRunRuleResultInput;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunStatus: HuntRunStatus;
   HuntRunTrigger: HuntRunTrigger;
@@ -42602,6 +42707,8 @@ export type ResolversTypes = ResolversObject<{
   HuntStatus: HuntStatus;
   HuntTechniqueValidation: ResolverTypeWrapper<HuntTechniqueValidation>;
   HuntTechniqueValidationStatus: HuntTechniqueValidationStatus;
+  HuntTranslation: ResolverTypeWrapper<Omit<HuntTranslation, 'securityPlatform'> & { securityPlatform?: Maybe<ResolversTypes['SecurityPlatform']> }>;
+  HuntTranslationState: HuntTranslationState;
   HuntType: HuntType;
   HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
   HuntValidation: ResolverTypeWrapper<Omit<HuntValidation, 'runs'> & { runs: Array<ResolversTypes['HuntRun']> }>;
@@ -43786,8 +43893,11 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRunConnection: Omit<HuntRunConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntRunEdge']> };
   HuntRunEdge: Omit<HuntRunEdge, 'node'> & { node: ResolversParentTypes['HuntRun'] };
   HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
+  HuntRunObservationInput: HuntRunObservationInput;
   HuntRunReportInput: HuntRunReportInput;
   HuntRunResultsSummary: HuntRunResultsSummary;
+  HuntRunRuleResult: HuntRunRuleResult;
+  HuntRunRuleResultInput: HuntRunRuleResultInput;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
   HuntSigmaValidation: SigmaValidation;
@@ -43795,6 +43905,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntStatisticsBucket: HuntStatisticsBucket;
   HuntStatisticsPoint: HuntStatisticsPoint;
   HuntTechniqueValidation: HuntTechniqueValidation;
+  HuntTranslation: Omit<HuntTranslation, 'securityPlatform'> & { securityPlatform?: Maybe<ResolversParentTypes['SecurityPlatform']> };
   HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
   HuntValidation: Omit<HuntValidation, 'runs'> & { runs: Array<ResolversParentTypes['HuntRun']> };
   ICCID: Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -48353,6 +48464,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   scopePlatforms?: Resolver<Maybe<Array<ResolversTypes['SecurityPlatform']>>, ParentType, ContextType>;
   sigmaValidation?: Resolver<Maybe<ResolversTypes['HuntSigmaValidation']>, ParentType, ContextType>;
   sigma_rule?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sigma_rules?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   statistics?: Resolver<Maybe<ResolversTypes['HuntStatistics']>, ParentType, ContextType, Partial<HuntStatisticsArgs>>;
@@ -48364,6 +48476,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HuntToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  translations?: Resolver<Array<ResolversTypes['HuntTranslation']>, ParentType, ContextType>;
   trigger_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -48399,7 +48512,10 @@ export type HuntAssistanceResolvers<ContextType = any, ParentType extends Resolv
 
 export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
   default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  max_iocs_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_related_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_results_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_sigma_rules?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   schedule_lookback_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -48445,6 +48561,7 @@ export type HuntDerivedContentResolvers<ContextType = any, ParentType extends Re
   elements_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity?: Resolver<ResolversTypes['HuntDerivedSource'], ParentType, ContextType>;
   rules?: Resolver<Array<ResolversTypes['HuntDerivedRule']>, ParentType, ContextType>;
+  rules_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   sources?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
   suggested_type?: Resolver<Maybe<ResolversTypes['HuntType']>, ParentType, ContextType>;
   targets?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
@@ -48466,6 +48583,7 @@ export type HuntDerivedRuleResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pattern?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pattern_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pinned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   technique_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
 }>;
 
@@ -48587,6 +48705,7 @@ export type HuntNativeQueryResolvers<ContextType = any, ParentType extends Resol
   pipeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   query?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rule_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type HuntPackImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntPackImportResult'] = ResolversParentTypes['HuntPackImportResult']> = ResolversObject<{
@@ -48655,6 +48774,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   incident_continued?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   incident_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   incident_proposal?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  incident_stix_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ioc_results?: Resolver<Maybe<Array<ResolversTypes['HuntIocResult']>>, ParentType, ContextType>;
   last_evidence_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48671,6 +48791,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   results?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<HuntRunResultsArgs>>;
   results_summary?: Resolver<ResolversTypes['HuntRunResultsSummary'], ParentType, ContextType>;
   results_truncated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  rule_results?: Resolver<Maybe<Array<ResolversTypes['HuntRunRuleResult']>>, ParentType, ContextType>;
   securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
   security_coverage_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   security_platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48712,6 +48833,19 @@ export type HuntRunResultsSummaryResolvers<ContextType = any, ParentType extends
   observed_data?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   others?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sightings?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntRunRuleResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunRuleResult'] = ResolversParentTypes['HuntRunRuleResult']> = ResolversObject<{
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  first_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hits_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntRunStatus'], ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  translated_query?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type HuntSigmaValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaValidation'] = ResolversParentTypes['HuntSigmaValidation']> = ResolversObject<{
@@ -48759,6 +48893,19 @@ export type HuntTechniqueValidationResolvers<ContextType = any, ParentType exten
   emulation_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['HuntTechniqueValidationStatus'], ParentType, ContextType>;
   technique_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntTranslationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntTranslation'] = ResolversParentTypes['HuntTranslation']> = ResolversObject<{
+  connector_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['HuntRunRuleResult']>, ParentType, ContextType>;
+  run_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
+  security_platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['HuntTranslationState'], ParentType, ContextType>;
+  translated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  translated_query?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type HuntValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntValidation'] = ResolversParentTypes['HuntValidation']> = ResolversObject<{
@@ -57469,11 +57616,13 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntRunConnection?: HuntRunConnectionResolvers<ContextType>;
   HuntRunEdge?: HuntRunEdgeResolvers<ContextType>;
   HuntRunResultsSummary?: HuntRunResultsSummaryResolvers<ContextType>;
+  HuntRunRuleResult?: HuntRunRuleResultResolvers<ContextType>;
   HuntSigmaValidation?: HuntSigmaValidationResolvers<ContextType>;
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
   HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;
   HuntStatisticsPoint?: HuntStatisticsPointResolvers<ContextType>;
   HuntTechniqueValidation?: HuntTechniqueValidationResolvers<ContextType>;
+  HuntTranslation?: HuntTranslationResolvers<ContextType>;
   HuntValidation?: HuntValidationResolvers<ContextType>;
   ICCID?: IccidResolvers<ContextType>;
   IMEI?: ImeiResolvers<ContextType>;

@@ -72,7 +72,9 @@ import {
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
   HUNT_MAX_ESCALATION_THRESHOLD,
   normalizeNativeQueries,
+  normalizeSigmaRules,
   sharedOrganizations,
+  storedSigmaRules,
 } from './hunt-utils';
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
 import {
@@ -158,18 +160,48 @@ const resolveTechniqueIds = async (context: AuthContext, user: AuthUser, values:
   return [...otherIds, ...byAttackId.map((technique) => technique.internal_id)];
 };
 
-/** The techniques a hunt is linked to: the ones given, else those its Sigma rule is tagged with. */
+/** The techniques a hunt is linked to: the ones given, else those its Sigma rules are tagged with. */
 const huntTechniqueIds = async (context: AuthContext, user: AuthUser, input: HuntAddInput) => {
   let techniques = input.huntTechniques ?? [];
-  if (techniques.length === 0 && input.sigma_rule) {
-    techniques = validateSigmaRule(input.sigma_rule).attack_techniques;
+  if (techniques.length === 0) {
+    techniques = Array.from(new Set(inputSigmaRules(input).flatMap((rule) => validateSigmaRule(rule).attack_techniques)));
   }
   return techniques.length > 0 ? resolveTechniqueIds(context, user, techniques) : [];
 };
 
+/** The Sigma rules of an input: its list, else its single rule (the clients that write one rule). */
+const inputSigmaRules = (input: Pick<HuntAddInput, 'sigma_rule' | 'sigma_rules'>) => {
+  return normalizeSigmaRules(input.sigma_rules && input.sigma_rules.length > 0 ? input.sigma_rules : [input.sigma_rule ?? null]);
+};
+
+/**
+ * The edits of the Sigma rules of a hunt with both forms kept in step: a list written sets the single rule to its first
+ * rule, a single rule written replaces the first rule of the list (the only one for the clients that write one).
+ */
+const syncSigmaRuleEdits = async (context: AuthContext, user: AuthUser, huntId: string, inputs: EditInput[]): Promise<EditInput[]> => {
+  const listEdit = inputs.find((editInput) => editInput.key === 'sigma_rules');
+  const singleEdit = inputs.find((editInput) => editInput.key === 'sigma_rule');
+  const others = inputs.filter((editInput) => editInput.key !== 'sigma_rules' && editInput.key !== 'sigma_rule');
+  let rules: string[];
+  if (listEdit) {
+    rules = normalizeSigmaRules(listEdit.value ?? []);
+  } else if (singleEdit) {
+    const current = await findHuntById(context, user, huntId);
+    const [first] = normalizeSigmaRules(singleEdit.value ?? []);
+    const rest = storedSigmaRules(current ?? {}).slice(1);
+    rules = normalizeSigmaRules(first ? [first, ...rest] : rest);
+  } else {
+    return inputs;
+  }
+  return [...others, { key: 'sigma_rules', value: rules }, { key: 'sigma_rule', value: [rules[0] ?? ''] }];
+};
+
 export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, input: HuntAddInput): Promise<HuntAddInput> => {
+  const sigmaRules = inputSigmaRules(input);
   const normalized: HuntAddInput = {
     ...input,
+    sigma_rules: sigmaRules,
+    sigma_rule: sigmaRules[0] ?? input.sigma_rule,
     hunt_type: input.hunt_type ?? HuntType.Telemetry,
     hunt_source_kind: input.hunt_source_kind ?? HuntSourceKind.Analyst,
     hunt_status: input.hunt_status ?? HuntStatus.Active,
@@ -211,9 +243,9 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
   if (!context.draft_context) {
     await refreshNextRunAt(context, created);
   }
-  // A hunt created explicitly active is activated: its translation is checked as on any activation
-  const activated = input.hunt_status === HuntStatus.Active && created.hunt_status === HUNT_STATUS_ACTIVE && opts.upsertedStatus !== HUNT_STATUS_ACTIVE;
-  if (!context.draft_context && !replicated && activated) {
+  // The translation of a new logic is checked on every platform of its scope as soon as it is saved, draft or active:
+  // the checklist and the Logic tab tell whether each platform can run it before the hunt is activated
+  if (!context.draft_context && !replicated) {
     await startHuntTranslationCheck(context, user, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
@@ -314,6 +346,9 @@ const withHuntStateLock = async <T>(context: AuthContext, user: AuthUser, huntId
   return withHuntLock(huntStateLockKey(hunt?.internal_id ?? huntId), action);
 };
 
+// A change of these fields changes what the connectors translate, or the platforms they translate it for
+const HUNT_TRANSLATED_FIELDS = ['sigma_rule', 'sigma_rules', 'native_queries', 'hunt_type', 'hunt_scope'];
+
 export const huntEditField = async (
   context: AuthContext,
   user: AuthUser,
@@ -321,7 +356,7 @@ export const huntEditField = async (
   rawInput: InputMaybe<EditInput>[],
   opts: { commitMessage?: string | null; references?: InputMaybe<string>[] | null } = {},
 ) => {
-  const input = rawInput.filter((editInput): editInput is EditInput => !!editInput);
+  const input = await syncSigmaRuleEdits(context, user, huntId, rawInput.filter((editInput): editInput is EditInput => !!editInput));
   const normalizedInput = input.map((editInput) => {
     if (editInput.key === 'native_queries') {
       return { ...editInput, value: normalizeNativeQueries(editInput.value) };
@@ -352,7 +387,7 @@ export const huntEditField = async (
   if (!context.draft_context && input.some((editInput) => ['hunt_schedule', 'hunt_status'].includes(editInput.key))) {
     await refreshNextRunAt(context, updated);
   }
-  if (activated) {
+  if (activated || input.some((editInput) => HUNT_TRANSLATED_FIELDS.includes(editInput.key))) {
     await startHuntTranslationCheck(context, user, updated);
   }
   return updated;

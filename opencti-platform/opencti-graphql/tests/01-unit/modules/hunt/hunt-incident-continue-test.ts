@@ -8,8 +8,11 @@ import {
   createHuntIncidentInWorkspace,
   createHuntIncidentWorkspace,
   findOpenHuntIncident,
+  HUNT_INCIDENT_TYPE,
   huntIncidentStixId,
+  resolveHuntRunIncidentLink,
 } from '../../../../src/modules/hunt/hunt-incident';
+import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftStatuses';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INCIDENT } from '../../../../src/schema/stixDomainObject';
@@ -74,7 +77,7 @@ describe('Hunt incident continued by a later run', () => {
   });
 
   it('should restrict the note of the later run like the run', async () => {
-    await continueHuntIncident({} as AuthContext, hunt, run, { incidentId: 'incident-1', draftId: null });
+    await continueHuntIncident({} as AuthContext, hunt, run, { incidentId: 'incident-1', incidentStixId: 'incident--1', draftId: null });
     expect(createEntity).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({
       attribute_abstract: 'Encoded PowerShell - 3 new hits in a later run',
       objects: ['incident-1'],
@@ -85,7 +88,7 @@ describe('Hunt incident continued by a later run', () => {
 
   it('should leave the note of a run shared with no organization unrestricted by organization', async () => {
     const unshared = { ...run, [RELATION_GRANTED_TO]: undefined } as unknown as BasicStoreEntityHuntRun;
-    await continueHuntIncident({} as AuthContext, hunt, unshared, { incidentId: 'incident-1', draftId: null });
+    await continueHuntIncident({} as AuthContext, hunt, unshared, { incidentId: 'incident-1', incidentStixId: 'incident--1', draftId: null });
     expect(createEntity).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ objectOrganization: [] }), ENTITY_TYPE_CONTAINER_NOTE);
   });
 });
@@ -109,10 +112,10 @@ describe('Open hunt incident a later run continues', () => {
 
   it('should continue an incident whose readers can all read the run', async () => {
     openIncident({ [RELATION_OBJECT_MARKING]: ['marking-red'], [RELATION_GRANTED_TO]: ['organization-1'] });
-    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', draftId: null });
+    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', incidentStixId: 'incident--1', draftId: null });
     // Shared with no organization, the incident is read by the platform organization only
     openIncident({ [RELATION_OBJECT_MARKING]: ['marking-red'] });
-    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', draftId: null });
+    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', incidentStixId: 'incident--1', draftId: null });
   });
 
   it('should give the run an incident of its own when a reader of the open one could not read the run', async () => {
@@ -122,7 +125,40 @@ describe('Open hunt incident a later run continues', () => {
     expect(await findOpenHuntIncident({} as AuthContext, run)).toBeNull();
     // Without a platform organization, organizations do not restrict reading
     vi.mocked(getEntityFromCache).mockResolvedValue({} as never);
-    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', draftId: null });
+    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-1', incidentStixId: 'incident--1', draftId: null });
+  });
+});
+
+describe('Hunt incident found again after its draft was validated', () => {
+  const validated = { internal_id: 'run-1', incident_id: 'incident-draft', incident_stix_id: 'incident--9', draft_id: 'draft-1' };
+  const loadValidated = (draftStatus: string) => {
+    vi.mocked(internalLoadById).mockImplementation((async (_context: AuthContext, _user: unknown, id: string) => {
+      if (id === 'draft-1') {
+        return { internal_id: 'draft-1', draft_status: draftStatus };
+      }
+      // The validated draft published the incident under its STIX id, with another internal id
+      return id === 'incident--9' ? { internal_id: 'incident-live', standard_id: 'incident--9', [RELATION_OBJECT_MARKING]: ['marking-red'] } : null;
+    }) as never);
+  };
+
+  beforeEach(() => {
+    vi.mocked(getEntityFromCache).mockResolvedValue({} as never);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['marking-red', { internal_id: 'marking-red', definition_type: 'TLP', x_opencti_order: 4 }]]) as never);
+  });
+
+  it('should continue the published incident, found by its STIX id', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValue([validated] as never);
+    loadValidated('validated');
+    expect(await findOpenHuntIncident({} as AuthContext, run)).toEqual({ incidentId: 'incident-live', incidentStixId: 'incident--9', draftId: null });
+  });
+
+  it('should link a run to its incident in the knowledge once the draft is validated, and in the draft while it is open', async () => {
+    loadValidated('validated');
+    const linked = { ...run, ...validated, internal_id: 'run-9' } as unknown as BasicStoreEntityHuntRun;
+    expect(await resolveHuntRunIncidentLink({} as AuthContext, {} as never, linked)).toEqual({ incident_id: 'incident-live', draft_id: null });
+    loadValidated(DRAFT_STATUS_OPEN);
+    const inDraft = { ...linked } as BasicStoreEntityHuntRun;
+    expect(await resolveHuntRunIncidentLink({} as AuthContext, {} as never, inDraft)).toEqual({ incident_id: 'incident-draft', draft_id: 'draft-1' });
   });
 });
 
@@ -165,5 +201,17 @@ describe('Incident of a run opened again after a failed attempt', () => {
     expect(stixIds).toEqual([huntIncidentStixId(run), huntIncidentStixId(run)]);
     expect(huntIncidentStixId(run)).toMatch(/^incident--[0-9a-f-]{36}$/);
     expect(huntIncidentStixId({ internal_id: 'run-3' })).not.toEqual(huntIncidentStixId(run));
+  });
+
+  it('should open an incident of the hunting type, and return the STIX id it keeps once its draft is validated', async () => {
+    vi.mocked(createEntity).mockImplementation((async (_context: AuthContext, _user: unknown, input: Record<string, unknown>, type: string) => (type === ENTITY_TYPE_INCIDENT
+      ? { internal_id: 'incident-draft', standard_id: input.stix_id }
+      : { internal_id: 'note-1' })) as never);
+    const created = await createHuntIncidentInWorkspace({} as AuthContext, hunt, run, null, 'draft-1');
+    expect(created).toEqual({ incidentId: 'incident-draft', incidentStixId: huntIncidentStixId(run) });
+    const incidentInput = vi.mocked(createEntity).mock.calls.find((call) => call[3] === ENTITY_TYPE_INCIDENT)?.[2] as Record<string, unknown>;
+    expect(incidentInput.incident_type).toEqual(HUNT_INCIDENT_TYPE);
+    expect(HUNT_INCIDENT_TYPE).toEqual('hunting');
+    vi.mocked(createEntity).mockImplementation((async () => ({ internal_id: 'note-1' })) as never);
   });
 });

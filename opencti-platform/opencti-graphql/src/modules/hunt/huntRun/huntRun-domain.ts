@@ -39,7 +39,9 @@ import {
   type HuntConnectorRegisterInput,
   type HuntRunEvidenceAddInput,
   type HuntRunReportInput,
+  type HuntRunRuleResult,
   type HuntRunVerdictInput,
+  type HuntTranslationState as HuntTranslationStateValue,
 } from '../../../generated/graphql';
 import { HUNT_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../../utils/access';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
@@ -67,6 +69,8 @@ import {
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
   huntRunRestrictions,
   huntHitDates,
+  huntSigmaRules,
+  type HuntObservationInputLike,
   identifyingHitKeys,
   markMatchedEvidence,
   mergeEvidence,
@@ -74,6 +78,8 @@ import {
   sanitizeEvidence,
   sanitizeHitKeys,
   sanitizeHits,
+  sanitizeObservations,
+  sanitizeRuleResults,
   shareAccessDecision,
   splitHitsByKeys,
   techniqueValidationStatus,
@@ -82,7 +88,6 @@ import {
 import { huntLogicError } from '../hunt-validators';
 import { HUNT_MESSAGES, renderHuntMessage } from '../hunt-messages';
 import {
-  findHuntTranslation,
   findHuntTranslations,
   findUnresolvedHuntTechniques,
   type HuntTranslation,
@@ -104,8 +109,8 @@ import {
   parseIncidentProposal,
 } from '../hunt-incident';
 import { createHuntHitObservations } from '../hunt-hit-observations';
-import { upsertHuntSightings } from '../hunt-sightings';
-import { isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
+import { huntSightedIdsByHit, resolveHuntSightingTargets, upsertHuntSightings } from '../hunt-sightings';
+import { findHitKeysNewOnPlatform, isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -138,6 +143,8 @@ import {
   HUNT_VERDICT_SOURCE_AUTO,
   HUNT_VERDICT_SOURCES,
   HUNT_VERDICT_TRUE_POSITIVE,
+  type HuntIocResult,
+  type HuntObservation,
   type HuntPlaybookContext,
 } from './huntRun-types';
 
@@ -164,13 +171,35 @@ export const findHuntRunById = (context: AuthContext, user: AuthUser, id: string
   return storeLoadById<BasicStoreEntityHuntRun>(context, user, id, ENTITY_TYPE_HUNT_RUN);
 };
 
+// Translation previews are not runs: the lists of runs leave them out unless they are asked for by their mode, the
+// Logic tab of a hunt shows its last translation on each platform (Hunt.translations)
+const withoutPreviews = (filters: FilterGroup | undefined | null) => {
+  return JSON.stringify(filters ?? {}).includes('"hunt_run_mode"') ? filters ?? undefined : addFilter(filters ?? undefined, 'hunt_run_mode', HUNT_RUN_MODE_EXECUTE);
+};
+
 export const findHuntRunsPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityHuntRun>) => {
-  return pageEntitiesConnection<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], args);
+  return pageEntitiesConnection<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { ...args, filters: withoutPreviews(args.filters as FilterGroup | undefined) });
 };
 
 export const findHuntRunsForHunt = (context: AuthContext, user: AuthUser, huntId: string, args: EntityOptions<BasicStoreEntityHuntRun>) => {
   const filters = addFilter(args.filters as FilterGroup | undefined, 'hunt_id', huntId);
   return findHuntRunsPaginated(context, user, { orderBy: 'created_at', orderMode: OrderingMode.Desc, ...args, filters });
+};
+
+/** The last translation of the current logic of a hunt on each security platform, for its Logic tab. */
+export const findHuntTranslationsView = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
+  const translations = await findHuntTranslations(context, user, hunt);
+  return translations.map(({ state, run }) => ({
+    security_platform_id: run.security_platform_id ?? null,
+    connector_name: run.connector_name ?? null,
+    state: state as HuntTranslationStateValue,
+    translated_query: run.translated_query ?? null,
+    query_language: run.query_language ?? null,
+    error: state === 'failed' ? run.error_message ?? null : null,
+    rules: (run.rule_results ?? []) as HuntRunRuleResult[],
+    translated_at: run.completed_at ?? null,
+    run_id: run.internal_id,
+  }));
 };
 
 /** What the results of a run hold, by kind. */
@@ -397,7 +426,7 @@ export const huntRunNewHits = (run: Pick<BasicStoreEntityHuntRun, 'hits_new_coun
 // The tagged techniques a run reports as not found: a lookup that fails reports none rather than blocking the run
 const findRunUnresolvedTechniques = async (context: AuthContext, hunt: BasicStoreEntityHunt) => {
   try {
-    const unresolved = await findUnresolvedHuntTechniques(context, HUNT_MANAGER_USER, hunt.sigma_rule);
+    const unresolved = await findUnresolvedHuntTechniques(context, HUNT_MANAGER_USER, huntSigmaRules(hunt));
     if (unresolved.length > 0) {
       logApp.info('[OPENCTI-MODULE] Hunt run tagged techniques not found in the knowledge base', { huntId: hunt.internal_id, count: unresolved.length });
     }
@@ -476,7 +505,16 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
     targets = targets.filter((target) => !target.securityPlatform || !request.excludedSecurityPlatformIds?.includes(target.securityPlatform.internal_id));
   }
   if (mode === HUNT_RUN_MODE_PREVIEW) {
-    targets = targets.filter((target) => target.connector.hunt_supports_preview !== false).slice(0, 1);
+    // One translation per security platform, each translating to the language of its platform
+    const previewed = new Set<string>();
+    targets = targets.filter((target) => {
+      const platformKey = target.securityPlatform?.internal_id ?? target.connector.internal_id;
+      if (target.connector.hunt_supports_preview === false || previewed.has(platformKey)) {
+        return false;
+      }
+      previewed.add(platformKey);
+      return true;
+    });
   }
   const windowEnd = request.windowEnd ? new Date(request.windowEnd) : new Date();
   const hours = clampInteger(request.timeWindowHours ?? hunt.time_window_hours, 1, HUNT_CONFIG.maxTimeWindowHours, HUNT_DEFAULT_TIME_WINDOW_HOURS);
@@ -673,42 +711,58 @@ export const startHuntRuns = async (
   return creation.runs;
 };
 
+/**
+ * Translation previews of the current logic of a hunt on the platforms whose translation of this logic is not known
+ * yet: a logic a preview or a run already translated (or failed to translate for good) on a platform is never sent
+ * again, its last translation answers. Returns the previews created and the translations already known.
+ */
+const previewUnknownTranslations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, securityPlatformIds: string[]) => {
+  const known = await findHuntTranslations(context, user, hunt, securityPlatformIds);
+  const knownPlatformIds = known.map((translation) => translation.run.security_platform_id).filter((id): id is string => !!id);
+  // Internet infrastructure hunts run on no security platform: one known translation answers for all their connectors
+  if (known.some((translation) => !translation.run.security_platform_id)) {
+    return { created: [], known };
+  }
+  const created = await createHuntRuns(context, hunt, {
+    trigger: HUNT_RUN_TRIGGER_PREVIEW,
+    mode: HUNT_RUN_MODE_PREVIEW,
+    securityPlatformIds,
+    excludedSecurityPlatformIds: knownPlatformIds,
+    triggeredBy: user.id,
+    requester: user,
+  });
+  return { created, known };
+};
+
 export const startHuntPreview = async (context: AuthContext, user: AuthUser, huntId: string, securityPlatformId?: string | null) => {
   const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
   if (!hunt) {
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
   await checkHuntEditAccess(context, user, hunt);
-  const runs = await createHuntRuns(context, hunt, {
-    trigger: HUNT_RUN_TRIGGER_PREVIEW,
-    mode: HUNT_RUN_MODE_PREVIEW,
-    securityPlatformIds: securityPlatformId ? [securityPlatformId] : [],
-    triggeredBy: user.id,
-    requester: user,
-  });
-  if (runs.length === 0) {
+  const { created, known } = await previewUnknownTranslations(context, user, hunt, securityPlatformId ? [securityPlatformId] : []);
+  const run = created[0] ?? known[0]?.run;
+  if (!run) {
     throw FunctionalError('No live hunt connector supporting translation preview serves a platform you can access', { huntId, securityPlatformId });
   }
-  return runs[0];
+  return run;
 };
 
 /**
- * The translation preview of an activated hunt whose current logic no run has translated yet: its result reaches the
- * translation item of the readiness of the hunt. Best effort, the activation never depends on it: a hunt without a
- * preview connector on its scope is activated all the same.
+ * The translation previews of a hunt whose current logic is not translated yet on every platform of its scope, started
+ * when the hunt is created and when its logic or scope changes: their results reach the translation item of the
+ * readiness of the hunt and its Logic tab. Best effort, nothing waits for them: a hunt without a preview connector on
+ * its scope is saved all the same.
  */
 export const startHuntTranslationCheck = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
-  if (context.draft_context || hunt.hunt_type === HUNT_TYPE_INDICATORS) {
+  if (context.draft_context || hunt.hunt_type === HUNT_TYPE_INDICATORS || huntLogicError(hunt)) {
     return null;
   }
   try {
-    if (await findHuntTranslation(context, user, hunt)) {
-      return null;
-    }
-    const runs = await createHuntRuns(context, hunt, { trigger: HUNT_RUN_TRIGGER_PREVIEW, mode: HUNT_RUN_MODE_PREVIEW, triggeredBy: user.id, requester: user });
-    return runs[0] ?? null;
+    const { created } = await previewUnknownTranslations(context, user, hunt, []);
+    return created[0] ?? null;
   } catch (error) {
-    logApp.warn('[OPENCTI-MODULE] Hunt translation check at activation skipped', { cause: error, huntId: hunt.internal_id });
+    logApp.warn('[OPENCTI-MODULE] Hunt translation check skipped', { cause: error, huntId: hunt.internal_id });
     return null;
   }
 };
@@ -856,11 +910,11 @@ const escalateHuntRun = async (
   const open: OpenHuntIncident | null = run.draft_id ? null : await findOpenHuntIncident(context, run);
   if (open) {
     await continueHuntIncident(context, hunt, run, open);
-    return patchHuntRun(context, run, { incident_id: open.incidentId, draft_id: open.draftId, incident_continued: true });
+    return patchHuntRun(context, run, { incident_id: open.incidentId, incident_stix_id: open.incidentStixId, draft_id: open.draftId, incident_continued: true });
   }
   const current = run.draft_id ? run : await createHuntIncidentWorkspace(context, run, (draftId) => patchHuntRun(context, run, { draft_id: draftId }));
-  const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
-  return patchHuntRun(context, current, { incident_id: incidentId, incident_continued: false });
+  const { incidentId, incidentStixId } = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
+  return patchHuntRun(context, current, { incident_id: incidentId, incident_stix_id: incidentStixId, incident_continued: false });
 });
 
 /**
@@ -888,7 +942,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     }
   };
   // The hits as knowledge first: the incident relates to them
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_sample ?? []).length > 0 && (current.hit_observation_ids ?? []).length === 0) {
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) > 0 && (current.hit_observation_ids ?? []).length === 0) {
     try {
       const { observedDataIds, observableIds } = await createHuntHitObservations(context, hunt, current);
       const observationIds = [...observedDataIds, ...observableIds];
@@ -1271,25 +1325,38 @@ const recordReportedHits = async (
   context: AuthContext,
   run: BasicStoreEntityHuntRun,
   input: Pick<HuntRunReportInput, 'hit_keys' | 'ioc_results'>,
-  hits: { count: number; sampledKeys: ReadonlyArray<string | null | undefined> },
+  hits: { count: number },
   reportedAt: string,
+  sighted: { hunt: BasicStoreEntityHunt | null; iocResults: HuntIocResult[] | null } = { hunt: null, iocResults: null },
 ) => {
   const unidentified = { hits_identified: false, hits_new_count: hits.count, hits_recurring_count: 0 };
   const iocKeysByHit = huntIocKeysByHit(input.ioc_results as never);
-  const keys = identifyingHitKeys(input.hit_keys, { hitsCount: hits.count, sampledKeys: hits.sampledKeys, extraKeys: [...iocKeysByHit.keys()] });
+  const keys = identifyingHitKeys(input.hit_keys, { hitsCount: hits.count, extraKeys: [...iocKeysByHit.keys()] });
   if (keys === null) {
     if (Array.isArray(input.hit_keys)) {
       logApp.warn('[OPENCTI-MODULE] Hunt hit keys do not identify the hits of the run, every hit counts as new', { runId: run.internal_id, hitsCount: hits.count });
     }
     return unidentified;
   }
+  const { hunt } = sighted;
+  // The objects sighted only feed the count of the sightings: hits still count once without them
+  let telemetryTargetIds: string[] = [];
+  if (hunt && hunt.hunt_type !== HUNT_TYPE_INDICATORS) {
+    try {
+      telemetryTargetIds = (await resolveHuntSightingTargets(context, hunt, run)).map((target) => target.id);
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Hunt sighted objects of the hits could not be read', { cause: error, runId: run.internal_id });
+    }
+  }
   try {
+    const sightedIdsByHit = hunt ? huntSightedIdsByHit(hunt, keys, { iocResults: sighted.iocResults, iocKeysByHit, telemetryTargetIds }) : undefined;
     const { newCount, recurringCount } = await recordHuntHits(context, {
       huntId: run.hunt_id,
       securityPlatformId: run.security_platform_id,
       runId: run.internal_id,
       keys,
       iocKeysByHit,
+      sightedIdsByHit,
       seenAt: reportedAt,
     });
     const { newHits, recurringHits } = splitHitsByKeys(hits.count, newCount, recurringCount);
@@ -1298,6 +1365,40 @@ const recordReportedHits = async (
     logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched, every hit of the run counts as new', { cause: error, runId: run.internal_id });
     return unidentified;
   }
+};
+
+/**
+ * What each value (or rule) matched on each victim over every hit of a completed run, as the run keeps it for its observed
+ * data: with the hits no run found before on the platform when the run identifies its hits. Null when the connector
+ * reports no observation (an older one): the observed data then read the value results or the run totals.
+ */
+const reportedObservations = async (
+  context: AuthContext,
+  run: BasicStoreEntityHuntRun,
+  observations: HuntObservationInputLike[] | null | undefined,
+  identified: boolean,
+): Promise<HuntObservation[] | null> => {
+  const groups = sanitizeObservations(observations, HUNT_CONFIG.hitObservedDataMaxItems);
+  if (!groups || groups.length === 0) {
+    return null;
+  }
+  const keys = identified ? groups.flatMap((group) => group.hitKeys ?? []) : [];
+  let newOnPlatform: Set<string> | null = null;
+  if (keys.length > 0) {
+    try {
+      newOnPlatform = await findHitKeysNewOnPlatform(context, run.security_platform_id, run.internal_id, keys);
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Hunt hits new on the platform could not be told, the observed data keep the highest count', { cause: error, runId: run.internal_id });
+    }
+  }
+  return groups.map((group) => ({
+    key: group.key,
+    host: group.host,
+    hits_count: group.hitsCount,
+    new_hits_count: newOnPlatform && group.hitKeys ? group.hitKeys.filter((key) => newOnPlatform.has(key)).length : null,
+    first_seen: group.firstSeen,
+    last_seen: group.lastSeen,
+  }));
 };
 
 /**
@@ -1356,6 +1457,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   if (typeof input.query_language === 'string') {
     patch.query_language = truncate(input.query_language, 64);
   }
+  const ruleResults = sanitizeRuleResults(input.rule_results as never);
+  if (ruleResults) {
+    patch.rule_results = ruleResults;
+  }
   if (status === HUNT_RUN_STATUS_COMPLETED) {
     patch.completed_at = reportedAt;
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
@@ -1372,8 +1477,9 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       const reportedIds = (input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id));
       const resultIds = Array.from(new Set([...(run.result_ids ?? []), ...reportedIds]));
       patch.result_ids = resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX);
+      let iocResults: HuntIocResult[] | null = null;
       if (Array.isArray(run.ioc_results) && run.ioc_results.length > 0) {
-        const iocResults = await linkIocDeployments(context, run, mergeHuntIocResults(run.ioc_results, input.ioc_results ?? []));
+        iocResults = await linkIocDeployments(context, run, mergeHuntIocResults(run.ioc_results, input.ioc_results ?? []));
         patch.ioc_results = iocResults;
         if (input.hits_count === null || input.hits_count === undefined) {
           reportedHits = countIocHits(iocResults);
@@ -1384,12 +1490,19 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       // evidence attached while running may already have cut the results
       const truncated = input.truncated === true || run.results_truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX;
       patch.results_truncated = truncated ? true : (input.truncated ?? null);
-      const sampledKeys = reportedSample.map((hit) => hit.hit_key);
-      const reported = await recordReportedHits(context, run, input, { count: reportedHits, sampledKeys }, reportedAt);
+      // The hit records name what each hit is a sighting of, so that every hunt finding an object counts the same hits
+      const hunt = reportedHits > 0
+        ? await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT })
+        : null;
+      const reported = await recordReportedHits(context, run, input, { count: reportedHits }, reportedAt, { hunt, iocResults });
       Object.assign(patch, reported, {
         hits_new_count: huntRunNewHits(run) + reported.hits_new_count,
         hits_recurring_count: (run.hits_recurring_count ?? 0) + reported.hits_recurring_count,
       });
+      const observations = await reportedObservations(context, run, input.observations as never, reported.hits_identified);
+      if (observations) {
+        patch.observations = observations;
+      }
     }
     if (typeof input.cost_ms === 'number') {
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));
@@ -1590,7 +1703,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     // Evidence with hit keys tells its new hits from the known ones and leaves out the hits its run already counted;
     // without keys identifying them, its hits count as new
     const keyed: { patch?: Awaited<ReturnType<typeof patchRun>>; patchError?: unknown } = {};
-    const evidenceKeys = identifyingHitKeys(input.hit_keys, { hitsCount: addedHits, sampledKeys: sanitizeHits(input.hits_sample).map((hit) => hit.hit_key) });
+    const evidenceKeys = identifyingHitKeys(input.hit_keys, { hitsCount: addedHits });
     if (evidenceKeys && evidenceKeys.length > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
       try {
         const recording = {
@@ -1703,6 +1816,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
           await continueHuntIncident(context, hunt, current, open);
           patch.draft_id = open.draftId;
           patch.incident_id = open.incidentId;
+          patch.incident_stix_id = open.incidentStixId;
           patch.incident_continued = true;
         } else {
           // A draft recorded by an interrupted finalization or verdict is reused rather than doubled
@@ -1711,7 +1825,9 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
             return opened;
           });
           patch.draft_id = draftId;
-          patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
+          const created = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
+          patch.incident_id = created.incidentId;
+          patch.incident_stix_id = created.incidentStixId;
           patch.incident_continued = false;
         }
       }

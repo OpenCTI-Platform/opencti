@@ -11,6 +11,7 @@ import {
   type StixHunt,
   type StoreEntityHunt,
 } from './hunt-types';
+import { storedSigmaRules } from './hunt-utils';
 
 const convertHuntToStix = (instance: StoreEntityHunt): StixHunt => {
   const stixDomainObject = buildStixDomain(instance);
@@ -23,6 +24,7 @@ const convertHuntToStix = (instance: StoreEntityHunt): StixHunt => {
     hunt_status: instance.hunt_status,
     hunt_source_kind: instance.hunt_source_kind,
     sigma_rule: instance.sigma_rule ?? '',
+    sigma_rules: storedSigmaRules(instance),
     native_queries: (instance.native_queries ?? []).map((nativeQuery) => cleanObject({ ...nativeQuery })),
     hunt_ioc_filters: instance.hunt_ioc_filters ?? '',
     hunt_ioc_values: (instance.hunt_ioc_values ?? []).map((value) => ({ observable_type: value.observable_type, value: value.value })),

@@ -4,7 +4,7 @@ import { fullEntitiesList, topEntitiesList } from '../../database/middleware-loa
 import { FilterMode, OrderingMode } from '../../generated/graphql';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { HUNT_TYPE_INDICATORS, type BasicStoreEntityHunt } from './hunt-types';
-import { normalizeNativeQueries, sha256, truncate } from './hunt-utils';
+import { normalizeNativeQueries, sha256, storedSigmaRules, truncate } from './hunt-utils';
 import { validateSigmaRule } from './hunt-sigma';
 import { HUNT_MESSAGES, huntMessage, type HuntMessage } from './hunt-messages';
 import {
@@ -20,11 +20,15 @@ import {
  * The logic a connector translates, as a fingerprint stored on every run: the runs of the same fingerprint tell whether
  * the current logic of a hunt translates, so an edit of the rule or of the native queries starts from an unknown state.
  */
-export const huntLogicFingerprint = (hunt: Pick<BasicStoreEntityHunt, 'hunt_type' | 'sigma_rule' | 'native_queries'>) => {
+export const huntLogicFingerprint = (hunt: Pick<BasicStoreEntityHunt, 'hunt_type' | 'sigma_rule' | 'sigma_rules' | 'native_queries'>) => {
+  // A hunt of one rule keeps the fingerprint it had before rule lists: its runs still tell its translation
+  const rules = storedSigmaRules(hunt).map((rule) => rule.trim());
   return sha256(JSON.stringify({
     type: hunt.hunt_type ?? null,
-    sigma_rule: hunt.sigma_rule?.trim() ?? '',
-    native_queries: normalizeNativeQueries(hunt.native_queries).map((query) => [query.platform, query.language, query.pipeline ?? null, query.query]),
+    sigma_rule: rules[0] ?? '',
+    native_queries: normalizeNativeQueries(hunt.native_queries)
+      .map((query) => [query.platform, query.language, query.pipeline ?? null, query.query, ...(query.rule_key ? [query.rule_key] : [])]),
+    ...(rules.length > 1 ? { sigma_rules: rules } : {}),
   }));
 };
 
@@ -144,23 +148,37 @@ export const findHuntTranslations = async (
  * The translation of the current logic of a hunt over its platforms: failed when it failed for good on every platform
  * that says, else translated when a platform translated it, else being checked. Null when no platform says.
  */
-export const findHuntTranslation = async (
-  context: AuthContext,
-  user: AuthUser,
-  hunt: BasicStoreEntityHunt,
-  securityPlatformIds: string[] = [],
-): Promise<HuntTranslationSummary | null> => {
-  const translations = await findHuntTranslations(context, user, hunt, securityPlatformIds);
+export const summarizeHuntTranslations = (translations: HuntTranslation[]): HuntTranslationSummary | null => {
   const failedOn = translations.filter((translation) => translation.state === 'failed');
   const others = translations.filter((translation) => translation.state !== 'failed');
   const summary = others.find((translation) => translation.state === 'translated') ?? others[0] ?? failedOn[0];
   return summary ? { ...summary, failedOn } : null;
 };
 
+export const findHuntTranslation = async (
+  context: AuthContext,
+  user: AuthUser,
+  hunt: BasicStoreEntityHunt,
+  securityPlatformIds: string[] = [],
+): Promise<HuntTranslationSummary | null> => {
+  return summarizeHuntTranslations(await findHuntTranslations(context, user, hunt, securityPlatformIds));
+};
+
+/** The Sigma rules a translation left out: the rules a connector failed to translate while it translated the others. */
+export const failedRuleResults = (run: Pick<BasicStoreEntityHuntRun, 'rule_results'>) => {
+  return (run.rule_results ?? []).filter((result) => result.status === HUNT_RUN_STATUS_FAILED);
+};
+
 /** The sentence of a translation state: the checklist item, and the refusal of a run whose logic fails for good. */
 export const huntTranslationMessage = (translation: HuntTranslation): { template: string; values: Record<string, string> } => {
   const connector = translation.run.connector_name ?? 'The hunt connector';
   if (translation.state === 'translated') {
+    const failedRules = failedRuleResults(translation.run);
+    if (failedRules.length > 0) {
+      const error = truncate(`${failedRules[0].title ?? failedRules[0].key}: ${failedRules[0].error ?? 'Unknown error'}`, CHECKLIST_ERROR_MAX_LENGTH);
+      const total = String((translation.run.rule_results ?? []).length);
+      return { template: HUNT_MESSAGES.translationRulesFailed, values: { connector, failed: String(failedRules.length), total, error } };
+    }
     return { template: HUNT_MESSAGES.translationReady, values: { connector } };
   }
   if (translation.state === 'checking') {
@@ -186,10 +204,16 @@ export const findUnresolvedAttackTechniques = async (context: AuthContext, user:
   return tagged.filter((attackId) => !knownIds.has(attackId));
 };
 
-/** The techniques the Sigma rule of a hunt tags that the knowledge base lacks. */
-export const findUnresolvedHuntTechniques = async (context: AuthContext, user: AuthUser, sigmaRule: string | null | undefined): Promise<string[]> => {
-  if (!sigmaRule?.trim()) {
+/** The techniques the Sigma rules of a hunt tag that the knowledge base lacks. */
+export const findUnresolvedHuntTechniques = async (
+  context: AuthContext,
+  user: AuthUser,
+  sigmaRules: string | ReadonlyArray<string | null | undefined> | null | undefined,
+): Promise<string[]> => {
+  const rules = typeof sigmaRules === 'string' ? [sigmaRules] : (sigmaRules ?? []);
+  const tagged = rules.filter((rule): rule is string => !!rule?.trim()).flatMap((rule) => validateSigmaRule(rule).attack_techniques);
+  if (tagged.length === 0) {
     return [];
   }
-  return findUnresolvedAttackTechniques(context, user, validateSigmaRule(sigmaRule).attack_techniques);
+  return findUnresolvedAttackTechniques(context, user, tagged);
 };

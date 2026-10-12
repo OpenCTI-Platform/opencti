@@ -20,12 +20,37 @@ type HuntNativeQuery {
   language: String!
   query: String!
   pipeline: String
+  "The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule"
+  rule_key: String
 }
 input HuntNativeQueryInput {
   platform: String!
   language: String!
   query: String!
   pipeline: String
+  "The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule"
+  rule_key: String
+}
+
+enum HuntTranslationState {
+  translated
+  failed
+  checking
+}
+"The last translation of the current logic of a hunt on a security platform, by a translation preview or a run"
+type HuntTranslation {
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_name: String
+  state: HuntTranslationState!
+  "The queries of the rules, each after a comment line naming its rule"
+  translated_query: String
+  query_language: String
+  error: String
+  "Detection-rule hunts: the translation of each Sigma rule"
+  rules: [HuntRunRuleResult!]!
+  translated_at: DateTime
+  run_id: String!
 }
 
 "A value pasted in an indicator hunt"
@@ -143,6 +168,12 @@ type HuntConfiguration {
   max_time_window_hours: Int!
   "The most results a hunt asks of the hunt connector in one run"
   max_results_per_run: Int!
+  "The most Sigma rules a detection-rule hunt holds"
+  max_sigma_rules: Int!
+  "The most values an indicator hunt run looks up"
+  max_iocs_per_run: Int!
+  "The malware and tools a threat uses, and the threats attributed to it, followed by a hunt started from it (each list)"
+  max_related_sources: Int!
 }
 
 enum HuntTechniqueValidationStatus {
@@ -292,9 +323,15 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   hunt_type: HuntType!
   hunt_status: HuntStatus!
   hunt_source_kind: HuntSourceKind!
+  "The first Sigma rule of sigma_rules"
   sigma_rule: String
+  "Detection-rule hunts: the Sigma rules, each translated and run on its own"
+  sigma_rules: [String!]!
+  "The validation of the first Sigma rule"
   sigmaValidation: HuntSigmaValidation
   native_queries: [HuntNativeQuery!]
+  "The last translation of the current logic on each security platform, the most recent first"
+  translations: [HuntTranslation!]!
   "Indicator hunts: the filter over indicators and observables"
   hunt_ioc_filters: String
   "Indicator hunts: the values pasted as text"
@@ -418,13 +455,14 @@ enum HuntDerivedSourceRelation {
   self
   uses
   attributed
+  flagged
 }
 "An entity a hunt started from another one takes its indicators and observables from"
 type HuntDerivedSource {
   id: ID!
   entity_type: String!
   name: String!
-  "self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it"
+  "self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it; flagged: a threat the PIR flags"
   relation: HuntDerivedSourceRelation!
 }
 "An indicator or an observable an indicator hunt looks up"
@@ -452,6 +490,8 @@ type HuntDerivedRule {
   pattern: String!
   "Ids of the techniques of the entity it indicates"
   technique_ids: [ID!]!
+  "The rule is the entity the hunt starts from: listed first, never left out by the limit"
+  pinned: Boolean!
 }
 "What a hunt started from an entity looks for, read with the access of the user"
 type HuntDerivedContent {
@@ -469,6 +509,8 @@ type HuntDerivedContent {
   unsupported_count: Int!
   techniques: [HuntDerivedTechnique!]!
   rules: [HuntDerivedRule!]!
+  "More detection rules than a hunt holds"
+  rules_truncated: Boolean!
 }
 
 type HuntValidation {
@@ -506,7 +548,10 @@ input HuntAddInput {
   hunt_type: HuntType
   hunt_status: HuntStatus
   hunt_source_kind: HuntSourceKind
+  "A hunt of one Sigma rule; ignored when sigma_rules is given"
   sigma_rule: String
+  "Detection-rule hunts: the Sigma rules, each translated and run on its own"
+  sigma_rules: [String!]
   native_queries: [HuntNativeQueryInput!]
   hunt_ioc_filters: String
   hunt_ioc_values: [HuntIocValueInput!]

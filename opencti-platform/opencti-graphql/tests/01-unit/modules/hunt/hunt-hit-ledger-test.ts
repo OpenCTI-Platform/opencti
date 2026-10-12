@@ -58,22 +58,29 @@ describe('Hit key shared with the connectors SDK', () => {
   it('should use the reported keys only when they identify the hits of the report', () => {
     const [first, second, third] = ['a', 'b', 'c'].map((digit) => digit.repeat(64));
     // Fewer keys than hits: hits of one detection share a key, and the keys stop at the maximum results
-    expect(identifyingHitKeys([first, second, first.toUpperCase()], { hitsCount: 28, sampledKeys: [first] })).toEqual([first, second]);
+    expect(identifyingHitKeys([first, second, first.toUpperCase()], { hitsCount: 28 })).toEqual([first, second]);
     expect(identifyingHitKeys([first, second, third], { hitsCount: 5000 }, 2)).toEqual([first, second]);
     expect(identifyingHitKeys([], { hitsCount: 0 })).toEqual([]);
-    // No list, no key for a report with hits, an entry that is not a key, a sampled hit missing from the list
+    // No list, no key for a report with hits, an entry that is not a key
     expect(identifyingHitKeys(undefined, { hitsCount: 3 })).toBeNull();
     expect(identifyingHitKeys([], { hitsCount: 28 })).toBeNull();
     expect(identifyingHitKeys([first, 'not a key'], { hitsCount: 2 })).toBeNull();
     expect(identifyingHitKeys([first, 42], { hitsCount: 2 })).toBeNull();
-    expect(identifyingHitKeys([first], { hitsCount: 2, sampledKeys: [first, second] })).toBeNull();
     // More distinct keys than hits: one key per hit read, never more, even for a report without hits
     expect(identifyingHitKeys([first], { hitsCount: 0 })).toBeNull();
     expect(identifyingHitKeys([first, second, third], { hitsCount: 2 })).toBeNull();
     expect(identifyingHitKeys([first, second, third], { hitsCount: 2 }, 1)).toBeNull();
     // An indicator hunt reports the keys of each value
-    expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second], sampledKeys: [second] })).toEqual([first, second]);
+    expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second] })).toEqual([first, second]);
     expect(identifyingHitKeys([third], { hitsCount: 2, extraKeys: [first, second] })).toBeNull();
+  });
+
+  it('should identify the hits of a SecOps indicator hunt whose sample carries other keys than the reported ones', () => {
+    // The connector keys an event over its identity fields, which the sample of the hit may not carry as read: the
+    // keys of the sample are no proof against the reported ones
+    const [first, second] = ['d', 'e'].map((digit) => digit.repeat(64));
+    expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second] })).toEqual([first, second]);
+    expect(identifyingHitKeys([first, second], { hitsCount: 4 })).toEqual([first, second]);
   });
 
   it('should split the hits without a key of their own like the keyed ones', () => {
@@ -193,26 +200,27 @@ describe('Known hits ledger', () => {
   });
 });
 
-describe('One sighting per hunt, sighted object and platform', () => {
+describe('One sighting per sighted object and platform, whichever hunt found it', () => {
   it('should hold the distinct known hits of identified runs, never fewer than stored', () => {
-    expect(nextHuntSightingCount(null, 'run-1', { identified: true, knownHits: 12, runHits: 12 })).toEqual(12);
-    // A second run over overlapping events: the same 12 hits, the count stays
-    expect(nextHuntSightingCount({ attribute_count: 12, x_opencti_hunt_run_id: 'run-1' }, 'run-2', { identified: true, knownHits: 12, runHits: 12 })).toEqual(12);
-    expect(nextHuntSightingCount({ attribute_count: 12, x_opencti_hunt_run_id: 'run-2' }, 'run-3', { identified: true, knownHits: 15, runHits: 7 })).toEqual(15);
+    expect(nextHuntSightingCount(null, { identified: true, knownHits: 12, runHits: 12 })).toEqual(12);
+    // A second run over the same events: the same 12 hits, the count stays
+    expect(nextHuntSightingCount({ attribute_count: 12 }, { identified: true, knownHits: 12, runHits: 12 })).toEqual(12);
+    expect(nextHuntSightingCount({ attribute_count: 12 }, { identified: true, knownHits: 15, runHits: 7 })).toEqual(15);
     // Hits forgotten by the retention stay counted
-    expect(nextHuntSightingCount({ attribute_count: 40 }, 'run-4', { identified: true, knownHits: 3, runHits: 3 })).toEqual(40);
+    expect(nextHuntSightingCount({ attribute_count: 40 }, { identified: true, knownHits: 3, runHits: 3 })).toEqual(40);
   });
 
-  it('should give each hunt its own sighting of an object on a platform, whatever the dates', () => {
-    const id = huntSightingStandardId('hunt-1', 'technique-1', 'platform-1');
+  it('should give one sighting to an object on a platform, whatever the hunt and the dates', () => {
+    const id = huntSightingStandardId('technique-1', 'platform-1');
     expect(id).toMatch(/^sighting--[0-9a-f-]{36}$/);
-    expect(huntSightingStandardId('hunt-1', 'technique-1', 'platform-1')).toEqual(id);
-    expect(huntSightingStandardId('hunt-2', 'technique-1', 'platform-1')).not.toEqual(id);
-    expect(huntSightingStandardId('hunt-1', 'technique-1', 'platform-2')).not.toEqual(id);
+    expect(huntSightingStandardId('technique-1', 'platform-1')).toEqual(id);
+    expect(huntSightingStandardId('technique-2', 'platform-1')).not.toEqual(id);
+    expect(huntSightingStandardId('technique-1', 'platform-2')).not.toEqual(id);
   });
 
-  it('should add the hits of a run that identifies none once', () => {
-    expect(nextHuntSightingCount({ attribute_count: 12, x_opencti_hunt_run_id: 'run-1' }, 'run-2', { identified: false, knownHits: 0, runHits: 5 })).toEqual(17);
-    expect(nextHuntSightingCount({ attribute_count: 17, x_opencti_hunt_run_id: 'run-2' }, 'run-2', { identified: false, knownHits: 0, runHits: 5 })).toEqual(17);
+  it('should keep the larger count for a run that identifies no hit, never adding the same hits twice', () => {
+    expect(nextHuntSightingCount({ attribute_count: 12 }, { identified: false, knownHits: 0, runHits: 5 })).toEqual(12);
+    expect(nextHuntSightingCount({ attribute_count: 3 }, { identified: false, knownHits: 0, runHits: 5 })).toEqual(5);
+    expect(nextHuntSightingCount(null, { identified: false, knownHits: 0, runHits: 0 })).toEqual(1);
   });
 });

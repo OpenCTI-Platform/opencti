@@ -65,6 +65,8 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     // Observed Data and observables the platform created from the hits sample, in the knowledge graph
     { name: 'hit_observation_ids', label: 'Run hit observations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'ioc_results', label: 'Results per value', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'rule_results', label: 'Results per rule', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'observations', label: 'Run observations', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'result_ids', label: 'Run results', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'verdict', label: 'Run verdict', type: 'string', format: 'enum', values: HUNT_VERDICTS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'verdict_source', label: 'Verdict source', type: 'string', format: 'enum', values: HUNT_VERDICT_SOURCES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
@@ -76,6 +78,7 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'verdict_proposal_agent', label: 'Proposing agent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'incident_proposal', label: 'Proposed incident', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'incident_id', label: 'Run incident', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'incident_stix_id', label: 'Run incident STIX id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'draft_id', label: 'Run draft', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'aev_inject_id', label: 'OpenAEV inject', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'security_coverage_id', label: 'Run security coverage', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

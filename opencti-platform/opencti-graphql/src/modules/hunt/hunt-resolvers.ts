@@ -21,13 +21,15 @@ import {
   planHunt,
 } from './hunt-domain';
 import { computeHuntReadiness } from './hunt-readiness';
-import { deriveHuntContent } from './hunt-derivation';
+import { deriveHuntContent, HUNT_MAX_RELATED_SOURCES } from './hunt-derivation';
 import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
-import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES } from './hunt-utils';
-import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
+import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, storedSigmaRules } from './hunt-utils';
+import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, findHuntTranslationsView, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
+import { storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { findHuntKnownHits } from './huntHitRecord/huntHitRecord-domain';
 
 const huntResolvers: Resolvers = {
@@ -41,6 +43,9 @@ const huntResolvers: Resolvers = {
       schedule_lookback_minutes: HUNT_CONFIG.scheduleLookbackMinutes,
       max_time_window_hours: HUNT_CONFIG.maxTimeWindowHours,
       max_results_per_run: HUNT_CONFIG.maxResultsPerRun,
+      max_sigma_rules: HUNT_MAX_SIGMA_RULES,
+      max_iocs_per_run: HUNT_CONFIG.maxIocsPerRun,
+      max_related_sources: HUNT_MAX_RELATED_SOURCES,
     }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),
@@ -53,6 +58,8 @@ const huntResolvers: Resolvers = {
     scopePlatforms: (hunt, _, context) => loadHuntScopePlatforms(context, context.user, hunt),
     techniqueValidations: (hunt, _, context) => computeHuntTechniqueValidations(context, context.user, hunt),
     sigmaValidation: (hunt) => huntSigmaValidation(hunt),
+    sigma_rules: (hunt) => storedSigmaRules(hunt),
+    translations: (hunt, _, context) => findHuntTranslationsView(context, context.user, hunt),
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
     iocSet: (hunt, { first }, context) => loadHuntIocSet(context, hunt, first),
@@ -60,6 +67,11 @@ const huntResolvers: Resolvers = {
     knownHits: (hunt, _, context) => findHuntKnownHits(context, context.user, hunt.id),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),
     toStixBundle: (hunt, _, context) => exportHuntPack(context, context.user, [hunt.id]),
+  },
+  HuntTranslation: {
+    securityPlatform: (translation, _, context) => (translation.security_platform_id
+      ? storeLoadById(context, context.user, translation.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) as any
+      : null),
   },
   HuntSigmaValidation: {
     unresolved_attack_techniques: (validation, _, context) => findUnresolvedAttackTechniques(context, context.user, validation.attack_techniques),

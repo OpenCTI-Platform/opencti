@@ -44,7 +44,18 @@ import {
   HUNT_RUN_TRIGGER_MANUAL,
   HUNT_RUN_TRIGGER_PREVIEW,
 } from './huntRun/huntRun-types';
-import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_MAX_RESULTS, huntExpectedObservables, huntSigmaRule, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import {
+  clampInteger,
+  HUNT_CONFIG,
+  HUNT_DEFAULT_MAX_RESULTS,
+  huntExpectedObservables,
+  huntRuleKey,
+  huntRuleNativeQuery,
+  huntSigmaRules,
+  normalizeNativeQueries,
+  parseHuntFilterGroup,
+} from './hunt-utils';
+import { validateSigmaRule } from './hunt-sigma';
 import { HUNT_MESSAGES, type HuntMessage, huntMessage, type HuntMessageValues, renderHuntMessage } from './hunt-messages';
 
 export interface HuntConnectorTarget {
@@ -153,34 +164,37 @@ export interface ConnectorBudget {
 }
 
 /**
- * Budget guard: maximum concurrent runs per connector and daily quota per connector.
- * Translation previews do not count against the daily quota (no execution on the platform).
+ * Budget guard of executions: maximum concurrent runs per connector and daily quota per connector. A translation
+ * preview executes nothing on the platform: it never waits for a slot, takes none and is counted in no quota.
  */
 export const checkConnectorBudget = async (context: AuthContext, connector: BasicStoreEntityConnector, isPreview = false): Promise<ConnectorBudget> => {
+  if (isPreview) {
+    return { canDispatch: true };
+  }
   const maxConcurrent = Math.max(1, Math.min(
     HUNT_CONFIG.maxConcurrentRunsPerConnector,
     connector.hunt_max_concurrent_runs && connector.hunt_max_concurrent_runs > 0 ? connector.hunt_max_concurrent_runs : Number.MAX_SAFE_INTEGER,
   ));
+  const notPreview = { key: 'hunt_run_mode', values: [HUNT_RUN_MODE_PREVIEW], operator: FilterOperator.NotEq };
   // A dispatched run occupies its connector until it terminates, even before the connector reports it running
   const activeRuns = await countRuns(context, runsFilters(connector.internal_id, [
     { key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES },
     { key: 'dispatched_at', values: [], operator: FilterOperator.NotNil },
+    notPreview,
   ]));
   if (activeRuns >= maxConcurrent) {
     const values = { connector: connector.name, count: activeRuns };
     return { canDispatch: false, reason: renderHuntMessage(HUNT_MESSAGES.queueConnectorBusy, values), template: HUNT_MESSAGES.queueConnectorBusy, values };
   }
-  if (!isPreview) {
-    const dayStart = new Date();
-    dayStart.setUTCHours(0, 0, 0, 0);
-    const runsToday = await countRuns(context, runsFilters(connector.internal_id, [
-      { key: 'dispatched_at', values: [dayStart.toISOString()], operator: FilterOperator.Gte },
-      { key: 'hunt_run_mode', values: [HUNT_RUN_MODE_PREVIEW], operator: FilterOperator.NotEq },
-    ]));
-    if (runsToday >= HUNT_CONFIG.dailyRunsPerConnector) {
-      const values = { connector: connector.name, count: HUNT_CONFIG.dailyRunsPerConnector };
-      return { canDispatch: false, reason: renderHuntMessage(HUNT_MESSAGES.queueConnectorQuota, values), template: HUNT_MESSAGES.queueConnectorQuota, values };
-    }
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const runsToday = await countRuns(context, runsFilters(connector.internal_id, [
+    { key: 'dispatched_at', values: [dayStart.toISOString()], operator: FilterOperator.Gte },
+    notPreview,
+  ]));
+  if (runsToday >= HUNT_CONFIG.dailyRunsPerConnector) {
+    const values = { connector: connector.name, count: HUNT_CONFIG.dailyRunsPerConnector };
+    return { canDispatch: false, reason: renderHuntMessage(HUNT_MESSAGES.queueConnectorQuota, values), template: HUNT_MESSAGES.queueConnectorQuota, values };
   }
   return { canDispatch: true };
 };
@@ -251,8 +265,15 @@ export const buildHuntRunMessage = async (
   // The native query of the platform only in a language the connector executes, else it translates the Sigma rule or
   // reports it cannot. A connector registered before it declared its languages takes it as before
   const languages = (connector.hunt_languages ?? []).map((language) => language.toLowerCase());
-  const nativeQuery = normalizeNativeQueries(hunt.native_queries)
-    .find((query) => query.platform === platform && (languages.length === 0 || languages.includes(query.language.toLowerCase()))) ?? null;
+  const executable = normalizeNativeQueries(hunt.native_queries)
+    .filter((query) => languages.length === 0 || languages.includes(query.language.toLowerCase()));
+  // Each Sigma rule is translated and run on its own; the first one and its native query stay the single rule of the
+  // connectors that read one
+  const sigmaRules = huntSigmaRules(hunt).map((rule, index) => {
+    const key = huntRuleKey(rule);
+    return { key, title: validateSigmaRule(rule).title, rule, native_query: huntRuleNativeQuery(executable, platform, key, index === 0) };
+  });
+  const nativeQuery = sigmaRules.length > 0 ? sigmaRules[0].native_query : huntRuleNativeQuery(executable, platform, null, true);
   const authorId = hunt[RELATION_CREATED_BY];
   // The evidence of a run is restricted like the run: the markings of the hunt and of its security platform, and the
   // organizations both are shared with. The attribution of an object to the run refuses a less restricted one
@@ -292,7 +313,8 @@ export const buildHuntRunMessage = async (
         name: hunt.name,
         hypothesis: hunt.hypothesis ?? '',
         hunt_type: hunt.hunt_type,
-        sigma_rule: huntSigmaRule(hunt),
+        sigma_rule: sigmaRules[0]?.rule ?? null,
+        sigma_rules: sigmaRules,
         native_query: nativeQuery,
         expected_observables: huntExpectedObservables(hunt),
         benign_patterns: hunt.benign_patterns ?? [],

@@ -1,5 +1,5 @@
 import { v5 as uuidv5 } from 'uuid';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { logApp } from '../../config/conf';
 import { createEntity, createRelation, patchAttribute } from '../../database/middleware';
@@ -25,6 +25,8 @@ const INCIDENT_SEVERITIES = ['low', 'medium', 'high', 'critical'];
 const SIGMA_LEVEL_SEVERITIES: Record<string, string> = { informational: 'low', low: 'low', medium: 'medium', high: 'high', critical: 'critical' };
 const DESCRIPTION_HITS_MAX = 5;
 const DESCRIPTION_TOP_VALUES = 5;
+// The incidents hunts open have their own type, to filter and count them
+export const HUNT_INCIDENT_TYPE = 'hunting';
 export const HUNT_INCIDENT_RECOMMENDATION = 'Recommendation: Run Case Autopilot on this incident once the draft is validated, to investigate the hits listed above, '
   + 'the observables and observed data it is related to, and their attribution.';
 
@@ -197,7 +199,7 @@ export const createHuntIncidentInWorkspace = async (
   run: BasicStoreEntityHuntRun,
   proposal: HuntIncidentProposal | null,
   draftId: string,
-): Promise<string> => {
+): Promise<{ incidentId: string; incidentStixId: string }> => {
   const draftContext: AuthContext = { ...context, draft_context: draftId };
   const platform = run.security_platform_id ? await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null;
   const content = buildHuntIncidentContent(hunt, run, proposal, platform?.name ?? null);
@@ -205,7 +207,7 @@ export const createHuntIncidentInWorkspace = async (
     stix_id: huntIncidentStixId(run),
     name: content.name,
     description: content.description,
-    incident_type: 'alert',
+    incident_type: HUNT_INCIDENT_TYPE,
     severity: content.severity,
     source: 'OpenCTI Hunts',
     first_seen: content.first_seen,
@@ -230,12 +232,14 @@ export const createHuntIncidentInWorkspace = async (
       logApp.warn('[OPENCTI-MODULE] Hunt incident draft relation could not be created', { cause: error, huntId: hunt.internal_id, toId: relatedIds[index] });
     }
   }
-  return incident.internal_id;
+  return { incidentId: incident.internal_id, incidentStixId: incident.standard_id };
 };
 
 /** An incident a later run of the hunt adds its hits to: in its draft while the draft is not validated, else in the knowledge. */
 export interface OpenHuntIncident {
   incidentId: string;
+  // The STIX id the incident keeps when its draft is validated
+  incidentStixId: string | null;
   draftId: string | null;
 }
 
@@ -291,15 +295,51 @@ export const findOpenHuntIncident = async (context: AuthContext, run: BasicStore
     ? await internalLoadById<IncidentWithStatus>({ ...context, draft_context: previous.draft_id }, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
     : null;
   if (draft && draft.draft_status === DRAFT_STATUS_OPEN && inDraft) {
-    return await isReadableByReadersOf(context, inDraft, run) ? { incidentId: inDraft.internal_id, draftId: previous.draft_id ?? null } : null;
+    return await isReadableByReadersOf(context, inDraft, run)
+      ? { incidentId: inDraft.internal_id, incidentStixId: inDraft.standard_id, draftId: previous.draft_id ?? null }
+      : null;
   }
-  // A validated draft published the incident under its standard id
-  const live = await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
-    ?? (inDraft ? await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, inDraft.standard_id, { type: ENTITY_TYPE_INCIDENT }) : null);
+  // A validated draft published the incident under its STIX id, recorded by the run; a run recorded before it was kept
+  // finds it by the draft incident, or by the STIX id every attempt at the incident carries
+  const loadIncident = (id: string | null | undefined) => (id ? internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, id, { type: ENTITY_TYPE_INCIDENT }) : null);
+  const live = await loadIncident(previous.incident_id)
+    ?? await loadIncident(previous.incident_stix_id)
+    ?? await loadIncident(inDraft?.standard_id)
+    ?? await loadIncident(huntIncidentStixId(previous));
   if (!live || await isHuntIncidentClosed(context, live) || !await isReadableByReadersOf(context, live, run)) {
     return null;
   }
-  return { incidentId: live.internal_id, draftId: null };
+  return { incidentId: live.internal_id, incidentStixId: live.standard_id, draftId: null };
+};
+
+const incidentLinks = new WeakMap<object, Promise<{ incident_id: string | null; draft_id: string | null }>>();
+
+const loadHuntRunIncidentLink = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const recorded = { incident_id: run.incident_id ?? null, draft_id: run.draft_id ?? null };
+  if (!run.incident_id) {
+    return recorded;
+  }
+  if (run.draft_id) {
+    const draft = await internalLoadById<BasicStoreEntity & { draft_status?: string }>(context, HUNT_MANAGER_USER, run.draft_id, { type: ENTITY_TYPE_DRAFT_WORKSPACE });
+    if (draft && draft.draft_status === DRAFT_STATUS_OPEN) {
+      return recorded;
+    }
+  }
+  const live = await internalLoadById<BasicStoreEntity>(context, user, run.incident_stix_id ?? huntIncidentStixId(run), { type: ENTITY_TYPE_INCIDENT });
+  return live ? { incident_id: live.internal_id, draft_id: null } : recorded;
+};
+
+/**
+ * Where the incident of a run is for a reader: in its draft while the draft is open, else in the knowledge, where a
+ * validated draft published it under its STIX id (another internal id). Computed once for the fields of a run.
+ */
+export const resolveHuntRunIncidentLink = (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  let link = incidentLinks.get(run);
+  if (!link) {
+    link = loadHuntRunIncidentLink(context, user, run);
+    incidentLinks.set(run, link);
+  }
+  return link;
 };
 
 /**
