@@ -135,6 +135,13 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         setMembers(uniqTemplates);
       });
   };
+  // Backend results are already filtered by the search, only the static dynamic options need client filtering
+  const filterOptions = (options: OptionMember[], inputValue: string) => {
+    const needle = inputValue.trim().toLowerCase();
+    if (!needle) return options;
+    const dynamicValues = new Set(dynamicMembers.map((m) => m.value));
+    return options.filter((o) => !dynamicValues.has(o.value) || o.label.toLowerCase().includes(needle));
+  };
   return (
     <div style={{ width: '100%' }}>
       <Field
@@ -151,7 +158,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}
-        filterOptions={(options: OptionMember[]) => options}
+        filterOptions={filterOptions}
         groupBy={(option: OptionMember) => option.type}
         onInputChange={(search: string, meta: ComboboxChangeMeta) => {
           if (meta.cause === 'type') searchMembers(search);
