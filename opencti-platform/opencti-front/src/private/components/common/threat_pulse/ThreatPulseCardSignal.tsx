@@ -29,6 +29,11 @@ export const THREAT_PULSE_FACTS_GRID_SX: SxProps = {
   rowGap: 2,
 };
 
+export const THREAT_PULSE_FOOTER_SX = {
+  paddingTop: 1.5,
+  borderTop: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
+};
+
 const ThreatPulseFact = ({ label, children }: { label: string; children: ReactNode }) => (
   <Box sx={{ minWidth: 0 }}>
     <Label>{label}</Label>
@@ -82,13 +87,7 @@ export const ThreatPulseFreshness = ({ updatedAt, notice, noticeIcon: NoticeIcon
     <Box
       component="footer"
       data-testid="threat-pulse-freshness"
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 0.5,
-        paddingTop: 1.5,
-        borderTop: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
-      }}
+      sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ...THREAT_PULSE_FOOTER_SX }}
     >
       {notice && (
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
