@@ -1,3 +1,4 @@
+import jsonCanonicalize from 'canonicalize';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
@@ -334,15 +335,18 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
     if (isMultiple) {
       let added: ChangeValue[] = [];
       let removed: ChangeValue[] = [];
-      const previousRawSet = new Set(previous.map((previousItem) => previousItem.raw));
+      // Stored objects can come back with another key order (updates are applied by a painless script),
+      // so objects are compared on their canonical JSON instead of their raw JSON.
+      const compareKey = (item: ChangeValue) => (attribute.type === 'object' ? jsonCanonicalize(JSON.parse(item.raw)) : item.raw);
+      const previousRawSet = new Set(previous.map(compareKey));
       if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previousRawSet.has(valueItem.raw));
+        added = valueArray.filter((valueItem) => !previousRawSet.has(compareKey(valueItem)));
       } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray.filter((valueItem) => previousRawSet.has(valueItem.raw));
+        removed = valueArray.filter((valueItem) => previousRawSet.has(compareKey(valueItem)));
       } else { // Replace
-        const valueRawSet = new Set(valueArray.map((valueItem) => valueItem.raw));
-        removed = previous.filter((previousItem) => !valueRawSet.has(previousItem.raw));
-        added = valueArray.filter((valueItem) => !previousRawSet.has(valueItem.raw));
+        const valueRawSet = new Set(valueArray.map(compareKey));
+        removed = previous.filter((previousItem) => !valueRawSet.has(compareKey(previousItem)));
+        added = valueArray.filter((valueItem) => !previousRawSet.has(compareKey(valueItem)));
       }
       if (added.length > 0 || removed.length > 0) {
         changes.push({
