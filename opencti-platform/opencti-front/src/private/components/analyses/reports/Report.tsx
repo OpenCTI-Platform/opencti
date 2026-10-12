@@ -137,13 +137,18 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
                     />
                   </Grid>
                 );
+              case 'hunts':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <HuntsOfEntity entityId={report.id} />
+                  </Grid>
+                );
               default:
                 return null;
             }
           })
         }
       </Grid>
-      <HuntsOfEntity entityId={report.id} />
     </>
   );
 };

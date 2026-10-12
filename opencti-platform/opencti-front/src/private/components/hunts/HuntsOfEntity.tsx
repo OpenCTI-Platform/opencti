@@ -11,7 +11,9 @@ import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntStatusChip, HuntVerdictChip } from './HuntChips';
 import { HuntsOfEntityQuery } from './__generated__/HuntsOfEntityQuery.graphql';
 
-const HUNTS_OF_ENTITY_LIMIT = 10;
+// The overview widget lists the latest hunts, the Defense tab all of them up to its limit
+type HuntsOfEntityVariant = 'overview' | 'defense';
+const HUNTS_OF_ENTITY_LIMIT: Record<HuntsOfEntityVariant, number> = { overview: 10, defense: 100 };
 
 const huntsOfEntityQuery = graphql`
   query HuntsOfEntityQuery($filters: FilterGroup, $first: Int) {
@@ -58,21 +60,32 @@ export const huntsOfEntityFilters = (entityId: string) => ({
   filterGroups: [],
 });
 
-const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
+interface HuntsOfEntityProps {
+  entityId: string;
+  variant?: HuntsOfEntityVariant;
+}
+
+const HuntsOfEntityCard = ({ entityId, variant = 'overview' }: HuntsOfEntityProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt, n } = useFormatter();
   const { hunts } = useLazyLoadQuery<HuntsOfEntityQuery>(
     huntsOfEntityQuery,
-    { filters: huntsOfEntityFilters(entityId), first: HUNTS_OF_ENTITY_LIMIT },
+    { filters: huntsOfEntityFilters(entityId), first: HUNTS_OF_ENTITY_LIMIT[variant] },
     { fetchPolicy: 'store-and-network' },
   );
   const edges = hunts?.edges ?? [];
   const total = hunts?.pageInfo?.globalCount ?? 0;
   if (edges.length === 0) {
-    return null;
+    return variant === 'defense' ? (
+      <div data-testid="hunts-of-entity-empty">
+        <Card title={t_i18n('Hunts')}>
+          <Text variant="content-caption">{t_i18n('No hunt looks for this entity or takes it as a source yet.')}</Text>
+        </Card>
+      </div>
+    ) : null;
   }
   return (
-    <div style={{ marginBottom: theme.spacing(2.5) }} data-testid="hunts-of-entity">
+    <div data-testid="hunts-of-entity">
       <Card title={`${t_i18n('Hunts')} (${n(total)})`}>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
           {edges.map(({ node }) => {
@@ -121,15 +134,18 @@ const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
   );
 };
 
-/** On the pages of intel a hunt can use, the hunts that use it with the verdict of their latest run; nothing when none does. */
-const HuntsOfEntity = ({ entityId }: { entityId: string }) => {
+/**
+ * On the pages of intel a hunt can use, the hunts that use it with the verdict of their latest run: a widget of the
+ * overview layout, nothing when no hunt uses the intel, and the Defense tab.
+ */
+const HuntsOfEntity = ({ entityId, variant = 'overview' }: HuntsOfEntityProps) => {
   const huntHidden = useIsHiddenEntities('Hunt');
   if (huntHidden) {
     return null;
   }
   return (
     <Suspense fallback={null}>
-      <HuntsOfEntityCard entityId={entityId} />
+      <HuntsOfEntityCard entityId={entityId} variant={variant} />
     </Suspense>
   );
 };

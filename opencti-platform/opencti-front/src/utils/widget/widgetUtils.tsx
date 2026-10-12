@@ -13,8 +13,6 @@ import {
   Crosshairs,
   FormatListNumberedRtl,
   Radar,
-  ScaleBalance,
-  ServerNetwork,
   StarSettingsOutline,
   TagTextOutline,
   ViewListOutline,
@@ -217,26 +215,6 @@ const widgetVisualizationTypes = [
     isEntities: false,
     isAudits: false,
   },
-  {
-    key: 'hunt-runs-per-platform',
-    name: 'Hunt runs per platform',
-    dataSelectionLimit: undefined,
-    category: 'hunt',
-    availableParameters: [],
-    isRelationships: false,
-    isEntities: false,
-    isAudits: false,
-  },
-  {
-    key: 'hunt-verdict-distribution',
-    name: 'Hunt verdict distribution',
-    dataSelectionLimit: undefined,
-    category: 'hunt',
-    availableParameters: [],
-    isRelationships: false,
-    isEntities: false,
-    isAudits: false,
-  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -356,10 +334,6 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
     case 'hunt-hits-over-time':
       return <Crosshairs fontSize={fontSize} color="primary" />;
-    case 'hunt-runs-per-platform':
-      return <ServerNetwork fontSize={fontSize} color="primary" />;
-    case 'hunt-verdict-distribution':
-      return <ScaleBalance fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

@@ -4,6 +4,7 @@ import { useLocation, useParams } from 'react-router';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
+import HuntsOfEntity from '@components/hunts/HuntsOfEntity';
 import Security from 'src/utils/Security';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -179,6 +180,7 @@ const RootReport = () => {
                           containerId={report.id}
                         />
                       ),
+                      defense: <HuntsOfEntity entityId={report.id} variant="defense" />,
                       files: (
                         <StixCoreObjectFilesAndHistory
                           id={reportId}

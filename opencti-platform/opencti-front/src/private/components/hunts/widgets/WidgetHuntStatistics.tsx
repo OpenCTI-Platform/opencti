@@ -1,27 +1,15 @@
 import React, { ReactNode, Suspense, useMemo } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../components/Theme';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
-import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { huntHasTimeSeries, huntHitsSeries, huntHitsTickAmount, huntPlatformSeries, huntStatisticsQuery, huntVerdictData } from '../HuntStatistics';
+import { huntHasTimeSeries, huntHitsSeries, huntHitsTickAmount, huntStatisticsQuery } from '../HuntStatistics';
 import { HuntStatisticsQuery } from '../__generated__/HuntStatisticsQuery.graphql';
 
-export const HUNT_WIDGET_TYPES = ['hunt-hits-over-time', 'hunt-runs-per-platform', 'hunt-verdict-distribution'] as const;
-export type HuntWidgetType = typeof HUNT_WIDGET_TYPES[number];
-
-export const HUNT_WIDGET_TITLES: Record<HuntWidgetType, string> = {
-  'hunt-hits-over-time': 'Hunt hits over time',
-  'hunt-runs-per-platform': 'Hunt runs per platform',
-  'hunt-verdict-distribution': 'Hunt verdict distribution',
-};
-
+// Runs per platform and verdicts are standard widgets on the Hunt-Run entity type: this one sums the hits of the runs
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PERIOD_DAYS = 30;
 
@@ -44,47 +32,35 @@ export const huntWidgetVariables = (startDate?: string | null, endDate?: string 
 };
 
 interface ContentProps {
-  type: HuntWidgetType;
   interval: string;
   queryRef: PreloadedQuery<HuntStatisticsQuery>;
 }
 
-const Content = ({ type, interval, queryRef }: ContentProps) => {
-  const theme = useTheme<Theme>();
+const Content = ({ interval, queryRef }: ContentProps) => {
   const { t_i18n } = useFormatter();
   const { huntStatistics: statistics } = usePreloadedQuery(huntStatisticsQuery, queryRef);
-  if (type === 'hunt-hits-over-time') {
-    return huntHasTimeSeries(statistics)
-      ? <WidgetVerticalBars series={huntHitsSeries(statistics, t_i18n)} interval={interval} hasLegend tickAmount={huntHitsTickAmount(statistics.hits_over_time.length)} />
-      : <WidgetNoData />;
-  }
-  if (type === 'hunt-runs-per-platform') {
-    return statistics.runs_per_platform.length > 0
-      ? <WidgetHorizontalBars series={huntPlatformSeries(statistics, t_i18n)} distributed />
-      : <WidgetNoData />;
-  }
-  const verdicts = huntVerdictData(statistics, t_i18n, theme);
-  return verdicts.length > 0 ? <WidgetDonut data={verdicts} groupBy="verdict" /> : <WidgetNoData />;
+  return huntHasTimeSeries(statistics)
+    ? <WidgetVerticalBars series={huntHitsSeries(statistics, t_i18n)} interval={interval} hasLegend tickAmount={huntHitsTickAmount(statistics.hits_over_time.length)} />
+    : <WidgetNoData />;
 };
 
 interface WidgetHuntStatisticsProps {
-  type: HuntWidgetType;
   title?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   popover?: ReactNode;
 }
 
-const WidgetHuntStatistics = ({ type, title, startDate, endDate, popover }: WidgetHuntStatisticsProps) => {
+const WidgetHuntStatistics = ({ title, startDate, endDate, popover }: WidgetHuntStatisticsProps) => {
   const { t_i18n } = useFormatter();
   const variables = useMemo(() => huntWidgetVariables(startDate, endDate), [startDate, endDate]);
   const queryRef = useQueryLoading<HuntStatisticsQuery>(huntStatisticsQuery, variables);
   return (
-    <WidgetContainer title={title || t_i18n(HUNT_WIDGET_TITLES[type])} action={popover}>
-      <div style={{ height: '100%' }} data-testid={`widget-${type}`}>
+    <WidgetContainer title={title || t_i18n('Hunt hits over time')} action={popover}>
+      <div style={{ height: '100%' }} data-testid="widget-hunt-hits-over-time">
         {queryRef ? (
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <Content type={type} interval={variables.interval} queryRef={queryRef} />
+            <Content interval={variables.interval} queryRef={queryRef} />
           </Suspense>
         ) : <Loader variant={LoaderVariant.inElement} />}
       </div>

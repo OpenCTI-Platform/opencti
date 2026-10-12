@@ -29,7 +29,13 @@ vi.mock('src/utils/hooks/useEntityTranslation', () => ({
 
 describe('widgetUtils', () => {
   describe('hunt widgets', () => {
-    const huntTypes = ['hunt-hits-over-time', 'hunt-runs-per-platform', 'hunt-verdict-distribution'];
+    const huntTypes = ['hunt-hits-over-time'];
+
+    it('should leave runs per platform and verdicts to the standard widgets on hunt runs', () => {
+      const workspaceKeys = workspacesWidgetVisualizationTypes.map((w) => w.key as string);
+      expect(workspaceKeys).not.toContain('hunt-runs-per-platform');
+      expect(workspaceKeys).not.toContain('hunt-verdict-distribution');
+    });
 
     it('should be offered in workspaces, without a data selection step', () => {
       const workspaceKeys = workspacesWidgetVisualizationTypes.map((w) => w.key as string);

@@ -17,6 +17,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
+import HuntsOfEntity from '@components/hunts/HuntsOfEntity';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -161,6 +162,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                   stixDomainObjectOrStixCoreRelationship={indicator}
                 />
               ),
+              defense: <HuntsOfEntity entityId={indicator.id} variant="defense" />,
               sightings: (
                 <EntityStixSightingRelationships
                   entityId={indicator.id}

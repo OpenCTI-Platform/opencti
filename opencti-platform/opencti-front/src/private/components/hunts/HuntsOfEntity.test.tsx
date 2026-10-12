@@ -92,10 +92,18 @@ describe('Hunts of an entity', () => {
     expect(within(rows[1]).queryByText(/^Last run /)).not.toBeInTheDocument();
   });
 
-  it('shows nothing when no hunt uses the entity', async () => {
+  it('shows nothing on the overview when no hunt uses the entity', async () => {
     const { relayEnv } = testRender(<HuntsOfEntity entityId="report-id" />);
     await resolveHunts(relayEnv, []);
     expect(screen.queryByTestId('hunts-of-entity')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hunts-of-entity-empty')).not.toBeInTheDocument();
+  });
+
+  it('lists up to a hundred hunts in the Defense tab, and says when none uses the entity', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="report-id" variant="defense" />);
+    const { variables } = await resolveHunts(relayEnv, []);
+    expect(variables.first).toBe(100);
+    expect(screen.getByTestId('hunts-of-entity-empty')).toBeInTheDocument();
   });
 
   it('neither queries nor shows the hunts when the Hunt entity type is hidden', () => {

@@ -119,8 +119,10 @@ const Indicator: React.FC<IndicatorProps> = ({
             defaultMarkings={indicator.objectMarking ?? []}
           />
         </Grid>
+        <Grid item xs={12}>
+          <HuntsOfEntity entityId={indicator.id} />
+        </Grid>
       </Grid>
-      <HuntsOfEntity entityId={indicator.id} />
     </div>
   );
 };

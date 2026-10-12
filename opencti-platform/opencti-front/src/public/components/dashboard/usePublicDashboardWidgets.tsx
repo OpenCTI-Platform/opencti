@@ -371,8 +371,6 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
           />
         );
       case 'hunt-hits-over-time':
-      case 'hunt-runs-per-platform':
-      case 'hunt-verdict-distribution':
         return (
           <Card>{t_i18n('Hunt widgets are not supported in public dashboards')}</Card>
         );

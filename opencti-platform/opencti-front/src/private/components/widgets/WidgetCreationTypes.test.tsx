@@ -22,11 +22,9 @@ const ALL_VISUALIZATION_TYPES = [
   'bookmark',
   'wordcloud',
   'hunt-hits-over-time',
-  'hunt-runs-per-platform',
-  'hunt-verdict-distribution',
 ];
 
-const HUNT_VISUALIZATION_TYPES = ['hunt-hits-over-time', 'hunt-runs-per-platform', 'hunt-verdict-distribution'];
+const HUNT_VISUALIZATION_TYPES = ['hunt-hits-over-time'];
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {

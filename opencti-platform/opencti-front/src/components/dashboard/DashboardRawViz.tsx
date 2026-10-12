@@ -31,11 +31,8 @@ const DashboardRawViz = ({
         />
       );
     case 'hunt-hits-over-time':
-    case 'hunt-runs-per-platform':
-    case 'hunt-verdict-distribution':
       return (
         <WidgetHuntStatistics
-          type={widget.type}
           title={widget.parameters?.title}
           startDate={startDate}
           endDate={endDate}
