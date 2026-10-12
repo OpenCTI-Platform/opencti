@@ -9461,11 +9461,13 @@ export type ExternalReferenceEditMutations = {
 
 export type ExternalReferenceEditMutationsAskEnrichmentArgs = {
   connectorId: Scalars['ID']['input'];
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type ExternalReferenceEditMutationsAskEnrichmentsArgs = {
   connectorIds: Array<Scalars['ID']['input']>;
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -32061,11 +32063,13 @@ export type StixCoreObjectEditMutationsAskAnalysisArgs = {
 
 export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
   connectorId: Scalars['ID']['input'];
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreObjectEditMutationsAskEnrichmentsArgs = {
   connectorIds: Array<Scalars['ID']['input']>;
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
