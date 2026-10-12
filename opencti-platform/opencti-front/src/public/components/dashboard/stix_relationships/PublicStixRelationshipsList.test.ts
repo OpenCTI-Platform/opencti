@@ -29,16 +29,27 @@ const resolveRelationship = (to: Record<string, unknown>) => {
 };
 
 describe('PublicStixRelationshipsListQuery', () => {
-  // The relationship columns (toName, toType...) display "Restricted" when an end is missing.
+  // The relationship columns (to_entity_type, to_relationship_type) display "Restricted" when an end is missing.
   it('should give the widget both ends of each relationship', () => {
-    const node = resolveRelationship({ __typename: 'ThreatActorIndividual', entity_type: 'Threat-Actor-Individual', name: 'GoodBoy' });
+    const node = resolveRelationship({
+      __typename: 'ThreatActorIndividual',
+      entity_type: 'Threat-Actor-Individual',
+      representative: { main: 'GoodBoy' },
+    });
     expect(node.from).toMatchObject({ entity_type: 'Threat-Actor-Individual', name: 'BadBoy' });
-    expect(node.to).toMatchObject({ entity_type: 'Threat-Actor-Individual', name: 'GoodBoy' });
+    expect(node.to).toMatchObject({ entity_type: 'Threat-Actor-Individual' });
+    expect(getMainRepresentative(node.to)).toEqual('GoodBoy');
     expect(node.created).toEqual('2026-09-25T16:36:08.000Z');
   });
 
-  it('should give the widget the representative of a target without name', () => {
-    const node = resolveRelationship({ __typename: 'Grouping', entity_type: 'Grouping', representative: { main: 'Q3 review' } });
-    expect(getMainRepresentative(node.to)).toEqual('Q3 review');
+  it.each([
+    { kind: 'entity without name', to: { __typename: 'Grouping', entity_type: 'Grouping', representative: { main: 'Q3 review' } } },
+    { kind: 'shared organization', to: { __typename: 'Organization', entity_type: 'Organization', representative: { main: 'JamieC Incorporated' } } },
+    { kind: 'marking definition', to: { __typename: 'MarkingDefinition', entity_type: 'Marking-Definition', representative: { main: 'TLP:AMBER' } } },
+    { kind: 'relationship', to: { __typename: 'StixCoreRelationship', entity_type: 'uses', representative: { main: 'APT1 uses Mimikatz' } } },
+  ])('should give the widget the type and representative of a $kind target', ({ to }) => {
+    const node = resolveRelationship(to);
+    expect(node.to).toMatchObject({ entity_type: to.entity_type });
+    expect(getMainRepresentative(node.to)).toEqual(to.representative.main);
   });
 });
