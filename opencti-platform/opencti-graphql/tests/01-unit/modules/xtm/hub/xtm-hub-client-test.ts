@@ -111,6 +111,21 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     expect({ status, calls: mockPost.mock.calls.length }).toEqual({ status: 'inactive', calls: 1 });
   });
 
+  it.each([
+    { rejection: 'an HTTP 400 validation error', mockRejection: () => mockPost.mockRejectedValueOnce(badRequestError(OTHER_INPUT_ERROR)), codes: ['BAD_USER_INPUT'] },
+    { rejection: 'GraphQL errors in an HTTP 200 answer', mockRejection: () => mockPost.mockResolvedValueOnce(graphqlErrorResponse(OTHER_INPUT_ERROR)), codes: [] },
+  ])('should log the error codes but not the echoed token when the hub rejects the refresh with $rejection', async ({ mockRejection, codes }) => {
+    // Given
+    const { xtmHubClient, logApp } = await loadClient();
+    mockRejection();
+
+    // When
+    await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });
+
+    // Then
+    expect(vi.mocked(logApp.warn).mock.calls).toEqual([['XTM Hub sent an error', { codes }]]);
+  });
+
   it('should return inactive when the hub is unreachable', async () => {
     // Given
     const { xtmHubClient } = await loadClient();

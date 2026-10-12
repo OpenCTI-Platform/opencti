@@ -8,6 +8,7 @@ export type HubPlatformContract = 'CE' | 'EE';
 
 interface HubGraphQLError {
   message?: string;
+  extensions?: { code?: string };
 }
 
 interface RefreshRegistrationStatusResult {
@@ -19,6 +20,11 @@ interface RefreshRegistrationStatusResult {
 // while the input value it echoes back holds an unquoted `platformContract` key on any other input error.
 const isPlatformContractRejected = (errors?: HubGraphQLError[]) => (errors ?? [])
   .some((error) => typeof error?.message === 'string' && error.message.includes('"platformContract"'));
+
+// GraphQL input errors echo the submitted variables, the platform token included: never log their messages.
+const hubErrorCodes = (errors?: HubGraphQLError[]) => (errors ?? [])
+  .map((error) => error?.extensions?.code)
+  .filter((code): code is string => typeof code === 'string');
 
 let isPlatformContractFallbackLogged = false;
 
@@ -104,7 +110,7 @@ export const xtmHubClient = {
         result = await refresh({ input });
       }
       if (!result.status) {
-        logApp.warn('XTM Hub sent an error', { reason: result.errors?.[0] });
+        logApp.warn('XTM Hub sent an error', { codes: hubErrorCodes(result.errors) });
         return 'inactive';
       }
       return result.status;
