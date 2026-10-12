@@ -304,7 +304,8 @@ describe('StixRefRelationship added again on a single ref', () => {
     expect((await loadFileRefs()).parentRelations.map(({ toId }) => toId)).toEqual([directoryBId]);
     const relation = await addRef(directoryAId, 'parent-directory', dates);
     expect(relation.to.id).toEqual(directoryAId);
-    expect({ start_time: relation.start_time, stop_time: relation.stop_time }).toEqual(dates);
+    expect(new Date(relation.start_time).toISOString()).toEqual(dates.start_time);
+    expect(new Date(relation.stop_time).toISOString()).toEqual(dates.stop_time);
     const { parentRelations } = await loadFileRefs();
     expect(parentRelations).toEqual([{ id: relation.id, toId: directoryAId }]);
   });
