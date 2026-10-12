@@ -6,11 +6,8 @@ import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { redisAddWorkTouchedElement, redisGetWorkEventType, redisGetWorkTouchedElements, WORK_TOUCHED_CAP } from './redis';
 import { logApp } from '../config/conf';
 
-// A work type never changes, so the cache needs no invalidation
-const NO_EVENT_TYPE = 'none';
-
 // Cache used to avoid making a read inside Redis for each element of a work to know
-// if the weork is from an enrichment connector or not.
+// if the work is from an enrichment connector or not.
 const workEventTypeCache = new LRUCache<string, string>({ max: 5000, ttl: 60 * 60 * 1000 });
 
 /**
@@ -26,7 +23,8 @@ const resolveWorkEventType = async (workId: string) => {
   if (cached) {
     return cached;
   }
-  const eventType = (await redisGetWorkEventType(workId)) ?? NO_EVENT_TYPE;
+  // A work type never changes, so the cache needs no invalidation
+  const eventType = (await redisGetWorkEventType(workId)) ?? 'none';
   workEventTypeCache.set(workId, eventType);
   return eventType;
 };

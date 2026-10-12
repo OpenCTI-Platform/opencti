@@ -523,21 +523,17 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
 // endregion
 
 // region work handling
-// Touched elements of enrichment works: ids of elements created or updated while
-// processing the work. Separate keys (not fields of the work hash) so that writing
-// them can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+
 export const WORK_TOUCHED_TTL = 7 * 24 * 60 * 60; // 7 days backstop, refreshed on each write
 export const WORK_TOUCHED_CAP = 1000; // safety net, enrichments touch far fewer elements
 const WORK_COMPLETION_HOOKS_FLAG_TTL = 86400; // 1 day
 
-/**
- * Redis key of the set holding the ids touched by a work.
- */
+// Touched elements of enrichment works: ids of elements created or updated while
+// processing the work. Separate keys (not fields of the work hash) so that writing
+// them can never recreate an orphaned work hash. All operations are single-key (cluster safe).
+// work_touched:${workId} => Redis key of the set holding the ids touched by a work.
+// work_touched_truncated:${workId} => Redis key of the flag set once an id was refused because the touched set of a work was full.
 const workTouchedKey = (workId: string) => `work_touched:${workId}`;
-
-/**
- * Redis key of the flag set once an id was refused because the touched set of a work was full.
- */
 const workTouchedTruncatedKey = (workId: string) => `work_touched_truncated:${workId}`;
 
 // Cap check, add and TTL refresh in one atomic round-trip on a single key (cluster safe).
@@ -556,7 +552,11 @@ const WORK_TOUCHED_ADD_SCRIPT = `
  * @param cap maximum number of ids kept per work, beyond it the work is flagged as truncated
  * @returns false when the id was refused by the cap
  */
-export const redisAddWorkTouchedElement = async (workId: string, elementId: string, cap = WORK_TOUCHED_CAP): Promise<boolean> => {
+export const redisAddWorkTouchedElement = async (
+  workId: string,
+  elementId: string,
+  cap = WORK_TOUCHED_CAP,
+): Promise<boolean> => {
   const client = getClientBase();
   const added = await client.eval(WORK_TOUCHED_ADD_SCRIPT, 1, workTouchedKey(workId), elementId, cap, WORK_TOUCHED_TTL);
   if (added === 0) {

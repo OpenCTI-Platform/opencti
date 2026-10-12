@@ -120,9 +120,11 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
     }
     // 2.4. If enrichment is linked to an investigation, the user must be allowed to enrich and to edit the investigation
-    const enrichmentInvestigationIds = uniq(actions
-      .filter((a) => a.type === ACTION_TYPE_ENRICHMENT && a.context?.options?.investigationId)
-      .map((a) => a.context.options.investigationId));
+    const enrichmentInvestigationIds = uniq(
+      actions
+        .filter((a) => a.type === ACTION_TYPE_ENRICHMENT && a.context?.options?.investigationId) // Keep only enrichment with investigation ID
+        .map((a) => a.context.options.investigationId), // Then keep only the investigation ID
+    );
     for (let index = 0; index < enrichmentInvestigationIds.length; index += 1) {
       await validateEnrichmentInvestigation(context, user, enrichmentInvestigationIds[index], { checkEnrichmentCapability: true });
     }
