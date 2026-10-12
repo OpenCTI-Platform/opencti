@@ -58,6 +58,10 @@ The **History** and **Activity** scopes target internal platform logs rather tha
 
     Unlike the Knowledge scope, History and Activity retention rules do not support custom filters. All log entries older than the maximum retention duration are deleted regardless of their content.
 
+!!! warning "History retention and the time machine"
+
+    The [knowledge time machine](../usage/time-machine.md) (the Changes tab of the entities, landscape changes and change digests) is computed from the history. When a History retention rule is active, entities can only be rebuilt with the history that remains, and the knowledge snapshots used to speed up the reconstruction are deleted with the same retention. Choose a History retention covering the periods your analysts compare.
+
 ## Verification process
 
 Before activating a retention rule, users have the option to verify its impact using the "Verify" button. This action provides insight into the number of objects that currently match the rule's criteria and would be deleted if the rule is activated.

@@ -27,6 +27,7 @@ import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import LandscapeChangesWidget from '../../private/components/common/time_machine/LandscapeChangesWidget';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -51,6 +52,20 @@ const DashboardEntitiesViz = ({
   const isDraftWidget = isDraftWorkspaceWidget(widget);
 
   switch (widget.type) {
+    case 'landscape-relationships':
+    case 'landscape-techniques':
+    case 'landscape-top-entities':
+      return (
+        <LandscapeChangesWidget
+          variant={widget.type}
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters}
+          popover={popover}
+          host={host}
+          config={config}
+          refreshRate={refreshRate}
+        />
+      );
     case 'bookmark':
       return (
         <StixDomainObjectBookmarksList

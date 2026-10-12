@@ -125,6 +125,7 @@ const RootReport = () => {
                   ]}
                   />
                   <ContainerHeader
+                    enableTimeMachine
                     container={report}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
@@ -144,6 +145,7 @@ const RootReport = () => {
                     enableEnricher={true}
                   />
                   <StixDomainObjectMain
+                    enableTimeMachine
                     entity={report}
                     basePath={basePath}
                     pages={{

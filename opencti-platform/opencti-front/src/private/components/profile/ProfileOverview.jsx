@@ -34,6 +34,7 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import ProfileLastVisits from './ProfileLastVisits';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
 
@@ -595,6 +596,7 @@ const ProfileOverviewComponent = (props) => {
         </div>
       </Card>
       <ProfileOverviewXtmOneMcp />
+      <ProfileLastVisits />
       <ProfileLocalStorage />
     </Stack>
   );

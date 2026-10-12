@@ -21,6 +21,7 @@ import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
+import { applyVisitRetentionIfDue } from '../modules/timeMachine/timeMachine-retention';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -187,6 +188,8 @@ const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promi
       await executeProcessing(context, retentionRule as unknown as RetentionRule);
     }
   }
+  // Expiration of the last visit markers of the knowledge time machine
+  await applyVisitRetentionIfDue(context);
 };
 
 const RETENTION_MANAGER_DEFINITION: ManagerDefinition = {

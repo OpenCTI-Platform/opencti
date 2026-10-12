@@ -14,7 +14,7 @@ export const colors: Record<string, string> = {
 export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
   const events = notification_content.map((n) => n.events).flat();
   const firstEvent = events.at(0);
-  const isDigest = notification_type === 'digest';
+  const isDigest = notification_type === 'digest' || notification_type === 'change_digest';
   return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
 };
 
