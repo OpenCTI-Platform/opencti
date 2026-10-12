@@ -180,8 +180,9 @@ const completeWorkflowAsyncActionResult = async (
     }
   }
 
-  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block)
-  for (const actionConfig of (pendingTransition.onEnterActions ?? [])) {
+  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block).
+  // A terminal transition has no target state to enter.
+  for (const actionConfig of (pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [])) {
     const actionFn = ActionRegistry[actionConfig.type];
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
@@ -220,6 +221,7 @@ const completeWorkflowAsyncActionResult = async (
     timestamp: new Date().toISOString(),
     event: pendingTransition.event,
     completedAt: new Date().toISOString(),
+    ...(pendingTransition.completesWorkflow ? { completed: true } : {}),
     ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
   });
 
@@ -229,6 +231,7 @@ const completeWorkflowAsyncActionResult = async (
     { key: 'pendingStatus', value: [null] },
     { key: 'pendingError', value: [null] },
     { key: 'pendingTransition', value: [null] },
+    ...(pendingTransition.completesWorkflow ? [{ key: 'completed', value: [true] }] : []),
   ]);
 
   // Keep the legacy `x_opencti_workflow_id` in sync with the completed state.

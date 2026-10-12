@@ -160,6 +160,30 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
+  it('should not return an unlinked-transition error when a null to completes the workflow via validateDraft', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'complete', syncActions: [{ type: 'validateDraft' }] },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION')).toBe(false);
+  });
+
+  it('should still return an unlinked-transition error for a null to without validateDraft (an orphaned reference)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'test' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION' && e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+  });
+
   it('should return error if filter operator is invalid', async () => {
     const invalid = {
       initialState: 'existing-state',

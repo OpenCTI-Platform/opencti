@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
 import { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
@@ -18,7 +18,7 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser } from '../../../utils/access';
+import { AccessOperation, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, validateUserAccessOperation } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
@@ -205,6 +205,7 @@ const notifyWorkflowTransitionComment = async (
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
+  completed?: boolean;
   history: string;
   pendingStatus?: string | null;
   pendingError?: string | null;
@@ -1224,7 +1225,7 @@ export const getAllowedTransitions = async (
   },
 ): Promise<Array<{
   event: string;
-  toState: string;
+  toState: string | null;
   toStatus: BasicWorkflowStatus | null;
   comment?: string;
   actions: string[];
@@ -1233,6 +1234,12 @@ export const getAllowedTransitions = async (
 }>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
+    return [];
+  }
+
+  // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
+  // an authorized-members group restriction) must not see any transition as available.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     return [];
   }
 
@@ -1245,6 +1252,9 @@ export const getAllowedTransitions = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (instanceEntity?.completed) {
+    return [];
+  }
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -1268,7 +1278,7 @@ export const getAllowedTransitions = async (
       }
       return {
         event: transition.event,
-        toState: transition.to,
+        toState: transition.to ?? null,
         toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
         comment: transition.comment,
         actions: transition.actionTypes || [],
@@ -1307,6 +1317,13 @@ export const triggerWorkflowEvent = async (
     throw FunctionalError('Entity not found', { entityId });
   }
 
+  // View access alone isn't enough to trigger a transition: mirrors the check in
+  // getAllowedTransitions, which only hides transitions from the UI and does not itself
+  // prevent a view-only user from calling this mutation directly.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+    throw ForbiddenAccess();
+  }
+
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = await getDefinitionData(context, user, entitySetting);
@@ -1325,6 +1342,10 @@ export const triggerWorkflowEvent = async (
     const executionUser = bypassDraftUser(user);
 
     const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+    if (instanceEntity.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
@@ -1403,12 +1424,19 @@ export const triggerWorkflowEvent = async (
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
-      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      // A null `to` only completes the workflow when paired with `validateDraft` (see
+      // workflow-validation.ts) - otherwise it's a stale orphaned reference (e.g. a status
+      // deleted after this definition was published, before that validation gate existed).
+      const completesWorkflow = targetTransitionForSync != null
+        && targetTransitionForSync.to == null
+        && serializedTransitions.some((action) => action.type === 'validateDraft');
+      const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
         toState: toStateId,
+        ...(completesWorkflow ? { completesWorkflow: true } : {}),
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
@@ -1449,12 +1477,14 @@ export const triggerWorkflowEvent = async (
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: eventName,
+      ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
+      ...(result.workflowCompleted ? [{ key: 'completed', value: [true] }] : []),
     ]);
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
