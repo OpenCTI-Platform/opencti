@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ManagerDefinition } from '../../../../src/manager/managerModule';
+import type { ManagerDefinition } from '../../../src/manager/managerModule';
 
 const {
   mockRegisterManager,
@@ -23,30 +23,30 @@ const {
   mockLogWarn: vi.fn(),
 }));
 
-vi.mock('../../../../src/manager/managerModule', () => ({
+vi.mock('../../../src/manager/managerModule', () => ({
   registerManager: mockRegisterManager,
 }));
 
-vi.mock('../../../../src/modules/connector/connector-domain', () => ({
+vi.mock('../../../src/modules/connector/connector-domain', () => ({
   connectors: mockConnectors,
 }));
 
-vi.mock('../../../../src/database/redis', () => ({
+vi.mock('../../../src/database/redis', () => ({
   redisGetConnectorStatus: mockRedisGetConnectorStatus,
   redisGetWork: mockRedisGetWork,
 }));
 
-vi.mock('../../../../src/database/engine', () => ({
+vi.mock('../../../src/database/engine', () => ({
   elList: mockElList,
   elUpdate: mockElUpdate,
 }));
 
-vi.mock('../../../../src/domain/work', () => ({
+vi.mock('../../../src/domain/work', () => ({
   deleteWorksRaw: mockDeleteWorksRaw,
 }));
 
-vi.mock('../../../../src/config/conf', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   return {
     ...actual,
     logApp: {
@@ -58,7 +58,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => {
   };
 });
 
-import '../../../../src/modules/connector/connector-manager';
+import '../../../src/manager/connectorManager';
 
 const definition: ManagerDefinition = mockRegisterManager.mock.calls[0][0];
 const runConnectorManager = (signal = new AbortController().signal) => {
