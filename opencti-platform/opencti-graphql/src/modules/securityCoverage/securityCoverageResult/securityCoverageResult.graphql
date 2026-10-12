@@ -243,6 +243,7 @@ input SecurityCoverageResultAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
   customFieldValues: [CustomFieldValueAddInput!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
 type Mutation {
