@@ -36,6 +36,31 @@ def test_guess_past_date_normalises_time_zones():
     )
 
 
+def test_guess_past_date_cutoff_is_compared_in_utc():
+    # NOW is 2026-10-12 08:00 UTC: the cutoff is 2026-10-11 08:00 UTC
+    paris = datetime.timezone(datetime.timedelta(hours=2))
+    for now in (NOW, NOW.replace(tzinfo=datetime.timezone.utc).astimezone(paris)):
+        assert (
+            OpenCTIStix2Utils.guess_past_date("seen 2026-10-11T09:30:00+02:00", now=now)
+            == "2026-10-11T07:30:00Z"
+        )
+        assert (
+            OpenCTIStix2Utils.guess_past_date("seen 2026-10-11T11:00:00+02:00", now=now)
+            is None
+        )
+        assert (
+            OpenCTIStix2Utils.guess_past_date("seen 2026-10-11T07:59:00", now=now)
+            == "2026-10-11T07:59:00Z"
+        )
+
+
+def test_guess_past_date_defaults_to_the_current_time():
+    assert (
+        OpenCTIStix2Utils.guess_past_date("seen 2000-01-01") == "2000-01-01T00:00:00Z"
+    )
+    assert OpenCTIStix2Utils.guess_past_date("scheduled for 2999-01-01") is None
+
+
 def test_guess_past_date_without_date_or_text():
     assert OpenCTIStix2Utils.guess_past_date("MITRE ATT&CK", now=NOW) is None
     assert OpenCTIStix2Utils.guess_past_date("", now=NOW) is None

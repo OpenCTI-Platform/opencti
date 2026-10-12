@@ -19,6 +19,20 @@ datefinder.ValueError = ValueError, OverflowError
 # case for every zone west of UTC.
 EPOCH = datetime.datetime(1970, 1, 1)
 
+
+def _to_naive_utc(value: datetime.datetime) -> datetime.datetime:
+    """Return a datetime as a naive UTC datetime; a naive one is taken as UTC already.
+
+    :param value: Datetime to convert, naive or time-zone-aware
+    :type value: datetime.datetime
+    :return: The same instant as a naive UTC datetime
+    :rtype: datetime.datetime
+    """
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
+
 # Aliases field constants
 ALIASES_FIELD = "aliases"
 X_OPENCTI_ALIASES_FIELD = "x_opencti_aliases"
@@ -306,14 +320,17 @@ class OpenCTIStix2Utils:
         """Find the first date older than a day in a free text (an external reference
         description or source name) and return it as an ISO 8601 UTC string.
 
-        The dates are compared as naive datetimes, never through ``timestamp()``:
+        The dates are compared as naive UTC datetimes, never through ``timestamp()``:
         on Windows ``datetime.timestamp()`` raises ``OSError`` for dates near or before
         the epoch, which made the worker fail on references mentioning such dates.
-        Any failure of the date finder leaves the result empty.
+        A date carrying a time zone is converted to UTC, a date without one is taken as
+        UTC, as the ``Z`` of the result states. Any failure of the date finder leaves
+        the result empty.
 
         :param text: Text to search for a date
         :type text: str or None
-        :param now: Reference time, defaults to the current time (tests override it)
+        :param now: Reference time, naive UTC or time-zone-aware, defaults to the
+            current time (tests override it)
         :type now: datetime.datetime or None
         :return: The date as ``%Y-%m-%dT%H:%M:%SZ`` or None when no past date is found
         :rtype: str or None
@@ -324,10 +341,12 @@ class OpenCTIStix2Utils:
             matches: Iterable[datetime.datetime] = datefinder.find_dates(
                 text, base_date=EPOCH
             )
-            yesterday = (now or datetime.datetime.now()) - datetime.timedelta(days=1)
+            reference = (
+                now if now is not None else datetime.datetime.now(datetime.timezone.utc)
+            )
+            yesterday = _to_naive_utc(reference) - datetime.timedelta(days=1)
             for match in matches:
-                if match.tzinfo is not None:
-                    match = match.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+                match = _to_naive_utc(match)
                 if match < yesterday and len(str(match.year)) == 4:
                     return match.strftime("%Y-%m-%dT%H:%M:%SZ")
         except (TypeError, OverflowError, ValueError, OSError):
