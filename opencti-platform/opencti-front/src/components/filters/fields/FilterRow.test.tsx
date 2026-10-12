@@ -139,6 +139,11 @@ describe('FilterRow', () => {
       expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).not.toBeDisabled();
     });
 
+    it('focuses the relationship type field on open, so it can be searched right after the operator', () => {
+      renderRow(withoutDynamic);
+      expect(within(screen.getByTestId('filter-row-relationship-type')).getByRole('combobox')).toHaveFocus();
+    });
+
     it('cannot be emptied once a dynamic filter is defined', () => {
       renderRow(withDynamic);
       const relationshipType = screen.getByTestId('filter-row-relationship-type');
