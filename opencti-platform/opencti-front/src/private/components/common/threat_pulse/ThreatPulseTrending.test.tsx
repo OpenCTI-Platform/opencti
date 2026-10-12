@@ -32,7 +32,16 @@ const renderTrending = (pulseTrending: Record<string, unknown>) => {
 
 const BASE = { readable: true, preview: false, unavailable_reason: null, day: '2026-10-03', period: 'last_7_days', locked_count: 0 };
 
+const titleLineOf = (title: string) => screen.getByText(title).parentElement as HTMLElement;
+
 describe('ThreatPulseTrending', () => {
+  it('should grow its title line with the period select so the select stays within the widget', async () => {
+    renderTrending({ ...BASE, sector_bucket: 'finance', region_bucket: null, network_items_count: 0, entries: [] });
+    expect(await screen.findByText('Nothing this platform holds is trending in its sector for this period.')).toBeDefined();
+    expect(screen.getByRole('combobox', { name: 'Period' })).toBeDefined();
+    expect(getComputedStyle(titleLineOf('Trending in your sector')).alignItems).toBe('end');
+  });
+
   it('should list the local entities rising in the sector with their community facts', async () => {
     renderTrending({
       ...BASE,
@@ -127,5 +136,6 @@ describe('ThreatPulseTrending', () => {
     expect(await screen.findByText('Sector: Finance - last 30 days')).toBeDefined();
     expect(screen.getByTestId('threat-pulse-trending-period').textContent).toBe('30 days');
     expect(screen.queryByRole('combobox', { name: 'Period' })).toBeNull();
+    expect(getComputedStyle(titleLineOf('Trending in your sector')).alignItems).toBe('center');
   });
 });
