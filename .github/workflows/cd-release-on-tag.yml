@@ -217,7 +217,7 @@ jobs:
           PYCTI_VERSION: ${{ needs.validate.outputs.pycti_version }}
         run: |
           set -euo pipefail
-          HTTP_CODE=$(curl -sS -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/pycti/${PYCTI_VERSION}/json")
+          HTTP_CODE=$(curl --connect-timeout 10 --max-time 30 -sS -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/pycti/${PYCTI_VERSION}/json")
           if [ "${HTTP_CODE}" == "404" ]; then
             echo "pycti ${PYCTI_VERSION} is not on PyPI yet: it would be published by a real run."
             echo "PYPI_STATUS=new version" >> "$GITHUB_ENV"
