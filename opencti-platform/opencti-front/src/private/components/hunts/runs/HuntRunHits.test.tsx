@@ -39,7 +39,7 @@ describe('Hits of a hunt run', () => {
     // The focus ring of the design system, not the outline of the browser
     expect(trigger).toHaveClass('focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-filigran-brand-primary');
     expect(screen.queryByTestId('hunt-run-hits-unidentified')).not.toBeInTheDocument();
-    // Two hits of 120 are kept: the drawer says so
+    // Two hits of 120 are kept: the card says so
     expect(screen.getByTestId('hunt-run-hits-sampled')).toHaveTextContent('2 of 120 hits are kept as a sample');
   });
 

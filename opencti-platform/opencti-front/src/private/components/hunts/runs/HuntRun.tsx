@@ -1,9 +1,10 @@
-import React, { createContext, Suspense, useContext, useEffect, useRef, useState } from 'react';
-import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
-import { Link, useNavigate, useParams } from 'react-router';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
+import Grid2 from '@mui/material/Grid2';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -11,26 +12,25 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useTheme } from '@mui/styles';
-import { AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
+import { ArrowBackOutlined, AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Alert, Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import Drawer from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import CodeBlock from '@components/common/CodeBlock';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextareaField from '../../../../components/TextareaField';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
-import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { PATH_HUNT, PATH_INCIDENT, PATH_SECURITY_COVERAGE } from '../../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT, PATH_SECURITY_COVERAGE } from '../../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
 import { prismLanguageOf } from '../HuntCodeEditor';
 import useHuntAI from '../useHuntAI';
@@ -59,22 +59,19 @@ import {
 } from '../hunt-utils';
 import { HuntLearnMore } from '../HuntLearnMore';
 import { shortHash } from '../hunt-evidence-utils';
-import { insertStartedHuntRuns } from './hunt-run-store';
+import { huntRunsListOptions, insertStartedHuntRuns } from './hunt-run-store';
 import HuntRunResults from './HuntRunResults';
 import HuntRunIocResults from './HuntRunIocResults';
 import HuntRunRuleResults from './HuntRunRuleResults';
 import HuntRunHits from './HuntRunHits';
 import { HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
-import { HuntRunDrawer_run$data, HuntRunDrawer_run$key } from './__generated__/HuntRunDrawer_run.graphql';
-import { HuntRunDrawerQuery } from './__generated__/HuntRunDrawerQuery.graphql';
-import { HuntRunDrawerVerdictMutation } from './__generated__/HuntRunDrawerVerdictMutation.graphql';
-import { HuntRunDrawerRetryMutation } from './__generated__/HuntRunDrawerRetryMutation.graphql';
-import { HuntRunDrawerTriageMutation } from './__generated__/HuntRunDrawerTriageMutation.graphql';
+import { HuntRun_run$data, HuntRun_run$key } from './__generated__/HuntRun_run.graphql';
+import { HuntRunVerdictMutation } from './__generated__/HuntRunVerdictMutation.graphql';
+import { HuntRunRetryMutation } from './__generated__/HuntRunRetryMutation.graphql';
+import { HuntRunTriageMutation } from './__generated__/HuntRunTriageMutation.graphql';
 
-const RUN_POLL_INTERVAL_MS = 5000;
-
-const huntRunDrawerFragment = graphql`
-  fragment HuntRunDrawer_run on HuntRun {
+const huntRunFragment = graphql`
+  fragment HuntRun_run on HuntRun {
     id
     ...HuntRunIocResults_run
     ...HuntRunRuleResults_run
@@ -163,29 +160,18 @@ const huntRunDrawerFragment = graphql`
   }
 `;
 
-const huntRunDrawerQuery = graphql`
-  query HuntRunDrawerQuery($id: String!) {
-    huntRun(id: $id) {
-      id
-      hunt_id
-      ...HuntRunDrawer_run
-    }
-    ...HuntRunResults_data @arguments(id: $id)
-  }
-`;
-
-const huntRunDrawerVerdictMutation = graphql`
-  mutation HuntRunDrawerVerdictMutation($id: ID!, $input: HuntRunVerdictInput!) {
+const huntRunVerdictMutation = graphql`
+  mutation HuntRunVerdictMutation($id: ID!, $input: HuntRunVerdictInput!) {
     huntRunSetVerdict(id: $id, input: $input) {
       id
-      ...HuntRunDrawer_run
+      ...HuntRun_run
       ...HuntRuns_RunFragment
     }
   }
 `;
 
-const huntRunDrawerRetryMutation = graphql`
-  mutation HuntRunDrawerRetryMutation($id: ID!) {
+const huntRunRetryMutation = graphql`
+  mutation HuntRunRetryMutation($id: ID!) {
     huntRunRetry(id: $id) {
       id
       ...HuntRuns_RunFragment
@@ -193,11 +179,11 @@ const huntRunDrawerRetryMutation = graphql`
   }
 `;
 
-const huntRunDrawerTriageMutation = graphql`
-  mutation HuntRunDrawerTriageMutation($id: ID!) {
+const huntRunTriageMutation = graphql`
+  mutation HuntRunTriageMutation($id: ID!) {
     huntRunTriage(id: $id) {
       id
-      ...HuntRunDrawer_run
+      ...HuntRun_run
     }
   }
 `;
@@ -209,7 +195,7 @@ interface IncidentProposal {
 }
 
 /** The agent proposal of an incident is stored as JSON; an unreadable one is ignored. */
-export const parseHuntIncidentProposal = (proposal?: string | null): IncidentProposal | null => {
+const parseHuntIncidentProposal = (proposal?: string | null): IncidentProposal | null => {
   if (!proposal) return null;
   try {
     const parsed = JSON.parse(proposal);
@@ -229,9 +215,9 @@ const severityOf = (severity?: string | null) => {
   }
 };
 
-type Run = HuntRunDrawer_run$data;
+type Run = HuntRun_run$data;
 
-/** The edit right of the hunt page: the update capability, the edit access to the hunt and, in a draft, to the draft. */
+/** The edit right of the hunt: the update capability, the edit access to the hunt and, in a draft, to the draft. */
 const HuntEditContext = createContext(false);
 
 /** The controls that change the hunt or its runs, which the platform refuses to a user who can only view the hunt. */
@@ -344,7 +330,7 @@ const RunDetails = ({ run }: { run: Run }) => {
 };
 
 /** What failed, why, and the next action, instead of the raw error the connector reported. */
-// Retry is the primary action of the status header: the alert carries the fix of the failure class
+// Retry is the primary action of the page header: the alert carries the fix of the failure class
 const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -476,7 +462,7 @@ interface VerdictValues {
 const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLDivElement | null> }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation<HuntRunDrawerVerdictMutation>(huntRunDrawerVerdictMutation);
+  const [commit] = useApiMutation<HuntRunVerdictMutation>(huntRunVerdictMutation);
   const editable = canSetHuntRunVerdict(run);
   const onSubmit = (values: VerdictValues, { setSubmitting }: { setSubmitting: (submitting: boolean) => void }) => {
     commit({
@@ -560,7 +546,6 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
             </Formik>
           </HuntEditControls>
         )}
-        {(canTriageHuntRun(run) || !!run.verdict_proposal) && <RunTriage run={run} />}
       </Card>
     </div>
   );
@@ -571,8 +556,8 @@ const RunTriage = ({ run }: { run: Run }) => {
   const { t_i18n } = useFormatter();
   const { available, isEnterpriseEdition } = useHuntAI();
   const canEdit = useContext(HuntEditContext);
-  const [commitTriage, triaging] = useApiMutation<HuntRunDrawerTriageMutation>(huntRunDrawerTriageMutation);
-  const [commitVerdict, accepting] = useApiMutation<HuntRunDrawerVerdictMutation>(huntRunDrawerVerdictMutation);
+  const [commitTriage, triaging] = useApiMutation<HuntRunTriageMutation>(huntRunTriageMutation);
+  const [commitVerdict, accepting] = useApiMutation<HuntRunVerdictMutation>(huntRunVerdictMutation);
   const incident = parseHuntIncidentProposal(run.incident_proposal);
   const canTriage = canTriageHuntRun(run);
   const hasProposal = !!run.verdict_proposal;
@@ -595,11 +580,7 @@ const RunTriage = ({ run }: { run: Run }) => {
     unavailableReason = t_i18n('AI triage needs XTM One to be configured on the platform');
   }
   return (
-    <section style={{ marginTop: theme.spacing(3), paddingTop: theme.spacing(2), borderTop: `1px solid ${theme.palette.divider}` }}>
-      <div style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
-        <Text variant="content-compact-bold">{t_i18n('AI triage')}</Text>
-        <EEChip />
-      </div>
+    <Card title={<>{t_i18n('AI triage')}<EEChip size="sm" /></>}>
       <div data-testid="hunt-run-triage">
         {unavailableReason && <Text variant="content-compact">{unavailableReason}</Text>}
         {!unavailableReason && !hasProposal && (
@@ -662,7 +643,7 @@ const RunTriage = ({ run }: { run: Run }) => {
           </div>
         </HuntEditControls>
       </div>
-    </section>
+    </Card>
   );
 };
 
@@ -740,17 +721,69 @@ const RunPartialResultsAlert = ({ run, huntId }: { run: Run; huntId: string }) =
   );
 };
 
-interface RunStatusHeaderProps {
+interface RunHeaderProps {
   run: Run;
   huntId: string;
+  huntName: string;
+  title: string;
   canRetry: boolean;
   retrying: boolean;
   onRetry: () => void;
   onSetVerdict: () => void;
 }
 
-/** Where the run stands in one sentence, with the next action: the first thing the drawer answers. */
-const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdict }: RunStatusHeaderProps) => {
+/** What the run is, where it stands and its next action, with the way back to its hunt. */
+const RunHeader = ({ run, huntId, huntName, title, canRetry, retrying, onRetry, onSetVerdict }: RunHeaderProps) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
+  const isExecution = run.hunt_run_mode !== 'preview';
+  let primary: React.ReactNode = null;
+  if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
+    primary = (
+      <HuntEditControls>
+        <Button onClick={onSetVerdict} data-testid="hunt-run-set-verdict">{t_i18n('Set the verdict')}</Button>
+      </HuntEditControls>
+    );
+  } else if (failure && canRetry) {
+    // The failure alert of the status carries the fix of its class (check the connector, edit the rule)
+    primary = (
+      <HuntEditControls>
+        <Button startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
+          {t_i18n('Retry')}
+        </Button>
+      </HuntEditControls>
+    );
+  } else if (run.verdict === 'true_positive' && (run.draft_id || run.incident_id)) {
+    const incidentPath = run.draft_id ? huntDraftWorkspacePath(run.draft_id) : PATH_INCIDENT(run.incident_id as string);
+    primary = (
+      <Button component={Link} to={incidentPath} data-testid="hunt-run-open-incident">
+        {run.draft_id ? t_i18n('Open the incident draft') : t_i18n('Open the incident')}
+      </Button>
+    );
+  }
+  return (
+    <div style={{ marginBottom: theme.spacing(2) }} data-testid="hunt-run-header">
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap', marginBottom: theme.spacing(1) }}>
+        <TitleMainEntity sx={{ flex: 1 }} preserveCase>{title}</TitleMainEntity>
+        <Button variant="secondary" component={Link} to={`${PATH_HUNT(huntId)}/runs`} startIcon={<ArrowBackOutlined fontSize="small" />} data-testid="hunt-run-back">
+          {t_i18n('Back to the hunt')}
+        </Button>
+        {primary}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+        <HuntRunStatusChip value={run.hunt_run_status} />
+        {isExecution && <HuntVerdictChip value={run.verdict} />}
+        <Text variant="content-compact" data-testid="hunt-run-hunt-name">{huntName}</Text>
+        <Text variant="content-compact" as="span" aria-hidden style={{ color: theme.palette.text.secondary }}>-</Text>
+        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="hunt-run-platform">{runPlatformName(run, t_i18n)}</Text>
+      </div>
+    </div>
+  );
+};
+
+/** Where the run stands in one sentence, and what keeps it from a complete answer: the first thing the page answers. */
+const RunStatus = ({ run, huntId }: { run: Run; huntId: string }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, n, rd } = useFormatter();
   const terminal = isTerminalHuntRun(run.hunt_run_status);
@@ -778,181 +811,148 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
     // The platform records why it cancelled the run as one of its sentences, the translation key of the reason
     sentence = run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled');
   }
-  let primary: React.ReactNode = null;
-  if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
-    primary = (
-      <HuntEditControls>
-        <Button onClick={onSetVerdict} data-testid="hunt-run-set-verdict">{t_i18n('Set the verdict')}</Button>
-      </HuntEditControls>
-    );
-  } else if (failure && canRetry) {
-    // The failure alert below carries the fix of its class (check the connector, edit the rule)
-    primary = (
-      <HuntEditControls>
-        <Button startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
-          {t_i18n('Retry')}
-        </Button>
-      </HuntEditControls>
-    );
-  } else if (run.verdict === 'true_positive' && (run.draft_id || run.incident_id)) {
-    const incidentPath = run.draft_id ? huntDraftWorkspacePath(run.draft_id) : PATH_INCIDENT(run.incident_id as string);
-    primary = (
-      <Button component={Link} to={incidentPath} data-testid="hunt-run-open-incident">
-        {run.draft_id ? t_i18n('Open the incident draft') : t_i18n('Open the incident')}
-      </Button>
-    );
+  const unresolved = isExecution && run.unresolved_techniques.length > 0;
+  const partial = isExecution && run.hunt_run_status === 'completed' && !!run.results_truncated;
+  if (!sentence && !run.queue_reason && !unresolved && !failure && !partial) {
+    return null;
   }
   return (
-    <Card aria-label={t_i18n('Run status')}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid="hunt-run-status-header">
-        <HuntRunStatusChip value={run.hunt_run_status} />
-        {isExecution && <HuntVerdictChip value={run.verdict} />}
-        <div style={{ flex: 1 }} />
-        {primary}
-      </div>
-      {sentence && (
-        <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-run-status-sentence">
-          {sentence}
-        </Text>
-      )}
-      {run.queue_reason && (
-        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-run-queue-reason">
-          {huntMessageText(run.queue_reason, t_i18n)}
-        </Text>
-      )}
-      {isExecution && run.unresolved_techniques.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1), marginTop: theme.spacing(1) }} data-testid="hunt-run-unresolved-techniques">
-          <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
-          <Text variant="content-compact">{huntRunUnresolvedTechniquesSentence(run.unresolved_techniques, t_i18n)}</Text>
+    <div style={{ marginBottom: theme.spacing(3) }}>
+      <Card aria-label={t_i18n('Run status')}>
+        <div data-testid="hunt-run-status">
+          {sentence && (
+            <Text variant="content-compact" style={{ display: 'block' }} data-testid="hunt-run-status-sentence">
+              {sentence}
+            </Text>
+          )}
+          {run.queue_reason && (
+            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-run-queue-reason">
+              {huntMessageText(run.queue_reason, t_i18n)}
+            </Text>
+          )}
+          {unresolved && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1), marginTop: theme.spacing(1) }} data-testid="hunt-run-unresolved-techniques">
+              <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
+              <Text variant="content-compact">{huntRunUnresolvedTechniquesSentence(run.unresolved_techniques, t_i18n)}</Text>
+            </div>
+          )}
+          {failure && (
+            <div style={{ marginTop: theme.spacing(1.5) }}>
+              <RunFailureAlert run={run} huntId={huntId} />
+            </div>
+          )}
+          {partial && (
+            <div style={{ marginTop: theme.spacing(1.5) }}>
+              <RunPartialResultsAlert run={run} huntId={huntId} />
+            </div>
+          )}
         </div>
-      )}
-      {failure && (
-        <div style={{ marginTop: theme.spacing(1.5) }}>
-          <RunFailureAlert run={run} huntId={huntId} />
-        </div>
-      )}
-      {isExecution && run.hunt_run_status === 'completed' && run.results_truncated && (
-        <div style={{ marginTop: theme.spacing(1.5) }}>
-          <RunPartialResultsAlert run={run} huntId={huntId} />
-        </div>
-      )}
-    </Card>
+      </Card>
+    </div>
   );
 };
 
-interface HuntRunDrawerContentProps {
-  data: HuntRunDrawer_run$key;
+interface HuntRunProps {
+  data: HuntRun_run$key;
   results: HuntRunResults_data$key;
   huntId: string;
-  paginationOptions?: Record<string, unknown>;
+  huntName: string;
+  title: string;
+  // The edit right of the hunt: acting on its runs changes it
+  canEdit: boolean;
 }
 
-const HuntRunDrawerContent = ({ data, results, huntId, paginationOptions }: HuntRunDrawerContentProps) => {
+/**
+ * The page of a hunt run: its header, where it stands, then the verdict, the AI triage, the hits and what the run
+ * found and produced, with its details and related objects on the side and the query it ran below.
+ */
+const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const draftContext = useDraftContext();
-  const run = useFragment(huntRunDrawerFragment, data);
-  const [commitRetry, retrying] = useApiMutation<HuntRunDrawerRetryMutation>(huntRunDrawerRetryMutation);
-  const terminal = isTerminalHuntRun(run.hunt_run_status);
+  const run = useFragment(huntRunFragment, data);
+  const [commitRetry, retrying] = useApiMutation<HuntRunRetryMutation>(huntRunRetryMutation);
   const verdictRef = useRef<HTMLDivElement>(null);
   const focusVerdict = () => {
     verdictRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     verdictRef.current?.querySelector<HTMLElement>('[data-testid="hunt-run-verdict-form"] button, [data-testid="hunt-run-verdict-form"] textarea')?.focus();
   };
-
-  useEffect(() => {
-    if (terminal) return undefined;
-    const timer = setInterval(() => {
-      fetchQuery(huntRunDrawerQuery, { id: run.id }).toPromise().catch(() => undefined);
-    }, RUN_POLL_INTERVAL_MS);
-    return () => clearInterval(timer);
-  }, [run.id, terminal]);
-
   const retry = () => {
     commitRetry({
       variables: { id: run.id },
       updater: (store) => {
-        if (paginationOptions) {
-          insertStartedHuntRuns(store, [store.getRootField('huntRunRetry')], paginationOptions);
+        const listOptions = huntRunsListOptions(huntId);
+        if (listOptions) {
+          insertStartedHuntRuns(store, [store.getRootField('huntRunRetry')], listOptions);
         }
       },
       onCompleted: (response, errors) => {
         if (!notifyPayloadErrors(errors) && response.huntRunRetry) {
-          navigate(`${PATH_HUNT(huntId)}/runs/${response.huntRunRetry.id}`);
+          navigate(PATH_HUNT_RUN(huntId, response.huntRunRetry.id));
         }
       },
     });
   };
   const canRetry = canRetryHuntRun(run) && canStartHuntRun(run.hunt?.hunt_status, !!draftContext);
   const isExecution = run.hunt_run_mode !== 'preview';
+  const column = { display: 'flex', flexDirection: 'column' as const, gap: theme.spacing(3) };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="hunt-run-drawer">
-      <RunStatusHeader run={run} huntId={huntId} canRetry={canRetry} retrying={retrying} onRetry={retry} onSetVerdict={focusVerdict} />
-      {isExecution && <RunVerdict run={run} cardRef={verdictRef} />}
-      {isExecution && run.hunt_run_status === 'completed' && ((run.hits_count ?? 0) > 0 || run.time_window_continued) && (
-        <HuntRunHits
-          hitsCount={run.hits_count}
-          newCount={run.hits_new_count}
-          recurringCount={run.hits_recurring_count}
-          identified={run.hits_identified}
-          windowContinued={run.time_window_continued}
-          platform={runPlatformName(run, t_i18n)}
-          hits={run.hits_sample ?? []}
+    <HuntEditContext.Provider value={canEdit}>
+      <div data-testid="hunt-run-page">
+        <RunHeader
+          run={run}
+          huntId={huntId}
+          huntName={huntName}
+          title={title}
+          canRetry={canRetry}
+          retrying={retrying}
+          onRetry={retry}
+          onSetVerdict={focusVerdict}
         />
-      )}
-      {isExecution && <HuntRunIocResults data={run} />}
-      <HuntRunRuleResults data={run} />
-      {isExecution && <RunEvidence run={run} results={results} />}
-      <RunLinks run={run} />
-      <RunDetails run={run} />
-      {run.translated_query && (
-        <Card title={t_i18n('Translated query')}>
-          <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
-            <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
-            <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
-          </Disclosure>
-        </Card>
-      )}
-    </div>
+        <RunStatus run={run} huntId={huntId} />
+        <Grid2 container spacing={3}>
+          <Grid2 size={{ xs: 12, lg: 8 }}>
+            <div style={column}>
+              {isExecution && <RunVerdict run={run} cardRef={verdictRef} />}
+              {isExecution && (canTriageHuntRun(run) || !!run.verdict_proposal) && <RunTriage run={run} />}
+              {isExecution && run.hunt_run_status === 'completed' && ((run.hits_count ?? 0) > 0 || run.time_window_continued) && (
+                <HuntRunHits
+                  hitsCount={run.hits_count}
+                  newCount={run.hits_new_count}
+                  recurringCount={run.hits_recurring_count}
+                  identified={run.hits_identified}
+                  windowContinued={run.time_window_continued}
+                  platform={runPlatformName(run, t_i18n)}
+                  hits={run.hits_sample ?? []}
+                />
+              )}
+              {isExecution && <HuntRunIocResults data={run} />}
+              <HuntRunRuleResults data={run} />
+              {isExecution && <RunEvidence run={run} results={results} />}
+            </div>
+          </Grid2>
+          <Grid2 size={{ xs: 12, lg: 4 }}>
+            <div style={column}>
+              <RunLinks run={run} />
+              <RunDetails run={run} />
+            </div>
+          </Grid2>
+          {run.translated_query && (
+            <Grid2 size={12}>
+              <Card title={t_i18n('Translated query')}>
+                <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
+                  <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
+                  <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
+                </Disclosure>
+              </Card>
+            </Grid2>
+          )}
+        </Grid2>
+      </div>
+    </HuntEditContext.Provider>
   );
 };
 
-const HuntRunDrawerLoader = ({ runId, huntId, paginationOptions }: { runId: string; huntId: string; paginationOptions?: Record<string, unknown> }) => {
-  const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<HuntRunDrawerQuery>(huntRunDrawerQuery, { id: runId }, { fetchPolicy: 'store-and-network' });
-  const { huntRun } = data;
-  if (!huntRun || huntRun.hunt_id !== huntId) {
-    return <Text variant="content-compact">{t_i18n('This run cannot be found')}</Text>;
-  }
-  return <HuntRunDrawerContent data={huntRun} results={data} huntId={huntId} paginationOptions={paginationOptions} />;
-};
-
-interface HuntRunDrawerProps {
-  huntId: string;
-  canEdit: boolean;
-  paginationOptions?: Record<string, unknown>;
-}
-
-const HuntRunDrawer = ({ huntId, canEdit, paginationOptions }: HuntRunDrawerProps) => {
-  const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
-  const { runId } = useParams() as { runId: string };
-  return (
-    <Drawer
-      title={t_i18n('Hunt run')}
-      open
-      onClose={() => navigate(`${PATH_HUNT(huntId)}/runs`)}
-      size="large"
-    >
-      <HuntEditContext.Provider value={canEdit}>
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <HuntRunDrawerLoader runId={runId} huntId={huntId} paginationOptions={paginationOptions} />
-        </Suspense>
-      </HuntEditContext.Provider>
-    </Drawer>
-  );
-};
-
-export default HuntRunDrawer;
+export default HuntRun;

@@ -80,14 +80,25 @@ test('Hunt manual creation, tabs and Logic validation', { tag: ['@hunt', '@mutat
  * Content of the test
  * -------------------
  * Seed an active hunt with a run a hunt connector reported completed
- * Open the run drawer and save an analyst verdict
+ * Open the run from the Runs tab of the hunt and read its page
+ * Save an analyst verdict, then go back to the hunt
  */
-test('Hunt run drawer verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({ page, request }) => {
+test('Hunt run page verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({ page, request }) => {
   const huntDetails = new HuntDetailsPage(page);
-  const seeded = await seedHuntWithCompletedRun(request, `Hunt with a run - ${uuid()}`);
+  const huntName = `Hunt with a run - ${uuid()}`;
+  const seeded = await seedHuntWithCompletedRun(request, huntName);
   try {
-    await huntDetails.gotoRun(seeded.huntId, seeded.runId);
-    await expect(huntDetails.getRunsPage()).toBeVisible();
+    await huntDetails.gotoRuns(seeded.huntId);
+    await huntDetails.getRunRow(seeded.huntId, seeded.runId).click();
+    await expect(page).toHaveURL(new RegExp(`/dashboard/defense/hunts/${seeded.huntId}/runs/${seeded.runId}$`));
+    await expect(huntDetails.getRunPage()).toBeVisible();
+    await expect(huntDetails.getRunsPage()).toBeHidden();
+    const header = huntDetails.getRunHeader();
+    await expect(header.getByRole('heading', { name: /^Run of / })).toBeVisible();
+    await expect(header.getByTestId('hunt-run-hunt-name')).toHaveText(huntName);
+    await expect(page.getByTestId('navigation').getByRole('link', { name: huntName })).toBeVisible();
+    await expect(page.getByTestId('hunt-run-status-sentence')).toContainText('3 hits');
+    await expect(page.getByTestId('hunt-run-evidence')).toContainText('WS-E2E-01');
     await expect(huntDetails.getRunVerdictForm()).toBeVisible();
     // The pending run proposes a true positive, which offers the incident; another verdict does not
     const incidentChoice = huntDetails.getRunVerdictIncidentChoice();
@@ -101,6 +112,9 @@ test('Hunt run drawer verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({
     await huntDetails.saveRunVerdict();
     await expect(page.getByText('The verdict has been saved')).toBeVisible();
     await expect(huntDetails.getVerdictChip('Benign')).toBeVisible();
+    await huntDetails.getRunBackButton().click();
+    await expect(huntDetails.getRunsPage()).toBeVisible();
+    await expect(huntDetails.getRunPage()).toBeHidden();
   } finally {
     await deleteSeededHunt(request, seeded);
   }

@@ -32,7 +32,7 @@ import useHuntConfiguration from '../useHuntConfiguration';
 
 // The hunt connectors page, as its status header links it
 const HUNT_CONNECTORS_PATH = '/dashboard/data/ingestion/connectors';
-import { PATH_HUNT } from '../../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN } from '../../common/routes/paths';
 import { huntRunsListOptions, insertStartedHuntRuns } from './hunt-run-store';
 import { HuntRunStartConnectorsQuery } from './__generated__/HuntRunStartConnectorsQuery.graphql';
 import { HuntRunStartMutation } from './__generated__/HuntRunStartMutation.graphql';
@@ -204,7 +204,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
         const count = data.huntRunStart.length;
         MESSAGING$.notifySuccess(t_i18n('{count, plural, one {# run started} other {# runs started}}', { values: { count } }));
         if (count === 1) {
-          navigate(`${PATH_HUNT(hunt.id)}/runs/${data.huntRunStart[0].id}`);
+          navigate(PATH_HUNT_RUN(hunt.id, data.huntRunStart[0].id));
         } else {
           navigate(`${PATH_HUNT(hunt.id)}/runs`);
         }

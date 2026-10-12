@@ -11,7 +11,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { PATH_ATTACK_PATTERN, PATH_HUNT, PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '../common/routes/paths';
+import { PATH_ATTACK_PATTERN, PATH_HUNT_RUN, PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntTechniqueValidationChip } from './HuntChips';
 import { HUNT_RUN_ENTITY_TYPE, type HuntTechniqueValidationStatus } from './hunt-utils';
 import { HuntCoverage_hunt$key } from './__generated__/HuntCoverage_hunt.graphql';
@@ -149,7 +149,7 @@ const HuntCoverageComponent = ({ hunt }: { hunt: HuntCoverageHunt }) => {
                 return (
                   <li key={run.id} style={{ padding: theme.spacing(1, 0), borderBottom: `1px solid ${theme.palette.divider}` }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-                      <Link to={`${PATH_HUNT(hunt.id)}/runs/${run.id}`}>{fldt(run.completed_at ?? run.created_at)}</Link>
+                      <Link to={PATH_HUNT_RUN(hunt.id, run.id)}>{fldt(run.completed_at ?? run.created_at)}</Link>
                       <HuntRunStatusChip value={run.hunt_run_status} />
                       <Text variant="content-compact">
                         {t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: run.hits_count ?? 0 } })}

@@ -40,7 +40,7 @@ Only hunt connectors that look up indicators run indicator hunts. The Splunk, Cr
 
 ## Results and verdicts
 
-The run drawer lists **Results per value**, the seen values first:
+The page of the run lists **Results per value**, the seen values first:
 
 | Verdict per value | Meaning |
 |---|---|

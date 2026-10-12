@@ -13,9 +13,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
-import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { getPaddingRight } from '../../../utils/utils';
 import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
@@ -29,6 +27,7 @@ import { HuntPackExportButton } from './HuntPack';
 import HuntRuns from './runs/HuntRuns';
 import HuntStatusHeader from './HuntStatusHeader';
 import { HUNT_ENTITY_TYPE } from './hunt-utils';
+import useHuntEditRight from './useHuntEditRight';
 import { RootHuntQuery } from './__generated__/RootHuntQuery.graphql';
 import { RootHuntSubscription } from './__generated__/RootHuntSubscription.graphql';
 
@@ -111,13 +110,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
   const { hunt, connectorsForImport, connectorsForExport } = usePreloadedQuery<RootHuntQuery>(huntQuery, queryRef);
   const subConfig = useMemo(() => ({ subscription, variables: { id: huntId } }), [huntId]);
   useSubscription<RootHuntSubscription>(subConfig);
-  // Same rule as the edit and delete controls of the entity header, in a draft the access to the draft too; the
-  // edition of the hunt only exists with the update capability, so its shortcuts need it as well
-  const canUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
-  const draftContext = useDraftContext();
-  const accessRight = useGetCurrentUserAccessRight(hunt?.currentUserAccessRight);
-  const draftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
-  const canEdit = canUpdate && accessRight.canEdit && (!draftContext || draftAccessRight.canEdit);
+  const canEdit = useHuntEditRight(hunt?.currentUserAccessRight);
 
   if (!hunt) {
     return <ErrorNotFound />;

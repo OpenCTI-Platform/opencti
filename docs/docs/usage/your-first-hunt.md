@@ -25,11 +25,11 @@ You need the **Create / Update knowledge** capability to create and run hunts.
 
     ![Step 2: where the hunt runs and how far back, with the hunt connectors able to run it](assets/first-hunt-indicators-step-2.png)
 
-4. **Start the hunt**: name the hunt and click **Activate and run now**. The hunt is created active and its first run starts; the page opens on that run. When no hunt connector can run it yet, the button reads **Save as a draft**: the hunt is saved and its page lists what it still needs.
+4. **Start the hunt**: name the hunt and click **Activate and run now**. The hunt is created active and its first run starts; the page of that run opens, under the breadcrumbs of the hunt, with **Back to the hunt** to its **Runs** tab. When no hunt connector can run it yet, the button reads **Save as a draft**: the hunt is saved and its page lists what it still needs.
 
     ![Step 3: the name of the hunt and Activate and run now](assets/first-hunt-indicators-step-3.png)
 
-When the run completes, **Results per value** lists every value with its verdict:
+The page of the run follows it while it is queued and running. When the run completes, **Results per value** lists every value with its verdict:
 
 | Verdict | Meaning |
 |---|---|

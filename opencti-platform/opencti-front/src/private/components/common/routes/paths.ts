@@ -63,6 +63,7 @@ export const PATH_INCIDENTS = `${PATH_DASHBOARD}/events/incidents`;
 export const PATH_INCIDENT = (incidentId: string) => `${PATH_INCIDENTS}/${incidentId}`;
 export const PATH_HUNTS = `${PATH_DASHBOARD}/defense/hunts`;
 export const PATH_HUNT = (huntId: string) => `${PATH_HUNTS}/${huntId}`;
+export const PATH_HUNT_RUN = (huntId: string, runId: string) => `${PATH_HUNT(huntId)}/runs/${runId}`;
 
 // THREATS
 export const PATH_THREAT_ACTORS_GROUPS = `${PATH_DASHBOARD}/threats/threat_actors_group`;

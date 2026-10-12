@@ -11,7 +11,7 @@ import type { Theme } from '../../../components/Theme';
 import useAuth from '../../../utils/hooks/useAuth';
 import { isGrantedTo, KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import { useHiddenEntities } from '../../../utils/hooks/useEntitySettings';
-import { PATH_HUNT, PATH_HUNTS, PATH_SECURITY_PLATFORM } from '../common/routes/paths';
+import { PATH_HUNT_RUN, PATH_HUNTS, PATH_SECURITY_PLATFORM } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from './HuntChips';
 import { HuntConnectorRequiredPermissions, HuntConnectorTestConnection } from './HuntConnectorSetup';
 import { HUNT_ENTITY_TYPE, HUNT_RUN_ENTITY_TYPE, huntMessageText, huntPlatformLabel, huntQueryLanguageLabel, huntRunTriggerLabel } from './hunt-utils';
@@ -133,7 +133,7 @@ export const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }
           <li key={run.id} style={{ borderBottom: `1px solid ${theme.palette.divider}` }} data-testid="connector-hunt-run">
             {run.hunt_deleted
               ? <div style={rowStyle}>{row}</div>
-              : <Link to={`${PATH_HUNT(run.hunt_id)}/runs/${run.id}`} style={rowStyle}>{row}</Link>}
+              : <Link to={PATH_HUNT_RUN(run.hunt_id, run.id)} style={rowStyle}>{row}</Link>}
           </li>
         );
       })}

@@ -5,12 +5,14 @@ import Loader from '../../../components/Loader';
 
 const Hunts = lazy(() => import('./Hunts'));
 const RootHunt = lazy(() => import('./Root'));
+const RootHuntRun = lazy(() => import('./runs/RootHuntRun'));
 
 // Mounted at PATH_HUNTS, the Hunts area of the Defense hub
 const RootHunts = () => (
   <Suspense fallback={<Loader />}>
     <Routes>
       <Route path="/" element={boundaryWrapper(Hunts)} />
+      <Route path="/:huntId/runs/:runId" element={boundaryWrapper(RootHuntRun)} />
       <Route path="/:huntId/*" element={boundaryWrapper(RootHunt)} />
     </Routes>
   </Suspense>

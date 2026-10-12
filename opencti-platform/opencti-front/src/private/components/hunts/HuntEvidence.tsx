@@ -8,7 +8,7 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { PATH_HUNT } from '../common/routes/paths';
+import { PATH_HUNT_RUN } from '../common/routes/paths';
 import { aggregateHuntEvidence, huntEvidenceFields, huntEvidenceWindow, shortHash, type HuntEvidenceRow } from './hunt-evidence-utils';
 import { HUNT_DOCS, HUNT_RUN_ENTITY_TYPE } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
@@ -164,7 +164,7 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
             first_seen_at: { id: 'first_seen_at', label: 'First seen', percentWidth: 8, isSortable: false, render: ({ first_seen_at }: HuntEvidenceRow) => dateRender(first_seen_at) },
             last_seen_at: { id: 'last_seen_at', label: 'Last seen', percentWidth: 8, isSortable: false, render: ({ last_seen_at }: HuntEvidenceRow) => dateRender(last_seen_at) },
           }}
-          getComputeLink={(row: HuntEvidenceRow) => (row.run_ids.length === 1 ? `${PATH_HUNT(huntId)}/runs/${row.run_ids[0]}` : undefined)}
+          getComputeLink={(row: HuntEvidenceRow) => (row.run_ids.length === 1 ? PATH_HUNT_RUN(huntId, row.run_ids[0]) : undefined)}
         />
       </div>
     </>

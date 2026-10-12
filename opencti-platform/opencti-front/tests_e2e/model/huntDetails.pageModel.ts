@@ -11,6 +11,10 @@ export default class HuntDetailsPage {
     this.verdictField = new SelectFieldPageModel(this.page, 'Your verdict', false, this.page.getByTestId('hunt-run-verdict-form'));
   }
 
+  gotoRuns(huntId: string) {
+    return this.page.goto(`/dashboard/defense/hunts/${huntId}/runs`);
+  }
+
   gotoRun(huntId: string, runId: string) {
     return this.page.goto(`/dashboard/defense/hunts/${huntId}/runs/${runId}`);
   }
@@ -45,6 +49,22 @@ export default class HuntDetailsPage {
 
   getRunsPage() {
     return this.page.getByTestId('hunt-runs-page');
+  }
+
+  getRunRow(huntId: string, runId: string) {
+    return this.getRunsPage().locator(`a[href="/dashboard/defense/hunts/${huntId}/runs/${runId}"]`);
+  }
+
+  getRunPage() {
+    return this.page.getByTestId('hunt-run-page');
+  }
+
+  getRunHeader() {
+    return this.page.getByTestId('hunt-run-header');
+  }
+
+  getRunBackButton() {
+    return this.page.getByTestId('hunt-run-back');
   }
 
   getEvidencePage() {

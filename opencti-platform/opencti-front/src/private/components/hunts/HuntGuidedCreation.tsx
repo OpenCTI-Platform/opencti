@@ -28,7 +28,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import { PATH_HUNT } from '../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN } from '../common/routes/paths';
 import HuntEntitiesField from './HuntEntitiesField';
 import { HUNT_DIALOG_BODY_STYLE } from './hunt-layout-utils';
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
@@ -203,7 +203,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
               return;
             }
             MESSAGING$.notifySuccess(t_i18n('The hunt is active and its first run has started'));
-            navigate(`${PATH_HUNT(hunt.id)}/runs/${runResponse.huntRunStart[0].id}`);
+            navigate(PATH_HUNT_RUN(hunt.id, runResponse.huntRunStart[0].id));
           },
           onError: () => {
             setSubmitting(false);

@@ -7,7 +7,7 @@ import Card from '../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { PATH_HUNT } from '../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from './HuntChips';
 import { HUNT_DOCS, HUNT_RUN_ENTITY_TYPE, huntRunTriggerLabel } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
@@ -81,7 +81,7 @@ const LatestRunsList = ({ huntId, canEdit }: HuntLatestRunsProps) => {
       {runs.map((run) => (
         <li key={run.id} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
           <Link
-            to={`${PATH_HUNT(huntId)}/runs/${run.id}`}
+            to={PATH_HUNT_RUN(huntId, run.id)}
             style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(1, 0), color: 'inherit', textDecoration: 'none' }}
           >
             <span style={{ minWidth: 150 }}><Text variant="content-compact">{fldt(run.created_at)}</Text></span>

@@ -146,14 +146,14 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   });
 
   test('Completed run with its evidence and the AI triage proposal', async ({ page }) => {
-    // The whole drawer fits, evidence included
+    // The whole run page fits, evidence included
     await page.setViewportSize({ width: 1440, height: 2000 });
     await page.route('**/chatbot/config', async (route) => {
       const response = await route.fetch();
       const json = response.ok() ? await response.json() : {};
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...json, xtm_one_configured: true }) });
     });
-    await completeOperation(page, 'HuntRunDrawerQuery', (data) => {
+    await completeOperation(page, 'RootHuntRunQuery', (data) => {
       Object.assign(data.huntRun ?? {}, {
         verdict_proposal: 'true_positive',
         verdict_proposal_confidence: 82,
@@ -162,13 +162,13 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
       });
     });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, completedRunId);
-    await capture(page, 'hunt-run-completed-triage.png', page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-triage'));
+    await capture(page, 'hunt-run-completed-triage.png', page.getByTestId('hunt-run-page'), page.getByTestId('hunt-run-triage'));
   });
 
   test('Failed run', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1600 });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, failedRunId);
-    await capture(page, 'hunt-run-failed.png', page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-failure'));
+    await capture(page, 'hunt-run-failed.png', page.getByTestId('hunt-run-page'), page.getByTestId('hunt-run-failure'));
   });
 
   test('Schedule field', async ({ page }) => {
@@ -216,8 +216,8 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await capture(page, `hunt-runs-verdicts${suffix}.png`, runs, runs.getByText('True positive').first());
     await page.setViewportSize({ width: 1440, height: 1600 });
     await huntDetails.gotoRun(seeded.huntId, partialRunId);
-    await capture(page, `hunt-run-partial-results${suffix}.png`, page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-partial-results'));
-    await expect(page.getByTestId('hunt-run-drawer').getByText('At least 7')).toBeVisible();
+    await capture(page, `hunt-run-partial-results${suffix}.png`, page.getByTestId('hunt-run-page'), page.getByTestId('hunt-run-partial-results'));
+    await expect(page.getByTestId('hunt-run-page').getByText('At least 7')).toBeVisible();
     await page.setViewportSize({ width: 1440, height: 900 });
   };
 
@@ -272,7 +272,7 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.setViewportSize({ width: 1440, height: 1600 });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, accessDeniedRunId);
     const failure = page.locator('[data-testid="hunt-run-failure"][data-kind="access"]');
-    await capture(page, `hunt-run-access-denied${suffix}.png`, page.getByTestId('hunt-run-drawer'), failure.getByTestId('hunt-run-test-connection'));
+    await capture(page, `hunt-run-access-denied${suffix}.png`, page.getByTestId('hunt-run-page'), failure.getByTestId('hunt-run-test-connection'));
     // The whole creation form, each field with its help; the Learn more of the documentation is in the drawer header
     await page.setViewportSize({ width: 1440, height: 2200 });
     const huntsPage = new HuntsPage(page);

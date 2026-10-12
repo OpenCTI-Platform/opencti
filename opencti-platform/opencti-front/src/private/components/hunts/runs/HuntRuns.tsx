@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import { Route, Routes } from 'react-router';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { HuntRuns_RunFragment$data } from './__generated__/HuntRuns_RunFragment.graphql';
 import { HuntRuns_RunsFragment$data } from './__generated__/HuntRuns_RunsFragment.graphql';
 import { HuntRunsListQuery, HuntRunsListQuery$variables } from './__generated__/HuntRunsListQuery.graphql';
-import HuntRunDrawer from './HuntRunDrawer';
 import { rememberHuntRunsList } from './hunt-run-store';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
 import { formatHuntRunDuration, HUNT_RUN_ENTITY_TYPE, huntMessageText, huntRunPartialResultsSentence, huntRunTriggerLabel } from '../hunt-utils';
-import { PATH_HUNT } from '../../common/routes/paths';
+import { PATH_HUNT_RUN } from '../../common/routes/paths';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -260,7 +258,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
             availableFilterKeys={RUN_FILTER_KEYS}
             availableEntityTypes={[HUNT_RUN_ENTITY_TYPE]}
             entityTypes={[HUNT_RUN_ENTITY_TYPE]}
-            getComputeLink={(run: { id: string }) => `${PATH_HUNT(hunt.id)}/runs/${run.id}`}
+            getComputeLink={(run: { id: string }) => PATH_HUNT_RUN(hunt.id, run.id)}
             disableLineSelection
             disableToolBar
             removeSelectAll
@@ -270,9 +268,6 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
           />
         )}
       </div>
-      <Routes>
-        <Route path=":runId" element={<HuntRunDrawer huntId={hunt.id} canEdit={canEdit} paginationOptions={queryPaginationOptions} />} />
-      </Routes>
     </div>
   );
 };
