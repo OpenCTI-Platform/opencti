@@ -15,7 +15,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { isDisclosableByHunt } from './hunt-iocs';
 import { withHuntLock } from './hunt-lock';
 import { findByIds } from './hunt-loaders';
-import { accumulatedHuntSightingAccess } from './hunt-sightings';
+import { accumulatedHuntSightingAccess, sameIds } from './hunt-sightings';
 import { type BasicStoreEntityHunt, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, HUNT_IOC_VERDICT_SEEN, type HuntHit, type HuntIocResult } from './huntRun/huntRun-types';
 import { HUNT_CONFIG, huntRuleKey, huntSigmaRules } from './hunt-utils';
@@ -336,8 +336,9 @@ export const createHuntHitObservations = async (context: AuthContext, hunt: Basi
             first_observed: firstObserved,
             last_observed: lastObserved,
             [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
-            objectMarking,
-            objectOrganization,
+            ...(!sameIds(stored[RELATION_OBJECT_MARKING], objectMarking) ? { objectMarking } : {}),
+            // Organizations can only be written in Enterprise Edition: sent only when they change
+            ...(!sameIds(stored[RELATION_GRANTED_TO], objectOrganization) ? { objectOrganization } : {}),
           });
           observedDataIds.add(stored.internal_id);
         } else {

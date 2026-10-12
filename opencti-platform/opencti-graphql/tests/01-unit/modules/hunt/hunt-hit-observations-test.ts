@@ -139,6 +139,10 @@ describe('Observed data of the hits of a run', () => {
       last_observed: '2026-10-05T09:00:00.000Z',
       x_opencti_hunt_run_id: 'run-3',
     }));
+    // Access left as it is is not written: organizations can only be written in Enterprise Edition
+    const [, , , , patch] = vi.mocked(patchAttribute).mock.calls[0];
+    expect(patch).not.toHaveProperty('objectMarking');
+    expect(patch).not.toHaveProperty('objectOrganization');
   });
 
   it('should add the new hits of a later run and move the last observation to them', async () => {

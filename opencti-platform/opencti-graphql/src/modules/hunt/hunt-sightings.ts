@@ -52,7 +52,7 @@ export interface HuntSightingsOutcome {
 
 const earliest = (dates: (string | null | undefined)[]) => dates.filter((date): date is string => !!date).sort()[0];
 const latest = (dates: (string | null | undefined)[]) => dates.filter((date): date is string => !!date).sort().reverse()[0];
-const sameIds = (left: string[] = [], right: string[] = []) => left.length === right.length && left.every((id) => right.includes(id));
+export const sameIds = (left: string[] = [], right: string[] = []) => left.length === right.length && left.every((id) => right.includes(id));
 
 /**
  * The count of a sighting after a run, never below the stored count (forgotten hits stay counted). A run whose hits are

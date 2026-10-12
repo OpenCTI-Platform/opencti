@@ -78,6 +78,9 @@ const listHuntRuns = (huntId: string) => middlewareLoader.topEntitiesList<BasicS
   filters: { mode: FilterMode.And, filters: [{ key: ['hunt_id'], values: [huntId] }], filterGroups: [] },
   noFiltersChecking: true,
 });
+// The executions holding a slot of the connector: the translation preview queued when a hunt is created holds none
+const occupiedSlots = async (huntId: string) => (await listHuntRuns(huntId))
+  .filter((run) => run.hunt_run_mode !== HUNT_RUN_MODE_PREVIEW && HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status) && run.dispatched_at).length;
 
 describe('Hunt manager', () => {
   let intrusionSetId: string;
@@ -325,8 +328,7 @@ describe('Hunt manager', () => {
     for (let index = 0; index < 3; index += 1) {
       runs.push(...await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false }));
     }
-    const occupied = (await listHuntRuns(huntId))
-      .filter((run) => HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status) && run.dispatched_at).length;
+    const occupied = await occupiedSlots(huntId);
     const { maxConcurrentRunsPerConnector } = HUNT_CONFIG;
     HUNT_CONFIG.maxConcurrentRunsPerConnector = occupied + 1;
     try {
@@ -538,7 +540,7 @@ describe('Hunt manager', () => {
 
   it('should refuse to execute a hunt whose logic was cleared while paused', async () => {
     const before = await loadHunt(huntId);
-    await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_status: 'paused', sigma_rule: '', native_queries: [] });
+    await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_status: 'paused', sigma_rule: '', sigma_rules: [], native_queries: [] });
     try {
       await expect(createHuntRuns(testContext, await loadHunt(huntId), { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false }))
         .rejects.toThrow('Add a Sigma rule or a native query');
@@ -546,6 +548,7 @@ describe('Hunt manager', () => {
       await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, {
         hunt_status: before.hunt_status,
         sigma_rule: before.sigma_rule,
+        sigma_rules: before.sigma_rules,
         native_queries: before.native_queries,
       });
     }
@@ -717,7 +720,7 @@ describe('Hunt manager', () => {
       HUNT_CONFIG.maxRunsPerTick = 0;
       await processStandingHunts(testContext);
       expect((await loadHunt(standingId)).next_run_at).toBeTruthy();
-      expect(await listHuntRuns(standingId)).toHaveLength(0);
+      expect((await listHuntRuns(standingId)).filter((run) => run.hunt_run_mode !== HUNT_RUN_MODE_PREVIEW)).toHaveLength(0);
       HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
       expect(await processStandingHunts(testContext)).toBeGreaterThanOrEqual(1);
       expect((await loadHunt(standingId)).next_run_at).toBeFalsy();
@@ -754,7 +757,7 @@ describe('Hunt manager', () => {
       await dispatchQueuedHuntRuns(testContext);
       // The Splunk connector runs one hunt and takes no other run
       waiting.push(...await createHuntRuns(testContext, saturatedHunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, securityPlatformIds: [securityPlatformId] }));
-      const occupied = (await listHuntRuns(huntId)).filter((run) => HUNT_RUN_ACTIVE_STATUSES.includes(run.hunt_run_status) && run.dispatched_at).length;
+      const occupied = await occupiedSlots(huntId);
       expect(occupied).toBeGreaterThanOrEqual(1);
       HUNT_CONFIG.maxConcurrentRunsPerConnector = occupied;
       for (let index = 0; index < 3; index += 1) {

@@ -3,10 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
-import { internalLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, internalLoadById } from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
+import { FilterMode } from '../../../src/generated/graphql';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { ENTITY_HOSTNAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
@@ -66,6 +69,15 @@ const HUNT_CONNECTOR_REGISTER = gql`
 
 type ReadinessItem = { key: string; status: string; template: string; message: string };
 const itemOf = (items: ReadinessItem[], key: string) => items.filter((item) => item.key === key);
+
+const deleteEntities = async (types: string[], key: string, value: string) => {
+  const entities = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, types, {
+    filters: { mode: FilterMode.And, filters: [{ key: [key], values: [value] }], filterGroups: [] },
+  });
+  for (let index = 0; index < entities.length; index += 1) {
+    await deleteElementById(testContext, ADMIN_USER, entities[index].id, entities[index].entity_type);
+  }
+};
 
 const reportAsConnector = async (runId: string, input: Record<string, unknown>) => {
   const run = await internalLoadById<BasicStoreEntity & { work_id?: string }>(testContext, ADMIN_USER, runId, { type: ENTITY_TYPE_HUNT_RUN });
@@ -130,6 +142,14 @@ describe('Hunt readiness and indicator hunts', () => {
       await queryAsAdmin({ query: gql`mutation IndicatorDelete($id: ID!) { indicatorDelete(id: $id) }`, variables: { id } });
     }
     await queryAsAdmin({ query: gql`mutation ObservableDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`, variables: { id: observableId } });
+    // The value seen, its victim (a system related to its hostname) and their observed data stay in the knowledge when
+    // the hunt is deleted, and the next files count them
+    if (securityPlatformId) {
+      await deleteEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], 'objects', securityPlatformId);
+    }
+    await deleteEntities([ENTITY_TYPE_IDENTITY_SYSTEM], 'name', 'WKS-01');
+    await deleteEntities([ENTITY_HOSTNAME], 'value', 'WKS-01');
+    await deleteEntities([ENTITY_IPV4_ADDR], 'value', '198.51.100.71');
     if (securityPlatformId) {
       await deleteElementById(testContext, ADMIN_USER, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
     }

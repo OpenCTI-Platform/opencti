@@ -9,7 +9,8 @@ import { createRelation, deleteElementById, patchAttribute } from '../../../src/
 import { addSecurityCoverage, listSecurityCoverageResults, securityCoverageDelete } from '../../../src/modules/securityCoverage/securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../../src/schema/stixCoreRelationship';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { fullRelationsList, internalLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalLoadById } from '../../../src/database/middleware-loader';
+import { FilterMode } from '../../../src/generated/graphql';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
 import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
@@ -46,6 +47,9 @@ detection:
 tags:
   - attack.t1999.001
 `;
+// A technique of its own: every hunt finding a technique on a platform updates the same sighting
+const KNOWN_HITS_TECHNIQUE_MITRE_ID = 'T1999.002';
+const KNOWN_HITS_SIGMA_RULE = SIGMA_RULE.replace('attack.t1999.001', 'attack.t1999.002');
 
 const HUNT_FIELDS = `
   id
@@ -200,7 +204,11 @@ const DRAFT_DELETE = gql`
   mutation DraftWorkspaceDelete($id: ID!) { draftWorkspaceDelete(id: $id) }
 `;
 
-const runFilters = (huntId: string) => ({ mode: 'and', filters: [{ key: ['hunt_id'], values: [huntId] }], filterGroups: [] });
+const runFilters = (huntId: string, mode?: string) => ({
+  mode: 'and',
+  filters: [{ key: ['hunt_id'], values: [huntId] }, ...(mode ? [{ key: ['hunt_run_mode'], values: [mode] }] : [])],
+  filterGroups: [],
+});
 
 describe('Hunt resolvers', () => {
   let techniqueId: string;
@@ -211,6 +219,8 @@ describe('Hunt resolvers', () => {
   let firstRunId: string;
   let secondRunId: string;
   let emulationRunId: string;
+  let observedDataId: string;
+  let creationPreviewId: string;
   const draftIds: string[] = [];
   const huntIds: string[] = [];
 
@@ -241,6 +251,13 @@ describe('Hunt resolvers', () => {
     }
     await queryAsAdmin({ query: gql`mutation DeleteConnector($id: ID!) { deleteConnector(id: $id) }`, variables: { id: CONNECTOR_ID } });
     if (securityPlatformId) {
+      // The observed data of the hits stay in the knowledge when their hunt is deleted, and the next files count them
+      const observedData = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], {
+        filters: { mode: FilterMode.And, filters: [{ key: ['objects'], values: [securityPlatformId] }], filterGroups: [] },
+      });
+      for (let index = 0; index < observedData.length; index += 1) {
+        await deleteElementById(testContext, ADMIN_USER, observedData[index].id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+      }
       await deleteElementById(testContext, ADMIN_USER, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
     }
     await deleteElementById(testContext, ADMIN_USER, techniqueId, ENTITY_TYPE_ATTACK_PATTERN);
@@ -518,7 +535,8 @@ describe('Hunt resolvers', () => {
     const stored = await internalLoadById<BasicStoreEntity & { result_ids?: string[] }>(testContext, ADMIN_USER, secondRunId, { type: ENTITY_TYPE_HUNT_RUN });
     expect(stored.result_ids).toHaveLength(3);
     expect(stored.result_ids?.[0]).toEqual(intrusionSetStandardId);
-    const observedData = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, stored.result_ids?.[1] as string);
+    observedDataId = stored.result_ids?.[1] as string;
+    const observedData = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, observedDataId);
     expect(observedData.entity_type).toEqual(ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
     expect(stored.result_ids?.[2]).toMatch(/^sighting--/);
     expect(run.verdict).toEqual('pending');
@@ -554,14 +572,16 @@ describe('Hunt resolvers', () => {
     const run = verdict.data?.huntRunSetVerdict;
     expect(run.verdict).toEqual('true_positive');
     expect(run.verdict_source).toEqual('analyst');
-    const preview = await queryAsAdminWithSuccess({ query: HUNT_TEST_QUERY, variables: { id: huntId, securityPlatformId } });
-    const auto = await queryAsAdmin({ query: HUNT_RUN_VERDICT, variables: { id: preview.data?.huntTestQuery.id, input: { verdict: 'benign' } } });
+    // A logic a run already translated on the platform is not sent again: its last translation answers
+    const known = await queryAsAdminWithSuccess({ query: HUNT_TEST_QUERY, variables: { id: huntId, securityPlatformId } });
+    expect(known.data?.huntTestQuery).toMatchObject({ id: secondRunId, hunt_run_mode: 'execute', verdict: 'true_positive' });
+    // The translation preview queued when the hunt was created never gets a verdict
+    const previews = await queryAsAdminWithSuccess({ query: HUNT_RUNS, variables: { filters: runFilters(huntId, 'preview') } });
+    const previewIds = previews.data?.huntRuns.edges.map((edge: { node: { id: string } }) => edge.node.id);
+    expect(previewIds).toHaveLength(1);
+    [creationPreviewId] = previewIds;
+    const auto = await queryAsAdmin({ query: HUNT_RUN_VERDICT, variables: { id: creationPreviewId, input: { verdict: 'benign' } } });
     expect(auto.errors?.[0].message).toContain('A translation preview has no verdict');
-    // The connector answers the preview, which then stops occupying one of its concurrent run slots
-    await reportAsConnector({
-      query: HUNT_RUN_REPORT,
-      variables: { id: preview.data?.huntTestQuery.id, input: { status: 'completed', translated_query: 'index=edr', query_language: 'spl' } },
-    });
   });
 
   it('should keep the verdict of an analyst when late evidence reaches the run', async () => {
@@ -588,9 +608,9 @@ describe('Hunt resolvers', () => {
     expect(run.incident_id).toBeTruthy();
     expect(run.draft_id).toBeTruthy();
     draftIds.push(run.draft_id);
-    // The sighting of the technique the hunt keeps on the platform, updated by this run too
+    // The observed data of the hits and the sighting of the technique the platform keeps, updated by this run too
     expect(run.result_ids[0]).toEqual(intrusionSetStandardId);
-    expect(run.result_ids.slice(1)).toEqual([expect.stringMatching(/^sighting--/)]);
+    expect(run.result_ids.slice(1)).toEqual([observedDataId, expect.stringMatching(/^sighting--/)]);
     expect(run.evidence_sources).toEqual(['splunk-alert-action']);
     const older = await queryAsAdminWithSuccess({
       query: HUNT_RUN_EVIDENCE,
@@ -602,13 +622,18 @@ describe('Hunt resolvers', () => {
   });
 
   it('should count a hit once across runs: a second run over the same events has no new hit, no new sighting, no new incident', async () => {
+    const knownTechnique = await queryAsAdminWithSuccess({
+      query: gql`mutation AttackPatternAdd($input: AttackPatternAddInput!) { attackPatternAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Hunt test known hits technique', x_mitre_id: KNOWN_HITS_TECHNIQUE_MITRE_ID } },
+    });
+    const knownTechniqueId = knownTechnique.data?.attackPatternAdd.id;
     const created = await queryAsAdminWithSuccess({
       query: HUNT_ADD,
       variables: {
         input: {
           name: 'Hunt test known hits',
           hypothesis: 'Encoded commands keep running on the same endpoints',
-          sigma_rule: SIGMA_RULE,
+          sigma_rule: KNOWN_HITS_SIGMA_RULE,
           escalation_threshold: 2,
           escalate_manual_runs: true,
           native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
@@ -623,8 +648,9 @@ describe('Hunt resolvers', () => {
       { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
     );
     try {
+      expect(created.data?.huntAdd.huntTechniques.map((t: { id: string }) => t.id)).toEqual([knownTechniqueId]);
       const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
-      // No host: a sampled hit naming one becomes an observable and an observed data that the next test files count
+      // No host: a sampled hit naming one becomes a system and its hostname, that the next test files count
       const hit = (eventId: string) => ({
         event_id: eventId,
         timestamp: '2026-10-05T10:00:00Z',
@@ -677,12 +703,12 @@ describe('Hunt resolvers', () => {
       }
       // The next tests count the hunts of the technique: this one leaves
       await queryAsAdmin({ query: HUNT_DELETE, variables: { id: knownHuntId } });
+      await deleteElementById(testContext, ADMIN_USER, knownTechniqueId, ENTITY_TYPE_ATTACK_PATTERN);
     }
   });
 
   it('should translate without executing for a preview', async () => {
-    const preview = await queryAsAdminWithSuccess({ query: HUNT_TEST_QUERY, variables: { id: huntId } });
-    const run = preview.data?.huntTestQuery;
+    const run = (await queryAsAdminWithSuccess({ query: HUNT_RUN_STATE, variables: { id: creationPreviewId } })).data?.huntRun;
     expect(run.hunt_run_mode).toEqual('preview');
     expect(run.hunt_run_trigger).toEqual('preview');
     const reported = await reportAsConnector({
@@ -696,10 +722,13 @@ describe('Hunt resolvers', () => {
   });
 
   it('should list the runs of the hunt and compute its statistics on executed runs', async () => {
-    const runs = await queryAsAdminWithSuccess({ query: HUNT_RUNS, variables: { filters: runFilters(huntId) } });
-    const modes = runs.data?.huntRuns.edges.map((edge: { node: { hunt_run_mode: string } }) => edge.node.hunt_run_mode);
-    expect(modes.filter((mode: string) => mode === 'execute')).toHaveLength(2);
-    expect(modes.filter((mode: string) => mode === 'preview')).toHaveLength(2);
+    // Translation previews are not runs: the list leaves them out unless they are asked for by their mode
+    const modesOf = async (mode?: string) => {
+      const runs = await queryAsAdminWithSuccess({ query: HUNT_RUNS, variables: { filters: runFilters(huntId, mode) } });
+      return runs.data?.huntRuns.edges.map((edge: { node: { hunt_run_mode: string } }) => edge.node.hunt_run_mode);
+    };
+    expect(await modesOf()).toEqual(['execute', 'execute']);
+    expect(await modesOf('preview')).toEqual(['preview']);
     const statistics = await queryAsAdminWithSuccess({ query: HUNT_STATISTICS, variables: { huntId } });
     expect(statistics.data?.huntStatistics).toMatchObject({ runs_count: 2, completed_runs_count: 2, hits_total: 9, benign_count: 0, true_positive_count: 1 });
     expect(statistics.data?.huntStatistics.runs_per_platform).toEqual([{ label: SECURITY_PLATFORM_NAME, value: 2 }]);
@@ -849,7 +878,7 @@ describe('Hunt resolvers', () => {
       objects: [
         ...bundle.objects.filter((object: { type: string }) => object.type !== 'hunt'),
         { ...exported, id: atomicHuntId, name: 'Hunt test atomic pack hunt', labels: [atomicLabel] },
-        { ...exported, id: 'hunt--1b2c3d4e-5f6a-5b7c-9d8e-0f1a2b3c4d5e', name: 'Hunt test refused pack hunt', sigma_rule: 'title: [x' },
+        { ...exported, id: 'hunt--1b2c3d4e-5f6a-5b7c-9d8e-0f1a2b3c4d5e', name: 'Hunt test refused pack hunt', sigma_rule: 'title: [x', sigma_rules: ['title: [x'] },
       ],
     };
     await expect(importHuntPack(testContext, ADMIN_USER, toUpload(atomic))).rejects.toThrow('Invalid Sigma rule');
