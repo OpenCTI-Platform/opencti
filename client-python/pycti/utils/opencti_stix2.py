@@ -12,7 +12,6 @@ import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
-import datefinder
 import dateutil.parser
 import pytz
 from cachetools import LRUCache
@@ -34,6 +33,7 @@ from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
+    EPOCH,
     NOT_PROVIDED,
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
@@ -42,7 +42,6 @@ from pycti.utils.opencti_stix2_utils import (
     OpenCTIStix2Utils,
 )
 
-datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
 
 # For Python 3.11+, datetime.UTC is preferred over datetime.timezone.utc
@@ -961,35 +960,15 @@ class OpenCTIStix2:
                     ):
                         # Add a corresponding report
                         # Extract date
-                        try:
-                            if "description" in external_reference:
-                                matches = datefinder.find_dates(
-                                    external_reference["description"],
-                                    base_date=datetime.datetime.fromtimestamp(0),
-                                )
-                            else:
-                                matches = datefinder.find_dates(
-                                    source_name,
-                                    base_date=datetime.datetime.fromtimestamp(0),
-                                )
-                        except (TypeError, OverflowError):
-                            matches = None
-                        published = None
-                        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-                        default_date = datetime.datetime.fromtimestamp(1)
-                        if matches is not None:
-                            try:
-                                for match in matches:
-                                    if (
-                                        match.timestamp() < yesterday.timestamp()
-                                        and len(str(match.year)) == 4
-                                    ):
-                                        published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
-                                        break
-                            except (TypeError, OverflowError):
-                                pass
+                        published = OpenCTIStix2Utils.guess_past_date(
+                            external_reference["description"]
+                            if "description" in external_reference
+                            else source_name
+                        )
                         if published is None:
-                            published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                            published = (
+                                EPOCH + datetime.timedelta(seconds=1)
+                            ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
                         if "mitre" in source_name and "name" in stix_object:
                             title = "[MITRE ATT&CK] " + stix_object["name"]
@@ -1416,27 +1395,7 @@ class OpenCTIStix2:
                 embedded_flags.append(file_obj.get("embedded", False))
 
         # Extract all custom properties
-        custom_properties = []
-        seen_custom_fields = set()
-        for key, value in stix_object.items():
-            if key.startswith("x_") and value is not None:
-                custom_properties.append({"field_name": key, "value": value})
-                seen_custom_fields.add(key)
-        # Also extract x_ custom properties nested inside all extensions
-        extensions = stix_object.get("extensions")
-        if isinstance(extensions, dict):
-            for extension in extensions.values():
-                if not isinstance(extension, dict):
-                    continue
-                for key, value in extension.items():
-                    # Keep top-level custom properties precedence over extensions
-                    if (
-                        key.startswith("x_")
-                        and key not in seen_custom_fields
-                        and value is not None
-                    ):
-                        custom_properties.append({"field_name": key, "value": value})
-                        seen_custom_fields.add(key)
+        custom_properties = self.extract_custom_properties(stix_object)
 
         # Extra
         extras = {
@@ -1454,9 +1413,7 @@ class OpenCTIStix2:
             "filesMarkings": files_markings if files_markings else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
-            "custom_properties": (
-                custom_properties if len(custom_properties) > 0 else None
-            ),
+            "custom_properties": custom_properties,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1725,6 +1682,41 @@ class OpenCTIStix2:
         else:
             return None
 
+    @staticmethod
+    def extract_custom_properties(stix_object: Dict) -> Optional[List[Dict]]:
+        """Extract the x_ custom properties of a STIX object as custom field inputs.
+
+        Top-level properties take precedence over the ones nested in extensions.
+        The platform only keeps the ones matching a custom field definition.
+
+        :param stix_object: STIX2 object
+        :type stix_object: Dict
+        :return: list of ``{"field_name", "value"}`` inputs, or None if there is none
+        :rtype: Optional[List[Dict]]
+        """
+        custom_properties = []
+        seen_custom_fields = set()
+        for key, value in stix_object.items():
+            if key.startswith("x_") and value is not None:
+                custom_properties.append({"field_name": key, "value": value})
+                seen_custom_fields.add(key)
+        # Also extract x_ custom properties nested inside all extensions
+        extensions = stix_object.get("extensions")
+        if isinstance(extensions, dict):
+            for extension in extensions.values():
+                if not isinstance(extension, dict):
+                    continue
+                for key, value in extension.items():
+                    # Keep top-level custom properties precedence over extensions
+                    if (
+                        key.startswith("x_")
+                        and key not in seen_custom_fields
+                        and value is not None
+                    ):
+                        custom_properties.append({"field_name": key, "value": value})
+                        seen_custom_fields.add(key)
+        return custom_properties if len(custom_properties) > 0 else None
+
     def import_relationship(
         self, stix_relation: Dict, update: bool = False, types: List = None
     ) -> None:
@@ -1767,6 +1759,7 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
+            "custom_properties": self.extract_custom_properties(stix_relation),
         }
 
         # Create the relation
@@ -1775,32 +1768,11 @@ class OpenCTIStix2:
         date = None
         if "external_references" in stix_relation:
             for external_reference in stix_relation["external_references"]:
-                try:
-                    if "description" in external_reference:
-                        matches = datefinder.find_dates(
-                            external_reference["description"],
-                            base_date=datetime.datetime.fromtimestamp(0),
-                        )
-                    else:
-                        matches = datefinder.find_dates(
-                            external_reference["source_name"],
-                            base_date=datetime.datetime.fromtimestamp(0),
-                        )
-                except (TypeError, OverflowError):
-                    matches = None
-                date = None
-                yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-                if matches is not None:
-                    try:
-                        for match in matches:
-                            if (
-                                match.timestamp() < yesterday.timestamp()
-                                and len(str(match.year)) == 4
-                            ):
-                                date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
-                                break
-                    except (TypeError, OverflowError):
-                        date = None
+                date = OpenCTIStix2Utils.guess_past_date(
+                    external_reference["description"]
+                    if "description" in external_reference
+                    else external_reference.get("source_name")
+                )
 
         stix_relation_result = self.opencti.stix_core_relationship.import_from_stix2(
             stixRelation=stix_relation, extras=extras, update=update, defaultDate=date
@@ -1960,6 +1932,7 @@ class OpenCTIStix2:
                 else None
             ),
             upsert_operations=upsert_operations,
+            custom_properties=self.extract_custom_properties(stix_sighting),
         )
         if stix_sighting_result is not None:
             self.set_in_cache(

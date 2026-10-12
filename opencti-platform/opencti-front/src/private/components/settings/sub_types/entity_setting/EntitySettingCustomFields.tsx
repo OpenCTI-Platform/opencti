@@ -81,7 +81,7 @@ export type CustomFieldDefinitionNode = NonNullable<NonNullable<EntitySettingCus
 export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) => string) => {
   switch (fieldType) {
     case 'integer':
-      return t_i18n('Number');
+      return t_i18n('Integer');
     case 'boolean':
       return t_i18n('Boolean');
     case 'date':

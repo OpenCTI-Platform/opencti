@@ -1,9 +1,32 @@
-import { getHttpClient } from '../../../utils/http-client';
+import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import conf, { logApp, PLATFORM_VERSION } from '../../../config/conf';
 import type { Success } from '../../../generated/graphql';
 import { type NewsFeedItemMetadata, NewsFeedItemType } from './news-feed/news-feed-types';
 
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
+export type HubPlatformContract = 'CE' | 'EE';
+
+interface HubGraphQLError {
+  message?: string;
+  extensions?: { code?: string };
+}
+
+interface RefreshRegistrationStatusResult {
+  status?: RegistrationStatus;
+  errors?: HubGraphQLError[];
+}
+
+// The input coercion error a hub older than the edition refresh (graphql-js 16) returns for the unknown field.
+const PLATFORM_CONTRACT_UNKNOWN_FIELD = 'Field "platformContract" is not defined by type "RefreshPlatformRegistrationConnectivityStatusInput"';
+const isPlatformContractRejected = (errors?: HubGraphQLError[]) => (errors ?? [])
+  .some((error) => typeof error?.message === 'string' && error.message.includes(PLATFORM_CONTRACT_UNKNOWN_FIELD));
+
+// GraphQL input errors echo the submitted variables, the platform token included: never log their messages.
+const hubErrorCodes = (errors?: HubGraphQLError[]) => (errors ?? [])
+  .map((error) => error?.extensions?.code)
+  .filter((code): code is string => typeof code === 'string');
+
+let isPlatformContractFallbackLogged = false;
 
 export interface ProvisionedNewsFeedItem {
   id: string;
@@ -73,10 +96,11 @@ export const xtmHubClient = {
       return { isReachable: false };
     }
   },
-  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: {
+  refreshRegistrationStatus: async ({ platformId, token, platformVersion, platformContract }: {
     platformId: string;
     token: string;
     platformVersion: string;
+    platformContract: HubPlatformContract;
   }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
@@ -86,22 +110,46 @@ export const xtmHubClient = {
       }
     `;
 
-    const variables = {
-      input: {
-        platformId,
-        token,
-        platformVersion,
-        platformIdentifier: HUB_OPENCTI_IDENTIFIER,
-      },
+    const input = {
+      platformId,
+      token,
+      platformVersion,
+      platformIdentifier: HUB_OPENCTI_IDENTIFIER,
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
       responseType: 'json',
     });
+    const refresh = async (variables: { input: Record<string, string> }): Promise<RefreshRegistrationStatusResult> => {
+      try {
+        const response = await httpClient.post('/graphql-api', { query, variables });
+        return {
+          status: response.data?.data?.refreshPlatformRegistrationConnectivityStatus?.status,
+          errors: response.data?.errors,
+        };
+      } catch (error) {
+        const errors = getResponseError(error)?.data?.errors;
+        if (!errors) {
+          throw error;
+        }
+        return { errors };
+      }
+    };
 
     try {
-      const response = await httpClient.post('/graphql-api', { query, variables });
-      return response.data.data.refreshPlatformRegistrationConnectivityStatus.status;
+      let result = await refresh({ input: { ...input, platformContract } });
+      if (!result.status && isPlatformContractRejected(result.errors)) {
+        if (!isPlatformContractFallbackLogged) {
+          logApp.warn('[XTMH] XTM Hub does not accept the platform edition yet, refreshing the connectivity without it');
+          isPlatformContractFallbackLogged = true;
+        }
+        result = await refresh({ input });
+      }
+      if (!result.status) {
+        logApp.warn('XTM Hub sent an error', { codes: hubErrorCodes(result.errors) });
+        return 'inactive';
+      }
+      return result.status;
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return 'inactive';
