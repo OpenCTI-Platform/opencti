@@ -24,7 +24,10 @@ export const validateEnrichmentInvestigation = async (
   investigationId: string,
   opts: { checkEnrichmentCapability?: boolean } = {},
 ) => {
-  if ((opts.checkEnrichmentCapability && !isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT)) || !isUserHasCapability(user, INVESTIGATION_UPDATE_CAPABILITY)) {
+  if (
+    (opts.checkEnrichmentCapability && !isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT))
+    || !isUserHasCapability(user, INVESTIGATION_UPDATE_CAPABILITY)
+  ) {
     throw ForbiddenAccess();
   }
   const investigation = await storeLoadById<BasicStoreEntityWorkspace>(context, user, investigationId, ENTITY_TYPE_WORKSPACE);
@@ -56,13 +59,22 @@ export const findInvestigationEnrichmentWorks = async (
   if (workspace.type !== 'investigation') {
     return emptyPaginationResult();
   }
-  const page = await findWorkPaginated(context, user, { ...args, filters: addFilter(args.filters, 'investigation_id', workspace.id) }) as BasicConnection<EnrichmentWork>;
+  const page = await findWorkPaginated(
+    context,
+    user,
+    { ...args, filters: addFilter(args.filters, 'investigation_id', workspace.id) },
+  ) as BasicConnection<EnrichmentWork>;
   const sourceIds = Array.from(new Set(page.edges.map((edge) => edge.node.event_source_id).filter(isNotEmptyField)));
   if (sourceIds.length === 0) {
     return page;
   }
   // event_source_id is the standard id of the enriched entity at enrichment time: match it on every id of the entities
-  const readable = await internalFindByIdsMapped(context, user, sourceIds, { mapWithAllIds: true, baseData: true, baseFields: ['x_opencti_stix_ids'] });
+  const readable = await internalFindByIdsMapped(
+    context,
+    user,
+    sourceIds,
+    { mapWithAllIds: true, baseData: true, baseFields: ['x_opencti_stix_ids'] },
+  );
   const edges = page.edges.filter((edge) => !edge.node.event_source_id || readable[edge.node.event_source_id]);
   return { ...page, edges };
 };
