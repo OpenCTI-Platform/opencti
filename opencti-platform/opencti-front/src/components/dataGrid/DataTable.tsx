@@ -230,12 +230,15 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'entityTypes'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
+  | 'ignoreUri'
   | 'container'> & {
     lineFragment: GraphQLTaggedNode;
     preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
     exportContext?: { entity_type: string; entity_id?: string };
     globalSearch?: string;
     createButton?: ReactNode;
+    /** Replaces the background task toolbar shown on selection; it reads the selection from useDataTableContext. */
+    customToolbar?: ReactNode;
   } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
@@ -267,6 +270,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     disableBulkEnroll,
     deleteDisable,
     container,
+    customToolbar,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -314,7 +318,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             searchContextFinal={computedSearchContextFinal}
           />
         )}
-        dataTableToolBarComponent={(
+        dataTableToolBarComponent={customToolbar ?? (
           <DataTableInternalToolbar
             container={container}
             entityTypes={entityTypes}

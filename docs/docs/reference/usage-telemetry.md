@@ -162,3 +162,20 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+
+### Knowledge curation
+
+- Whether the knowledge curation detectors are enabled
+- The number of open curation proposals
+- The number of enabled curation policies
+- The latest Knowledge health score (from 0 to 100)
+- The number of curation proposals created by the detectors
+- The number of curation proposals accepted (from the curation inbox, a bulk accept or an applied adjudication decision)
+- The number of curation proposals rejected
+- The number of curation proposals applied automatically by a curation policy
+- The number of applied curation proposals reverted
+- The number of merges recorded as reversible merge records
+- The number of merges reverted (unmerge)
+- The number of curation proposals sent to an XTM One agent for adjudication
+- The number of entity resolution requests from importers (`curationResolve` query)
+- The number of entity resolution requests that bound a name to an existing entity

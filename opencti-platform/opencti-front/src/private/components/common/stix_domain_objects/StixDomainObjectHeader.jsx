@@ -53,6 +53,7 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
+import CurationPossibleDuplicate from '../../data/curation/CurationPossibleDuplicate';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -477,36 +478,39 @@ const StixDomainObjectHeader = (props) => {
     <React.Suspense fallback={<span />}>
       <HeaderMainEntityLayout
         title={title}
-        titleRight={
-          typeof onViewAs === 'function' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
-              <FormControl
-                variant="outlined"
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 1,
-                  '&& > *': { marginBottom: 0, whiteSpace: 'nowrap', flexShrink: 0 },
-                }}
-              >
-                <Select
-                  name="view-as"
-                  value={viewAs}
-                  onValueChange={onViewAs}
+        titleRight={(
+          <>
+            <CurationPossibleDuplicate entityId={stixDomainObject.id} />
+            {typeof onViewAs === 'function' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+                <FormControl
+                  variant="outlined"
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1,
+                    '&& > *': { marginBottom: 0, whiteSpace: 'nowrap', flexShrink: 0 },
+                  }}
                 >
-                  <SelectLabel>{t_i18n('Display as')}</SelectLabel>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent aria-label={t_i18n('Display as')}>
-                    <SelectItem value="knowledge">{t_i18n('Knowledge entity')}</SelectItem>
-                    <SelectItem value="author">{t_i18n('Author')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-            </div>
-          )
-        }
+                  <Select
+                    name="view-as"
+                    value={viewAs}
+                    onValueChange={onViewAs}
+                  >
+                    <SelectLabel>{t_i18n('Display as')}</SelectLabel>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent aria-label={t_i18n('Display as')}>
+                      <SelectItem value="knowledge">{t_i18n('Knowledge entity')}</SelectItem>
+                      <SelectItem value="author">{t_i18n('Author')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+              </div>
+            )}
+          </>
+        )}
         rightActions={(
           <>
             {disableSharing !== true && (

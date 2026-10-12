@@ -21,6 +21,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
+import { applyUpsertRemovals, computeUpsertRemovals } from './syncManager-upsert-removals';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
@@ -199,6 +200,7 @@ export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
 export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
   const { uri } = sync;
+  const upsertRemovals = computeUpsertRemovals(data, context);
   const processingData = { ...data };
   const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
   const markdownEntityContext = {
@@ -333,7 +335,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   };
 
   await resolveEmbeddedImagesMarkdownFields(processingData);
-  return { data: processingData, previous_standard: idOperation?.value };
+  return { data: applyUpsertRemovals(processingData, upsertRemovals), previous_standard: idOperation?.value };
 };
 
 const syncManagerInstance = (syncId) => {

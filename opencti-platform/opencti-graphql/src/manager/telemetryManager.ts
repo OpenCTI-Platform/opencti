@@ -67,6 +67,7 @@ import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
+import { computeCurationTelemetryGauges } from '../modules/curation/curation-telemetry';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -165,6 +166,17 @@ export const TELEMETRY_GAUGE_AI_INSIGHT_REQUEST = 'aiInsightRequestCount';
 export const TELEMETRY_GAUGE_ASK_AI_QUERY = 'askAiQueryCount';
 export const TELEMETRY_GAUGE_XTM_AGENT_CALL = 'xtmAgentCallCount';
 export const TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN = 'playbookAiAgentRunCount';
+// Knowledge curation counters
+export const TELEMETRY_GAUGE_CURATION_PROPOSAL_CREATED = 'curationProposalCreatedCount';
+export const TELEMETRY_GAUGE_CURATION_PROPOSAL_ACCEPTED = 'curationProposalAcceptedCount';
+export const TELEMETRY_GAUGE_CURATION_PROPOSAL_REJECTED = 'curationProposalRejectedCount';
+export const TELEMETRY_GAUGE_CURATION_PROPOSAL_AUTO_APPLIED = 'curationProposalAutoAppliedCount';
+export const TELEMETRY_GAUGE_CURATION_PROPOSAL_REVERTED = 'curationProposalRevertedCount';
+export const TELEMETRY_GAUGE_CURATION_MERGE_RECORD = 'curationMergeRecordCount';
+export const TELEMETRY_GAUGE_CURATION_UNMERGE = 'curationUnmergeCount';
+export const TELEMETRY_GAUGE_CURATION_ADJUDICATION = 'curationAdjudicationCount';
+export const TELEMETRY_GAUGE_CURATION_RESOLVE = 'curationResolveCount';
+export const TELEMETRY_GAUGE_CURATION_RESOLVE_HIT = 'curationResolveHitCount';
 // Product usage counters
 export const TELEMETRY_GAUGE_PLAYBOOK_EXECUTION = 'playbookExecutionCount';
 export const TELEMETRY_GAUGE_NOTIFICATION_SENT = 'notificationSentCount';
@@ -337,6 +349,24 @@ export const addPlaybookAiAgentRunCount = () => {
 export const addPlaybookExecutionCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION, 1)
     .catch((reason) => logApp.warn('Error adding playbook execution count to telemetry', { reason }));
+};
+
+// Knowledge curation counters. Fire-and-forget: telemetry never breaks a curation action.
+const addCurationCount = (gauge: string, count = 1) => {
+  redisSetTelemetryAdd(gauge, count)
+    .catch((cause) => logApp.warn('Error adding curation count to telemetry', { gauge, cause }));
+};
+export const addCurationProposalCreatedCount = (count = 1) => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_CREATED, count);
+export const addCurationProposalAcceptedCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_ACCEPTED);
+export const addCurationProposalRejectedCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_REJECTED);
+export const addCurationProposalAutoAppliedCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_AUTO_APPLIED);
+export const addCurationProposalRevertedCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_REVERTED);
+export const addCurationMergeRecordCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_MERGE_RECORD);
+export const addCurationUnmergeCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_UNMERGE);
+export const addCurationAdjudicationCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_ADJUDICATION);
+export const addCurationResolveCount = (isHit: boolean) => {
+  addCurationCount(TELEMETRY_GAUGE_CURATION_RESOLVE);
+  if (isHit) addCurationCount(TELEMETRY_GAUGE_CURATION_RESOLVE_HIT);
 };
 
 export const addNotificationSentCount = (channel: NotificationChannel) => {
@@ -799,6 +829,23 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setXtmAgentCallItems(xtmAgentItems);
     const playbookAiAgentRunCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_AI_AGENT_RUN);
     manager.setPlaybookAiAgentRunCount(playbookAiAgentRunCountInRedis);
+    // region Knowledge curation
+    manager.setCurationProposalCreatedCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_PROPOSAL_CREATED));
+    manager.setCurationProposalAcceptedCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_PROPOSAL_ACCEPTED));
+    manager.setCurationProposalRejectedCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_PROPOSAL_REJECTED));
+    manager.setCurationProposalAutoAppliedCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_PROPOSAL_AUTO_APPLIED));
+    manager.setCurationProposalRevertedCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_PROPOSAL_REVERTED));
+    manager.setCurationMergeRecordCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_MERGE_RECORD));
+    manager.setCurationUnmergeCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_UNMERGE));
+    manager.setCurationAdjudicationCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_ADJUDICATION));
+    manager.setCurationResolveCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_RESOLVE));
+    manager.setCurationResolveHitCount(await redisGetTelemetry(TELEMETRY_GAUGE_CURATION_RESOLVE_HIT));
+    const curationGauges = await computeCurationTelemetryGauges(context, TELEMETRY_MANAGER_USER);
+    manager.setCurationOpenProposalsCount(curationGauges.openProposals);
+    manager.setCurationPoliciesEnabledCount(curationGauges.enabledPolicies);
+    manager.setKnowledgeHealthScore(curationGauges.healthScore);
+    manager.setIsCurationEnabled(curationGauges.curationEnabled ? 1 : 0);
+    // endregion
     const playbookExecutionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PLAYBOOK_EXECUTION);
     manager.setPlaybookExecutionCount(playbookExecutionCountInRedis);
     const notificationSentItems: DimensionalGaugeItem[] = [];

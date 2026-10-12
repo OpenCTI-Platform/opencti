@@ -116,6 +116,12 @@
   "telemetry_manager": {
     "enabled": false
   },
+  "curation_manager": {
+    "enabled": false
+  },
+  "curation_records_manager": {
+    "enabled": false
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"

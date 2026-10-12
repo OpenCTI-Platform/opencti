@@ -460,6 +460,25 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   if (isDecayExcluded) {
     return stixDomainObjectEditField(context, user, id, input, opts);
   }
+  const finalInput = computeIndicatorEditInput(user, indicatorBeforeUpdate, input);
+  if (finalInput.length > 0) {
+    return stixDomainObjectEditField(context, user, id, finalInput, opts);
+  }
+
+  // If no changes because of some above rules, return the unchanged indicator
+  return indicatorBeforeUpdate;
+};
+
+/**
+ * The input an edit of an Indicator writes once its decay, score, validity and revocation are computed from the edited
+ * fields. An Indicator under a decay exclusion takes the input as is.
+ */
+export const computeIndicatorEditInput = (user: AuthUser, indicatorBeforeUpdate: BasicStoreEntityIndicator, input: EditInput[]): EditInput[] => {
+  if (indicatorBeforeUpdate.decay_exclusion_applied_rule !== undefined) {
+    return input;
+  }
+  const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
+  const scoreEditInput = input.find((e) => e.key === X_SCORE);
   // Region Decay and {Score, Valid until, Revoke} computation
   // We keep everything EXCEPT fields that can be changed by decay computation
   const finalInput = input.filter((editInput) => {
@@ -557,14 +576,8 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     finalInput.push(revokedEditInput);
   }
   logApp.debug('Indicator full computed changes:', { finalInput });
-
   // END Decay and {Score, Valid until, Revoke} computation
-  if (finalInput.length > 0) {
-    return stixDomainObjectEditField(context, user, id, finalInput, opts);
-  }
-
-  // If no changes because of some above rules, return the unchanged indicator
-  return indicatorBeforeUpdate;
+  return finalInput;
 };
 
 export interface IndicatorPatch {

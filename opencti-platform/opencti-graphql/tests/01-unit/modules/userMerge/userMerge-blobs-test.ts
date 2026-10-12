@@ -38,8 +38,8 @@ describe('userMerge blob targets', () => {
     userMergeBlobCoveredRows().forEach((rowId) => expect(known).toContain(rowId));
   });
 
-  it('should claim twelve rows, the paired case-rfi and workflow ones each through a single field', () => {
-    expect(userMergeBlobCoveredRows()).toHaveLength(12);
+  it('should claim thirteen rows, the paired case-rfi and workflow ones each through a single field', () => {
+    expect(userMergeBlobCoveredRows()).toHaveLength(13);
     expect(userMergeBlobCoveredRows()).toContain('case-rfi-terminal.request-access-applicant-id');
     expect(userMergeBlobCoveredRows()).toContain('workflow-instance-pending.transition-actions');
   });
@@ -98,6 +98,16 @@ describe('userMerge object payloads', () => {
     const actions = [{ type: 'ADD', context: { values: [SOURCE, TARGET] } }];
     const rewrite = rewriteOf('background-task-actions', { actions }) as { doc: Record<string, any> };
     expect(rewrite.doc.actions[0].context.values).toEqual([TARGET]);
+  });
+
+  it('should remap the adjudication Run as account and the digest recipients of the curation settings', () => {
+    const setting = { adjudication_enabled: true, adjudication_run_as_id: SOURCE, digest_recipient_ids: [SOURCE, OTHER, TARGET] };
+    const rewrite = rewriteOf('curation-settings-users', { manager_setting: setting }) as { doc: Record<string, any> };
+    expect(rewrite.doc.manager_setting).toEqual({ adjudication_enabled: true, adjudication_run_as_id: TARGET, digest_recipient_ids: [TARGET, OTHER] });
+  });
+
+  it('should leave a manager setting naming nobody relevant untouched', () => {
+    expect(rewriteOf('curation-settings-users', { manager_setting: { adjudication_run_as_id: null, digest_recipient_ids: [OTHER] } })).toBeUndefined();
   });
 });
 

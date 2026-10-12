@@ -504,6 +504,21 @@ export const coverageInformation: NestedObjectAttribute = {
   ],
 };
 
+// Merge policy bookkeeping of the curation field authority rules: per ruled attribute, the source that wrote the
+// current value. Written through a side channel (no stream event, no history) and never exported.
+export const fieldAuthority: RawObjectAttribute<BasicStoreAttribute> = {
+  name: 'i_field_authority',
+  label: 'Field authority',
+  type: 'object',
+  format: 'raw',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false,
+  update: false,
+  isFilterable: false,
+};
+
 export const opinionsMetrics: ObjectAttribute = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',

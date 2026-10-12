@@ -201,6 +201,8 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
+      - Curation: usage/curation-hub.md
+      - Knowledge curation: usage/knowledge-curation.md
       - Refine content ✨: usage/refine-content.md
     - Act on knowledge:
       - Case management: usage/case-management.md

@@ -161,6 +161,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
       { name: 'cti.stix_transformer', description: 'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle' },
       { name: 'cti.stix_consumer', description: 'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)' },
+      { name: 'cti.curation_adjudicate', description: 'Adjudicate an ambiguous OpenCTI curation proposal (merge, alias, distinct or skip)' },
     ],
   });
 

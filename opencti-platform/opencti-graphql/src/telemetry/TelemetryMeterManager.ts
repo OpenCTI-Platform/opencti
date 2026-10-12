@@ -265,6 +265,50 @@ export class TelemetryMeterManager {
   // Number of playbook AI agent component runs
   playbookAiAgentRunCount = 0;
 
+  // region Knowledge curation
+  // Number of curation proposals created by the detectors
+  curationProposalCreatedCount = 0;
+
+  // Number of curation proposals accepted by an analyst
+  curationProposalAcceptedCount = 0;
+
+  // Number of curation proposals rejected by an analyst
+  curationProposalRejectedCount = 0;
+
+  // Number of curation proposals applied automatically by a curation policy
+  curationProposalAutoAppliedCount = 0;
+
+  // Number of applied curation proposals reverted
+  curationProposalRevertedCount = 0;
+
+  // Number of merges recorded as reversible merge records
+  curationMergeRecordCount = 0;
+
+  // Number of merges reverted (unmerge)
+  curationUnmergeCount = 0;
+
+  // Number of curation proposals adjudicated by an XTM One agent
+  curationAdjudicationCount = 0;
+
+  // Number of entity resolution requests from importers (curationResolve)
+  curationResolveCount = 0;
+
+  // Number of entity resolution requests that bound a name to an existing entity
+  curationResolveHitCount = 0;
+
+  // Number of open curation proposals
+  curationOpenProposalsCount = 0;
+
+  // Number of enabled curation policies
+  curationPoliciesEnabledCount = 0;
+
+  // Latest Knowledge Health score (0 to 100)
+  knowledgeHealthScore = 0;
+
+  // Knowledge curation detectors are enabled
+  isCurationEnabled = 0;
+  // endregion Knowledge curation
+
   // Built-in LLM configuration state, with the provider type as dimension
   isAiEnabledItems: DimensionalGaugeItem[] = [];
 
@@ -583,6 +627,62 @@ export class TelemetryMeterManager {
     this.playbookAiAgentRunCount = n;
   }
 
+  setCurationProposalCreatedCount(n: number) {
+    this.curationProposalCreatedCount = n;
+  }
+
+  setCurationProposalAcceptedCount(n: number) {
+    this.curationProposalAcceptedCount = n;
+  }
+
+  setCurationProposalRejectedCount(n: number) {
+    this.curationProposalRejectedCount = n;
+  }
+
+  setCurationProposalAutoAppliedCount(n: number) {
+    this.curationProposalAutoAppliedCount = n;
+  }
+
+  setCurationProposalRevertedCount(n: number) {
+    this.curationProposalRevertedCount = n;
+  }
+
+  setCurationMergeRecordCount(n: number) {
+    this.curationMergeRecordCount = n;
+  }
+
+  setCurationUnmergeCount(n: number) {
+    this.curationUnmergeCount = n;
+  }
+
+  setCurationAdjudicationCount(n: number) {
+    this.curationAdjudicationCount = n;
+  }
+
+  setCurationResolveCount(n: number) {
+    this.curationResolveCount = n;
+  }
+
+  setCurationResolveHitCount(n: number) {
+    this.curationResolveHitCount = n;
+  }
+
+  setCurationOpenProposalsCount(n: number) {
+    this.curationOpenProposalsCount = n;
+  }
+
+  setCurationPoliciesEnabledCount(n: number) {
+    this.curationPoliciesEnabledCount = n;
+  }
+
+  setKnowledgeHealthScore(n: number) {
+    this.knowledgeHealthScore = n;
+  }
+
+  setIsCurationEnabled(n: number) {
+    this.isCurationEnabled = n;
+  }
+
   setIsAiEnabledItems(items: DimensionalGaugeItem[]) {
     this.isAiEnabledItems = items;
   }
@@ -778,6 +878,22 @@ export class TelemetryMeterManager {
     this.registerDimensionalGauge('ask_ai_query_count', 'Ask AI queries broken down by feature', 'askAiQueryItems');
     this.registerDimensionalGauge('xtm_agent_call_count', 'Direct XTM One agent calls broken down by channel (direct, direct_files)', 'xtmAgentCallItems');
     this.registerGauge('playbook_ai_agent_run_count', 'Number of playbook AI agent component runs', 'playbookAiAgentRunCount');
+    // region Knowledge curation
+    this.registerGauge('curation_proposal_created_count', 'Number of curation proposals created by the detectors', 'curationProposalCreatedCount');
+    this.registerGauge('curation_proposal_accepted_count', 'Number of curation proposals accepted by an analyst', 'curationProposalAcceptedCount');
+    this.registerGauge('curation_proposal_rejected_count', 'Number of curation proposals rejected by an analyst', 'curationProposalRejectedCount');
+    this.registerGauge('curation_proposal_auto_applied_count', 'Number of curation proposals applied by a curation policy', 'curationProposalAutoAppliedCount');
+    this.registerGauge('curation_proposal_reverted_count', 'Number of applied curation proposals reverted', 'curationProposalRevertedCount');
+    this.registerGauge('curation_merge_record_count', 'Number of merges recorded as reversible merge records', 'curationMergeRecordCount');
+    this.registerGauge('curation_unmerge_count', 'Number of merges reverted', 'curationUnmergeCount');
+    this.registerGauge('curation_adjudication_count', 'Number of curation proposals adjudicated by an XTM One agent', 'curationAdjudicationCount');
+    this.registerGauge('curation_resolve_count', 'Number of entity resolution requests from importers', 'curationResolveCount');
+    this.registerGauge('curation_resolve_hit_count', 'Number of entity resolution requests bound to an existing entity', 'curationResolveHitCount');
+    this.registerGauge('curation_open_proposals_count', 'Number of open curation proposals', 'curationOpenProposalsCount');
+    this.registerGauge('curation_policies_enabled_count', 'Number of enabled curation policies', 'curationPoliciesEnabledCount');
+    this.registerGauge('knowledge_health_score', 'Latest Knowledge Health score (0 to 100)', 'knowledgeHealthScore');
+    this.registerGauge('is_curation_enabled', 'Knowledge curation detectors are enabled', 'isCurationEnabled', { unit: 'boolean' });
+    // endregion
     this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
     this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });
     this.registerGauge('is_chatbot_cgu_accepted', 'Filigran chatbot AI CGU accepted', 'isChatbotCguAccepted', { unit: 'boolean' });

@@ -1,7 +1,8 @@
+import { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 
 type DataTableEmptyStateProps = {
-  message: string;
+  message: ReactNode;
 };
 
 const DataTableEmptyState = ({ message }: DataTableEmptyStateProps) => {

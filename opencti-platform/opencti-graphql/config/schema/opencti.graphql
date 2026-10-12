@@ -958,6 +958,7 @@ enum BackgroundTaskActionType {
   SEND_EMAIL
   ENROLL_PLAYBOOK
   ADD_RELATED_COVERED_ENTITIES
+  CURATION_APPLY
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE

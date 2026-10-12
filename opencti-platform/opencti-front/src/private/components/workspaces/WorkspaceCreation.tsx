@@ -12,7 +12,7 @@ import IconButton from '../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
-import { handleError, handleErrorInForm } from '../../../relay/environment';
+import { handleError, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -26,6 +26,7 @@ import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreati
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
+import DashboardTemplateMenu from '../../../components/dashboard/templates/DashboardTemplateMenu';
 import { Tooltip } from '@mui/material';
 
 const workspaceMutation = graphql`
@@ -72,7 +73,14 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
+        // A payload error leaves no dashboard to open: the import stays on this page and says why.
+        if ((errors && errors.length > 0) || !data?.workspaceConfigurationImport) {
+          if (errors && errors.length > 0) handleError({ res: { errors } });
+          else MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard'));
+          reject();
+          return;
+        }
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
@@ -140,6 +148,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>
         </Tooltip>
+        <DashboardTemplateMenu onCreate={(file) => handleImport(file).catch(() => {})} />
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient

@@ -2,15 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 
 /**
- * The v6 baseline, transcribed from the register page. It is asserted here rather than
- * derived from the constant: a test that recounts the array would agree with any
- * transcription mistake it is supposed to catch.
+ * The v6 baseline, transcribed from the register page, plus the four knowledge curation
+ * references (proposal decision, merge and unmerge authors, the users of the curation settings),
+ * all transferred. It is asserted here rather than derived from
+ * the constant: a test that recounts the array would agree with any transcription mistake it is
+ * supposed to catch.
  *
  * v6 splits the raw payload of a history record (`input`, `list_params`, `filters`) out of
  * `history.context-data-payload` into a retained row of its own.
  */
 const V6_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 41,
+  [UserMergeDisposition.Transfer]: 45,
   [UserMergeDisposition.Invalidate]: 20,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 12,
@@ -25,7 +27,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 100 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 104 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V6_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });

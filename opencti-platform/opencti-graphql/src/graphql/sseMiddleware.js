@@ -299,8 +299,18 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     allResolvedElements.unshift(elementsWithStix);
     refsToResolve = Array.from(newRefsToResolve);
   }
-  // Return flattened results in reverse order (deepest dependencies first)
-  return allResolvedElements.flat();
+  // Return flattened results in reverse order (deepest dependencies first).
+  // The search returns a batch in no guaranteed order: an element returned after an element of the same batch that
+  // references it is resolved again one level deeper. Only that deepest occurrence is kept, so that every element is
+  // sent once, before the elements referencing it.
+  const returnedIds = new Set();
+  return allResolvedElements.flat().filter(({ instanceIds: [internalId] }) => {
+    if (returnedIds.has(internalId)) {
+      return false;
+    }
+    returnedIds.add(internalId);
+    return true;
+  });
 };
 
 // before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access

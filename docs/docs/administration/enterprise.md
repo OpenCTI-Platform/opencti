@@ -85,6 +85,10 @@ Use an email template to create templates of emails to be sent to your users. Le
 
 Priority Intelligence Requirements (PIRs) gather and prioritize the most relevant and crucial information based on the user's focus, helping them analyze key insights needed for effective decision-making and risk assessment (please read [Priority Intelligence Requirement](../usage/pir.md)).
 
+### Knowledge curation adjudication and policies
+
+Adjudication of ambiguous curation proposals by an XTM One agent, and curation policies that apply eligible proposals automatically through background tasks (please read [Knowledge curation](../usage/knowledge-curation.md)).
+
 ### SSO definition & usage
 
 Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read the Authentication via GUI configuration section in the deployment documentation.
