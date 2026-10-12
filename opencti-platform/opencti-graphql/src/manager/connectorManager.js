@@ -9,6 +9,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { now } from '../utils/format';
 import { deleteWorksRaw } from '../domain/work';
+import { buildTouchedIdsCompletion } from '../database/work-touched-elements';
+import { dispatchWorkCompletion } from '../domain/work-completion';
 
 // Manage work created by connectors
 // Update status to complete when needed
@@ -19,7 +21,11 @@ const CONNECTOR_WORK_RANGE = conf.get('connector_manager:works_day_range') || 7;
 const BATCH_SIZE = conf.get('connector_manager:batch_size') || 10000;
 let running = false;
 
-const closeOldWorks = async (context, connector) => {
+/**
+ * Force-complete the open works of a connector that are older than its current one,
+ * persisting the touched elements of enrichment works and dispatching the completion hooks.
+ */
+export const closeOldWorks = async (context, connector) => {
   // Get current status from Redis
   const status = await redisGetConnectorStatus(connector.internal_id);
   // If status is here we can try to close all old open works
@@ -45,13 +51,15 @@ const closeOldWorks = async (context, connector) => {
             const sourceScript = `ctx._source['status'] = "complete";
                 ctx._source['completed_time'] = params.completed_time;
                 ctx._source['completed_number'] = params.completed_number;`;
+            const touched = await buildTouchedIdsCompletion(element);
             await elUpdate(context, element._index, element.internal_id, {
               script: {
-                source: sourceScript,
+                source: sourceScript + touched.source,
                 lang: 'painless',
-                params,
+                params: { ...params, ...touched.params },
               },
             });
+            dispatchWorkCompletion(element.internal_id, element.event_type);
             logApp.info('Work completed by force due to age', { workId: element.internal_id });
           }
         } catch (e) {
@@ -65,7 +73,7 @@ const closeOldWorks = async (context, connector) => {
       types: ['Work'],
       orderBy: 'timestamp',
       baseData: true,
-      baseFields: ['internal_id', 'timestamp'],
+      baseFields: ['internal_id', 'timestamp', 'event_type'],
       maxSize: BATCH_SIZE,
       callback: queryCallback,
     });

@@ -26,6 +26,8 @@ import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
+import { buildTouchedIdsCompletion } from '../database/work-touched-elements';
+import { dispatchWorkCompletion } from './work-completion';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -339,6 +341,10 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
     .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
 };
 
+/**
+ * Called by worker when an expectation is processed. Completes the work when all expectations are done,
+ * persisting the touched elements of an enrichment work and dispatching the completion hooks.
+ */
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
@@ -380,11 +386,15 @@ export const reportExpectation = async (context, user, workId, errorData) => {
         // Telemetry: objects processed by this completed work (volume proxy,
         // import-side pipelines only, first completion only).
         countIngestionObjectsProcessed(currentWork, total);
+        const touched = await buildTouchedIdsCompletion(currentWork);
+        sourceScript += touched.source;
+        Object.assign(params, touched.params);
       }
       await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
+        dispatchWorkCompletion(workId, currentWork.event_type);
       }
       logApp.info('Work completed via expectation reporting', { workId, hasError: !!errorData });
     } else {
@@ -470,6 +480,10 @@ export const updateReceivedTime = async (context, user, workId, message) => {
   return workId;
 };
 
+/**
+ * Called by connector when it has finished processing a work. Completes the work when all expectations are done,
+ * persisting the touched elements of an enrichment work and dispatching the completion hooks.
+ */
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
   if (!currentWork) { // work is no longer exists
@@ -493,6 +507,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     // import-side pipelines only, first completion only). Use the real
     // processed total, not the defaulted-to-1 completed_number.
     countIngestionObjectsProcessed(currentWork, total);
+    const touched = await buildTouchedIdsCompletion(currentWork);
+    source += touched.source;
+    Object.assign(params, touched.params);
   }
   if (isNotEmptyField(message)) {
     if (inError) {
@@ -503,5 +520,8 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   }
   // Update elastic
   await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  if (isComplete) {
+    dispatchWorkCompletion(workId, currentWork.event_type);
+  }
   return workId;
 };
