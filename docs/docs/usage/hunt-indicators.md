@@ -13,7 +13,7 @@ The values of an indicator hunt add up from four sources, edited in the **What t
 | Paste values | Values pasted as text, one per line or separated by commas, semicolons or spaces. The type of each value is detected and checked by the platform; defanged values (`hxxp`, `[.]`, `(.)`, `[@]`) are restored. |
 | Or the ones matching a filter | The indicators and observables matching a filter, for example the indicators labelled `apt28` that are still valid. |
 
-The values are read again at **every run**: a hunt taken from a report or a threat follows the intelligence of the moment. The **Values the next run looks for** card lists them, with the indicators and observables each comes from.
+The values are read again at **every run**: a hunt taken from a report or a threat follows the intelligence of the moment. The **Values the next run looks for** card lists them, each value a link to its indicator or observable, with where each comes from and how the hunt reached it: chosen as a source of the hunt, matched by the filter, or through a source (contained in a report, indicating a threat, related to it). Pasted values come from no indicator: they are listed apart, after the values of the intelligence, and their sightings name the value only.
 
 Supported types: IPv4 and IPv6 addresses, domain names, host names, URLs, email addresses, MAC addresses and file hashes (MD5, SHA-1, SHA-256, SHA-512). Domains, host names, email addresses and hashes are compared without case; URLs keep their case.
 
@@ -31,11 +31,12 @@ The first rule guarantees that a run never discloses an indicator to the readers
 ## How a run works
 
 1. The platform resolves the values of the hunt when the run is dispatched and keeps them on the run.
-2. The hunt connector groups them by observable type in batches of 50 values (`hunt_manager:ioc_batch_size`) and runs one lookup per batch over the time window of the run, the **look back** of the hunt (24 hours, 7 days, 30 days, or any number of hours up to 720). **Preview the query** shows these lookups without running them.
+2. The hunt connector groups them by observable type in batches of 50 values (`hunt_manager:ioc_batch_size`) and runs one lookup per batch over the time window of the run, the **Time window** of the hunt (24 hours, 7 days, 30 days, or any number of hours up to 720). **Preview the query** shows these lookups without running them.
 3. It reports, for each value: seen or not, the number of events holding it, the first and last of them, and up to ten hosts; or not searched, with the reason, when the platform cannot look up that type.
-4. It reports the keys of the hits holding each value. OpenCTI keeps one **sighting** per hunt, indicator or observable a seen value comes from, and security platform, updated in place at each run: its count holds the distinct hits of its values found so far, its dates the first and the latest hit, and it carries the markings and organizations of the run (see [Access rights](hunts.md#access-rights)). A pasted value is created as an observable by the connector, so that OpenCTI can sight it. A lookup that returns counts instead of events adds the hits of each run to the count.
+4. It reports the keys of the hits holding each value. OpenCTI keeps one **sighting** per indicator or observable a seen value comes from and security platform, whichever hunt found it, updated in place at each run: its count holds the distinct hits of its values recorded so far, so a second run over the same events adds nothing, its dates the first and the latest hit, and it carries the markings and organizations of the run (see [Access rights](hunts.md#access-rights)). A pasted value is created as an observable by the connector, so that OpenCTI can sight it. A lookup that returns counts instead of events keeps the larger of the stored count and the count of the run.
+5. Each seen value gets one **observed data** per victim on the platform, counting its hits and dating its first and last hit over the whole run. It holds the observable of the value, typed by the pattern of its indicator (a domain is a Domain-Name, an address an IPv4-Addr), and the victim as a System related to its Hostname.
 
-Only hunt connectors that look up indicators run indicator hunts. The Splunk hunt connector does; the others run detection rule hunts. The checklist of the hunt says when no hunt connector of its scope supports indicator lookups.
+Only hunt connectors that look up indicators run indicator hunts. The Splunk, CrowdStrike Falcon LogScale and Google SecOps hunt connectors do; the others run detection rule hunts. The checklist of the hunt says when no hunt connector of its scope supports indicator lookups.
 
 ## Results and verdicts
 

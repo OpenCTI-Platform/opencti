@@ -21,7 +21,7 @@ You need the **Create / Update knowledge** capability to create and run hunts.
 
     ![Step 1 of the guided indicator hunt: the pasted values with their detected types and the values left out](assets/first-hunt-indicators-step-1.png)
 
-3. **Where and how far back**: leave the security platforms empty to hunt on every platform served by a hunt connector, or pick some. Choose how far back each run looks: the last 24 hours, 7 days or 30 days. The step names the hunt connectors that can run the hunt, or says what is missing.
+3. **Where and how far back**: leave the security platforms empty to hunt on every platform served by a hunt connector, or pick some. Choose the **Time window** each run looks back over: the last 24 hours, 7 days or 30 days. The step names the hunt connectors that can run the hunt, or says what is missing.
 
     ![Step 2: where the hunt runs and how far back, with the hunt connectors able to run it](assets/first-hunt-indicators-step-2.png)
 
@@ -39,15 +39,15 @@ When the run completes, **Results per value** lists every value with its verdict
 
 ![Results per value of an indicator hunt run: seen, not seen and not searched, with hits, first and last seen and hosts](assets/first-hunt-results-per-value.png)
 
-Each seen value is **sighted** on the hunted security platform for each indicator or observable it comes from (a pasted value is created as an observable and sighted). Without any value seen, and with every value searched, the run is **Benign**; with a value seen, it waits for your verdict, and above the escalation threshold of the hunt it proposes an incident like any hunt. When an indicator is deployed on that platform (dissemination assurance), its row says **Deployed on this platform**.
+Each seen value is **sighted** on the hunted security platform for each indicator or observable it comes from (a pasted value is created as an observable and sighted): one sighting per indicator and platform, updated by the next runs, and one observed data per value and victim host. Without any value seen, and with every value searched, the run is **Benign**; with a value seen, it waits for your verdict, and above the escalation threshold of the hunt it proposes an incident like any hunt. When an indicator is deployed on that platform (dissemination assurance), its row says **Deployed on this platform**.
 
-The **Logic** tab of the hunt lists the values the next run looks for, with where each comes from. Indicators taken from a report or a threat are read again at every run: new indicators added to the report are hunted at the next run.
+The **Logic** tab of the hunt lists the values the next run looks for, each a link to its indicator or observable, with where each comes from (a report that contains it, a threat it indicates); pasted values are listed apart. Indicators taken from a report or a threat are read again at every run: new indicators added to the report are hunted at the next run.
 
 ![The Logic tab of an indicator hunt: the values the next run looks for and where each comes from](assets/first-hunt-indicators-logic.png)
 
 ## Hunt with a Sigma rule
 
-1. Open **Defense > Hunts** and click **Hunt with a detection rule (Sigma)**, or create the hunt from **Create a hunt** to set every option.
+1. Open **Defense > Hunts** and click **Hunt with a detection rule (Sigma)**, or create the hunt from **Create a hunt** to set every option, step by step (what to hunt, context, execution, knowledge), and to hunt several Sigma rules at once with **Add a Sigma rule**: each is translated and run on its own, with its own results.
 2. Paste a Sigma rule, from [SigmaHQ](https://github.com/SigmaHQ/sigma) or your own, or click **Generate with AI** next to its label (Enterprise Edition, XTM One): say in a few words what to hunt, review the rule XTM One proposes, then **Accept** it. It is validated as you type with the errors of the platform, and its title, level, log source, detection fields and ATT&CK techniques are shown.
 3. Choose where and how far back, then start the hunt as above.
 
@@ -64,7 +64,7 @@ A hunt can also start as a draft, for example a hunt created without its logic, 
 
 ![The status header once every item is met: Activate is enabled](assets/first-hunt-activation-ready.png)
 
-Once active, **Run now** runs the hunt on its platforms, and **Preview the query** shows the query a hunt connector would run, translated from the Sigma rule, without running it.
+Once active, **Run now** runs the hunt on its platforms, and **Preview the query** shows the query a hunt connector would run, translated from the Sigma rule, without running it. The translation is checked as soon as the logic is saved: the **Logic** tab shows the last translation on each platform, and the checklist never calls ready a rule that does not translate.
 
 ## Plan a hunt with AI or import a hunt pack
 

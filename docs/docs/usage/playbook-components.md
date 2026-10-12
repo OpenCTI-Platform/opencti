@@ -292,7 +292,8 @@ Add filters to control which elements in your bundle the action defined in the c
 
 ***Component details***
 
-- ***Hunts to run***: a fixed list of hunts. When empty, the active hunts targeting the threats, techniques and indicators of the elements are run.
+- ***Hunts***: ***Run existing hunts*** [default], or ***Derive a hunt from each element***: the hunt "Hunt this" proposes for each element is created (or found again by its name) and run. See [Hunt automation](hunt-automation.md#hunt-every-new-report).
+- ***Hunts to run***: with existing hunts, a fixed list of hunts. When empty, the active hunts targeting the threats, techniques and indicators of the elements are run.
 - ***Security platforms***: when empty, each hunt runs on its own scope.
 - ***Time window***: in hours, 0 to use the window of each hunt.
 - ***Maximum number of hunts per execution***.
