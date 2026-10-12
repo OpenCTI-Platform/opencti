@@ -284,7 +284,7 @@ import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
-  normalizeCustomFieldValuesDates,
+  normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
@@ -3034,7 +3034,7 @@ export const updateAttribute = async <T extends StoreObject>(
   if (customFieldValuesInput) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
       const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValuesDates(resolvedValues) };
+      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) };
       await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
       finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
     } else {

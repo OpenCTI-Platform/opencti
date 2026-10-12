@@ -4,7 +4,7 @@ import {
   extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
   getCustomFieldDefaultValueFromEntitySettings,
-  normalizeCustomFieldValuesDates,
+  normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
   validateCustomFieldValues,
@@ -456,13 +456,13 @@ describe('resolveCustomFieldValuesIdentity', () => {
   });
 });
 
-describe('normalizeCustomFieldValuesDates', () => {
+describe('normalizeCustomFieldValues', () => {
   it('normalizes valid date values to ISO UTC and leaves other entries untouched', () => {
     const values: CustomFieldValue[] = [
       { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T02:00:00+02:00' },
       { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
     ];
-    expect(normalizeCustomFieldValuesDates(values)).toEqual([
+    expect(normalizeCustomFieldValues(values)).toEqual([
       { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T00:00:00.000Z' },
       { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
     ]);
@@ -470,7 +470,30 @@ describe('normalizeCustomFieldValuesDates', () => {
 
   it('leaves an invalid date as is so that validation rejects it', () => {
     const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '09/29/2026' }];
-    expect(normalizeCustomFieldValuesDates(values)).toEqual(values);
+    expect(normalizeCustomFieldValues(values)).toEqual(values);
+  });
+
+  it('drops the unset value keys sent as null, as for entries read back from the API', () => {
+    const values: CustomFieldValue[] = [{
+      field_id: 'cf-id-1',
+      field_name: 'x_opencti_cf_score',
+      int_value: 10,
+      string_value: null,
+      boolean_value: null,
+      date_value: null,
+      select_value: null,
+      select_values: null,
+    }];
+    expect(normalizeCustomFieldValues(values)).toStrictEqual([
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 10 },
+    ]);
+  });
+
+  it('keeps a false boolean value', () => {
+    const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_flag', boolean_value: false, int_value: null }];
+    expect(normalizeCustomFieldValues(values)).toStrictEqual([
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_flag', boolean_value: false },
+    ]);
   });
 });
 

@@ -25,13 +25,16 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
 const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
   && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
 
-// Normalize the date values of stored-format entries (edit path); invalid dates are left as is for validation to reject.
-export const normalizeCustomFieldValuesDates = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
-  if (value.date_value === undefined || value.date_value === null) {
-    return value;
+// Normalize stored-format entries (edit path). Clients may send every value key with the unset ones as null
+// (e.g. entries read back from the API): they are dropped, so that the stored entries and the history
+// comparison only depend on the actual value. Invalid dates are left as is for validation to reject.
+export const normalizeCustomFieldValues = (values: CustomFieldValue[]): CustomFieldValue[] => values.map((value) => {
+  const entry = Object.fromEntries(Object.entries(value).filter(([, v]) => v !== null && v !== undefined)) as CustomFieldValue;
+  if (entry.date_value === undefined) {
+    return entry;
   }
-  const normalizedDate = normalizeCustomFieldDate(value.date_value);
-  return normalizedDate ? { ...value, date_value: normalizedDate } : value;
+  const normalizedDate = normalizeCustomFieldDate(entry.date_value);
+  return normalizedDate ? { ...entry, date_value: normalizedDate } : entry;
 });
 
 // Edit path (stored format): the technical name is unique and immutable, so the server derives field_id
