@@ -76,6 +76,11 @@ const HuntRunHits = ({ hitsCount, newCount, recurringCount, identified, windowCo
           {t_i18n('Searched since the previous run on {platform}, with a {minutes}-minute overlap', { values: { platform, minutes: n(scheduleLookbackMinutes) } })}
         </Text>
       )}
+      {hits.length > 0 && (hitsCount ?? 0) > hits.length && (
+        <Text variant="content-caption" style={caption} data-testid="hunt-run-hits-sampled">
+          {t_i18n('{shown} of {count} hits are kept as a sample, at least one per value or rule and host: counts and dates cover every hit', { values: { shown: n(hits.length), count: n(hitsCount ?? 0) } })}
+        </Text>
+      )}
       {hits.length > 0 && (
         <>
           <TableContainer style={{ marginTop: theme.spacing(1.5) }}>

@@ -63,11 +63,23 @@ input HuntIocValueInput {
   value: String!
 }
 
+"The source of a hunt an indicator or an observable was reached from, and the relationship followed"
+type HuntIocVia {
+  id: ID!
+  entity_type: String!
+  name: String!
+  "object: the container holds it; indicates: the indicator indicates the source; related-to: the observable is related to the source"
+  relation: String!
+}
 type HuntIocSource {
   id: ID!
   standard_id: String!
   entity_type: String!
   name: String!
+  "Null when the hunt takes it directly or its filter matched it"
+  via: HuntIocVia
+  "The indicator filter of the hunt matched it"
+  matched_filter: Boolean!
 }
 "A value an indicator hunt looks up, with the indicators and observables it comes from"
 type HuntIoc {
@@ -327,6 +339,8 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   sigma_rule: String
   "Detection-rule hunts: the Sigma rules, each translated and run on its own"
   sigma_rules: [String!]!
+  "The keys of sigma_rules, in their order: the rule_key of a native query replacing one of them"
+  sigma_rule_keys: [String!]!
   "The validation of the first Sigma rule"
   sigmaValidation: HuntSigmaValidation
   native_queries: [HuntNativeQuery!]

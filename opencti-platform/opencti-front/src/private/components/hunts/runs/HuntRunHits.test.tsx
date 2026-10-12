@@ -39,6 +39,13 @@ describe('Hits of a hunt run', () => {
     // The focus ring of the design system, not the outline of the browser
     expect(trigger).toHaveClass('focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-filigran-brand-primary');
     expect(screen.queryByTestId('hunt-run-hits-unidentified')).not.toBeInTheDocument();
+    // Two hits of 120 are kept: the drawer says so
+    expect(screen.getByTestId('hunt-run-hits-sampled')).toHaveTextContent('2 of 120 hits are kept as a sample');
+  });
+
+  it('should say nothing of a sample that holds every hit', () => {
+    testRender(<HuntRunHits hitsCount={2} newCount={2} recurringCount={0} identified windowContinued={false} platform="Splunk prod" hits={[hit(1), hit(2)]} />);
+    expect(screen.queryByTestId('hunt-run-hits-sampled')).not.toBeInTheDocument();
   });
 
   it('should say every hit counts as new when the connector identifies none', () => {

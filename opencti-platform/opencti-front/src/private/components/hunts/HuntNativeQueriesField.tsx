@@ -12,6 +12,7 @@ import { HuntCodeEditorField } from './HuntCodeEditor';
 import { HuntAIAction } from './HuntAIAssist';
 import {
   HUNT_DOCS,
+  HUNT_FIRST_RULE,
   HUNT_PLATFORM_DEFAULT_LANGUAGE,
   HUNT_PLATFORMS,
   HUNT_QUERY_LANGUAGES,
@@ -26,6 +27,8 @@ interface HuntNativeQueriesFieldProps {
   /** The field label, left out where a card title already names the field */
   label?: string;
   disabled?: boolean;
+  /** The saved Sigma rules a native query can replace, offered from two rules */
+  ruleOptions?: ReadonlyArray<{ value: string; label: string }>;
 }
 
 interface NativeQueriesValues {
@@ -38,7 +41,7 @@ const emptyRow = (): HuntNativeQueryFormValue => ({ platform: '', language: '', 
  * Per-platform native query overrides: when a row matches the platform of a hunt connector,
  * the connector executes this query verbatim instead of translating the Sigma rule.
  */
-const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false }: HuntNativeQueriesFieldProps) => {
+const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false, ruleOptions = [] }: HuntNativeQueriesFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { values, setFieldValue } = useFormikContext<NativeQueriesValues>();
@@ -122,6 +125,25 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   />
                 </div>
               </div>
+              {ruleOptions.length > 1 && (
+                <div style={{ marginTop: theme.spacing(2) }}>
+                  <Field
+                    component={SelectFieldFds}
+                    name={`${name}.${index}.rule_key`}
+                    label={t_i18n('Replaces the Sigma rule')}
+                    disabled={disabled}
+                    fullWidth
+                    helpertext={t_i18n('On its platform, this query runs instead of the translation of this rule; the other rules are still translated')}
+                  >
+                    {ruleOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                    {row.rule_key && row.rule_key !== HUNT_FIRST_RULE && !ruleOptions.some((option) => option.value === row.rule_key) && (
+                      <SelectItem value={row.rule_key}>{t_i18n('A rule the hunt no longer holds')}</SelectItem>
+                    )}
+                  </Field>
+                </div>
+              )}
               <div style={{ marginTop: theme.spacing(2) }}>
                 <Field
                   component={HuntCodeEditorField}

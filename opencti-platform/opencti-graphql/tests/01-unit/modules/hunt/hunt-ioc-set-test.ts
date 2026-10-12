@@ -121,6 +121,26 @@ describe('Values an indicator hunt looks up', () => {
     expect(set.iocs.map((ioc) => ioc.value).sort()).toEqual(['10.2.0.0', '10.9.0.0']);
     expect(set.restricted_count).toBe(1);
   });
+
+  it('should name the source each value was reached from, and keep pasted values without one', async () => {
+    vi.mocked(findByIds).mockResolvedValue([address('report-9', 0), { ...report(1), name: 'LockBit report' }] as never);
+    vi.mocked(pageRegardingEntitiesConnection).mockImplementation(async (_context, _user, sourceId) => ({
+      edges: [{ node: address(String(sourceId), 0) }],
+    }) as never);
+    const set = await resolveHuntIocSet(testContext, {
+      internal_id: 'hunt-1',
+      hunt_type: 'indicators',
+      [RELATION_HUNT_SOURCES]: ['report-9-ip-0', 'report-1'],
+      hunt_ioc_values: [{ observable_type: 'Domain-Name', value: 'pasted.example.com' }],
+    } as unknown as BasicStoreEntityHunt);
+    const byValue = new Map(set.iocs.map((ioc) => [ioc.value, ioc]));
+    expect(byValue.get('10.9.0.0')?.sources).toEqual([expect.objectContaining({ id: 'report-9-ip-0', via: null, matched_filter: false })]);
+    expect(byValue.get('10.1.0.0')?.sources).toEqual([expect.objectContaining({
+      id: 'report-1-ip-0',
+      via: { id: 'report-1', entity_type: 'Report', name: 'LockBit report', relation: 'object' },
+    })]);
+    expect(byValue.get('pasted.example.com')?.sources).toEqual([]);
+  });
 });
 
 describe('Sources of a hunt', () => {

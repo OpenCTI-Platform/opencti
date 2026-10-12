@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../relay/environment';
 import { HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES } from './hunt-schedule-utils';
-import { HUNT_MAX_RESULTS_PER_RUN, HUNT_MAX_TIME_WINDOW_HOURS } from './hunt-utils';
+import { HUNT_MAX_IOCS_PER_RUN, HUNT_MAX_RELATED_SOURCES, HUNT_MAX_RESULTS_PER_RUN, HUNT_MAX_SIGMA_RULES, HUNT_MAX_TIME_WINDOW_HOURS } from './hunt-utils';
 import { useHuntConfigurationQuery } from './__generated__/useHuntConfigurationQuery.graphql';
 
 export const huntConfigurationQuery = graphql`
@@ -13,6 +13,9 @@ export const huntConfigurationQuery = graphql`
       schedule_lookback_minutes
       max_time_window_hours
       max_results_per_run
+      max_sigma_rules
+      max_iocs_per_run
+      max_related_sources
     }
   }
 `;
@@ -31,6 +34,12 @@ export interface HuntConfiguration {
   maxTimeWindowHours: number;
   /** Most results a hunt asks of one run, the platform default until it is loaded */
   maxResultsPerRun: number;
+  /** Most Sigma rules a hunt holds */
+  maxSigmaRules: number;
+  /** Most values an indicators hunt sends in one run */
+  maxIocsPerRun: number;
+  /** Most related threats a hunt from a threat reads its indicators from */
+  maxRelatedSources: number;
 }
 
 const positiveOr = (value: number | null | undefined, fallback: number) => (typeof value === 'number' && value > 0 ? value : fallback);
@@ -43,6 +52,9 @@ const useHuntConfiguration = (): HuntConfiguration => {
     scheduleLookbackMinutes: HUNT_DEFAULT_SCHEDULE_LOOKBACK_MINUTES,
     maxTimeWindowHours: HUNT_MAX_TIME_WINDOW_HOURS,
     maxResultsPerRun: HUNT_MAX_RESULTS_PER_RUN,
+    maxSigmaRules: HUNT_MAX_SIGMA_RULES,
+    maxIocsPerRun: HUNT_MAX_IOCS_PER_RUN,
+    maxRelatedSources: HUNT_MAX_RELATED_SOURCES,
   });
   useEffect(() => {
     const subscription = fetchQuery<useHuntConfigurationQuery>(huntConfigurationQuery, {}, { fetchPolicy: 'store-or-network' })
@@ -56,6 +68,9 @@ const useHuntConfiguration = (): HuntConfiguration => {
             scheduleLookbackMinutes: typeof lookback === 'number' && lookback >= 0 ? lookback : HUNT_DEFAULT_SCHEDULE_LOOKBACK_MINUTES,
             maxTimeWindowHours: positiveOr(data?.huntConfiguration?.max_time_window_hours, HUNT_MAX_TIME_WINDOW_HOURS),
             maxResultsPerRun: positiveOr(data?.huntConfiguration?.max_results_per_run, HUNT_MAX_RESULTS_PER_RUN),
+            maxSigmaRules: positiveOr(data?.huntConfiguration?.max_sigma_rules, HUNT_MAX_SIGMA_RULES),
+            maxIocsPerRun: positiveOr(data?.huntConfiguration?.max_iocs_per_run, HUNT_MAX_IOCS_PER_RUN),
+            maxRelatedSources: positiveOr(data?.huntConfiguration?.max_related_sources, HUNT_MAX_RELATED_SOURCES),
           });
         },
         // On failure the defaults stay: the platform validates the schedule again on save

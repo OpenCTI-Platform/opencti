@@ -11262,6 +11262,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   sigmaValidation?: Maybe<HuntSigmaValidation>;
   /** The first Sigma rule of sigma_rules */
   sigma_rule?: Maybe<Scalars['String']['output']>;
+  /** The keys of sigma_rules, in their order: the rule_key of a native query replacing one of them */
+  sigma_rule_keys: Array<Scalars['String']['output']>;
   /** Detection-rule hunts: the Sigma rules, each translated and run on its own */
   sigma_rules: Array<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -11894,8 +11896,12 @@ export type HuntIocSource = {
   __typename?: 'HuntIocSource';
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  /** The indicator filter of the hunt matched it */
+  matched_filter: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  /** Null when the hunt takes it directly or its filter matched it */
+  via?: Maybe<HuntIocVia>;
 };
 
 /** A value pasted in an indicator hunt */
@@ -11916,6 +11922,16 @@ export enum HuntIocVerdict {
   Pending = 'pending',
   Seen = 'seen'
 }
+
+/** The source of a hunt an indicator or an observable was reached from, and the relationship followed */
+export type HuntIocVia = {
+  __typename?: 'HuntIocVia';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  /** object: the container holds it; indicates: the indicator indicates the source; related-to: the observable is related to the source */
+  relation: Scalars['String']['output'];
+};
 
 /** What a hunt knows of its hits: each distinct hit once, whatever the number of runs that found it */
 export type HuntKnownHits = {
@@ -42669,6 +42685,7 @@ export type ResolversTypes = ResolversObject<{
   HuntIocValue: ResolverTypeWrapper<HuntIocValue>;
   HuntIocValueInput: HuntIocValueInput;
   HuntIocVerdict: HuntIocVerdict;
+  HuntIocVia: ResolverTypeWrapper<HuntIocVia>;
   HuntKnownHits: ResolverTypeWrapper<HuntKnownHits>;
   HuntMessage: ResolverTypeWrapper<HuntMessage>;
   HuntMessageValue: ResolverTypeWrapper<HuntMessageValue>;
@@ -43877,6 +43894,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntIocSource: HuntIocSource;
   HuntIocValue: HuntIocValue;
   HuntIocValueInput: HuntIocValueInput;
+  HuntIocVia: HuntIocVia;
   HuntKnownHits: HuntKnownHits;
   HuntMessage: HuntMessage;
   HuntMessageValue: HuntMessageValue;
@@ -48464,6 +48482,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   scopePlatforms?: Resolver<Maybe<Array<ResolversTypes['SecurityPlatform']>>, ParentType, ContextType>;
   sigmaValidation?: Resolver<Maybe<ResolversTypes['HuntSigmaValidation']>, ParentType, ContextType>;
   sigma_rule?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sigma_rule_keys?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   sigma_rules?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48674,13 +48693,22 @@ export type HuntIocSetResolvers<ContextType = any, ParentType extends ResolversP
 export type HuntIocSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocSource'] = ResolversParentTypes['HuntIocSource']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  matched_filter?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  via?: Resolver<Maybe<ResolversTypes['HuntIocVia']>, ParentType, ContextType>;
 }>;
 
 export type HuntIocValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocValue'] = ResolversParentTypes['HuntIocValue']> = ResolversObject<{
   observable_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntIocViaResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocVia'] = ResolversParentTypes['HuntIocVia']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type HuntKnownHitsResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntKnownHits'] = ResolversParentTypes['HuntKnownHits']> = ResolversObject<{
@@ -57603,6 +57631,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntIocSet?: HuntIocSetResolvers<ContextType>;
   HuntIocSource?: HuntIocSourceResolvers<ContextType>;
   HuntIocValue?: HuntIocValueResolvers<ContextType>;
+  HuntIocVia?: HuntIocViaResolvers<ContextType>;
   HuntKnownHits?: HuntKnownHitsResolvers<ContextType>;
   HuntMessage?: HuntMessageResolvers<ContextType>;
   HuntMessageValue?: HuntMessageValueResolvers<ContextType>;

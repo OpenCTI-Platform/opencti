@@ -1,11 +1,13 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { Formik } from 'formik';
 import testRender from '../../../utils/tests/test-render';
 import { HuntDerivedPanel, HuntFromEntitySummary } from './HuntFromEntity';
 import HuntTypeField from './HuntTypeField';
 import { buildDerivedHuntPrefill, emptyHuntFormValues, type HuntDerived, type HuntFormValues } from './hunt-utils';
+
+vi.mock('./useHuntConfiguration', () => ({ default: () => ({ maxSigmaRules: 100, maxIocsPerRun: 1000, maxRelatedSources: 25 }) }));
 
 const derived: HuntDerived = {
   entity: { id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT28', relation: 'self' },
@@ -89,16 +91,28 @@ describe('Hunt this from a threat', () => {
     expect(screen.getByText(/for its 2 known indicators over the last 24 hours/)).toBeInTheDocument();
   });
 
-  it('runs a detection rule picked from the techniques of the threat, and goes back to the indicators', async () => {
+  it('runs the detection rules picked from the techniques of the threat, and goes back to the indicators', async () => {
     const { relayEnv } = renderForm(derived, buildDerivedHuntPrefill(threat, derived));
     await resolveConnectors(relayEnv);
+    // The type comes first: an indicator hunt only says that rules were found too
+    expect(screen.getByTestId('hunt-derived-rules-other-type')).toHaveTextContent('2 detection rules were found too: a detection-rule hunt runs them.');
+    expect(screen.queryByTestId('hunt-derived-rules')).not.toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('radio', { name: /Detection rule \(Sigma or native query\)/ }));
+    });
     expect(screen.getByText('2 detection rules covering 2 of the 2 techniques of APT28')).toBeInTheDocument();
     expect(screen.getByText('SPL rule, covers T1027 Obfuscated Files')).toBeInTheDocument();
+    expect(screen.getByTestId('hunt-derived-rules-limits')).toHaveTextContent('A hunt holds up to 100 Sigma rules, and one native query per platform.');
     await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: /Splunk obfuscation search/ }));
+      fireEvent.click(screen.getByRole('checkbox', { name: /Splunk obfuscation search/ }));
     });
     expect(values()).toMatchObject({ type: 'telemetry', sigma: '', native: ['splunk'] });
     expect(screen.getByText('You are hunting APT28 on 2 security platforms: the hunt runs the detection rule "Splunk obfuscation search" on your telemetry over the last 24 hours.')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
+    });
+    expect(values()).toMatchObject({ type: 'telemetry', sigma: 'title: encoded', native: ['splunk'] });
+    expect(screen.getByText('You are hunting APT28 on 2 security platforms: the hunt runs 2 detection rules on your telemetry over the last 24 hours, each on its own.')).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Hunt these indicators' }));
     });
@@ -128,5 +142,30 @@ describe('Hunt this from a threat', () => {
     expect(screen.getByRole('button', { name: 'Import a hunt pack' })).toBeInTheDocument();
     expect(values().type).toEqual('telemetry');
     expect(screen.getByText(/the hunt runs the Sigma rule or the native queries you write below/)).toBeInTheDocument();
+  });
+
+  it('keeps the rule an indicator starts from selected, first, and lists it when the rules were cut', async () => {
+    const indicator = { id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', pattern_type: 'sigma', pattern: 'title: encoded' };
+    const fromIndicator: HuntDerived = {
+      ...derived,
+      entity: { id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', relation: 'self' },
+      suggested_type: 'telemetry',
+      sources: [{ id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', relation: 'self' }],
+      elements: [],
+      rules: [{ ...derived.rules[0], pinned: true }, derived.rules[1]],
+      rules_truncated: true,
+    };
+    const { relayEnv } = renderForm(fromIndicator, buildDerivedHuntPrefill(indicator, fromIndicator));
+    await resolveConnectors(relayEnv);
+    const pinned = screen.getByRole('checkbox', { name: /Encoded PowerShell/ });
+    expect(pinned).toBeChecked();
+    expect(pinned).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /Splunk obfuscation search/ })).not.toBeChecked();
+    expect(screen.getByTestId('hunt-derived-rules-truncated')).toBeInTheDocument();
+    // Clearing the selection keeps the rule the hunt starts from
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Clear the selection' }));
+    });
+    expect(values()).toMatchObject({ type: 'telemetry', sigma: 'title: encoded', native: [] });
   });
 });

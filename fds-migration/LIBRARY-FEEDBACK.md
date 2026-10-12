@@ -2641,3 +2641,23 @@ longer imports `components/common/card/Card`.
 **Resolved by 1.2.0.** `HuntsFirstUse` renders the design-system `Hero` /
 `HeroHeader` / `HeroBody` composition and no longer imports
 `components/common/card/Card`.
+
+## 71. No stepper, so a stepped creation form stays on the MUI `Stepper`
+
+**Raised** by the Hunts screens (#18671): the hunt creation drawer walks the
+analyst through four steps (what to hunt, context, execution, knowledge), each
+reachable once the previous ones hold no error.
+
+**Today.** The library ships no stepper (steps, active step, completed and error
+states, clickable steps). The product already uses the MUI `Stepper` for the
+widget, PIR and import wizards.
+
+**Workaround.** `hunts/HuntCreation.tsx` renders the MUI `Stepper`, `Step` and
+`StepButton` (non-linear, an error state per step), with the library `Button`
+for Back and Next.
+
+**Ask.** A `Stepper` with a step list, the active step, a completed and an error
+state per step, and a clickable step that the host can disable.
+
+**Removal test.** The hunt creation drawer renders its steps with the library
+component and `HuntCreation.tsx` no longer imports `@mui/material`.

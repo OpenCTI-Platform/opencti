@@ -2,6 +2,15 @@ import { ConnectionHandler, RecordProxy, RecordSourceSelectorProxy } from 'relay
 
 export const HUNT_RUNS_CONNECTION_KEY = 'Pagination_huntRuns';
 
+// The runs list shown for each hunt, so that Run now of the hunt header adds its runs to it
+const listedRunsOptions = new Map<string, Record<string, unknown>>();
+
+export const rememberHuntRunsList = (huntId: string, paginationOptions: Record<string, unknown>) => {
+  listedRunsOptions.set(huntId, paginationOptions);
+};
+
+export const huntRunsListOptions = (huntId: string) => listedRunsOptions.get(huntId);
+
 /** Adds freshly started runs at the top of the runs list of the hunt. A run already listed (a retry returning the
  * next attempt it already created) is not added twice. */
 export const insertStartedHuntRuns = (

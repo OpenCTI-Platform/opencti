@@ -48,11 +48,22 @@ const STIX_VALUE_OBJECTS: Record<string, string> = {
   'mac-addr': ENTITY_MAC_ADDR,
 };
 
+/** The source of a hunt an indicator or an observable was reached from, and the relationship followed. */
+export interface HuntIocVia {
+  id: string;
+  entity_type: string;
+  name: string;
+  relation: typeof RELATION_OBJECT | typeof RELATION_INDICATES | typeof RELATION_RELATED_TO;
+}
+
 export interface HuntIocSource {
   id: string;
   standard_id: string;
   entity_type: string;
   name: string;
+  /** Null when the hunt takes it directly or its filter matched it */
+  via: HuntIocVia | null;
+  matched_filter: boolean;
 }
 
 /** One value an indicator hunt looks up, with the indicators and observables it comes from (none for a pasted value). */
@@ -302,6 +313,8 @@ export const listSubjectIocElements = async (context: AuthContext, user: AuthUse
   return [...indicators, ...observables];
 };
 
+const subjectRelationOf = (element: IocElement) => (element.entity_type === ENTITY_TYPE_INDICATOR ? RELATION_INDICATES : RELATION_RELATED_TO);
+
 /** The name an indicator or an observable is shown with. */
 export const iocElementName = (element: IocElement) => String(element.name ?? element.value ?? element.observable_value ?? element.standard_id);
 
@@ -321,6 +334,14 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
   const sources = await findByIds<IocElement>(context, SYSTEM_USER, readSourceIds);
   const elements: IocElement[] = sources.filter((source) => IOC_ELEMENT_TYPES.includes(source.entity_type));
   budget -= elements.length;
+  // How each element was reached, the first way kept: chosen, then through a source, then by the filter
+  const reached = new Map<string, Pick<HuntIocSource, 'via' | 'matched_filter'>>();
+  const reach = (element: IocElement, how: Pick<HuntIocSource, 'via' | 'matched_filter'>) => {
+    if (!reached.has(element.internal_id)) {
+      reached.set(element.internal_id, how);
+    }
+  };
+  elements.forEach((element) => reach(element, { via: null, matched_filter: false }));
   // What a report, a grouping or an incident response restricted to authorized members contains is for its members
   // only: a hunt never takes values from it
   const expansions = sources.filter((source) => (HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type) || HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type))
@@ -328,17 +349,25 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
   for (let index = 0; index < expansions.length && budget > 0; index += 1) {
     const source = expansions[index];
     // Expanded elements of revoked indicators are not hunted, an explicitly chosen one is
-    const expanded = HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type)
+    const isContainer = HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type);
+    const expanded = isContainer
       ? await listContainedIocElements(context, SYSTEM_USER, source.internal_id, budget)
       : (await listSubjectIocElements(context, SYSTEM_USER, source.internal_id, budget)).slice(0, budget);
     budget -= Math.max(1, expanded.length);
-    elements.push(...expanded.filter((element) => element.revoked !== true));
+    const kept = expanded.filter((element) => element.revoked !== true);
+    kept.forEach((element) => reach(element, {
+      via: { id: source.internal_id, entity_type: source.entity_type, name: iocElementName(source), relation: isContainer ? RELATION_OBJECT : subjectRelationOf(element) },
+      matched_filter: false,
+    }));
+    elements.push(...kept);
   }
   const filters = parseHuntFilterGroup(hunt.hunt_ioc_filters, 'hunt_ioc_filters');
   if (filters && budget > 0) {
     const matching = await pageEntitiesConnection<IocElement>(context, SYSTEM_USER, IOC_ELEMENT_TYPES, { filters, first: budget });
     budget -= Math.max(1, matching.edges.length);
-    elements.push(...matching.edges.map((edge) => edge.node));
+    const matched = matching.edges.map((edge) => edge.node);
+    matched.forEach((element) => reach(element, { via: null, matched_filter: true }));
+    elements.push(...matched);
   }
   // A spent budget read more elements than a run looks up, or left sources and the filter unread
   const truncated = budget <= 0 || readSourceIds.length < sourceIds.length;
@@ -366,6 +395,7 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
       standard_id: element.standard_id,
       entity_type: element.entity_type,
       name: iocElementName(element),
+      ...(reached.get(element.internal_id) ?? { via: null, matched_filter: false }),
     };
     values.forEach((value) => {
       const key = iocKey(value);

@@ -16376,6 +16376,11 @@ type HuntNativeQuery {
   language: String!
   query: String!
   pipeline: String
+
+  """
+  The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule
+  """
+  rule_key: String
 }
 
 input HuntNativeQueryInput {
@@ -16383,6 +16388,37 @@ input HuntNativeQueryInput {
   language: String!
   query: String!
   pipeline: String
+
+  """
+  The Sigma rule this query replaces on its platform (key of the rule); null: the first rule, or the logic of a hunt without Sigma rule
+  """
+  rule_key: String
+}
+
+enum HuntTranslationState {
+  translated
+  failed
+  checking
+}
+
+"""
+The last translation of the current logic of a hunt on a security platform, by a translation preview or a run
+"""
+type HuntTranslation {
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_name: String
+  state: HuntTranslationState!
+
+  """The queries of the rules, each after a comment line naming its rule"""
+  translated_query: String
+  query_language: String
+  error: String
+
+  """Detection-rule hunts: the translation of each Sigma rule"""
+  rules: [HuntRunRuleResult!]!
+  translated_at: DateTime
+  run_id: String!
 }
 
 """A value pasted in an indicator hunt"""
@@ -16396,11 +16432,31 @@ input HuntIocValueInput {
   value: String!
 }
 
+"""
+The source of a hunt an indicator or an observable was reached from, and the relationship followed
+"""
+type HuntIocVia {
+  id: ID!
+  entity_type: String!
+  name: String!
+
+  """
+  object: the container holds it; indicates: the indicator indicates the source; related-to: the observable is related to the source
+  """
+  relation: String!
+}
+
 type HuntIocSource {
   id: ID!
   standard_id: String!
   entity_type: String!
   name: String!
+
+  """Null when the hunt takes it directly or its filter matched it"""
+  via: HuntIocVia
+
+  """The indicator filter of the hunt matched it"""
+  matched_filter: Boolean!
 }
 
 """
@@ -16535,6 +16591,17 @@ type HuntConfiguration {
 
   """The most results a hunt asks of the hunt connector in one run"""
   max_results_per_run: Int!
+
+  """The most Sigma rules a detection-rule hunt holds"""
+  max_sigma_rules: Int!
+
+  """The most values an indicator hunt run looks up"""
+  max_iocs_per_run: Int!
+
+  """
+  The malware and tools a threat uses, and the threats attributed to it, followed by a hunt started from it (each list)
+  """
+  max_related_sources: Int!
 }
 
 enum HuntTechniqueValidationStatus {
@@ -16620,9 +16687,28 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   hunt_type: HuntType!
   hunt_status: HuntStatus!
   hunt_source_kind: HuntSourceKind!
+
+  """The first Sigma rule of sigma_rules"""
   sigma_rule: String
+
+  """
+  Detection-rule hunts: the Sigma rules, each translated and run on its own
+  """
+  sigma_rules: [String!]!
+
+  """
+  The keys of sigma_rules, in their order: the rule_key of a native query replacing one of them
+  """
+  sigma_rule_keys: [String!]!
+
+  """The validation of the first Sigma rule"""
   sigmaValidation: HuntSigmaValidation
   native_queries: [HuntNativeQuery!]
+
+  """
+  The last translation of the current logic on each security platform, the most recent first
+  """
+  translations: [HuntTranslation!]!
 
   """Indicator hunts: the filter over indicators and observables"""
   hunt_ioc_filters: String
@@ -16742,6 +16828,7 @@ enum HuntDerivedSourceRelation {
   self
   uses
   attributed
+  flagged
 }
 
 """
@@ -16753,7 +16840,7 @@ type HuntDerivedSource {
   name: String!
 
   """
-  self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it
+  self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it; flagged: a threat the PIR flags
   """
   relation: HuntDerivedSourceRelation!
 }
@@ -16790,6 +16877,11 @@ type HuntDerivedRule {
 
   """Ids of the techniques of the entity it indicates"""
   technique_ids: [ID!]!
+
+  """
+  The rule is the entity the hunt starts from: listed first, never left out by the limit
+  """
+  pinned: Boolean!
 }
 
 """
@@ -16821,6 +16913,9 @@ type HuntDerivedContent {
   unsupported_count: Int!
   techniques: [HuntDerivedTechnique!]!
   rules: [HuntDerivedRule!]!
+
+  """More detection rules than a hunt holds"""
+  rules_truncated: Boolean!
 }
 
 type HuntValidation {
@@ -16839,7 +16934,14 @@ input HuntAddInput {
   hunt_type: HuntType
   hunt_status: HuntStatus
   hunt_source_kind: HuntSourceKind
+
+  """A hunt of one Sigma rule; ignored when sigma_rules is given"""
   sigma_rule: String
+
+  """
+  Detection-rule hunts: the Sigma rules, each translated and run on its own
+  """
+  sigma_rules: [String!]
   native_queries: [HuntNativeQueryInput!]
   hunt_ioc_filters: String
   hunt_ioc_values: [HuntIocValueInput!]
@@ -17092,6 +17194,31 @@ type HuntIocResult {
   deployed: Boolean!
 }
 
+"""
+What one Sigma rule of a detection-rule hunt run translated to and found
+"""
+type HuntRunRuleResult {
+  """
+  Key of the rule (first 24 hexadecimal characters of the SHA-256 of the trimmed rule)
+  """
+  key: String!
+  title: String
+
+  """
+  completed, or failed with its error: the other rules of the run still ran
+  """
+  status: HuntRunStatus!
+  translated_query: String
+  query_language: String
+  hits_count: Int!
+
+  """The platform returned partial results for the rule"""
+  truncated: Boolean!
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  error: String
+}
+
 """The results of a run the user can read, counted by kind"""
 type HuntRunResultsSummary {
   sightings: Int!
@@ -17181,12 +17308,16 @@ type HuntRun implements BasicObject & InternalObject {
   The run added its hits to the incident still open from a previous run instead of opening a new one
   """
   incident_continued: Boolean
+
+  """
+  The platform returned partial results (hits_count is a lower bound), never the cap of the hit sample
+  """
   results_truncated: Boolean
   distinct_entities: Int
   evidence_sample: [HuntEvidence!]
 
   """
-  One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample
+  One evidence item per hit (a sample of hits_count: one per value or rule and victim first, then the earliest), in time order
   """
   hits_sample: [HuntHit!]
 
@@ -17198,6 +17329,11 @@ type HuntRun implements BasicObject & InternalObject {
 
   """Indicator hunts: one result per value looked up"""
   ioc_results: [HuntIocResult!]
+
+  """
+  Detection-rule hunts: one result per Sigma rule, null when the connector ran the first rule only
+  """
+  rule_results: [HuntRunRuleResult!]
   result_ids: [String!]
   results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
 
@@ -17220,6 +17356,11 @@ type HuntRun implements BasicObject & InternalObject {
   """
   auto_escalation: Boolean!
   incident_id: String
+
+  """
+  STIX id of the incident of the run: it still finds the incident once its draft is validated
+  """
+  incident_stix_id: String
   draft_id: String
   aev_inject_id: String
   security_coverage_id: String
@@ -17410,6 +17551,40 @@ input HuntIocResultInput {
   hit_keys: [String!]
 }
 
+"""What one Sigma rule of the run message translated to and found"""
+input HuntRunRuleResultInput {
+  "Key of the rule in the run message\n\n*Constraints:*\n* Maximal length: `64`\n"
+  key: String!
+  title: String
+  status: HuntRunStatus!
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  truncated: Boolean
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  error: String
+}
+
+"""
+Every hit of the run for one value (or rule) on one victim host, never a sample
+"""
+input HuntRunObservationInput {
+  "Key of the value (indicator hunts) or of the rule (detection-rule hunts) in the run message\n\n*Constraints:*\n* Maximal length: `64`\n"
+  key: String!
+
+  """Victim host, null when the hits name none"""
+  host: String
+  hits_count: Int!
+  first_seen: DateTime
+  last_seen: DateTime
+
+  """
+  Keys of the hits of the group (same rule as hit_keys of the report), null when they cannot be told apart
+  """
+  hit_keys: [String!]
+}
+
 input HuntRunReportInput {
   status: HuntRunStatus!
 
@@ -17440,6 +17615,16 @@ input HuntRunReportInput {
 
   """Indicator hunts: the result of each value of the run message"""
   ioc_results: [HuntIocResultInput!]
+
+  """
+  Detection-rule hunts: the result of each Sigma rule of the run message, in its order
+  """
+  rule_results: [HuntRunRuleResultInput!]
+
+  """
+  The hits of the run grouped by value (or rule) and victim host, over every hit read: the counts and dates of the observed data and sightings
+  """
+  observations: [HuntRunObservationInput!]
   result_ids: [String!]
   cost_ms: Int
   error: String

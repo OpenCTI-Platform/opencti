@@ -330,7 +330,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
                   variant="outlined"
                   type="number"
                   name="time_window_hours"
-                  label={values.hunt_type === 'indicators' ? t_i18n('Look back (hours)') : t_i18n('Time window (hours)')}
+                  label={t_i18n('Time window (hours)')}
                   helperText={<HuntHelp text={t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')} href={HUNT_DOCS.runHunt} />}
                   fullWidth
                   required

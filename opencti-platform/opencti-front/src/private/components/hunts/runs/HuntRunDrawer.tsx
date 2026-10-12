@@ -62,6 +62,7 @@ import { shortHash } from '../hunt-evidence-utils';
 import { insertStartedHuntRuns } from './hunt-run-store';
 import HuntRunResults from './HuntRunResults';
 import HuntRunIocResults from './HuntRunIocResults';
+import HuntRunRuleResults from './HuntRunRuleResults';
 import HuntRunHits from './HuntRunHits';
 import { HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
 import { HuntRunDrawer_run$data, HuntRunDrawer_run$key } from './__generated__/HuntRunDrawer_run.graphql';
@@ -76,6 +77,7 @@ const huntRunDrawerFragment = graphql`
   fragment HuntRunDrawer_run on HuntRun {
     id
     ...HuntRunIocResults_run
+    ...HuntRunRuleResults_run
     hunt_id
     hunt {
       id
@@ -296,7 +298,13 @@ const RunDetails = ({ run }: { run: Run }) => {
   const date = (value?: string | null) => (value ? <RelativeDate date={value} /> : null);
   const essentials: DetailRow[] = [
     { key: 'platform', label: t_i18n('Platform'), value: runPlatformName(run, t_i18n) },
-    { key: 'connector', label: t_i18n('Connector'), value: run.connector_name },
+    {
+      key: 'connector',
+      label: t_i18n('Connector'),
+      value: run.connector_id && run.connector_name
+        ? <Link to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-connector-link">{run.connector_name}</Link>
+        : run.connector_name,
+    },
     { key: 'trigger', label: t_i18n('Trigger'), value: t_i18n(huntRunTriggerLabel(run.hunt_run_trigger)) },
     { key: 'triggered_by', label: t_i18n('Triggered by'), value: run.triggeredBy?.name },
     { key: 'started', label: t_i18n('Started'), value: date(run.started_at) },
@@ -668,9 +676,6 @@ const RunLinks = ({ run }: { run: Run }) => {
   if (run.incident_id && !run.draft_id) {
     links.push({ key: 'incident', to: PATH_INCIDENT(run.incident_id), label: t_i18n('Open the incident') });
   }
-  if (run.connector_id) {
-    links.push({ key: 'work', to: `/dashboard/data/ingestion/connectors/${run.connector_id}`, label: run.dispatched_at ? t_i18n('Open the connector work') : t_i18n('Open the connector') });
-  }
   if (run.playbook_id) {
     links.push({ key: 'playbook', to: `/dashboard/data/processing/automation/${run.playbook_id}`, label: t_i18n('Open the playbook') });
   }
@@ -898,6 +903,7 @@ const HuntRunDrawerContent = ({ data, results, huntId, paginationOptions }: Hunt
         />
       )}
       {isExecution && <HuntRunIocResults data={run} />}
+      <HuntRunRuleResults data={run} />
       {isExecution && <RunEvidence run={run} results={results} />}
       <RunLinks run={run} />
       <RunDetails run={run} />

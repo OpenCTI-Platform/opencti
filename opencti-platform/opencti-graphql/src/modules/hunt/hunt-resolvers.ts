@@ -26,7 +26,7 @@ import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
-import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, storedSigmaRules } from './hunt-utils';
+import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, huntRuleKey, storedSigmaRules } from './hunt-utils';
 import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, findHuntTranslationsView, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
 import { storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
@@ -59,6 +59,7 @@ const huntResolvers: Resolvers = {
     techniqueValidations: (hunt, _, context) => computeHuntTechniqueValidations(context, context.user, hunt),
     sigmaValidation: (hunt) => huntSigmaValidation(hunt),
     sigma_rules: (hunt) => storedSigmaRules(hunt),
+    sigma_rule_keys: (hunt) => storedSigmaRules(hunt).map(huntRuleKey),
     translations: (hunt, _, context) => findHuntTranslationsView(context, context.user, hunt),
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,

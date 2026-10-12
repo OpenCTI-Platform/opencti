@@ -5,7 +5,7 @@ import {
   buildHuntSummary,
   countDerivedValueTypes,
   countHuntPlatforms,
-  derivedRuleValues,
+  derivedRulesValues,
   formatDerivedValueTypes,
   formatHuntWindow,
   type HuntDerived,
@@ -14,7 +14,7 @@ import {
   huntTypeDescription,
   huntTypeLabel,
   selectedDerivedElements,
-  selectedDerivedRule,
+  selectedDerivedRules,
   buildHuntEditPatch,
   buildHuntPrefill,
   buildHuntScope,
@@ -58,6 +58,10 @@ import {
   huntRunHitsBreakdown,
   huntRunsRecur,
   huntTimeWindowPresets,
+  HUNT_FIRST_RULE,
+  isHuntLogicDerived,
+  isHuntLogicLockedEntity,
+  normalizeNativeQueries,
 } from './hunt-utils';
 
 describe('Hunt utils', () => {
@@ -247,6 +251,7 @@ describe('Hunt utils', () => {
         hunt_type: 'telemetry',
         hunt_status: 'draft',
         sigma_rule: 'title: test',
+        sigma_rules: ['title: test'],
         native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: null }],
         hunt_scope: buildHuntScope(['platform-1']),
         hunt_schedule: '0 * * * *',
@@ -268,6 +273,16 @@ describe('Hunt utils', () => {
       });
     });
 
+    it('should send the Sigma rule a native query replaces, the first one by default', () => {
+      expect(normalizeNativeQueries([
+        { platform: 'splunk', language: 'spl', query: 'index=a', pipeline: '', rule_key: HUNT_FIRST_RULE },
+        { platform: 'splunk', language: 'spl', query: 'index=b', pipeline: '', rule_key: 'key-2' },
+      ])).toEqual([
+        { platform: 'splunk', language: 'spl', query: 'index=a', pipeline: null },
+        { platform: 'splunk', language: 'spl', query: 'index=b', pipeline: null, rule_key: 'key-2' },
+      ]);
+    });
+
     it('should keep trigger filters for standing hunts and drop telemetry fields of infrastructure hunts', () => {
       const input = toHuntAddInput({
         ...emptyHuntFormValues(),
@@ -278,6 +293,7 @@ describe('Hunt utils', () => {
         schedule_mode: 'standing',
       }, '{"mode":"and","filters":[{"key":["entity_type"],"values":["Report"]}],"filterGroups":[]}');
       expect(input.sigma_rule).toEqual('');
+      expect(input.sigma_rules).toEqual([]);
       expect(input.hunt_scope).toEqual('');
       expect(input.hunt_schedule).toEqual('standing');
       expect(input.trigger_filters).toContain('Report');
@@ -377,11 +393,32 @@ describe('Hunt utils', () => {
       expect(prefill.huntTargets?.map((option) => option.value)).toEqual(['is-1', 'mal-1']);
     });
 
-    it('should open a detection-rule hunt with the best rule when only rules are found', () => {
+    it('should open a detection-rule hunt running every rule found when only rules are found', () => {
       const prefill = buildDerivedHuntPrefill(threat, { ...derived, suggested_type: 'telemetry', elements: [] });
-      expect(prefill).toMatchObject({ hunt_type: 'telemetry', sigma_rule: 'title: encoded', native_queries: [] });
-      expect(prefill.huntSources?.map((option) => option.value)).toEqual(['rule-1']);
-      expect(prefill.huntTechniques).toEqual([{ value: 'ap-1', label: 'T1059.001 PowerShell', type: 'Attack-Pattern' }]);
+      expect(prefill).toMatchObject({
+        hunt_type: 'telemetry',
+        sigma_rule: 'title: encoded',
+        more_sigma_rules: [],
+        native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: '' }],
+      });
+      expect(prefill.huntSources?.map((option) => option.value)).toEqual(['rule-1', 'rule-2']);
+      expect(prefill.huntTechniques?.map((option) => option.value)).toEqual(['ap-1', 'ap-2']);
+    });
+
+    it('should run each Sigma rule on its own, and one native rule per platform', () => {
+      const rules = [
+        ...derived.rules,
+        { id: 'rule-3', entity_type: 'Indicator', name: 'Mimikatz', pattern_type: 'sigma', pattern: 'title: mimikatz', technique_ids: [] },
+        { id: 'rule-4', entity_type: 'Indicator', name: 'Another Splunk search', pattern_type: 'spl', pattern: 'index=other', technique_ids: [] },
+      ];
+      const values = derivedRulesValues(rules, { ...derived, rules });
+      expect(values).toMatchObject({ sigma_rule: 'title: encoded', more_sigma_rules: ['title: mimikatz'] });
+      expect(values.native_queries).toEqual([{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: '' }]);
+      expect(values.huntSources?.map((option) => option.value)).toEqual(['rule-1', 'rule-2', 'rule-3']);
+      const input = toHuntAddInput({ ...emptyHuntFormValues(), name: 'Hunt', ...values }, '');
+      expect(input.sigma_rule).toEqual('title: encoded');
+      expect(input.sigma_rules).toEqual(['title: encoded', 'title: mimikatz']);
+      expect(huntFormHasLogic({ ...emptyHuntFormValues(), more_sigma_rules: ['title: mimikatz'] })).toBe(true);
     });
 
     it('should open a detection-rule hunt without logic when nothing is found', () => {
@@ -391,14 +428,26 @@ describe('Hunt utils', () => {
     });
 
     it('should turn a native rule into a native query of its platform', () => {
-      expect(derivedRuleValues(derived.rules[1], derived)).toMatchObject({
+      expect(derivedRulesValues([derived.rules[1]], derived)).toMatchObject({
         hunt_type: 'telemetry',
         sigma_rule: '',
         native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: '' }],
       });
-      const picked = { ...emptyHuntFormValues(), ...derivedRuleValues(derived.rules[1], derived) };
-      expect(selectedDerivedRule(derived, picked)?.id).toEqual('rule-2');
-      expect(selectedDerivedRule(derived, { ...picked, hunt_type: 'indicators' })).toBeNull();
+      const picked = { ...emptyHuntFormValues(), ...derivedRulesValues([derived.rules[1]], derived) };
+      expect(selectedDerivedRules(derived, picked).map(({ id }) => id)).toEqual(['rule-2']);
+      expect(selectedDerivedRules(derived, { ...picked, hunt_type: 'indicators' })).toEqual([]);
+    });
+
+    it('should lock the type and the logic of a hunt from an indicator or an observable, never from a threat', () => {
+      const fromIndicator = { ...derived, entity: { id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', relation: 'self' }, rules: [{ ...derived.rules[0], pinned: true }] };
+      expect(isHuntLogicLockedEntity(fromIndicator)).toBe(true);
+      const fromObservable = { ...derived, entity: { id: 'ip-1', entity_type: 'IPv4-Addr', name: '198.51.100.1', relation: 'self' }, elements: [{ id: 'ip-1', entity_type: 'IPv4-Addr', name: '198.51.100.1', value_types: ['IPv4-Addr'], source_ids: ['ip-1'] }] };
+      expect(isHuntLogicLockedEntity(fromObservable)).toBe(true);
+      expect(isHuntLogicLockedEntity(derived)).toBe(false);
+      expect(isHuntLogicDerived(derived, 'telemetry')).toBe(true);
+      expect(isHuntLogicDerived(derived, 'indicators')).toBe(true);
+      expect(isHuntLogicDerived(derived, 'infrastructure')).toBe(false);
+      expect(isHuntLogicDerived({ ...derived, rules: [] }, 'telemetry')).toBe(false);
     });
 
     it('should keep the hunt an indicator calls for and its techniques', () => {
@@ -425,12 +474,12 @@ describe('Hunt utils', () => {
     });
 
     it('should say in plain language what the hunt does', () => {
-      const input = { name: 'APT28', huntType: 'indicators', scopePlatforms: [], availablePlatforms: 2, indicatorsCount: 23, ruleName: null, hasLogic: true, timeWindowHours: 168, escalationThreshold: 10 };
+      const input = { name: 'APT28', huntType: 'indicators', scopePlatforms: [], availablePlatforms: 2, indicatorsCount: 23, ruleNames: [], hasLogic: true, timeWindowHours: 168, escalationThreshold: 10 };
       expect(buildHuntSummary(input, t)).toEqual([
         'You are hunting APT28 on 2 security platforms: the hunt searches your telemetry for its 23 known indicators over the last 7 days.',
         'A hit creates a sighting and, from 10 hits, proposes an incident.',
       ]);
-      expect(buildHuntSummary({ ...input, huntType: 'telemetry', ruleName: 'Encoded PowerShell', scopePlatforms: [{ value: 'sp-1', label: 'Splunk - SOC' }], timeWindowHours: 36 }, t)[0])
+      expect(buildHuntSummary({ ...input, huntType: 'telemetry', ruleNames: ['Encoded PowerShell'], scopePlatforms: [{ value: 'sp-1', label: 'Splunk - SOC' }], timeWindowHours: 36 }, t)[0])
         .toEqual('You are hunting APT28 on Splunk - SOC: the hunt runs the detection rule "Encoded PowerShell" on your telemetry over the last 36 hours.');
       expect(buildHuntSummary({ ...input, indicatorsCount: 0, availablePlatforms: 0 }, t)[0])
         .toEqual('You are hunting APT28 on your security platforms (no hunt connector can run it yet): the hunt searches your telemetry for the indicators and observables you add below over the last 7 days.');

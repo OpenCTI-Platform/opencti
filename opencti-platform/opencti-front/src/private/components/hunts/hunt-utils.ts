@@ -131,6 +131,10 @@ export const HUNT_MAX_ESCALATION_THRESHOLD = 1000000;
 // The platform defaults of its configured limits, until the hunt configuration is loaded
 export const HUNT_MAX_TIME_WINDOW_HOURS = 720;
 export const HUNT_MAX_RESULTS_PER_RUN = 10000;
+// The platform defaults until the hunting configuration is loaded
+export const HUNT_MAX_SIGMA_RULES = 100;
+export const HUNT_MAX_IOCS_PER_RUN = 1000;
+export const HUNT_MAX_RELATED_SOURCES = 25;
 // Results a run reads when its hunt sets no limit (the platform default)
 export const HUNT_DEFAULT_MAX_RESULTS = 1000;
 
@@ -563,6 +567,7 @@ export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null; hunt_pir
 export const hasHuntLogic = (hunt: {
   hunt_type?: string | null;
   sigma_rule?: string | null;
+  sigma_rules?: ReadonlyArray<string> | null;
   native_queries?: ReadonlyArray<{ platform: string }> | null;
   hunt_ioc_values?: ReadonlyArray<unknown> | null;
   hunt_ioc_filters?: string | null;
@@ -575,7 +580,8 @@ export const hasHuntLogic = (hunt: {
   if (hunt.hunt_type === 'indicators') {
     return (hunt.hunt_ioc_values ?? []).length > 0 || (hunt.huntSources ?? []).length > 0 || !isFilterGroupJsonEmpty(hunt.hunt_ioc_filters);
   }
-  return (hunt.sigma_rule ?? '').trim().length > 0 || nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
+  return [hunt.sigma_rule, ...(hunt.sigma_rules ?? [])].some((rule) => (rule ?? '').trim().length > 0)
+    || nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
 };
 
 /** Hunts proposed by an agent or imported from XTM Hub stay drafts until an analyst reviews them. */
@@ -692,11 +698,16 @@ export const isFilterGroupJsonEmpty = (filters?: string | null): boolean => {
 // endregion
 
 // region form
+// The rule a native query replaces when it names none: the first Sigma rule, or the logic of a hunt without one
+export const HUNT_FIRST_RULE = 'first';
+
 export interface HuntNativeQueryFormValue {
   platform: string;
   language: string;
   query: string;
   pipeline: string;
+  /** The key of the Sigma rule it replaces, empty or HUNT_FIRST_RULE for the first rule */
+  rule_key?: string;
 }
 
 export interface HuntFormValues {
@@ -706,6 +717,8 @@ export interface HuntFormValues {
   hunt_type: HuntTypeValue;
   hunt_status: HuntStatusValue;
   sigma_rule: string;
+  // The Sigma rules after the first one, each translated and run on its own
+  more_sigma_rules: string[];
   native_queries: HuntNativeQueryFormValue[];
   scopePlatforms: FieldOption[];
   schedule_mode: HuntScheduleMode;
@@ -737,6 +750,7 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   hunt_type: 'telemetry',
   hunt_status: 'draft',
   sigma_rule: '',
+  more_sigma_rules: [],
   native_queries: [],
   scopePlatforms: [],
   schedule_mode: 'manual',
@@ -789,8 +803,14 @@ export const normalizeNativeQueries = (rows: HuntNativeQueryFormValue[]) => {
       language: row.language.trim(),
       query: row.query,
       pipeline: row.pipeline.trim().length > 0 ? row.pipeline.trim() : null,
+      ...(row.rule_key && row.rule_key !== HUNT_FIRST_RULE ? { rule_key: row.rule_key } : {}),
     }));
 };
+
+/** The Sigma rules of a form, the first one and the others, trimmed, each once. */
+export const formSigmaRules = (values: Pick<HuntFormValues, 'sigma_rule' | 'more_sigma_rules'>) => Array.from(new Set(
+  [values.sigma_rule, ...(values.more_sigma_rules ?? [])].map((rule) => (rule ?? '').trim()).filter((rule) => rule.length > 0),
+));
 
 const toInteger = (value: number | string, fallback: number | null): number | null => {
   if (value === '' || value === null || value === undefined) {
@@ -816,6 +836,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     hunt_type: values.hunt_type,
     hunt_status: values.hunt_status,
     sigma_rule: values.hunt_type === 'telemetry' ? values.sigma_rule : '',
+    sigma_rules: values.hunt_type === 'telemetry' ? formSigmaRules(values) : [],
     native_queries: isIndicators ? [] : normalizeNativeQueries(values.native_queries),
     ...(isIndicators ? { hunt_ioc_values: parseIocText(values.ioc_values_text).values, hunt_ioc_filters: iocFilters } : {}),
     hunt_scope: values.hunt_type !== 'infrastructure' ? buildHuntScope(optionValues(values.scopePlatforms)) : '',
@@ -845,6 +866,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
 export const huntFormHasLogic = (values: Partial<HuntFormValues>, iocFilters: string | null = null) => hasHuntLogic({
   hunt_type: values.hunt_type,
   sigma_rule: values.sigma_rule,
+  sigma_rules: values.more_sigma_rules,
   native_queries: normalizeNativeQueries(values.native_queries ?? []),
   huntSources: [...(values.iocElements ?? []), ...(values.iocEntities ?? []), ...(values.huntSources ?? [])],
   hunt_ioc_values: parseIocText(values.ioc_values_text ?? '').values,
@@ -1002,6 +1024,8 @@ export interface HuntDerivedRule extends HuntDerivedEntity {
   pattern_type: string;
   pattern: string;
   technique_ids: ReadonlyArray<string>;
+  /** The rule the hunt starts from: listed first, never left out by the limit */
+  pinned?: boolean | null;
 }
 export interface HuntDerived {
   entity: HuntDerivedSource;
@@ -1013,10 +1037,13 @@ export interface HuntDerived {
   unsupported_count: number;
   techniques: ReadonlyArray<HuntDerivedTechnique>;
   rules: ReadonlyArray<HuntDerivedRule>;
+  /** More rules than a hunt holds: the pinned rule and the rules covering the most techniques are listed */
+  rules_truncated?: boolean | null;
 }
 
-/** Entities "Hunt this" derives the content of a hunt from (a PIR prefills its targets only). */
+/** Entities "Hunt this" derives the content of a hunt from (for a PIR, from the threats it flags). */
 export const HUNT_DERIVABLE_TYPES = [
+  'Pir',
   ...HUNT_TARGET_TYPES,
   'Tool',
   ...HUNT_TECHNIQUE_TYPES,
@@ -1065,48 +1092,102 @@ export const formatDerivedValueTypes = (elements: ReadonlyArray<HuntDerivedEleme
   .map(({ type, count }) => t_i18n(HUNT_VALUE_TYPE_COUNTS[type] ?? '{count, plural, one {# value} other {# values}}', { values: { count } }))
   .join(', ');
 
-/** The form values a detection rule turns a hunt into: its Sigma rule or its native query, with the techniques it covers. */
-export const derivedRuleValues = (rule: HuntDerivedRule, derived: HuntDerived): Partial<HuntFormValues> => {
-  const huntTechniques = derived.techniques.filter((technique) => rule.technique_ids.includes(technique.id))
-    .map((technique) => ({ value: technique.id, label: huntTechniqueName(technique), type: technique.entity_type }));
-  const base: Partial<HuntFormValues> = { hunt_type: 'telemetry', huntSources: [derivedOption(rule)], huntTechniques };
-  const platform = INDICATOR_PATTERN_PLATFORMS[rule.pattern_type];
-  if (rule.pattern_type !== 'sigma' && platform) {
-    return { ...base, sigma_rule: '', native_queries: [{ platform, language: rule.pattern_type, query: rule.pattern, pipeline: '' }] };
-  }
-  return { ...base, sigma_rule: rule.pattern, native_queries: [] };
+const techniqueOption = (technique: HuntDerivedTechnique): FieldOption => ({ value: technique.id, label: huntTechniqueName(technique), type: technique.entity_type });
+
+/** The platform a native detection rule runs on, null for a Sigma rule. */
+export const derivedRulePlatform = (rule: Pick<HuntDerivedRule, 'pattern_type'>) => (rule.pattern_type === 'sigma' ? null : INDICATOR_PATTERN_PLATFORMS[rule.pattern_type] ?? null);
+
+/**
+ * The detection rules of a selection a hunt runs: every Sigma rule, each translated and run on its own, and the first
+ * native rule of each platform, which runs one native query.
+ */
+export const runnableDerivedRules = (rules: ReadonlyArray<HuntDerivedRule>) => {
+  const platforms = new Set<string>();
+  return rules.filter((rule) => {
+    const platform = derivedRulePlatform(rule);
+    if (!platform) return rule.pattern_type === 'sigma';
+    if (platforms.has(platform)) return false;
+    platforms.add(platform);
+    return true;
+  });
 };
 
-/** The detection rule of the derived content the form runs now, if any. */
-export const selectedDerivedRule = (derived: HuntDerived, values: Pick<HuntFormValues, 'hunt_type' | 'huntSources'>) => {
-  if (values.hunt_type !== 'telemetry') return null;
-  const sourceIds = values.huntSources.map((option) => option.value);
-  return derived.rules.find((rule) => sourceIds.includes(rule.id)) ?? null;
+/** The techniques a hunt from the entity covers whatever rules it runs: those of a technique or of a container. */
+const derivedEntityTechniques = (entityType: string, derived: HuntDerived) => {
+  const isContainer = entityType === 'Report' || HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entityType);
+  return HUNT_TECHNIQUE_TYPES.includes(entityType) || isContainer ? derived.techniques.slice(0, DERIVED_TECHNIQUES_PREFILL_MAX).map(techniqueOption) : [];
+};
+
+/**
+ * The form values the selected detection rules turn a hunt into: their Sigma rules, their native queries, the
+ * techniques they cover. The rules stay the sources of the hunt.
+ */
+export const derivedRulesValues = (rules: ReadonlyArray<HuntDerivedRule>, derived: HuntDerived): Partial<HuntFormValues> => {
+  const runnable = runnableDerivedRules(rules);
+  const sigmaRules = runnable.filter((rule) => rule.pattern_type === 'sigma').map((rule) => rule.pattern);
+  const techniqueIds = new Set(runnable.flatMap((rule) => rule.technique_ids));
+  const ruleTechniques = derived.techniques.filter((technique) => techniqueIds.has(technique.id)).map(techniqueOption);
+  return {
+    hunt_type: 'telemetry',
+    sigma_rule: sigmaRules[0] ?? '',
+    more_sigma_rules: sigmaRules.slice(1),
+    native_queries: runnable.flatMap((rule) => {
+      const platform = derivedRulePlatform(rule);
+      return platform ? [{ platform, language: rule.pattern_type, query: rule.pattern, pipeline: '' }] : [];
+    }),
+    huntSources: runnable.map(derivedOption),
+    huntTechniques: uniqueOptions([...derivedEntityTechniques(derived.entity.entity_type, derived), ...ruleTechniques]),
+  };
+};
+
+/** The detection rules of the derived content the form runs now. */
+export const selectedDerivedRules = (derived: HuntDerived, values: Pick<HuntFormValues, 'hunt_type' | 'huntSources'>) => {
+  if (values.hunt_type !== 'telemetry') return [];
+  const sourceIds = new Set(values.huntSources.map((option) => option.value));
+  return derived.rules.filter((rule) => sourceIds.has(rule.id));
+};
+
+/**
+ * Whether the hunt started from the entity keeps the type and the logic the entity calls for: an indicator runs its
+ * own rule or looks up its own values, an observable is looked up itself.
+ */
+export const isHuntLogicLockedEntity = (derived: HuntDerived) => {
+  const type = derived.entity.entity_type;
+  const startsFromItself = type === 'Indicator' || (isIocHuntEntity(type) && !HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(type));
+  return startsFromItself && (derived.rules.some((rule) => rule.pinned) || derived.elements.some((element) => element.id === derived.entity.id));
+};
+
+/**
+ * Whether the logic of the form comes from the derived content of the entity, picked in its panel rather than written:
+ * the rules of a detection-rule hunt, the indicators and observables of an indicator hunt.
+ */
+export const isHuntLogicDerived = (derived: HuntDerived | null | undefined, huntType: string) => {
+  if (!derived) return false;
+  if (huntType === 'telemetry') return derived.rules.length > 0;
+  if (huntType === 'indicators') return derived.elements.length > 0;
+  return false;
 };
 
 /**
  * The hunt "Hunt this" opens from the derived content of the entity: an indicator hunt over the sources when indicators
- * were found, otherwise a detection-rule hunt running the rule covering the most techniques; an indicator keeps the hunt
+ * were found, otherwise a detection-rule hunt running every rule found, each on its own; an indicator keeps the hunt
  * its pattern type calls for, an observable is looked up itself.
  */
 export const buildDerivedHuntPrefill = (entity: HuntIndicatorPrefillEntity, derived: HuntDerived): Partial<HuntFormValues> => {
   const name = buildHuntPrefillName(entity.name);
   const huntTargets = uniqueOptions(derived.targets.map(derivedOption));
-  const techniqueOptions = derived.techniques.map((technique) => ({ value: technique.id, label: huntTechniqueName(technique), type: technique.entity_type }));
   if (entity.entity_type === 'Indicator') {
-    return { name, huntTargets, huntTechniques: techniqueOptions, ...buildIndicatorHuntPrefill(entity) };
+    return { name, huntTargets, huntTechniques: derived.techniques.map(techniqueOption), ...buildIndicatorHuntPrefill(entity) };
   }
   if (isIocHuntEntity(entity.entity_type) && !HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entity.entity_type)) {
     return { name, ...buildIocHuntPrefill(entity) };
   }
-  const isContainer = entity.entity_type === 'Report' || HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entity.entity_type);
-  const huntTechniques = HUNT_TECHNIQUE_TYPES.includes(entity.entity_type) || isContainer ? techniqueOptions.slice(0, DERIVED_TECHNIQUES_PREFILL_MAX) : [];
+  const huntTechniques = derivedEntityTechniques(entity.entity_type, derived);
   if (derived.suggested_type === 'indicators') {
     return { name, huntTargets, huntTechniques, hunt_type: 'indicators', iocEntities: uniqueOptions(derived.sources.map(derivedOption)) };
   }
   if (derived.rules.length > 0) {
-    const ruleValues = derivedRuleValues(derived.rules[0], derived);
-    return { name, huntTargets, ...ruleValues, huntTechniques: uniqueOptions([...huntTechniques, ...(ruleValues.huntTechniques ?? [])]) };
+    return { name, huntTargets, ...derivedRulesValues(derived.rules, derived) };
   }
   return { name, huntTargets, huntTechniques, hunt_type: 'telemetry' };
 };
@@ -1129,7 +1210,8 @@ export interface HuntSummaryInput {
   scopePlatforms: ReadonlyArray<FieldOption>;
   availablePlatforms: number;
   indicatorsCount: number;
-  ruleName: string | null;
+  /** The detection rules of the entity the hunt runs */
+  ruleNames: ReadonlyArray<string>;
   hasLogic: boolean;
   timeWindowHours: number;
   escalationThreshold: number;
@@ -1167,8 +1249,10 @@ export const buildHuntSummary = (input: HuntSummaryInput, t_i18n: HuntTranslate)
     what = input.indicatorsCount > 0
       ? t_i18n('You are hunting {name} on {platforms}: the hunt searches your telemetry for its {count, plural, one {# known indicator} other {# known indicators}} over the last {window}.', { values: { name, platforms, window, count: input.indicatorsCount } })
       : t_i18n('You are hunting {name} on {platforms}: the hunt searches your telemetry for the indicators and observables you add below over the last {window}.', { values: { name, platforms, window } });
-  } else if (input.ruleName) {
-    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs the detection rule "{rule}" on your telemetry over the last {window}.', { values: { name, platforms, window, rule: input.ruleName } });
+  } else if (input.ruleNames.length === 1) {
+    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs the detection rule "{rule}" on your telemetry over the last {window}.', { values: { name, platforms, window, rule: input.ruleNames[0] } });
+  } else if (input.ruleNames.length > 1) {
+    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs {count} detection rules on your telemetry over the last {window}, each on its own.', { values: { name, platforms, window, count: input.ruleNames.length } });
   } else if (input.hasLogic) {
     what = t_i18n('You are hunting {name} on {platforms}: the hunt runs its Sigma rule or native queries on your telemetry over the last {window}.', { values: { name, platforms, window } });
   } else {

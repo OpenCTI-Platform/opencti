@@ -3,7 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useFormikContext } from 'formik';
 import { useTheme } from '@mui/styles';
 import { AutoAwesomeOutlined, FileUploadOutlined } from '@mui/icons-material';
-import { Alert, Button, Checkbox, Paper, Radio, RadioGroup, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert, Button, Checkbox, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -16,7 +16,8 @@ import { parseIocText } from './hunt-ioc-utils';
 import {
   buildHuntSummary,
   countHuntPlatforms,
-  derivedRuleValues,
+  derivedRulePlatform,
+  derivedRulesValues,
   formatDerivedValueTypes,
   hasHuntLogic,
   HUNT_DEFAULT_ESCALATION_THRESHOLD,
@@ -28,8 +29,9 @@ import {
   huntTechniqueName,
   normalizeNativeQueries,
   selectedDerivedElements,
-  selectedDerivedRule,
+  selectedDerivedRules,
 } from './hunt-utils';
+import useHuntConfiguration from './useHuntConfiguration';
 import { HuntFromEntityConnectorsQuery } from './__generated__/HuntFromEntityConnectorsQuery.graphql';
 import { HuntPackImportMutation } from './__generated__/HuntPackImportMutation.graphql';
 
@@ -44,7 +46,8 @@ export const huntFromEntityDerivedQuery = graphql`
       elements_truncated
       unsupported_count
       techniques { id entity_type name x_mitre_id }
-      rules { id entity_type name pattern_type pattern technique_ids }
+      rules { id entity_type name pattern_type pattern technique_ids pinned }
+      rules_truncated
     }
   }
 `;
@@ -72,15 +75,20 @@ const SummaryContent = ({ derived }: { derived: HuntDerived }) => {
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<HuntFormValues>();
   const { huntConnectors } = useLazyLoadQuery<HuntFromEntityConnectorsQuery>(huntFromEntityConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
-  const rule = selectedDerivedRule(derived, values);
+  const rules = selectedDerivedRules(derived, values);
   const sentences = buildHuntSummary({
     name: derived.entity.name,
     huntType: values.hunt_type,
     scopePlatforms: values.scopePlatforms,
     availablePlatforms: countHuntPlatforms(huntConnectors, values.hunt_type),
     indicatorsCount: selectedDerivedElements(derived, values).length + parseIocText(values.ioc_values_text).values.length,
-    ruleName: rule?.name ?? null,
-    hasLogic: hasHuntLogic({ hunt_type: values.hunt_type, sigma_rule: values.sigma_rule, native_queries: normalizeNativeQueries(values.native_queries) }),
+    ruleNames: rules.map((rule) => rule.name),
+    hasLogic: hasHuntLogic({
+      hunt_type: values.hunt_type,
+      sigma_rule: values.sigma_rule,
+      sigma_rules: values.more_sigma_rules,
+      native_queries: normalizeNativeQueries(values.native_queries),
+    }),
     timeWindowHours: toNumber(values.time_window_hours, HUNT_DEFAULT_TIME_WINDOW_HOURS),
     escalationThreshold: toNumber(values.escalation_threshold, HUNT_DEFAULT_ESCALATION_THRESHOLD),
   }, t_i18n);
@@ -111,6 +119,7 @@ const SourceDescription = ({ source, entityName, count }: { source: HuntDerivedS
   const type = t_i18n(`entity_${source.entity_type}`);
   if (source.relation === 'uses') return <>{t_i18n('{type} used by {name}, {indicators}', { values: { type, name: entityName, indicators } })}</>;
   if (source.relation === 'attributed') return <>{t_i18n('{type} attributed to {name}, {indicators}', { values: { type, name: entityName, indicators } })}</>;
+  if (source.relation === 'flagged') return <>{t_i18n('{type} flagged by {name}, {indicators}', { values: { type, name: entityName, indicators } })}</>;
   return <>{t_i18n('{type}, {indicators}', { values: { type, indicators } })}</>;
 };
 
@@ -193,7 +202,14 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
   const rulesLabelId = useId();
   const name = derived.entity.name;
   const selectedElements = selectedDerivedElements(derived, values);
-  const selectedRule = selectedDerivedRule(derived, values);
+  const { maxSigmaRules, maxIocsPerRun, maxRelatedSources } = useHuntConfiguration();
+  const selectedRules = selectedDerivedRules(derived, values);
+  const selectedRuleIds = new Set(selectedRules.map((rule) => rule.id));
+  // A platform runs one native query: a native rule of a platform already taken by a selected rule waits for it
+  const takenPlatforms = new Map(selectedRules.flatMap((rule) => {
+    const platform = derivedRulePlatform(rule);
+    return platform ? [[platform, rule.id] as const] : [];
+  }));
   const techniquesById = new Map(derived.techniques.map((technique) => [technique.id, technique]));
   const coveredTechniques = new Set(derived.rules.flatMap((rule) => rule.technique_ids));
   const hasElements = derived.elements.length > 0;
@@ -210,10 +226,19 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
     const iocEntities = derived.sources.map((source) => ({ value: source.id, label: source.name, type: source.entity_type }));
     setValues({ ...values, hunt_type: 'indicators', iocEntities: derived.sources.length > 0 ? iocEntities : values.iocEntities });
   };
-  const pickRule = (ruleId: string) => {
-    const rule = derived.rules.find(({ id }) => id === ruleId);
-    if (rule) setValues({ ...values, ...derivedRuleValues(rule, derived) });
+  const selectRules = (ruleIds: Set<string>) => {
+    setValues({ ...values, ...derivedRulesValues(derived.rules.filter((rule) => rule.pinned || ruleIds.has(rule.id)), derived) });
   };
+  const toggleRule = (ruleId: string, checked: boolean) => {
+    const next = new Set(selectedRuleIds);
+    if (checked) {
+      next.add(ruleId);
+    } else {
+      next.delete(ruleId);
+    }
+    selectRules(next);
+  };
+  const followsRelated = derived.sources.some((source) => source.relation !== 'self');
 
   return (
     <Paper padding={16} style={style} data-testid="hunt-derived-panel">
@@ -252,11 +277,12 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
               ))}
             </div>
           )}
-          {derived.elements_truncated && (
-            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }}>
-              {t_i18n('More values than a run looks up: the first ones are looked up at each run.')}
-            </Text>
-          )}
+          <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }} data-testid="hunt-derived-indicators-limits">
+            {derived.elements_truncated
+              ? t_i18n('More values than a run looks up: the first {max} are looked up at each run.', { values: { max: maxIocsPerRun } })
+              : t_i18n('A run looks up at most {max} values.', { values: { max: maxIocsPerRun } })}
+            {followsRelated && ` ${t_i18n('The malware and tools a threat uses and the threats attributed to it are read up to {max} of each.', { values: { max: maxRelatedSources } })}`}
+          </Text>
           {!isIndicatorHunt && (
             <div style={{ marginTop: theme.spacing(1) }}>
               <Button priority="secondary" size="sm" onClick={huntIndicators} data-testid="hunt-derived-use-indicators">
@@ -266,7 +292,12 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
           )}
         </section>
       )}
-      {hasRules && !isInfrastructureHunt && (
+      {hasRules && isIndicatorHunt && (
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1.5), color: theme.palette.text.secondary }} data-testid="hunt-derived-rules-other-type">
+          {t_i18n('{count, plural, one {# detection rule was} other {# detection rules were}} found too: a detection-rule hunt runs them.', { values: { count: derived.rules.length } })}
+        </Text>
+      )}
+      {hasRules && values.hunt_type === 'telemetry' && (
         <section style={{ marginTop: theme.spacing(2) }} data-testid="hunt-derived-rules">
           <Text variant="content-compact-medium" id={rulesLabelId} style={{ display: 'block' }}>
             {derived.techniques.length > 0
@@ -275,27 +306,45 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
                 })
               : t_i18n('{count, plural, one {# detection rule} other {# detection rules}} of {name}', { values: { count: derived.rules.length, name } })}
           </Text>
-          <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-            {t_i18n('Pick the rule the hunt runs on your telemetry.')}
+          <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }} data-testid="hunt-derived-rules-limits">
+            {t_i18n('Pick the rules the hunt runs on your telemetry: each one is translated and run on its own, with its own results. A hunt holds up to {max} Sigma rules, and one native query per platform.', { values: { max: maxSigmaRules } })}
           </Text>
-          <div style={{ maxHeight: RULES_LIST_MAX_HEIGHT, overflowY: 'auto', marginTop: theme.spacing(1) }}>
-            <RadioGroup aria-labelledby={rulesLabelId} value={selectedRule?.id ?? ''} onValueChange={pickRule}>
-              {derived.rules.map((rule) => {
-                const techniques = rule.technique_ids.map((id) => techniquesById.get(id)).filter((technique) => !!technique).map((technique) => huntTechniqueName(technique));
-                const language = rule.pattern_type === 'sigma' ? 'Sigma' : huntQueryLanguageLabel(rule.pattern_type, t_i18n);
-                return (
-                  <Radio
-                    key={rule.id}
-                    value={rule.id}
-                    label={rule.name}
-                    description={techniques.length > 0
-                      ? t_i18n('{language} rule, covers {techniques}', { values: { language, techniques: techniques.join(', ') } })
-                      : t_i18n('{language} rule', { values: { language } })}
-                    data-testid={`hunt-derived-rule-${rule.id}`}
-                  />
-                );
-              })}
-            </RadioGroup>
+          {derived.rules_truncated && (
+            <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }} data-testid="hunt-derived-rules-truncated">
+              {t_i18n('{name} has more rules than a hunt holds: the rule it starts from and the rules covering the most techniques are listed.', { values: { name } })}
+            </Text>
+          )}
+          <div style={{ display: 'flex', gap: theme.spacing(1), marginTop: theme.spacing(1) }}>
+            <Button priority="tertiary" size="sm" onClick={() => selectRules(new Set(derived.rules.map((rule) => rule.id)))} data-testid="hunt-derived-rules-all">
+              {t_i18n('Select all')}
+            </Button>
+            <Button priority="tertiary" size="sm" onClick={() => selectRules(new Set())} data-testid="hunt-derived-rules-none">
+              {t_i18n('Clear the selection')}
+            </Button>
+          </div>
+          <div role="group" aria-labelledby={rulesLabelId} style={{ maxHeight: RULES_LIST_MAX_HEIGHT, overflowY: 'auto', marginTop: theme.spacing(1), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+            {derived.rules.map((rule) => {
+              const techniques = rule.technique_ids.map((id) => techniquesById.get(id)).filter((technique) => !!technique).map((technique) => huntTechniqueName(technique));
+              const language = rule.pattern_type === 'sigma' ? 'Sigma' : huntQueryLanguageLabel(rule.pattern_type, t_i18n);
+              const platform = derivedRulePlatform(rule);
+              const platformTaken = !!platform && takenPlatforms.has(platform) && takenPlatforms.get(platform) !== rule.id;
+              let description = techniques.length > 0
+                ? t_i18n('{language} rule, covers {techniques}', { values: { language, techniques: techniques.join(', ') } })
+                : t_i18n('{language} rule', { values: { language } });
+              if (rule.pinned) description = `${description} - ${t_i18n('the rule the hunt starts from')}`;
+              if (platformTaken) description = `${description} - ${t_i18n('another {language} rule is selected: a platform runs one native query', { values: { language } })}`;
+              return (
+                <Checkbox
+                  key={rule.id}
+                  checked={rule.pinned || selectedRuleIds.has(rule.id)}
+                  disabled={!!rule.pinned || platformTaken}
+                  onCheckedChange={(checked) => toggleRule(rule.id, checked === true)}
+                  label={rule.name}
+                  description={description}
+                  data-testid={`hunt-derived-rule-${rule.id}`}
+                />
+              );
+            })}
           </div>
         </section>
       )}

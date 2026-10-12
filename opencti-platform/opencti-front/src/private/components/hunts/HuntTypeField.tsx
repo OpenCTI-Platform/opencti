@@ -12,10 +12,14 @@ interface HuntTypeFieldProps {
   style?: React.CSSProperties;
   /** The action of the form header, at the end of the label row (for instance "Plan with AI") */
   action?: React.ReactNode;
+  /** The type the entity a hunt starts from calls for, shown without a choice, with why under it */
+  lockedReason?: string;
+  /** Called with the picked type once the field holds it */
+  onChange?: (huntType: HuntTypeValue) => void;
 }
 
 /** The hunt types, each with what it needs as input and where it runs. */
-const HuntTypeField = ({ name = 'hunt_type', style, action }: HuntTypeFieldProps) => {
+const HuntTypeField = ({ name = 'hunt_type', style, action, lockedReason, onChange }: HuntTypeFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [field, , helpers] = useField<HuntTypeValue>(name);
@@ -31,7 +35,11 @@ const HuntTypeField = ({ name = 'hunt_type', style, action }: HuntTypeFieldProps
       <RadioGroup
         aria-labelledby={labelId}
         value={field.value}
-        onValueChange={(value) => helpers.setValue(value as HuntTypeValue)}
+        disabled={!!lockedReason}
+        onValueChange={(value) => {
+          helpers.setValue(value as HuntTypeValue);
+          onChange?.(value as HuntTypeValue);
+        }}
       >
         {HUNT_TYPES.map((huntType) => (
           <Radio
@@ -44,7 +52,9 @@ const HuntTypeField = ({ name = 'hunt_type', style, action }: HuntTypeFieldProps
         ))}
       </RadioGroup>
       <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }}>
-        <HuntHelp text={t_i18n('Pick the type from what you have: indicators, a detection rule or an internet fingerprint.')} href={HUNT_DOCS.types} />
+        {lockedReason ? <span data-testid="hunt-type-locked">{lockedReason}</span> : (
+          <HuntHelp text={t_i18n('Pick the type from what you have: indicators, a detection rule or an internet fingerprint.')} href={HUNT_DOCS.types} />
+        )}
       </Text>
     </div>
   );

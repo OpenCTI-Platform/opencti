@@ -5,8 +5,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system
 import { HuntRuns_RunFragment$data } from './__generated__/HuntRuns_RunFragment.graphql';
 import { HuntRuns_RunsFragment$data } from './__generated__/HuntRuns_RunsFragment.graphql';
 import { HuntRunsListQuery, HuntRunsListQuery$variables } from './__generated__/HuntRunsListQuery.graphql';
-import HuntRunStart from './HuntRunStart';
 import HuntRunDrawer from './HuntRunDrawer';
+import { rememberHuntRunsList } from './hunt-run-store';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
 import { formatHuntRunDuration, HUNT_RUN_ENTITY_TYPE, huntMessageText, huntRunPartialResultsSentence, huntRunTriggerLabel } from '../hunt-utils';
 import { PATH_HUNT } from '../../common/routes/paths';
@@ -148,6 +148,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<HuntRunsListQuery$variables>(storageKey, initialValues);
   const contextFilters = huntRunsContextFilters(hunt.id, viewStorage.filters);
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as HuntRunsListQuery$variables;
+  rememberHuntRunsList(hunt.id, queryPaginationOptions);
   const queryRef = useQueryLoading<HuntRunsListQuery>(huntRunsListQuery, queryPaginationOptions);
 
   const dateRender = (value: string | null | undefined, fd: (date: string | null | undefined) => string) => defaultRender(value ? fd(value) : '-');
@@ -266,7 +267,6 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
             emptyStateMessage={canEdit
               ? t_i18n('No run yet: click Run now to run the hunt over its time window, or Activate it to run on its schedule.')
               : t_i18n('No run yet. Runs appear here once a user who can edit the hunt runs it or activates it.')}
-            createButton={canEdit ? <HuntRunStart hunt={hunt} paginationOptions={queryPaginationOptions} /> : undefined}
           />
         )}
       </div>

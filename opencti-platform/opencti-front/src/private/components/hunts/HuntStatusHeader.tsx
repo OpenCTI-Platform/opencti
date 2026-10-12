@@ -202,8 +202,9 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
   const hunt = useFragment(huntStatusHeaderFragment, data);
   const [commit, inFlight] = useApiMutation<HuntStatusHeaderStatusMutation>(huntStatusHeaderStatusMutation);
   const [commitRetire, retiring] = useDialogMutation<HuntStatusHeaderStatusMutation>(huntStatusHeaderStatusMutation);
-  const [showStatuses, setShowStatuses] = useState(hunt.hunt_status === 'draft');
-  const [showChecklist, setShowChecklist] = useState(!hunt.readiness.ready || hunt.hunt_status !== 'active');
+  // Collapsed, their summary line says enough: only an active hunt that cannot run opens its checklist
+  const [showStatuses, setShowStatuses] = useState(false);
+  const [showChecklist, setShowChecklist] = useState(hunt.hunt_status === 'active' && !hunt.readiness.ready);
   const [confirmRetire, setConfirmRetire] = useState(false);
   const [retireError, setRetireError] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);

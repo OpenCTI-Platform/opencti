@@ -33,7 +33,7 @@ import useHuntConfiguration from '../useHuntConfiguration';
 // The hunt connectors page, as its status header links it
 const HUNT_CONNECTORS_PATH = '/dashboard/data/ingestion/connectors';
 import { PATH_HUNT } from '../../common/routes/paths';
-import { insertStartedHuntRuns } from './hunt-run-store';
+import { huntRunsListOptions, insertStartedHuntRuns } from './hunt-run-store';
 import { HuntRunStartConnectorsQuery } from './__generated__/HuntRunStartConnectorsQuery.graphql';
 import { HuntRunStartMutation } from './__generated__/HuntRunStartMutation.graphql';
 import { layerInputVars } from '../../../../utils/fdsLayer';
@@ -188,8 +188,9 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
         },
       },
       updater: (store) => {
-        if (paginationOptions) {
-          insertStartedHuntRuns(store, store.getPluralRootField('huntRunStart') ?? [], paginationOptions);
+        const listOptions = paginationOptions ?? huntRunsListOptions(hunt.id);
+        if (listOptions) {
+          insertStartedHuntRuns(store, store.getPluralRootField('huntRunStart') ?? [], listOptions);
         }
       },
       onCompleted: (data, errors) => {

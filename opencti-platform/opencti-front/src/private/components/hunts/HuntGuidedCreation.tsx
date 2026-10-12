@@ -265,7 +265,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                         helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
                       />
                       <div style={{ ...fieldSpacingContainerStyle, display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }}>
-                        <Text variant="content-compact">{t_i18n('Look back')}</Text>
+                        <Text variant="content-compact">{t_i18n('Time window')}</Text>
                         <LookBackSelect value={Number(values.time_window_hours)} label={timeWindowLabel} />
                       </div>
                       <div style={fieldSpacingContainerStyle}>
@@ -354,10 +354,10 @@ const LookBackSelect = ({ value, label }: { value: number; label: (hours: number
     <Field name="time_window_hours">
       {({ form }: { form: { setFieldValue: (field: string, next: number) => void } }) => (
         <Select value={String(value)} onValueChange={(next) => form.setFieldValue('time_window_hours', Number(next))}>
-          <SelectTrigger aria-label={t_i18n('Look back')} style={{ minWidth: 240 }} data-testid="hunt-guided-time-window">
+          <SelectTrigger aria-label={t_i18n('Time window')} style={{ minWidth: 240 }} data-testid="hunt-guided-time-window">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Look back')}>
+          <SelectContent aria-label={t_i18n('Time window')}>
             {huntTimeWindowPresets(maxTimeWindowHours).map((hours) => <SelectItem key={hours} value={String(hours)}>{label(hours)}</SelectItem>)}
           </SelectContent>
         </Select>

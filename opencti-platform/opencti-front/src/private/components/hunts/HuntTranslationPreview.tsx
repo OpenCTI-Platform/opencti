@@ -261,11 +261,11 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
     content = (
       <Alert
         severity="warning"
-        title={t_i18n('The connector did not answer in time')}
-        description={t_i18n('The preview appears in the Runs tab once it completes')}
+        title={t_i18n('The connector did not answer yet')}
+        description={t_i18n('The preview waits for the connector, behind the runs it received before: its translation appears in the Logic tab of the hunt once it answers.')}
         action={(
-          <Button variant="secondary" size="small" component={Link} to={`${PATH_HUNT(huntId)}/runs`} data-testid="hunt-preview-open-runs">
-            {t_i18n('Open the runs')}
+          <Button variant="secondary" size="small" component={Link} to={`${PATH_HUNT(huntId)}/logic`} data-testid="hunt-preview-open-logic">
+            {t_i18n('Open the logic')}
           </Button>
         )}
         data-testid="hunt-preview-timeout"
