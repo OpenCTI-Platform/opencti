@@ -12,7 +12,6 @@ import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
-import datefinder
 import dateutil.parser
 import pytz
 from cachetools import LRUCache
@@ -34,6 +33,7 @@ from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
+    EPOCH,
     NOT_PROVIDED,
     OBSERVABLES_VALUE_INT,
     STIX_CORE_OBJECTS,
@@ -42,7 +42,6 @@ from pycti.utils.opencti_stix2_utils import (
     OpenCTIStix2Utils,
 )
 
-datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
 
 # For Python 3.11+, datetime.UTC is preferred over datetime.timezone.utc
@@ -961,35 +960,15 @@ class OpenCTIStix2:
                     ):
                         # Add a corresponding report
                         # Extract date
-                        try:
-                            if "description" in external_reference:
-                                matches = datefinder.find_dates(
-                                    external_reference["description"],
-                                    base_date=datetime.datetime.fromtimestamp(0),
-                                )
-                            else:
-                                matches = datefinder.find_dates(
-                                    source_name,
-                                    base_date=datetime.datetime.fromtimestamp(0),
-                                )
-                        except (TypeError, OverflowError):
-                            matches = None
-                        published = None
-                        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-                        default_date = datetime.datetime.fromtimestamp(1)
-                        if matches is not None:
-                            try:
-                                for match in matches:
-                                    if (
-                                        match.timestamp() < yesterday.timestamp()
-                                        and len(str(match.year)) == 4
-                                    ):
-                                        published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
-                                        break
-                            except (TypeError, OverflowError):
-                                pass
+                        published = OpenCTIStix2Utils.guess_past_date(
+                            external_reference["description"]
+                            if "description" in external_reference
+                            else source_name
+                        )
                         if published is None:
-                            published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                            published = (
+                                EPOCH + datetime.timedelta(seconds=1)
+                            ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
                         if "mitre" in source_name and "name" in stix_object:
                             title = "[MITRE ATT&CK] " + stix_object["name"]
@@ -1775,32 +1754,11 @@ class OpenCTIStix2:
         date = None
         if "external_references" in stix_relation:
             for external_reference in stix_relation["external_references"]:
-                try:
-                    if "description" in external_reference:
-                        matches = datefinder.find_dates(
-                            external_reference["description"],
-                            base_date=datetime.datetime.fromtimestamp(0),
-                        )
-                    else:
-                        matches = datefinder.find_dates(
-                            external_reference["source_name"],
-                            base_date=datetime.datetime.fromtimestamp(0),
-                        )
-                except (TypeError, OverflowError):
-                    matches = None
-                date = None
-                yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-                if matches is not None:
-                    try:
-                        for match in matches:
-                            if (
-                                match.timestamp() < yesterday.timestamp()
-                                and len(str(match.year)) == 4
-                            ):
-                                date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
-                                break
-                    except (TypeError, OverflowError):
-                        date = None
+                date = OpenCTIStix2Utils.guess_past_date(
+                    external_reference["description"]
+                    if "description" in external_reference
+                    else external_reference.get("source_name")
+                )
 
         stix_relation_result = self.opencti.stix_core_relationship.import_from_stix2(
             stixRelation=stix_relation, extras=extras, update=update, defaultDate=date
