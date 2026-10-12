@@ -617,13 +617,29 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+// An entity without a value for a custom field has no element for it in custom_field_values.
+// Negative operators are therefore applied as "no element matches the positive operator",
+// so that such entities are returned.
+const CUSTOM_FIELD_NEGATED_OPERATORS: Partial<Record<FilterOperator, FilterOperator>> = {
+  [FilterOperator.Nil]: FilterOperator.NotNil,
+  [FilterOperator.NotEq]: FilterOperator.Eq,
+  [FilterOperator.NotContains]: FilterOperator.Contains,
+  [FilterOperator.NotStartsWith]: FilterOperator.StartsWith,
+  [FilterOperator.NotEndsWith]: FilterOperator.EndsWith,
+};
+
 /**
  * Adapts a filter on a custom field key (x_opencti_cf_*) into a nested filter
  * on the custom_field_values array stored in Elasticsearch.
  */
 export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
   const { key, values, operator } = filter;
-  const op: string = operator ?? FilterOperator.Eq;
+  // As for a standard attribute, a filter without value is only supported by the (not) empty operators
+  if (values.length === 0 && operator !== FilterOperator.Nil && operator !== FilterOperator.NotNil) {
+    throw UnsupportedError('Invalid filter configuration', { filter });
+  }
+  const positiveOperator = operator ? CUSTOM_FIELD_NEGATED_OPERATORS[operator] : undefined;
+  const op: string = positiveOperator ?? operator ?? FilterOperator.Eq;
   const filterKey = Array.isArray(key) ? key[0] : key;
 
   const definition = await getCustomFieldDefinitionByNameOrAlias(context, user, filterKey);
@@ -687,6 +703,7 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
       { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
       ...valueClauses,
     ],
+    ...(positiveOperator ? { negateNested: true } : {}),
   };
 
   return { newFilter, newFilterGroup: undefined };

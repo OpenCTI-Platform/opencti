@@ -202,6 +202,59 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
     });
   });
 
+  describe('negative operators (entities without the field must match)', () => {
+    it('does not negate positive operators', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['hello'], operator: FilterOperator.Eq }));
+      expect(newFilter).not.toHaveProperty('negateNested');
+    });
+
+    it('translates nil into the negation of not_nil', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: [], operator: FilterOperator.Nil }));
+      expect(newFilter).toEqual({
+        key: ['custom_field_values'],
+        values: [],
+        nested: [
+          { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+          { key: 'string_value', values: [], operator: FilterOperator.NotNil },
+        ],
+        negateNested: true,
+      });
+    });
+
+    it.each([
+      [FilterOperator.NotEq, FilterOperator.Eq],
+      [FilterOperator.NotContains, FilterOperator.Contains],
+      [FilterOperator.NotStartsWith, FilterOperator.StartsWith],
+      [FilterOperator.NotEndsWith, FilterOperator.EndsWith],
+    ])('translates %s into the negation of %s', async (operator, positiveOperator) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['hello'], operator }));
+      expect(newFilter.negateNested).toBe(true);
+      expect(newFilter.nested).toEqual([
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'string_value', values: ['hello'], operator: positiveOperator },
+      ]);
+    });
+
+    it.each([FilterOperator.Eq, FilterOperator.NotEq, FilterOperator.Contains])('rejects %s without value, as for a standard attribute', async (operator) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      await expect(adapt(makeFilter({ values: [], operator }))).rejects.toThrow('Invalid filter configuration');
+    });
+
+    it('translates not_eq on an integer into the negation of the exact range', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['42'], operator: FilterOperator.NotEq }));
+      expect(newFilter.negateNested).toBe(true);
+      expect(newFilter.nested).toEqual([
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'int_value', values: [42], operator: FilterOperator.Gte },
+        { key: 'int_value', values: [42], operator: FilterOperator.Lte },
+      ]);
+    });
+  });
+
   describe('markdown fields (reuse string_value channel)', () => {
     it('uses string_value for markdown type', async () => {
       seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'markdown' }));
