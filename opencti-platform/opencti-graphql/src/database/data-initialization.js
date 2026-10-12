@@ -26,7 +26,7 @@ import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
-import { generateBuiltInExportId } from '../schema/identifier';
+import { withBuiltInExportId } from '../schema/identifier';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
@@ -199,8 +199,7 @@ export const CAPABILITIES = [
 
 const addBuiltInMarkingDefinition = async (context, markingDefinition) => {
   const { definition_type, definition } = markingDefinition;
-  const export_id = generateBuiltInExportId(ENTITY_TYPE_MARKING_DEFINITION, { definition_type, definition });
-  return addAllowedMarkingDefinition(context, SYSTEM_USER, { ...markingDefinition, export_id });
+  return addAllowedMarkingDefinition(context, SYSTEM_USER, withBuiltInExportId(markingDefinition, ENTITY_TYPE_MARKING_DEFINITION, { definition_type, definition }));
 };
 
 const createMarkingDefinitions = async (context) => {
@@ -270,28 +269,26 @@ const createVocabularies = async (context) => {
     const vocabularies = openVocabularies[category] ?? [];
     for (let i = 0; i < vocabularies.length; i += 1) {
       const { key, description, aliases, order } = vocabularies[i];
-      const data = {
+      const data = withBuiltInExportId({
         name: key,
         description: description ?? '',
         aliases: aliases ?? [],
         category,
         order,
         builtIn: builtInOv.includes(category),
-        export_id: generateBuiltInExportId(ENTITY_TYPE_VOCABULARY, { category, name: key.trim() }),
-      };
+      }, ENTITY_TYPE_VOCABULARY, { category, name: key.trim() });
       await addVocabulary(context, SYSTEM_USER, data);
     }
   }
 };
 
 const createBuiltInStatusTemplate = async (context, statusTemplate) => {
-  const export_id = generateBuiltInExportId(ENTITY_TYPE_STATUS_TEMPLATE, { name: statusTemplate.name });
-  return createStatusTemplate(context, SYSTEM_USER, { ...statusTemplate, export_id });
+  return createStatusTemplate(context, SYSTEM_USER, withBuiltInExportId(statusTemplate, ENTITY_TYPE_STATUS_TEMPLATE, { name: statusTemplate.name }));
 };
 
 const createBuiltInStatus = async (context, type, statusTemplate, { order, scope }) => {
-  const export_id = generateBuiltInExportId(ENTITY_TYPE_STATUS, { type, scope, template: statusTemplate.name });
-  return createStatus(context, SYSTEM_USER, type, { template_id: statusTemplate.id, order, scope, export_id });
+  const statusInput = { template_id: statusTemplate.id, order, scope };
+  return createStatus(context, SYSTEM_USER, type, withBuiltInExportId(statusInput, ENTITY_TYPE_STATUS, { type, scope, template: statusTemplate.name }));
 };
 
 const createDefaultStatusTemplates = async (context) => {
@@ -352,8 +349,7 @@ export const createCapabilities = async (context, capabilities, parentName = '')
 };
 
 const createBuiltInRetentionRule = async (context, retentionRule) => {
-  const export_id = generateBuiltInExportId(ENTITY_TYPE_RETENTION_RULE, { scope: retentionRule.scope });
-  return createRetentionRule(context, SYSTEM_USER, { ...retentionRule, export_id });
+  return createRetentionRule(context, SYSTEM_USER, withBuiltInExportId(retentionRule, ENTITY_TYPE_RETENTION_RULE, { scope: retentionRule.scope }));
 };
 
 export const createDefaultRetentionRules = async (context) => {
@@ -396,22 +392,20 @@ const createBasicRolesAndCapabilities = async (context) => {
   await createCapabilities(context, CAPABILITIES);
 
   // Create Default(s) Role and Group
-  const defaultRoleInput = await addRole(context, SYSTEM_USER, {
+  const defaultRoleInput = await addRole(context, SYSTEM_USER, withBuiltInExportId({
     name: ROLE_DEFAULT,
-    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: ROLE_DEFAULT }),
     description: 'Default role associated to the default group',
     capabilities: [
       KNOWLEDGE_CAPABILITY,
     ],
     can_manage_sensitive_config: false,
-  });
+  }, ENTITY_TYPE_ROLE, { name: ROLE_DEFAULT }));
 
-  const defaultGroup = await addGroup(context, SYSTEM_USER, {
+  const defaultGroup = await addGroup(context, SYSTEM_USER, withBuiltInExportId({
     name: GROUP_DEFAULT,
-    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: GROUP_DEFAULT }),
     description: 'Default group associated to all users',
     default_assignation: true,
-  });
+  }, ENTITY_TYPE_GROUP, { name: GROUP_DEFAULT }));
   const defaultRoleRelationInput = {
     toId: defaultRoleInput.id,
     relationship_type: 'has-role',
@@ -421,20 +415,18 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create Administrator(s) Role and Group
   const administratorRoleInput = {
     name: ROLE_ADMINISTRATOR,
-    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: ROLE_ADMINISTRATOR }),
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
     can_manage_sensitive_config: false,
   };
 
-  const administratorRole = await addRole(context, SYSTEM_USER, administratorRoleInput);
+  const administratorRole = await addRole(context, SYSTEM_USER, withBuiltInExportId(administratorRoleInput, ENTITY_TYPE_ROLE, { name: ROLE_ADMINISTRATOR }));
 
-  const administratorGroup = await addGroup(context, SYSTEM_USER, {
+  const administratorGroup = await addGroup(context, SYSTEM_USER, withBuiltInExportId({
     name: 'Administrators',
-    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: 'Administrators' }),
     description: 'Administrator group',
     auto_new_marking: true,
-  });
+  }, ENTITY_TYPE_GROUP, { name: 'Administrators' }));
   const administratorRoleRelationInput = {
     toId: administratorRole.id,
     relationship_type: 'has-role',
@@ -444,7 +436,6 @@ const createBasicRolesAndCapabilities = async (context) => {
   // Create Connector(s) Role and Group
   const connectorRoleInput = {
     name: 'Connector',
-    export_id: generateBuiltInExportId(ENTITY_TYPE_ROLE, { name: 'Connector' }),
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
       'APIACCESS_USETOKEN',
@@ -468,17 +459,16 @@ const createBasicRolesAndCapabilities = async (context) => {
     can_manage_sensitive_config: false,
   };
 
-  const connectorRole = await addRole(context, SYSTEM_USER, connectorRoleInput);
+  const connectorRole = await addRole(context, SYSTEM_USER, withBuiltInExportId(connectorRoleInput, ENTITY_TYPE_ROLE, { name: 'Connector' }));
   // Create default group with default role
 
   // Create connector group with connector role
-  const connectorGroup = await addGroup(context, SYSTEM_USER, {
+  const connectorGroup = await addGroup(context, SYSTEM_USER, withBuiltInExportId({
     name: 'Connectors',
-    export_id: generateBuiltInExportId(ENTITY_TYPE_GROUP, { name: 'Connectors' }),
     description: 'Connector group',
     auto_new_marking: true,
     auto_integration_assignation: ['global'],
-  });
+  }, ENTITY_TYPE_GROUP, { name: 'Connectors' }));
   const connectorRoleRelationInput = {
     toId: connectorRole.id,
     relationship_type: 'has-role',
@@ -563,8 +553,8 @@ export const initializeData = async (context, withMarkings = true) => {
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
-  const emailTemplateExportId = generateBuiltInExportId(ENTITY_TYPE_EMAIL_TEMPLATE, { name: DEFAULT_EMAIL_TEMPLATE_INPUT.name });
-  await addEmailTemplate(context, SYSTEM_USER, { ...DEFAULT_EMAIL_TEMPLATE_INPUT, export_id: emailTemplateExportId }, false);
+  const emailTemplateInput = withBuiltInExportId(DEFAULT_EMAIL_TEMPLATE_INPUT, ENTITY_TYPE_EMAIL_TEMPLATE, { name: DEFAULT_EMAIL_TEMPLATE_INPUT.name });
+  await addEmailTemplate(context, SYSTEM_USER, emailTemplateInput, false);
   await createDefaultRetentionRules(context);
   if (withMarkings) {
     await createMarkingDefinitions(context);

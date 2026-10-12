@@ -228,6 +228,7 @@ export const exportId: TextAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
+  featureFlag: 'GLOBAL_EXPORT_BUNDLE',
 };
 
 export const iAliasedIds: TextAttribute = {

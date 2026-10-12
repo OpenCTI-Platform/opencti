@@ -38,7 +38,7 @@ import {
 import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { lockResources } from '../../lock/master-lock';
-import { generateBuiltInExportId } from '../../schema/identifier';
+import { withBuiltInExportId } from '../../schema/identifier';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -348,15 +348,14 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     generateFintelTemplateExecutiveSummary('Case-Rft'),
   ];
   // add id to fintel template widgets
-  const finalInputs: (FintelTemplateAddInput & { export_id: string })[] = builtInTemplatesInputs.map((input) => ({
+  const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => withBuiltInExportId({
     ...input,
-    export_id: generateBuiltInExportId(ENTITY_TYPE_FINTEL_TEMPLATE, { name: input.name, target_type: input.settings_types[0] }),
     template_content: input.template_content ?? '',
     fintel_template_widgets: (input.fintel_template_widgets ?? []).map((templateWidget) => ({
       ...templateWidget,
       widget: { ...templateWidget.widget, id: uuidv4() },
     })),
-  }));
+  }, ENTITY_TYPE_FINTEL_TEMPLATE, { name: input.name, target_type: input.settings_types[0] }));
   await Promise.all(finalInputs
     .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
 };

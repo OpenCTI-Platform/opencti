@@ -26,7 +26,7 @@ import { storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
-import { generateBuiltInExportId, generateInternalId, generateStandardId } from '../schema/identifier';
+import { generateInternalId, generateStandardId, withBuiltInExportId } from '../schema/identifier';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -173,7 +173,7 @@ export const getPublicSettings = async (context) => {
 };
 
 export const addSettings = async (context, user, settings) => {
-  const settingsToCreate = { ...settings, export_id: generateBuiltInExportId(ENTITY_TYPE_SETTINGS) };
+  const settingsToCreate = withBuiltInExportId(settings, ENTITY_TYPE_SETTINGS);
   const created = await createEntity(context, user, settingsToCreate, ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };

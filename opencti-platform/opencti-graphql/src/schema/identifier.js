@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import jsonCanonicalize from 'canonicalize';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import { isFeatureEnabled } from '../config/conf';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
@@ -505,6 +506,18 @@ export const generateInternalId = () => uuidv4();
 // known at creation time. It is computed once and never recomputed, so renaming the element does not change it.
 export const generateBuiltInExportId = (entityType, key = {}) => {
   return uuidv5(jsonCanonicalize({ entity_type: entityType, ...key }), OPENCTI_NAMESPACE);
+};
+// Returns the creation input of a built-in element with its export_id. The export_id attribute only exists when
+// GLOBAL_EXPORT_BUNDLE is enabled: otherwise the input is returned unchanged, as the strict mapping would reject the field.
+/**
+ * @template T
+ * @param {T} input
+ * @param {string} entityType
+ * @param {Record<string, unknown>} [key]
+ * @returns {T}
+ */
+export const withBuiltInExportId = (input, entityType, key = {}) => {
+  return isFeatureEnabled('GLOBAL_EXPORT_BUNDLE') ? { ...input, export_id: generateBuiltInExportId(entityType, key) } : input;
 };
 export const generateWorkId = (connectorId) => {
   const timestamp = now();

@@ -3,11 +3,11 @@ import nconf from 'nconf';
 import { createEntity, createRelation, updateAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
-import { generateBuiltInExportId, generateStandardId } from '../schema/identifier';
+import { generateStandardId, withBuiltInExportId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
 
 export const addCapability = async (context, user, capability) => {
-  const capabilityToCreate = { ...capability, export_id: generateBuiltInExportId(ENTITY_TYPE_CAPABILITY, { name: capability.name }) };
+  const capabilityToCreate = withBuiltInExportId(capability, ENTITY_TYPE_CAPABILITY, { name: capability.name });
   return createEntity(context, user, capabilityToCreate, ENTITY_TYPE_CAPABILITY);
 };
 

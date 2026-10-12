@@ -30,7 +30,7 @@ import type { NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE } from './notifier-statics';
 import type { BasicStoreEntityNotifier, StoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { generateBuiltInExportId } from '../../schema/identifier';
+import { withBuiltInExportId } from '../../schema/identifier';
 
 const ajv = new Ajv();
 
@@ -148,8 +148,7 @@ export const getNotifierConnector = (context: AuthContext, user: AuthUser, conne
 
 export const initDefaultNotifiers = (context: AuthContext) => {
   return Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) => {
-    const export_id = generateBuiltInExportId(ENTITY_TYPE_NOTIFIER, { name: notifier.name });
-    return addNotifier(context, SYSTEM_USER, { ...notifier, export_id });
+    return addNotifier(context, SYSTEM_USER, withBuiltInExportId(notifier, ENTITY_TYPE_NOTIFIER, { name: notifier.name }));
   }));
 };
 
