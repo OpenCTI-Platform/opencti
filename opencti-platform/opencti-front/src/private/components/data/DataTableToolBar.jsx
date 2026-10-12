@@ -166,10 +166,21 @@ const styles = (theme) => ({
     fontSize: '12px',
     marginBottom: '1px',
   },
+  // The toolbar spans the whole header row, which gets wider than the table when columns are widened.
+  // Both groups stick to the visible part of the scrolling table so that the actions are never cut off.
+  selection: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    position: 'sticky',
+    left: 8,
+  },
   editButtons: {
     display: 'flex',
     alignItems: 'center',
     gap: 4,
+    position: 'sticky',
+    right: 12,
     '& > span': {
       display: 'inline-flex',
       alignItems: 'center',
@@ -2426,7 +2437,7 @@ class DataTableToolBar extends Component {
           return (
             <>
               <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8, alignItems: 'center' }} data-testid="opencti-toolbar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div className={classes.selection}>
                   <Typography
                     className={classes.title}
                     color="inherit"
