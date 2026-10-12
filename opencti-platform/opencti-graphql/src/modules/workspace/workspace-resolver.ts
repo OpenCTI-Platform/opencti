@@ -21,11 +21,12 @@ import {
 import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_WORKSPACE } from './workspace-types';
-import type { Resolvers } from '../../generated/graphql';
+import type { Resolvers, ResolversTypes } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreator } from '../../database/members';
+import { findInvestigationEnrichmentWorks } from './investigation-enrichment';
 
 const workspaceResolvers: Resolvers = {
   Query: {
@@ -44,6 +45,7 @@ const workspaceResolvers: Resolvers = {
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
+    enrichmentWorks: (workspace, args, context) => findInvestigationEnrichmentWorks(context, context.user, workspace, args) as unknown as ResolversTypes['WorkConnection'],
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

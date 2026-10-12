@@ -12981,6 +12981,7 @@ type Workspace implements InternalObject & BasicObject {
   toConfigurationExport: String!
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
+  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
 }
 
 enum WorkspacesOrdering {

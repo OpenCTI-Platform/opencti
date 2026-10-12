@@ -7,7 +7,7 @@ import { connectorDelete, registerConnector } from '../../../src/domain/connecto
 import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreObject';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { deleteElementById } from '../../../src/database/middleware';
-import { deleteWork, loadWorkById } from '../../../src/domain/work';
+import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
@@ -191,6 +191,146 @@ describe('Enrichments linked to an investigation', () => {
 
     it('should refuse a user without the enrichment capability', async () => {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: LIST_TASK_ADD, variables: { input: taskInput(editableInvestigationId) } });
+    });
+  });
+
+  describe('retrieval', () => {
+    const ENRICHMENT_WORKS = gql`
+      query EnrichmentWorks($id: String!, $first: Int, $after: ID, $filters: FilterGroup) {
+        workspace(id: $id) {
+          enrichmentWorks(first: $first, after: $after, filters: $filters) {
+            edges { node { id status connector { id } } }
+            pageInfo { hasNextPage endCursor }
+          }
+        }
+      }
+    `;
+    const WORKS = gql`
+      query Works($filters: FilterGroup) { works(first: 50, filters: $filters) { edges { node { id } } } }
+    `;
+    const TLP_RED = 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+    let otherInvestigationId: string;
+    const tagged: string[] = [];
+    // Dedicated to single tests, so that the expectations on otherInvestigationId stay unchanged
+    const dedicatedInvestigationIds: string[] = [];
+    const dedicatedIntrusionSetIds: string[] = [];
+
+    beforeAll(async () => {
+      otherInvestigationId = await createWorkspace('investigation', 'Other enrichment investigation', 'edit');
+      const fromA: any[] = await askElementEnrichmentForConnectors(testContext, analyst, enriched.id, [INV_CONNECTOR_A], { investigationId: otherInvestigationId });
+      const fromB: any[] = await askElementEnrichmentForConnectors(testContext, analyst, enriched.id, [INV_CONNECTOR_B], { investigationId: otherInvestigationId });
+      const another: any[] = await askElementEnrichmentForConnectors(testContext, analyst, enriched.id, [INV_CONNECTOR_A], { investigationId: otherInvestigationId });
+      tagged.push(fromA[0].id, fromB[0].id, another[0].id);
+      workIds.push(...tagged);
+      // Complete the first work only
+      await updateExpectationsNumber(testContext, ADMIN_USER, fromA[0].id, 1);
+      await reportExpectation(testContext, ADMIN_USER, fromA[0].id);
+    });
+
+    afterAll(async () => {
+      for (const id of [otherInvestigationId, ...dedicatedInvestigationIds]) {
+        await queryAsAdmin({ query: DELETE_WORKSPACE, variables: { id } });
+      }
+      for (const id of dedicatedIntrusionSetIds) {
+        await deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_INTRUSION_SET);
+      }
+    });
+
+    /**
+     * List the ids of the enrichment works of an investigation, as admin or as the given user.
+     */
+    const listEnrichmentWorkIds = async (investigationId: string, asUser?: typeof USER_DISINFORMATION_ANALYST) => {
+      const query = { query: ENRICHMENT_WORKS, variables: { id: investigationId, first: 50 } };
+      const result = asUser ? await queryAsUserWithSuccess(asUser, query) : await queryAsAdminWithSuccess(query);
+      return result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id).sort();
+    };
+
+    it('should list the works of the investigation from the works query', async () => {
+      const filters = { mode: 'and', filters: [{ key: 'investigation_id', values: [otherInvestigationId] }], filterGroups: [] };
+      const result = await queryAsAdminWithSuccess({ query: WORKS, variables: { filters } });
+      expect(result.data?.works.edges.map((e: any) => e.node.id).sort()).toEqual([...tagged].sort());
+    });
+
+    it('should list the works of the investigation from the workspace', async () => {
+      const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 50 } });
+      expect(result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id).sort()).toEqual([...tagged].sort());
+    });
+
+    it('should combine caller filters with the investigation', async () => {
+      const filters = {
+        mode: 'and',
+        filters: [{ key: 'status', values: ['complete'] }, { key: 'connector_id', values: [INV_CONNECTOR_A] }],
+        filterGroups: [],
+      };
+      const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 50, filters } });
+      expect(result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id)).toEqual([tagged[0]]);
+    });
+
+    it('should let a reader of the investigation without the MODULES capability list its works', async () => {
+      // The analyst (anais) has no MODULES capability, so the root works query is forbidden to this user
+      expect(analyst.capabilities.some((c: any) => c.name.startsWith('MODULES'))).toBe(false);
+      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, { query: WORKS, variables: { filters: undefined } });
+      const result = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, { query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 50 } });
+      expect(result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id).sort()).toEqual([...tagged].sort());
+    });
+
+    it('should keep the investigation filter when the caller uses an OR group', async () => {
+      const filters = {
+        mode: 'or',
+        filters: [{ key: 'investigation_id', values: [editableInvestigationId] }, { key: 'status', values: ['complete'] }],
+        filterGroups: [],
+      };
+      const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 50, filters } });
+      expect(result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id)).toEqual([tagged[0]]);
+    });
+
+    it('should never return works of another investigation', async () => {
+      const filters = { mode: 'and', filters: [{ key: 'investigation_id', values: [editableInvestigationId] }], filterGroups: [] };
+      const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 50, filters } });
+      expect(result.data?.workspace.enrichmentWorks.edges).toEqual([]);
+    });
+
+    it('should return an empty connection for a dashboard', async () => {
+      const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: dashboardId, first: 50 } });
+      expect(result.data?.workspace.enrichmentWorks.edges).toEqual([]);
+    });
+
+    it('should paginate every work exactly once', async () => {
+      const page1 = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 2 } });
+      const first = page1.data?.workspace.enrichmentWorks;
+      expect(first.edges).toHaveLength(2);
+      expect(first.pageInfo.hasNextPage).toBe(true);
+      const page2 = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: otherInvestigationId, first: 2, after: first.pageInfo.endCursor } });
+      const second = page2.data?.workspace.enrichmentWorks;
+      const ids = [...first.edges, ...second.edges].map((e: any) => e.node.id);
+      expect(new Set(ids).size).toBe(3);
+      expect(ids.sort()).toEqual([...tagged].sort());
+    });
+
+    it('should tag the work with the internal id when the investigation is given by its standard id', async () => {
+      const investigationId = await createWorkspace('investigation', 'Enrichment investigation (standard id)', 'edit');
+      dedicatedInvestigationIds.push(investigationId);
+      const loaded = await queryAsAdminWithSuccess({ query: gql`query W($id: String!) { workspace(id: $id) { standard_id } }`, variables: { id: investigationId } });
+      const standardId = loaded.data?.workspace.standard_id;
+      expect(standardId).not.toEqual(investigationId);
+      const works: any[] = await askElementEnrichmentForConnectors(testContext, analyst, enriched.id, [INV_CONNECTOR_A], { investigationId: standardId });
+      workIds.push(works[0].id);
+      expect(((await loadWorkById(testContext, ADMIN_USER, works[0].id)) as any).investigation_id).toEqual(investigationId);
+      expect(await listEnrichmentWorkIds(investigationId)).toEqual([works[0].id]);
+    });
+
+    it('should hide the works of an enriched entity the reader cannot load', async () => {
+      // The analyst only has the TLP:GREEN marking
+      expect(analyst.allowed_marking.some((m: any) => m.standard_id === TLP_RED)).toBe(false);
+      const investigationId = await createWorkspace('investigation', 'Enrichment investigation (hidden entity)', 'view');
+      dedicatedInvestigationIds.push(investigationId);
+      const hidden = await addIntrusionSet(testContext, ADMIN_USER, { name: `Investigation hidden ${Date.now()}`, objectMarking: [TLP_RED] });
+      dedicatedIntrusionSetIds.push(hidden.id);
+      const [visibleWork]: any[] = await askElementEnrichmentForConnectors(testContext, ADMIN_USER, enriched.id, [INV_CONNECTOR_A], { investigationId });
+      const [hiddenWork]: any[] = await askElementEnrichmentForConnectors(testContext, ADMIN_USER, hidden.id, [INV_CONNECTOR_A], { investigationId });
+      workIds.push(visibleWork.id, hiddenWork.id);
+      expect(await listEnrichmentWorkIds(investigationId)).toEqual([visibleWork.id, hiddenWork.id].sort());
+      expect(await listEnrichmentWorkIds(investigationId, USER_DISINFORMATION_ANALYST)).toEqual([visibleWork.id]);
     });
   });
 });
