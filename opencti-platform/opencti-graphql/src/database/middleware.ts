@@ -3420,6 +3420,22 @@ type CreateRelationRawOpts = UpdateEventOpts & {
   commitMessage?: string;
   restore?: boolean;
 };
+const checkRefRelationNotCyclic = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipType: string,
+  from: any,
+  to: any,
+  fromRule?: string,
+) => {
+  const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
+  // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+  // Checking the direction of the relation to allow relationships
+  const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+  if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
+    throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
+  }
+};
 export const createRelationRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -3503,6 +3519,7 @@ export const createRelationRaw = async (
       let holder = from;
       let event;
       if (currentTarget.internal_id !== to.internal_id) {
+        await checkRefRelationNotCyclic(context, user, relationshipType, from, to);
         const { references, commitMessage, bypassValidation, publishStreamEvent } = opts;
         const updateOpts = { locks, references, commitMessage, bypassValidation, publishStreamEvent };
         ({ event } = await updateAttribute(context, user, from.internal_id, from.entity_type, [{ key, value: [to.internal_id] }], updateOpts));
@@ -3562,13 +3579,7 @@ export const createRelationRaw = async (
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
-      const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
-      // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
-      // Checking the direction of the relation to allow relationships
-      const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
-      if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-        throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
-      }
+      await checkRefRelationNotCyclic(context, user, relationshipType, from, to, fromRule);
     }
     // Just build a standard relationship
     const dataRel = await buildRelationData(context, user, resolvedInput, opts);

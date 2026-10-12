@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { now } from 'moment';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { createRelation } from '../../../src/database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
@@ -189,16 +189,46 @@ describe('StixRefRelationship added again on a single ref', () => {
       }
     }
   `;
+  const ORGANIZATION_ADD_QUERY = gql`
+    mutation OrganizationAdd($input: OrganizationAddInput!) {
+      organizationAdd(input: $input) {
+        id
+        createdBy {
+          id
+        }
+      }
+    }
+  `;
+  const ORGANIZATION_DELETE_QUERY = gql`
+    mutation OrganizationDelete($id: ID!) {
+      organizationDelete(id: $id)
+    }
+  `;
+  const ORGANIZATION_AUTHOR_QUERY = gql`
+    query OrganizationAuthor($id: String!) {
+      organization(id: $id) {
+        createdBy {
+          id
+        }
+      }
+    }
+  `;
   const ANSSI = 'identity--7b82b010-b1c0-4dae-981f-7756374a17df';
   const JOHN_DOE = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f';
   let directoryAId;
   let directoryBId;
   let fileId;
   let firstParentRelationId;
+  let authorId;
+  let authoredId;
 
   const addDirectory = async (path) => {
     const { data } = await queryAsAdminWithSuccess({ query: OBSERVABLE_ADD_QUERY, variables: { type: 'Directory', Directory: { path } } });
     return data.stixCyberObservableAdd.id;
+  };
+  const addOrganization = async (name, createdBy) => {
+    const { data } = await queryAsAdminWithSuccess({ query: ORGANIZATION_ADD_QUERY, variables: { input: { name, createdBy } } });
+    return data.organizationAdd;
   };
   const upsertFile = async () => {
     const StixFile = { name: 'single-ref-test.exe', hashes: [{ algorithm: 'MD5', hash: '5ad1e5ad1e5ad1e5ad1e5ad1e5ad1e50' }] };
@@ -232,6 +262,9 @@ describe('StixRefRelationship added again on a single ref', () => {
   afterAll(async () => {
     for (const id of [fileId, directoryAId, directoryBId]) {
       await queryAsAdmin({ query: OBSERVABLE_DELETE_QUERY, variables: { id } });
+    }
+    for (const id of [authoredId, authorId]) {
+      await queryAsAdmin({ query: ORGANIZATION_DELETE_QUERY, variables: { id } });
     }
   });
 
@@ -273,6 +306,17 @@ describe('StixRefRelationship added again on a single ref', () => {
     const otherAuthor = await addRef(JOHN_DOE, 'created-by');
     expect(otherAuthor.to.id).not.toEqual(anssiId);
     expect((await loadFileRefs()).createdById).toEqual(otherAuthor.to.id);
+  });
+
+  it('should not replace the author of an element by an element it authors', async () => {
+    const author = await addOrganization('single-ref-test author', ANSSI);
+    authorId = author.id;
+    const authored = await addOrganization('single-ref-test authored', authorId);
+    authoredId = authored.id;
+    const input = { fromId: authorId, toId: authoredId, relationship_type: 'created-by' };
+    await queryAsAdminWithError({ query: REF_ADD_QUERY, variables: { input } }, 'You cant create a cyclic relation');
+    const { data } = await queryAsAdminWithSuccess({ query: ORGANIZATION_AUTHOR_QUERY, variables: { id: authorId } });
+    expect(data.organization.createdBy.id).toEqual(author.createdBy.id);
   });
 
   it('should never let a restoration overwrite the current target', async () => {
