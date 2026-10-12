@@ -84,6 +84,30 @@ describe('Hunt dialogs', () => {
     await user.click(await screen.findByRole('option', { name: /Google SecOps - production/ }));
     await waitFor(() => expect(screen.getByTestId('hunt-plan-submit')).toBeEnabled());
   });
+
+  it('lays the plan dialog out as the design-system dialogs: labelled fields with their helper, the actions alone in the footer', async () => {
+    testRender(<HuntPlanDialog open onClose={() => undefined} entityIds={[]} />);
+    const agent = await screen.findByRole('combobox', { name: 'Agent' });
+    const dialog = screen.getByRole('dialog', { name: 'Plan a hunt with AI' });
+    expect(dialog).toHaveAccessibleDescription('An XTM One agent writes a hypothesis and the hunt logic from this knowledge. Nothing runs before you validate the draft.');
+    expect(agent).toHaveAccessibleDescription('From the knowledge you pick, the default hunt planner writes a falsifiable hypothesis, a Sigma rule and the observables to extract.');
+    expect(agent).toHaveClass('w-full');
+    expect(within(dialog).getByRole('combobox', { name: /Plan from/ })).toHaveAccessibleDescription('Pick at least one threat, technique, report or indicator');
+    const body = dialog.querySelector<HTMLElement>('.overflow-y-auto');
+    expect(body?.style.margin).toBe('calc(var(--spacing) * -1)');
+    expect(body?.style.padding).toBe('var(--spacing)');
+    const submit = within(dialog).getByTestId('hunt-plan-submit');
+    expect(submit).toBeDisabled();
+    expect(submit).toHaveClass('bg-filigran-brand-primary');
+    expect(Array.from(submit.parentElement?.children ?? []).map((action) => action.textContent)).toEqual(['Cancel', 'Plan the hunt']);
+  });
+
+  it('gives the fields of the guided creation the room of their focus ring', () => {
+    testRender(<HuntGuidedCreation kind="sigma" open onClose={() => undefined} />);
+    const body = screen.getByRole('dialog').querySelector<HTMLElement>('.overflow-y-auto');
+    expect(body?.style.margin).toBe('calc(var(--spacing) * -1)');
+    expect(body?.style.padding).toBe('var(--spacing)');
+  });
 });
 
 describe('Run the hunt now', () => {

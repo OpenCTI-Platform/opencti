@@ -13,7 +13,9 @@ import {
   DialogTitle,
   Select,
   SelectContent,
+  SelectHelperText,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
   Spinner,
@@ -26,6 +28,7 @@ import type { Theme } from '../../../components/Theme';
 import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import HuntEntitiesField from './HuntEntitiesField';
+import { HUNT_DIALOG_BODY_STYLE } from './hunt-layout-utils';
 import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
 import { layerInputVars } from '../../../utils/fdsLayer';
@@ -162,7 +165,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
       return <Spinner size="md" label={t_i18n('Loading')} />;
     }
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
         {picksSubjects && (
           <Formik<PlanSubjectsValues> initialValues={{ subjects: [] }} onSubmit={() => undefined}>
             <div data-testid="hunt-plan-subjects">
@@ -176,21 +179,24 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
             </div>
           </Formik>
         )}
-        <Text variant="content-compact">{t_i18n('Agent')}</Text>
-        <Select value={agentSlug} onValueChange={setAgentSlug}>
-          <SelectTrigger aria-label={t_i18n('Agent')} data-testid="hunt-plan-agent">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Agent')}>
-            <SelectItem value={DEFAULT_AGENT}>{t_i18n('Default hunt planner')}</SelectItem>
-            {agents.map((agent) => (
-              <SelectItem key={agent.slug} value={agent.slug}>{agent.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
-          {t_i18n('From the knowledge you pick, the default hunt planner writes a falsifiable hypothesis, a Sigma rule and the observables to extract.')}
-        </Text>
+        {/* Select renders no box of its own: the wrapper keeps the label, trigger and helper spacing of the library */}
+        <div>
+          <Select value={agentSlug} onValueChange={setAgentSlug}>
+            <SelectLabel>{t_i18n('Agent')}</SelectLabel>
+            <SelectTrigger className="w-full" data-testid="hunt-plan-agent">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Agent')}>
+              <SelectItem value={DEFAULT_AGENT}>{t_i18n('Default hunt planner')}</SelectItem>
+              {agents.map((agent) => (
+                <SelectItem key={agent.slug} value={agent.slug}>{agent.name}</SelectItem>
+              ))}
+            </SelectContent>
+            <SelectHelperText>
+              {t_i18n('From the knowledge you pick, the default hunt planner writes a falsifiable hypothesis, a Sigma rule and the observables to extract.')}
+            </SelectHelperText>
+          </Select>
+        </div>
         {inFlight && <Spinner size="md" label={t_i18n('The agent is planning the hunt')} />}
         {planError && (
           <div role="alert">
@@ -208,7 +214,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
         <DialogDescription>
           {t_i18n('An XTM One agent writes a hypothesis and the hunt logic from this knowledge. Nothing runs before you validate the draft.')}
         </DialogDescription>
-        <DialogBody>
+        <DialogBody style={HUNT_DIALOG_BODY_STYLE}>
           {proposal ? renderProposal(proposal) : renderForm()}
         </DialogBody>
         <DialogFooter>
@@ -220,16 +226,9 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
               {t_i18n('Review the draft')}
             </Button>
           ) : (
-            <>
-              {subjectIds.length === 0 && (
-                <Text variant="content-caption" style={{ color: theme.palette.text.secondary }} data-testid="hunt-plan-submit-reason">
-                  {t_i18n('Pick at least one threat, technique, report or indicator')}
-                </Text>
-              )}
-              <Button intent="ai" onClick={plan} disabled={inFlight || agents === null || subjectIds.length === 0} data-testid="hunt-plan-submit">
-                {t_i18n('Plan the hunt')}
-              </Button>
-            </>
+            <Button onClick={plan} disabled={inFlight || agents === null || subjectIds.length === 0} data-testid="hunt-plan-submit">
+              {t_i18n('Plan the hunt')}
+            </Button>
           )}
         </DialogFooter>
       </DialogContent>

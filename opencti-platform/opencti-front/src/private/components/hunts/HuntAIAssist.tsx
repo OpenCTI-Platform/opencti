@@ -30,6 +30,7 @@ import type { Theme } from '../../../components/Theme';
 import type { RelayError } from '../../../relay/relayTypes';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import HuntCodeEditor from './HuntCodeEditor';
+import { HUNT_DIALOG_BODY_STYLE } from './hunt-layout-utils';
 import { XTM_ONE_SETTINGS_PATH } from './HuntsSetupChecklist';
 import useHuntAI from './useHuntAI';
 import {
@@ -523,7 +524,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
         return (
           <>
             <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-            <Button intent="ai" onClick={generate} data-testid="hunt-ai-generate">{t_i18n('Generate')}</Button>
+            <Button onClick={generate} data-testid="hunt-ai-generate">{t_i18n('Generate')}</Button>
           </>
         );
       case 'running':
@@ -532,7 +533,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
         return (
           <>
             <Button variant="secondary" onClick={onClose}>{t_i18n('Close')}</Button>
-            <Button intent="ai" onClick={generate} data-testid="hunt-ai-retry">{t_i18n('Retry')}</Button>
+            <Button onClick={generate} data-testid="hunt-ai-retry">{t_i18n('Retry')}</Button>
           </>
         );
       default:
@@ -551,7 +552,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
       <DialogContent size={request.kind === 'plan' ? 'lg' : 'md'} data-testid="hunt-ai-dialog" style={{ ...layerInputVars } as React.CSSProperties}>
         <DialogTitle>{t_i18n(DIALOG_TITLES[request.kind])}</DialogTitle>
         <DialogDescription>{t_i18n('Nothing changes in the form until you accept.')}</DialogDescription>
-        <DialogBody>{renderBody()}</DialogBody>
+        <DialogBody style={HUNT_DIALOG_BODY_STYLE}>{renderBody()}</DialogBody>
         <DialogFooter>{renderFooter()}</DialogFooter>
       </DialogContent>
     </Dialog>

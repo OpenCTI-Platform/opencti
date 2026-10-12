@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, useFormikContext } from 'formik';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
 import type { HuntAIFormValues, HuntAIRequest } from './hunt-ai-utils';
@@ -92,6 +92,27 @@ describe('AI assistance of a hunt form', () => {
     expect(screen.queryByTestId('hunt-ai-dialog')).not.toBeInTheDocument();
   });
 
+  it('lays the prompt out as the design-system dialogs: the field and its helper fill the body, the actions fill the footer', async () => {
+    const { user } = renderForm(EMPTY, { kind: 'sigma_rule' });
+    await user.click(screen.getByTestId('hunt-field-generate'));
+    const dialog = screen.getByRole('dialog', { name: 'Write the Sigma rule with AI' });
+    expect(dialog).toHaveAccessibleDescription('Nothing changes in the form until you accept.');
+    const field = within(dialog).getByRole('textbox', { name: 'What do you want to hunt?' });
+    expect(field).toHaveAccessibleDescription('XTM One writes the proposal from your words and the knowledge on this platform.');
+    // The scrolling body keeps the room of the focus ring and takes it back from the layout: the field has no offset of its own
+    const body = dialog.querySelector<HTMLElement>('.overflow-y-auto');
+    expect(body?.style.margin).toBe('calc(var(--spacing) * -1)');
+    expect(body?.style.padding).toBe('var(--spacing)');
+    expect(body?.children).toHaveLength(1);
+    expect(body?.firstElementChild).toContainElement(field);
+    expect(body?.firstElementChild).toHaveClass('w-full');
+    expect(body?.firstElementChild).not.toHaveAttribute('style');
+    const generate = within(dialog).getByTestId('hunt-ai-generate');
+    expect(Array.from(generate.parentElement?.children ?? []).map((action) => action.textContent)).toEqual(['Cancel', 'Generate']);
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveClass('border-filigran-brand-primary-transparency-55');
+    expect(generate).toHaveClass('bg-filigran-brand-primary');
+  });
+
   it('starts right away from a named hunt and writes nothing when the proposal is dismissed', async () => {
     const { user, relayEnv } = renderForm({ ...EMPTY, name: 'Encoded PowerShell' }, { kind: 'description' });
     await user.click(screen.getByTestId('hunt-field-generate'));
@@ -115,6 +136,7 @@ describe('AI assistance of a hunt form', () => {
     });
     expect(await screen.findByTestId('hunt-ai-error')).toHaveTextContent('XTM One could not run the agent');
     expect(screen.getByTestId('hunt-ai-error')).toHaveTextContent('Settings > AI Models');
+    expect(screen.getByTestId('hunt-ai-retry')).toHaveClass('bg-filigran-brand-primary');
     await user.click(screen.getByTestId('hunt-ai-retry'));
     expect(screen.getByTestId('hunt-ai-progress')).toBeInTheDocument();
     expect(relayEnv.mock.getAllOperations()).toHaveLength(1);

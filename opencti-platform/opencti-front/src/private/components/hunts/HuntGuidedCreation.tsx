@@ -30,6 +30,7 @@ import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { PATH_HUNT } from '../common/routes/paths';
 import HuntEntitiesField from './HuntEntitiesField';
+import { HUNT_DIALOG_BODY_STYLE } from './hunt-layout-utils';
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import HuntIocFields from './HuntIocFields';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
@@ -235,7 +236,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
             const connectorsCount = connectorsCountOf(values);
             return (
               <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
-                <DialogBody>
+                <DialogBody style={HUNT_DIALOG_BODY_STYLE}>
                   <ol aria-label={t_i18n('Steps')} style={{ display: 'flex', gap: theme.spacing(2), listStyle: 'none', padding: 0, margin: `0 0 ${theme.spacing(2)} 0` }}>
                     {stepTitles.map((title, index) => (
                       <li key={title} aria-current={index === step ? 'step' : undefined}>
