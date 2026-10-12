@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import gql from 'graphql-tag';
 import * as rabbitmq from '../../../src/database/rabbitmq';
-import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_DISINFORMATION_ANALYST } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { connectorDelete, registerConnector } from '../../../src/domain/connector';
 import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreObject';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
@@ -166,5 +166,31 @@ describe('Enrichments linked to an investigation', () => {
     await expect(askElementEnrichmentForConnectors(testContext, analyst, enriched.id, [INV_CONNECTOR_A], { investigationId: deletedId }))
       .rejects.toThrow('Investigation not found');
     expect(pushToConnector).not.toHaveBeenCalled();
+  });
+
+  describe('bulk enrichment task', () => {
+    const LIST_TASK_ADD = gql`mutation listTaskAdd($input: ListTaskAddInput!) { listTaskAdd(input: $input) { id } }`;
+
+    /**
+     * Build the input of a bulk enrichment task on knowledge, linked to the given investigation.
+     */
+    const taskInput = (investigationId: string) => ({
+      description: 'Bulk enrichment for investigation',
+      ids: [],
+      scope: 'KNOWLEDGE',
+      actions: [{ type: 'ENRICHMENT', context: { values: [INV_CONNECTOR_A], options: { investigationId } } }],
+    });
+
+    it('should accept an editor of the investigation with the enrichment capability', async () => {
+      await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, { query: LIST_TASK_ADD, variables: { input: taskInput(editableInvestigationId) } });
+    });
+
+    it('should refuse a view-only member', async () => {
+      await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, { query: LIST_TASK_ADD, variables: { input: taskInput(viewOnlyInvestigationId) } });
+    });
+
+    it('should refuse a user without the enrichment capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: LIST_TASK_ADD, variables: { input: taskInput(editableInvestigationId) } });
+    });
   });
 });

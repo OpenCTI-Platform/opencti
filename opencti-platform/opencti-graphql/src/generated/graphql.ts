@@ -1847,6 +1847,7 @@ export type BackgroundTaskContextInput = {
 
 export type BackgroundTaskContextOptionsInput = {
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
+  investigationId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum BackgroundTaskContextType {

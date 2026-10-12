@@ -156,6 +156,9 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
+/**
+ * Build the part of a worker operation that depends on the action type.
+ */
 export const baseOperationBuilder = (actionType, operations, element) => {
   const baseOperationObject = {};
   // Knowledge management
@@ -186,6 +189,10 @@ export const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_ENRICHMENT) {
     baseOperationObject.opencti_operation = 'enrichment';
     baseOperationObject.connector_ids = operations[0].context.values;
+    const investigationId = operations[0].context.options?.investigationId;
+    if (investigationId) {
+      baseOperationObject.investigation_id = investigationId;
+    }
   }
   if (actionType === ACTION_TYPE_MERGE) {
     baseOperationObject.opencti_operation = 'merge';
