@@ -226,6 +226,17 @@ describe('dashboard manifest with variables', () => {
     expect(back.variables[0]).toMatchObject({ id: 'v1', name: 'Sector', defaultValue: 'sector-id' });
   });
 
+  it.each([
+    ['an object', { id: 'v1' }],
+    ['a string', 'variables'],
+    ['a null entry', [null]],
+    ['an entry without restriction', [{ id: 'v1', name: 'No restriction' }]],
+  ])('should not crash on malformed variables (%s)', (_, variables) => {
+    const encoded = toB64(JSON.stringify({ config: {}, widgets: {}, variables }));
+    expect(() => deserializeDashboardManifestForFrontend(encoded)).not.toThrow();
+    expect(() => serializeDashboardManifestForBackend(deserializeDashboardManifestForFrontend(encoded))).not.toThrow();
+  });
+
   it('should leave selection and none restrictions untouched', () => {
     const variables = [
       { id: 'v2', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' },

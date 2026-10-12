@@ -3,6 +3,7 @@ import { fromB64, toB64 } from '../../../../src/utils/base64';
 import {
   buildVariableAuditInput,
   preserveServerOwnedManifestKeys,
+  stripServerOwnedManifestKeys,
   toGraphqlDashboardVariables,
   validateManifestVariables,
 } from '../../../../src/modules/workspace/workspace-variables-utils';
@@ -108,5 +109,19 @@ describe('validateManifestVariables', () => {
     ['too many variables', { variables: Array.from({ length: 51 }, (_, i) => variable({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, name: `v${i}` })) }, 'A dashboard cannot hold more than 50 variables'],
   ])('should reject %s', (_, manifest, message) => {
     expect(() => validateManifestVariables(toB64({ widgets: {}, ...manifest }))).toThrow(message);
+  });
+});
+
+describe('stripServerOwnedManifestKeys', () => {
+  it('should remove variables and presets from a manifest', () => {
+    const result = stripServerOwnedManifestKeys(toB64({ widgets: { a: {} }, variables: [{ id: VAR_ID }], presets: [] }));
+    expect(fromB64(result as string)).toEqual({ widgets: { a: {} } });
+  });
+  it('should leave a manifest without them, an empty or an unreadable one untouched', () => {
+    const encoded = toB64({ widgets: { a: {} } });
+    expect(stripServerOwnedManifestKeys(encoded)).toEqual(encoded);
+    expect(stripServerOwnedManifestKeys('')).toEqual('');
+    expect(stripServerOwnedManifestKeys(undefined)).toBeUndefined();
+    expect(stripServerOwnedManifestKeys('%%%not-base64-json')).toEqual('%%%not-base64-json');
   });
 });

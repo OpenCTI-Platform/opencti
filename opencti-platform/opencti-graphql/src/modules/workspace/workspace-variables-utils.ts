@@ -137,3 +137,15 @@ export const validateManifestVariables = (encoded: string | null | undefined) =>
   const withoutServerKeys = R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest);
   return toB64(variables === undefined ? withoutServerKeys : { ...withoutServerKeys, variables: validated });
 };
+
+/**
+ * Remove the server-owned keys from a manifest stored where dashboard variables cannot live
+ * (custom views): a malformed or forged `variables` key would otherwise reach the frontend.
+ * A manifest without these keys, or unreadable, is returned untouched.
+ */
+export const stripServerOwnedManifestKeys = (encoded: string | null | undefined) => {
+  if (!encoded) return encoded;
+  const manifest = parseManifestObject(encoded);
+  if (!manifest || !DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in manifest)) return encoded;
+  return toB64(R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest));
+};
