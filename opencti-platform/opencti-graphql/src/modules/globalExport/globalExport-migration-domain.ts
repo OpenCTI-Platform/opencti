@@ -1,10 +1,11 @@
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { logMigration } from '../config/conf';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
-import { executionContext, SYSTEM_USER } from '../utils/access';
-import { generateBuiltInExportId } from '../schema/identifier';
+import { logMigration } from '../../config/conf';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../../database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
+import { SYSTEM_USER } from '../../utils/access';
+import type { AuthContext } from '../../types/user';
+import { generateBuiltInExportId } from '../../schema/identifier';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -14,14 +15,14 @@ import {
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_THEME,
-} from '../schema/internalObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
-import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
-import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+} from '../../schema/internalObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../managerConfiguration/managerConfiguration-types';
+import { ENTITY_TYPE_VOCABULARY } from '../vocabulary/vocabulary-types';
+import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
+import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 
 const message = '[MIGRATION] Add export_id to built-in entities';
 
@@ -238,10 +239,11 @@ export const findMissingBuiltInElements = (elements: StoredElement[]): { entity_
     .map((naturalKey) => ({ entity_type, naturalKey })));
 };
 
-export const up = async (next: (error?: Error) => void) => {
+// Gives their export_id to the built-in elements of a platform created before the export_id existed.
+// Not called yet: the migration calling it is added once every global export/import feature is done.
+export const addMissingBuiltInExportIds = async (context: AuthContext) => {
   const startTime = Date.now();
   logMigration.info(`${message} > started`);
-  const context = executionContext('migration');
   const indices = [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS];
   const elements = await elList<any>(context, SYSTEM_USER, indices, { types: BUILT_IN_EXPORT_ID_TYPES });
   const missingByType = R.groupBy((missing) => missing.entity_type, findMissingBuiltInElements(elements));
@@ -271,9 +273,4 @@ export const up = async (next: (error?: Error) => void) => {
   };
   await BluePromise.map(R.splitEvery(MAX_BULK_OPERATIONS, assignments), concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
-  next();
-};
-
-export const down = async (next: (error?: Error) => void) => {
-  next();
 };

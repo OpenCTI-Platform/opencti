@@ -17,8 +17,8 @@ import {
   BUILT_IN_EXPORT_ID_TYPES,
   computeMissingBuiltInExportIds,
   findMissingBuiltInElements,
-  up as addExportIdMigration,
-} from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
+  addMissingBuiltInExportIds,
+} from '../../../src/modules/globalExport/globalExport-migration-domain';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -254,7 +254,7 @@ describe('Built-in entities export_id', () => {
     const withoutExportId = await listBuiltInCandidates();
     expect(computeMissingBuiltInExportIds(withoutExportId)).toHaveLength(targets.length);
     const warnSpy = vi.spyOn(logMigration, 'warn');
-    await addExportIdMigration(() => {});
+    await addMissingBuiltInExportIds(testContext);
     // The test platform setup does not create the fintel templates: the migration reports them
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('6 built-in FintelTemplate not found'));
     warnSpy.mockRestore();

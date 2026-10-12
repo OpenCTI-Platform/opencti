@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
+import { computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/modules/globalExport/globalExport-migration-domain';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
 
 const INDEX = 'test_internal_objects-000001';
