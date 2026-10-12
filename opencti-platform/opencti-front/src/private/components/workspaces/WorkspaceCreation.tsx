@@ -26,6 +26,7 @@ import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreati
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
+import DashboardTemplateMenu from '../../../components/dashboard/templates/DashboardTemplateMenu';
 import { Tooltip } from '@mui/material';
 
 const workspaceMutation = graphql`
@@ -140,6 +141,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>
         </Tooltip>
+        <DashboardTemplateMenu onCreate={(file) => handleImport(file).catch(() => {})} />
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient

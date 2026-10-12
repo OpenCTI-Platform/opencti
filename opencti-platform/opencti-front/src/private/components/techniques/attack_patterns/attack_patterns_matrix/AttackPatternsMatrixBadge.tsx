@@ -8,13 +8,15 @@ interface AttackPatternsMatrixBadgeProps {
   attackPattern: FilteredAttackPattern;
   color: string;
   textColor?: string;
+  // Number of highlighted techniques (parent and sub-techniques), computed from isCovered when omitted
+  count?: number;
   children: React.ReactNode;
 }
 
-const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, children }: AttackPatternsMatrixBadgeProps) => {
+const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, count, children }: AttackPatternsMatrixBadgeProps) => {
   const theme = useTheme<Theme>();
-  const attackPatternsCount = (attackPattern.isCovered ? 1 : 0)
-    + (attackPattern.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0);
+  const attackPatternsCount = count ?? ((attackPattern.isCovered ? 1 : 0)
+    + (attackPattern.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0));
 
   return (
     <Badge

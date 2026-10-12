@@ -117,6 +117,12 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
+// Defense matrix events (aggregate defense level of a technique): offered by the trigger forms, never selected by default
+export const defenseEventTypesOptions = [
+  { value: 'defense_level_decreased', label: 'Defense level decreased' },
+  { value: 'defense_level_increased', label: 'Defense level increased' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return filterEventTypesOptions.find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...defenseEventTypesOptions].find((o) => o.value === event_type);
 });

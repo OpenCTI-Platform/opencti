@@ -3,6 +3,7 @@ import { addSettings } from '../domain/settings';
 import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
+import { initDefenseLogsourceMappings } from '../modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { createStatus, createStatusTemplate } from '../domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -527,6 +528,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
+  await initDefenseLogsourceMappings(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);

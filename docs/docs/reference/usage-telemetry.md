@@ -140,6 +140,16 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of PIRs
 - The number of decay rules created
 
+### Defense matrix
+
+- The number of `provides` relationships (telemetry declared by security platforms and systems)
+- The number of techniques with a defense level above none
+- The number of techniques validated by OpenAEV
+- The number of open defense gaps (one gap per technique, over all security platforms)
+- The number of defense validation requests created from gaps
+- The number of defense gaps closed (one gap per technique, over all security platforms)
+- The number of defense gap backlog exports
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform

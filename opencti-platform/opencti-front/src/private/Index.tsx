@@ -33,6 +33,7 @@ const RootAnalyses = lazy(() => import('./components/analyses/Root'));
 const RootCases = lazy(() => import('./components/cases/Root'));
 const RootEvents = lazy(() => import('./components/events/Root'));
 const RootObservations = lazy(() => import('./components/observations/Root'));
+const RootDefense = lazy(() => import('./components/defense/Root'));
 const RootProfile = lazy(() => import('./components/profile/Root'));
 const RootSearch = lazy(() => import('@components/RootSearch'));
 const RootThreats = lazy(() => import('./components/threats/Root'));
@@ -161,6 +162,7 @@ const Index = ({ settings }: IndexProps) => {
                   <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
                   <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                   <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+                  <Route path="/defense/*" element={boundaryWrapper(RootDefense)} />
                   <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
                   <Route path="/*" element={<NoMatch />} />
                 </Routes>
