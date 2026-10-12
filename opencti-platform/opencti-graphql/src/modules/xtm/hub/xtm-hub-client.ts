@@ -1,9 +1,26 @@
-import { getHttpClient } from '../../../utils/http-client';
+import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import conf, { logApp, PLATFORM_VERSION } from '../../../config/conf';
 import type { Success } from '../../../generated/graphql';
 import { type NewsFeedItemMetadata, NewsFeedItemType } from './news-feed/news-feed-types';
 
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
+export type HubPlatformContract = 'CE' | 'EE';
+
+interface HubGraphQLError {
+  message?: string;
+}
+
+interface RefreshRegistrationStatusResult {
+  status?: RegistrationStatus;
+  errors?: HubGraphQLError[];
+}
+
+// A hub older than the edition refresh rejects the unknown input field. GraphQL quotes the field name it rejects,
+// while the input value it echoes back holds an unquoted `platformContract` key on any other input error.
+const isPlatformContractRejected = (errors?: HubGraphQLError[]) => (errors ?? [])
+  .some((error) => typeof error?.message === 'string' && error.message.includes('"platformContract"'));
+
+let isPlatformContractFallbackLogged = false;
 
 export interface ProvisionedNewsFeedItem {
   id: string;
@@ -37,10 +54,11 @@ export const xtmHubClient = {
       return { isReachable: false };
     }
   },
-  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: {
+  refreshRegistrationStatus: async ({ platformId, token, platformVersion, platformContract }: {
     platformId: string;
     token: string;
     platformVersion: string;
+    platformContract: HubPlatformContract;
   }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
@@ -50,22 +68,46 @@ export const xtmHubClient = {
       }
     `;
 
-    const variables = {
-      input: {
-        platformId,
-        token,
-        platformVersion,
-        platformIdentifier: HUB_OPENCTI_IDENTIFIER,
-      },
+    const input = {
+      platformId,
+      token,
+      platformVersion,
+      platformIdentifier: HUB_OPENCTI_IDENTIFIER,
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
       responseType: 'json',
     });
+    const refresh = async (variables: { input: Record<string, string> }): Promise<RefreshRegistrationStatusResult> => {
+      try {
+        const response = await httpClient.post('/graphql-api', { query, variables });
+        return {
+          status: response.data?.data?.refreshPlatformRegistrationConnectivityStatus?.status,
+          errors: response.data?.errors,
+        };
+      } catch (error) {
+        const errors = getResponseError(error)?.data?.errors;
+        if (!errors) {
+          throw error;
+        }
+        return { errors };
+      }
+    };
 
     try {
-      const response = await httpClient.post('/graphql-api', { query, variables });
-      return response.data.data.refreshPlatformRegistrationConnectivityStatus.status;
+      let result = await refresh({ input: { ...input, platformContract } });
+      if (!result.status && isPlatformContractRejected(result.errors)) {
+        if (!isPlatformContractFallbackLogged) {
+          logApp.warn('[XTMH] XTM Hub does not accept the platform edition yet, refreshing the connectivity without it');
+          isPlatformContractFallbackLogged = true;
+        }
+        result = await refresh({ input });
+      }
+      if (!result.status) {
+        logApp.warn('XTM Hub sent an error', { reason: result.errors?.[0] });
+        return 'inactive';
+      }
+      return result.status;
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return 'inactive';
