@@ -11,7 +11,7 @@ import { createRedisClient } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
-import { initializeInternalQueues } from '../../src/database/rabbitmq';
+import { initializeInternalQueues } from '../../src/modules/connector/connector-rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { startModules } from '../../src/managers';
