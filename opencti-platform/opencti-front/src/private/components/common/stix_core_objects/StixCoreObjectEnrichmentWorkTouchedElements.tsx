@@ -74,8 +74,7 @@ const StixCoreObjectEnrichmentWorkTouchedElements = ({
   if (touched.length === 0) {
     return (
       <ListItem dense={true} style={{ paddingLeft: 64, gap: 8 }}>
-        <ListItemText primary={t_i18n('Elements touched by this enrichment')} />
-        <Chip label={count} />
+        <ListItemText primary={t_i18n('No element touched by this enrichment')} />
       </ListItem>
     );
   }
