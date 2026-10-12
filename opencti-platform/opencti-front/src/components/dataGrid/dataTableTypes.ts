@@ -75,6 +75,8 @@ export interface DataTableContextProps {
   page: number;
   setPage: Dispatch<SetStateAction<number>>;
   tableWidthState: [number, Dispatch<SetStateAction<number>>];
+  /** Width in px of the visible part of the table, i.e. of its horizontally scrolling container. */
+  visibleWidth: number;
   startsWithAction: boolean;
   startsWithIcon: boolean;
   startColumnWidth: number;

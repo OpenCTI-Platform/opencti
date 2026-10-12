@@ -3,7 +3,7 @@ import * as cache from '../../../src/database/cache';
 import { autoRegisterOpenCTI, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
 import { testContext } from '../../utils/testQuery';
 import { HUB_REGISTRATION_MANAGER_USER } from '../../../src/utils/access';
-import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
+import { type AutoRegisterInput, type PlatformEe, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
 import { type ProvisionedNewsFeedItem, xtmHubClient } from '../../../src/modules/xtm/hub/xtm-hub-client';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import * as middleware from '../../../src/database/middleware';
@@ -13,6 +13,7 @@ import * as redisModule from '../../../src/database/redis';
 import * as xtmHubEmail from '../../../src/modules/xtm/hub/xtm-hub-email';
 import * as conf from '../../../src/config/conf';
 import * as newsFeedDomain from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
+import * as licensing from '../../../src/modules/settings/licensing';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 
 describe('XTM hub', () => {
@@ -140,6 +141,24 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
         ],
       );
+    });
+
+    it.each([
+      { licenseValidated: true, platformContract: 'EE' },
+      { licenseValidated: false, platformContract: 'CE' },
+    ])('should send the $platformContract edition with the connectivity refresh when license_validated is $licenseValidated', async ({ licenseValidated, platformContract }) => {
+      const settings: Partial<BasicStoreSettings> = {
+        id: 'id',
+        xtm_hub_token,
+        xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+      };
+      getEntityFromCacheSpy.mockResolvedValue(settings);
+      vi.spyOn(licensing, 'getEnterpriseEditionInfo').mockReturnValue({ license_validated: licenseValidated } as PlatformEe);
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+
+      await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+      expect(xtmHubClientRefreshStatusSpy).toHaveBeenCalledWith(expect.objectContaining({ platformId: 'id', token: xtm_hub_token, platformContract }));
     });
 
     it('should update is backend reachable to false when xtm hub backend is not reachable', async () => {

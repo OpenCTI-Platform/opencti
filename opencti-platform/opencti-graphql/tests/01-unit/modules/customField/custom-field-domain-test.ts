@@ -15,11 +15,9 @@ import {
   customFieldDefinitionRemoveEntityType,
   customFieldDefinitionUpdateEntityType,
   findById,
-  findCustomFieldDefinitionByName,
   findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
   findCustomFieldStixFilterKeys,
-  isCustomFieldKey,
 } from '../../../../src/modules/customField/custom-field-domain';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 
@@ -93,16 +91,6 @@ beforeEach(() => {
   vi.mocked(Access.executionContext).mockReturnValue({ source: 'testing' } as any);
 });
 
-describe('isCustomFieldKey', () => {
-  it('returns true for keys prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('x_opencti_cf_score')).toBe(true);
-  });
-
-  it('returns false for keys not prefixed with the custom field prefix', () => {
-    expect(isCustomFieldKey('name')).toBe(false);
-  });
-});
-
 describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefinitionsForEntityType', () => {
   it('findById delegates to storeLoadById with the CustomFieldDefinition type', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(makeDefinition() as any);
@@ -125,19 +113,6 @@ describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefini
         filterGroups: [],
       },
     });
-  });
-
-  it('findCustomFieldDefinitionByName returns the node when found', async () => {
-    const def = makeDefinition({ name: 'x_opencti_cf_field' });
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [{ node: def }], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_field');
-    expect(result).toEqual(def);
-  });
-
-  it('findCustomFieldDefinitionByName returns null when not found', async () => {
-    vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [], pageInfo: {} } as any);
-    const result = await findCustomFieldDefinitionByName(mockContext, mockUser, 'x_opencti_cf_unknown');
-    expect(result).toBeNull();
   });
 });
 
