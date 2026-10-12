@@ -98,5 +98,10 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   password_policy_min_lowercase?: number;
   password_policy_min_uppercase?: number;
   password_policy_validity_days?: number;
+  local_auth_lockout_enabled?: boolean;
+  local_auth_lockout_max_attempts?: number;
+  local_auth_lockout_window?: number;
+  local_auth_lockout_duration?: number;
+  local_auth_lockout_max_duration?: number;
   smtp_configuration?: SmtpConfiguration;
 }
