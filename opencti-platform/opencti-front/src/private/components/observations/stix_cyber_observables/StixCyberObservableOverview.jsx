@@ -20,6 +20,7 @@ import { graphql } from 'react-relay';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemCreators from '../../../../components/ItemCreators';
+import ProvenanceOverviewColumn from '../../common/provenance/ProvenanceOverviewColumn';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemScore from '../../../../components/ItemScore';
 import Label from '../../../../components/common/label/Label';
@@ -120,7 +121,7 @@ class StixCyberObservableOverview extends Component {
       otherStixIds,
     );
     return (
-      <>
+      <ProvenanceOverviewColumn id={stixCyberObservable.id} entityType={stixCyberObservable.entity_type} inheritedType="Stix-Cyber-Observable">
         <Card title={t('Basic information')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={6}>
@@ -248,7 +249,7 @@ class StixCyberObservableOverview extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </>
+      </ProvenanceOverviewColumn>
     );
   }
 }

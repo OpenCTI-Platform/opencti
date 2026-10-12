@@ -13,22 +13,26 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
+import useHelper from '../../../utils/hooks/useHelper';
+import { isProvenanceWidget } from '../common/provenance/provenanceWidgetUtils';
 
-export const getVisualizationTypes = (host: WidgetHost) => {
-  return host.kind === 'workspace'
+export const getVisualizationTypes = (host: WidgetHost, provenanceEnabled = true) => {
+  const types = host.kind === 'workspace'
     ? workspacesWidgetVisualizationTypes
     : host.kind === 'fintelTemplate'
       ? fintelTemplatesWidgetVisualizationTypes
       : host.kind === 'custom-view'
         ? customViewsWidgetVisualizationTypes
         : [];
+  return provenanceEnabled ? types : types.filter(({ key }) => !isProvenanceWidget(key));
 };
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
   const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
+  const { isProvenanceEnabled } = useHelper();
 
-  const visualizationTypes = getVisualizationTypes(host);
+  const visualizationTypes = getVisualizationTypes(host, isProvenanceEnabled());
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

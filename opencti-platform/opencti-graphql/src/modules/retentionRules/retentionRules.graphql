@@ -21,6 +21,7 @@ enum RetentionRuleScope {
   workbench
   history
   activity
+  conflicts
 }
 enum RetentionUnit {
   minutes

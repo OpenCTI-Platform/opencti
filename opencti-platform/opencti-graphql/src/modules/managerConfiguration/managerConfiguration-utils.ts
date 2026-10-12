@@ -1,3 +1,5 @@
+import { DEFAULT_PROVENANCE_BACKFILL_STATE, PROVENANCE_BACKFILL_MANAGER_ID } from '../provenance/provenance-types';
+
 export const supportedMimeTypes = [
   'application/pdf',
   'application/json',
@@ -20,6 +22,11 @@ const defaultManagerConfigurations = [
       entity_types: [],
       max_file_size: 5242880,
     },
+  },
+  {
+    manager_id: PROVENANCE_BACKFILL_MANAGER_ID,
+    manager_running: false,
+    manager_setting: { ...DEFAULT_PROVENANCE_BACKFILL_STATE },
   },
 ];
 

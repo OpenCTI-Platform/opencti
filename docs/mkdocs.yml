@@ -162,6 +162,7 @@ nav:
       - Containers: usage/containers.md
       - Deduplication: usage/deduplication.md
       - Reliability and confidence: usage/reliability-confidence.md
+      - Provenance and corroboration: usage/provenance.md
       - Meaning of dates: usage/dates.md
       - CTI Copilot ✨: usage/copilot.md
     - Explore knowledge:

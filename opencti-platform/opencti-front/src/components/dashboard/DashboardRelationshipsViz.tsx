@@ -15,8 +15,13 @@ import StixRelationshipsMultiHeatMap from '../../private/components/common/stix_
 import StixRelationshipsTreeMap from '../../private/components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '../../private/components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
+import ProvenanceFreshnessWidget from '@components/common/provenance/ProvenanceFreshnessWidget';
+import ProvenanceSingleSourcedWidget from '@components/common/provenance/ProvenanceSingleSourcedWidget';
+import ProvenanceWidgetDisabled from '@components/common/provenance/ProvenanceWidgetDisabled';
+import { isProvenanceWidget } from '@components/common/provenance/provenanceWidgetUtils';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
+import useHelper from '../../utils/hooks/useHelper';
 import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardRelationshipsVizProps {
@@ -34,6 +39,11 @@ const DashboardRelationshipsViz = ({
   host,
   refreshRate,
 }: DashboardRelationshipsVizProps) => {
+  const { isProvenanceEnabled } = useHelper();
+
+  if (isProvenanceWidget(widget.type) && !isProvenanceEnabled()) {
+    return <ProvenanceWidgetDisabled widget={widget} popover={popover} />;
+  }
   switch (widget.type) {
     case 'number':
       return (
@@ -219,6 +229,30 @@ const DashboardRelationshipsViz = ({
           dataSelection={widget.dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-freshness':
+      return (
+        <ProvenanceFreshnessWidget
+          perspective="relationships"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
+          popover={popover}
+          host={host}
+          refreshRate={refreshRate}
+          config={config}
+        />
+      );
+    case 'provenance-single-sourced':
+      return (
+        <ProvenanceSingleSourcedWidget
+          perspective="relationships"
+          dataSelection={widget.dataSelection}
+          parameters={widget.parameters ?? undefined}
           popover={popover}
           host={host}
           refreshRate={refreshRate}

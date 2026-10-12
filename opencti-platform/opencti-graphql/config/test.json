@@ -110,6 +110,17 @@
     "enabled": true,
     "interval": 6000000
   },
+  "provenance": {
+    "reassertion_window_hours": 0,
+    "default_tracked_types": ["*"],
+    "refresh_on_write": true
+  },
+  "knowledge_freshness_manager": {
+    "enabled": false
+  },
+  "provenance_backfill_manager": {
+    "enabled": false
+  },
   "ingestion_manager": {
     "enabled": false
   },

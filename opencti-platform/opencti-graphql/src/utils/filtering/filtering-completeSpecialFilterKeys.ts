@@ -43,6 +43,7 @@ import {
   USER_SERVICE_ACCOUNT_FILTER,
   WORKFLOW_FILTER,
   X_OPENCTI_WORKFLOW_ID,
+  FRESHNESS_DAYS_FILTER,
 } from './filtering-constants';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
@@ -65,6 +66,7 @@ import { ENTITY_TYPE_PIR } from '../../modules/pir/pir-types';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
+import { adaptFilterToFreshnessDaysFilterKey } from '../../modules/provenance/provenance-filters';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
 
@@ -911,6 +913,10 @@ export const completeSpecialFilterKeys = async (
       if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
         finalFilters.push(newFilter);
+      }
+      if (filterKey === FRESHNESS_DAYS_FILTER) {
+        const { newFilterGroup } = adaptFilterToFreshnessDaysFilterKey(filter);
+        finalFilterGroups.push(newFilterGroup);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
         const { newFilter, newFilterGroup } = adaptFilterToServiceAccountFilterKey(filter);

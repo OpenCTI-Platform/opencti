@@ -38,6 +38,7 @@ import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOver
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
+import ProvenanceOverviewColumn from '../provenance/ProvenanceOverviewColumn';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import { WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
 import { WorkflowTransitionsForEntity } from '../workflow/WorkflowTransitions';
@@ -143,7 +144,7 @@ const StixDomainObjectOverview = ({
   );
 
   return (
-    <>
+    <ProvenanceOverviewColumn id={stixDomainObject.id} entityType={stixDomainObject.entity_type}>
       <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
@@ -463,7 +464,7 @@ const StixDomainObjectOverview = ({
           </Dialog>
         )}
       </Formik>
-    </>
+    </ProvenanceOverviewColumn>
   );
 };
 

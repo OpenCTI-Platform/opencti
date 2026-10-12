@@ -29,6 +29,13 @@ class StixSightingRelationship:
             spec_version
             created_at
             updated_at
+            corroboration_count
+            last_asserted_at
+            freshness_days
+            has_conflicts
+            freshness_stale
+            single_sourced
+            freshness_stale_at
             standard_id
             description
             first_seen

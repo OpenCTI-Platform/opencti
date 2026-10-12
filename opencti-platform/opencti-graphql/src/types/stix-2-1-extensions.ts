@@ -12,6 +12,12 @@ export const STIX_EXT_OCTI = 'extension-definition--ea279b3e-5c71-4632-ac08-831c
 // Artifact = score - additional_names
 export const STIX_EXT_OCTI_SCO = 'extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82';
 
+// Provenance summary of OCTI (opencti-provenance)
+// Attributes extensions
+// corroboration_count - assertions_count - first_asserted - last_asserted - single_sourced - has_conflicts
+// conflicting_fields - freshness_stale - sources_by_kind
+export const STIX_EXT_OCTI_PROVENANCE = 'extension-definition--283daa2f-7739-5345-a110-19d73676f670';
+
 // Extensions from MITRE
 // Attributes extensions
 // mitre_id
