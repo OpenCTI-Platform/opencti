@@ -114,6 +114,9 @@ test.describe('Your first hunt', { tag: ['@hunt', '@mutation', '@ce'] }, () => {
     // Activate stays visible, disabled with its reason next to it, and the checklist names what to do
     await expect(header.getByTestId('hunt-status-to-active')).toBeDisabled();
     await expect(header.getByTestId('hunt-primary-blocked-reason')).toHaveText('1 item to complete');
+    // The checklist and the statuses of a draft open on demand
+    await header.getByTestId('hunt-readiness-toggle').click();
+    await header.getByTestId('hunt-status-model-toggle').click();
     const logic = header.getByTestId('hunt-readiness-logic');
     await expect(logic).toHaveAttribute('data-status', 'unmet');
     await expect(logic).toContainText('Add a Sigma rule or a native query');

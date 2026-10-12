@@ -27,4 +27,8 @@ export default class HuntFormPage {
   getCreateButton() {
     return this.formLocator.getByTestId('hunt-creation-submit');
   }
+
+  getNextButton() {
+    return this.formLocator.getByTestId('hunt-creation-next');
+  }
 }

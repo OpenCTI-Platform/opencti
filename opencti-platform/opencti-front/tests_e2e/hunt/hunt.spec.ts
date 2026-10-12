@@ -32,11 +32,12 @@ test('Hunt manual creation, tabs and Logic validation', { tag: ['@hunt', '@mutat
   await huntsPage.openCreateForm();
   await expect(huntForm.getCreateTitle()).toBeVisible();
   const huntName = `Hunt - ${uuid()}`;
-  await huntForm.nameField.fill(huntName);
   await huntForm.getSigmaEditor().fill(INVALID_SIGMA_RULE);
   await expect(huntForm.getSigmaValidation().getByText('Invalid Sigma rule')).toBeVisible();
   await huntForm.getSigmaEditor().fill(HUNT_SIGMA_RULE);
   await expect(huntForm.getSigmaValidation().getByText('Valid Sigma rule')).toBeVisible();
+  await huntForm.getNextButton().click();
+  await huntForm.nameField.fill(huntName);
   await huntForm.getCreateButton().click();
 
   await huntsPage.getItemFromList(huntName).click();

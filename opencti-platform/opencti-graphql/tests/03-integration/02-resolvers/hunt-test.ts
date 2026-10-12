@@ -513,10 +513,14 @@ describe('Hunt resolvers', () => {
     expect(run.hits_sample[0].matched[0].value_hash).not.toEqual('a'.repeat(64));
     expect(new Date(run.hits_sample[0].timestamp).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
     expect(new Date(run.first_hit_at).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
-    // Only STIX identifiers are recorded from a connector report, then the sighting the platform keeps for the hunt
+    // Only STIX identifiers are recorded from a connector report, then the observed data of the hits and the sighting
+    // the platform keeps for the hunt
     const stored = await internalLoadById<BasicStoreEntity & { result_ids?: string[] }>(testContext, ADMIN_USER, secondRunId, { type: ENTITY_TYPE_HUNT_RUN });
+    expect(stored.result_ids).toHaveLength(3);
     expect(stored.result_ids?.[0]).toEqual(intrusionSetStandardId);
-    expect(stored.result_ids?.slice(1)).toEqual([expect.stringMatching(/^sighting--/)]);
+    const observedData = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, stored.result_ids?.[1] as string);
+    expect(observedData.entity_type).toEqual(ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+    expect(stored.result_ids?.[2]).toMatch(/^sighting--/);
     expect(run.verdict).toEqual('pending');
     expect(run.incident_id).toBeTruthy();
     expect(run.draft_id).toBeTruthy();

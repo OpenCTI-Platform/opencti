@@ -122,9 +122,11 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     const form = await openCreationDrawer(page);
     // Learn more sits in the drawer header, left of the close button, no longer above the first field
     await expect(form.getByTestId('hunt-creation-learn-more')).toHaveCount(0);
-    await capture(page, `hunt-drawer-header${suffix}.png`, [drawerHeader(page), new TextFieldPageModel(page, 'Name', 'text', form).get()]);
+    await capture(page, `hunt-drawer-header${suffix}.png`, [drawerHeader(page), form.getByTestId('hunt-creation-steps')]);
     await capture(page, `hunt-drawer-logic${suffix}.png`, [page.getByTestId('hunt-sigma-editor'), page.getByTestId('hunt-native-queries')]);
     await expect(page.getByTestId('hunt-native-query-add')).toBeVisible();
+    // The schedule and the PIR activation are in the execution step
+    await form.getByTestId('hunt-creation-step-2').click();
     const schedule = page.getByTestId('hunt-schedule-field');
     const pir = form.getByText('Activate when a PIR flags one of its targets');
     await capture(page, `hunt-drawer-ee-chips${suffix}.png`, [schedule, pir]);
@@ -137,9 +139,12 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     for (const testId of ['hunt-ai-plan', 'hunt-hypothesis-generate', 'hunt-description-generate', 'hunt-sigma-generate', 'hunt-observables-generate', 'hunt-benign-generate']) {
       await expect(page.getByTestId(testId)).toBeEnabled();
     }
-    await capture(page, `hunt-drawer-ai-actions${suffix}.png`, [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-hypothesis-generate')]);
-    // A name is enough: the planner proposes the rule and what it implies for the empty fields
+    await capture(page, `hunt-drawer-ai-actions${suffix}.png`, [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-sigma-generate')]);
+    // A name is enough: the planner proposes the rule and what it implies for the empty fields. The name is in the
+    // context step, the rule in the first one
+    await form.getByTestId('hunt-creation-next').click();
     await new TextFieldPageModel(page, 'Name', 'text', form).fill('APT28 encoded PowerShell from Office');
+    await form.getByTestId('hunt-creation-step-0').click();
     await page.getByTestId('hunt-sigma-generate').click();
     await expect(page.getByTestId('hunt-ai-proposal-sigma_rule').locator('textarea')).toHaveValue(GENERATED_RULE);
     await expect(page.getByTestId('hunt-ai-rationale')).toContainText(RATIONALE);
@@ -190,6 +195,7 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
   test('A failure names its cause and offers a retry', async ({ page }) => {
     await withPlatform(page, { enterpriseEdition: true, xtmOne: true, failure: 'XTM_ONE_NO_MODEL' });
     const form = await openCreationDrawer(page);
+    await form.getByTestId('hunt-creation-next').click();
     await new TextFieldPageModel(page, 'Name', 'text', form).fill('APT28 encoded PowerShell from Office');
     await page.getByTestId('hunt-hypothesis-generate').click();
     await expect(page.getByTestId('hunt-ai-error')).toContainText('XTM One could not run the agent');
@@ -207,7 +213,7 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     // The fields repeat the reason on hover and focus only
     await expect(page.getByTestId('hunt-sigma-generate')).toBeDisabled();
     await expect(page.getByTestId('hunt-sigma-generate-unavailable')).toBeVisible();
-    await capture(page, 'hunt-drawer-sigma-unavailable.png', [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-hypothesis-generate')]);
+    await capture(page, 'hunt-drawer-sigma-unavailable.png', [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-sigma-generate')]);
   });
 
   test('Generate the Sigma rule of a saved hunt from its Logic tab', async ({ page, request }) => {
