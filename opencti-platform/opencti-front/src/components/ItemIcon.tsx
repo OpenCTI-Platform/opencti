@@ -593,6 +593,7 @@ const iconSelector = (
     case 'subtechnique-of':
     case 'should-cover':
     case 'has-covered':
+    case 'deployed-on':
       return <VectorRadius style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'notifier':
       return <UpcomingOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;

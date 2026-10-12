@@ -237,6 +237,9 @@ const STATIC_STIX_FILTERS = [
   'x_opencti_ssvc_exploitation',
   'x_opencti_ssvc_automatable',
   'x_opencti_ssvc_technical_impact',
+  'deployment_status',
+  'validation_status',
+  'deployment_platforms_count',
 ];
 const customFieldStixFilterKeysQuery = graphql`
   query filtersUtilsCustomFieldStixFilterKeysQuery($entityType: String) {

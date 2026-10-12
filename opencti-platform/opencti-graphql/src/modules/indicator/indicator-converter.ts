@@ -36,6 +36,8 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
         score: instance.x_opencti_score,
         main_observable_type: instance.x_opencti_main_observable_type,
         observable_values: getObservableValuesFromPattern(instance.pattern, true),
+        // Only when live somewhere, so triggers can match "revoked but still deployed" without adding a zero to every indicator.
+        deployment_platforms_count: (instance.deployment_platforms_count ?? 0) > 0 ? instance.deployment_platforms_count : undefined,
       }),
       [STIX_EXT_MITRE]: buildMITREExtensions(instance),
     },

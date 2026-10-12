@@ -1,0 +1,173 @@
+# Dissemination assurance: lifecycle of an indicator on a security platform,
+# carried by the deployed-on relationship (Indicator -> Security Platform).
+
+enum IndicatorDeploymentStatus {
+  pending
+  deployed
+  active
+  failed
+  removed
+  expired
+}
+
+enum IndicatorValidationStatus {
+  not_requested
+  requested
+  detected
+  prevented
+  missed
+  error
+}
+
+# Attributes only set on deployed-on relationships, null for every other relationship type.
+extend type StixCoreRelationship {
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  last_hit_report_ids: [String!]
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
+}
+
+extend enum StixCoreRelationshipsOrdering {
+  deployment_status
+  deployed_at
+  last_sync_at
+  hit_count
+  last_hit_at
+  validation_status
+  last_validation_at
+}
+
+# Used by bundle imports and platform synchronization to carry the deployment state.
+# Only connector accounts (CONNECTORAPI) and administrators may set the lifecycle fields; any other
+# account creates deployments in their default state (pending, no hit, validation not requested).
+extend input StixCoreRelationshipAddInput {
+  deployment_status: IndicatorDeploymentStatus
+  external_id: String
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  hit_count: Int
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  last_hit_report_ids: [String!]
+  validation_status: IndicatorValidationStatus
+  last_validation_at: DateTime
+  validation_run_id: String
+  error_message: String
+}
+
+# Derived counters, recomputed from the deployed-on relationships of the indicator.
+extend type Indicator {
+  deployments_count: Int
+  deployment_platforms_count: Int
+  deployment_failed_count: Int
+  deployment_expired_count: Int
+  validated_platforms_count: Int
+  hit_platforms_count: Int
+}
+
+extend enum IndicatorsOrdering {
+  deployments_count
+  deployment_platforms_count
+  deployment_failed_count
+  deployment_expired_count
+  validated_platforms_count
+  hit_platforms_count
+}
+
+# Write-back from stream connectors
+input IndicatorDeploymentMetadataInput {
+  deployed_at: DateTime
+  last_sync_at: DateTime
+  removed_at: DateTime
+  error_message: String @constraint(maxLength: 5000)
+}
+
+input IndicatorDeploymentReportInput {
+  indicatorId: StixRef!
+  status: IndicatorDeploymentStatus!
+  externalId: String @constraint(maxLength: 1000)
+  metadata: IndicatorDeploymentMetadataInput
+}
+
+type IndicatorDeploymentReportError {
+  indicatorId: String!
+  message: String!
+}
+
+type IndicatorDeploymentBatchResult {
+  processed: Int!
+  created: Int!
+  updated: Int!
+  unchanged: Int!
+  errors: [IndicatorDeploymentReportError!]!
+}
+
+# Dissemination assurance analytics
+type DisseminationAssuranceFunnel {
+  created: Int!
+  disseminated: Int!
+  deployed: Int!
+  validated: Int!
+  hit: Int!
+  expired_still_deployed: Int!
+}
+
+type DisseminationAssuranceStatusCount {
+  status: String!
+  count: Int!
+}
+
+type DisseminationAssurancePlatformCount {
+  platform: SecurityPlatform!
+  count: Int!
+}
+
+type DisseminationAssuranceMetrics {
+  funnel: DisseminationAssuranceFunnel!
+  deployment_statuses: [DisseminationAssuranceStatusCount!]!
+  validation_statuses: [DisseminationAssuranceStatusCount!]!
+  failures_by_platform: [DisseminationAssurancePlatformCount!]!
+  deployments_by_platform: [DisseminationAssurancePlatformCount!]!
+  # Share (0-100) of live deployments proven by a detected or prevented validation.
+  proven_share: Float!
+}
+
+type Query {
+  disseminationAssuranceMetrics(platformId: String, startDate: DateTime, endDate: DateTime): DisseminationAssuranceMetrics @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+  # Write-back of the security platform integrations: connector accounts only.
+  indicatorReportDeployment(
+    indicatorId: StixRef!
+    platformId: StixRef!
+    status: IndicatorDeploymentStatus!
+    externalId: String
+    metadata: IndicatorDeploymentMetadataInput
+  ): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
+  indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
+  # lastHit is required (refused when empty; nullable in the schema so that clients declaring it nullable keep
+  # validating): it is the replay watermark of the report, a retry carries the same lastHit and is never counted twice.
+  # reportId tells apart distinct reports sharing the same lastHit: a report with a new reportId is counted, a retry
+  # carries the same reportId. Without a reportId, a report whose lastHit equals the last known hit is a replay.
+  indicatorReportHits(
+    indicatorId: StixRef!
+    platformId: StixRef!
+    count: Int!
+    lastHit: DateTime
+    firstHit: DateTime
+    reportId: String
+  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
+  indicatorDeploymentRetry(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorDeploymentRemove(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+}
