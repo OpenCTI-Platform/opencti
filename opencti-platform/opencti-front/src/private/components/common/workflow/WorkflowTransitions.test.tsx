@@ -303,6 +303,12 @@ describe('WorkflowTransitions – status out of sync with the workflow', () => {
     expect(screen.queryByText('Clear')).toBeNull();
   });
 
+  it('opens the divergence reason from the keyboard', async () => {
+    const { user } = testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
+    await user.tab();
+    expect((await screen.findByRole('tooltip')).textContent).toContain('does not map to any state of the published workflow');
+  });
+
   it('lets a bypass user clear the divergence', async () => {
     mocks.isBypass = true;
     const { user } = testRender(<WorkflowTransitions data={makeDivergedDraft()} />);

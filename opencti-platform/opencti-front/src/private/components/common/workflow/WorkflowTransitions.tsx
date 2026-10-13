@@ -182,7 +182,9 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <ErrorOutline color="warning" fontSize="small" />
+          <span className="inline-flex" tabIndex={0}>
+            <ErrorOutline color="warning" fontSize="small" />
+          </span>
         </TooltipTrigger>
         <TooltipContent>{workflowInstance.pendingError}</TooltipContent>
       </Tooltip>
