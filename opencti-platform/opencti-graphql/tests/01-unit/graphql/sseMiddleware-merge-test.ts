@@ -48,7 +48,7 @@ describe('filterMergeEventSources', () => {
   beforeEach(() => {
     vi.mocked(checkUserCanAccessStixElement).mockReset();
     vi.mocked(getEntityFromCache).mockReset();
-    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'platform-org-id' });
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'platform-org-id' } as any);
   });
 
   it('should return the event unchanged when all sources are accessible', async () => {
