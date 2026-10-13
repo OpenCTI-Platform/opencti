@@ -297,6 +297,14 @@ export const customFieldDefinitionToWidgetColumn = (definition: CustomFieldWidge
   label: definition.label,
   attributeType: mapCustomFieldTypeToWidgetColumnAttributeType(definition.field_type),
 });
+// Label of a custom field, read from the filter keys schema of the given entity types (technical name if unknown).
+export const getCustomFieldLabelFromFilterKeysSchema = (
+  filterKeysSchema: Map<string, Map<string, { label: string }>>,
+  entityTypes: readonly string[],
+  name: string,
+): string => entityTypes
+  .map((entityType) => filterKeysSchema.get(entityType)?.get(name)?.label)
+  .find((label) => !!label) ?? name;
 // A definition attached to no entity type cannot hold any value: it is never offered as a column.
 export const customFieldDefinitionsToWidgetColumns = (
   definitions: readonly CustomFieldWidgetDefinition[],
