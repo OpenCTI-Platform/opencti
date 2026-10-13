@@ -501,6 +501,7 @@
   "Inference weight": "추론 가중치",
   "Information": "정보",
   "Infrastructure types": "인프라 유형",
+  "INGESTION_HEALTH_MANAGER": "수집 상태 관리자",
   "Ingestion running": "데이터 수집 실행 중",
   "Ingestion state": "수집 상태",
   "Ingestion_running": "수집 실행 중",

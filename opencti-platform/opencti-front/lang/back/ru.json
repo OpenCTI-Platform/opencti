@@ -501,6 +501,7 @@
   "Inference weight": "Вес вывода",
   "Information": "Информация",
   "Infrastructure types": "Типы инфраструктуры",
+  "INGESTION_HEALTH_MANAGER": "Менеджер состояния загрузки данных",
   "Ingestion running": "Приём данных выполняется",
   "Ingestion state": "Состояние приема данных",
   "Ingestion_running": "Прием данных работает",

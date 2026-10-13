@@ -501,6 +501,7 @@
   "Inference weight": "Inferenzgewicht",
   "Information": "Informationen",
   "Infrastructure types": "Arten von Infrastruktur",
+  "INGESTION_HEALTH_MANAGER": "Manager für den Zustand der Datenaufnahme",
   "Ingestion running": "Verschlucken läuft",
   "Ingestion state": "Einnahme-Status",
   "Ingestion_running": "Ingestion_running",

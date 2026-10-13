@@ -52,7 +52,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealt
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
   const normalized = checks.map((check) => ({ health_check_code: check.health_check_code, health_check_metadata: check.health_check_metadata ?? {} }));
-  return R.sortBy((check) => check.health_check_code, normalized);
+  return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code));
 };
 
 // Returns the fields to write, or null when neither the status nor the checks changed

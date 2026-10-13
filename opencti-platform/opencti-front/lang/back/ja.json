@@ -501,6 +501,7 @@
   "Inference weight": "推論の重み",
   "Information": "最終更新日",
   "Infrastructure types": "インフラの種類",
+  "INGESTION_HEALTH_MANAGER": "インジェストヘルスマネージャー",
   "Ingestion running": "コレクション",
   "Ingestion state": "摂取状態",
   "Ingestion_running": "Ingestion_running（インジェスト実行中",
