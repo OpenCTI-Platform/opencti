@@ -200,6 +200,10 @@ export const baseOperationBuilder = (actionType, operations, element, customFiel
   if (actionType === ACTION_TYPE_ENRICHMENT) {
     baseOperationObject.opencti_operation = 'enrichment';
     baseOperationObject.connector_ids = operations[0].context.values;
+    const investigationId = operations[0].context.options?.investigationId;
+    if (investigationId) {
+      baseOperationObject.investigation_id = investigationId;
+    }
   }
   if (actionType === ACTION_TYPE_MERGE) {
     baseOperationObject.opencti_operation = 'merge';

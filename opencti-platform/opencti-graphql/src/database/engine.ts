@@ -1829,6 +1829,21 @@ export const elBatchIds = async <T extends BasicStoreBase>(
   }
   return findHits;
 };
+/**
+ * Like elBatchIds, but an element is found from any of its ids (internal id, standard id or other stix ids),
+ * for fields that store an id other than the internal one, such as a standard id that may since have moved to
+ * the stix ids (merge, observable upgrade). The type filter is the union of the requested types.
+ */
+export const elBatchAnyIds = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  elements: { id: string; type: string | string[] }[],
+) => {
+  const ids = elements.map((e) => e.id);
+  const types = R.uniq(elements.flatMap((e) => (Array.isArray(e.type) ? e.type : [e.type])));
+  const mapHits = await elFindByIds<T>(context, user, ids, { type: types, includeDeletedInDraft: true, toMap: true, mapWithAllIds: true }) as Record<string, T>;
+  return ids.map((id) => mapHits[id]);
+};
 export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
