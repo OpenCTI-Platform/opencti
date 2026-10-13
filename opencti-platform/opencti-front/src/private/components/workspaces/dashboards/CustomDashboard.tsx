@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Stack from '@mui/material/Stack';
 import DashboardTimeFilters from '../../../../components/dashboard/DashboardTimeFilters';
@@ -16,6 +16,8 @@ import { DashboardRefreshProvider } from '../../../../components/dashboard/Dashb
 import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
+import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
+import type { DashboardVariable } from '../../../../components/dashboard/dashboard-types';
 import { useDashboardVariableMutations } from '../../../../components/dashboard/variables/useDashboardVariableMutations';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -103,6 +105,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const { isFeatureEnable } = useHelper();
   const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const canManageVariables = userCanEdit;
+  // undefined: dialog closed, null: creating a variable, a variable: editing it.
+  const [dialogVariable, setDialogVariable] = useState<DashboardVariable | null | undefined>(undefined);
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
@@ -255,6 +259,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               onSetValue={variableControls.setValue}
               onReset={variableControls.reset}
               onSetAsDefaults={onSetAsDefaults}
+              onCreate={canManageVariables ? () => setDialogVariable(null) : undefined}
+              onEdit={canManageVariables ? setDialogVariable : undefined}
+            />
+          )}
+          {showVariablesBar && dialogVariable !== undefined && (
+            <DashboardVariableDialog
+              open
+              workspaceId={workspace.id}
+              variable={dialogVariable ?? undefined}
+              existingVariables={variables}
+              onClose={() => setDialogVariable(undefined)}
             />
           )}
           {!noToolbar && (

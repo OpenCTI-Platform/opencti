@@ -34,6 +34,8 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
 vi.mock('../../../../utils/Security', () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+// This module otherwise preloads its query on the application environment at import time.
+vi.mock('../../../../utils/hooks/useVocabularyCategory', () => ({ default: vi.fn() }));
 vi.mock('../workspaceHeader/WorkspaceHeader', () => ({ default: () => <div>workspace-header</div> }));
 vi.mock('../../../../components/dashboard/DashboardTimeFilters', () => ({ default: () => null }));
 vi.mock('../../../../components/dashboard/DashboardRefreshControl', () => ({ default: () => null }));
@@ -127,13 +129,33 @@ describe('CustomDashboard variables bar', () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.());
   });
 
-  it('shows the bar to a manager, with a chip per variable and no editing entry point yet', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+  it('shows the bar to a manager, with a chip per variable and the create and edit entry points but no delete', async () => {
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
     expect(bar()).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-variable-chip-Sector')).toHaveAttribute('data-unused', 'false');
-    expect(screen.queryByTestId('create-variable-button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Open menu/ })).not.toBeInTheDocument();
+    expect(screen.getByTestId('create-variable-button')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Open menu/ }));
+    expect(screen.getByRole('menuitem', { name: 'Edit variable' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Delete variable' })).not.toBeInTheDocument();
+  });
+
+  it('opens the dialog empty from Create variable, then closes it on Cancel', async () => {
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    expect(screen.queryByTestId('dashboard-variable-dialog')).not.toBeInTheDocument();
+    await user.click(screen.getByTestId('create-variable-button'));
+    expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Name/ })).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByTestId('dashboard-variable-dialog')).not.toBeInTheDocument());
+  });
+
+  it('opens the dialog on the variable from its Edit variable entry', async () => {
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await user.click(screen.getByRole('button', { name: /Open menu/ }));
+    await user.click(screen.getByRole('menuitem', { name: 'Edit variable' }));
+    expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /Name/ })).toHaveValue('Sector');
   });
 
   it('is absent when the feature flag is off', () => {

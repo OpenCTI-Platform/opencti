@@ -72,7 +72,7 @@ export const draftToVariable = (draft: DashboardVariableDraft, id: string): Dash
  */
 export const validateDraft = (
   draft: DashboardVariableDraft,
-  existing: DashboardVariable[],
+  existing: readonly DashboardVariable[],
   t_i18n: (s: string) => string,
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
