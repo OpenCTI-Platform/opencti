@@ -1,4 +1,5 @@
-import { ConnectorPriorityGroup, type EditInput, type Resolvers } from '../../generated/graphql';
+import { ConnectorPriorityGroup, type EditInput, IngestionHealthStatus, type Resolvers } from '../../generated/graphql';
+import { toGraphqlHealthChecks } from '../ingestionHealth/ingestionHealth-checks';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorContract,
@@ -75,6 +76,10 @@ const connectorResolvers: Resolvers = {
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
+    // Read from Elasticsearch only, never from Redis: the Deployed list polls every 5 s
+    health_status: (cn) => cn.health_status ?? IngestionHealthStatus.Unknown,
+    health_status_since: (cn) => cn.health_status_since ?? null,
+    healthChecks: (cn) => toGraphqlHealthChecks(cn.health_checks),
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),

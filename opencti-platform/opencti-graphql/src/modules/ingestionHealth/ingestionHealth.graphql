@@ -1,0 +1,24 @@
+enum IngestionHealthStatus {
+  critical
+  unknown
+  stopped
+  healthy
+  degraded
+}
+
+enum IngestionHealthCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionHealthCheckSeverity {
+  blocking
+  advisory
+}
+
+type IngestionHealthCheck {
+  health_check_code: String!
+  health_check_message: String
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
+}

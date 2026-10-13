@@ -10787,6 +10787,9 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  health_status: IngestionHealthStatus!
+  health_status_since: DateTime
+  healthChecks: [IngestionHealthCheck!]!
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -10830,6 +10833,31 @@ type ConnectorManager implements BasicObject & InternalObject {
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!
+}
+
+enum IngestionHealthStatus {
+  critical
+  unknown
+  stopped
+  healthy
+  degraded
+}
+
+enum IngestionHealthCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionHealthCheckSeverity {
+  blocking
+  advisory
+}
+
+type IngestionHealthCheck {
+  health_check_code: String!
+  health_check_message: String
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
 }
 
 type Catalog implements InternalObject & BasicObject {

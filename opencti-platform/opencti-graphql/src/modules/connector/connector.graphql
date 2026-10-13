@@ -296,6 +296,9 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  health_status: IngestionHealthStatus! @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "\"unknown\"")
+  health_status_since: DateTime @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES]) @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "[]")
 }
 
 type ManagedConnector implements BasicObject & InternalObject {

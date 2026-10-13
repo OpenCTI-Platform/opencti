@@ -4606,6 +4606,9 @@ export type Connector = BasicObject & InternalObject & {
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
@@ -14108,6 +14111,32 @@ export type IngestionHeader = {
   name: Scalars['String']['output'];
   value: Scalars['String']['output'];
 };
+
+export type IngestionHealthCheck = {
+  __typename?: 'IngestionHealthCheck';
+  health_check_code: Scalars['String']['output'];
+  health_check_kind: IngestionHealthCheckKind;
+  health_check_message?: Maybe<Scalars['String']['output']>;
+  health_check_severity: IngestionHealthCheckSeverity;
+};
+
+export enum IngestionHealthCheckKind {
+  Configuration = 'configuration',
+  Runtime = 'runtime'
+}
+
+export enum IngestionHealthCheckSeverity {
+  Advisory = 'advisory',
+  Blocking = 'blocking'
+}
+
+export enum IngestionHealthStatus {
+  Critical = 'critical',
+  Degraded = 'degraded',
+  Healthy = 'healthy',
+  Stopped = 'stopped',
+  Unknown = 'unknown'
+}
 
 export type IngestionJson = BasicObject & InternalObject & {
   __typename?: 'IngestionJson';
@@ -41260,6 +41289,10 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvOrdering: IngestionCsvOrdering;
   IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
+  IngestionHealthCheck: ResolverTypeWrapper<IngestionHealthCheck>;
+  IngestionHealthCheckKind: IngestionHealthCheckKind;
+  IngestionHealthCheckSeverity: IngestionHealthCheckSeverity;
+  IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: ResolverTypeWrapper<IngestionJsonAddInputFromImport>;
@@ -42384,6 +42417,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
   IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
+  IngestionHealthCheck: IngestionHealthCheck;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -44483,6 +44517,9 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47645,6 +47682,13 @@ export type IngestionEntryResolvers<ContextType = any, ParentType extends Resolv
 export type IngestionHeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHeader'] = ResolversParentTypes['IngestionHeader']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheck'] = ResolversParentTypes['IngestionHealthCheck']> = ResolversObject<{
+  health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
+  health_check_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
 }>;
 
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
@@ -55500,6 +55544,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
   IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
+  IngestionHealthCheck?: IngestionHealthCheckResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;

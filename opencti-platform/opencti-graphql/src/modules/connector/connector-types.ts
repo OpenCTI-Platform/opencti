@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { ConnectorContractConfiguration, ConnectorPriorityGroup } from '../../generated/graphql';
 import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
+import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
 export interface ConnectorInfo {
   run_and_terminate: boolean;
@@ -15,8 +16,9 @@ export interface ConnectorInfo {
 
 type ConnectorManagerContract = CatalogContractEntityFields;
 
-export interface BasicStoreEntityConnector extends BasicStoreEntity {
+export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHealthFields {
   active: boolean;
+  built_in?: boolean;
   auto: boolean;
   auto_update: boolean;
   enrichment_resolution: string;
