@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MuiAccordion from '@mui/material/Accordion';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
 import IconButton from '@common/button/IconButton';
@@ -30,6 +30,7 @@ interface AccordionAttackPatternProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  expandAll?: boolean;
 }
 
 const AccordionAttackPattern = ({
@@ -40,11 +41,16 @@ const AccordionAttackPattern = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  expandAll,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(expandAll ?? false);
   const [isHovered, setIsHovered] = useState(false);
   const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    if (expandAll !== undefined) setExpanded(expandAll);
+  }, [expandAll]);
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -129,6 +129,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
   const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
+  const [expandAll, setExpandAll] = useState<boolean>(false);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
@@ -356,6 +357,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     icon={<VisibilityOutlined />}
                   />
                 </Tooltip>
+
+                <Tooltip title={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}>
+                  <IconButton
+                    variant="default"
+                    priority="tertiary"
+                    active={expandAll}
+                    aria-label={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}
+                    onClick={() => setExpandAll((value) => !value)}
+                    icon={expandAll ? <UnfoldLessOutlined /> : <UnfoldMoreOutlined />}
+                  />
+                </Tooltip>
               </Stack>
 
               {!isSecurityPlatform && (
@@ -489,6 +501,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
+            expandAll={expandAll}
           />
         )}
         {currentView === 'matrix-in-line' && (
