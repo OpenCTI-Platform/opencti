@@ -2549,8 +2549,10 @@ tooltip; and the field must be 36px high empty and with chips. Then delete the
 **Needed.** Fixing the `jsx-a11y` click-handler violations (#16818) turned
 four clickable non-interactive elements into real buttons. In each, the
 control's content is the visual, and the button must add no box of its own:
-- `TruncatedRawValue` — a truncated raw value in the Audit / History / draft
-  diff tables, shown as pre-wrapped code; clicking it opens the full value.
+- `TruncatedRawValue` — a truncated raw value, clicking it opens the full
+  value: as pre-wrapped code (`code` variant), or as a single line cut with an
+  ellipsis in the History and Audit tables (`text` variant, a button only once
+  the value overflows).
 - `MarkdownDisplay` — a markdown image, clicking it opens the preview.
 - `SearchInput` — the caret half of the AI search split control: a narrow
   zone sharing one pill with the MUI `ToggleButton` beside it (hover tint,
@@ -2579,6 +2581,7 @@ split controls built from two halves of one pill.
 
 **Removal test.** At a pin with that variant: replace the four
 `<button>`s, delete their reset styles and the markers, and check that the
-truncated value keeps its whitespace and wrapping, the image keeps its size,
+truncated code value keeps its whitespace and wrapping, the truncated text
+value its single line and ellipsis, the image keeps its size,
 the caret still reads as one pill with the AI toggle (idle, hover, focus),
 and the and/or still matches the filter chips' operator badge.
