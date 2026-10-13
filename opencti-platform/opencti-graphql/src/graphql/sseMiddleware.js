@@ -28,6 +28,7 @@ import {
 import {
   BYPASS,
   checkOTPValidationStatus,
+  checkUserCanAccessStixElement,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
   isUserCanAccessStreamUpdateEvent,
@@ -334,8 +335,12 @@ export const sendEventWithFilteredObjectRefs = async (
 
 export const filterMergeEventSources = async (context, user, eventData) => {
   const sources = eventData.context?.sources ?? [];
-  const accessFlags = await Promise.all(sources.map((source) => isUserCanAccessStixElement(context, user, source)));
-  const accessibleSources = sources.filter((_, index) => accessFlags[index]);
+  if (sources.length === 0) {
+    return eventData;
+  }
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  const accessibleSources = sources.filter((source) => checkUserCanAccessStixElement(context, user, source, hasPlatformOrg));
   if (accessibleSources.length === sources.length) {
     return eventData;
   }

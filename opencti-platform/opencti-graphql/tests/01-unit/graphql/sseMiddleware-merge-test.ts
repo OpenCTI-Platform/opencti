@@ -12,12 +12,14 @@ vi.mock('../../../src/database/stream/stream-handler', () => ({ createStreamProc
 vi.mock('../../../src/database/engine', () => ({ elCount: vi.fn(), elList: vi.fn(), elFindByIds: vi.fn() }));
 vi.mock('../../../src/database/middleware-loader', () => ({ fullRelationsList: vi.fn() }));
 vi.mock('../../../src/database/middleware', () => ({ stixLoadById: vi.fn(), storeLoadByIdsWithRefs: vi.fn() }));
+vi.mock('../../../src/database/cache', () => ({ getEntitiesListFromCache: vi.fn(), getEntityFromCache: vi.fn() }));
 vi.mock('../../../src/utils/access', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/utils/access')>();
-  return { ...actual, isUserCanAccessStixElement: vi.fn() };
+  return { ...actual, checkUserCanAccessStixElement: vi.fn() };
 });
 
-import { isUserCanAccessStixElement } from '../../../src/utils/access';
+import { getEntityFromCache } from '../../../src/database/cache';
+import { checkUserCanAccessStixElement } from '../../../src/utils/access';
 // eslint-disable-next-line import/extensions
 import { filterMergeEventSources } from '../../../src/graphql/sseMiddleware.js';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
@@ -44,21 +46,25 @@ const user = { id: 'user-id' } as any;
 
 describe('filterMergeEventSources', () => {
   beforeEach(() => {
-    vi.mocked(isUserCanAccessStixElement).mockReset();
+    vi.mocked(checkUserCanAccessStixElement).mockReset();
+    vi.mocked(getEntityFromCache).mockReset();
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'platform-org-id' });
   });
 
   it('should return the event unchanged when all sources are accessible', async () => {
-    vi.mocked(isUserCanAccessStixElement).mockResolvedValue(true);
+    vi.mocked(checkUserCanAccessStixElement).mockReturnValue(true);
     const eventData = buildMergeEventData([buildReport('a', 'Source A'), buildReport('b', 'Source B')]);
     const result = await filterMergeEventSources(context, user, eventData);
     expect(result).toBe(eventData);
-    expect(isUserCanAccessStixElement).toHaveBeenCalledTimes(2);
+    expect(getEntityFromCache).toHaveBeenCalledOnce();
+    expect(checkUserCanAccessStixElement).toHaveBeenCalledTimes(2);
+    expect(checkUserCanAccessStixElement).toHaveBeenCalledWith(context, user, eventData.context.sources[0], true);
   });
 
   it('should keep only accessible sources and rebuild the message', async () => {
     const sourceA = buildReport('a', 'Source A');
     const sourceB = buildReport('b', 'Source B');
-    vi.mocked(isUserCanAccessStixElement).mockImplementation(async (_ctx, _user, instance: any) => instance === sourceA);
+    vi.mocked(checkUserCanAccessStixElement).mockImplementation((_ctx, _user, instance: any) => instance === sourceA);
     const eventData = buildMergeEventData([sourceA, sourceB]);
     const result = await filterMergeEventSources(context, user, eventData);
     expect(result.context.sources).toEqual([sourceA]);
@@ -71,7 +77,7 @@ describe('filterMergeEventSources', () => {
   });
 
   it('should remove all sources when none is accessible', async () => {
-    vi.mocked(isUserCanAccessStixElement).mockResolvedValue(false);
+    vi.mocked(checkUserCanAccessStixElement).mockReturnValue(false);
     const eventData = buildMergeEventData([buildReport('a', 'Source A'), buildReport('b', 'Source B')]);
     const result = await filterMergeEventSources(context, user, eventData);
     expect(result.context.sources).toEqual([]);
@@ -82,6 +88,7 @@ describe('filterMergeEventSources', () => {
     const eventData = { ...buildMergeEventData([]), context: undefined };
     const result = await filterMergeEventSources(context, user, eventData);
     expect(result).toBe(eventData);
-    expect(isUserCanAccessStixElement).not.toHaveBeenCalled();
+    expect(getEntityFromCache).not.toHaveBeenCalled();
+    expect(checkUserCanAccessStixElement).not.toHaveBeenCalled();
   });
 });
