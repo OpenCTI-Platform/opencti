@@ -16,6 +16,7 @@
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events",
   "This task completes the containment": "This task completes the containment",
   "This task does not complete the containment": "This task does not complete the containment",
+  "Zoom on these events": "Zoom on these events",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Click to view all the new resources on the Hub",
   "(no output)": "(no output)",

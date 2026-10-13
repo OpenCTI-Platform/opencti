@@ -192,3 +192,49 @@ describe('ContainerTimelineLanes accessibility', () => {
     expect(container.querySelector('style')?.textContent).toMatch(/\.timeline-lanes:focus-visible \{ outline: 2px solid [^;]+; outline-offset: -2px; \}/);
   });
 });
+
+describe('ContainerTimelineLanes numbered circles', () => {
+  const domain: [number, number] = [new Date('2026-02-01T00:00:00.000Z').getTime(), new Date('2026-02-10T00:00:00.000Z').getTime()];
+  const at = (id: string, title: string, time: string, kind: string): TimelineChartEvent => ({ ...event(id, 'derived'), title, event_time: time, kind });
+  const events = [
+    at('late', 'Sighting of the domain', '2026-02-05T16:00:00.000Z', 'sighting'),
+    at('early', 'Indicator validity: jiaw.shop', '2026-02-05T08:00:00.000Z', 'indicator_valid'),
+  ];
+
+  it('lists the events of a circle in time order, with their time, title and event type, each opening its event', async () => {
+    const onSelect = vi.fn();
+    const onClusterSelect = vi.fn();
+    const { user } = testRender(
+      <ContainerTimelineLanes events={events} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={onSelect} onClusterSelect={onClusterSelect} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^2 events - / }));
+    expect(screen.getByTestId('timeline-cluster-events')).toHaveTextContent('2 events');
+    const early = screen.getByTestId('timeline-cluster-event-early');
+    const late = screen.getByTestId('timeline-cluster-event-late');
+    expect(early.compareDocumentPosition(late) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(early).toHaveTextContent(/^Indicator validity: jiaw\.shop.+ - Indicator validity$/);
+    expect(late).toHaveTextContent(/^Sighting of the domain.+ - Sighting$/);
+    await user.click(late);
+    expect(onSelect).toHaveBeenCalledWith('late');
+    expect(onClusterSelect).not.toHaveBeenCalled();
+  });
+
+  it('still offers to zoom on the events of the circle, at the end of its list', async () => {
+    const onClusterSelect = vi.fn();
+    const { user } = testRender(
+      <ContainerTimelineLanes events={events} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} onClusterSelect={onClusterSelect} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^2 events - / }));
+    await user.click(screen.getByRole('menuitem', { name: 'Zoom on these events' }));
+    expect(onClusterSelect).toHaveBeenCalledWith([new Date('2026-02-05T08:00:00.000Z').getTime(), new Date('2026-02-05T16:00:00.000Z').getTime()]);
+  });
+
+  it('opens the list from the keyboard', async () => {
+    const { user } = testRender(
+      <ContainerTimelineLanes events={events} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} />,
+    );
+    screen.getByRole('button', { name: /^2 events - / }).focus();
+    await user.keyboard('{Enter}');
+    expect(await screen.findAllByRole('menuitem')).toHaveLength(2);
+  });
+});

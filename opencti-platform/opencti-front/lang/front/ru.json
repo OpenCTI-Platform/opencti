@@ -16,6 +16,7 @@
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "Экспорт временной шкалы сохранён в экспортированных файлах сущности с маркировкой {markings}, соответствующей его событиям",
   "This task completes the containment": "Эта задача завершает сдерживание",
   "This task does not complete the containment": "Эта задача не завершает сдерживание",
+  "Zoom on these events": "Приблизить эти события",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "«Да, всегда» сохраняет настройку за вас. После этого инструмент будет запускаться без запроса — в том числе в рамках запланированных запусков, за которыми никто не наблюдает, — до тех пор, пока вы не отмените это разрешение.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Нажмите, чтобы просмотреть все новые ресурсы на хабе",
   "(no output)": "(без вывода)",

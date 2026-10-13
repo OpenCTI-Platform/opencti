@@ -16,6 +16,7 @@
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "타임라인 내보내기가 엔터티의 내보내진 파일에 저장되었으며, 이벤트에 맞춰 {markings}(으)로 표시되었습니다",
   "This task completes the containment": "이 작업으로 봉쇄가 완료됩니다",
   "This task does not complete the containment": "이 작업으로 봉쇄가 완료되지 않습니다",
+  "Zoom on these events": "이 이벤트 확대",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“예, 항상”을 선택하면 해당 설정이 저장됩니다. 그러면 사용자가 권한을 철회할 때까지, 아무도 지켜보지 않는 예약된 실행 시에도 해당 도구는 별도의 확인 요청 없이 실행됩니다.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 허브의 모든 새 리소스를 보려면 클릭하세요",
   "(no output)": "(출력 없음)",

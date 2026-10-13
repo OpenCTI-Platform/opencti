@@ -16,6 +16,7 @@
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "L'export de la chronologie a été enregistré dans les fichiers exportés de l'entité, marqué {markings} pour couvrir ses événements",
   "This task completes the containment": "Cette tâche termine le confinement",
   "This task does not complete the containment": "Cette tâche ne termine pas le confinement",
+  "Zoom on these events": "Zoomer sur ces événements",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "« Oui, toujours » enregistre une préférence pour vous. Cet outil s’exécutera alors sans vous demander votre avis — y compris lors d’exécutions programmées que personne ne surveille — jusqu’à ce que vous révoquiez cette autorisation.",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) Cliquez pour voir toutes les nouvelles ressources sur le Hub",
   "(no output)": "(pas de sortie)",

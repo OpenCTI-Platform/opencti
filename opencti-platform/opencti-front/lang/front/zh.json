@@ -16,6 +16,7 @@
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "时间线导出已保存到实体的导出文件中，并标记为 {markings} 以涵盖其事件",
   "This task completes the containment": "此任务完成遏制",
   "This task does not complete the containment": "此任务不完成遏制",
+  "Zoom on these events": "放大这些事件",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "“是，始终”会为您保存该偏好设置。此后，该工具将无需再次询问即可运行——包括在无人监视的定时运行中——直到您撤销该授权为止。",
   "(+{count}) Click to view all the new resources on the Hub": "(+{count}) 点击查看中枢上的所有新资源",
   "(no output)": "（无输出）",

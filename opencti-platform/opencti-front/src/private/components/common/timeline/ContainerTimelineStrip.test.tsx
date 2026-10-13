@@ -15,7 +15,8 @@ interface StripCase {
 
 // The summary of the case counts every event, the events query only the lanes and kinds its timeline settings show
 const renderStrip = async (total: number, shownEvents: Array<Record<string, unknown>>, { canEdit = true, enabledLanes = ['adversary'], hiddenKinds = [] }: StripCase = {}) => {
-  const { relayEnv } = testRender(<ContainerTimelineStrip containerId="case-1" basePath="/dashboard/cases/incidents/case-1" />);
+  const rendered = testRender(<ContainerTimelineStrip containerId="case-1" basePath="/dashboard/cases/incidents/case-1" />);
+  const { relayEnv } = rendered;
   const resolve = (operation: OperationDescriptor) => {
     if (operation.request.node.params.name === 'ContainerTimelineStripQuery') {
       return {
@@ -46,7 +47,23 @@ const renderStrip = async (total: number, shownEvents: Array<Record<string, unkn
   if (total > 0) {
     await waitFor(() => relayEnv.mock.resolveMostRecentOperation(resolve));
   }
+  return rendered;
 };
+
+const stripEvent = (id: string, title: string, time: string) => ({
+  id,
+  event_time: time,
+  event_end_time: null,
+  precision: 'exact',
+  lane: 'adversary',
+  kind: 'technique_used',
+  rule_id: 'technique-kill-chain',
+  title,
+  pinned: false,
+  hidden: false,
+  source: 'derived',
+  annotation: null,
+});
 
 describe('ContainerTimelineStrip', () => {
   it('explains what fills a new timeline and offers editors to add a milestone', async () => {
@@ -100,5 +117,21 @@ describe('ContainerTimelineStrip', () => {
     }]);
     expect(await screen.findByTestId('timeline-strip-summary')).toHaveTextContent('1 event');
     expect(screen.queryByTestId('timeline-strip-empty')).toBeNull();
+  });
+
+  it('lists the events of a numbered circle, each opening the Timeline tab on that event', async () => {
+    const { user } = await renderStrip(2, [
+      stripEvent('event-2', 'Technique Exfiltration', '2026-02-02T11:00:00.000Z'),
+      stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z'),
+    ]);
+    await user.click(await screen.findByRole('button', { name: /^2 events - / }));
+    const items = await screen.findAllByRole('menuitem');
+    expect(items.map((item) => item.textContent)).toEqual([
+      expect.stringContaining('Technique Phishing'),
+      expect.stringContaining('Technique Exfiltration'),
+    ]);
+    expect(items[0]).toHaveTextContent('Technique used');
+    await user.click(items[1]);
+    await waitFor(() => expect(`${window.location.pathname}${window.location.search}`).toBe('/dashboard/cases/incidents/case-1/timeline?event=event-2'));
   });
 });

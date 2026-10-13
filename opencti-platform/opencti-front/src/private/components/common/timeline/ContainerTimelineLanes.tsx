@@ -2,7 +2,8 @@ import React, { KeyboardEvent, PointerEvent, Ref, useCallback, useEffect, useId,
 import { scaleTime } from 'd3-scale';
 import { useIntl } from 'react-intl';
 import { useTheme } from '@mui/material/styles';
-import { Text } from '@filigran/design-system';
+import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
+import { ZoomInOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
 import { resolveTimelineSourceState, type TimelineSourceStateValue } from './timelineSourceStates';
@@ -61,7 +62,9 @@ interface ContainerTimelineLanesProps {
   compact?: boolean;
   onDomainChange?: (domain: TimelineDomain) => void;
   onFit?: () => void;
+  // Opens an event: a numbered circle then lists its events, each one opening it
   onSelect?: (eventId: string) => void;
+  // Zooms on the events of a numbered circle, offered at the end of its list
   onClusterSelect?: (domain: TimelineDomain) => void;
   svgRef?: Ref<SVGSVGElement>;
   ariaLabel: string;
@@ -80,6 +83,7 @@ const COMPACT_MAX_ROWS = 2;
 const POINT_RADIUS = 5;
 const MARKER_WIDTH = 14;
 const LABEL_CHARS = 26;
+const CLUSTER_TITLE_CHARS = 40;
 const ZOOM_STEP = 0.7;
 const PAN_STEP = 0.15;
 const CONTEXT_OPACITY = 0.45;
@@ -392,21 +396,27 @@ const ContainerTimelineLanes = ({
     const centerY = laneY + LANE_PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
     const x = scale(new Date(cluster.start + (cluster.end - cluster.start) / 2));
     const label = t_i18n('{count, plural, one {# event} other {# events}} - {from} to {to}', { values: { count: cluster.events.length, from: fldt(new Date(cluster.start)), to: fldt(new Date(cluster.end)) } });
-    const select = () => onClusterSelect?.([cluster.start, cluster.end]);
-    return (
+    const zoom = () => onClusterSelect?.([cluster.start, cluster.end]);
+    // With events that can be opened, the circle lists them; the menu trigger then owns its click and keys
+    const lists = !!onSelect;
+    const activatable = lists || !!onClusterSelect;
+    let cursor = 'default';
+    if (lists) cursor = 'pointer';
+    else if (onClusterSelect) cursor = 'zoom-in';
+    const marker = (
       <g
         key={cluster.id}
         className="timeline-cluster"
-        role={onClusterSelect ? 'button' : undefined}
-        tabIndex={onClusterSelect ? 0 : undefined}
+        role={activatable ? 'button' : undefined}
+        tabIndex={activatable ? 0 : undefined}
         aria-label={label}
-        style={{ cursor: onClusterSelect ? 'zoom-in' : 'default', outline: 'none' }}
-        onClick={select}
-        onKeyDown={(keyEvent) => onMarkerKeyDown(keyEvent, select)}
+        style={{ cursor, outline: 'none' }}
+        onClick={lists ? undefined : zoom}
+        onKeyDown={lists ? undefined : (keyEvent) => onMarkerKeyDown(keyEvent, zoom)}
         data-testid={`timeline-cluster-${cluster.id}`}
       >
         <title>{label}</title>
-        {onClusterSelect && (
+        {activatable && (
           <circle className="timeline-cluster-focus" cx={x} cy={centerY} r={13} fill="none" stroke={colors.focus} strokeWidth={2} />
         )}
         <circle cx={x} cy={centerY} r={9} fill={color} fillOpacity={0.85} stroke={colors.background} />
@@ -414,6 +424,32 @@ const ContainerTimelineLanes = ({
           {cluster.events.length > 99 ? '99+' : cluster.events.length}
         </text>
       </g>
+    );
+    if (!lists) return marker;
+    const listed = [...cluster.events].sort((a, b) => (toTime(a.event_time) ?? 0) - (toTime(b.event_time) ?? 0));
+    return (
+      <Menu key={cluster.id}>
+        <MenuTrigger asChild>{marker}</MenuTrigger>
+        <MenuContent aria-label={label} style={{ maxHeight: 360, overflowY: 'auto' }} data-testid="timeline-cluster-events">
+          <MenuLabel>{label}</MenuLabel>
+          {listed.map((listedEvent) => (
+            <MenuItem key={listedEvent.id} onSelect={() => onSelect?.(listedEvent.id)} data-testid={`timeline-cluster-event-${listedEvent.id}`}>
+              <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <Text variant="content-compact-medium" as="span">{truncate(listedEvent.title, CLUSTER_TITLE_CHARS)}</Text>
+                <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>
+                  {`${fldt(listedEvent.event_time)} - ${t_i18n(TIMELINE_KIND_LABELS[listedEvent.kind] ?? listedEvent.kind)}`}
+                </Text>
+              </span>
+            </MenuItem>
+          ))}
+          {onClusterSelect && <MenuSeparator />}
+          {onClusterSelect && (
+            <MenuItem startIcon={<ZoomInOutlined fontSize="small" />} onSelect={zoom} data-testid="timeline-cluster-zoom">
+              {t_i18n('Zoom on these events')}
+            </MenuItem>
+          )}
+        </MenuContent>
+      </Menu>
     );
   };
 
