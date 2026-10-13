@@ -20,6 +20,12 @@ export const ingestionFeedsQuery = graphql`
           running
           current_state_date
           queue_messages
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name
@@ -43,6 +49,12 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name
@@ -67,6 +79,12 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name
@@ -86,6 +104,12 @@ export const ingestionFeedsQuery = graphql`
           ingestion_running
           created_at
           updated_at
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name
@@ -109,6 +133,12 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name
@@ -132,6 +162,12 @@ export const ingestionFeedsQuery = graphql`
           last_execution_date
           created_at
           updated_at
+          health_status
+          health_status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
           user {
             id
             name

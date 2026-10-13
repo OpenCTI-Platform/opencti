@@ -6,6 +6,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
+import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -296,6 +297,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+          {item.kind !== 'form' && (
+            <IngestionHealthChip healthStatus={item.healthStatus} healthStatusSince={item.healthStatusSince} healthChecks={item.healthChecks} />
+          )}
         </Stack>
       </Box>
       {/* Actions column. */}

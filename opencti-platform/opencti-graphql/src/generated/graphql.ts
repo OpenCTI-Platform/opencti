@@ -14025,6 +14025,9 @@ export type IngestionCsv = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   duplicateCsvMapper: CsvMapper;
   entity_type: Scalars['String']['output'];
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -14148,6 +14151,9 @@ export type IngestionJson = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   headers?: Maybe<Array<IngestionHeader>>;
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -14268,6 +14274,9 @@ export type IngestionRss = BasicObject & InternalObject & {
   defaultMarkingDefinitions?: Maybe<Array<Maybe<MarkingDefinition>>>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -14351,6 +14360,9 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   current_state_cursor?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
@@ -14402,6 +14414,9 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -34486,6 +34501,9 @@ export type Synchronizer = {
   __typename?: 'Synchronizer';
   consumer_metrics?: Maybe<StreamCollectionConsumer>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  healthChecks: Array<IngestionHealthCheck>;
+  health_status: IngestionHealthStatus;
+  health_status_since?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
@@ -47638,6 +47656,9 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   duplicateCsvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47700,6 +47721,9 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47777,6 +47801,9 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   defaultMarkingDefinitions?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47828,6 +47855,9 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   current_state_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47856,6 +47886,9 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -53367,6 +53400,9 @@ export type SupportPackageEdgeResolvers<ContextType = any, ParentType extends Re
 export type SynchronizerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Synchronizer'] = ResolversParentTypes['Synchronizer']> = ResolversObject<{
   consumer_metrics?: Resolver<Maybe<ResolversTypes['StreamCollectionConsumer']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  healthChecks?: Resolver<Array<ResolversTypes['IngestionHealthCheck']>, ParentType, ContextType>;
+  health_status?: Resolver<ResolversTypes['IngestionHealthStatus'], ParentType, ContextType>;
+  health_status_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

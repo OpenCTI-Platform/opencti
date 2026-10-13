@@ -738,6 +738,9 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  health_status: IngestionHealthStatus! @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "\"unknown\"")
+  health_status_since: DateTime @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  healthChecks: [IngestionHealthCheck!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "[]")
 }
 
 type SynchronizerEdge {

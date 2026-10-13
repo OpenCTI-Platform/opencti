@@ -16,6 +16,9 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
     user: Creator
     authorized_members: [MemberAccess!] @auth(for: [INGESTION_SETINGESTIONS])
     toConfigurationExport: String!
+    health_status: IngestionHealthStatus! @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "\"unknown\"")
+    health_status_since: DateTime @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+    healthChecks: [IngestionHealthCheck!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "[]")
 }
 enum IngestionTaxiiCollectionOrdering {
     name

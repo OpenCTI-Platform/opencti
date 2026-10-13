@@ -40,6 +40,9 @@ type IngestionTaxii implements InternalObject & BasicObject {
     confidence_to_score: Boolean
     ssl_verify: Boolean
     toConfigurationExport: String!
+    health_status: IngestionHealthStatus! @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "\"unknown\"")
+    health_status_since: DateTime @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+    healthChecks: [IngestionHealthCheck!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_HEALTH"], softFail: true, defaultValue: "[]")
 }
 enum IngestionTaxiiOrdering {
     name

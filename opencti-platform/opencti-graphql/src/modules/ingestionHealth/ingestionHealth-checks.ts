@@ -24,13 +24,16 @@ const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
 // endregion
 
 // region evaluation (pure, no I/O)
-export interface ConnectorHealthInput {
-  connector_user_id?: string | null;
+export interface IngestionHealthInput {
+  userId?: string | null;
+  // Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
+  isUserRequired: boolean;
 }
 
-export const computeConnectorHealthChecks = (connector: ConnectorHealthInput, isExistingUser: (userId: string) => boolean): StoredHealthCheck[] => {
+export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExistingUser: (userId: string) => boolean): StoredHealthCheck[] => {
   const checks: StoredHealthCheck[] = [];
-  if (!connector.connector_user_id || !isExistingUser(connector.connector_user_id)) {
+  const isUserMissing = input.userId ? !isExistingUser(input.userId) : input.isUserRequired;
+  if (isUserMissing) {
     checks.push({ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} });
   }
   return checks;
@@ -87,5 +90,13 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
       health_check_severity: definition.severity,
     }];
   });
+};
+
+// Spread into the resolvers of every type carrying an ingestion health.
+// Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
+export const ingestionHealthFieldResolvers = {
+  health_status: (element: IngestionHealthFields) => element.health_status ?? IngestionHealthStatus.Unknown,
+  health_status_since: (element: IngestionHealthFields) => element.health_status_since ?? null,
+  healthChecks: (element: IngestionHealthFields) => toGraphqlHealthChecks(element.health_checks),
 };
 // endregion
