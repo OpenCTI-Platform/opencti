@@ -35,7 +35,7 @@ import Label from '../../../../components/common/label/Label';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
-import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
 import { paperBg } from '../paperSurface';
 
 const feedDetailSyncQuery = graphql`
@@ -679,8 +679,8 @@ const FeedDetail = () => {
     // Same gate as the legacy /data/ingestion/forms/:formId route.
     return (
       <Security
-        needs={[KNOWLEDGE_KNUPDATE]}
-        capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+        needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]}
+        capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}
         placeholder={<Navigate to="/dashboard" />}
       >
         <FormView formId={feedId} />
