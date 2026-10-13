@@ -17,7 +17,18 @@ import StixDomainObjectAttackPatternsKillChainMatrixInline from '@components/com
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import FormControl from '@mui/material/FormControl';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, IconButton } from '@filigran/design-system';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  IconButton,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
@@ -358,16 +369,19 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   />
                 </Tooltip>
 
-                <Tooltip title={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}>
-                  <IconButton
-                    variant="default"
-                    priority="tertiary"
-                    active={expandAll}
-                    aria-label={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}
-                    onClick={() => setExpandAll((value) => !value)}
-                    icon={expandAll ? <UnfoldLessOutlined /> : <UnfoldMoreOutlined />}
-                  />
-                </Tooltip>
+                <FdsTooltip>
+                  <TooltipTrigger asChild>
+                    <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      active={expandAll}
+                      aria-label={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}
+                      onClick={() => setExpandAll((value) => !value)}
+                      icon={expandAll ? <UnfoldLessOutlined /> : <UnfoldMoreOutlined />}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}</TooltipContent>
+                </FdsTooltip>
               </Stack>
 
               {!isSecurityPlatform && (
