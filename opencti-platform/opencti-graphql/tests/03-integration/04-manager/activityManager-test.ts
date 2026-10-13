@@ -8,9 +8,9 @@ import type { ActivityStreamEvent, SseEvent } from '../../../src/types/event';
 import { type ActionHandler, registerUserActionListener, type UserAction } from '../../../src/listener/UserActionListener';
 import { askEntityExport, askListExport, EXPORT_CONNECTOR_ONLY_FIELDS } from '../../../src/domain/stix';
 import { storeLoadById } from '../../../src/database/middleware-loader';
-import * as connectorDomain from '../../../src/domain/connector';
+import * as connectorDomain from '../../../src/modules/connector/connector-domain';
 import * as workDomain from '../../../src/domain/work';
-import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as rabbitmq from '../../../src/modules/connector/connector-rabbitmq';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { elIndexElements, elRawDeleteByQuery, elRawGet } from '../../../src/database/engine';
@@ -257,7 +257,7 @@ describe('Activity manager - export events indexing', () => {
     vi.spyOn(connectorDomain, 'connectorsForExport').mockResolvedValue([EXPORT_CONNECTOR] as Awaited<ReturnType<typeof connectorDomain.connectorsForExport>>);
     vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'export-work-test' } as Awaited<ReturnType<typeof workDomain.createWork>>);
     vi.spyOn(rabbitmq, 'pushToConnector').mockImplementation(async (_connectorId, message) => {
-      connectorMessages.push(message);
+      connectorMessages.push(message as ConnectorMessage);
       return true;
     });
     exportListener = registerUserActionListener({
