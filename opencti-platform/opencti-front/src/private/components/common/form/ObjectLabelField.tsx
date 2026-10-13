@@ -11,6 +11,8 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption } from '../../../../utils/field';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
+import useGranted, { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,6 +53,9 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  // Form Intake: the labels are created on submission with the rights of the user, do not offer what would fail then
+  const { isDeferredMode } = useDeferredCreation();
+  const canCreateLabel = useGranted([SETTINGS_SETLABELS]);
 
   const [labelCreation, setLabelCreation] = useState(false);
   const [labels, setLabels] = useState<FieldOption[]>([]);
@@ -100,7 +105,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onFocusInput={() => searchLabels('')}
         // The label's own colour, straight from the database.
         getChipColor={(option: FieldOption) => option.color}
-        openCreate={() => setLabelCreation(true)}
+        openCreate={isDeferredMode && !canCreateLabel ? undefined : () => setLabelCreation(true)}
         onChange={onChange}
         renderOption={(option: FieldOption) => (
           <>

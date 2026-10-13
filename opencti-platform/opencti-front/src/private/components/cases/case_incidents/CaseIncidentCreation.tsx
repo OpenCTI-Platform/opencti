@@ -23,6 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -113,6 +114,8 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  // Form Intake: nothing is created on the fly, there is no entity to map yet
+  const { isDeferredMode } = useDeferredCreation();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
@@ -389,7 +392,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             >
               {t_i18n('Create')}
             </Button>
-            {values.content.length > 0 && (
+            {!isDeferredMode && values.content.length > 0 && (
               <Button
                 onClick={() => {
                   setMapAfter(true);
