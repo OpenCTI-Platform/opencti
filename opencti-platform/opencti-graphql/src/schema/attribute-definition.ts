@@ -4,7 +4,7 @@ import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
-import { DefaultFormating, type Formating } from '../utils/humanize';
+import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
@@ -693,6 +693,15 @@ export const identityClass: TextAttribute = {
   isFilterable: false,
 };
 
+// Value of a custom field entry, dates formatted as standard date attributes
+export const humanizeCustomFieldValue = (item: any, format: Formating = DefaultFormating): string => {
+  if (item.date_value) {
+    return humanizeDate(item.date_value, format);
+  }
+  const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
+  return Array.isArray(value) ? value.join(', ') : `${value}`;
+};
+
 export const customFieldValues: NestedObjectAttribute = {
   name: 'custom_field_values',
   label: 'Custom field values',
@@ -716,9 +725,8 @@ export const customFieldValues: NestedObjectAttribute = {
   ],
   // The definition is resolved to display its label, the technical name is kept if it cannot be resolved (e.g. deleted)
   attrRawIds: async (item: any, _) => (item.field_id ? [{ id: item.field_id }] : []),
-  representative: (item: any, translate, __ = DefaultFormating): string => {
-    const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.date_value ?? item.select_value;
+  representative: (item: any, translate, format = DefaultFormating): string => {
     const fieldLabel = translate[item.field_id] ?? item.field_name;
-    return fieldLabel + ': ' + (Array.isArray(value) ? value.join(', ') : value);
+    return fieldLabel + ': ' + humanizeCustomFieldValue(item, format);
   },
 };

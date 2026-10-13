@@ -8,7 +8,7 @@ import { isStoreRelationPir } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { Change, ChangeValue } from '../types/event';
-import { type AttributeDefinition, files } from '../schema/attribute-definition';
+import { type AttributeDefinition, customFieldValues, files, humanizeCustomFieldValue } from '../schema/attribute-definition';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import { internalFindByIdsMapped } from './middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -157,6 +157,22 @@ const humanizeHistoryChanges = (resolvedMap: Record<string, string>, changes: Ch
   return humanizeHistoryChanges;
 };
 
+// All custom fields are stored in one multiple attribute: in the message, each custom field is
+// displayed as a standard single value attribute, replaced by its new value (nothing if removed).
+const humanizeCustomFieldValuesChange = (resolvedMap: Record<string, string>, change: Change, format: Formating) => {
+  const added = (change.changes_added ?? []).map((v) => JSON.parse(v.raw));
+  const removed = (change.changes_removed ?? []).map((v) => JSON.parse(v.raw));
+  const fieldIds = [...new Set([...added, ...removed].map((v) => v.field_id))];
+  return fieldIds.map((fieldId) => {
+    const addedValue = added.find((v) => v.field_id === fieldId);
+    const { field_name } = addedValue ?? removed.find((v) => v.field_id === fieldId);
+    return {
+      field: resolvedMap[fieldId] ?? field_name,
+      values: addedValue ? [humanizeCustomFieldValue(addedValue, format)] : [],
+    };
+  });
+};
+
 export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
   changes: Change[], format: Formating = DefaultFormating): string => {
   const sliceChanges = changes.slice(0, MAX_OPERATIONS_FOR_MESSAGE);
@@ -180,7 +196,18 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
       }).join(', ') + (isTooMuch ? ', ...' : '');
     };
     const human = humanizeHistoryChange(resolvedMap, attribute, historyChange, format);
-    if (attribute?.multiple) {
+    if (attribute?.name === customFieldValues.name) {
+      const fieldChanges = humanizeCustomFieldValuesChange(resolvedMap, historyChange, format);
+      for (let fieldIndex = 0; fieldIndex < fieldChanges.length; fieldIndex += 1) {
+        const { field: fieldLabel, values } = fieldChanges[fieldIndex];
+        const message = convertChange(values, true);
+        if (actions['replaces']) {
+          actions['replaces'].push({ message, field: fieldLabel });
+        } else {
+          actions['replaces'] = [{ message, field: fieldLabel }];
+        }
+      }
+    } else if (attribute?.multiple) {
       if ((human.changes_added ?? []).length > 0) {
         const message = convertChange(human.changes_added);
         if (actions['adds']) {
