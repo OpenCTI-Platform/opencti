@@ -1,11 +1,5 @@
 import { countAllThings, type EntityOptions, type FilterGroupWithNested, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityCustomFieldDefinition,
-  CUSTOM_FIELD_PREFIX,
-  type CustomFieldType,
-  ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
-  type StoreEntityCustomFieldDefinition,
-} from './custom-field-types';
+import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldType, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type StoreEntityCustomFieldDefinition } from './custom-field-types';
 import { BackgroundTaskScope, type CustomFieldDefinitionAddInput, type EditInput, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { DomainFindById } from '../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -26,13 +20,6 @@ import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByNameOrAlias,
  * enforced here again so the constraint cannot be bypassed via a direct GraphQL call).
  */
 const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
-
-/**
- * Check if a filter key corresponds to a custom field.
- */
-export const isCustomFieldKey = (key: string): boolean => {
-  return key.startsWith(CUSTOM_FIELD_PREFIX);
-};
 
 // ----- Domain CRUD operations -----
 
@@ -61,22 +48,6 @@ export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: 
     const filtered = definitions.filter((def) => def.entity_types?.includes(entityType));
     return filtered.map((def) => def.name);
   });
-};
-
-export const findCustomFieldDefinitionByName = async (
-  context: AuthContext,
-  user: AuthUser,
-  name: string,
-): Promise<BasicStoreEntityCustomFieldDefinition | null> => {
-  const result = await findCustomFieldDefinitionsPaginated(context, user, {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['name'], values: [name], operator: FilterOperator.Eq }],
-      filterGroups: [],
-    },
-    first: 1,
-  });
-  return result.edges.length > 0 ? result.edges[0].node : null;
 };
 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {

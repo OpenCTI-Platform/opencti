@@ -12,6 +12,7 @@ import useDashboardRefresh from '../../../../components/dashboard/useDashboardRe
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
+import { DashboardVariableValuesProvider, useDashboardDefaultVariableValues } from '../../../../components/dashboard/DashboardVariableValuesContext';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -163,7 +164,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onImportWidget,
     onExportWidget,
   });
-  const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
+  const { handleAddWidget, handleImportWidget, handleDateChange, config, variables } = helpers;
+  const variableValues = useDashboardDefaultVariableValues(variables);
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
   const {
@@ -241,13 +243,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             </Security>
           )
           }
-          <DashboardContent
-            helpers={helpers}
-            isEditable={userCanEdit}
-            entity={workspace}
-            host={WIDGET_WORKSPACE_HOST}
-            refreshRate={refreshRate}
-          />
+          <DashboardVariableValuesProvider values={variableValues}>
+            <DashboardContent
+              helpers={helpers}
+              isEditable={userCanEdit}
+              entity={workspace}
+              host={WIDGET_WORKSPACE_HOST}
+              refreshRate={refreshRate}
+            />
+          </DashboardVariableValuesProvider>
         </DashboardRefreshProvider>
       </div>
     </Stack>

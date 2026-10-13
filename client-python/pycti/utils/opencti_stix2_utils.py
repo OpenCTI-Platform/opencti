@@ -4,9 +4,34 @@ This module provides utility classes and constants for working with STIX2 object
 in OpenCTI, including type mappings, pattern generation, and object reference counting.
 """
 
-from typing import Any, Dict
+import datetime
+from typing import Any, Dict, Iterable, Optional
 
+import datefinder
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
+
+# datefinder only catches ValueError while parsing candidates; an out-of-range date
+# raises OverflowError, which must be swallowed the same way.
+datefinder.ValueError = ValueError, OverflowError
+
+# The Unix epoch as a naive datetime. datetime.fromtimestamp(0) depends on the local
+# time zone and raises OSError on Windows when the result is before 1970, which is the
+# case for every zone west of UTC.
+EPOCH = datetime.datetime(1970, 1, 1)
+
+
+def _to_naive_utc(value: datetime.datetime) -> datetime.datetime:
+    """Return a datetime as a naive UTC datetime; a naive one is taken as UTC already.
+
+    :param value: Datetime to convert, naive or time-zone-aware
+    :type value: datetime.datetime
+    :return: The same instant as a naive UTC datetime
+    :rtype: datetime.datetime
+    """
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(datetime.timezone.utc).replace(tzinfo=None)
+
 
 # Aliases field constants
 ALIASES_FIELD = "aliases"
@@ -297,6 +322,46 @@ class OpenCTIStix2Utils:
         return OpenCTIStix2Utils.retrieve_class_for_method(
             openCTIApiClient, entity, type_path, method
         )
+
+    @staticmethod
+    def guess_past_date(
+        text: Optional[str], now: Optional[datetime.datetime] = None
+    ) -> Optional[str]:
+        """Find the first date older than a day in a free text (an external reference
+        description or source name) and return it as an ISO 8601 UTC string.
+
+        The dates are compared as naive UTC datetimes, never through ``timestamp()``:
+        on Windows ``datetime.timestamp()`` raises ``OSError`` for dates near or before
+        the epoch, which made the worker fail on references mentioning such dates.
+        A date carrying a time zone is converted to UTC, a date without one is taken as
+        UTC, as the ``Z`` of the result states. Any failure of the date finder leaves
+        the result empty.
+
+        :param text: Text to search for a date
+        :type text: str or None
+        :param now: Reference time, naive UTC or time-zone-aware, defaults to the
+            current time (tests override it)
+        :type now: datetime.datetime or None
+        :return: The date as ``%Y-%m-%dT%H:%M:%SZ`` or None when no past date is found
+        :rtype: str or None
+        """
+        if not text:
+            return None
+        try:
+            matches: Iterable[datetime.datetime] = datefinder.find_dates(
+                text, base_date=EPOCH
+            )
+            reference = (
+                now if now is not None else datetime.datetime.now(datetime.timezone.utc)
+            )
+            yesterday = _to_naive_utc(reference) - datetime.timedelta(days=1)
+            for match in matches:
+                match = _to_naive_utc(match)
+                if match < yesterday and len(str(match.year)) == 4:
+                    return match.strftime("%Y-%m-%dT%H:%M:%SZ")
+        except (TypeError, OverflowError, ValueError, OSError):
+            return None
+        return None
 
     @staticmethod
     def compute_object_refs_number(entity: Dict):

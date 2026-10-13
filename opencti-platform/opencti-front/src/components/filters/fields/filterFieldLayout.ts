@@ -19,8 +19,8 @@ export const FILTER_ROW_COLUMN_FLEX = {
   compositeValue: '1 1 0',
 } as const;
 
-/** Floating value editor of a composite filter: narrower than this, the entity picker wraps. */
-export const FILTER_VALUE_POPOVER_MIN_WIDTH = 250;
+/** Fixed width of the floating value editors: it never grows with the content (e.g. many autocomplete chips). */
+export const FILTER_VALUE_POPOVER_WIDTH = 500;
 
 /**
  * Outlined-field look-alike box shared by the two clickable value boxes of a nested-filter-group

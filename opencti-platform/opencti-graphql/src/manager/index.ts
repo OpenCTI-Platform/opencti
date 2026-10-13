@@ -1,3 +1,4 @@
+import './connectorManager';
 import './dataSanityManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
@@ -11,5 +12,4 @@ import './telemetryManager';
 import './timelineManager';
 import './workflowStatusCleanupManager';
 import './xtmOneRegistrationManager';
-import './dataSanityManager';
 import '../modules/catalog/catalog-manager';
