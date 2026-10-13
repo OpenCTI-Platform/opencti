@@ -10,6 +10,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -40,6 +41,8 @@ const CreatedByField = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  // Form Intake: authors are never created on the fly, only selected
+  const { isDeferredMode } = useDeferredCreation();
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const [identityCreation, setIdentityCreation] = useState(false);
@@ -140,7 +143,7 @@ const CreatedByField = (props) => {
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
         onInputChange={handleSearch}
         onFocusInput={searchIdentities}
-        openCreate={handleOpenIdentityCreation}
+        openCreate={isDeferredMode ? undefined : handleOpenIdentityCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>
