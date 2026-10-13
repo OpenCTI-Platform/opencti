@@ -3,7 +3,7 @@ import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useAvailableFilterKeysForEntityTypes, useStixFilters } from '../../../../../utils/filters/filtersUtils';
 import { useEffect } from 'react';
 import { FieldProps } from 'formik';
 import { WORKFLOW_FILTER_KEYS } from '../../../../../utils/filters/filterKeyGrouping';
@@ -23,7 +23,7 @@ export const WORKFLOW_CONTEXT_FILTER_KEYS = ['name', ...WORKFLOW_FILTER_KEYS];
 
 // Entity attribute keys are evaluated by the backend stix filtering engine, so only stix compatible keys are offered.
 // entity_type is dropped: it always equals the workflow entity type.
-export const getWorkflowConditionFilterKeys = (entityFilterKeys: string[]) => {
+export const getWorkflowConditionFilterKeys = (entityFilterKeys: string[], stixFilters: string[]) => {
   const entityKeys = entityFilterKeys.filter((key) => key !== 'entity_type'
     && stixFilters.includes(key)
     && !WORKFLOW_CONTEXT_FILTER_KEYS.includes(key));
@@ -40,7 +40,8 @@ const WorkflowConditionFilters = ({
 
   const [filters, helpers] = useFiltersState(value?.filters || emptyFilterGroup);
   const entityFilterKeys = useAvailableFilterKeysForEntityTypes(entityType ? [entityType] : []);
-  const availableFilterKeys = getWorkflowConditionFilterKeys(entityFilterKeys);
+  const stixFilters = useStixFilters(entityType);
+  const availableFilterKeys = getWorkflowConditionFilterKeys(entityFilterKeys, stixFilters);
   const contextEntityTypes = ['User', 'Group', 'Organization', 'DraftWorkspace'];
   const availableEntityTypes = entityType && !contextEntityTypes.includes(entityType)
     ? [...contextEntityTypes, entityType]

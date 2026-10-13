@@ -31,6 +31,15 @@ vi.mock('../../../src/schema/schemaUtils', () => ({
   getAttributes: vi.fn().mockReturnValue(new Map()),
 }));
 
+// the custom fields definitions come from the cache, unavailable in unit tests
+vi.mock('../../../src/modules/customField/custom-field-stix-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/modules/customField/custom-field-stix-utils')>();
+  return {
+    ...actual,
+    getCustomFieldsStixFilterTesters: vi.fn().mockResolvedValue({ custom_field_test: vi.fn() }),
+  };
+});
+
 const mockContext = {} as any;
 const mockUser = {
   id: 'user-1',
@@ -282,6 +291,7 @@ describe('Workflow Validation', () => {
       [WORKFLOW_ROLE_FILTER],
       ['name'],
       ['objectParticipant'],
+      ['custom_field_test'],
     ])('should accept supported filter key %s', async (key) => {
       expect(await validate({ key })).toEqual([]);
     });
