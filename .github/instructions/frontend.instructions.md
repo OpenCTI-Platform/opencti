@@ -75,6 +75,7 @@ yarn test:e2e     # E2E (Playwright)
 > - [Forms & Validation](frontend/patterns/forms-validation.md)
 > - [Styling](frontend/patterns/styling-mui.md)
 > - [Components](frontend/patterns/components.md)
+> - [Accessibility](frontend/patterns/accessibility.md)
 
 ## Common Issues
 - **Missing Data**: Did you run `yarn relay`?
