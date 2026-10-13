@@ -1,5 +1,5 @@
 import React from 'react';
-import { compose, includes, map } from 'ramda';
+import { compose, includes } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -60,6 +60,57 @@ const frontendErrorLogMutation = graphql`
   }
 `;
 
+// Error codes the ErrorBoundary renders with a dedicated display or forwards: expected, so not reported
+const ERROR_BOUNDARY_HANDLED_CODES = ['AUTH_REQUIRED', 'COMPLEX_SEARCH_ERROR', 'FORBIDDEN_ACCESS', 'IP_FORBIDDEN', 'RESOURCE_NOT_FOUND'];
+
+// Relay errors are either thrown as is, or wrapped in an ApplicationError (data) by the QueryRenderer
+const getRelayError = (error) => {
+  if (error?.res) return error;
+  if (error?.data?.res) return error.data;
+  return null;
+};
+
+export const getErrorCodes = (error) => {
+  const baseErrors = error?.res?.errors ?? [];
+  const retroErrors = error?.data?.res?.errors ?? [];
+  return [...baseErrors, ...retroErrors].map((e) => e.extensions?.code);
+};
+
+export const buildErrorLogMessage = (error) => {
+  const relayError = getRelayError(error);
+  if (!relayError) {
+    return String(error);
+  }
+  const operation = relayError.req?.getID?.() ?? 'unknown operation';
+  const graphqlErrors = relayError.res.errors ?? [];
+  if (graphqlErrors.length === 0) {
+    // Not a GraphQL answer, for example a proxy error page
+    return `[GraphQL] ${operation} failed with HTTP status ${relayError.res.status ?? 'unknown'}`;
+  }
+  const details = graphqlErrors.map((e) => `${e.extensions?.code ?? 'UNKNOWN'}: ${e.message}`).join(' | ');
+  return `[GraphQL] ${operation} failed: ${details}`;
+};
+
+// Send the error to the backend, as it may not have been logged there (or never reached it)
+export const reportFrontendError = (error, componentStack, handledCodes = []) => {
+  const codes = getErrorCodes(error);
+  if (codes.some((code) => handledCodes.includes(code))) {
+    return;
+  }
+  try {
+    commitMutation({
+      mutation: frontendErrorLogMutation,
+      variables: {
+        message: buildErrorLogMessage(error),
+        codeStack: error?.stack,
+        componentStack,
+      },
+    });
+  } catch {
+    // If error fail to be reported, do nothing
+  }
+};
+
 class ErrorBoundaryComponent extends React.Component {
   state = { error: null };
 
@@ -69,22 +120,7 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    try {
-      const isNetworkError = this.state.error?.res;
-      if (!isNetworkError) {
-        // If direct javascript error, sent the error for back logging
-        commitMutation({
-          mutation: frontendErrorLogMutation,
-          variables: {
-            message: String(error),
-            codeStack: error.stack,
-            componentStack: errorInfo.componentStack,
-          },
-        });
-      }
-    } catch {
-      // If error fail to be reported, do nothing
-    }
+    reportFrontendError(error, errorInfo?.componentStack, ERROR_BOUNDARY_HANDLED_CODES);
   }
 
   componentDidUpdate(prevProps, _prevState) {
@@ -96,9 +132,7 @@ class ErrorBoundaryComponent extends React.Component {
 
   render() {
     if (this.state.error) {
-      const baseErrors = this.state.error.res?.errors ?? [];
-      const retroErrors = this.state.error.data?.res?.errors ?? [];
-      const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
+      const types = getErrorCodes(this.state.error);
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title="Complex search" description="Your search have too much terms to be executed. Please limit the number of words or the complexity" />;
