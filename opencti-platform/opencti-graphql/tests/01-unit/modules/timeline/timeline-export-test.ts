@@ -100,6 +100,15 @@ describe('Timeline exports', () => {
     expect(html).not.toContain('<case>');
   });
 
+  it('should put the drawing first in the HTML of the PDF and start the tables on the next page', () => {
+    const html = renderTimelineHtml(input);
+    const drawing = html.indexOf('<svg');
+    const anchors = html.indexOf('<h2 class="pdf-pagebreak-before">Anchors</h2>');
+    expect(drawing).toBeGreaterThan(html.indexOf('<h1>'));
+    expect(anchors).toBeGreaterThan(html.indexOf('</svg>'));
+    expect(html.indexOf('<h2>Events</h2>')).toBeGreaterThan(anchors);
+  });
+
   it('should draw a window without a known end to the right edge and say it is still open', () => {
     const open = { id: 'e3', lane: 'detection' as const, kind: 'hunt_run', event_time: '2026-03-04T00:00:00.000Z', event_end_time: null, open_ended: true, precision: 'exact', title: 'Hunt run beacons', source: 'derived', pinned: false, hidden: false };
     const svg = renderTimelineSvg({ ...input, events: [...input.events, open], labels: { still_open: 'Toujours en cours' } });

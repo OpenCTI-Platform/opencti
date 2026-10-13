@@ -14,7 +14,6 @@ import {
   effectiveKinds,
   effectiveLanes,
   elapsedBetween,
-  fitSvgToWidth,
   groupEventsByBucket,
   groupOverflowItems,
   hasClearableTimelineFilters,
@@ -263,12 +262,6 @@ describe('Timeline exports', () => {
   it('should build a safe file name', () => {
     expect(buildTimelineFileName('Ransomware / ACME: 2026', 'csv', new Date(2026, 9, 3))).toEqual('Ransomware_ACME_2026_timeline_2026-10-03.csv');
     expect(buildTimelineFileName('***', 'png', new Date(2026, 0, 1))).toEqual('container_timeline_2026-01-01.png');
-  });
-
-  it('should scale the first svg of a document to the page width', () => {
-    const html = '<div><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400"></svg></div>';
-    expect(fitSvgToWidth(html, 600)).toContain('width="600" height="200" viewBox="0 0 1200 400"');
-    expect(fitSvgToWidth(html, 1600)).toEqual(html);
   });
 });
 

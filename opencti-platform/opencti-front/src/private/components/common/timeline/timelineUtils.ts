@@ -462,17 +462,6 @@ export const buildTimelineFileName = (containerName: string, extension: string, 
   const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   return `${safeName}_timeline_${day}.${extension}`;
 };
-
-/** Scale the first SVG of an HTML document to a maximum width, keeping its proportions (PDF pages are narrow). */
-export const fitSvgToWidth = (html: string, maxWidth: number): string => {
-  return html.replace(/<svg([^>]*?)\swidth="(\d+(?:\.\d+)?)"\sheight="(\d+(?:\.\d+)?)"/, (match, before, width, height) => {
-    const w = Number(width);
-    const h = Number(height);
-    if (w <= maxWidth) return match;
-    const scaledHeight = Math.round((h * maxWidth) / w);
-    return `<svg${before} width="${maxWidth}" height="${scaledHeight}"`;
-  });
-};
 // endregion
 
 // region filters

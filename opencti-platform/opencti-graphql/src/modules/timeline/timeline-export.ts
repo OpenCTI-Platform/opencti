@@ -413,6 +413,10 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
 // endregion
 
 // region HTML (consumed by the built-in HTML to PDF export of the front end)
+/**
+ * The drawing comes first, alone on its page; the headline dates and the events start on the next page, where the
+ * `pdf-pagebreak-before` class asks the PDF export to break.
+ */
 export const renderTimelineHtml = (input: TimelineExportInput): string => {
   const anchorsRows = TIMELINE_ANCHOR_KEYS.map((key) => {
     const value = input.anchors?.[key];
@@ -434,10 +438,9 @@ export const renderTimelineHtml = (input: TimelineExportInput): string => {
     '<div>',
     `<h1>${escapeXml(`${label(input, 'title')} - ${input.containerName}`)}</h1>`,
     `<p>${escapeXml(`${input.containerType} - ${label(input, 'generated_at')} ${formatExportDate(input.generatedAt)}`)}</p>`,
-    `<h2>${escapeXml(label(input, 'anchors'))}</h2>`,
-    `<table><tbody>${anchorsRows}</tbody></table>`,
-    `<h2>${escapeXml(label(input, 'title'))}</h2>`,
     renderTimelineSvg(input),
+    `<h2 class="pdf-pagebreak-before">${escapeXml(label(input, 'anchors'))}</h2>`,
+    `<table><tbody>${anchorsRows}</tbody></table>`,
     `<h2>${escapeXml(label(input, 'events'))}</h2>`,
     input.events.length > 0
       ? `<table><thead><tr>${headers}</tr></thead><tbody>${eventRows}</tbody></table>`

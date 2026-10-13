@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import type { RelayError } from '../../../../relay/relayTypes';
 import { useFormatter } from '../../../../components/i18n';
-import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
-import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
+import { timelineHtmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { containerTimelineExportFileQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
 import type { ContainerTimelineMutationsExportFileQuery } from './__generated__/ContainerTimelineMutationsExportFileQuery.graphql';
 import type {
@@ -15,7 +14,6 @@ import type {
 } from './__generated__/ContainerTimelineMutationsExportQuery.graphql';
 import {
   buildTimelineFileName,
-  fitSvgToWidth,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_ANCHOR_LABELS,
   TIMELINE_KIND_LABELS,
@@ -87,7 +85,7 @@ const serverContentToBlob = async (format: TimelineExportFormat, content: string
   }
   if (format === 'pdf') {
     // Built-in HTML to PDF export, the timeline being rendered server side as an SVG in the HTML
-    return htmlToPdf('timeline', fitSvgToWidth(content, MAX_WIDTH_PORTRAIT)).getBlob();
+    return timelineHtmlToPdf(content).getBlob();
   }
   if (format === 'svg') {
     return new Blob([content], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });

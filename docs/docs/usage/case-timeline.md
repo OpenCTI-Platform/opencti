@@ -180,7 +180,7 @@ Milestones can be edited and deleted by the users who can update the case.
 
 - From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the **exported files** of the entity, next to the other exports (see [Manual export](export.md)).
 
-The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
+The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF is laid out on A4 landscape pages: the timeline drawing, scaled to fit the first page whole, then the anchors and the list of events on the following pages. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
 
 In the drawing (SVG, PNG and PDF), each lane grows to give overlapping windows and close events their own row, events too close to be told apart are grouped into a numbered circle whose tooltip lists them, and the labels of the headline dates are staggered so that two dates of the same day stay readable.
 
