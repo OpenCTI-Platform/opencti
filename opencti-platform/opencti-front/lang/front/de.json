@@ -4632,6 +4632,7 @@
   "State operation": "Operation zuordnen",
   "Statistics": "Statistik",
   "Status": "Status",
+  "Status out of sync with the workflow": "Status nicht mit dem Workflow synchronisiert",
   "Status templates": "Status Vorlagen",
   "Status Templates | Taxonomies | Settings": "Statusvorlagen | Taxonomien | Einstellungen",
   "Status update failed": "Statusaktualisierung fehlgeschlagen",

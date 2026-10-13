@@ -14,6 +14,7 @@ import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_dat
 // ---------------------------------------------------------------------------
 const mockCommit = vi.fn();
 const mockCommitClear = vi.fn();
+const mocks = vi.hoisted(() => ({ isBypass: false }));
 
 vi.mock('react-relay', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-relay')>();
@@ -39,7 +40,7 @@ vi.mock('react-router', async (importOriginal) => {
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({
   default: () => false,
-  isBypassUser: () => false,
+  isBypassUser: () => mocks.isBypass,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
@@ -268,5 +269,36 @@ describe('WorkflowTransitions — next status menu', () => {
     expect(screen.getAllByRole('menuitem')).toHaveLength(3);
     await user.click(screen.getByRole('menuitem', { name: /^approve/ }));
     expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
+  });
+});
+
+describe('WorkflowTransitions – status out of sync with the workflow', () => {
+  const makeDivergedDraft = () => makeDraft({
+    workflowInstance: {
+      id: 'instance-1',
+      currentState: 'in_review',
+      currentStatus: makeStatus(),
+      lastHistoryEntry: null,
+      pendingStatus: null,
+      pendingError: 'x_opencti_workflow_id was set to Status "status-2", which does not map to any state of the published workflow',
+      pendingTransition: null,
+      allowedTransitions: [],
+    },
+  });
+
+  beforeEach(() => {
+    mocks.isBypass = false;
+  });
+
+  it('shows the divergence when pendingError is set without a pending transition', () => {
+    testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
+    expect(screen.getByText('Status out of sync with the workflow')).toBeDefined();
+    expect(screen.queryByText('Clear')).toBeNull();
+  });
+
+  it('lets a bypass user clear the divergence', () => {
+    mocks.isBypass = true;
+    testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeDefined();
   });
 });

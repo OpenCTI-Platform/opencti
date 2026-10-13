@@ -4632,6 +4632,7 @@
   "State operation": "状態操作",
   "Statistics": "統計",
   "Status": "ステータス",
+  "Status out of sync with the workflow": "ステータスがワークフローと同期していません",
   "Status templates": "ステータス テンプレート",
   "Status Templates | Taxonomies | Settings": "ステータス・テンプレート｜タクソノミ｜設定",
   "Status update failed": "ステータスの更新に失敗しました",
