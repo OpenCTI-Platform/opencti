@@ -162,7 +162,7 @@ const GlobalExportBundleDrawer: FunctionComponent<GlobalExportBundleDrawerProps>
             >
               <Typography>{t_i18n('Credentials handling')}</Typography>
               <Typography variant="body2">
-                {t_i18n('Sensitive credentials will not be included in the export bundle. After import:')}
+                {t_i18n('Authentication values and sensitive headers are not included in the export bundle. Secrets set in feed URLs, request bodies or query parameters are exported as-is: review the bundle before sharing it. After import:')}
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
                 <li>{t_i18n('Connectors and integrations will remain inactive')}</li>
