@@ -17,6 +17,7 @@ import { DashboardVariableValuesProvider } from '../../../../components/dashboar
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
 import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
+import DashboardVariableDeletion from '../../../../components/dashboard/variables/DashboardVariableDeletion';
 import type { DashboardVariable } from '../../../../components/dashboard/dashboard-types';
 import { useDashboardVariableMutations } from '../../../../components/dashboard/variables/useDashboardVariableMutations';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
@@ -107,6 +108,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const canManageVariables = userCanEdit;
   // undefined: dialog closed, null: creating a variable, a variable: editing it.
   const [dialogVariable, setDialogVariable] = useState<DashboardVariable | null | undefined>(undefined);
+  const [variableToDelete, setVariableToDelete] = useState<DashboardVariable | undefined>(undefined);
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
@@ -181,7 +183,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onImportWidget,
     onExportWidget,
   });
-  const { handleAddWidget, handleImportWidget, handleDateChange, config, variables } = helpers;
+  const { handleAddWidget, handleImportWidget, handleDateChange, config, variables, widgetsArray } = helpers;
   // The home dashboard (noToolbar) only ever shows the manifest defaults: no per user value is read or written.
   const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar });
   const { setAsDefaults } = useDashboardVariableMutations(workspace.id);
@@ -261,6 +263,16 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               onSetAsDefaults={onSetAsDefaults}
               onCreate={canManageVariables ? () => setDialogVariable(null) : undefined}
               onEdit={canManageVariables ? setDialogVariable : undefined}
+              onDelete={canManageVariables ? setVariableToDelete : undefined}
+            />
+          )}
+          {showVariablesBar && variableToDelete && (
+            <DashboardVariableDeletion
+              workspaceId={workspace.id}
+              variable={variableToDelete}
+              usedInWidgetIds={usedInWidgetIdsByVariable.get(variableToDelete.id) ?? []}
+              widgets={widgetsArray}
+              onClose={() => setVariableToDelete(undefined)}
             />
           )}
           {showVariablesBar && dialogVariable !== undefined && (

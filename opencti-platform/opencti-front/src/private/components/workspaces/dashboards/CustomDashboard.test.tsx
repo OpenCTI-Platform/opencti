@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { toB64 } from '../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../components/dashboard/dashboardVariablesStorage';
@@ -42,8 +42,13 @@ vi.mock('../../../../components/dashboard/DashboardRefreshControl', () => ({ def
 vi.mock('../../../../components/dashboard/DashboardContent', () => ({ default: () => <div>dashboard-content</div> }));
 
 const SECTOR_ID = '11111111-1111-4111-8111-111111111111';
+const widgetLayout = { w: 4, h: 2, x: 0, y: 0, i: 'x' };
+const manifestWidgets = {
+  'widget-1': { id: 'widget-1', type: 'list', dataSelection: [], parameters: { title: 'Top malwares' }, layout: widgetLayout },
+  'widget-2': { id: 'widget-2', type: 'donut', dataSelection: [], parameters: null, layout: widgetLayout },
+};
 const buildManifest = (config: Record<string, unknown> = {}) => toB64(JSON.stringify({
-  widgets: {},
+  widgets: manifestWidgets,
   config,
   variables: [{
     id: SECTOR_ID,
@@ -129,7 +134,7 @@ describe('CustomDashboard variables bar', () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.());
   });
 
-  it('shows the bar to a manager, with a chip per variable and the create and edit entry points but no delete', async () => {
+  it('shows the bar to a manager, with a chip per variable and the create, edit and delete entry points', async () => {
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
     expect(bar()).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeInTheDocument();
@@ -137,7 +142,46 @@ describe('CustomDashboard variables bar', () => {
     expect(screen.getByTestId('create-variable-button')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Open menu/ }));
     expect(screen.getByRole('menuitem', { name: 'Edit variable' })).toBeInTheDocument();
-    expect(screen.queryByRole('menuitem', { name: 'Delete variable' })).not.toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Delete variable' })).toBeInTheDocument();
+  });
+
+  const openDeleteDialog = async (user: ReturnType<typeof testRender>['user']) => {
+    await user.click(screen.getByRole('button', { name: /Open menu/ }));
+    await user.click(screen.getByRole('menuitem', { name: 'Delete variable' }));
+  };
+
+  it('warns about the widgets using the variable by title, falling back to their type', async () => {
+    const used = buildWorkspace({ variables: [{ id: SECTOR_ID, usedInWidgetIds: ['widget-1', 'widget-2', 'gone'] }] });
+    const { user } = testRender(<CustomDashboard data={used as never} />, { userContext: flagOn() });
+    await openDeleteDialog(user);
+    const items = within(screen.getByTestId('dashboard-variable-delete-dialog')).getAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual(['Top malwares', 'Donut']);
+  });
+
+  it('deletes the variable on confirmation, then closes the dialog', async () => {
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await openDeleteDialog(user);
+    await user.click(screen.getByTestId('dashboard-variable-delete-confirm'));
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    expect(captured.commit.mock.calls[0][0].variables).toEqual({ id: 'ws-1', variableId: SECTOR_ID });
+    await waitFor(() => expect(screen.queryByTestId('dashboard-variable-delete-dialog')).not.toBeInTheDocument());
+  });
+
+  it('deletes nothing when the confirmation is cancelled', async () => {
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await openDeleteDialog(user);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(captured.commit).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByTestId('dashboard-variable-delete-dialog')).not.toBeInTheDocument());
+  });
+
+  it('keeps the dialog open when the deletion fails', async () => {
+    captured.commit.mockImplementation((args) => args.onError?.(new Error('denied')));
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await openDeleteDialog(user);
+    await user.click(screen.getByTestId('dashboard-variable-delete-confirm'));
+    await waitFor(() => expect(screen.getByTestId('dashboard-variable-delete-confirm')).toBeEnabled());
+    expect(screen.getByTestId('dashboard-variable-delete-dialog')).toBeInTheDocument();
   });
 
   it('opens the dialog empty from Create variable, then closes it on Cancel', async () => {

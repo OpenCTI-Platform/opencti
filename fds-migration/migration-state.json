@@ -610,6 +610,17 @@
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
       ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables deletion dialog: the confirmation question, the warning about the impacted widgets and their list (content-base), replacing MUI Typography and a bare <ul>.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
+      ]
     }
   ]
 }
