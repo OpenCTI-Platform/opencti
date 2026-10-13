@@ -12,14 +12,15 @@ import { addReport, deleteReport } from '../dataForTesting/report.data';
 import { addDashboard, deleteWorkspace, upsertEntityVariable } from '../dataForTesting/workspace.data';
 import { REGISTER_BANNER_DISMISSED_KEY } from '../../src/utils/bannerConstants';
 
-// The tests below are steps of one journey sharing the same dashboard, and the viewer test logs
-// another user in: running them in parallel would make them conflict.
+// The tests below share the sectors and reports seeded in beforeAll (deleted in afterAll), so they run
+// serially in one worker. Consequence: if the journey test fails, the viewer test is skipped.
 test.describe.configure({ mode: 'serial' });
 
 /**
  * Content of the test
  * -------------------
- * Needs the backend started with the DASHBOARD_VARIABLES dev feature (`app:enabled_dev_features: ["*"]` in test.json).
+ * Needs the backend started with the DASHBOARD_VARIABLES dev feature. In CI, dev features are only enabled
+ * for the `@groupff` e2e group (`dev_features: '["*"]'`), hence this spec is tagged `@groupff`, not `@group1`.
  *
  * Data (API): two sectors, and one report containing each of them.
  *
@@ -33,7 +34,7 @@ test.describe.configure({ mode: 'serial' });
  *
  * Viewer (second user, 'can view' on the dashboard): the variables bar is not displayed.
  */
-test.describe('Dashboard variables', { tag: ['@ce', '@group1'] }, () => {
+test.describe('Dashboard variables', { tag: ['@ce', '@groupff'] }, () => {
   const suffix = uuid();
   const sectors = [
     { name: `Sector A - ${suffix}`, id: '' },
@@ -176,7 +177,8 @@ test.describe('Dashboard variables', { tag: ['@ce', '@group1'] }, () => {
   });
 
   /**
-   * The dashboard and its variable are created through the API, so this test does not depend on the journey above.
+   * The dashboard and its variable are created through the API, so this test does not use the dashboard of the
+   * journey above (it still runs after it, serial mode, and is skipped if the journey fails).
    * Default setting is kept: viewers are not allowed to change the variables, hence no bar for them.
    */
   test('Variables bar is hidden for a viewer', async ({ page, request, secondUserPage }) => {
