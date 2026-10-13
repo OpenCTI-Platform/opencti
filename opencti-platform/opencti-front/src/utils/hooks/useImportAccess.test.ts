@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import useImportAccess from './useImportAccess';
-import { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
+import { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
 
 const cap = (name: string) => ({ name });
 
@@ -139,5 +139,87 @@ describe('Hook: useImportAccess', () => {
       );
       expect(hook.result.current.isForcedImportToDraft).toBe(false);
     });
+  });
+});
+
+describe('Hook: useImportAccess - form intake capability', () => {
+  it('should not force a draft when the form intake capability is granted in main', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.isForcedImportToDraft).toBe(false);
+  });
+
+  it('should force a draft when the form intake capability is only granted in draft', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([], [KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.isForcedImportToDraft).toBe(true);
+  });
+
+  it('should not force a draft when the form intake capability is in draft but Create / Update knowledge is in main', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNUPDATE], [KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.isForcedImportToDraft).toBe(false);
+  });
+
+  it('should not open the other import modes to a form-only user', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.hasOnlyAccessToImportDraftTab).toBe(false);
+  });
+
+  it('should only offer the forms to a user who can submit forms but not import files', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.hasOnlyAccessToFormImport).toBe(true);
+  });
+
+  it('should also offer only the forms when the form capability is granted in draft only', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([], [KNOWLEDGE_KNFORMINTAKE]) },
+    );
+    expect(hook.result.current.hasOnlyAccessToFormImport).toBe(true);
+  });
+
+  it('should not restrict a user who can import files to the forms', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNASKIMPORT]) },
+    );
+    expect(hook.result.current.hasOnlyAccessToFormImport).toBe(false);
+  });
+
+  it('should not offer forms without the form capability', () => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext([KNOWLEDGE_KNUPDATE]) },
+    );
+    expect(hook.result.current.hasOnlyAccessToFormImport).toBe(false);
+  });
+});
+
+describe('Hook: useImportAccess - canOpenDraft', () => {
+  it.each([
+    ['a form-only user in main', [KNOWLEDGE_KNFORMINTAKE], [], false],
+    ['a form-only user in draft', [], [KNOWLEDGE_KNFORMINTAKE], false],
+    ['a user who can only import', [KNOWLEDGE_KNASKIMPORT], [], false],
+    ['a user with Create / Update knowledge in main', [KNOWLEDGE_KNUPDATE], [], true],
+    ['a user with Create / Update knowledge in draft only', [], [KNOWLEDGE_KNUPDATE], true],
+  ])('%s', (_name, capabilities, capabilitiesInDraft, expected) => {
+    const { hook } = testRenderHook(
+      () => useImportAccess(),
+      { userContext: buildUserContext(capabilities, capabilitiesInDraft) },
+    );
+    expect(hook.result.current.canOpenDraft).toBe(expected);
   });
 });
