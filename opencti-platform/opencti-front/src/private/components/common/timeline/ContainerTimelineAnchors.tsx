@@ -10,7 +10,7 @@ import type { TimelineChartAnchors } from './ContainerTimelineLanes';
 const ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
   first_adversary_activity: 'First event of the adversary lane',
   first_detection: 'First event of the detection lane (security platform sightings, coverage results, hunts, deployments)',
-  first_response: 'First event of the response lane',
+  first_response: 'First thing the team did: case opened, task created or completed, status change, assignment, note or response milestone (due dates and future dates never count)',
   containment: 'First containment milestone or completion of a task labelled containment',
   closure: 'Last transition to the final workflow status, while the case stays closed',
 };

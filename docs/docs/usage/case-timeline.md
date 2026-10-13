@@ -70,9 +70,11 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 |:-------|:-----------|
 | First adversary activity | First event of the adversary lane |
 | First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
-| First response | First event of the response lane |
+| First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts |
 | Containment | First containment milestone, or completion of a task labelled containment |
 | Closure | Last transition to the final workflow status, while the case stays closed |
+
+An event dated in the future, such as a milestone planned ahead, never sets an anchor: it counts once its date has passed and the timeline is computed again.
 
 ![Anchors of an incident response once the containment is recorded](assets/case-timeline-anchors-containment.png)
 

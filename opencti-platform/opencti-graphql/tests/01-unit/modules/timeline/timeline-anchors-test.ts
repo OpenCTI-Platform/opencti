@@ -60,6 +60,35 @@ describe('Timeline anchors', () => {
     expect(anchors.changed_at).toEqual('2026-04-02T00:00:00.000Z');
   });
 
+  it('should never start the response with the due date of a task, even one set before the case opened', () => {
+    const anchors = computeTimelineAnchors([
+      ...events,
+      { lane: 'response' as const, kind: 'task_due' as const, rule_id: 'task-lifecycle', event_time: '2026-02-10T00:00:00.000Z' },
+    ], { isClosed: false, computedAt });
+    expect(anchors.first_response).toEqual('2026-03-04T00:00:00.000Z');
+  });
+
+  it('should never set a headline date with an event dated in the future', () => {
+    const future = [
+      { lane: 'response' as const, kind: 'task_due' as const, rule_id: 'task-lifecycle', event_time: '2026-05-01T00:00:00.000Z' },
+      { lane: 'response' as const, kind: 'milestone' as const, event_time: '2026-05-02T00:00:00.000Z' },
+      { lane: 'detection' as const, kind: 'milestone' as const, event_time: '2026-05-03T00:00:00.000Z' },
+      { lane: 'custom' as const, kind: 'containment' as const, event_time: '2026-05-04T00:00:00.000Z' },
+    ];
+    expect(computeTimelineAnchors(future, { isClosed: false, computedAt })).toMatchObject({
+      first_detection: null,
+      first_response: null,
+      containment: null,
+    });
+    // Once their date has passed, the next computation counts them
+    expect(computeTimelineAnchors(future, { isClosed: false, computedAt: '2026-06-01T00:00:00.000Z' })).toMatchObject({
+      first_detection: '2026-05-03T00:00:00.000Z',
+      first_response: '2026-05-02T00:00:00.000Z',
+      containment: '2026-05-04T00:00:00.000Z',
+    });
+    expect(computeTimelineAnchorBounds(future, computedAt)).toMatchObject({ first_response: null, containment: null });
+  });
+
   it('should not expose a closure while the container is open', () => {
     expect(computeTimelineAnchors(events, { isClosed: false, computedAt }).closure).toBeNull();
   });

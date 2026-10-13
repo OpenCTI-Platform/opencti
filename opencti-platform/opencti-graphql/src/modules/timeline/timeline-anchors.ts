@@ -14,6 +14,8 @@ export interface AnchorComputationContext {
   // closure only exists while the container sits in a final workflow status
   isClosed: boolean;
   computedAt: string;
+  // events dated after it have not happened yet and never set an anchor (computedAt when not given)
+  now?: string;
   // last generation of the timeline from the knowledge, when it is not this computation (a milestone or a pin since);
   // null when the timeline was never generated, so that a first contribution never passes for a generation
   generatedAt?: string | null;
@@ -50,12 +52,15 @@ export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | 
   });
 };
 
+// A due date is a plan, not something the team did
+const isResponseAction = (event: AnchorEventLike) => event.lane === 'response' && event.kind !== 'task_due';
+
 /**
  * Per-case anchors. Hidden events never contribute: hiding an event is the analyst way to
- * discard noise, so it must not move an anchor.
+ * discard noise, so it must not move an anchor. Events dated in the future have not happened yet and never contribute.
  * - first_adversary_activity: first event of the adversary lane
  * - first_detection: first event of the detection lane (platform sightings, coverage results, hunts, deployments, manual detections)
- * - first_response: first event of the response lane
+ * - first_response: first thing the team did, first event of the response lane except the due dates of tasks
  * - containment: first containment milestone or first completion of a task labelled containment
  * - closure: last transition to a final workflow status, only while the container is still closed
  * computed_at is the last generation of the timeline from the knowledge (the consistency pass regenerates the timelines
@@ -63,12 +68,17 @@ export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | 
  * cursor.
  */
 export const computeTimelineAnchors = (events: AnchorEventLike[], context: AnchorComputationContext): TimelineAnchors => {
-  const visible = events.filter((event) => !event.hidden);
+  const now = toTimelineTime(context.now ?? context.computedAt);
+  const visible = events.filter((event) => {
+    if (event.hidden) return false;
+    const time = toTimelineTime(event.event_time);
+    return now === null || time === null || time <= now;
+  });
   const bounds = context.bounds ?? {};
   const values = {
     first_adversary_activity: minTime(visible.filter((e) => e.lane === 'adversary'), bounds.first_adversary_activity),
     first_detection: minTime(visible.filter((e) => e.lane === 'detection'), bounds.first_detection),
-    first_response: minTime(visible.filter((e) => e.lane === 'response'), bounds.first_response),
+    first_response: minTime(visible.filter(isResponseAction), bounds.first_response),
     containment: minTime(visible.filter((e) => e.kind === 'containment' || e.rule_id === RULE_TASK_CONTAINMENT), bounds.containment),
     closure: context.isClosed ? maxTime(visible.filter((e) => e.rule_id === RULE_WORKFLOW_CLOSURE), bounds.closure) : null,
   };
@@ -78,8 +88,8 @@ export const computeTimelineAnchors = (events: AnchorEventLike[], context: Ancho
 };
 
 /** Anchor values of events whatever the status of their container (the closure applies only while it is closed). */
-export const computeTimelineAnchorBounds = (events: AnchorEventLike[]): TimelineAnchorBounds => {
-  const anchors = computeTimelineAnchors(events, { isClosed: true, computedAt: new Date(0).toISOString() });
+export const computeTimelineAnchorBounds = (events: AnchorEventLike[], now: string = new Date().toISOString()): TimelineAnchorBounds => {
+  const anchors = computeTimelineAnchors(events, { isClosed: true, computedAt: new Date(0).toISOString(), now });
   return {
     first_adversary_activity: anchors.first_adversary_activity,
     first_detection: anchors.first_detection,

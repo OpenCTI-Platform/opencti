@@ -862,7 +862,7 @@ export const refreshTimelineContributions = async (
   const generatedAt = opts.regenerated ? computedAt : (previousGeneratedAt ?? null);
   const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt, generatedAt, previous: previousAnchors, bounds: anchorBounds });
   const cappedAnchorBounds = opts.anchorEvents
-    ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent))
+    ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent), computedAt)
     : null;
   const exchange = await buildExchange(context, container, [...events, ...cappedAnnotated], scope);
   const changedAnchors = diffTimelineAnchors(previousAnchors, anchors);
