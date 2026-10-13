@@ -4,6 +4,8 @@ import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeS
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import type { TypeAttribute } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 
 // ----- Custom field definitions read through the platform generic cache -----
 // Registered like any other cached entity type in cacheManager.ts (writeCacheForEntity),
@@ -14,6 +16,14 @@ export const getCustomFieldDefinitions = (context: AuthContext, user: AuthUser):
   return getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(context, user, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
 };
 
+// Custom fields of the stix core relationships are configured on the abstract type (as the entity settings):
+// a relationship type (e.g. targets) inherits the custom fields attached to stix-core-relationship.
+const getCustomFieldInheritedTypes = (entityType: string): string[] => (
+  isStixCoreRelationship(entityType) && entityType !== ABSTRACT_STIX_CORE_RELATIONSHIP
+    ? [entityType, ABSTRACT_STIX_CORE_RELATIONSHIP]
+    : [entityType]
+);
+
 /**
  * Get cached custom field definitions for a given entity type.
  */
@@ -23,7 +33,8 @@ export const getCustomFieldDefinitionsForEntityType = async (
   entityType: string,
 ): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
   const definitions = await getCustomFieldDefinitions(context, user);
-  return definitions.filter((def) => def.entity_types && def.entity_types.includes(entityType));
+  const types = getCustomFieldInheritedTypes(entityType);
+  return definitions.filter((def) => def.entity_types && def.entity_types.some((type) => types.includes(type)));
 };
 
 /**
@@ -35,7 +46,9 @@ export const getCustomFieldSettingForEntityType = (
   definition: BasicStoreEntityCustomFieldDefinition | undefined,
   entityType: string,
 ): CustomFieldEntityTypeSetting | undefined => {
-  return definition?.entity_type_settings?.find((setting) => setting.entity_type === entityType);
+  const types = getCustomFieldInheritedTypes(entityType);
+  // The setting of the type itself takes precedence over the inherited one
+  return types.map((type) => definition?.entity_type_settings?.find((setting) => setting.entity_type === type)).find((setting) => !!setting);
 };
 
 /**
@@ -95,7 +108,7 @@ export const getDynamicTypeAttributeForEntityType = async (
     else if (cfDef.field_type === 'boolean') attributeType = 'boolean';
     else if (cfDef.field_type === 'date') attributeType = 'date';
 
-    const entitySetting = cfDef.entity_type_settings?.find((setting) => setting.entity_type === entityType);
+    const entitySetting = getCustomFieldSettingForEntityType(cfDef, entityType);
     const isMandatory = entitySetting?.mandatory ?? false;
     resultAttributes.push({
       name: cfDef.name,

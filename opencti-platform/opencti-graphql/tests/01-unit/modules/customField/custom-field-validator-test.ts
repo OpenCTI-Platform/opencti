@@ -226,6 +226,15 @@ describe('validateCustomFieldValues', () => {
   });
 
   describe('mandatory enforcement', () => {
+    it('throws when a mandatory field of stix-core-relationship is not provided for a relationship type', async () => {
+      seed(makeDefinition({
+        field_type: 'string',
+        entity_types: ['stix-core-relationship'],
+        entity_type_settings: [{ entity_type: 'stix-core-relationship', mandatory: true }],
+      }));
+      await expect(validateCustomFieldValues(CONTEXT, USER, [], 'targets')).rejects.toThrow('Mandatory custom field is missing');
+    });
+
     it('throws when a mandatory field for this entity type is not provided at all', async () => {
       seed(makeDefinition({
         field_type: 'string',
