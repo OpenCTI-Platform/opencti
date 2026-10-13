@@ -16,7 +16,7 @@ import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filters
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
-import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
+import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -1267,20 +1267,20 @@ export const getSelectedOptions = (
   const mapFilterValues: FilterOptionValue[] = [];
   filterValues.forEach((value: string) => {
     const mapRepresentative = entitiesOptions.find((f) => f.value === value);
-    const variableId = variables ? parseVariableToken(value) : null;
+    const tokenLabel = getVariableTokenLabel(value, variables, t_i18n);
     if (mapRepresentative) {
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
       });
-    } else if (variableId !== null) {
+    } else if (tokenLabel !== null) {
       // The representatives query cannot resolve a token: never rely on its answer.
       mapFilterValues.push({
         value,
         type: 'Variable',
         parentTypes: [],
         group: capitalizeFirstLetter(t_i18n('selected')),
-        label: variables?.find((variable) => variable.id === variableId)?.name ?? t_i18n('Deleted variable'),
+        label: tokenLabel.label,
       });
     } else if (value === SELF_ID) {
       mapFilterValues.push({

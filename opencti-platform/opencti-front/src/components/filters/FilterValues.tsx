@@ -19,7 +19,7 @@ import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
 import Button from '@common/button/Button';
 import { useOptionalDashboardVariableDefinitions } from '../dashboard/DashboardVariablesContext';
-import { parseVariableToken } from '../dashboard/dashboardVariablesResolution';
+import { getVariableTokenLabel } from '../dashboard/dashboardVariableTokenLabel';
 
 // The prop only ever arrives as 'warning' or 'success' (WidgetFilters, 4 call
 // sites), so it maps to two tones; absent keeps the library default.
@@ -199,19 +199,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
     // A variable token is shown under the variable name, never through the representatives (that cannot resolve it).
-    const variableId = variables ? parseVariableToken(id) : null;
-    const variable = variables?.find(({ id: knownId }) => knownId === variableId);
-    const variableName = variable?.name ?? t_i18n('Deleted variable');
-    const variableToken = variableId !== null && (
+    const tokenLabel = getVariableTokenLabel(id, variables, t_i18n);
+    const variableToken = tokenLabel !== null && (
       <span
-        data-variable-token={variableId}
+        data-variable-token={tokenLabel.variableId}
         style={{
           fontStyle: 'italic',
-          color: variable ? theme.palette.primary.main : theme.palette.error.main,
+          color: tokenLabel.isDeleted ? theme.palette.error.main : theme.palette.primary.main,
           ...(tooltip && { whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }),
         }}
       >
-        {tooltip ? variableName : truncate(variableName, 20)}
+        {tooltip ? tokenLabel.label : truncate(tokenLabel.label, 20)}
       </span>
     );
     return (
