@@ -21,6 +21,7 @@ import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
+import { getPendingUploadIndexes, readUploads, resolvePendingFieldRefs, validatePendingPayload, validatePendingRoots } from './form-pending';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -517,6 +518,10 @@ export const planSubmission = async (
 
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
+  validatePendingPayload(values, input.files?.length ?? 0);
+  validatePendingRoots(schema, values);
+  const uploads = await readUploads(input.files, getPendingUploadIndexes(values));
+  values = resolvePendingFieldRefs(values, uploads);
   const bundle: any = {
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
@@ -525,8 +530,8 @@ export const planSubmission = async (
   };
 
   const { mainEntityType } = schema;
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
 
@@ -566,7 +571,7 @@ export const commitSubmission = async (
 ): Promise<SubmissionResult> => {
   const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
   try {
-    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
+    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length });
     const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;

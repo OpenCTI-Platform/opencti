@@ -10272,6 +10272,7 @@ export type FormEdge = {
 };
 
 export type FormSubmissionInput = {
+  files?: InputMaybe<Array<Scalars['Upload']['input']>>;
   formId: Scalars['String']['input'];
   values: Scalars['String']['input'];
 };

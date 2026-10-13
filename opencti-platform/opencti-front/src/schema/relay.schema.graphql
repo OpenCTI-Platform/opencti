@@ -16506,6 +16506,7 @@ input FormAddInput {
 input FormSubmissionInput {
   formId: String!
   values: String!
+  files: [Upload!]
 }
 
 type FormSubmissionResponse {
