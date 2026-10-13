@@ -421,6 +421,8 @@ const SearchInput = (props) => {
                     }}
                     onClick={handleNlqToggleClick}
                     disabled={nlqSplitDisabled}
+                    // Named here: the tooltip labels the wrapping <span>, not this icon-only toggle
+                    aria-label={t_i18n('Ask AI')}
                   >
                     <FiligranIcon
                       icon={LogoXtmOneIcon}
