@@ -1,11 +1,12 @@
 import gql from 'graphql-tag';
+import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { createEntity, loadEntity } from '../../../src/database/middleware';
+import { createEntity, loadEntity, updateAttribute } from '../../../src/database/middleware';
 import { findHistory } from '../../../src/domain/log';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { FilterMode, LogsOrdering, OrderingMode, StatusScope } from '../../../src/generated/graphql';
-import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { createStatus, createStatusTemplate, findByType } from '../../../src/domain/status';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
@@ -1093,16 +1094,18 @@ describe('Workflow instance sync from external status writes (Report)', () => {
   let reportInternalId: string;
   let openStatusId: string;
   let validatedStatusId: string;
+  let archivedStatusId: string;
   const reportName = `Workflow External Write Test Report ${Date.now()}`;
   const reportPublished = new Date().toISOString();
   const reportWorkflowDefinition = JSON.stringify({
     id: 'report-external-write-workflow',
     name: 'Report External Write Workflow',
     initialState: 'open',
-    states: [{ statusId: 'open' }, { statusId: 'validated' }],
+    states: [{ statusId: 'open' }, { statusId: 'validated' }, { statusId: 'archived' }],
     transitions: [
       { from: 'open', to: 'validated', event: 'validate_event' },
       { from: 'validated', to: 'open', event: 'reopen_event' },
+      { from: 'validated', to: 'archived', event: 'archive_event' },
     ],
   });
   const REPORT_STATUS_PATCH_MUTATION = gql`
@@ -1165,6 +1168,7 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
     openStatusId = statuses.find((status) => status.template_id === 'open')!.id;
     validatedStatusId = statuses.find((status) => status.template_id === 'validated')!.id;
+    archivedStatusId = statuses.find((status) => status.template_id === 'archived')!.id;
   });
 
   afterAll(async () => {
@@ -1213,6 +1217,17 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'open', event: 'reopen_event' }));
   });
 
+  it('should keep the state when a writer without BYPASS sets a Status no transition leads to', async () => {
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: REPORT_STATUS_PATCH_MUTATION,
+      variables: { id: reportInternalId, input: [{ key: 'x_opencti_workflow_id', value: [archivedStatusId] }] },
+    });
+
+    const { currentState, history } = await readInstance();
+    expect(currentState).toBe('open');
+    expect(history.at(-1)).toEqual(expect.objectContaining({ event: 'event_external_unmapped', status_id: archivedStatusId, reason: 'no_transition' }));
+  });
+
   it('should move the WorkflowInstance when an upsert changes the legacy status field', async () => {
     await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, x_opencti_workflow_id: validatedStatusId }, ENTITY_TYPE_CONTAINER_REPORT);
 
@@ -1221,14 +1236,16 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'validated', event: 'event_external' }));
   });
 
-  it('should not move the WorkflowInstance when an upsert keeps the legacy status field', async () => {
-    const before = await readInstance();
+  it('should not sync the WorkflowInstance when an upsert keeps the legacy status field', async () => {
+    // Diverge the instance from the entity Status: a sync running on this upsert would realign it.
+    const instance = await findWorkflowInstance(reportInternalId) as any;
+    await updateAttribute(testContext, ADMIN_USER, instance.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [{ key: 'currentState', value: ['open'] }]);
 
     await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, description: 'upserted' }, ENTITY_TYPE_CONTAINER_REPORT);
 
-    const after = await readInstance();
-    expect(after.history).toHaveLength(before.history.length);
-    expect(openStatusId).toBeDefined();
+    const { currentState } = await readInstance();
+    expect(currentState).toBe('open');
+    await updateAttribute(testContext, ADMIN_USER, instance.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [{ key: 'currentState', value: ['validated'] }]);
   });
 
   it('should ignore a Status of another entity type sent along with another field change', async () => {
@@ -1288,5 +1305,20 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     expect((await loadReport()).x_opencti_workflow_id).toBe(unmappedStatus.id);
     const instance = await findWorkflowInstance(reportInternalId) as any;
     expect(instance.pendingError).toContain(unmappedStatus.id);
+  });
+
+  it('should not sync the WorkflowInstance when ENTITIES_WORKFLOW is disabled', async () => {
+    const before = await readInstance();
+    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    try {
+      await patchStatus(openStatusId);
+    } finally {
+      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
+    }
+
+    const after = await readInstance();
+    expect((await loadReport()).x_opencti_workflow_id).toBe(openStatusId);
+    expect(after.currentState).toBe(before.currentState);
+    expect(after.history).toHaveLength(before.history.length);
   });
 });
