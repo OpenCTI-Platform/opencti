@@ -79,6 +79,29 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
 - **Lag:** a fixed user stays `degraded` up to one period.
 - **Leftovers after turning the flag off:** the stored fields stay.
 
+## To do (chunk 1)
+
+- **Elasticsearch fields** on the connector, gated by `INGESTION_HEALTH` (`featureFlag` on the attribute definitions):
+  - `health_status` (`critical`, `unknown`, `stopped`, `healthy`, `degraded`);
+  - `health_status_since` (date, nullable);
+  - `health_checks`, nested: `health_check_code` (string) and `health_check_metadata` (raw).
+- **Check registry**: one place mapping each code to its kind, severity and message; chunk 1 registers `USER_MISSING` only.
+- **Pure evaluation function**: from the connector and its checks, return the status and the `health_checks` list, with the priority `stopped` > `critical` > `degraded` > `unknown`; `USER_MISSING` → `degraded`.
+- **`USER_MISSING` check**: empty `connector_user_id`, or a user missing from the user cache; no user id or name in the metadata.
+- **Health manager**:
+  - registered only when the flag is on, with its own lock;
+  - period `ingestion_health_manager:interval`, 60 s by default;
+  - for each deployed connector (built-ins excluded): evaluate, then write only if the status or the checks changed;
+  - the write moves `health_status_since` only on a status change, does not touch `updated_at` and emits no stream event;
+  - invalidate the connector cache after a write;
+  - one connector that fails to evaluate does not stop the others, and the error is logged with its id;
+  - disabled in `config/test.json`.
+- **GraphQL**:
+  - `IngestionHealthStatus` enum, `IngestionHealthCheck` type;
+  - `health_status`, `health_status_since` (nullable), `healthChecks` with `@auth(for: [MODULES])`;
+  - resolvers read Elasticsearch only: message, kind and severity come from the registry; raw metadata not exposed; `unknown` with no date and no check when not evaluated yet;
+  - flag off: empty fields, no error.
+
 ## Chunk 2 in short
 
 - **Listener:** sources publish on a new PubSub channel; the listener only records the raw data in Redis. Ping date: `connector_heartbeats` (#18851), may change later.
