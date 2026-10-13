@@ -18,3 +18,29 @@ export const writeStoredVariableValues = (key: string, values: Record<string, st
     window.localStorage.setItem(key, JSON.stringify(values));
   }
 };
+
+export const serializeVariablesParam = (values: Record<string, string>) => (
+  Object.entries(values).map(([id, value]) => `${id}:${encodeURIComponent(value)}`).join(',')
+);
+
+export const parseVariablesParam = (search: string): Record<string, string> => {
+  const raw = new URLSearchParams(search).get('variables');
+  if (!raw) return {};
+  const result: Record<string, string> = {};
+  raw.split(',').forEach((pair) => {
+    const separator = pair.indexOf(':');
+    if (separator <= 0) return;
+    try {
+      const value = decodeURIComponent(pair.slice(separator + 1));
+      if (value) result[pair.slice(0, separator)] = value;
+    } catch { /* paramètre mal formé : ignoré */ }
+  });
+  return result;
+};
+
+export const writeVariablesParam = (values: Record<string, string>) => {
+  const url = new URL(window.location.href);
+  if (Object.keys(values).length === 0) url.searchParams.delete('variables');
+  else url.searchParams.set('variables', serializeVariablesParam(values));
+  window.history.replaceState(window.history.state, '', url);
+};

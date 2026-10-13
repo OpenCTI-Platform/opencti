@@ -4,7 +4,7 @@ import useHelper from '../../utils/hooks/useHelper';
 import type { DashboardVariable } from './dashboard-types';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from './dashboardVariablesFeatureFlag';
 import { buildDefaultVariableValues } from './dashboardVariablesResolution';
-import { dashboardVariablesStorageKey, readStoredVariableValues, writeStoredVariableValues } from './dashboardVariablesStorage';
+import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues, writeStoredVariableValues, writeVariablesParam } from './dashboardVariablesStorage';
 
 const isInPool = (variable: DashboardVariable, value: string) => (
   variable.restriction.mode !== 'selection' || variable.restriction.values.includes(value)
@@ -19,7 +19,8 @@ export const useDashboardVariables = (
   const { isFeatureEnable } = useHelper();
   const enabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const key = dashboardVariablesStorageKey(me.id, workspaceId);
-  const load = () => (ignoreLocalValues || !enabled ? {} : readStoredVariableValues(key));
+  // Priorité : URL > localStorage > défaut (le défaut est appliqué plus bas).
+  const load = () => (ignoreLocalValues || !enabled ? {} : { ...readStoredVariableValues(key), ...parseVariablesParam(window.location.search) });
   const [state, setState] = useState(() => ({ key, stored: load() }));
   // Changement de compte ou de dashboard : on relit, on ne garde jamais l'état d'une autre clé.
   const stored = state.key === key ? state.stored : load();
@@ -45,12 +46,13 @@ export const useDashboardVariables = (
 
   const commit = useCallback((next: Record<string, string>) => {
     writeStoredVariableValues(key, next);
+    writeVariablesParam(next);
     setState({ key, stored: next });
   }, [key]);
 
   const setValue = useCallback((variableId: string, value: string) => {
     if (ignoreLocalValues || !enabled) return;
-    const { [variableId]: _previous, ...others } = readStoredVariableValues(key);
+    const { [variableId]: _previous, ...others } = load();
     // Une valeur vide signifie « non définie » : le défaut du manifest s'applique.
     commit(value === '' ? others : { ...others, [variableId]: value });
   }, [commit, key, ignoreLocalValues, enabled]);

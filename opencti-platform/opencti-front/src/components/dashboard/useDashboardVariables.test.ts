@@ -45,6 +45,7 @@ describe('useDashboardVariables', () => {
   it('isolates two dashboards', () => {
     const a = renderHook(() => useDashboardVariables('ws-1', [sector]));
     act(() => a.result.current.setValue(sector.id, 'Finance'));
+    window.history.replaceState(null, '', '/'); // navigating to another dashboard drops the query string
     const b = renderHook(() => useDashboardVariables('ws-2', [sector]));
     expect(b.result.current.values.get(sector.id)).toBe('Energy');
   });
@@ -54,6 +55,7 @@ describe('useDashboardVariables', () => {
     act(() => a.result.current.setValue(sector.id, 'Finance'));
     a.unmount();
     mocks.userId = 'user-2';
+    window.history.replaceState(null, '', '/'); // a new session starts on a fresh URL
     const b = renderHook(() => useDashboardVariables('ws-1', [sector]));
     expect(b.result.current.values.get(sector.id)).toBe('Energy');
   });
@@ -130,5 +132,65 @@ describe('useDashboardVariables', () => {
     window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
     act(() => result.current.reset());
     expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).not.toBeNull();
+  });
+
+  it('gives the URL priority over the storage and keeps other query params', () => {
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
+    window.history.replaceState(null, '', `/?foo=bar&variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    expect(result.current.values.get(sector.id)).toBe('Retail');
+  });
+
+  it('mirrors a change into the URL without touching other params', () => {
+    window.history.replaceState(null, '', '/?foo=bar');
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    const params = new URLSearchParams(window.location.search);
+    expect(params.get('foo')).toBe('bar');
+    expect(params.get('variables')).toBe(`${sector.id}:Finance`);
+  });
+
+  it('never reads nor writes the URL with ignoreLocalValues', () => {
+    window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector], { ignoreLocalValues: true }));
+    expect(result.current.values.get(sector.id)).toBe('Energy');
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail`);
+  });
+
+  it('reset removes the variables param', () => {
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    act(() => result.current.reset());
+    expect(new URLSearchParams(window.location.search).has('variables')).toBe(false);
+  });
+
+  it('ignores a malformed variables param', () => {
+    window.history.replaceState(null, '', '/?variables=%%%');
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    expect(result.current.values.get(sector.id)).toBe('Energy');
+  });
+
+  it('ignores a URL value outside the selection pool or of a deleted variable', () => {
+    window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${country.id}:US,gone:x`)}`);
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [country]));
+    expect(result.current.values.get(country.id)).toBe('FR');
+    expect([...result.current.values.keys()]).toEqual([country.id]);
+  });
+
+  it('keeps URL values of other variables when one variable changes', () => {
+    window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country]));
+    act(() => result.current.setValue(country.id, 'DE'));
+    expect(result.current.values.get(sector.id)).toBe('Retail');
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail,${country.id}:DE`);
+  });
+
+  it('does not touch the URL when the feature flag is off', () => {
+    mocks.flags = [];
+    window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${sector.id}:Retail`)}`);
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail`);
   });
 });
