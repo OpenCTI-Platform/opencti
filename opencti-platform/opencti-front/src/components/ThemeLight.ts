@@ -7,6 +7,8 @@ import { alpha, darken, lighten } from '@mui/material';
 import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00BD94';
+// Focus ring of the toggle buttons, also drawn by the AI search caret (palette.border.focus).
+const FOCUS_RING_COLOR = '#74E9CA';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--bg-elevation-default-layer-0'];
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = FDS.colors.light['--bg-elevation-default-layer-0-gradient'];
@@ -61,6 +63,7 @@ const ThemeLight = (
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
+      focus: FOCUS_RING_COLOR,
       lightBackground: hexToRGB('#000000', 0.15),
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
       secondary: '#C2C2C2',
@@ -433,7 +436,7 @@ const ThemeLight = (
 
             '&:focus-visible': {
               outline: 'none',
-              boxShadow: '0 0 0 2px #74E9CA',
+              boxShadow: `0 0 0 2px ${FOCUS_RING_COLOR}`,
             },
 
             '&.Mui-selected': {

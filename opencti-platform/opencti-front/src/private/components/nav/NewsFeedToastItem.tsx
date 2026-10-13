@@ -97,6 +97,11 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
             aria-label={t_i18n('Open in XTM Hub')}
             icon={<OpenInNewOutlined fontSize="small" />}
           >
+            {/* IconButton's `asChild` clones this element and injects the
+                (aria-hidden) icon glyph as its child at runtime (see
+                IconButton.mjs), so the anchor does have accessible content —
+                ESLint's static analysis just can't see it. */}
+            {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
             <a href={resourceLink} target="_blank" rel="noopener noreferrer" />
           </IconButton>
         </Tooltip>
