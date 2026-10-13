@@ -16,6 +16,7 @@ import {
   authorizedMembersActivationDate,
   confidence,
   creators,
+  customFieldValues,
   files,
   lang,
   revoked,
@@ -64,6 +65,28 @@ describe('generateUpdatePatchMessage tests', () => {
     const resolvedMap = { 'bff2afb7-03d3-40ad-bdd0-d6977f045ddg': 'TLP:GREEN' };
     const message = generateMessageFromChanges(resolvedMap, changes);
     expect(message).toEqual('adds `secret-doc.pdf (TLP:GREEN)` in `Files`');
+  });
+  it('should generate message for custom field values with the label of the field', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + customFieldValues.name,
+        changes_removed: [],
+        changes_added: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_note', string_value: 'ok' }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({ 'cf-id-1': 'Analyst note' }, changes);
+    expect(message).toEqual('adds `Analyst note: ok` in `Custom field values`');
+  });
+  it('should generate message for custom field values with the technical name if the field is not resolved', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_CONTAINER_REPORT + '--' + customFieldValues.name,
+        changes_removed: [],
+        changes_added: [{ raw: JSON.stringify({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_note', string_value: 'ok' }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('adds `x_opencti_cf_note: ok` in `Custom field values`');
   });
   it('should generate message fail for unexisting attribute', () => {
     const changes: Change[] = [

@@ -714,8 +714,11 @@ export const customFieldValues: NestedObjectAttribute = {
     { name: 'select_value', label: 'Select value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'select_values', label: 'Select values', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: true, isFilterable: false },
   ],
-  representative: (item: any, _, __ = DefaultFormating): string => {
+  // The definition is resolved to display its label, the technical name is kept if it cannot be resolved (e.g. deleted)
+  attrRawIds: async (item: any, _) => (item.field_id ? [{ id: item.field_id }] : []),
+  representative: (item: any, translate, __ = DefaultFormating): string => {
     const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.date_value ?? item.select_value;
-    return item.field_name + ': ' + (Array.isArray(value) ? value.join(', ') : value);
+    const fieldLabel = translate[item.field_id] ?? item.field_name;
+    return fieldLabel + ': ' + (Array.isArray(value) ? value.join(', ') : value);
   },
 };
