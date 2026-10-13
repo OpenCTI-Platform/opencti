@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import Tag from '@common/tag/Tag';
 import { AddOutlined, CloseOutlined, Delete } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -210,20 +211,31 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
               initialValues={{ newTag: '' }}
               onSubmit={onSubmitCreateTag}
             >
-              <Form style={{ float: 'right' }}>
+              <Form>
                 <label className="sr-only" htmlFor="dialog-new-tag-input">{t_i18n('New tag')}</label>
-                <Field
-                  id="dialog-new-tag-input"
-                  innerRef={(node: HTMLInputElement | null) => {
-                    dialogTagInputRef.current = node;
-                  }}
-                  component={TextField}
-                  variant="outlined"
-                  name="newTag"
-                  placeholder={t_i18n('New tag')}
-                  onChange={handleChangeNewTag}
-                  value={newTag}
-                />
+                {/* Same layout as the entity aliases dialog: the field takes the
+                    width, and Add submits it (as does Enter). */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Field
+                      id="dialog-new-tag-input"
+                      innerRef={(node: HTMLInputElement | null) => {
+                        dialogTagInputRef.current = node;
+                      }}
+                      component={TextField}
+                      variant="outlined"
+                      name="newTag"
+                      fullWidth={true}
+                      placeholder={t_i18n('New tag')}
+                      onChange={handleChangeNewTag}
+                      value={newTag}
+                    />
+                  </Box>
+                  {/* Not disabled while empty, as in the aliases dialog. */}
+                  <Button type="submit">
+                    {t_i18n('Add')}
+                  </Button>
+                </Box>
               </Form>
             </Formik>
 

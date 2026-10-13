@@ -1,15 +1,19 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import WorkspaceHeaderTagManager from './WorkspaceHeaderTagManager';
 
 vi.mock('src/utils/Security', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('src/utils/hooks/useApiMutation', () => ({ default: () => [vi.fn()] }));
+const mocks = vi.hoisted(() => ({ commit: vi.fn() }));
+
+vi.mock('src/utils/hooks/useApiMutation', () => ({ default: () => [mocks.commit] }));
 
 describe('WorkspaceHeaderTagManager', () => {
+  beforeEach(() => vi.clearAllMocks());
+
   it('focuses the inline tag field when it opens, and closes it on Escape back to its trigger', async () => {
     const { user } = testRender(<WorkspaceHeaderTagManager tags={[]} workspaceId="workspace-1" canEdit />);
 
@@ -40,5 +44,28 @@ describe('WorkspaceHeaderTagManager', () => {
     await user.click(screen.getByRole('button', { name: 'More' }));
     await screen.findByRole('dialog', { name: 'Entity tags' });
     await waitFor(() => expect(screen.getByLabelText('New tag')).toHaveFocus());
+  });
+
+  it('adds a tag from the "More" dialog with the Add button or with Enter', async () => {
+    const { user } = testRender(<WorkspaceHeaderTagManager tags={['first', 'second']} workspaceId="workspace-1" canEdit />);
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Entity tags' });
+
+    await user.type(within(dialog).getByLabelText('New tag'), 'third');
+    await user.click(within(dialog).getByRole('button', { name: 'Add' }));
+    expect(mocks.commit).toHaveBeenCalledOnce();
+    expect(mocks.commit.mock.calls[0][0].variables.input).toEqual({ key: 'tags', value: ['first', 'second', 'third'] });
+
+    await user.type(within(dialog).getByLabelText('New tag'), 'fourth{Enter}');
+    expect(mocks.commit).toHaveBeenCalledTimes(2);
+  });
+
+  it('adds nothing from the "More" dialog when the field is empty', async () => {
+    const { user } = testRender(<WorkspaceHeaderTagManager tags={['first', 'second']} workspaceId="workspace-1" canEdit />);
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Entity tags' });
+
+    await user.click(within(dialog).getByRole('button', { name: 'Add' }));
+    expect(mocks.commit).not.toHaveBeenCalled();
   });
 });
