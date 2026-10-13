@@ -30,6 +30,14 @@ const filterKeysSchema = new Map([
       subEntityTypes: ['Stix-Core-Object'],
       elementsForFilterValuesSearch: ['Label'],
     } as FilterDefinition],
+    ...([['created_at', 'date'], ['confidence', 'integer'], ['name', 'string'], ['revoked', 'boolean']] as const).map(([key, type]) => [key, {
+      filterKey: key,
+      type,
+      label: key,
+      multiple: type !== 'date',
+      subEntityTypes: ['Stix-Core-Object'],
+      elementsForFilterValuesSearch: [],
+    } as FilterDefinition] as const),
   ])],
 ]);
 const userContext = createMockUserContext({ schema: { filterKeysSchema, scos: [], sdos: [], smos: [], scrs: [] } });
@@ -78,5 +86,25 @@ describe('FilterValues with dashboard variable tokens', () => {
     expect(screen.getByText('APT')).toBeInTheDocument();
     // The legacy rendering of a value the representatives cannot resolve.
     expect(screen.getByText('deleted')).toBeInTheDocument();
+  });
+
+  // The free inputs and the date filter format their values (date, number, boolean): a token must skip it.
+  it.each([
+    ['created_at', 'gt'],
+    ['confidence', 'gt'],
+    ['name', 'starts_with'],
+    ['revoked', 'eq'],
+  ])('shows a token of a %s filter (%s) under the variable name', (key, operator) => {
+    const ui = (
+      <FilterValues
+        label={key}
+        currentFilter={{ id: 'filter-1', key, values: [TOKEN], operator, mode: 'or' }}
+        filtersRepresentativesMap={new Map()}
+      />
+    );
+    const { container } = testRender(<DashboardVariablesProvider variables={[labelVariable]}>{ui}</DashboardVariablesProvider>, { userContext });
+    expect(container.querySelector(`[data-variable-token="${VARIABLE_ID}"]`)).toHaveTextContent('Client label');
+    expect(container.textContent).not.toContain('$var:');
+    expect(container.textContent).not.toContain('Invalid');
   });
 });

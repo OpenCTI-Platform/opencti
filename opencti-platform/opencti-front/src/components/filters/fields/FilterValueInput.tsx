@@ -18,6 +18,7 @@ import DateRangeFilter from '../DateRangeFilter';
 import FilterFiltersInput from '../FilterFiltersInput';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterEntityAutocomplete from './FilterEntityAutocomplete';
+import FilterValueVariableSwitch, { useFilterValueVariables, withoutVariableTokens } from './FilterValueVariableSwitch';
 
 export interface FilterValueInputProps {
   filter?: Filter;
@@ -56,7 +57,24 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const finalFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
+  // Dashboard variables (undefined anywhere else: the inputs below then get exactly what they always got).
+  const filterValueVariables = useFilterValueVariables(finalFilterDefinition, subKey);
+  const toFixedValues = (values: string[]) => (filterValueVariables ? withoutVariableTokens(values) : values);
+  const fixedInputValues = filterValueVariables
+    ? inputValues.map((inputValue) => ({ ...inputValue, values: withoutVariableTokens(inputValue.values) }))
+    : inputValues;
 
+  // A single value input with no option list (date, number, free text) can take a compatible variable.
+  const withVariableSwitch = (fixedInput: ReactNode) => {
+    if (!filterValueVariables || filterValueVariables.compatibleVariables.length === 0) return fixedInput;
+    return (
+      <FilterValueVariableSwitch filter={filter} variables={filterValueVariables.compatibleVariables}>
+        {fixedInput}
+      </FilterValueVariableSwitch>
+    );
+  };
+
+  // Fixed dates only: a variable token is written as-is by FilterValueVariableSwitch, the day shift below is NOT applied to it.
   const handleDateChange = (_: string, value: string) => {
     // convert the date to handle comparison with a timestamp
     const date = new Date(value);
@@ -82,7 +100,7 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
       defaultHandleAddFilter={handleDateChange}
       filterKey={filterKey}
       operator={filterOperator}
-      inputValues={inputValues}
+      inputValues={fixedInputValues}
       setInputValues={setInputValues}
       filterLabel={filterLabel}
       filterValue={value}
@@ -106,7 +124,9 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
           />
         );
       }
-      return <BasicFilterDate value={computedValues.length > 0 ? computedValues[0] : undefined} />;
+      // No variable on a date range (within): its two bounds are relative dates, a token is not supported there.
+      const fixedValues = toFixedValues(computedValues);
+      return withVariableSwitch(<BasicFilterDate value={fixedValues.length > 0 ? fixedValues[0] : undefined} />);
     }
     if (fDefinition?.type === 'filters') {
       const finalComputedValues = computedValues.filter((v: object) => 'filters' in v); // we keep values of type FilterGroup
@@ -126,26 +146,26 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
       );
     }
     if (isNumericFilter(fDefinition?.type)) {
-      return (
+      return withVariableSwitch(
         <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
-          filterValues={computedValues}
+          filterValues={toFixedValues(computedValues)}
           helpers={helpers}
           label={filterLabel}
           type="number"
-        />
+        />,
       );
     }
     if (isBasicTextFilter(filterDefinition)) {
-      return (
+      return withVariableSwitch(
         <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
-          filterValues={filterValues}
+          filterValues={toFixedValues(filterValues)}
           helpers={helpers}
           label={filterLabel}
-        />
+        />,
       );
     }
     return null;

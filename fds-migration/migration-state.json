@@ -621,6 +621,39 @@
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
       ]
+    },
+    {
+      "component": "ButtonGroup",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the Fixed value / Variable switch of a date, numeric or free text widget filter value (glyph items named by aria-label and tooltip, LIBRARY-FEEDBACK #63).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the list of the dashboard variables compatible with a date, numeric or free text widget filter, in the Variable mode of the value switch.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: names the two glyph items (Fixed value, Variable) of the widget filter value switch.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterValueVariableSwitch.tsx"
+      ]
     }
   ]
 }

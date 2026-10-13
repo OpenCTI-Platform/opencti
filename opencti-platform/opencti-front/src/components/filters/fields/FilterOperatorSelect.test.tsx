@@ -15,6 +15,7 @@ vi.mock('../../../relay/environment', () => ({
 
 import FilterOperatorSelect from './FilterOperatorSelect';
 import { FilterEditorProvider } from './FilterEditorContext';
+import { DashboardVariablesProvider } from '../../dashboard/DashboardVariablesContext';
 
 const buildDefinition = (filterKey: string, type: string, label: string, subFilters?: FilterDefinition[]): FilterDefinition => ({
   filterKey,
@@ -118,6 +119,30 @@ describe('FilterOperatorSelect', () => {
     expect(helpers.handleAddSingleValueFilter).not.toHaveBeenCalled();
     expect(setInputValues).not.toHaveBeenCalled();
     expect(helpers.handleChangeOperatorFilters).toHaveBeenCalledWith('filter-1', 'gt');
+  });
+
+  // The day shift is not applied to a variable value: the token is kept as-is, never parsed as a date.
+  it('keeps a variable token as-is when switching a date filter from lte to lt in a dashboard', async () => {
+    const variableToken = '$var:11111111-1111-4111-8111-111111111111';
+    const filter: Filter = { id: 'filter-1', key: 'created_at', values: [variableToken], operator: 'lte', mode: 'or' };
+    const { user } = testRender(
+      <DashboardVariablesProvider variables={[]}>
+        <FilterEditorProvider
+          helpers={helpers}
+          availableFilterKeys={[]}
+          entityTypes={['Stix-Core-Object']}
+          filtersRepresentativesMap={new Map()}
+        >
+          <FilterOperatorSelect filter={filter} filterKey={filter.key} setInputValues={setInputValues} />
+        </FilterEditorProvider>
+      </DashboardVariablesProvider>,
+      { userContext },
+    );
+    await user.click(screen.getByRole('combobox'));
+    await user.click(await screen.findByText('Lower than'));
+    expect(helpers.handleAddSingleValueFilter).not.toHaveBeenCalled();
+    expect(setInputValues).not.toHaveBeenCalled();
+    expect(helpers.handleChangeOperatorFilters).toHaveBeenCalledWith('filter-1', 'lt');
   });
 
   it('renders nothing for a subfilter that allows no operator choice', () => {

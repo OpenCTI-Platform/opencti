@@ -2352,6 +2352,12 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
+**Also at.** `FilterValueVariableSwitch.tsx` (dashboard widget filters): the
+"Fixed value" / "Variable" switch of a date, numeric or free text value is
+specified with text segments. It uses the library group with two glyphs, each
+named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
+With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
