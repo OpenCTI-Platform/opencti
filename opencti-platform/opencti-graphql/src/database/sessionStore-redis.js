@@ -68,7 +68,8 @@ class RedisStore extends Store {
 
   destroy(sid, cb = noop) {
     const key = this.prefix + sid;
-    return killSession(key).then((data) => cb(null, data));
+    // Propagate Redis failures to the callback, otherwise callers such as session.regenerate() would wait forever
+    return killSession(key).then((data) => cb(null, data), cb);
   }
 
   all(cb = noop) {
