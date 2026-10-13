@@ -70,6 +70,8 @@ const containerTimelineStripEventsQuery = graphql`
       total
       first_event_time
       last_event_time
+      frame_start
+      frame_end
     }
     containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
       edges {
@@ -190,8 +192,8 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
   const total = shown?.total ?? events.length;
   const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
-  // The span covers every shown event, also those older than the latest ones drawn here
-  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.first_event_time, shown?.last_event_time]);
+  // The fit frames every shown event, also those older than the latest ones drawn here
+  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.frame_start, shown?.frame_end]);
   if (total === 0) {
     return (
       <ContainerTimelineStripEmpty

@@ -144,6 +144,8 @@ export interface TimelineEventLike {
   event_end_time?: string | null;
   open_ended?: boolean | null;
   lane: string;
+  kind?: string;
+  rule_id?: string | null;
   pinned?: boolean;
   source?: string;
 }
@@ -227,21 +229,31 @@ export const toTime = (value: string | Date | null | undefined): number | null =
   return Number.isNaN(time) ? null : time;
 };
 
-/** Smallest interval containing every event (and its window) and every anchor. */
+// A window up to this long is always framed whole by the fit, however close the starts of the events are
+const FIT_FRAMED_WINDOW = 7 * DAY;
+
+/**
+ * Interval the fit frames: the start of every event and every headline date (the bounds of the events not loaded yet
+ * are passed as headline dates), and the end of the windows no longer than that span or a week. The global first and
+ * last seen of entities (context only) and the longer windows run off the edges; a timeline made of context windows
+ * alone is framed whole.
+ */
 export const computeTimelineExtent = (events: TimelineEventLike[], anchors: Array<string | null | undefined> = []): TimelineDomain | null => {
-  let min = Infinity;
-  let max = -Infinity;
-  const push = (time: number | null) => {
-    if (time === null) return;
-    if (time < min) min = time;
-    if (time > max) max = time;
-  };
-  events.forEach((event) => {
-    push(toTime(event.event_time));
-    push(toTime(event.event_end_time));
+  const incident = events.filter((event) => !isTimelineContextWindow({ rule_id: event.rule_id, kind: event.kind ?? '' }));
+  const starts = [...incident.map((event) => toTime(event.event_time)), ...anchors.map((anchor) => toTime(anchor))]
+    .filter((time): time is number => time !== null);
+  if (starts.length === 0) {
+    const times = events.flatMap((event) => [toTime(event.event_time), toTime(event.event_end_time)]).filter((time): time is number => time !== null);
+    return times.length > 0 ? [Math.min(...times), Math.max(...times)] : null;
+  }
+  const min = Math.min(...starts);
+  let max = Math.max(...starts);
+  const framed = Math.max(max - min, FIT_FRAMED_WINDOW);
+  incident.forEach((event) => {
+    const start = toTime(event.event_time);
+    const end = toTime(event.event_end_time);
+    if (start !== null && end !== null && end - start <= framed && end > max) max = end;
   });
-  anchors.forEach((anchor) => push(toTime(anchor)));
-  if (min === Infinity) return null;
   return [min, max];
 };
 

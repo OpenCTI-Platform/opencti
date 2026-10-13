@@ -88,6 +88,7 @@ import {
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { computeTimelineAnchors } from './timeline-anchors';
 import { isContainerClosed } from './timeline-loader';
+import { RULE_ENTITY_SEEN } from './timeline-rules';
 import { notifyTimelineMilestoneAdded, notifyTimelineMilestonesAdded } from './timeline-notification';
 import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
@@ -375,23 +376,44 @@ export const findContainerTimeline = async (context: AuthContext, user: AuthUser
   return { ...connection, edges: items };
 };
 
-/** Earliest start and latest instant (start or end) of the events matching already accessible filters. */
+/** The events Fit frames: every event but the global first and last seen of entities, which are context only. */
+export const withoutTimelineContextWindows = (filters: ReturnType<typeof buildTimelineFilters>) => ({
+  ...filters,
+  filterGroups: [...filters.filterGroups, {
+    mode: FilterMode.Or,
+    filters: [
+      { key: ['rule_id'], values: [RULE_ENTITY_SEEN], operator: FilterOperator.NotEq },
+      { key: ['kind'], values: ['incident_seen'] },
+    ],
+    filterGroups: [],
+  }],
+});
+
+/**
+ * Earliest start and latest instant (start or end) of the events matching already accessible filters, and the earliest
+ * and latest start of those Fit frames.
+ */
 const computeTimelineBounds = async (context: AuthContext, user: AuthUser, filters: ReturnType<typeof buildTimelineFilters>): Promise<TimelineBounds> => {
   const windowFilters = { ...filters, filters: [...filters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] };
+  const framedFilters = withoutTimelineContextWindows(filters);
   const firstOf = (pageFilters: typeof filters, orderBy: string, orderMode: OrderingMode) => pageEntitiesConnection<StoredTimelineEvent>(
     context,
     user,
     [ENTITY_TYPE_TIMELINE_EVENT],
     { filters: pageFilters as any, noFiltersChecking: true, first: 1, orderBy, orderMode },
   );
-  const [firstEvents, lastEvents, lastEndingEvents] = await Promise.all([
+  const [firstEvents, lastEvents, lastEndingEvents, firstFramed, lastFramed] = await Promise.all([
     firstOf(filters, 'event_time', OrderingMode.Asc),
     firstOf(filters, 'event_time', OrderingMode.Desc),
     firstOf(windowFilters, 'event_end_time', OrderingMode.Desc),
+    firstOf(framedFilters, 'event_time', OrderingMode.Asc),
+    firstOf(framedFilters, 'event_time', OrderingMode.Desc),
   ]);
   return {
     first_event_time: firstEvents.edges[0]?.node.event_time ?? null,
     last_event_time: latestTimelineTime(lastEvents.edges[0]?.node.event_time, lastEndingEvents.edges[0]?.node.event_end_time),
+    frame_start: firstFramed.edges[0]?.node.event_time ?? null,
+    frame_end: lastFramed.edges[0]?.node.event_time ?? null,
   };
 };
 
@@ -490,6 +512,8 @@ export const findContainerTimelineSummary = async (
     hidden_count: hiddenCount,
     first_event_time: bounds.first_event_time,
     last_event_time: bounds.last_event_time,
+    frame_start: bounds.frame_start,
+    frame_end: bounds.frame_end,
     lanes: lanes.map((l) => ({ lane: l.label, count: l.count })),
     kinds: kinds.map((k) => ({ kind: k.label, count: k.count })),
     anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null,

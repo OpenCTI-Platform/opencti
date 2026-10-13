@@ -232,6 +232,8 @@ const CONTAINER_TIMELINE_BOUNDS = gql`
     containerTimelineBounds(id: $id, sources: $sources) {
       first_event_time
       last_event_time
+      frame_start
+      frame_end
     }
   }
 `;
@@ -1161,6 +1163,11 @@ describe('Incident and case timeline', () => {
       const listed = await listTimeline(caseIncident.id);
       const bounds = (await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id } })).data.containerTimelineBounds;
       expect({ first: time(bounds.first_event_time), last: time(bounds.last_event_time) }).toEqual(span(listed));
+      // The fit frames the starts of the events of the incident, never the global first and last seen of an entity
+      const framed = listed.filter((event) => event.rule_id !== 'entity-first-last-seen' || event.kind === 'incident_seen');
+      const framedStarts = framed.map((event) => new Date(event.event_time).getTime());
+      expect(listed.length).toBeGreaterThan(framed.length);
+      expect({ first: time(bounds.frame_start), last: time(bounds.frame_end) }).toEqual({ first: Math.min(...framedStarts), last: Math.max(...framedStarts) });
       // Same filters as the list
       const manual = await listTimeline(caseIncident.id, { sources: ['manual'] });
       const manualBounds = (await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id, sources: ['manual'] } })).data.containerTimelineBounds;

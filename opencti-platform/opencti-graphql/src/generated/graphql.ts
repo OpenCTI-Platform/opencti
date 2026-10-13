@@ -36722,6 +36722,10 @@ export type TimelineBounds = {
   __typename?: 'TimelineBounds';
   /** Earliest start of the matching events */
   first_event_time?: Maybe<Scalars['DateTime']['output']>;
+  /** Latest start of the matching events Fit frames */
+  frame_end?: Maybe<Scalars['DateTime']['output']>;
+  /** Earliest start of the matching events Fit frames: the global first and last seen of entities, context only, are left out */
+  frame_start?: Maybe<Scalars['DateTime']['output']>;
   /** Latest start or end of the matching events, whichever is later */
   last_event_time?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -36971,6 +36975,10 @@ export type TimelineSummary = {
   can_edit: Scalars['Boolean']['output'];
   container_id: Scalars['String']['output'];
   first_event_time?: Maybe<Scalars['DateTime']['output']>;
+  /** Latest start of the events Fit frames */
+  frame_end?: Maybe<Scalars['DateTime']['output']>;
+  /** Earliest start of the events Fit frames: the global first and last seen of entities, context only, are left out */
+  frame_start?: Maybe<Scalars['DateTime']['output']>;
   generated_at?: Maybe<Scalars['DateTime']['output']>;
   hidden_count: Scalars['Int']['output'];
   kinds: Array<TimelineKindDistribution>;
@@ -54582,6 +54590,8 @@ export type TimelineAnchorsResolvers<ContextType = any, ParentType extends Resol
 
 export type TimelineBoundsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineBounds'] = ResolversParentTypes['TimelineBounds']> = ResolversObject<{
   first_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  frame_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  frame_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
@@ -54697,6 +54707,8 @@ export type TimelineSummaryResolvers<ContextType = any, ParentType extends Resol
   can_edit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   first_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  frame_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  frame_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   generated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   hidden_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   kinds?: Resolver<Array<ResolversTypes['TimelineKindDistribution']>, ParentType, ContextType>;

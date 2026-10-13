@@ -32,7 +32,6 @@ import {
 import {
   AddOutlined,
   AutorenewOutlined,
-  FitScreenOutlined,
   GetAppOutlined,
   MoreVertOutlined,
   SettingsOutlined,
@@ -80,10 +79,15 @@ interface ContainerTimelineToolbarProps {
   onOpenSettings: () => void;
   onRegenerate: () => void;
   onZoom: (factor: number) => void;
-  onFit: () => void;
+  // A zoom window picked, Fit included: the view leaves any pan or zoom of its own
+  onZoomWindow: (zoom: TimelineZoomWindow) => void;
+  // The view was panned or zoomed away from its zoom window
+  customWindow?: boolean;
   // Span of the lanes in view, shown next to the zoom controls
   visibleDomain?: TimelineDomain | null;
 }
+
+const CUSTOM_WINDOW = 'custom';
 
 const WithTooltip = ({ title, children }: { title: string; children: React.ReactElement }) => (
   <Tooltip>
@@ -175,7 +179,8 @@ const ContainerTimelineToolbar = ({
   onOpenSettings,
   onRegenerate,
   onZoom,
-  onFit,
+  onZoomWindow,
+  customWindow = false,
   visibleDomain,
 }: ContainerTimelineToolbarProps) => {
   const { t_i18n } = useFormatter();
@@ -207,14 +212,18 @@ const ContainerTimelineToolbar = ({
             <ButtonGroupItem value="list" aria-label={t_i18n('List view')} icon={<ViewListOutlined fontSize="small" />} />
           </WithTooltip>
         </ButtonGroup>
-        <Select value={state.zoom} onValueChange={(value) => onChange({ zoom: value as TimelineZoomWindow, domain: null })}>
-          <SelectTrigger aria-label={t_i18n('Zoom window')} style={{ minWidth: 110 }}>
-            <SelectValue />
-          </SelectTrigger>
+        {/* The one way to fit: Fit in the zoom window, also offered once the view was panned or zoomed */}
+        <Select value={customWindow ? CUSTOM_WINDOW : state.zoom} onValueChange={(value) => value !== CUSTOM_WINDOW && onZoomWindow(value as TimelineZoomWindow)}>
+          <WithTooltip title={t_i18n('Zoom window')}>
+            <SelectTrigger aria-label={t_i18n('Zoom window')} style={{ minWidth: 110 }} data-testid="timeline-zoom-window">
+              <SelectValue />
+            </SelectTrigger>
+          </WithTooltip>
           <SelectContent aria-label={t_i18n('Zoom window')}>
             {TIMELINE_ZOOM_WINDOWS.map((zoom) => (
               <SelectItem key={zoom} value={zoom}>{t_i18n(TIMELINE_ZOOM_LABELS[zoom])}</SelectItem>
             ))}
+            {customWindow && <SelectItem value={CUSTOM_WINDOW} disabled>{t_i18n('Custom window')}</SelectItem>}
           </SelectContent>
         </Select>
         {state.view === 'lanes' && (
@@ -224,9 +233,6 @@ const ContainerTimelineToolbar = ({
             </WithTooltip>
             <WithTooltip title={t_i18n('Zoom out')}>
               <IconButton priority="tertiary" size="md" aria-label={t_i18n('Zoom out')} icon={<ZoomOutOutlined fontSize="small" />} onClick={() => onZoom(1 / 0.6)} />
-            </WithTooltip>
-            <WithTooltip title={t_i18n('Fit the timeline')}>
-              <IconButton priority="tertiary" size="md" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined fontSize="small" />} onClick={onFit} />
             </WithTooltip>
             {visibleSpan && (
               <WithTooltip title={t_i18n('Visible period')}>
@@ -238,10 +244,12 @@ const ContainerTimelineToolbar = ({
           </>
         )}
         <Select value={state.grouping} onValueChange={(value) => onChange({ grouping: value as TimelineGrouping })}>
-          <SelectTrigger aria-label={t_i18n('Group by')} style={{ minWidth: 110 }}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Group by')}>
+          <WithTooltip title={t_i18n('Group events by')}>
+            <SelectTrigger aria-label={t_i18n('Group events by')} style={{ minWidth: 110 }} data-testid="timeline-grouping">
+              <SelectValue />
+            </SelectTrigger>
+          </WithTooltip>
+          <SelectContent aria-label={t_i18n('Group events by')}>
             {TIMELINE_GROUPINGS.map((grouping) => (
               <SelectItem key={grouping} value={grouping}>{t_i18n('By {period}', { values: { period: t_i18n(TIMELINE_GROUPING_LABELS[grouping]).toLowerCase() } })}</SelectItem>
             ))}

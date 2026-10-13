@@ -69,8 +69,8 @@ export const containerTimelineWidgetQuery = graphql`
 const containerTimelineWidgetEventsQuery = graphql`
   query ContainerTimelineWidgetEventsQuery($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!], $count: Int!) {
     shown: containerTimelineSummary(id: $id, lanes: $lanes, kinds: $kinds) {
-      first_event_time
-      last_event_time
+      frame_start
+      frame_end
     }
     containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
       pageInfo {
@@ -143,7 +143,7 @@ const ContainerTimelineWidgetEvents = ({
   }
   const shownLanes = (apiLanes ?? TIMELINE_LANES).filter((lane) => events.some((e) => e.lane === lane));
   // The whole timeline of the shown lanes and kinds, also the events older than the latest ones drawn here
-  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.first_event_time, shown?.last_event_time]);
+  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.frame_start, shown?.frame_end]);
   // A long timeline is drawn from its latest events: the count says so, the full timeline is one click away
   const total = containerTimeline?.pageInfo.globalCount ?? events.length;
   return (

@@ -163,8 +163,8 @@ const containerTimelineEventsFragment = graphql`
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
     ) {
-      first_event_time
-      last_event_time
+      frame_start
+      frame_end
     }
     containerTimeline(
       id: $id
@@ -302,6 +302,8 @@ interface ContainerTimelineEventsViewProps {
   domain: TimelineDomain | null;
   lanes: readonly (typeof TIMELINE_LANES)[number][];
   onDomainChange: (domain: TimelineDomain | null) => void;
+  // Fit, from the keyboard of the lanes: the same as Fit in the zoom window
+  onFit: () => void;
   onSelect: (eventId: string | null) => void;
   onEdit: (event: TimelineEventDetails) => void;
   onAdd: () => void;
@@ -326,6 +328,7 @@ const ContainerTimelineEventsView = ({
   domain,
   lanes,
   onDomainChange,
+  onFit,
   onSelect,
   onEdit,
   onAdd,
@@ -387,12 +390,12 @@ const ContainerTimelineEventsView = ({
     }
   }, [linkedEventId, linkedTime, events, hasNext, isLoadingNext]);
   const anchors = summary.anchors;
-  // The fit spans every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
-  const firstTime = data.containerTimelineBounds?.first_event_time;
-  const lastTime = data.containerTimelineBounds?.last_event_time;
+  // The fit frames every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
+  const frameStart = data.containerTimelineBounds?.frame_start;
+  const frameEnd = data.containerTimelineBounds?.frame_end;
   const extent = useMemo(
-    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), firstTime, lastTime]),
-    [events, anchors, firstTime, lastTime],
+    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), frameStart, frameEnd]),
+    [events, anchors, frameStart, frameEnd],
   );
   const visibleDomain = domain ?? computeVisibleDomain(extent, state.zoom);
   const showsLanes = state.view === 'lanes' && events.length > 0;
@@ -429,7 +432,7 @@ const ContainerTimelineEventsView = ({
               anchors={anchors}
               selectedId={state.event}
               onDomainChange={onDomainChange}
-              onFit={() => onDomainChange(null)}
+              onFit={onFit}
               onSelect={onSelect}
               onClusterSelect={(clusterDomain) => onDomainChange(zoomDomain(clusterDomain, 1.2))}
               ariaLabel={t_i18n('Timeline of {count, plural, one {# event} other {# events}}', { values: { count: events.length } })}
@@ -532,6 +535,12 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
     setDomain(next);
     clearTimeout(urlTimer.current);
     urlTimer.current = setTimeout(() => updateState({ domain: next }), URL_SYNC_DELAY);
+  }, [updateState]);
+  // Picking a zoom window, the same one included, leaves the pan and zoom of the view
+  const onZoomWindow = useCallback((zoom: TimelineZoomWindow) => {
+    clearTimeout(urlTimer.current);
+    setDomain(null);
+    updateState({ zoom, domain: null });
   }, [updateState]);
 
   const lanes = useMemo(() => {
@@ -691,7 +700,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           onOpenSettings={() => setSettingsOpen(true)}
           onRegenerate={regenerate}
           onZoom={(factor) => onDomainChange(zoomDomain(currentTimelineDomain(domain, visibleDomain, state.zoom), factor))}
-          onFit={() => onDomainChange(null)}
+          onZoomWindow={onZoomWindow}
+          customWindow={!!domain}
           visibleDomain={visibleDomain}
         />
         {eventsRef ? (
@@ -706,6 +716,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
                 domain={domain}
                 lanes={lanes}
                 onDomainChange={onDomainChange}
+                onFit={() => onZoomWindow('fit')}
                 onSelect={(eventId) => updateState({ event: eventId })}
                 onEdit={(event) => {
                   setFormEvent(event);

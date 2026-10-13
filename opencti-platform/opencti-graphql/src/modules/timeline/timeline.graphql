@@ -180,6 +180,10 @@ type TimelineSummary {
   hidden_count: Int!
   first_event_time: DateTime
   last_event_time: DateTime
+  "Earliest start of the events Fit frames: the global first and last seen of entities, context only, are left out"
+  frame_start: DateTime
+  "Latest start of the events Fit frames"
+  frame_end: DateTime
   lanes: [TimelineLaneDistribution!]!
   kinds: [TimelineKindDistribution!]!
   anchors: TimelineAnchors
@@ -196,6 +200,10 @@ type TimelineBounds {
   first_event_time: DateTime
   "Latest start or end of the matching events, whichever is later"
   last_event_time: DateTime
+  "Earliest start of the matching events Fit frames: the global first and last seen of entities, context only, are left out"
+  frame_start: DateTime
+  "Latest start of the matching events Fit frames"
+  frame_end: DateTime
 }
 
 type TimelineRegenerationResult {

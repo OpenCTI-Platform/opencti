@@ -105,6 +105,28 @@ describe('Timeline time domain', () => {
     expect(computeTimelineExtent([], [])).toBeNull();
   });
 
+  it('should frame the events of the incident and its headline dates, the long bars running off the edges', () => {
+    const day = (n: number) => n * DAY;
+    const window = (id: string, from: number, to: number, extra: Record<string, unknown> = {}) => event(id, from, { event_end_time: new Date(to).toISOString(), ...extra });
+    const extent = computeTimelineExtent([
+      window('technique', day(10), day(12), { kind: 'technique_used', rule_id: 'technique-kill-chain' }),
+      event('sighting', day(11), { kind: 'sighting' }),
+      // Global first and last seen of a malware: context only
+      window('malware', day(-2000), day(400), { kind: 'malware_seen', rule_id: 'entity-first-last-seen' }),
+      // Valid for half a year: starts in the frame, ends far after it
+      window('indicator', day(9), day(200), { kind: 'indicator_valid', rule_id: 'indicator-validity' }),
+    ], [new Date(day(15)).toISOString()]);
+    expect(extent).toEqual([day(9), day(15)]);
+  });
+
+  it('should frame a short window whole, and a timeline of context windows alone whole', () => {
+    expect(computeTimelineExtent([event('technique', 10 * DAY, { event_end_time: new Date(13 * DAY).toISOString(), kind: 'technique_used' })])).toEqual([10 * DAY, 13 * DAY]);
+    const malware = event('malware', 0, { event_end_time: new Date(400 * DAY).toISOString(), kind: 'malware_seen', rule_id: 'entity-first-last-seen' });
+    expect(computeTimelineExtent([malware])).toEqual([0, 400 * DAY]);
+    // The incident seen window is the activity of the incident, never context
+    expect(computeTimelineExtent([{ ...malware, kind: 'incident_seen' }], [new Date(DAY).toISOString()])).toEqual([0, DAY]);
+  });
+
   it('should fit the extent with a margin', () => {
     const [start, end] = computeVisibleDomain([0, 100 * HOUR], 'fit');
     expect(start).toBeLessThan(0);

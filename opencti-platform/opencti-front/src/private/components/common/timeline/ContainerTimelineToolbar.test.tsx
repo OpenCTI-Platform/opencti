@@ -23,7 +23,7 @@ const toolbarProps = (state: TimelineViewState, onChange: (patch: Partial<Timeli
   onOpenSettings: vi.fn(),
   onRegenerate: vi.fn(),
   onZoom: vi.fn(),
-  onFit: vi.fn(),
+  onZoomWindow: vi.fn(),
 });
 
 // Holds the view state like the timeline does, with an outside reset like "Clear filters"
@@ -92,6 +92,30 @@ describe('ContainerTimelineToolbar', () => {
     expect(screen.getByRole('switch', { name: 'Show hidden events' })).toBeInTheDocument();
     const firstRow = screen.getByTestId('timeline-toolbar').firstElementChild as HTMLElement;
     expect(firstRow.lastElementChild).toContainElement(screen.getByTestId('timeline-add-milestone'));
+  });
+
+  it('names the zoom window and the grouping, and fits from the zoom window only', async () => {
+    const onZoomWindow = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ zoom: 'week' }), vi.fn())} onZoomWindow={onZoomWindow} />);
+    expect(screen.queryByRole('button', { name: 'Fit the timeline' })).toBeNull();
+    expect(screen.getByRole('combobox', { name: 'Group events by' })).toBeInTheDocument();
+    const zoom = screen.getByRole('combobox', { name: 'Zoom window' });
+    expect(zoom).toHaveTextContent('Week');
+    await user.click(zoom);
+    expect(screen.queryByRole('option', { name: 'Custom window' })).toBeNull();
+    await user.click(screen.getByRole('option', { name: 'Fit' }));
+    expect(onZoomWindow).toHaveBeenCalledWith('fit');
+  });
+
+  it('shows a custom window once the view was panned or zoomed, and goes back to the window picked', async () => {
+    const onZoomWindow = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ zoom: 'fit' }), vi.fn())} onZoomWindow={onZoomWindow} customWindow />);
+    const zoom = screen.getByRole('combobox', { name: 'Zoom window' });
+    expect(zoom).toHaveTextContent('Custom window');
+    await user.click(zoom);
+    // Fit again, though it was the zoom window already
+    await user.click(screen.getByRole('option', { name: 'Fit' }));
+    expect(onZoomWindow).toHaveBeenCalledWith('fit');
   });
 
   it('keeps the search field in line with the view state', async () => {
