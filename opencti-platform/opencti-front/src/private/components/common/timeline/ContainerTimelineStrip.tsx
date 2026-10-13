@@ -30,6 +30,7 @@ import {
   TIMELINE_MILESTONE_DEFAULT_LANE,
   TIMELINE_OPEN_SETTINGS_PARAM,
   type TimelineGrouping,
+  timelineContainerHasTasks,
   toTime,
 } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
@@ -240,9 +241,10 @@ interface ContainerTimelineStripContentProps {
   queryRef: PreloadedQuery<ContainerTimelineStripQuery>;
   containerId: string;
   timelinePath: string;
+  withTasks: boolean;
 }
 
-const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: ContainerTimelineStripContentProps) => {
+const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, withTasks }: ContainerTimelineStripContentProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
@@ -262,7 +264,7 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: 
               canEdit={canEdit}
             />
           </Suspense>
-          <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} />
+          <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} withTasks={withTasks} />
         </>
       ) : (
         <ContainerTimelineStripEmpty
@@ -296,11 +298,12 @@ const ContainerTimelineStripSkeleton = () => {
 
 interface ContainerTimelineStripProps {
   containerId: string;
+  entityType: string;
   basePath: string;
 }
 
 /** Timeline widget of the overview of incidents and cases: a half-width card like the other overview widgets. */
-const ContainerTimelineStrip = ({ containerId, basePath }: ContainerTimelineStripProps) => {
+const ContainerTimelineStrip = ({ containerId, entityType, basePath }: ContainerTimelineStripProps) => {
   const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading<ContainerTimelineStripQuery>(containerTimelineStripQuery, { id: containerId });
   const timelinePath = `${basePath}/timeline`;
@@ -308,7 +311,7 @@ const ContainerTimelineStrip = ({ containerId, basePath }: ContainerTimelineStri
     <Card title={t_i18n('Timeline')}>
       {queryRef ? (
         <Suspense fallback={<ContainerTimelineStripSkeleton />}>
-          <ContainerTimelineStripContent queryRef={queryRef} containerId={containerId} timelinePath={timelinePath} />
+          <ContainerTimelineStripContent queryRef={queryRef} containerId={containerId} timelinePath={timelinePath} withTasks={timelineContainerHasTasks(entityType)} />
         </Suspense>
       ) : (
         <ContainerTimelineStripSkeleton />

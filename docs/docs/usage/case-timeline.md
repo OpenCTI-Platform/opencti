@@ -71,14 +71,14 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 | First adversary activity | First activity of this incident on the adversary lane: a dated `uses` or `targets` relationship of a technique, a sighting, observed data, the first seen of the incident or a contained incident, an adversary milestone. The global first and last seen of malware, tools, infrastructures and threats, and the techniques placed in kill chain order, never count |
 | First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
 | First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts |
-| Containment | First containment milestone, or completion of a task that completes the containment |
+| Containment | First **Containment** milestone. On an Incident Response, a Request for Information or a Request for Takedown, also the completion of a task that completes the containment. An Incident holds no task: a **Containment** milestone, added with **Add an event**, is its only way to record the containment |
 | Closure | Last transition to the final workflow status, while the case stays closed |
 
 An event dated in the future, such as a milestone planned ahead, never sets an anchor: it counts once its date has passed and the timeline is computed again.
 
 ### Containment from a task
 
-When a task reaches the last status of its workflow, its edition form and its **Details** card offer the switch **This task completes the containment**. Once it is on, the completion of the task records the containment of the case: the first such completion, or the first **Containment** milestone if it is earlier, sets the containment anchor. The switch stays visible while it is on, also if the task is reopened, and travels with the task in its STIX representation (timeline extension). The task edition form also edits the labels of the task.
+On the cases (Incident Response, Request for Information, Request for Takedown), when a task reaches the last status of its workflow, its edition form and its **Details** card offer the switch **This task completes the containment**. Once it is on, the completion of the task records the containment of the case: the first such completion, or the first **Containment** milestone if it is earlier, sets the containment anchor. The switch stays visible while it is on, also if the task is reopened, and travels with the task in its STIX representation (timeline extension). The task edition form also edits the labels of the task.
 
 The `containment` label is kept as the legacy route: a completed task labelled `containment` (in any case) still records the containment, so that the tasks marked before the switch existed keep their meaning.
 

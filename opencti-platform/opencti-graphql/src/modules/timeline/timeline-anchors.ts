@@ -70,7 +70,8 @@ const isIncidentAdversaryActivity = (event: AnchorEventLike) => event.lane === '
  *   malware, tools, infrastructures and threats stay on the lane as context only
  * - first_detection: first event of the detection lane (platform sightings, coverage results, hunts, deployments, manual detections)
  * - first_response: first thing the team did, first event of the response lane except the due dates of tasks
- * - containment: first containment milestone or first completion of a task labelled containment
+ * - containment: first containment milestone or first completion of a task that completes the containment (switch, or the
+ *   legacy containment label); an Incident holds no task, so only its milestones count
  * - closure: last transition to a final workflow status, only while the container is still closed
  * computed_at is the last generation of the timeline from the knowledge (the consistency pass regenerates the timelines
  * it finds too old), changed_at moves only when one of these values moves: consumers use changed_at as their incremental

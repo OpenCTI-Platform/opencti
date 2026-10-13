@@ -95,6 +95,10 @@ export type TimelineSource = typeof TIMELINE_SOURCES[number];
 export const isTimelineContextWindow = (event: { rule_id?: string | null; kind: string }): boolean => event.rule_id === 'entity-first-last-seen'
   && event.kind !== 'incident_seen';
 
+// The cases hold tasks; an Incident has none, so a Containment milestone is its only way to record the containment
+const TIMELINE_TASK_CONTAINER_TYPES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
+export const timelineContainerHasTasks = (entityType: string | null | undefined): boolean => !!entityType && TIMELINE_TASK_CONTAINER_TYPES.includes(entityType);
+
 export type TimelineExportFormat = 'csv' | 'pdf' | 'svg' | 'png';
 
 // Entity types carrying a timeline

@@ -76,7 +76,7 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
               case 'timeline':
                 return (
                   <Grid key={key} size={{ xs: width }}>
-                    <ContainerTimelineStrip containerId={caseRft.id} basePath={`${resolveLink(caseRft.entity_type)}/${caseRft.id}`} />
+                    <ContainerTimelineStrip containerId={caseRft.id} entityType={caseRft.entity_type} basePath={`${resolveLink(caseRft.entity_type)}/${caseRft.id}`} />
                   </Grid>
                 );
               case 'details':

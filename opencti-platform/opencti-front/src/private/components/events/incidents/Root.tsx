@@ -192,7 +192,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     stixCoreObject={incident}
                   />
                 ),
-                timeline: <ContainerTimeline containerId={incident.id} containerName={incident.name} />,
+                timeline: <ContainerTimeline containerId={incident.id} containerName={incident.name} entityType={incident.entity_type} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={incident}

@@ -11,14 +11,19 @@ const ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
   first_adversary_activity: 'First event of the adversary lane',
   first_detection: 'First event of the detection lane (security platform sightings, coverage results, hunts, deployments)',
   first_response: 'First thing the team did: case opened, task created or completed, status change, assignment, note or response milestone (due dates and future dates never count)',
-  containment: 'First containment milestone or completion of a task labelled containment',
+  containment: 'First Containment milestone, added with Add an event',
   closure: 'Last transition to the final workflow status, while the case stays closed',
 };
+const CONTAINMENT_HELP_WITH_TASKS = 'First Containment milestone, or first task completed with This task completes the containment switched on (or labelled containment)';
+
+const anchorHelp = (key: TimelineAnchorKey, withTasks: boolean) => (key === 'containment' && withTasks ? CONTAINMENT_HELP_WITH_TASKS : ANCHOR_HELP[key]);
 
 interface ContainerTimelineAnchorsProps {
   anchors: TimelineChartAnchors;
   // Overview card: a compact list with the time to the minute and the time elapsed since the first adversary activity
   dense?: boolean;
+  // The container holds tasks (the cases), which can also record the containment
+  withTasks?: boolean;
   onAnchorClick?: (time: number) => void;
 }
 
@@ -39,7 +44,7 @@ const useElapsedLabel = () => {
   };
 };
 
-const ContainerTimelineAnchorList = ({ anchors }: { anchors: TimelineChartAnchors }) => {
+const ContainerTimelineAnchorList = ({ anchors, withTasks }: { anchors: TimelineChartAnchors; withTasks: boolean }) => {
   const { t_i18n } = useFormatter();
   const intl = useIntl();
   const theme = useTheme();
@@ -72,7 +77,7 @@ const ContainerTimelineAnchorList = ({ anchors }: { anchors: TimelineChartAnchor
                 </Text>
               </div>
             </TooltipTrigger>
-            <TooltipContent>{t_i18n(ANCHOR_HELP[key])}</TooltipContent>
+            <TooltipContent>{t_i18n(anchorHelp(key, withTasks))}</TooltipContent>
           </Tooltip>
         );
       })}
@@ -81,12 +86,12 @@ const ContainerTimelineAnchorList = ({ anchors }: { anchors: TimelineChartAnchor
 };
 
 /** Per-case anchor timestamps (no aggregated metric): one tile per anchor, empty when not reached yet. */
-const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
+const ContainerTimelineAnchors = ({ anchors, dense = false, withTasks = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
   const { t_i18n, fldt } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
   if (dense) {
-    return <ContainerTimelineAnchorList anchors={anchors} />;
+    return <ContainerTimelineAnchorList anchors={anchors} withTasks={withTasks} />;
   }
   return (
     <div
@@ -134,7 +139,7 @@ const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: Con
           <div role="listitem" key={key} style={{ minWidth: 0 }}>
             <Tooltip>
               <TooltipTrigger asChild>{tile}</TooltipTrigger>
-              <TooltipContent>{t_i18n(ANCHOR_HELP[key])}</TooltipContent>
+              <TooltipContent>{t_i18n(anchorHelp(key, withTasks))}</TooltipContent>
             </Tooltip>
           </div>
         );

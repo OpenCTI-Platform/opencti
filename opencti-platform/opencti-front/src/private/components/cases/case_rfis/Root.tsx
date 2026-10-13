@@ -159,7 +159,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }: RootCaseRfiComponentProps) =
               isContainer={true}
             />
           ),
-          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} />,
+          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} entityType={caseData.entity_type} />,
           entities: (
             <ContainerStixDomainObjects
               container={caseData}

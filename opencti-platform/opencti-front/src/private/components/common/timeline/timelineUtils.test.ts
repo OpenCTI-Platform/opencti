@@ -27,6 +27,7 @@ import {
   serializeTimelineViewState,
   TIMELINE_KINDS,
   TIMELINE_MIN_SPAN,
+  timelineContainerHasTasks,
   type TimelineDomain,
   timelineExportWindow,
   type TimelineViewState,
@@ -92,6 +93,14 @@ describe('Timeline URL view state', () => {
     expect(parseTimelineViewState(params, DEFAULTS)).toEqual(state);
     const defaults = serializeTimelineViewState(parseTimelineViewState(new URLSearchParams(''), DEFAULTS), DEFAULTS);
     expect(defaults.toString()).toEqual('');
+  });
+});
+
+describe('Timeline containers with tasks', () => {
+  it('should tell the cases, which hold tasks, from the incident', () => {
+    expect(['Case-Incident', 'Case-Rfi', 'Case-Rft'].every(timelineContainerHasTasks)).toBe(true);
+    expect(timelineContainerHasTasks('Incident')).toBe(false);
+    expect(timelineContainerHasTasks(undefined)).toBe(false);
   });
 });
 

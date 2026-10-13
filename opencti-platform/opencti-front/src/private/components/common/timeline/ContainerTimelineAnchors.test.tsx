@@ -35,3 +35,20 @@ describe('ContainerTimelineAnchors on the overview card', () => {
     expect(screen.getByTestId('timeline-anchor-closure')).toHaveTextContent('Not reached');
   });
 });
+
+describe('ContainerTimelineAnchors containment help', () => {
+  it('names the tasks on a case, which can record the containment', async () => {
+    const { user } = testRender(<ContainerTimelineAnchors anchors={anchors} withTasks={true} />);
+    await user.hover(screen.getByTestId('timeline-anchor-containment'));
+    const help = await screen.findByRole('tooltip');
+    expect(help).toHaveTextContent('First Containment milestone, or first task completed with This task completes the containment switched on');
+  });
+
+  it('names the milestone only on an incident, which holds no task', async () => {
+    const { user } = testRender(<ContainerTimelineAnchors anchors={anchors} />);
+    await user.hover(screen.getByTestId('timeline-anchor-containment'));
+    const help = await screen.findByRole('tooltip');
+    expect(help).toHaveTextContent('First Containment milestone, added with Add an event');
+    expect(help).not.toHaveTextContent(/task/);
+  });
+});

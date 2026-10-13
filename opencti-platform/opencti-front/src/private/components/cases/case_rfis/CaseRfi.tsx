@@ -160,7 +160,7 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
               case 'timeline':
                 return (
                   <Grid key={key} size={{ xs: width }}>
-                    <ContainerTimelineStrip containerId={caseRfi.id} basePath={`${resolveLink(caseRfi.entity_type)}/${caseRfi.id}`} />
+                    <ContainerTimelineStrip containerId={caseRfi.id} entityType={caseRfi.entity_type} basePath={`${resolveLink(caseRfi.entity_type)}/${caseRfi.id}`} />
                   </Grid>
                 );
               case 'details':

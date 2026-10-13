@@ -105,7 +105,7 @@ const Incident: React.FC<IncidentProps> = ({
               case 'timeline':
                 return (
                   <Grid key={key} item xs={width}>
-                    <ContainerTimelineStrip containerId={incident.id} basePath={`${resolveLink(incident.entity_type)}/${incident.id}`} />
+                    <ContainerTimelineStrip containerId={incident.id} entityType={incident.entity_type} basePath={`${resolveLink(incident.entity_type)}/${incident.id}`} />
                   </Grid>
                 );
               case 'details':

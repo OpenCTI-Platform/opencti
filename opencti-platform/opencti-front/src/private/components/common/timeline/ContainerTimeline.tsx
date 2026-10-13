@@ -63,6 +63,7 @@ import {
   type TimelineGrouping,
   type TimelineViewState,
   type TimelineZoomWindow,
+  timelineContainerHasTasks,
   toTime,
   zoomDomain,
 } from './timelineUtils';
@@ -481,11 +482,12 @@ const ContainerTimelineEventsView = ({
 interface ContainerTimelineContentProps {
   containerId: string;
   containerName: string;
+  entityType: string;
   summaryRef: PreloadedQuery<ContainerTimelineSummaryQuery>;
   reloadSummary: () => void;
 }
 
-const ContainerTimelineContent = ({ containerId, containerName, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
+const ContainerTimelineContent = ({ containerId, containerName, entityType, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
@@ -664,6 +666,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
     <div data-testid="container-timeline">
       <ContainerTimelineAnchors
         anchors={summary.anchors}
+        withTasks={timelineContainerHasTasks(entityType)}
         onAnchorClick={(time) => {
           const centered = centerDomain(currentTimelineDomain(domain, visibleDomain, state.zoom), time);
           clearTimeout(urlTimer.current);
@@ -766,9 +769,10 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
 interface ContainerTimelineProps {
   containerId: string;
   containerName: string;
+  entityType: string;
 }
 
-const ContainerTimelineOfContainer = ({ containerId, containerName }: ContainerTimelineProps) => {
+const ContainerTimelineOfContainer = ({ containerId, containerName, entityType }: ContainerTimelineProps) => {
   const [summaryRef, loadSummary] = useQueryLoadingWithLoadQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, { id: containerId });
   const reloadSummary = useCallback(() => loadSummary({ id: containerId }, { fetchPolicy: 'network-only' }), [loadSummary, containerId]);
   // Usage telemetry: one opening of the tab (the strip and the widget read the same summary without counting)
@@ -779,7 +783,7 @@ const ContainerTimelineOfContainer = ({ containerId, containerName }: ContainerT
   if (!summaryRef) return <Loader variant={LoaderVariant.container} />;
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <ContainerTimelineContent containerId={containerId} containerName={containerName} summaryRef={summaryRef} reloadSummary={reloadSummary} />
+      <ContainerTimelineContent containerId={containerId} containerName={containerName} entityType={entityType} summaryRef={summaryRef} reloadSummary={reloadSummary} />
     </Suspense>
   );
 };
@@ -788,8 +792,8 @@ const ContainerTimelineOfContainer = ({ containerId, containerName }: ContainerT
  * Timeline tab of an Incident or a Case (Incident response, Request for information, Request for takedown). The route
  * keeps the component from one container to the next: keyed by the container, each one starts with its own state.
  */
-const ContainerTimeline = ({ containerId, containerName }: ContainerTimelineProps) => (
-  <ContainerTimelineOfContainer key={containerId} containerId={containerId} containerName={containerName} />
+const ContainerTimeline = ({ containerId, containerName, entityType }: ContainerTimelineProps) => (
+  <ContainerTimelineOfContainer key={containerId} containerId={containerId} containerName={containerName} entityType={entityType} />
 );
 
 export default ContainerTimeline;

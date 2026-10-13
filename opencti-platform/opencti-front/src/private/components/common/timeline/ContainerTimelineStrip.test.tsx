@@ -15,7 +15,7 @@ interface StripCase {
 
 // The summary of the case counts every event, the events query only the lanes and kinds its timeline settings show
 const renderStrip = async (total: number, shownEvents: Array<Record<string, unknown>>, { canEdit = true, enabledLanes = ['adversary'], hiddenKinds = [] }: StripCase = {}) => {
-  const rendered = testRender(<ContainerTimelineStrip containerId="case-1" basePath="/dashboard/cases/incidents/case-1" />);
+  const rendered = testRender(<ContainerTimelineStrip containerId="case-1" entityType="Case-Incident" basePath="/dashboard/cases/incidents/case-1" />);
   const { relayEnv } = rendered;
   const resolve = (operation: OperationDescriptor) => {
     if (operation.request.node.params.name === 'ContainerTimelineStripQuery') {
