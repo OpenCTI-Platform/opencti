@@ -205,6 +205,36 @@ describe('WorkflowTransitions – validate draft dialog', () => {
     expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
   });
 
+  it('focuses the comment field when the transition dialog opens', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        pendingStatus: null,
+        pendingError: null,
+        pendingTransition: null,
+        allowedTransitions: [
+          {
+            event: 'publish',
+            toState: 'published',
+            actions: [],
+            comment: 'required',
+            requiresShareOrganizationInput: false,
+            requiresUnshareOrganizationInput: false,
+            toStatus: makeStatus(),
+          },
+        ],
+      },
+    });
+
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('publish'));
+    // Not the dialog's close button, which Radix would focus first
+    expect(await screen.findByLabelText(/Comment/)).toHaveFocus();
+  });
+
   it('shows a warning Alert when processingCount > 0 in the validate dialog', async () => {
     const draft = {
       ...makeDraft({

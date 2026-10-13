@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 // fds:keep-mui gap #66 — paired with the Autocomplete above
 import TextField from '@mui/material/TextField';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
+import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent, useEffect, useRef } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { isStixObjectTypes } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../i18n';
@@ -62,6 +62,15 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
     subKey,
     setInputValues,
   });
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Same as BasicFilterInput: the operator select is rendered before this field,
+  // so without focus on open the value takes an extra Tab to reach — and focusing
+  // it is also what triggers the first entity search (see `onFocus` below).
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
     const currentValues = getEditedValues(filter, subKey);
@@ -180,7 +189,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
           variant="outlined"
           size="small"
           fullWidth={true}
-          autoFocus={true}
+          inputRef={inputRef}
           onFocus={triggerSearch}
         />
       )}
