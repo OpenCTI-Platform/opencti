@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { extractResolvedFiltersFromInstance } from '../../../src/manager/cacheManager';
+import { logApp } from '../../../src/config/conf';
 import type { BasicStoreCommon } from '../../../src/types/store';
 
 const instanceOfPlaybookListenKnowledgeWithSelectedEntities = {
@@ -50,12 +51,29 @@ describe('Cache Manager', () => {
             }],
             links: [],
           }),
+          internal_id: 'playbook-id',
           entity_type: 'Playbook',
         } as unknown as BasicStoreCommon);
-        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR('id2'))).toEqual([]);
-        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR({ value: 'id2' }))).toEqual([]);
-        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(null))).toEqual([]);
-        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(['id2', null, { value: 'id3' }]))).toEqual(['id3']);
+        const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+        try {
+          // Well formatted or empty values: no warning
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR([{ value: 'id2' }]))).toEqual(['id2']);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR([]))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(null))).toEqual([]);
+          expect(warnSpy).not.toHaveBeenCalled();
+          // Malformed values: ignored with a warning
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR('id2'))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR({ value: 'id2' }))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(['id2', null, { value: 'id3' }]))).toEqual(['id3']);
+          expect(warnSpy).toHaveBeenCalledTimes(3);
+          expect(warnSpy).toHaveBeenLastCalledWith(expect.any(String), {
+            playbook_id: 'playbook-id',
+            node_id: 'id1',
+            inPirFilters: ['id2', null, { value: 'id3' }],
+          });
+        } finally {
+          warnSpy.mockRestore();
+        }
       });
     });
   });

@@ -105,10 +105,23 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     // IDs from list of PIRs to listen.
     // inPirFilters is not validated at save time, ignore anything that is not an array of { value }
     // so a single malformed playbook cannot break the whole resolved filters cache.
-    const playbookInPirFilterIds = configurations
-      .map((config) => config.inPirFilters)
-      .flatMap((f) => (Array.isArray(f) ? f : []).map((i: { value?: string } | null) => i?.value))
-      .filter((id) => isNotEmptyField(id));
+    const playbookInPirFilterIds: string[] = [];
+    for (let index = 0; index < definition.nodes.length; index += 1) {
+      const { inPirFilters } = configurations[index];
+      if (isNotEmptyField(inPirFilters)) {
+        const inPirFilterIds = (Array.isArray(inPirFilters) ? inPirFilters : [])
+          .map((i: { value?: string } | null) => i?.value)
+          .filter((id) => isNotEmptyField(id));
+        if (!Array.isArray(inPirFilters) || inPirFilterIds.length !== inPirFilters.length) {
+          logApp.warn('[CACHE] Malformed inPirFilters in playbook configuration, invalid values are ignored', {
+            playbook_id: instance.internal_id,
+            node_id: definition.nodes[index].id,
+            inPirFilters,
+          });
+        }
+        pushAll(playbookInPirFilterIds, inPirFilterIds);
+      }
+    }
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
