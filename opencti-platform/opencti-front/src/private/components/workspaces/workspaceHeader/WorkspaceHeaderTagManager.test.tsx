@@ -33,4 +33,12 @@ describe('WorkspaceHeaderTagManager', () => {
     rerender(<WorkspaceHeaderTagManager tags={['first', 'second']} workspaceId="workspace-1" canEdit />);
     expect(screen.getByRole('button', { name: 'More' })).toHaveFocus();
   });
+
+  it('focuses the new tag field when the "More" dialog opens', async () => {
+    const { user } = testRender(<WorkspaceHeaderTagManager tags={['first', 'second']} workspaceId="workspace-1" canEdit />);
+
+    await user.click(screen.getByRole('button', { name: 'More' }));
+    await screen.findByRole('dialog', { name: 'Entity tags' });
+    await waitFor(() => expect(screen.getByLabelText('New tag')).toHaveFocus());
+  });
 });

@@ -49,6 +49,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   const inlineTagInputId = 'inline-new-tag-input';
   const inlineTagInputRef = useRef<HTMLInputElement | null>(null);
+  const dialogTagInputRef = useRef<HTMLInputElement | null>(null);
 
   // The inline field appears in place (Slide) while the trigger button stays
   // mounted, so removing autoFocus left it never reached nor announced.
@@ -199,6 +200,11 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
             onClose={toggleTagDialog}
             title={t_i18n('Entity tags')}
             size="small"
+            slotProps={{
+              // Adding a tag is what this dialog is opened for once "More"
+              // replaces "Add tag"; focus its field once the dialog has entered.
+              transition: { onEntered: () => dialogTagInputRef.current?.focus() },
+            }}
           >
             <Formik
               initialValues={{ newTag: '' }}
@@ -208,6 +214,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 <label className="sr-only" htmlFor="dialog-new-tag-input">{t_i18n('New tag')}</label>
                 <Field
                   id="dialog-new-tag-input"
+                  innerRef={(node: HTMLInputElement | null) => {
+                    dialogTagInputRef.current = node;
+                  }}
                   component={TextField}
                   variant="outlined"
                   name="newTag"
