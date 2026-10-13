@@ -29,7 +29,15 @@ import { useComputeLink } from '../../../../utils/hooks/useAppData';
 import useTimelineColors from './useTimelineColors';
 import type { TimelineListEvent } from './ContainerTimelineList';
 import TimelineSourceStateChip from './TimelineSourceStateChip';
-import { describeTimelineEventTimes, TIMELINE_KIND_LABELS, TIMELINE_LANE_LABELS, TIMELINE_PRECISION_LABELS, type TimelineLane, type TimelinePrecision } from './timelineUtils';
+import {
+  cropLongTokens,
+  describeTimelineEventTimes,
+  TIMELINE_KIND_LABELS,
+  TIMELINE_LANE_LABELS,
+  TIMELINE_PRECISION_LABELS,
+  type TimelineLane,
+  type TimelinePrecision,
+} from './timelineUtils';
 
 interface TimelineElementRef {
   readonly id: string;
@@ -170,7 +178,7 @@ const ContainerTimelineEventDrawer = ({
   );
 
   return (
-    <Drawer title={event.title} open={true} onClose={onClose} size="medium" header={headerActions}>
+    <Drawer title={cropLongTokens(event.title)} open={true} onClose={onClose} size="medium" header={headerActions}>
       <>
         <div data-testid="timeline-event-drawer" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2.5) }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
@@ -213,7 +221,7 @@ const ContainerTimelineEventDrawer = ({
               <MetadataItem label={t_i18n('Element')}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), minWidth: 0 }}>
                   <ItemIcon type={element.entity_type} size="small" />
-                  <div style={{ minWidth: 0 }}>
+                  <div style={{ minWidth: 0, overflowWrap: 'anywhere' }} data-testid="timeline-event-element-value">
                     {elementLink ? (
                       <Link to={elementLink} data-testid="timeline-event-element">{element.representative?.main ?? t_i18n(`entity_${element.entity_type}`)}</Link>
                     ) : (
@@ -296,7 +304,7 @@ const ContainerTimelineEventDrawer = ({
         </div>
         <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <DialogContent>
-            <DialogTitle>{t_i18n('Delete the event {title}?', { values: { title: event.title } })}</DialogTitle>
+            <DialogTitle>{t_i18n('Delete the event {title}?', { values: { title: cropLongTokens(event.title) } })}</DialogTitle>
             <DialogBody>{t_i18n('The event is removed from the timeline and its anchors are recomputed.')}</DialogBody>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setConfirmDelete(false)}>{t_i18n('Cancel')}</Button>

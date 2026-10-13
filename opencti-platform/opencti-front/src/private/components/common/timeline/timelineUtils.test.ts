@@ -6,6 +6,7 @@ import {
   clusterLaneEvents,
   compactDayTicks,
   computeTimelineExtent,
+  cropLongTokens,
   endsAfterStart,
   computeVisibleDomain,
   currentTimelineDomain,
@@ -255,6 +256,14 @@ describe('Timeline lane layout', () => {
     expect(rows.get('c')).toEqual(0);
     expect(rowCount).toEqual(2);
     expect(layoutLaneRows([]).rowCount).toEqual(1);
+  });
+});
+
+describe('Timeline titles', () => {
+  it('should crop the values too long to fit a line to their start and end', () => {
+    expect(cropLongTokens('Indicator abcdefghijklmnopqrstuvwxyz0123456789 valid')).toEqual('Indicator abcdefgh...23456789 valid');
+    expect(cropLongTokens('short words only')).toEqual('short words only');
+    expect(cropLongTokens('x'.repeat(24))).toEqual('x'.repeat(24));
   });
 });
 
