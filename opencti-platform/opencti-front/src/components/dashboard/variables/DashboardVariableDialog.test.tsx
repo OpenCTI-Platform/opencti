@@ -221,6 +221,43 @@ describe('DashboardVariableDialog', () => {
     await waitFor(() => expect(submit()).toBeEnabled());
   });
 
+  it('forgets the default value when the vocabulary category changes', async () => {
+    const { user } = renderDialog();
+    await user.type(nameInput(), 'Event');
+    await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+    await user.click(screen.getByRole('option', { name: 'Vocabulary' }));
+    await user.click(await screen.findByRole('combobox', { name: /Vocabulary category/ }));
+    await user.click(screen.getByRole('option', { name: 'report_types' }));
+    await user.type(await screen.findByTestId('value-input'), 'threat-report');
+    await waitFor(() => expect(submit()).toBeEnabled());
+    await user.click(screen.getByRole('combobox', { name: /Vocabulary category/ }));
+    await user.click(screen.getByRole('option', { name: 'event_type' }));
+    await waitFor(() => expect(screen.getByTestId('value-input')).toHaveValue(''));
+    expect(submit()).toBeDisabled();
+    await user.type(screen.getByTestId('value-input'), 'conference');
+    await user.click(submit());
+    await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+      vocabularyCategory: 'event_type',
+      defaultValue: 'conference',
+    }));
+  });
+
+  it('forgets the default value when the entity types change', async () => {
+    const { user } = renderDialog();
+    await user.type(nameInput(), 'Entity');
+    await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+    await user.click(screen.getByRole('option', { name: 'Entity' }));
+    await user.click(await screen.findByRole('combobox', { name: /Entity types/ }));
+    await user.click(screen.getByRole('option', { name: 'Malware' }));
+    await user.type(await screen.findByTestId('value-input'), 'abc');
+    await waitFor(() => expect(submit()).toBeEnabled());
+    await user.click(screen.getByRole('combobox', { name: /Entity types/ }));
+    await user.click(screen.getByRole('option', { name: 'Report' }));
+    await waitFor(() => expect(screen.getByTestId('value-input')).toHaveValue(''));
+    expect(submit()).toBeDisabled();
+  });
+
   it('refuses a duplicated name and does not upsert', async () => {
     const { user } = renderDialog({ existingVariables: [sector] });
     await user.type(nameInput(), 'sector');
@@ -255,6 +292,62 @@ describe('DashboardVariableDialog', () => {
       await user.click(submit());
       await waitFor(() => expect(mocks.onClose).toHaveBeenCalledTimes(1));
       expect(mocks.upsert).toHaveBeenCalledWith({ ...sector, name: 'Sectors' });
+    });
+
+    it('locks the type parameters and resends them untouched', async () => {
+      const vocabulary: DashboardVariable = {
+        id: '44444444-4444-4444-8444-444444444444',
+        name: 'Event',
+        type: 'vocabulary',
+        vocabularyCategory: 'report_types',
+        restriction: { mode: 'none' },
+        defaultValue: 'threat-report',
+      };
+      const killChain: DashboardVariable = {
+        id: '55555555-5555-4555-8555-555555555555',
+        name: 'Phase',
+        type: 'killChainPhase',
+        killChainName: 'mitre-attack',
+        restriction: { mode: 'none' },
+        defaultValue: 'phase-1',
+      };
+      const entity: DashboardVariable = {
+        id: '66666666-6666-4666-8666-666666666666',
+        name: 'Actor',
+        type: 'entity',
+        entityTypes: ['Malware'],
+        restriction: { mode: 'none' },
+        defaultValue: 'abc',
+      };
+      const all = [vocabulary, killChain, entity];
+      const parameterField = () => ({
+        vocabulary: screen.queryByRole('combobox', { name: /Vocabulary category/ }),
+        killChain: screen.queryByRole('textbox', { name: /Kill chain/ }),
+        entity: screen.queryByRole('combobox', { name: /Entity types/ }),
+      });
+
+      const first = renderDialog({ variable: vocabulary, existingVariables: all });
+      expect(parameterField().vocabulary).toBeDisabled();
+      await first.user.type(nameInput(), 's');
+      await first.user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+      expect(mocks.upsert).toHaveBeenLastCalledWith({ ...vocabulary, name: 'Events' });
+      first.unmount();
+
+      const second = renderDialog({ variable: killChain, existingVariables: all });
+      expect(parameterField().killChain).toBeDisabled();
+      await second.user.type(nameInput(), 's');
+      await second.user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(2));
+      expect(mocks.upsert).toHaveBeenLastCalledWith({ ...killChain, name: 'Phases' });
+      second.unmount();
+
+      const third = renderDialog({ variable: entity, existingVariables: all });
+      expect(parameterField().entity).toBeDisabled();
+      await third.user.type(nameInput(), 's');
+      await third.user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(3));
+      expect(mocks.upsert).toHaveBeenLastCalledWith({ ...entity, name: 'Actors' });
     });
 
     it('does not count the edited variable against its own name nor the quota', async () => {

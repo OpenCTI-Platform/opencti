@@ -38,7 +38,14 @@ export interface DashboardVariableDialogProps {
   onClose: () => void;
 }
 
-const VocabularyCategoryField = ({ disabled }: { disabled?: boolean }) => {
+// The parameters of the type are locked in edition (filters already reference the variable) and, in creation,
+// changing one makes the default value meaningless.
+interface ParameterFieldProps {
+  disabled: boolean;
+  onChange: () => void;
+}
+
+const VocabularyCategoryField = ({ disabled, onChange }: ParameterFieldProps) => {
   const { t_i18n } = useFormatter();
   const { categoriesOptions } = useVocabularyCategory();
   return (
@@ -49,6 +56,7 @@ const VocabularyCategoryField = ({ disabled }: { disabled?: boolean }) => {
       fullWidth
       required
       disabled={disabled}
+      onChange={onChange}
     >
       {categoriesOptions.map(({ value, label }) => (
         <SelectItem key={value} value={value}>{label}</SelectItem>
@@ -57,7 +65,7 @@ const VocabularyCategoryField = ({ disabled }: { disabled?: boolean }) => {
   );
 };
 
-const EntityTypesField = () => {
+const EntityTypesField = ({ disabled, onChange }: ParameterFieldProps) => {
   const { t_i18n } = useFormatter();
   const { allEntityTypes } = useSchema();
   return (
@@ -69,6 +77,8 @@ const EntityTypesField = () => {
       getOptionLabel={(entityType: string) => t_i18n(`entity_${entityType}`)}
       multiple
       required
+      disabled={disabled}
+      onChange={onChange}
     />
   );
 };
@@ -165,13 +175,14 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                 )}
                 {hasParameterStep && parameter === 'vocabularyCategory' && (
                   <Suspense fallback={null}>
-                    <VocabularyCategoryField />
+                    <VocabularyCategoryField disabled={isEditing} onChange={forgetDefaultValue} />
                   </Suspense>
                 )}
                 {hasParameterStep && parameter === 'killChainName' && (
                   <Input
                     label={t_i18n('Kill chain')}
                     required
+                    disabled={isEditing}
                     value={values.killChainName}
                     onChange={(event) => {
                       setFieldValue('killChainName', event.target.value);
@@ -180,7 +191,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     onBlur={() => setFieldTouched('killChainName', true)}
                   />
                 )}
-                {hasParameterStep && parameter === 'entityTypes' && <EntityTypesField />}
+                {hasParameterStep && parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
                 {hasRestrictionStep && (
                   <RadioGroup
                     aria-label={t_i18n('Restriction')}
