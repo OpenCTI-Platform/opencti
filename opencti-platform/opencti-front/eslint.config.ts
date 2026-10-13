@@ -51,13 +51,14 @@ export default defineConfig([
     },
     settings: {
       'jsx-a11y': {
-        // Maps MUI components to semantic HTML tags
+        // Lints these components as the native element they render. The match is
+        // by JSX name, not import source: every Button and IconButton here (the
+        // product wrappers, the design system's, MUI's) renders a <button>.
+        // Select, TextField or Switch would not fit: their root is a <div>, a
+        // <span> or no element at all, not the native control.
         components: {
           Button: 'button',
           IconButton: 'button',
-          TextField: 'input',
-          Select: 'select',
-          Switch: 'input',
         },
       },
     },
