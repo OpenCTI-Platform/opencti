@@ -11,6 +11,13 @@ export interface GlobalExportBundleCategory {
 
 export const EXPORT_CATEGORIES: GlobalExportBundleCategory[] = [
   {
+    key: 'Security & Access',
+    label: 'Security & Access',
+    items: [
+      { key: 'SettingsPolicies', label: 'Policies' },
+    ],
+  },
+  {
     key: 'Data Model',
     label: 'Data Model',
     items: [
