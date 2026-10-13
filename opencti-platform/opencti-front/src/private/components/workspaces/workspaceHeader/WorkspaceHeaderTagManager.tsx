@@ -63,7 +63,30 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   const shownTags = namedTags.slice(0, 2);
   const hiddenTagCount = namedTags.length - shownTags.length;
 
+  // One ref for the header trigger: "Add tag", or "More" once there are several
+  // tags. Only one of the two is rendered at a time.
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const hasTagMenu = tags.length > 1;
+  const refocusTriggerAfterSwap = useRef(false);
+
+  // Adding a second tag swaps "Add tag" for "More" once the mutation lands,
+  // unmounting the button that had the focus; hand it to "More" instead.
+  useEffect(() => {
+    if (refocusTriggerAfterSwap.current) {
+      refocusTriggerAfterSwap.current = false;
+      if (document.activeElement === document.body) {
+        triggerRef.current?.focus();
+      }
+    }
+  }, [hasTagMenu]);
+
   const toggleTagInput = () => setIsTagInputOpen(!isTagInputOpen);
+  // The inline field unmounts with the focus inside it, which would leave
+  // keyboard users on <body>; give it back to the trigger that opened it.
+  const closeTagInput = () => {
+    setIsTagInputOpen(false);
+    triggerRef.current?.focus();
+  };
   const toggleTagDialog = () => setIsTagDialogOpen(!isTagDialogOpen);
 
   // The product field reports (name, value), not a DOM event.
@@ -74,7 +97,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   const handleInlineTagInputKeyDown = (key: string) => {
     if (key === 'Escape') {
       setNewTag('');
-      setIsTagInputOpen(false);
+      closeTagInput();
     }
   };
 
@@ -97,9 +120,10 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   const onSubmitCreateTag: FormikConfig<WorkspaceHeaderTagCreatorFormValues>['onSubmit'] = (data, { resetForm }) => {
     if (!tags.includes(newTag) && newTag !== '') {
+      refocusTriggerAfterSwap.current = isTagInputOpen && tags.length === 1;
       handleManageTags([...tags, newTag], t_i18n('The tag has been added'));
     }
-    if (isTagInputOpen) toggleTagInput();
+    if (isTagInputOpen) closeTagInput();
     setNewTag('');
     resetForm();
   };
@@ -108,8 +132,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
     <>
       <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
         <>
-          {tags.length > 1 ? (
+          {hasTagMenu ? (
             <IconButton
+              ref={triggerRef}
               color="primary"
               // md, like its `Add tag` alternate below: the two share one slot
               // and must not change size with the state.
@@ -122,6 +147,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           ) : (
             <Tooltip title={isTagInputOpen ? t_i18n('Cancel') : t_i18n('Add tag')}>
               <IconButton
+                ref={triggerRef}
                 color="primary"
                 // md.
                 size="default"
