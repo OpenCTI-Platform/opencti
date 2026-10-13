@@ -41,6 +41,8 @@ describe('useApiMutation – normal mode (isDeferredMode = false)', () => {
     vi.spyOn(useDeferredCreationModule, 'useDeferredCreation').mockReturnValue({
       isDeferredMode: false,
       captureInput: vi.fn(),
+      registerPending: vi.fn(),
+      getPending: vi.fn(),
     });
   });
 
@@ -63,6 +65,8 @@ describe('useApiMutation – deferred mode (isDeferredMode = true)', () => {
     vi.spyOn(useDeferredCreationModule, 'useDeferredCreation').mockReturnValue({
       isDeferredMode: true,
       captureInput,
+      registerPending: vi.fn(),
+      getPending: vi.fn(),
     });
   });
 
