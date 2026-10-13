@@ -108,6 +108,31 @@ const NOTE_ADD = gql`
     noteAdd(input: $input) { id standard_id }
   }
 `;
+const OPINION_ADD = gql`
+  mutation TimelineOpinionAdd($input: OpinionAddInput!) {
+    opinionAdd(input: $input) { id standard_id }
+  }
+`;
+const TASK_FIELD_PATCH = gql`
+  mutation TimelineTaskFieldPatch($id: ID!, $input: [EditInput!]!) {
+    taskFieldPatch(id: $id, input: $input) { id }
+  }
+`;
+const STATUS_TEMPLATES = gql`
+  query TimelineStatusTemplates {
+    statusTemplates(first: 100) { edges { node { id name } } }
+  }
+`;
+const SUB_TYPE_STATUS_ADD = gql`
+  mutation TimelineSubTypeStatusAdd($id: ID!, $input: StatusAddInput!) {
+    subTypeEdit(id: $id) { statusAdd(input: $input) { id statuses { id order template { name } } } }
+  }
+`;
+const SUB_TYPE_STATUS_DELETE = gql`
+  mutation TimelineSubTypeStatusDelete($id: ID!, $statusId: String!) {
+    subTypeEdit(id: $id) { statusDelete(statusId: $statusId) { id } }
+  }
+`;
 const STIX_CORE_OBJECT_DELETE = gql`
   mutation TimelineStixCoreObjectDelete($id: ID!) {
     stixCoreObjectEdit(id: $id) { delete }
@@ -346,6 +371,7 @@ interface TimelineEventNode {
   kind: string;
   lane: string;
   title: string;
+  description: string | null;
   source: string;
   rule_id: string | null;
   element_id: string | null;
@@ -562,6 +588,110 @@ describe('Incident and case timeline', () => {
       expect(rules.find((r) => r.id === 'technique-kill-chain')).toMatchObject({ available: true, kinds: ['technique_used'] });
       expect(rules.find((r) => r.id === 'security-coverage-result')?.available).toBe(true);
       expect(rules.map((r) => r.id)).toEqual(expect.arrayContaining(['hunt-run', 'indicator-deployment', 'investigation-run']));
+    });
+
+    describe('tasks, notes and opinions of a case', () => {
+      let containmentCaseId: string;
+      let containmentLabelId: string;
+      let containmentTaskId: string;
+      let authoredNoteId: string;
+      let authoredOpinionId: string;
+      let authorId: string;
+      const taskStatusIds: string[] = [];
+
+      beforeAll(async () => {
+        const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
+        authorId = author.internal_id;
+        const templates = await queryAsAdminWithSuccess({ query: STATUS_TEMPLATES, variables: {} });
+        const templateId = (name: string) => templates.data.statusTemplates.edges
+          .map((edge: { node: { id: string; name: string } }) => edge.node)
+          .find((node: { name: string }) => node.name === name)?.id;
+        // Orders above any other status of tasks: CLOSED is the last status of their workflow
+        const addStatus = async (name: string, order: number) => {
+          const result = await queryAsAdminWithSuccess({
+            query: SUB_TYPE_STATUS_ADD,
+            variables: { id: 'Task', input: { template_id: templateId(name), order, scope: 'GLOBAL' } },
+          });
+          const status = result.data.subTypeEdit.statusAdd.statuses.find((s: { order: number }) => s.order === order);
+          taskStatusIds.push(status.id);
+          return status.id as string;
+        };
+        await addStatus('NEW', 900);
+        await addStatus('CLOSED', 901);
+        const label = await queryAsAdminWithSuccess({ query: LABEL_ADD, variables: { input: { value: 'containment', color: '#ff9800' } } });
+        containmentLabelId = label.data.labelAdd.id;
+        const containmentCase = await queryAsAdminWithSuccess({
+          query: CASE_INCIDENT_ADD,
+          variables: { input: { name: 'Timeline containment case', created: '2026-03-01T08:00:00.000Z', objects: [attackPatternId] } },
+        });
+        containmentCaseId = containmentCase.data.caseIncidentAdd.id;
+        const task = await queryAsAdminWithSuccess({
+          query: TASK_ADD,
+          variables: {
+            input: {
+              name: 'Isolate the mail server',
+              created: '2026-03-01T09:00:00.000Z',
+              objects: [containmentCaseId],
+              objectLabel: [containmentLabelId],
+              createdBy: TEST_ORGANIZATION.id,
+            },
+          },
+        });
+        containmentTaskId = task.data.taskAdd.id;
+        const note = await queryAsAdminWithSuccess({
+          query: NOTE_ADD,
+          variables: { input: { attribute_abstract: 'Timeline authored note', content: 'Mail server isolated', created: '2026-03-01T10:00:00.000Z', objects: [containmentCaseId], createdBy: TEST_ORGANIZATION.id } },
+        });
+        authoredNoteId = note.data.noteAdd.id;
+        const opinion = await queryAsAdminWithSuccess({
+          query: OPINION_ADD,
+          variables: { input: { opinion: 'agree', explanation: 'Isolation confirmed', created: '2026-03-01T11:00:00.000Z', objects: [containmentCaseId], createdBy: TEST_ORGANIZATION.id } },
+        });
+        authoredOpinionId = opinion.data.opinionAdd.id;
+        await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: containmentTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: containmentCaseId } });
+      });
+
+      afterAll(async () => {
+        const deletions: Array<[typeof STIX_CORE_OBJECT_DELETE, string | undefined]> = [
+          [STIX_CORE_OBJECT_DELETE, authoredOpinionId],
+          [STIX_CORE_OBJECT_DELETE, authoredNoteId],
+          [STIX_CORE_OBJECT_DELETE, containmentTaskId],
+          [STIX_CORE_OBJECT_DELETE, containmentCaseId],
+          [LABEL_DELETE, containmentLabelId],
+        ];
+        for (let index = 0; index < deletions.length; index += 1) {
+          const [query, id] = deletions[index];
+          if (id) await queryAsAdmin({ query, variables: { id } });
+        }
+        for (let index = 0; index < taskStatusIds.length; index += 1) {
+          await queryAsAdmin({ query: SUB_TYPE_STATUS_DELETE, variables: { id: 'Task', statusId: taskStatusIds[index] } });
+        }
+        if (containmentCaseId) await deleteContainerTimeline(containmentCaseId);
+      });
+
+      it('a closed task labelled containment sets the containment anchor', async () => {
+        const completions = await listTimeline(containmentCaseId, { kinds: ['task_completed'] });
+        expect(completions).toHaveLength(1);
+        expect(completions[0]).toMatchObject({ element_id: containmentTaskId, rule_id: 'task-containment', lane: 'response' });
+        const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: containmentCaseId } });
+        expect(iso(anchors.data.timelineAnchors.containment)).toEqual(completions[0].event_time);
+      });
+
+      it('should keep the authors of the tasks, notes and opinions and the kill chain phases of the techniques', async () => {
+        const events = await listTimeline(containmentCaseId, { kinds: ['task_created', 'task_completed', 'note_added', 'opinion_added', 'technique_used'] });
+        const byKind = (kind: string) => events.filter((event) => event.kind === kind);
+        ['task_created', 'task_completed', 'note_added', 'opinion_added'].forEach((kind) => {
+          expect(byKind(kind), kind).toHaveLength(1);
+          expect(byKind(kind)[0].createdBy?.id, kind).toEqual(authorId);
+        });
+        expect(byKind('note_added')[0].element_id).toEqual(authoredNoteId);
+        expect(byKind('opinion_added')[0].element_id).toEqual(authoredOpinionId);
+        const techniques = byKind('technique_used');
+        expect(techniques).toHaveLength(1);
+        expect(techniques[0]).toMatchObject({ element_id: attackPatternId, precision: 'approximate' });
+        expect(techniques[0].description).toContain('timeline-initial-access');
+      });
     });
   });
 
