@@ -70,7 +70,8 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
         setItems((prev) => (append ? [...prev, ...newItems] : newItems));
         setHasNextPage(data?.pageInfo?.hasNextPage ?? false);
         setEndCursor(data?.pageInfo?.endCursor ?? null);
-        setGlobalCount(data?.pageInfo?.globalCount ?? null);
+        // Selections persist across searches, so the total must stay the unfiltered count.
+        if (searchValue === '') setGlobalCount(data?.pageInfo?.globalCount ?? null);
       })
       .catch((error) => {
         if (isLatestRequest()) handleError(error);
