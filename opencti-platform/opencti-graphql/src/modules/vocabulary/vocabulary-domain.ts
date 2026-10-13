@@ -77,7 +77,7 @@ const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) 
   }
 };
 
-export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
+export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput & { export_id?: string }) => {
   checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
   const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);

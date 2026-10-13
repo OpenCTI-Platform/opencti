@@ -507,6 +507,7 @@ export const playbookExport = async (playbook: BasicStoreEntityPlaybook) => {
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'playbook',
+    export_id: playbook.export_id,
     configuration: {
       name,
       description,

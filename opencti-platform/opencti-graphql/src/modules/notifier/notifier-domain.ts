@@ -30,6 +30,7 @@ import type { NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE } from './notifier-statics';
 import type { BasicStoreEntityNotifier, StoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { generateBuiltInExportId } from '../../schema/identifier';
 
 const ajv = new Ajv();
 
@@ -54,7 +55,11 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   }
 };
 
-export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput): Promise<BasicStoreEntityNotifier> => {
+export const addNotifier = async (
+  context: AuthContext,
+  user: AuthUser,
+  notifier: NotifierAddInput & { export_id?: string },
+): Promise<BasicStoreEntityNotifier> => {
   validateNotifier(notifier);
   const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
   const created = await createEntity(context, user, notifierToCreate, ENTITY_TYPE_NOTIFIER);
@@ -142,7 +147,10 @@ export const getNotifierConnector = (context: AuthContext, user: AuthUser, conne
 };
 
 export const initDefaultNotifiers = (context: AuthContext) => {
-  return Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
+  return Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) => {
+    const export_id = generateBuiltInExportId(ENTITY_TYPE_NOTIFIER, { name: notifier.name });
+    return addNotifier(context, SYSTEM_USER, { ...notifier, export_id });
+  }));
 };
 
 export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
