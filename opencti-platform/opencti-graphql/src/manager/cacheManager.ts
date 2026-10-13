@@ -120,7 +120,6 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
           logApp.warn('[CACHE] Malformed inPirFilters in playbook configuration, invalid values are ignored', {
             playbook_id: instance.internal_id,
             node_id: definition.nodes[index].id,
-            inPirFilters,
           });
         }
         pushAll(playbookInPirFilterIds, inPirFilterIds);
