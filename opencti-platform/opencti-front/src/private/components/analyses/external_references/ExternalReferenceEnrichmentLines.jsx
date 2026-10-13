@@ -2,23 +2,9 @@ import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
 import { createRefetchContainer, graphql } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
-import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
-import CircularProgress from '@mui/material/CircularProgress';
-import withStyles from '@mui/styles/withStyles';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import List from '@mui/material/List';
-import { v4 as uuid } from 'uuid';
-import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
+import ConnectorWorkList from '../../common/work/ConnectorWorkList';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -29,14 +15,6 @@ export const externalReferenceEnrichmentLinesQuery = graphql`
     }
     connectorsForImport {
       ...ExternalReferenceEnrichmentLines_connectorsForImport
-    }
-  }
-`;
-
-const externalReferenceEnrichmentLinesDeleteMutation = graphql`
-  mutation ExternalReferenceEnrichmentLinesDeleteMutation($workId: ID!) {
-    workEdit(id: $workId) {
-      delete
     }
   }
 `;
@@ -65,30 +43,8 @@ const externalReferenceEnrichmentLinesAskJob = graphql`
   }
 `;
 
-const styles = (theme) => ({
-  noResult: {
-    top: 10,
-    left: 16,
-    right: 0,
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  tooltip: {
-    maxWidth: 600,
-  },
-});
-
 const ExternalReferenceEnrichment = (props) => {
-  const theme = useTheme();
-  const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
+  const { externalReference, connectorsForImport, relay } = props;
   const { id } = externalReference;
   const file = externalReference.importFiles
     && externalReference.importFiles.edges.length > 0
@@ -107,13 +63,6 @@ const ExternalReferenceEnrichment = (props) => {
     commitMutation({
       mutation: externalReferenceEnrichmentLinesAskEnrich,
       variables: { id, connectorId },
-      onCompleted: () => relay.refetch({ id, entityType: externalReference.entity_type }),
-    });
-  };
-  const deleteWork = (workId) => {
-    commitMutation({
-      mutation: externalReferenceEnrichmentLinesDeleteMutation,
-      variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: externalReference.entity_type }),
     });
   };
@@ -139,155 +88,27 @@ const ExternalReferenceEnrichment = (props) => {
     ...externalReference.connectors,
     ...connectors,
   ]);
+  const items = allConnectors.map((connector) => ({
+    connector,
+    works: connector.connector_type === 'INTERNAL_IMPORT_FILE'
+      ? R.filter(
+          (n) => n.connector.id === connector.id,
+          R.propOr([], 'works', file),
+        )
+      : R.filter(
+          (n) => n.connector && n.connector.id === connector.id,
+          R.propOr([], 'jobs', externalReference),
+        ),
+  }));
   return (
-    <List>
-      {allConnectors.length > 0 ? (
-        allConnectors.map((connector) => {
-          const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
-            ? R.filter(
-                (n) => n.connector.id === connector.id,
-                R.propOr([], 'works', file),
-              )
-            : R.filter(
-                (n) => n.connector && n.connector.id === connector.id,
-                R.propOr([], 'jobs', externalReference),
-              );
-
-          const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
-          return (
-            <div key={connector.id}>
-              <ListItem
-                divider={true}
-                disablePadding
-                secondaryAction={(
-                  <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                    <div style={{ right: 0 }}>
-                      <Tooltip
-                        title={t('Refresh the knowledge using this connector')}
-                      >
-                        <IconButton
-                          disabled={!connector.active || isRefreshing}
-                          onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                            ? askJob(connector.id)
-                            : askEnrich(connector.id))
-                          }
-                          size="default"
-                          aria-label={t('Refresh the knowledge using this connector')}
-                        >
-                          <Refresh />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
-                  </Security>
-                )}
-              >
-                <ListItemButton
-                  classes={{ root: classes.item }}
-                >
-                  <Tooltip
-                    title={
-                      connector.active
-                        ? t('This connector is active')
-                        : t('This connector is disconnected')
-                    }
-                  >
-                    <ListItemIcon
-                      style={{
-                        color: connector.active ? theme.palette.success.main : theme.palette.error.main,
-                      }}
-                    >
-                      <Extension />
-                    </ListItemIcon>
-                  </Tooltip>
-                  <ListItemText primary={connector.name} />
-                </ListItemButton>
-              </ListItem>
-              <List component="div" disablePadding={true}>
-                {jobs.map((work) => {
-                  const isFail = work.errors && work.errors.length > 0;
-                  const messages = R.sortBy(R.prop('timestamp'), [
-                    ...work.messages,
-                    ...work.errors,
-                  ]);
-                  const messageToDisplay = (
-                    <div>
-                      {messages.length > 0
-                        ? R.map(
-                            (message) => (
-                              <div key={message.message}>
-                                [{nsdt(message.timestamp)}] {message.message}
-                              </div>
-                            ),
-                            messages,
-                          )
-                        : t(work.status)}
-                    </div>
-                  );
-                  return (
-                    <Tooltip
-                      title={messageToDisplay}
-                      key={uuid()}
-                      classes={{ tooltip: classes.tooltip }}
-                    >
-                      <ListItem
-                        dense={true}
-                        divider={true}
-                        secondaryAction={(
-                          <div style={{ right: 0 }}>
-                            <IconButton
-                              aria-label={t('delete')}
-                              onClick={() => deleteWork(work.id)}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </div>
-                        )}
-                      >
-                        <ListItemButton
-                          classes={{ root: classes.nested }}
-                        >
-                          <ListItemIcon>
-                            {isFail && (
-                              <Warning
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.error.main,
-                                }}
-                              />
-                            )}
-                            {!isFail && work.status === 'complete' && (
-                              <CheckCircle
-                                style={{
-                                  fontSize: 15,
-                                  color: theme.palette.success.main,
-                                }}
-                              />
-                            )}
-                            {((!isFail && work.status === 'wait')
-                              || work.status === 'progress') && (
-                              <CircularProgress
-                                size={20}
-                                thickness={2}
-                                style={{ marginRight: 10 }}
-                              />
-                            )}
-                          </ListItemIcon>
-                          <ListItemText primary={nsdt(work.timestamp)} />
-                        </ListItemButton>
-                      </ListItem>
-                    </Tooltip>
-                  );
-                })}
-              </List>
-            </div>
-          );
-        })
-      ) : (
-        <div className={classes.noResult}>
-          {t('No connectors for this type of entity')}
-        </div>
-      )}
-    </List>
+    <ConnectorWorkList
+      items={items}
+      onRefresh={(connector) => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
+        ? askJob(connector.id)
+        : askEnrich(connector.id))
+      }
+      onWorkDeleted={() => relay.refetch({ id, entityType: externalReference.entity_type })}
+    />
   );
 };
 
@@ -339,7 +160,4 @@ const ExternalReferenceEnrichmentLinesFragment = createRefetchContainer(
   externalReferenceEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ExternalReferenceEnrichmentLinesFragment);
+export default ExternalReferenceEnrichmentLinesFragment;

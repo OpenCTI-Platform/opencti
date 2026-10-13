@@ -36,6 +36,15 @@ type Workspace implements InternalObject & BasicObject {
     toWidgetExport(widgetId: ID!): String!
     isShared: Boolean
     variables: [DashboardVariable!]! @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true, defaultValue: "[]")
+    enrichmentWorks(
+        first: Int
+        after: ID
+        orderBy: WorksOrdering
+        orderMode: OrderingMode
+        search: String
+        filters: FilterGroup
+        entityIds: [String!]
+    ): WorkConnection
 }
 
 # Ordering
