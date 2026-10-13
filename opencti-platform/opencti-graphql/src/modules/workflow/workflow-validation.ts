@@ -13,6 +13,8 @@ import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
 import { logApp } from '../../config/conf';
+import { WORKFLOW_CONTEXT_FILTER_KEYS } from '../../utils/filtering/filtering-constants';
+import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
@@ -265,6 +267,17 @@ export const validateWorkflowDefinitionData = async (
           }
           if (filter.mode && !filterModeValues.includes(filter.mode)) {
             errors.push({ type: 'INVALID_FILTER_MODE', message: `Invalid filter mode '${filter.mode}'` });
+          }
+          if (filter.key) {
+            // Entity attribute filters are evaluated by the stix filtering engine: reject keys it cannot evaluate,
+            // otherwise the condition is silently considered as not matching at runtime.
+            if (!WORKFLOW_CONTEXT_FILTER_KEYS.includes(filter.key)) {
+              try {
+                validateFilterGroupForStixMatch({ mode: FilterMode.And, filters: [{ ...filter, key: [filter.key] }], filterGroups: [] });
+              } catch (error: any) {
+                errors.push({ type: 'UNSUPPORTED_FILTER_KEY', message: `Unsupported filter key '${filter.key}': ${error.message}` });
+              }
+            }
           }
         });
         if (group.filterGroups && Array.isArray(group.filterGroups)) {

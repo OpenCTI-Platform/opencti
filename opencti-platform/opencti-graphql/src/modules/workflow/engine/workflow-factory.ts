@@ -10,12 +10,15 @@ import { buildResolutionMapForFilterGroup, extractFilterGroupValuesToResolveForC
 import { SYSTEM_USER } from '../../../utils/access';
 import { logApp } from '../../../config/conf';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
-import { FILTER_KEYS_WITH_ME_VALUE, ME_FILTER_VALUE } from '../../../utils/filtering/filtering-constants';
+import {
+  FILTER_KEYS_WITH_ME_VALUE,
+  ME_FILTER_VALUE,
+  WORKFLOW_CONTEXT_FILTER_KEYS,
+  WORKFLOW_ORGANIZATION_FILTER,
+  WORKFLOW_ROLE_FILTER,
+  WORKFLOW_USER_FILTER,
+} from '../../../utils/filtering/filtering-constants';
 import type { FilterResolutionMap } from '../../../utils/filtering/filtering-resolution';
-
-// Filter keys evaluated against the workflow context (triggering user, entity name).
-// Every other key is an entity attribute, evaluated by the stix filtering engine.
-const CONTEXT_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization', 'workflow_role', 'name'];
 
 // What entity attribute filters are evaluated against: the entity as stix and the resolved filter values.
 interface EntityFilterInput {
@@ -42,11 +45,11 @@ export class WorkflowFactory {
     const ctxUser = (ctx as any).triggeringUser ?? (ctx as any).user;
     if (key === 'workflow_group') {
       return (ctxUser?.groups || []).map((g: any) => g.id);
-    } else if (key === 'workflow_organization') {
+    } else if (key === WORKFLOW_ORGANIZATION_FILTER) {
       return (ctxUser?.organizations || []).map((o: any) => o.id);
-    } else if (key === 'workflow_role') {
+    } else if (key === WORKFLOW_ROLE_FILTER) {
       return (ctxUser?.roles || []).map((r: any) => r.name);
-    } else if (key === 'workflow_user') {
+    } else if (key === WORKFLOW_USER_FILTER) {
       return (ctxUser?.id || ctxUser?.internal_id || null);
     }
     return ctx.entity.name;
@@ -54,7 +57,7 @@ export class WorkflowFactory {
 
   private static isContextFilter(filter: Filter): boolean {
     const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
-    return keys.every((k) => CONTEXT_FILTER_KEYS.includes(k));
+    return keys.every((k) => WORKFLOW_CONTEXT_FILTER_KEYS.includes(k));
   }
 
   private static entityFilterCaches = new WeakMap<object, EntityFilterCache>();

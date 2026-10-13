@@ -6,6 +6,7 @@ import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-ty
 import { emptyFilterGroup, stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../utils/filters/filtersUtils';
 import { useEffect } from 'react';
 import { FieldProps } from 'formik';
+import { WORKFLOW_FILTER_KEYS } from '../../../../../utils/filters/filterKeyGrouping';
 
 interface WorkflowCondition {
   filters?: FilterGroup;
@@ -18,12 +19,7 @@ interface WorkflowConditionFiltersProps extends FieldProps<WorkflowCondition> {
 }
 
 // Keys evaluated against the user triggering the transition (and the entity name)
-export const WORKFLOW_CONTEXT_FILTER_KEYS = [
-  'name',
-  'workflow_user',
-  'workflow_group',
-  'workflow_organization',
-];
+export const WORKFLOW_CONTEXT_FILTER_KEYS = ['name', ...WORKFLOW_FILTER_KEYS];
 
 // Entity attribute keys are evaluated by the backend stix filtering engine, so only stix compatible keys are offered.
 // entity_type is dropped: it always equals the workflow entity type.

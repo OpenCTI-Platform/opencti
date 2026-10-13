@@ -40,6 +40,7 @@ vi.mock('../../../src/utils/filtering/filtering-stix/stix-filtering', () => ({
 vi.mock('../../../src/utils/filtering/filtering-constants', () => ({
   FILTER_KEYS_WITH_ME_VALUE: ['objectAssignee', 'objectParticipant'],
   ME_FILTER_VALUE: '@me',
+  WORKFLOW_CONTEXT_FILTER_KEYS: ['workflow_user', 'workflow_group', 'workflow_organization', 'workflow_role', 'name'],
 }));
 
 vi.mock('../../../src/utils/filtering/filtering-resolution', () => ({

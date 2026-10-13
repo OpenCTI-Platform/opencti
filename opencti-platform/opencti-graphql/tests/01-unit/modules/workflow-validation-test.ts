@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
+import { WORKFLOW_ROLE_FILTER, WORKFLOW_USER_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn().mockResolvedValue(null),
@@ -87,7 +88,7 @@ describe('Workflow Validation', () => {
             filters: {
               mode: 'and',
               filters: [
-                { key: 'status', values: ['active'], operator: 'eq' },
+                { key: 'priority', values: ['P1'], operator: 'eq' },
               ],
               filterGroups: [],
             },
@@ -237,7 +238,7 @@ describe('Workflow Validation', () => {
           conditions: {
             filters: {
               mode: 'and',
-              filters: [{ key: 'status', values: ['active'] }],
+              filters: [{ key: 'priority', values: ['P1'] }],
               filterGroups: [
                 {
                   mode: 'or',
@@ -252,6 +253,45 @@ describe('Workflow Validation', () => {
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
     expect(errors).toEqual([]);
+  });
+
+  describe('filter keys', () => {
+    const definitionWithFilter = (filter: Record<string, unknown>) => ({
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [{
+        from: 'existing-state',
+        to: 'in-progress',
+        event: 'test',
+        conditions: { filters: { mode: 'and', filters: [{ operator: 'eq', mode: 'or', values: ['x'], ...filter }], filterGroups: [] } },
+      }],
+    });
+    const validate = (filter: Record<string, unknown>) => validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definitionWithFilter(filter)), 'Incident');
+
+    it.each([
+      ['created_at'],
+      ['regardingOf'],
+      ['entity.confidence'],
+    ])('should reject unsupported filter key %s', async (key) => {
+      const errors = await validate({ key });
+      expect(errors.some((e) => e.type === 'UNSUPPORTED_FILTER_KEY')).toBe(true);
+    });
+
+    it.each([
+      [WORKFLOW_USER_FILTER],
+      [WORKFLOW_ROLE_FILTER],
+      ['name'],
+      ['objectParticipant'],
+    ])('should accept supported filter key %s', async (key) => {
+      expect(await validate({ key })).toEqual([]);
+    });
+
+    it('should reject an unsupported key in a nested filter group', async () => {
+      const definition = definitionWithFilter({ key: 'priority' });
+      definition.transitions[0].conditions.filters.filterGroups = [{ mode: 'or', filters: [{ key: 'created_at', values: ['x'] }], filterGroups: [] }] as any;
+      const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(errors.some((e) => e.type === 'UNSUPPORTED_FILTER_KEY')).toBe(true);
+    });
   });
 
   it('should return error for missing filter key', async () => {
