@@ -70,6 +70,24 @@ describe('Cache Manager', () => {
             playbook_id: 'playbook-id',
             node_id: 'id1',
           });
+          // inPirFilters in a node that is not a "Listen PIR events" node: ignored without warning
+          warnSpy.mockClear();
+          const playbookWithInPirFiltersInOtherNode = {
+            playbook_definition: JSON.stringify({
+              nodes: [{
+                id: 'id1',
+                name: 'Listen knowledge events',
+                position: { x: 0, y: 0 },
+                component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
+                configuration: JSON.stringify({ inPirFilters: [{ value: 'id2' }, 'id3'] }),
+              }],
+              links: [],
+            }),
+            internal_id: 'playbook-id',
+            entity_type: 'Playbook',
+          } as unknown as BasicStoreCommon;
+          expect(extractResolvedFiltersFromInstance(playbookWithInPirFiltersInOtherNode)).toEqual([]);
+          expect(warnSpy).not.toHaveBeenCalled();
         } finally {
           warnSpy.mockRestore();
         }
