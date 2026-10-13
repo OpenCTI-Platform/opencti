@@ -392,7 +392,7 @@ const checksumFile = async (hashName, stream) => {
   });
 };
 
-export const ARTIFACT_ZIP_MAX_EXTRACTED_SIZE = 100 * 1024 * 1024; // 100MB
+export const ARTIFACT_ZIP_MAX_EXTRACTED_SIZE = nconf.get('app:artifact_zip_max_extracted_size') ?? 104857600; // 100MB
 
 export const extractInfectedZipFile = async (file) => {
   const buffer = await streamToBuffer(file.createReadStream());
