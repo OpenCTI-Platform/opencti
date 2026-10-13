@@ -84,9 +84,24 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
     applyValueChange(change, { helpers, filter, subKey });
   };
 
+  // Set while the clear button hands focus back to the input: that focus must not
+  // search again, it would read the input before React empties it.
+  const isRefocusingAfterClearRef = useRef(false);
+
   const handleClearInputValue = () => {
     setInputValue('');
     triggerSearch({ target: { value: '' } } as unknown as SyntheticEvent);
+    // The clear button unmounts with the text it clears, and the Autocomplete root
+    // refocuses the input on any click inside it, right after this handler. Focus it
+    // first, flagged, so that refocus is a no-op instead of a search for the old text.
+    isRefocusingAfterClearRef.current = true;
+    inputRef.current?.focus();
+    isRefocusingAfterClearRef.current = false;
+  };
+
+  const handleInputFocus = (event: SyntheticEvent) => {
+    if (isRefocusingAfterClearRef.current) return;
+    triggerSearch(event);
   };
 
   return (
@@ -219,7 +234,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
           size="small"
           fullWidth={true}
           inputRef={inputRef}
-          onFocus={triggerSearch}
+          onFocus={handleInputFocus}
         />
       )}
       renderOption={(props, option) => {
