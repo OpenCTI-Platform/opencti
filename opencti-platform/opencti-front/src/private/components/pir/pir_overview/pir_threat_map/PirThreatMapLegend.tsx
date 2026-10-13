@@ -59,6 +59,8 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
           onClick={() => toggleType(type)}
           role="button"
           tabIndex={0}
+          // Opacity alone shows whether the type is on the map: expose it too
+          aria-pressed={!disabledTypes.includes(type)}
           onKeyDown={onActivationKey(() => toggleType(type))}
         >
           <div
