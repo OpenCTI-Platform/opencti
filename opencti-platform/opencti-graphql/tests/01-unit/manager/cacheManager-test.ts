@@ -69,7 +69,6 @@ describe('Cache Manager', () => {
           expect(warnSpy).toHaveBeenLastCalledWith(expect.any(String), {
             playbook_id: 'playbook-id',
             node_id: 'id1',
-            inPirFilters: ['id2', null, { value: 'id3' }],
           });
         } finally {
           warnSpy.mockRestore();
