@@ -86,10 +86,23 @@ const isConnectorInScope = (conn, scope) => {
   return scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
 };
 
+// Trigger flags of filterConnectorsForElementEnrichment, without evaluating the trigger filters
+const isConnectorAutoTriggerable = (conn, mode) => {
+  if (mode === 'creation') {
+    return Boolean(conn.connector_trigger_filters) || conn.auto === true;
+  }
+  if (mode === 'update') {
+    return Boolean(conn.auto_update);
+  }
+  return false;
+};
+
 const findConnectorsForElementEnrichment = async (context, user, element, scope, opts = {}) => {
   const connectors = await getEntitiesListFromCache(context, user, ENTITY_TYPE_CONNECTOR);
   // Liveness is not part of the connectors cache: compute it, only for the connectors that could enrich the element
-  const candidates = connectors.filter((conn) => conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT && isConnectorInScope(conn, scope));
+  const candidates = connectors.filter((conn) => conn.connector_type === CONNECTOR_INTERNAL_ENRICHMENT
+    && isConnectorInScope(conn, scope)
+    && isConnectorAutoTriggerable(conn, opts.mode));
   const liveCandidates = await refreshConnectorsLiveness(candidates);
   return filterConnectorsForElementEnrichment(context, liveCandidates, element, scope, opts);
 };
