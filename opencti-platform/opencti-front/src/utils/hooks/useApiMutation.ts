@@ -18,6 +18,8 @@ export interface UsiApiMutationOptions {
  * creating an entity on the fly inside a Form Intake), the mutation is NOT dispatched
  * to the server. Instead, the raw `input` from `variables` is captured via the context
  * so it can be bundled and created in draft when the form intake is submitted.
+ * Consequence: a mutation that must really be sent (e.g. the form intake submission itself)
+ * has to be called from outside the `DeferredCreationContext.Provider`.
  */
 const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,

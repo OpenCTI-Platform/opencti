@@ -151,7 +151,7 @@ export const QueryRenderer = ({
   );
 };
 
-const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
+export const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
   (e) => ({
     type: 'error',
     text: e?.data?.reason ?? e.message,

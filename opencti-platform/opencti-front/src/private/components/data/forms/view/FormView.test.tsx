@@ -3,6 +3,7 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as useGrantedModule from '../../../../../utils/hooks/useGranted';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import { useDeferredCreation } from '../../../../../utils/hooks/useDeferredCreation';
 import FormView from './FormView';
 
 vi.mock('../../../common/form/AuthorizedMembersField', () => ({
@@ -15,7 +16,7 @@ vi.mock('../../../common/form/AuthorizedMembersField', () => ({
 vi.mock('../../../common/form/CreatedByField', () => ({
   __esModule: true,
   default: (props: { name?: string; label?: string }) => (
-    <div data-testid="created-by-field">
+    <div data-testid="created-by-field" data-deferred={String(useDeferredCreation().isDeferredMode)}>
       <label>{props.label}</label>
     </div>
   ),
@@ -247,5 +248,49 @@ describe('FormView', () => {
       author: { type: 'static', isEditable: false, isRequired: false, defaultValue: 'identity-1' },
     }));
     expect(screen.queryByTestId('created-by-field')).toBeNull();
+  });
+
+  it('should wrap the form in the deferred creation context', async () => {
+    useGrantedSpy.mockReturnValue(true);
+    const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, makeMockForm({
+      author: { type: 'static', isEditable: true, isRequired: false, defaultValue: 'identity-1', defaultValueLabel: 'Org A' },
+    }));
+    expect(screen.getByTestId('created-by-field').getAttribute('data-deferred')).toBe('true');
+  });
+
+  it('should send the submission once and disable the submit button while it is in flight', async () => {
+    useGrantedSpy.mockReturnValue(true);
+    const { relayEnv, user } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+    const isFormSubmit = (operation: { request: { node: { params: { name: string } } } }) => operation.request.node.params.name === 'FormViewMutation';
+
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => {
+      expect(relayEnv.mock.getAllOperations().filter(isFormSubmit)).toHaveLength(1);
+    });
+    // The request is still pending: the button stays disabled and cannot send it twice
+    const button = await screen.findByRole('button', { name: 'Submitting...' });
+    expect(button.hasAttribute('disabled')).toBe(true);
+    await user.click(button);
+    expect(relayEnv.mock.getAllOperations().filter(isFormSubmit)).toHaveLength(1);
+  });
+
+  it('should show the GraphQL error of a failed submission, not the Relay wrapper', async () => {
+    useGrantedSpy.mockReturnValue(true);
+    const { relayEnv, user } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => {
+      expect(relayEnv.mock.getAllOperations().filter((operation) => operation.request.node.params.name === 'FormViewMutation')).toHaveLength(1);
+    });
+    const error = Object.assign(
+      new Error('Relay request for `FormViewMutation` failed by the following reasons:\n1. You are not allowed to create labels.'),
+      { res: { errors: [{ message: 'You are not allowed to create labels.' }] } },
+    );
+    relayEnv.mock.rejectMostRecentOperation(error);
+    expect(await screen.findByText('You are not allowed to create labels.')).toBeTruthy();
+    expect(screen.queryByText(/Relay request/)).toBeNull();
   });
 });

@@ -1,6 +1,5 @@
 import React, { useState, FunctionComponent, useCallback, useRef, useMemo } from 'react';
 import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import { Field, useFormikContext } from 'formik';
 import { graphql } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -22,8 +21,9 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
-import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
+import { DeferredCreationContext, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { Checkbox } from '@filigran/design-system';
+import { buildPendingOptions, PendingCreationOption } from './pendingOptions';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -224,18 +224,8 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const CREATE_OPTION_VALUE = '__create_new_entity__';
 
-/** Marker prefix used to identify pending-creation entities in the field value. */
-export const PENDING_ENTITY_PREFIX = '__pending__:';
-
-interface StixCoreObjectOption {
-  label: string;
-  value: string;
-  type: string;
+interface StixCoreObjectOption extends PendingCreationOption {
   isCreateOption?: boolean;
-  /** True when the entity has not yet been created – will be built in the draft bundle. */
-  isPendingCreation?: boolean;
-  /** Raw mutation input captured during deferred creation. Present only when isPendingCreation=true. */
-  pendingInputData?: { entityType: string; input: Record<string, unknown> };
 }
 
 interface StixCoreObjectsFieldProps {
@@ -298,44 +288,44 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const entityCreatedSuccessfully = React.useRef(false);
 
   /**
-   * In deferred mode, holds the raw mutation `input` captured by useApiMutation so that
-   * handleClose / handleSCOEntityCreated can build a pending-creation option from it.
+   * In deferred mode, holds the raw mutation inputs captured by useApiMutation (one per
+   * created object, a bulk creation captures one per name) so that handleClose /
+   * handleSCOEntityCreated can build the pending-creation options from them.
    */
-  const deferredCapturedRef = useRef<Record<string, unknown> | null>(null);
+  const deferredCapturedRef = useRef<Record<string, unknown>[]>([]);
 
   /**
    * Context value provided to the SDO / SCO creation dialogs when deferCreation=true.
-   * useApiMutation will call captureInput() instead of dispatching the real mutation.
+   * useApiMutation will call captureInput() instead of dispatching the real mutation;
+   * the pending store of the enclosing form (labels, external references) is kept.
    */
+  const parentDeferredContext = useDeferredCreation();
   const deferredContextValue = useMemo(() => ({
+    ...parentDeferredContext,
     isDeferredMode: deferCreation,
     captureInput: (input: Record<string, unknown>) => {
-      deferredCapturedRef.current = input;
+      deferredCapturedRef.current.push(input);
     },
-  }), [deferCreation]);
+  }), [deferCreation, parentDeferredContext]);
 
   /**
-   * Build a pending-creation option from captured deferred input data.
-   * Falls back to currentSearchTerm when the input does not carry a `name`.
-   *
-   * For SDO mutations, capturedInput.name is the entity name.
-   * For SCO mutations, capturedInput has no `name`; we use currentSearchTerm
-   * (the value typed by the user, e.g. an IP address) as the display label.
+   * Turns the inputs captured in deferred mode into pending-creation options, selects them
+   * in the field and returns whether there were any.
    */
-  const buildPendingOption = useCallback((capturedInput: Record<string, unknown>): StixCoreObjectOption => {
-    const entityName = (capturedInput.name as string | undefined) || currentSearchTerm || 'New Entity';
-    const pendingId = `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
-    return {
-      label: entityName,
-      value: pendingId,
-      type: createEntityType || '',
-      isPendingCreation: true,
-      pendingInputData: {
-        entityType: createEntityType || '',
-        input: capturedInput,
-      },
-    };
-  }, [createEntityType, currentSearchTerm]);
+  const applyDeferredCapture = useCallback(() => {
+    const capturedInputs = deferredCapturedRef.current;
+    if (!deferCreation || capturedInputs.length === 0) return false;
+    const newOptions = buildPendingOptions(capturedInputs, createEntityType, currentSearchTerm);
+    setStixCoreObjects((prev) => [...newOptions, ...prev.filter((o) => !o.isCreateOption)]);
+    const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+    if (multiple) {
+      setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), ...newOptions]);
+    } else {
+      setFieldValue(name, newOptions[newOptions.length - 1]);
+    }
+    deferredCapturedRef.current = [];
+    return true;
+  }, [deferCreation, createEntityType, currentSearchTerm, values, name, multiple, setFieldValue]);
 
   const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(null);
@@ -475,17 +465,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 
   const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
     // --- Deferred creation path ---
-    const capturedInput = deferredCapturedRef.current;
-    if (deferCreation && capturedInput) {
-      const newOption = buildPendingOption(capturedInput);
-      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      if (multiple) {
-        setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
-      } else {
-        setFieldValue(name, newOption);
-      }
-      deferredCapturedRef.current = null;
+    if (applyDeferredCapture()) {
       entityCreatedSuccessfully.current = true;
       setOpenSCOCreation(false);
       setCreateEntityType(null);
@@ -554,7 +534,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           setStixCoreObjects(finalResults);
         });
     }
-  }, [buildPendingOption, currentSearchTerm, deferCreation, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
+  }, [applyDeferredCapture, currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const searchStixCoreObjects = useCallback((event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
     const searchValue = newInputValue ?? '';
@@ -734,17 +714,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           open={openSDOCreation}
           handleClose={() => {
             // Deferred path: mutation was intercepted, input was captured
-            const capturedInput = deferredCapturedRef.current;
-            if (deferCreation && capturedInput) {
-              const newOption = buildPendingOption(capturedInput);
-              setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-              const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-              if (multiple) {
-                setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
-              } else {
-                setFieldValue(name, newOption);
-              }
-              deferredCapturedRef.current = null;
+            if (applyDeferredCapture()) {
               setOpenSDOCreation(false);
               setCreateEntityType(null);
               setValueBeforeCreate(null);
