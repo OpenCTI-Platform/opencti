@@ -12,7 +12,9 @@ import useAI from '../utils/hooks/useAI';
 // component forwards its ref to the actual `<input>` instead — the two are
 // incompatible, so the inherited one is dropped in favour of `RefAttributes<HTMLInputElement>`
 // (added automatically by `React.forwardRef` below).
-export type TextFieldProps = Omit<FieldProps<string> & MuiTextFieldProps, 'ref'> & {
+// `autoFocus` is dropped too, so that passing it is a type error rather than a
+// silent no-op (see the component below).
+export type TextFieldProps = Omit<FieldProps<string> & MuiTextFieldProps, 'ref' | 'autoFocus'> & {
   detectDuplicate?: string[];
   askAi?: boolean;
   startAdornment?: ReactNode;
@@ -34,11 +36,15 @@ export type TextFieldProps = Omit<FieldProps<string> & MuiTextFieldProps, 'ref'>
 };
 
 const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, forwardedRef) => {
-  // autoFocus is destructured out and never forwarded: jsx-a11y/no-autofocus
-  // forbids it as a generic escape hatch. Callers that need focus-on-mount
-  // should use `ref`/`innerRef` (Formik's Field prop) and focus it themselves,
-  // typically from a Dialog's `slotProps.transition.onEntered`.
-  const { detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, infoTooltip, innerRef, autoFocus: _autoFocus, ...htmlProps } = props;
+  // autoFocus is never forwarded: jsx-a11y/no-autofocus forbids it as a generic
+  // escape hatch. Callers that need focus-on-mount should use `ref`/`innerRef`
+  // (Formik's Field prop) and focus it themselves, typically from a Dialog's
+  // `slotProps.transition.onEntered`. It is out of the props type, but Formik's
+  // `<Field component={TextField}>` does not type-check what it passes through,
+  // so it is still stripped here at runtime.
+  const {
+    detectDuplicate, onBeforePaste, startAdornment, askAi, endIcon, infoTooltip, innerRef, autoFocus: _autoFocus, ...htmlProps
+  } = props as TextFieldProps & { autoFocus?: boolean };
   const setRef = useCallback((node: HTMLInputElement | null) => {
     if (typeof forwardedRef === 'function') forwardedRef(node);
     else if (forwardedRef) forwardedRef.current = node;
