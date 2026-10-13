@@ -30,6 +30,8 @@ export interface TimelineElementData {
   attribute_count?: number | null;
   valid_from?: string | null;
   valid_until?: string | null;
+  // When a revoked indicator was revoked
+  revoked_at?: string | null;
   published?: string | null;
   due_date?: string | null;
   completes_containment?: boolean | null;
@@ -169,6 +171,9 @@ export const RULE_TECHNIQUE = 'technique-kill-chain';
 export const RULE_ENTITY_SEEN = 'entity-first-last-seen';
 export const RULE_TASK_CONTAINMENT = 'task-containment';
 export const RULE_WORKFLOW_CLOSURE = 'workflow-closure';
+export const RULE_INDICATOR_VALIDITY = 'indicator-validity';
+// Validity window of an indicator cut short by its revocation
+export const RULE_INDICATOR_REVOCATION = 'indicator-revocation';
 
 export const CONTAINMENT_LABEL = 'containment';
 const UNKNOWN_PHASE_ORDER = 9999;
@@ -431,26 +436,31 @@ const techniqueRule: TimelineRule = {
 
 // region evidence rules
 const indicatorRule: TimelineRule = {
-  id: 'indicator-validity',
-  label: 'Indicator validity windows',
+  id: RULE_INDICATOR_VALIDITY,
+  label: 'Indicator validity windows, ending at the revocation of an indicator revoked before its valid until',
   kinds: ['indicator_valid'],
   derive: (input) => input.entities
     .filter((e) => e.entity_type === 'Indicator')
     .flatMap((indicator) => {
       const window = windowOf(indicator.valid_from, indicator.valid_until);
       if (!window) return [];
+      // Revoked before the end of its validity, or with no end: the indicator stopped being valid at its revocation
+      const revokedAt = toTimelineTime(indicator.revoked_at);
+      const revokedEarly = revokedAt !== null && (window.to === null || revokedAt < window.to);
+      let end = window.to;
+      if (revokedEarly) end = revokedAt > window.from ? revokedAt : null;
       return [{
-        rule_id: 'indicator-validity',
+        rule_id: revokedEarly ? RULE_INDICATOR_REVOCATION : RULE_INDICATOR_VALIDITY,
         kind: 'indicator_valid',
         lane: 'evidence',
         element_id: indicator.id,
         element_type: indicator.entity_type,
         event_time: iso(window.from),
-        event_end_time: window.to !== null ? iso(window.to) : null,
-        // Valid from a date without an end date: still valid
-        ...(toTimelineTime(indicator.valid_from) !== null && toTimelineTime(indicator.valid_until) === null ? { open_ended: true } : {}),
+        event_end_time: end !== null ? iso(end) : null,
+        // Valid from a date without an end date (or the never-expires placeholder), and not revoked: still valid
+        ...(!revokedEarly && toTimelineTime(indicator.valid_from) !== null && toTimelineTime(indicator.valid_until) === null ? { open_ended: true } : {}),
         time_precision: 'exact',
-        name: `Indicator ${indicator.name} valid`,
+        name: `Indicator validity: ${indicator.name}`,
         description: indicator.description,
         markings: mergeMarkings(indicator.markings),
         confidence: indicator.confidence,

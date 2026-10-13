@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildTimelineStatuses,
   capTimelineRead,
+  indicatorRevocationTime,
   keepNewestTimelineEntries,
   terminalWorkflowStates,
   timelineRefIds,
@@ -43,6 +44,34 @@ describe('Timeline element refs', () => {
     expect(toTimelineElement({ ...technique, 'kill-chain-phase': ['phase-1', 'phase-2'] } as any).kill_chain_phase_ids).toEqual(['phase-1', 'phase-2']);
     expect(toTimelineElement({ ...technique, 'rel_kill-chain-phase.internal_id': ['phase-1'] } as any).kill_chain_phase_ids).toEqual(['phase-1']);
     expect(toTimelineElement(technique as any).kill_chain_phase_ids).toEqual([]);
+  });
+});
+
+describe('Timeline indicator revocation', () => {
+  const indicator = { internal_id: 'ind-1', standard_id: 'indicator--1', entity_type: 'Indicator', name: 'jiaw.shop', updated_at: '2026-05-20T00:00:00.000Z' };
+  const decayed = {
+    ...indicator,
+    revoked: true,
+    decay_applied_rule: { decay_revoke_score: 20 },
+    decay_history: [
+      { updated_at: '2026-03-01T00:00:00.000Z', score: 80 },
+      { updated_at: '2026-04-01T00:00:00.000Z', score: 15 },
+      // Reactivated, then revoked again: the last revocation counts
+      { updated_at: '2026-04-10T00:00:00.000Z', score: 80 },
+      { updated_at: '2026-05-01T00:00:00.000Z', score: 20 },
+      { updated_at: '2026-05-10T00:00:00.000Z', score: 10 },
+    ],
+  };
+
+  it('should date the revocation of an indicator with the decay point that revoked it for good', () => {
+    expect(indicatorRevocationTime(decayed as any)).toEqual('2026-05-01T00:00:00.000Z');
+    expect(toTimelineElement(decayed as any).revoked_at).toEqual('2026-05-01T00:00:00.000Z');
+  });
+
+  it('should date it with the last update when no decay point tells it, and never date an indicator that is not revoked', () => {
+    expect(indicatorRevocationTime({ ...indicator, revoked: true } as any)).toEqual('2026-05-20T00:00:00.000Z');
+    expect(indicatorRevocationTime({ ...decayed, revoked: false } as any)).toBeNull();
+    expect(indicatorRevocationTime({ ...decayed, entity_type: 'Malware' } as any)).toBeNull();
   });
 });
 

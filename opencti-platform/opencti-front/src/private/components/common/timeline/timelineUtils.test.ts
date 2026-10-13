@@ -202,6 +202,8 @@ describe('Timeline event source', () => {
 
   it('names the attributes a rule took the dates from, then the entity', () => {
     expect(describeTimelineEventSource(derived('indicator-validity', { element_name: 'jiaw.shop' }), t)).toBe('Taken from the Valid from and Valid until of the indicator jiaw.shop');
+    expect(describeTimelineEventSource(derived('indicator-revocation', { element_name: 'jiaw.shop' }), t))
+      .toBe('Taken from the Valid from and the revocation, before its Valid until, of the indicator jiaw.shop');
     expect(describeTimelineEventSource(derived('observed-data-window'), t)).toBe('Taken from the First observed and Last observed of the observed data');
     expect(describeTimelineEventSource(derived('technique-kill-chain', { element_name: 'Phishing' }), t))
       .toBe('Taken from the Start time and Stop time of the uses and targets relationships of the technique Phishing');

@@ -11,6 +11,8 @@ import {
   isTimelineContextWindow,
   MAX_DETAILED_OBJECT_ADDITIONS,
   RULE_ENTITY_SEEN,
+  RULE_INDICATOR_REVOCATION,
+  RULE_INDICATOR_VALIDITY,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
   TIMELINE_CORE_RULES,
@@ -228,6 +230,32 @@ describe('Timeline evidence rules', () => {
     expect(events.find((e) => e.kind === 'report_published')).toMatchObject({ event_time: '2026-03-04T00:00:00.000Z', time_precision: 'exact' });
     expect(events.find((e) => e.kind === 'reference_published')).toMatchObject({ name: 'Reference CERT (CERT-1)', time_precision: 'day' });
     expect(events.find((e) => e.kind === 'file_uploaded')).toMatchObject({ element_id: 'case-1', markings: ['tlp-amber'], discriminator: 'import/Case-Incident/case-1/memo.pdf' });
+  });
+
+  const validity = (data: Partial<TimelineElementData>) => derive(buildInput({
+    entities: [element({ id: 'ind-1', entity_type: 'Indicator', name: 'jiaw.shop', valid_from: '2026-03-01T00:00:00.000Z', ...data })],
+  })).find((e) => e.kind === 'indicator_valid');
+
+  it('should title the validity of an indicator with its name, and end it at a revocation before its valid until', () => {
+    expect(validity({ valid_until: '2026-06-01T00:00:00.000Z' })).toMatchObject({ name: 'Indicator validity: jiaw.shop', rule_id: RULE_INDICATOR_VALIDITY });
+    const revoked = validity({ valid_until: '2026-06-01T00:00:00.000Z', revoked_at: '2026-04-15T00:00:00.000Z' });
+    expect(revoked).toMatchObject({ event_time: '2026-03-01T00:00:00.000Z', event_end_time: '2026-04-15T00:00:00.000Z', rule_id: RULE_INDICATOR_REVOCATION });
+    expect(revoked?.open_ended).toBeUndefined();
+    // Revoked once its validity was over: the valid until still ends the window
+    expect(validity({ valid_until: '2026-06-01T00:00:00.000Z', revoked_at: '2026-06-02T00:00:00.000Z' }))
+      .toMatchObject({ event_end_time: '2026-06-01T00:00:00.000Z', rule_id: RULE_INDICATOR_VALIDITY });
+    // Revoked before it was valid: a point at its valid from, never an open window
+    const never = validity({ valid_until: '2026-06-01T00:00:00.000Z', revoked_at: '2026-02-01T00:00:00.000Z' });
+    expect(never).toMatchObject({ event_end_time: null, rule_id: RULE_INDICATOR_REVOCATION });
+    expect(never?.open_ended).toBeUndefined();
+  });
+
+  it('should keep the validity of an indicator open for the never-expires placeholder and an empty valid until, until a revocation', () => {
+    expect(validity({ valid_until: '5138-11-16T09:46:40.000Z' })).toMatchObject({ event_end_time: null, open_ended: true });
+    expect(validity({ valid_until: null })).toMatchObject({ event_end_time: null, open_ended: true });
+    const revoked = validity({ valid_until: '5138-11-16T09:46:40.000Z', revoked_at: '2026-04-15T00:00:00.000Z' });
+    expect(revoked).toMatchObject({ event_end_time: '2026-04-15T00:00:00.000Z', rule_id: RULE_INDICATOR_REVOCATION });
+    expect(revoked?.open_ended).toBeUndefined();
   });
 });
 

@@ -45,6 +45,8 @@ import { enqueueTimelineRegeneration } from './timeline-queue';
 import {
   deriveTimelineEvents,
   type DerivedTimelineEvent,
+  RULE_INDICATOR_REVOCATION,
+  RULE_INDICATOR_VALIDITY,
   RULE_INVESTIGATION_RUN,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
@@ -92,10 +94,12 @@ export const getTimelineRules = (): TimelineRule[] => [
 
 // region identifiers
 // Derived rule ids that refine a rule family keep the identifier of their family, so that an event
-// keeps its id (and its annotations) when its refinement changes (task labelled containment, final status).
+// keeps its id (and its annotations) when its refinement changes (task completing the containment, final status,
+// indicator revoked).
 const RULE_FAMILIES: Record<string, string> = {
   [RULE_TASK_CONTAINMENT]: 'task-lifecycle',
   [RULE_WORKFLOW_CLOSURE]: 'workflow-status',
+  [RULE_INDICATOR_REVOCATION]: RULE_INDICATOR_VALIDITY,
 };
 export const timelineRuleFamily = (ruleId: string): string => RULE_FAMILIES[ruleId] ?? ruleId;
 

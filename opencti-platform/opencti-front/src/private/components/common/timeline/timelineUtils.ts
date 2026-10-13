@@ -530,6 +530,7 @@ export const describeTimelineEventTimes = (
 // they belong to (its name, when known, ends the sentence)
 export const TIMELINE_SOURCE_SENTENCES: Record<string, string> = {
   'indicator-validity': 'Taken from the Valid from and Valid until of the indicator {name}',
+  'indicator-revocation': 'Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}',
   'entity-first-last-seen': 'Taken from the First seen and Last seen of the entity {name}',
   'observed-data-window': 'Taken from the First observed and Last observed of the observed data {name}',
   'sighting-window': 'Taken from the First seen and Last seen of the sighting {name}',

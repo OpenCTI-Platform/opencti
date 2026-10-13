@@ -31,7 +31,7 @@ import {
 import type { AuthUser } from '../../../../src/types/user';
 import { buildTimelineFilters, collectTimelineExportPages, latestTimelineTime, strongerTimelineConfidence } from '../../../../src/modules/timeline/timeline-domain';
 import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
-import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
+import { RULE_INDICATOR_REVOCATION, RULE_INDICATOR_VALIDITY, RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modules/timeline/timeline-types';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
@@ -52,11 +52,14 @@ describe('Timeline event identity', () => {
     expect(timelineEventStandardId(first)).toEqual(`timeline-event--${first}`);
   });
 
-  it('should keep the id of an event when its rule is refined (containment task, closure status)', () => {
+  it('should keep the id of an event when its rule is refined (containment task, closure status, revoked indicator)', () => {
     expect(timelineRuleFamily(RULE_TASK_CONTAINMENT)).toEqual('task-lifecycle');
     expect(timelineRuleFamily(RULE_WORKFLOW_CLOSURE)).toEqual('workflow-status');
     expect(computeDerivedEventId('case-1', RULE_TASK_CONTAINMENT, 'task-1', 'task_completed'))
       .toEqual(computeDerivedEventId('case-1', 'task-lifecycle', 'task-1', 'task_completed'));
+    // A pin or an annotation on the validity of an indicator survives its revocation
+    expect(computeDerivedEventId('case-1', RULE_INDICATOR_REVOCATION, 'ind-1', 'indicator_valid'))
+      .toEqual(computeDerivedEventId('case-1', RULE_INDICATOR_VALIDITY, 'ind-1', 'indicator_valid'));
   });
 
   it('should only exchange the contributions of derived events another platform can recompute', () => {

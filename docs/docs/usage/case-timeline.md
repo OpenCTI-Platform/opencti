@@ -39,7 +39,7 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Observed data | Observation window (First observed to Last observed) |
 | Sightings | Sighting window (First seen to Last seen, or the creation date of a sighting without First seen, approximate); sightings from a security platform land in the detection lane, the others in the adversary lane |
 | Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen. Except for incidents, these dates are global: they tell when the entity was seen anywhere, not in this incident, so the window is drawn lighter as context (see the legend under the lanes) and never sets the first adversary activity |
-| Indicators | Validity window (valid from, valid until) |
+| Indicators | Validity window, titled **Indicator validity:** followed by the name of the indicator, from Valid from to Valid until, or to the revocation of an indicator revoked before its Valid until (the decay point that revoked it, or its last update); open-ended while the indicator is valid with an empty Valid until or the never-expires date |
 | Reports and external references | Publication (the Publication date of a report, or its creation date when it has none, approximate; the creation date of an external reference) |
 | Files of the container | Upload |
 | Case | Opening (creation date of the case) |

@@ -40,6 +40,7 @@
   "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}": "テクニック {name} の uses および targets 関係の開始時刻と停止時刻から取得",
   "Taken from the steps of the Case Autopilot investigation": "Case Autopilot 調査のステップから取得",
   "Taken from the upload date of the file": "ファイルのアップロード日から取得",
+  "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}": "インジケーター {name} の有効期間(開始)と、有効期間(終了)前の失効から取得",
   "Taken from the Valid from and Valid until of the indicator {name}": "インジケーター {name} の有効期間(開始)と有効期間(終了)から取得",
   "The timeline export has been saved in the exported files of the entity": "タイムラインのエクスポートがエンティティの出力済みファイルに保存されました",
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "タイムラインのエクスポートをエンティティの出力済みファイルに保存しました。イベントに合わせて {markings} でマークされています",

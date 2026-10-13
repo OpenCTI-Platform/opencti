@@ -40,6 +40,7 @@
   "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}": "Übernommen aus Startzeitpunkt und Stoppzeit der Beziehungen uses und targets der Technik {name}",
   "Taken from the steps of the Case Autopilot investigation": "Übernommen aus den Schritten der Case-Autopilot-Untersuchung",
   "Taken from the upload date of the file": "Übernommen aus dem Hochladedatum der Datei",
+  "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}": "Übernommen aus Gültig ab und dem Widerruf vor Gültig bis des Indikators {name}",
   "Taken from the Valid from and Valid until of the indicator {name}": "Übernommen aus Gültig ab und Gültig bis des Indikators {name}",
   "The timeline export has been saved in the exported files of the entity": "Der Export der Zeitleiste wurde in den exportierten Dateien der Entität gespeichert",
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "Der Export der Zeitleiste wurde in den exportierten Dateien der Entität gespeichert und mit {markings} markiert, um seine Ereignisse abzudecken",

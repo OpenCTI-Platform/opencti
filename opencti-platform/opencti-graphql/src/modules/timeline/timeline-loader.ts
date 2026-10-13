@@ -102,6 +102,26 @@ const dateString = (value: unknown): string | null => {
   return String(value);
 };
 
+/**
+ * When a revoked indicator was revoked: the decay point that brought its score down to the revoke score for good, or
+ * its last update when no decay point tells it.
+ */
+export const indicatorRevocationTime = (element: AnyStoreElement): string | null => {
+  if (element.entity_type !== 'Indicator' || element.revoked !== true) return null;
+  const revokeScore = element.decay_applied_rule?.decay_revoke_score;
+  const points = [...(element.decay_history ?? [])]
+    .map((point: { updated_at?: unknown; score?: number }) => ({ time: dateString(point.updated_at), score: Number(point.score) }))
+    .filter((point): point is { time: string; score: number } => !!point.time)
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+  let revokedAt: string | null = null;
+  if (revokeScore !== undefined && revokeScore !== null) {
+    for (let index = points.length - 1; index >= 0 && points[index].score <= revokeScore; index -= 1) {
+      revokedAt = points[index].time;
+    }
+  }
+  return revokedAt ?? dateString(element.updated_at);
+};
+
 export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map<string, string> } = {}): TimelineElementData => {
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   const relation = element as unknown as BasicStoreRelation;
@@ -134,6 +154,7 @@ export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map
     attribute_count: element.attribute_count ?? null,
     valid_from: dateString(element.valid_from),
     valid_until: dateString(element.valid_until),
+    revoked_at: indicatorRevocationTime(element),
     published: dateString(element.published),
     due_date: dateString(element.due_date),
     completes_containment: element.completes_containment ?? null,

@@ -40,6 +40,7 @@
   "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}": "取自技术 {name} 的 uses 和 targets 关系的开始时间和停止时间",
   "Taken from the steps of the Case Autopilot investigation": "取自 Case Autopilot 调查的步骤",
   "Taken from the upload date of the file": "取自文件的上传日期",
+  "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}": "取自指标 {name} 的有效期从以及在有效期至之前的撤销",
   "Taken from the Valid from and Valid until of the indicator {name}": "取自指标 {name} 的有效期从和有效期至",
   "The timeline export has been saved in the exported files of the entity": "时间线导出已保存到实体的导出文件中",
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "时间线导出已保存到实体的导出文件中，并标记为 {markings} 以涵盖其事件",

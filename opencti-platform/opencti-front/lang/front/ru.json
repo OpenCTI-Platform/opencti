@@ -40,6 +40,7 @@
   "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}": "Взято из времени начала и остановки связей uses и targets техники {name}",
   "Taken from the steps of the Case Autopilot investigation": "Взято из шагов расследования Case Autopilot",
   "Taken from the upload date of the file": "Взято из даты загрузки файла",
+  "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}": "Взято из поля «Действует с» и отзыва индикатора {name} до даты «Действует до»",
   "Taken from the Valid from and Valid until of the indicator {name}": "Взято из полей «Действует с» и «Действует до» индикатора {name}",
   "The timeline export has been saved in the exported files of the entity": "Экспорт временной шкалы сохранён в экспортированных файлах сущности",
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "Экспорт временной шкалы сохранён в экспортированных файлах сущности с маркировкой {markings}, соответствующей его событиям",

@@ -40,6 +40,7 @@
   "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}": "Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}",
   "Taken from the steps of the Case Autopilot investigation": "Taken from the steps of the Case Autopilot investigation",
   "Taken from the upload date of the file": "Taken from the upload date of the file",
+  "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}": "Taken from the Valid from and the revocation, before its Valid until, of the indicator {name}",
   "Taken from the Valid from and Valid until of the indicator {name}": "Taken from the Valid from and Valid until of the indicator {name}",
   "The timeline export has been saved in the exported files of the entity": "The timeline export has been saved in the exported files of the entity",
   "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events": "The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events",
