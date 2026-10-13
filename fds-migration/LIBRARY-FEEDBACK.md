@@ -2585,3 +2585,40 @@ truncated code value keeps its whitespace and wrapping, the truncated text
 value its single line and ellipsis, the image keeps its size,
 the caret still reads as one pill with the AI toggle (idle, hover, focus),
 and the and/or still matches the filter chips' operator badge.
+
+## 68. A disabled `Button` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
+
+**Needed.** The integration catalog explains why Deploy is disabled (an
+incompatible platform version) in a tooltip on the disabled button. The
+reason must reach mouse users on hover and keyboard users on focus, which
+is the WAI-ARIA APG pattern for this case ("Focusability of disabled
+controls"): a button marked `aria-disabled` that stays focusable and
+hoverable, and simply does nothing when activated.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs`). Without `asChild`, a disabled `Button`
+renders a native `disabled` attribute: no focus, no pointer events, so the
+tooltip trigger never fires. With `asChild`, it renders `aria-disabled` and
+stays focusable, but its `data-[disabled]:pointer-events-none` class still
+removes hover, so the tooltip only opens from the keyboard. Neither mode
+works as a tooltip trigger on its own.
+
+**Workaround.** FDS-WORKAROUND #68 in `DisabledReasonTooltip`: the
+disabled button sits in a `<span tabIndex={0}>` that takes the hover and the
+focus for the tooltip. Its callers are the Deploy buttons of
+`AvailableIntegrationLine`, `IngestionCatalogConnectorHeader` and
+`IngestionCatalogCardDeployButton`. The span is a focusable element with no
+role, which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled
+there: the Tab stop lands on that span, not on the button.
+
+**Ask.** A disabled mode of `Button` (and `IconButton`) that renders
+`aria-disabled` instead of `disabled`, keeps focus and pointer events, and
+blocks activation in JavaScript, for example a `focusableWhenDisabled`
+prop. That would make the button itself the tooltip trigger.
+
+**Removal test.** At a pin with that mode: pass the disabled state through
+it on the three Deploy buttons, delete the `<span>` in
+`DisabledReasonTooltip` with its marker and its eslint-disable, and check
+that the reason shows on hover and on keyboard focus, that the screen
+reader announces the button as disabled, and that a click or Enter does
+not deploy.
