@@ -3977,6 +3977,46 @@ describe('getWorkflowInstance — read-repair', () => {
     expect(projectWorkflowState).toHaveBeenCalledOnce();
   });
 
+  it('does not repair a Status written after the last workflow change while its sync may still run', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([{ state: 'reviewing', event: 'review', timestamp: new Date(Date.now() - 60000).toISOString() }]),
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ ...entity, updated_at: new Date().toISOString() });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('repairs a Status older than the last workflow change', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([{ state: 'reviewing', event: 'review', timestamp: new Date().toISOString() }]),
+    });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ ...entity, updated_at: new Date(Date.now() - 1000).toISOString() });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).toHaveBeenCalledOnce();
+  });
+
   it('does not repair when the entity Status changed before the lock was taken', async () => {
     setup();
     (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');

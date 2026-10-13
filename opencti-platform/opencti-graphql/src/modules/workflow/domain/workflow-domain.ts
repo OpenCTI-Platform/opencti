@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
-import { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
+import conf, { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
@@ -1090,6 +1090,16 @@ const READ_REPAIR_RATE_LIMIT_TTL_MS = 5000;
 const READ_REPAIR_RATE_LIMIT_MAX_ENTRIES = 10000;
 const readRepairLastAttemptByEntity = new LRUCache<string, true>({ max: READ_REPAIR_RATE_LIMIT_MAX_ENTRIES, ttl: READ_REPAIR_RATE_LIMIT_TTL_MS });
 
+// An external sync waits at most this long for the workflow mutation lock.
+const EXTERNAL_SYNC_WINDOW_MS = conf.get('app:concurrency:retry_count') * (conf.get('app:concurrency:retry_delay') + conf.get('app:concurrency:retry_jitter')) + 5000;
+
+// A Status written after the last workflow change may still be waiting for its sync: never revert it.
+const isExternalSyncInFlight = (entity: BasicStoreEntity, instanceEntity: WorkflowInstanceStoreEntity): boolean => {
+  const updatedAt = Date.parse(entity.updated_at as unknown as string);
+  const lastChangeAt = Date.parse(parseWorkflowHistory(instanceEntity).at(-1)?.timestamp ?? '');
+  return updatedAt > lastChangeAt && Date.now() - updatedAt < EXTERNAL_SYNC_WINDOW_MS;
+};
+
 /** Test-only: clears the read-repair rate-limit cache so tests can exercise it from a clean state. */
 export const __resetReadRepairRateLimitForTest = (): void => {
   readRepairLastAttemptByEntity.clear();
@@ -1149,12 +1159,14 @@ export const getWorkflowInstance = async (
       try {
         const scope = resolveProjectionScope(instanceEntity.scope);
         const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-        const needsRepair = async (entityStatusId: string | undefined, repairInstance: WorkflowInstanceStoreEntity) => {
+        const needsRepair = async (repairEntity: BasicStoreEntity, repairInstance: WorkflowInstanceStoreEntity) => {
+          const entityStatusId = repairEntity.x_opencti_workflow_id;
           if (entityStatusId && findKeptExternalStatusId(repairInstance) === entityStatusId) return false;
+          if (isExternalSyncInFlight(repairEntity, repairInstance)) return false;
           const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, repairInstance.currentState);
           return !!expectedStatusId && entityStatusId !== expectedStatusId;
         };
-        if (await needsRepair((entity as BasicStoreEntity).x_opencti_workflow_id, instanceEntity)) {
+        if (await needsRepair(entity as BasicStoreEntity, instanceEntity)) {
           // Never repair under a running workflow mutation or external sync: it owns the Status.
           const lock = await lockResources([`workflow-mutation-${effectiveEntityId}`], { retryCount: 0 }).catch(() => null);
           if (lock) {
@@ -1162,7 +1174,7 @@ export const getWorkflowInstance = async (
               // Re-read under the lock: a write may have landed since the first read.
               const lockedEntity = await storeLoadById<BasicStoreEntity>(repairContext, WORKFLOW_MANAGER_USER, effectiveEntityId, entity.entity_type);
               const lockedInstance = await findWorkflowInstanceEntity(repairContext, WORKFLOW_MANAGER_USER, effectiveEntityId);
-              if (lockedEntity && lockedInstance && await needsRepair(lockedEntity.x_opencti_workflow_id, lockedInstance)) {
+              if (lockedEntity && lockedInstance && await needsRepair(lockedEntity, lockedInstance)) {
                 await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, lockedEntity, lockedInstance.currentState, scope);
                 logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState: lockedInstance.currentState });
               }
