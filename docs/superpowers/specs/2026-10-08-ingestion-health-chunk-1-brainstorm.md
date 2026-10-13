@@ -137,9 +137,9 @@ health_checks: [                                   # nested
 On `Connector`, `IngestionRss`, `IngestionCsv`, `IngestionJson`, `IngestionTaxii`, `IngestionTaxiiCollection` and `Synchronizer`:
 
 ```graphql
-health_status: IngestionHealthStatus!
-health_status_since: DateTime                    # nullable
-healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES])   # INGESTION on feeds and syncs
+health_status: IngestionHealthStatus!           # @auth(for: [MODULES]) on Connector
+health_status_since: DateTime                    # nullable; @auth(for: [MODULES]) on Connector
+healthChecks: [IngestionHealthCheck!]!           # @auth(for: [MODULES]) on Connector
 
 type IngestionHealthCheck {
   health_check_code: String!                     # from Elasticsearch
@@ -151,7 +151,7 @@ type IngestionHealthCheck {
 
 - A connector the manager has not evaluated yet: `unknown`, `health_status_since` null, no check.
 - The raw metadata is not exposed: only what the UI uses.
-- `healthChecks` requires the capability that already reads the entity: `MODULES` for connectors, `INGESTION` for feeds and syncs. A stricter one would make the field fail, and break the page, for a user who can read the list.
+- Health is visible to whoever can access the ingestion. On `Connector`, all three fields require `MODULES`: a connector is also reachable without it (the `connectors` field of every entity, `connectorsForImport`/`Export`/`Analysis`). Feeds and syncs are only reachable through queries that already require `INGESTION`, so their fields carry no extra `@auth`.
 - No resolver calls Redis.
 
 ## 8 bis. What the user sees (chunk 1)
@@ -272,7 +272,6 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 - Open follow-up issues:
   - `TOKEN_EXPIRED` without touching authentication;
   - the suspected composer token revocation between connectors sharing a user;
-  - `health_status` stays readable by users with only the `KNOWLEDGE` capability (through `connectorsForImport`/`Export`/`Analysis`); `healthChecks` is protected by `@auth`;
   - deleting a connector deletes its Redis key for good, even during a manager cycle.
 - Tick the chunk items in Notion.
 
@@ -306,7 +305,7 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 | 2026-10-13 | Composer health is not in chunks 1 and 2. |
 | 2026-10-13 | The old `unknown` summaries become a `NOT_EVALUATED` advisory check, with the sentence in `health_check_metadata.reason`. |
 | 2026-10-13 | The service account check keeps the code `USER_NOT_SERVICE_ACCOUNT`. |
-| 2026-10-13 | GraphQL: `health_status`, `health_status_since` (nullable), `healthChecks` (code, message, kind, severity) under `@auth`: `MODULES` on connectors, `INGESTION` on feeds and syncs. Raw metadata not exposed. |
+| 2026-10-13 | GraphQL: `health_status`, `health_status_since` (nullable), `healthChecks` (code, message, kind, severity). Raw metadata not exposed. On `Connector`, all three under `@auth(for: [MODULES])`, so `KNOWLEDGE`-only users no longer read the health of connectors; no extra `@auth` on feeds and syncs, already behind `INGESTION`. |
 | 2026-10-13 | **Chunk 1 = the structure**: the manager with the single check `USER_MISSING`, the Elasticsearch fields, the GraphQL types. Everything else (listener, `NO_HEARTBEAT`, `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`, `stopped`, activity event) moves to chunk 2. |
 | 2026-10-13 | Chunk 1 also ships, as implemented: the UI chip and its tooltip (connector list and detail, deployed cards and lines, feed and sync detail), and feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, with the same fields, GraphQL types and `USER_MISSING` (empty or SYSTEM user allowed for them). |
 | 2026-10-13 | Tests and acceptance criteria deferred until the design is settled. |

@@ -65,15 +65,16 @@ Kind and severity are **not stored**: they are derived from the code through one
 On `Connector`, `IngestionRss`, `IngestionCsv`, `IngestionJson`, `IngestionTaxii`, `IngestionTaxiiCollection` and `Synchronizer`:
 
 ```graphql
-health_status: IngestionHealthStatus!
-health_status_since: DateTime            # nullable
-healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES])   # INGESTION on feeds and syncs
+health_status: IngestionHealthStatus!   # @auth(for: [MODULES]) on Connector
+health_status_since: DateTime            # nullable; @auth(for: [MODULES]) on Connector
+healthChecks: [IngestionHealthCheck!]!   # @auth(for: [MODULES]) on Connector
 # IngestionHealthCheck: health_check_code, health_check_message, health_check_kind, health_check_severity
 ```
 
 - The API only reads Elasticsearch, **never Redis**.
 - Not evaluated yet: `unknown`, no date, no check.
 - The raw metadata is not exposed.
+- On `Connector`, the three fields require `MODULES` (a connector is also reachable without it). Feeds and syncs are already behind `INGESTION`.
 
 ## UI
 
@@ -113,7 +114,7 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
   - disabled in `config/test.json`.
 - **GraphQL**:
   - `IngestionHealthStatus` enum, `IngestionHealthCheck` type;
-  - `health_status`, `health_status_since` (nullable), `healthChecks` with `@auth` (`MODULES` on connectors, `INGESTION` on feeds and syncs);
+  - `health_status`, `health_status_since` (nullable), `healthChecks`, all three with `@auth(for: [MODULES])` on `Connector`;
   - resolvers read Elasticsearch only: message, kind and severity come from the registry; raw metadata not exposed; `unknown` with no date and no check when not evaluated yet;
   - flag off: empty fields, no error.
 - **UI**: the health chip and its tooltip on the connector list and detail page, the deployed cards and lines, and the feed and sync detail pages.
@@ -134,7 +135,6 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
 - Open follow-up issues:
   - `TOKEN_EXPIRED` without touching authentication;
   - the suspected composer token revocation between connectors sharing a user;
-  - `health_status` readable by `KNOWLEDGE`-only users (`healthChecks` is protected);
   - deleting the Redis key of a deleted connector for good, even during a manager cycle.
 - Tick the chunks in Notion.
 

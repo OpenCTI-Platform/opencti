@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeIngestionHealthPatch, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
+import { computeIngestionHealthChecks, computeIngestionHealthPatch, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import { IngestionHealthStatus } from '../../../../src/generated/graphql';
 import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
@@ -82,5 +82,44 @@ describe('computeIngestionHealthPatch', () => {
   it('should return the checks sorted by code', () => {
     const patch = computeIngestionHealthPatch({}, [USER_MISSING, OTHER_CHECK], EVALUATED_AT);
     expect(patch?.health_checks?.map((check) => check.health_check_code)).toEqual([OTHER_CHECK.health_check_code, HEALTH_CHECK_USER_MISSING]);
+  });
+});
+
+describe('computeIngestionHealthChecks', () => {
+  const EXISTING_USER_ID = 'existing-user-id';
+  const DELETED_USER_ID = 'deleted-user-id';
+  const isExistingUser = (userId: string) => userId === EXISTING_USER_ID;
+
+  describe('connector (user required)', () => {
+    it.each([undefined, null, ''])('should flag USER_MISSING when the user is %s', (userId) => {
+      expect(computeIngestionHealthChecks({ userId, isUserRequired: true }, isExistingUser)).toEqual([USER_MISSING]);
+    });
+
+    it('should flag USER_MISSING when the user was deleted', () => {
+      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, isExistingUser)).toEqual([USER_MISSING]);
+    });
+
+    it('should return no check when the user exists', () => {
+      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: true }, isExistingUser)).toEqual([]);
+    });
+  });
+
+  describe('feed or sync (user optional: runs as the system user without one)', () => {
+    it.each([undefined, null, ''])('should return no check when the user is %s', (userId) => {
+      expect(computeIngestionHealthChecks({ userId, isUserRequired: false }, isExistingUser)).toEqual([]);
+    });
+
+    it('should flag USER_MISSING when the user was deleted', () => {
+      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: false }, isExistingUser)).toEqual([USER_MISSING]);
+    });
+
+    it('should return no check when the user exists', () => {
+      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: false }, isExistingUser)).toEqual([]);
+    });
+  });
+
+  it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
+    const checks = computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, isExistingUser);
+    expect(computeIngestionHealthPatch({}, checks, EVALUATED_AT)?.health_status).toBe(IngestionHealthStatus.Degraded);
   });
 });
