@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/migrations/1790755214072-add-export-id-to-built-in-entities';
+import { computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/modules/globalExport/globalExport-migration-domain';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
 
 const INDEX = 'test_internal_objects-000001';
@@ -13,16 +13,11 @@ describe('Migration add export_id to built-in entities', () => {
   it('should compute the same export_id as the platform initialization for built-in elements', () => {
     const elements = [
       element('Settings'),
-      element('EntitySetting', { target_type: 'Report' }),
-      element('ManagerConfiguration', { manager_id: 'FILE_INDEX_MANAGER' }),
-      element('Capability', { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }),
       element('Role', { name: 'Administrator' }),
       element('Group', { name: 'Connectors' }),
-      element('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }),
       element('Vocabulary', { category: 'report_types_ov', name: 'threat-report' }),
       element('Theme', { name: 'Filigran Dark', built_in: true }),
       element('EmailTemplate', { name: 'Built-In Template For Onboarding' }),
-      element('RetentionRule', { name: 'History retention', scope: 'history' }),
       element('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' }),
       element('FintelTemplate', { name: 'Executive Summary', settings_types: ['Case-Rfi'] }),
     ];
@@ -30,18 +25,13 @@ describe('Migration add export_id to built-in entities', () => {
     const exportIds = new Map(assignments.map((a) => [a.element.internal_id, a.export_id]));
     expect(exportIds).toEqual(new Map([
       [elements[0].internal_id, generateBuiltInExportId('Settings')],
-      [elements[1].internal_id, generateBuiltInExportId('EntitySetting', { target_type: 'Report' })],
-      [elements[2].internal_id, generateBuiltInExportId('ManagerConfiguration', { manager_id: 'FILE_INDEX_MANAGER' })],
-      [elements[3].internal_id, generateBuiltInExportId('Capability', { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' })],
-      [elements[4].internal_id, generateBuiltInExportId('Role', { name: 'Administrator' })],
-      [elements[5].internal_id, generateBuiltInExportId('Group', { name: 'Connectors' })],
-      [elements[6].internal_id, generateBuiltInExportId('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' })],
-      [elements[7].internal_id, generateBuiltInExportId('Vocabulary', { category: 'report_types_ov', name: 'threat-report' })],
-      [elements[8].internal_id, generateBuiltInExportId('Theme', { name: 'Filigran Dark' })],
-      [elements[9].internal_id, generateBuiltInExportId('EmailTemplate', { name: 'Built-In Template For Onboarding' })],
-      [elements[10].internal_id, generateBuiltInExportId('RetentionRule', { scope: 'history' })],
-      [elements[11].internal_id, generateBuiltInExportId('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' })],
-      [elements[12].internal_id, generateBuiltInExportId('FintelTemplate', { name: 'Executive Summary', target_type: 'Case-Rfi' })],
+      [elements[1].internal_id, generateBuiltInExportId('Role', { name: 'Administrator' })],
+      [elements[2].internal_id, generateBuiltInExportId('Group', { name: 'Connectors' })],
+      [elements[3].internal_id, generateBuiltInExportId('Vocabulary', { category: 'report_types_ov', name: 'threat-report' })],
+      [elements[4].internal_id, generateBuiltInExportId('Theme', { name: 'Filigran Dark' })],
+      [elements[5].internal_id, generateBuiltInExportId('EmailTemplate', { name: 'Built-In Template For Onboarding' })],
+      [elements[6].internal_id, generateBuiltInExportId('Notifier', { name: 'Sample of Microsoft Teams message for live trigger' })],
+      [elements[7].internal_id, generateBuiltInExportId('FintelTemplate', { name: 'Executive Summary', target_type: 'Case-Rfi' })],
     ]));
   });
 
@@ -53,33 +43,27 @@ describe('Migration add export_id to built-in entities', () => {
     ]);
   });
 
-  it('should resolve the template of a built-in status', () => {
-    const newTemplate = element('StatusTemplate', { name: 'NEW' });
-    const customTemplate = element('StatusTemplate', { name: 'MY_STATUS' });
-    const reportStatus = element('Status', { type: 'Report', scope: 'GLOBAL', template_id: newTemplate.internal_id });
-    const rfiStatus = element('Status', { type: 'Case-Rfi', scope: 'REQUEST_ACCESS', template_id: newTemplate.internal_id });
-    const customStatus = element('Status', { type: 'Report', scope: 'GLOBAL', template_id: customTemplate.internal_id });
-    const otherTypeStatus = element('Status', { type: 'Grouping', scope: 'GLOBAL', template_id: newTemplate.internal_id });
-    const assignments = computeMissingBuiltInExportIds([newTemplate, customTemplate, reportStatus, rfiStatus, customStatus, otherTypeStatus]);
-    const exportIds = new Map(assignments.map((a) => [a.element.internal_id, a.export_id]));
-    expect(exportIds).toEqual(new Map([
-      [newTemplate.internal_id, generateBuiltInExportId('StatusTemplate', { name: 'NEW' })],
-      [reportStatus.internal_id, generateBuiltInExportId('Status', { type: 'Report', scope: 'GLOBAL', template: 'NEW' })],
-      [rfiStatus.internal_id, generateBuiltInExportId('Status', { type: 'Case-Rfi', scope: 'REQUEST_ACCESS', template: 'NEW' })],
-    ]));
-  });
-
   it('should ignore elements that are not built-in', () => {
     const elements = [
       element('Group', { name: 'My team' }),
       element('Theme', { name: 'Filigran Dark', built_in: false }),
-      // Built-in decay rules cannot be modified, so they are not exported
-      element('DecayRule', { name: 'Built-in default', built_in: true }),
       element('Vocabulary', { category: 'report_types_ov', name: 'my-report-type' }),
-      element('Marking-Definition', { definition_type: 'STATEMENT', definition: 'Copyright' }),
-      element('RetentionRule', { name: 'Knowledge retention', scope: 'knowledge' }),
       element('FintelTemplate', { name: 'My template', settings_types: ['Report'] }),
       element('Dashboard', { name: 'Administrators' }),
+    ];
+    expect(computeMissingBuiltInExportIds(elements)).toEqual([]);
+  });
+
+  it('should ignore the built-in elements of types without export_id', () => {
+    // Their existing key is enough to find them on another platform, or they are not exported
+    const elements = [
+      element('Capability', { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }),
+      element('EntitySetting', { target_type: 'Report' }),
+      element('ManagerConfiguration', { manager_id: 'FILE_INDEX_MANAGER' }),
+      element('Marking-Definition', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }),
+      element('RetentionRule', { name: 'History retention', scope: 'history' }),
+      element('StatusTemplate', { name: 'NEW' }),
+      element('DecayRule', { name: 'Built-in default', built_in: true }),
     ];
     expect(computeMissingBuiltInExportIds(elements)).toEqual([]);
   });
@@ -104,7 +88,6 @@ describe('Migration add export_id to built-in entities', () => {
     const missing = findMissingBuiltInElements([administrators, renamedDefault, alreadyMigratedThenRenamed]);
     expect(missing.filter((m) => m.entity_type === 'Group')).toEqual([{ entity_type: 'Group', naturalKey: { name: 'Default' } }]);
     expect(missing.filter((m) => m.entity_type === 'Vocabulary')).toHaveLength(355);
-    // Types whose instances are all built-in have no list of expected elements
-    expect(missing.filter((m) => ['Settings', 'EntitySetting', 'ManagerConfiguration', 'Capability'].includes(m.entity_type))).toEqual([]);
+    expect(missing.filter((m) => m.entity_type === 'Settings')).toEqual([{ entity_type: 'Settings', naturalKey: {} }]);
   });
 });

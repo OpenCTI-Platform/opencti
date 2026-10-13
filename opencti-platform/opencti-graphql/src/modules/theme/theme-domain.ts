@@ -14,7 +14,7 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { extractContentFrom } from '../../utils/fileToContent';
 import { SYSTEM_USER } from '../../utils/access';
 import { DARK_DEFAULTS, LIGHT_DEFAULTS } from './theme-constants';
-import { generateBuiltInExportId } from '../../schema/identifier';
+import { withBuiltInExportId, type WithExportId } from '../globalExport/globalExport-built-ins';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
@@ -43,7 +43,7 @@ const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeNam
   return themes.edges.some((edge) => edge.node.name === themeName && edge.node.id !== excludeThemeId);
 };
 
-export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput & { export_id?: string }) => {
+export const addTheme = async (context: AuthContext, user: AuthUser, input: WithExportId<ThemeAddInput>) => {
   const themeFound = await checkExistingTheme(context, user, input.name);
 
   if (themeFound) {
@@ -79,7 +79,6 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
   // Create Filigran Dark theme
   const darkThemeInput = {
     name: 'Filigran Dark',
-    export_id: generateBuiltInExportId(ENTITY_TYPE_THEME, { name: 'Filigran Dark' }),
     theme_background: DARK_DEFAULTS.theme_background,
     theme_paper: DARK_DEFAULTS.theme_paper,
     theme_nav: DARK_DEFAULTS.theme_nav,
@@ -97,12 +96,11 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     built_in: true,
   };
 
-  const darkTheme = await addTheme(context, user, darkThemeInput);
+  const darkTheme = await addTheme(context, user, withBuiltInExportId(darkThemeInput, ENTITY_TYPE_THEME));
 
   // Create Filigran Light theme
   const lightThemeInput = {
     name: 'Filigran Light',
-    export_id: generateBuiltInExportId(ENTITY_TYPE_THEME, { name: 'Filigran Light' }),
     theme_background: LIGHT_DEFAULTS.theme_background,
     theme_paper: LIGHT_DEFAULTS.theme_paper,
     theme_nav: LIGHT_DEFAULTS.theme_nav,
@@ -120,7 +118,7 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     built_in: true,
   };
 
-  await addTheme(context, user, lightThemeInput);
+  await addTheme(context, user, withBuiltInExportId(lightThemeInput, ENTITY_TYPE_THEME));
 
   logApp.info('[INIT] Theme defaults initialized');
   return darkTheme;

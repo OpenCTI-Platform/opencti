@@ -24,7 +24,6 @@ import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { emptyPaginationResult } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { generateBuiltInExportId } from '../../schema/identifier';
 
 // -- LOADING --
 
@@ -147,7 +146,6 @@ export const initCreateEntitySettings = async (context: AuthContext, user: AuthU
       const availableSettings = getAvailableSettings(entityType);
       const entitySetting: Record<string, typeAvailableSetting> = {
         target_type: entityType,
-        export_id: generateBuiltInExportId(ENTITY_TYPE_ENTITY_SETTING, { target_type: entityType }),
       };
       availableSettings.forEach((key) => {
         if (defaultEntitySetting[key] !== undefined) {

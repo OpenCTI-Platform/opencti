@@ -32,13 +32,10 @@ describe('Built-in entities creation export_id', () => {
     vi.clearAllMocks();
   });
 
-  it('should create a capability with an export_id based on its name', async () => {
+  it('should create a capability without export_id', async () => {
+    // A capability is found by its name, which only changes through migrations that keep its standard_id in sync
     await addCapability(context, SYSTEM_USER, { name: 'KNOWLEDGE_KNUPDATE', description: 'Create / Update knowledge' });
-    expect(createdInputs('Capability')).toEqual([{
-      name: 'KNOWLEDGE_KNUPDATE',
-      description: 'Create / Update knowledge',
-      export_id: generateBuiltInExportId('Capability', { name: 'KNOWLEDGE_KNUPDATE' }),
-    }]);
+    expect(createdInputs('Capability')).toEqual([{ name: 'KNOWLEDGE_KNUPDATE', description: 'Create / Update knowledge' }]);
   });
 
   it('should create the settings with the same export_id on every platform', async () => {
@@ -55,13 +52,11 @@ describe('Built-in entities creation export_id', () => {
     ].map((name) => [name, generateBuiltInExportId('Notifier', { name })]));
   });
 
-  it('should create the missing manager configurations with an export_id based on the manager', async () => {
+  it('should create the missing manager configurations without export_id', async () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([]);
     await initManagerConfigurations(context, SYSTEM_USER);
     const managerConfigurations = createdInputs('ManagerConfiguration');
-    expect(managerConfigurations.map(({ manager_id, export_id }) => [manager_id, export_id])).toEqual([
-      ['FILE_INDEX_MANAGER', generateBuiltInExportId('ManagerConfiguration', { manager_id: 'FILE_INDEX_MANAGER' })],
-    ]);
+    expect(managerConfigurations.map(({ manager_id, export_id }) => [manager_id, export_id])).toEqual([['FILE_INDEX_MANAGER', undefined]]);
   });
 
   it('should not recreate an existing manager configuration', async () => {
