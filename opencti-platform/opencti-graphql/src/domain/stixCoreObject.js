@@ -115,6 +115,7 @@ import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
 import { addAskAiQueryCount } from '../manager/telemetryManager';
+import { validateEnrichmentInvestigation } from '../modules/workspace/investigation-enrichment';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -377,8 +378,27 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
   return stixCoreObject.id;
 };
 
-export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
+/**
+ * Ask the given connectors to enrich an element, optionally on behalf of an investigation.
+ * When an investigation is given, the user must be allowed to edit it and the created works are tagged
+ * with its internal id, whatever id (internal, standard or stix) the caller used to designate it.
+ * Every connector must be an enrichment connector: otherwise nothing is created, so a work of another
+ * type can never be tagged with an investigation.
+ */
+export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds, opts = {}) => {
+  const { investigationId } = opts;
+  const investigation = investigationId ? await validateEnrichmentInvestigation(context, user, investigationId) : null;
+  const investigationInternalId = investigation?.internal_id;
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
+
+  const invalidConnectorIds = connectorIds.filter((_, index) => {
+    const connector = connectors[index];
+    return !connector || connector.connector_type !== CONNECTOR_INTERNAL_ENRICHMENT;
+  });
+  if (invalidConnectorIds.length > 0) {
+    throw FunctionalError('Only enrichment connectors can enrich an element', { connectorIds: invalidConnectorIds });
+  }
+
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.', { enrichedId });
@@ -396,7 +416,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
     if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
       stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
     }
-    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
+    const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext, investigationId: investigationInternalId });
     const message = {
       internal: {
         work_id: work.id, // Related action for history
@@ -420,6 +440,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
       connector_name: connector.name,
       entity_name: extractEntityRepresentativeName(element),
       entity_type: element.entity_type,
+      ...(investigationInternalId ? { investigation_id: investigationInternalId } : {}),
     };
     const contextData = completeContextDataForEntity(baseData, element);
     await publishUserAction({
@@ -434,8 +455,11 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   return works;
 };
 
-export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId]);
+/**
+ * Ask a single connector to enrich an element, optionally on behalf of an investigation.
+ */
+export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId, opts = {}) => {
+  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId], opts);
   return works.length > 0 ? works[0] : null;
 };
 

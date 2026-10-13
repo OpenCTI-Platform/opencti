@@ -13,7 +13,7 @@ import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
 import { batchInternalRels, batchMarkingDefinitions } from '../domain/stixCoreObject';
-import { elBatchIds, elBatchIdsWithRelCount } from '../database/engine';
+import { elBatchAnyIds, elBatchIds, elBatchIdsWithRelCount } from '../database/engine';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
@@ -31,6 +31,7 @@ export const computeLoaders = (executeContext, user) => {
     creatorsBatchLoader: batchLoader(batchCreators, executeContext, user),
     creatorBatchLoader: batchLoader(batchCreator, executeContext, user),
     idsBatchLoader: batchLoader(elBatchIds, executeContext, user),
+    anyIdsBatchLoader: batchLoader(elBatchAnyIds, executeContext, user),
     idsBatchLoaderWithCount: batchLoader(elBatchIdsWithRelCount, executeContext, user),
     markingsBatchLoader: batchLoader(batchMarkingDefinitions, executeContext, user),
     // Specific loaders

@@ -224,6 +224,9 @@ export const deleteWorkForSource = async (sourceId) => {
   });
 };
 
+/**
+ * Create a work for a connector. The optional args.investigationId links the work to an investigation.
+ */
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
   const {
@@ -232,6 +235,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     fileMarkings = [],
     draftContext,
     formSubmission,
+    investigationId,
   } = args;
   const isMultiPartWork = args.isMultiPartWork === true;
   // Create the work and an initial job
@@ -263,6 +267,9 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   };
   if (draftContext) {
     work.draft_context = draftContext;
+  }
+  if (investigationId) {
+    work.investigation_id = investigationId;
   }
   await elIndex(INDEX_HISTORY, work);
   const createdWork = await loadWorkById(context, user, workId);
