@@ -103,10 +103,12 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .filter((f) => isNotEmptyField(f))
       .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
     // IDs from list of PIRs to listen.
+    // inPirFilters is not validated at save time, ignore anything that is not an array of { value }
+    // so a single malformed playbook cannot break the whole resolved filters cache.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
+      .flatMap((f) => (Array.isArray(f) ? f : []).map((i: { value?: string } | null) => i?.value))
+      .filter((id) => isNotEmptyField(id));
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {

@@ -37,6 +37,26 @@ describe('Cache Manager', () => {
         const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenPIR);
         expect(result).toEqual(expectedResult);
       });
+
+      it('should ignore malformed inPirFilters when listening to PIR events', async () => {
+        const buildPlaybookListenPIR = (inPirFilters: unknown) => ({
+          playbook_definition: JSON.stringify({
+            nodes: [{
+              id: 'id1',
+              name: 'Listen PIR events',
+              position: { x: 0, y: 0 },
+              component_id: 'PLAYBOOK_DATA_STREAM_PIR',
+              configuration: JSON.stringify({ inPirFilters, create: true, update: false, delete: false }),
+            }],
+            links: [],
+          }),
+          entity_type: 'Playbook',
+        } as unknown as BasicStoreCommon);
+        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR('id2'))).toEqual([]);
+        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR({ value: 'id2' }))).toEqual([]);
+        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(null))).toEqual([]);
+        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(['id2', null, { value: 'id3' }]))).toEqual(['id3']);
+      });
     });
   });
 });
