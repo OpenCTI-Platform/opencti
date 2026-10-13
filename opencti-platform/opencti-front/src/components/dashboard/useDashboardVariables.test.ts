@@ -96,4 +96,39 @@ describe('useDashboardVariables', () => {
     rerender({ vars: [{ ...sector }] });
     expect(result.current.values).toBe(before);
   });
+
+  it('treats an empty value as unset: default applies now and after a remount', () => {
+    const other = { ...country, defaultValue: 'DE' };
+    const first = renderHook(() => useDashboardVariables('ws-1', [sector, other]));
+    act(() => first.result.current.setValue(sector.id, 'Finance'));
+    act(() => first.result.current.setValue(other.id, 'FR'));
+    act(() => first.result.current.setValue(sector.id, ''));
+    expect(first.result.current.values.get(sector.id)).toBe('Energy');
+    expect(JSON.parse(window.localStorage.getItem('dashboard-variables-user-1-ws-1') as string)).toEqual({ [other.id]: 'FR' });
+    first.unmount();
+    const second = renderHook(() => useDashboardVariables('ws-1', [sector, other]));
+    expect(second.result.current.values.get(sector.id)).toBe('Energy');
+    expect(second.result.current.values.get(other.id)).toBe('FR');
+  });
+
+  it('removes the storage key when the last stored value is unset', () => {
+    const first = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => first.result.current.setValue(sector.id, 'Finance'));
+    act(() => first.result.current.setValue(sector.id, ''));
+    expect(first.result.current.values.get(sector.id)).toBe('Energy');
+    expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).toBeNull();
+    first.unmount();
+    const second = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    expect(second.result.current.values.get(sector.id)).toBe('Energy');
+  });
+
+  it('does not write to the storage when the feature flag is off', () => {
+    mocks.flags = [];
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).toBeNull();
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
+    act(() => result.current.reset());
+    expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).not.toBeNull();
+  });
 });
