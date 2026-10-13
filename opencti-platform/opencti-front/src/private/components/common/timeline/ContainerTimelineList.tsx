@@ -18,7 +18,6 @@ import {
 } from './timelineUtils';
 
 export interface TimelineListEvent extends TimelineChartEvent {
-  element_name?: string | null;
   // The user can pin, hide and annotate this event (container rights and confidence of the event)
   annotatable?: boolean;
 }

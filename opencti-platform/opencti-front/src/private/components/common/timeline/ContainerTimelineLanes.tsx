@@ -10,6 +10,7 @@ import { resolveTimelineSourceState, type TimelineSourceStateValue } from './tim
 import {
   clusterLaneEvents,
   compactDayTicks,
+  describeTimelineEventSource,
   describeTimelineEventTimes,
   groupOverflowItems,
   isTimelineContextWindow,
@@ -45,6 +46,8 @@ export interface TimelineChartEvent {
   source: string;
   annotation?: string | null;
   source_state?: TimelineSourceStateValue | null;
+  // Name of the element the event comes from, when the view loads it
+  element_name?: string | null;
 }
 
 const isStillOpen = (event: Pick<TimelineChartEvent, 'open_ended' | 'event_end_time'>): boolean => !!event.open_ended && !event.event_end_time;
@@ -626,7 +629,7 @@ const ContainerTimelineLanes = ({
             })}
           </Text>
           <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-source">
-            {hover.event.source === 'manual' ? t_i18n('Analyst milestone') : t_i18n('Derived from the knowledge')}
+            {describeTimelineEventSource(hover.event, t_i18n)}
           </Text>
           {hover.event.annotation && (
             <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }}>{hover.event.annotation}</Text>

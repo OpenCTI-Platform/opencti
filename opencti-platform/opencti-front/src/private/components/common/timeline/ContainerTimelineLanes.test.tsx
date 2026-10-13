@@ -39,6 +39,12 @@ describe('ContainerTimelineLanes tooltip', () => {
     fireEvent.mouseEnter(screen.getByTestId('timeline-event-manual-1'));
     expect(screen.getByTestId('timeline-tooltip-source')).toHaveTextContent('Analyst milestone');
   });
+
+  it('names the attributes and the entity the dates of a derived event come from', () => {
+    renderLanes([{ ...event('indicator-1', 'derived'), rule_id: 'indicator-validity', element_name: 'jiaw.shop' }]);
+    fireEvent.mouseEnter(screen.getByTestId('timeline-event-indicator-1'));
+    expect(screen.getByTestId('timeline-tooltip-source')).toHaveTextContent('Taken from the Valid from and Valid until of the indicator jiaw.shop');
+  });
 });
 
 describe('ContainerTimelineLanes context windows', () => {

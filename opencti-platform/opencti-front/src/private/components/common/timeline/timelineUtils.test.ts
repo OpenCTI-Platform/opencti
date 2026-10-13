@@ -10,6 +10,7 @@ import {
   endsAfterStart,
   computeVisibleDomain,
   currentTimelineDomain,
+  describeTimelineEventSource,
   describeTimelineEventTimes,
   describeTimelineSpan,
   effectiveKinds,
@@ -192,6 +193,39 @@ describe('Timeline event window', () => {
     expect(endsAfterStart(start, new Date('2026-02-05T10:00:01.000Z'))).toBe(true);
     expect(endsAfterStart(start, new Date('2026-02-05T10:00:00.000Z'))).toBe(false);
     expect(endsAfterStart(start, new Date('2026-02-05T09:00:00.000Z'))).toBe(false);
+  });
+});
+
+describe('Timeline event source', () => {
+  const t = (message: string, options?: { values?: Record<string, unknown> }) => message.replace('{name}', String(options?.values?.name ?? ''));
+  const derived = (rule_id: string | null, extra: Record<string, unknown> = {}) => ({ source: 'derived', rule_id, kind: 'note', precision: 'exact', ...extra });
+
+  it('names the attributes a rule took the dates from, then the entity', () => {
+    expect(describeTimelineEventSource(derived('indicator-validity', { element_name: 'jiaw.shop' }), t)).toBe('Taken from the Valid from and Valid until of the indicator jiaw.shop');
+    expect(describeTimelineEventSource(derived('observed-data-window'), t)).toBe('Taken from the First observed and Last observed of the observed data');
+    expect(describeTimelineEventSource(derived('technique-kill-chain', { element_name: 'Phishing' }), t))
+      .toBe('Taken from the Start time and Stop time of the uses and targets relationships of the technique Phishing');
+  });
+
+  it('says how an approximate event was placed', () => {
+    expect(describeTimelineEventSource(derived('technique-kill-chain', { precision: 'approximate', element_name: 'Phishing' }), t))
+      .toBe('Placed by kill chain order: this technique has no dated relationship');
+    expect(describeTimelineEventSource(derived('sighting-window', { precision: 'approximate' }), t)).toBe('Taken from the creation date of the sighting: it has no First seen');
+    // A rule without an approximate wording keeps its sentence
+    expect(describeTimelineEventSource(derived('case-opened', { precision: 'approximate', element_name: 'Phishing wave' }), t)).toBe('Taken from the creation date of the case Phishing wave');
+  });
+
+  it('tells each event of a task where it comes from', () => {
+    expect(describeTimelineEventSource(derived('task-lifecycle', { kind: 'task_due', element_name: 'Block the domain' }), t)).toBe('Taken from the Due date of the task Block the domain');
+    expect(describeTimelineEventSource(derived('task-lifecycle', { kind: 'task_completed' }), t)).toBe('Taken from the history of the task: the moment it reached the last status of its workflow');
+    expect(describeTimelineEventSource(derived('task-containment', { kind: 'task_completed' }), t))
+      .toBe('Taken from the history of the task that completes the containment: the moment it reached the last status of its workflow');
+  });
+
+  it('keeps the generic wording for a milestone and for a rule it does not know', () => {
+    expect(describeTimelineEventSource({ ...derived(null), source: 'manual' }, t)).toBe('Analyst milestone');
+    expect(describeTimelineEventSource(derived('a-future-rule'), t)).toBe('Derived from the knowledge');
+    expect(describeTimelineEventSource(derived(null), t)).toBe('Derived from the knowledge');
   });
 });
 

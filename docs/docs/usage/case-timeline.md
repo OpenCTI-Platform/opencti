@@ -36,14 +36,14 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Source | Events |
 |:-------|:-------|
 | Attack patterns in the case | One event per technique, with the exact window of its `uses` and `targets` relationships when they have a start time (from the first start to the last stop, open-ended while one of them has no stop time), otherwise placed in kill chain order with an approximate precision |
-| Observed data | Observation window (first and last observed) |
-| Sightings | Sighting window; sightings from a security platform land in the detection lane, the others in the adversary lane |
+| Observed data | Observation window (First observed to Last observed) |
+| Sightings | Sighting window (First seen to Last seen, or the creation date of a sighting without First seen, approximate); sightings from a security platform land in the detection lane, the others in the adversary lane |
 | Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen. Except for incidents, these dates are global: they tell when the entity was seen anywhere, not in this incident, so the window is drawn lighter as context (see the legend under the lanes) and never sets the first adversary activity |
 | Indicators | Validity window (valid from, valid until) |
-| Reports and external references | Publication |
+| Reports and external references | Publication (the Publication date of a report, or its creation date when it has none, approximate; the creation date of an external reference) |
 | Files of the container | Upload |
-| Case | Opening |
-| Tasks | Creation, due date and first completion, kept when the task is reopened (the completion of a task that completes the containment records the containment, see below) |
+| Case | Opening (creation date of the case) |
+| Tasks | Creation date, Due date and first completion (the moment the task reached the last status of its workflow, read from its history), kept when the task is reopened (the completion of a task that completes the containment records the containment, see below) |
 | History of the container | Workflow status transitions, assignees and participants added, objects added, merges |
 | Relationships between objects of the case | Creation |
 
@@ -151,6 +151,8 @@ The timeline listens to the changes of the case. When events are added or update
 ### Event details
 
 Click an event to open its details. The header shows the title of the event and its kind, with **Edit** (milestones) and **Pin**; centering the timeline on the event, hiding it and deleting a milestone (with a confirmation) are under **More actions**. The details list the time and precision, the lane, the source, the author, the confidence, the element the event comes from (open it to pivot) and the markings. An event without annotation offers **Add an annotation**.
+
+The source of a derived event names the attributes its dates were taken from and the entity they belong to, for example "Taken from the Valid from and Valid until of the indicator jiaw.shop" or "Taken from the Due date of the task Block the domain"; a technique without a dated relationship says "Placed by kill chain order: this technique has no dated relationship". The tooltip of an event in the lanes shows the same sentence. The table of the [derived events](#derived-events) lists the attributes each kind of event is read from.
 
 ![Details of a timeline event: header actions and metadata grid](assets/case-timeline-drawer-event.png)
 

@@ -31,6 +31,7 @@ import type { TimelineListEvent } from './ContainerTimelineList';
 import TimelineSourceStateChip from './TimelineSourceStateChip';
 import {
   cropLongTokens,
+  describeTimelineEventSource,
   describeTimelineEventTimes,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
@@ -200,8 +201,8 @@ const ContainerTimelineEventDrawer = ({
               <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? 'Custom')} color={colors.lanes[lane]} size="sm" />
             </MetadataItem>
             <MetadataItem label={t_i18n('Source')}>
-              <Text variant="content-base" as="div">
-                {event.source === 'manual' ? t_i18n('Analyst milestone') : t_i18n('Derived from the knowledge')}
+              <Text variant="content-base" as="div" data-testid="timeline-event-source">
+                {describeTimelineEventSource({ ...event, element_name: event.element_name ?? element?.representative?.main }, t_i18n)}
               </Text>
             </MetadataItem>
             {author && (

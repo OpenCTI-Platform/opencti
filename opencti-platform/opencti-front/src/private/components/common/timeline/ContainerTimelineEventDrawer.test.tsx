@@ -61,3 +61,24 @@ describe('ContainerTimelineEventDrawer with a long indicator value', () => {
     expect(screen.getByText('Indicator validity: malicious domain of the phishing campaign')).toBeInTheDocument();
   });
 });
+
+describe('ContainerTimelineEventDrawer source', () => {
+  it('names the attributes and the entity the dates of a derived event come from', () => {
+    renderDrawer({ ...indicatorEvent, rule_id: 'indicator-validity', element: { ...indicatorEvent.element, representative: { main: 'jiaw.shop' } } });
+    expect(screen.getByTestId('timeline-event-source')).toHaveTextContent('Taken from the Valid from and Valid until of the indicator jiaw.shop');
+  });
+
+  it('says that a technique without a dated relationship is placed by kill chain order', () => {
+    renderDrawer({
+      ...indicatorEvent,
+      title: 'Technique Phishing',
+      kind: 'technique_used',
+      lane: 'adversary',
+      precision: 'approximate',
+      event_end_time: null,
+      rule_id: 'technique-kill-chain',
+      element: { id: 'attack-pattern-1', entity_type: 'Attack-Pattern', representative: { main: 'Phishing' } },
+    });
+    expect(screen.getByTestId('timeline-event-source')).toHaveTextContent('Placed by kill chain order: this technique has no dated relationship');
+  });
+});

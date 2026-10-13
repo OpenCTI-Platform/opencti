@@ -526,6 +526,56 @@ export const describeTimelineEventTimes = (
   if (event.open_ended) return t_i18n('Since {start}, still open', { values: { start: fldt(event.event_time) } });
   return fldt(event.event_time);
 };
+// Where a derived event takes its dates from, by the rule that derived it: the attributes it reads, then the entity
+// they belong to (its name, when known, ends the sentence)
+export const TIMELINE_SOURCE_SENTENCES: Record<string, string> = {
+  'indicator-validity': 'Taken from the Valid from and Valid until of the indicator {name}',
+  'entity-first-last-seen': 'Taken from the First seen and Last seen of the entity {name}',
+  'observed-data-window': 'Taken from the First observed and Last observed of the observed data {name}',
+  'sighting-window': 'Taken from the First seen and Last seen of the sighting {name}',
+  'technique-kill-chain': 'Taken from the Start time and Stop time of the uses and targets relationships of the technique {name}',
+  'report-published': 'Taken from the Publication date of the report {name}',
+  'external-reference-published': 'Taken from the creation date of the external reference {name}',
+  'file-uploaded': 'Taken from the upload date of the file',
+  'case-opened': 'Taken from the creation date of the case {name}',
+  task_created: 'Taken from the creation date of the task {name}',
+  task_due: 'Taken from the Due date of the task {name}',
+  task_completed: 'Taken from the history of the task: the moment it reached the last status of its workflow',
+  'task-containment': 'Taken from the history of the task that completes the containment: the moment it reached the last status of its workflow',
+  'workflow-status': 'Taken from the history of the case: the change of its status',
+  'workflow-closure': 'Taken from the history of the case: the change of its status',
+  assignment: 'Taken from the history of the case: the assignees and participants added',
+  'note-added': 'Taken from the creation date of the note {name}',
+  'opinion-added': 'Taken from the creation date of the opinion {name}',
+  'object-added': 'Taken from the history of the case: the objects added to it',
+  'relation-created': 'Taken from the creation date of the relationship {name}',
+  merge: 'Taken from the history of the merge',
+  'security-coverage-result': 'Taken from the last result of the security coverage {name}',
+  'hunt-run': 'Taken from the start and end of the hunt run {name}',
+  'indicator-deployment': 'Taken from the deployment and removal dates of the indicator on the security platform',
+  'investigation-run': 'Taken from the steps of the Case Autopilot investigation',
+};
+// The same, for an event the rule could only place approximately
+export const TIMELINE_APPROXIMATE_SOURCE_SENTENCES: Record<string, string> = {
+  'technique-kill-chain': 'Placed by kill chain order: this technique has no dated relationship',
+  'sighting-window': 'Taken from the creation date of the sighting: it has no First seen',
+  'report-published': 'Taken from the creation date of the report: it has no Publication date',
+  task_completed: 'Taken from the last update of the task: its history does not tell when it reached the last status of its workflow',
+  'task-containment': 'Taken from the last update of the task that completes the containment: its history does not tell when it reached the last status of its workflow',
+};
+/** Where an event comes from in words: an analyst milestone, or the attributes and the entity a rule took its dates from. */
+export const describeTimelineEventSource = (
+  event: { source: string; rule_id?: string | null; kind: string; precision: string; element_name?: string | null },
+  t_i18n: (message: string, options?: { values?: Record<string, unknown> }) => string,
+): string => {
+  if (event.source === 'manual') return t_i18n('Analyst milestone');
+  // The rule of the task lifecycle reads a different attribute for each of its events
+  const key = event.rule_id === 'task-lifecycle' ? event.kind : (event.rule_id ?? '');
+  const sentence = (event.precision === 'approximate' ? TIMELINE_APPROXIMATE_SOURCE_SENTENCES[key] : undefined) ?? TIMELINE_SOURCE_SENTENCES[key];
+  if (!sentence) return t_i18n('Derived from the knowledge');
+  // Without the name of the entity (the overview and the widget do not load it), the sentence names its type only
+  return t_i18n(sentence, { values: { name: event.element_name ?? '' } }).replace(/\s{2,}/g, ' ').trim();
+};
 /** Whether the view narrows the events with a filter the user can clear: the timeline settings are not such a filter. */
 export const hasClearableTimelineFilters = (state: Pick<TimelineViewState, 'lanes' | 'kinds' | 'sources' | 'search' | 'pinnedOnly'>): boolean => (
   state.lanes.length > 0 || state.kinds.length > 0 || state.sources.length > 0 || state.search.trim().length > 0 || state.pinnedOnly
