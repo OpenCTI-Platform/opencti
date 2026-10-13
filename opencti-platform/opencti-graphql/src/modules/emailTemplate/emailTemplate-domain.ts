@@ -26,6 +26,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
+import type { WithExportId } from '../globalExport/globalExport-built-ins';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -45,7 +46,7 @@ export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: st
 export const addEmailTemplate = async (
   context: AuthContext,
   user: AuthUser,
-  input: EmailTemplateAddInput & { export_id?: string },
+  input: WithExportId<EmailTemplateAddInput>,
   useTelemetry: boolean = true,
 ) => {
   const emailTemplateToCreate = {

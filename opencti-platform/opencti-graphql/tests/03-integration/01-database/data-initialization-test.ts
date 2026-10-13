@@ -13,12 +13,8 @@ import { elList, elUpdate } from '../../../src/database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../../src/database/utils';
 import { generateBuiltInExportId } from '../../../src/schema/identifier';
 import { logMigration } from '../../../src/config/conf';
-import {
-  BUILT_IN_EXPORT_ID_TYPES,
-  computeMissingBuiltInExportIds,
-  findMissingBuiltInElements,
-  addMissingBuiltInExportIds,
-} from '../../../src/modules/globalExport/globalExport-migration-domain';
+import { BUILT_IN_EXPORT_ID_TYPES } from '../../../src/modules/globalExport/globalExport-built-ins';
+import { addMissingBuiltInExportIds, computeMissingBuiltInExportIds, findMissingBuiltInElements } from '../../../src/modules/globalExport/globalExport-migration-domain';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -193,17 +189,11 @@ describe('Built-in entities export_id', () => {
     const elements = await listBuiltInCandidates();
     const expectations: [string, (element: any) => boolean, Record<string, string>][] = [
       ['Settings', () => true, {}],
-      ['EntitySetting', (e) => e.target_type === 'Report', { target_type: 'Report' }],
-      ['ManagerConfiguration', (e) => e.manager_id === 'FILE_INDEX_MANAGER', { manager_id: 'FILE_INDEX_MANAGER' }],
-      ['Capability', (e) => e.name === 'BYPASS', { name: 'BYPASS' }],
       ['Role', (e) => e.name === 'Administrator', { name: 'Administrator' }],
       ['Group', (e) => e.name === 'Administrators', { name: 'Administrators' }],
-      ['StatusTemplate', (e) => e.name === 'IN_PROGRESS', { name: 'IN_PROGRESS' }],
       ['Vocabulary', (e) => e.category === 'report_types_ov' && e.name === 'threat-report', { category: 'report_types_ov', name: 'threat-report' }],
-      ['Marking-Definition', (e) => e.definition === 'TLP:AMBER+STRICT', { definition_type: 'TLP', definition: 'TLP:AMBER+STRICT' }],
       ['Theme', (e) => e.name === 'Filigran Light', { name: 'Filigran Light' }],
       ['EmailTemplate', (e) => e.name === 'Built-In Template For Onboarding', { name: 'Built-In Template For Onboarding' }],
-      ['RetentionRule', (e) => e.scope === 'activity', { scope: 'activity' }],
       ['Notifier', (e) => e.name === 'Sample of Microsoft Teams message for digest trigger', { name: 'Sample of Microsoft Teams message for digest trigger' }],
     ];
     expectations.forEach(([entityType, predicate, naturalKey]) => {
@@ -211,13 +201,14 @@ describe('Built-in entities export_id', () => {
       expect(builtIn, `Built-in ${entityType} is missing`).toBeDefined();
       expect(builtIn.export_id, `Built-in ${entityType} has a wrong export_id`).toEqual(generateBuiltInExportId(entityType, naturalKey));
     });
-    // Statuses are identified by the name of their template
-    const reportTemplate = findElement(elements, 'StatusTemplate', (e) => e.name === 'ANALYZED');
-    const reportStatus = findElement(elements, 'Status', (e) => e.type === 'Report' && e.template_id === reportTemplate.internal_id);
-    expect(reportStatus.export_id).toEqual(generateBuiltInExportId('Status', { type: 'Report', scope: 'GLOBAL', template: 'ANALYZED' }));
-    // Every capability and entity setting is built-in
-    const allBuiltIn = elements.filter((e) => ['Capability', 'EntitySetting'].includes(e.entity_type));
-    expect(allBuiltIn.filter((e) => !e.export_id)).toEqual([]);
+  });
+
+  it('should not give an export_id to the built-in elements of the other types', async () => {
+    // Their existing key is enough to find them on another platform, or they are not exported
+    const otherTypes = ['Capability', 'EntitySetting', 'ManagerConfiguration', 'Marking-Definition', 'StatusTemplate', 'Status', 'RetentionRule'];
+    const elements = await elList<any>(testContext, ADMIN_USER, [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_META_OBJECTS], { types: otherTypes });
+    expect(elements.length).toBeGreaterThan(0);
+    expect(elements.filter((e) => e.export_id)).toEqual([]);
   });
 
   it('should compute in the migration the same export_id as the initialization', async () => {
@@ -226,7 +217,7 @@ describe('Built-in entities export_id', () => {
     const elementsWithoutExportId = elements.map(({ export_id: _, ...element }) => element);
     const assignments = computeMissingBuiltInExportIds(elementsWithoutExportId);
     // Sanity floor, mostly made of the built-in vocabularies
-    expect(assignments.length).toBeGreaterThan(450);
+    expect(assignments.length).toBeGreaterThan(350);
     // Every element the migration recognizes gets the value computed at creation
     assignments.forEach(({ element, export_id }) => {
       expect(export_id, `${element.entity_type} ${element.internal_id}`).toEqual(initializationExportIds.get(element.internal_id));
@@ -242,8 +233,8 @@ describe('Built-in entities export_id', () => {
       findElement(elements, 'Group', (e) => e.name === 'Connectors'),
       findElement(elements, 'Theme', (e) => e.name === 'Filigran Dark'),
       findElement(elements, 'Vocabulary', (e) => e.category === 'report_types_ov' && e.name === 'threat-report'),
-      findElement(elements, 'RetentionRule', (e) => e.scope === 'file'),
-      findElement(elements, 'Status', (e) => e.type === 'Case-Rfi'),
+      findElement(elements, 'EmailTemplate'),
+      findElement(elements, 'Notifier', (e) => e.name === 'Sample of Microsoft Teams message for live trigger'),
     ];
     // Simulate built-in entities created before the export_id existed
     for (let index = 0; index < targets.length; index += 1) {

@@ -75,43 +75,19 @@ describe('Data initialization export_id', () => {
     await initializeData({ source: 'testing' } as any, true);
   });
 
-  it('should create every built-in marking definition with its export_id', () => {
+  it('should create the built-in markings, statuses and retention rules without export_id', () => {
+    // Their existing key is enough to find them on another platform, or they are not exported
     const markings = inputsOf(addAllowedMarkingDefinition, 2);
-    expect(markings.map((m) => m.definition)).toEqual([
-      'TLP:CLEAR', 'TLP:GREEN', 'TLP:AMBER', 'TLP:AMBER+STRICT', 'TLP:RED',
-      'PAP:CLEAR', 'PAP:GREEN', 'PAP:AMBER', 'PAP:RED',
-    ]);
-    markings.forEach(({ definition_type, definition, export_id }) => {
-      expect(export_id, definition).toEqual(generateBuiltInExportId('Marking-Definition', { definition_type, definition }));
-    });
-    const amberStrict = markings.find((m) => m.definition === 'TLP:AMBER+STRICT');
-    expect(amberStrict.export_id).toEqual('d58e35dd-f974-5690-8f79-20759a80b99c');
-  });
-
-  it('should create every built-in status template with its export_id', () => {
     const templates = inputsOf(createStatusTemplate, 2);
-    expect(templates.map((t) => t.name)).toEqual(['NEW', 'IN_PROGRESS', 'PENDING', 'TO_BE_QUALIFIED', 'ANALYZED', 'CLOSED', 'DECLINED', 'APPROVED']);
-    templates.forEach(({ name, export_id }) => {
-      expect(export_id, name).toEqual(generateBuiltInExportId('StatusTemplate', { name }));
+    const statuses = inputsOf(createStatus, 3);
+    const retentionRules = inputsOf(createRetentionRule, 2);
+    expect(markings).toHaveLength(9);
+    expect(templates).toHaveLength(8);
+    expect(statuses).toHaveLength(7);
+    expect(retentionRules).toHaveLength(4);
+    [...markings, ...templates, ...statuses, ...retentionRules].forEach((input) => {
+      expect(input.export_id).toBeUndefined();
     });
-  });
-
-  it('should create every built-in status with an export_id based on its template name', () => {
-    const statuses = vi.mocked(createStatus).mock.calls.map(([, , type, input]) => ({ type, ...input }) as any);
-    expect(statuses.map(({ type, template_id, scope }) => [type, template_id, scope])).toEqual([
-      ['Report', 'template-NEW', 'GLOBAL'],
-      ['Report', 'template-IN_PROGRESS', 'GLOBAL'],
-      ['Report', 'template-ANALYZED', 'GLOBAL'],
-      ['Report', 'template-CLOSED', 'GLOBAL'],
-      ['Case-Rfi', 'template-NEW', 'REQUEST_ACCESS'],
-      ['Case-Rfi', 'template-DECLINED', 'REQUEST_ACCESS'],
-      ['Case-Rfi', 'template-APPROVED', 'REQUEST_ACCESS'],
-    ]);
-    statuses.forEach(({ type, scope, template_id, export_id }) => {
-      const template = template_id.replace('template-', '');
-      expect(export_id, `${type} ${template}`).toEqual(generateBuiltInExportId('Status', { type, scope, template }));
-    });
-    expect(statuses[0].export_id).toEqual('c2be890f-6cc0-5822-9795-ea6eee54d8c6');
   });
 
   it('should keep the request access workflow pointing to the built-in statuses', () => {
@@ -135,16 +111,12 @@ describe('Data initialization export_id', () => {
     expect(groups.find((g) => g.name === 'Administrators').export_id).toEqual('d8281c40-c3c8-5cd8-910f-aa3259e92453');
   });
 
-  it('should create the built-in email template and retention rules with their export_id', () => {
+  it('should create the built-in email template with its export_id', () => {
     const [emailTemplate] = inputsOf(addEmailTemplate, 2);
     expect(emailTemplate).toEqual({
       ...DEFAULT_EMAIL_TEMPLATE_INPUT,
       export_id: generateBuiltInExportId('EmailTemplate', { name: DEFAULT_EMAIL_TEMPLATE_INPUT.name }),
     });
-    const retentionRules = inputsOf(createRetentionRule, 2);
-    expect(retentionRules.map(({ scope, export_id }) => [scope, export_id])).toEqual(
-      ['file', 'workbench', 'history', 'activity'].map((scope) => [scope, generateBuiltInExportId('RetentionRule', { scope })]),
-    );
   });
 
   it('should create every built-in vocabulary with an export_id based on its category and trimmed name', () => {

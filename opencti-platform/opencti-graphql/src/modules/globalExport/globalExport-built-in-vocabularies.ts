@@ -1,0 +1,97 @@
+// Built-in vocabularies, frozen as they were when the export_id was introduced: the backfill of platforms created
+// before it must keep finding the same elements, whatever later versions add to openVocabularies.
+export const BUILT_IN_VOCABULARIES: Record<string, string[]> = {
+  account_type_ov: ['facebook', 'ldap', 'nis', 'openid', 'radius', 'skype', 'tacacs', 'twitter', 'unix', 'windows-local', 'windows-domain'],
+  attack_resource_level_ov: ['individual', 'club', 'contest', 'team', 'organization', 'government'],
+  attack_motivation_ov: [
+    'accidental', 'coercion', 'dominance', 'ideology', 'notoriety', 'organizational-gain', 'personal-gain', 'personal-satisfaction', 'revenge',
+    'unpredictable',
+  ],
+  coverage_ov: ['prevention', 'detection', 'vulnerability'],
+  case_severity_ov: ['low', 'medium', 'high', 'critical'],
+  case_priority_ov: ['P1', 'P2', 'P3', 'P4'],
+  channel_types_ov: ['Twitter', 'Facebook'],
+  event_type_ov: ['conference', 'financial', 'holiday', 'international-summit', 'local-election', 'national-election', 'sport-competition'],
+  grouping_context_ov: ['suspicious-activity', 'malware-analysis', 'unspecified'],
+  implementation_language_ov: [
+    'applescript', 'bash', 'c', 'c++', 'c#', 'go', 'java', 'javascript', 'lua', 'objective-c', 'perl', 'php', 'powershell', 'python', 'ruby', 'rust',
+    'scala', 'swift', 'typescript', 'visual-basic', 'x86-32', 'x86-64',
+  ],
+  incident_response_types_ov: ['ransomware', 'data-leak'],
+  incident_type_ov: [
+    'alert', 'compromise', 'information-system-disruption', 'ransomware', 'reputation-damage', 'data-leak', 'typosquatting', 'phishing',
+    'cybercrime',
+  ],
+  incident_severity_ov: ['low', 'medium', 'high', 'critical'],
+  indicator_type_ov: ['anomalous-activity', 'anonymization', 'benign', 'compromised', 'malicious-activity', 'attribution', 'unknown'],
+  infrastructure_type_ov: [
+    'amplification', 'anonymization', 'botnet', 'command-and-control', 'control-system', 'exfiltration', 'firewall', 'hosting-malware',
+    'hosting-target-lists', 'phishing', 'reconnaissance', 'routers-switches', 'staging', 'workstation', 'unknown',
+  ],
+  integrity_level_ov: ['low', 'medium', 'high', 'system'],
+  malware_capabilities_ov: [
+    'accesses-remote-machines', 'anti-debugging', 'anti-disassembly', 'anti-emulation', 'anti-memory-forensics', 'anti-sandbox', 'anti-vm',
+    'captures-input-peripherals', 'captures-output-peripherals', 'captures-system-state-data', 'cleans-traces-of-infection', 'commits-fraud',
+    'communicates-with-c2', 'compromises-data-availability', 'compromises-data-integrity', 'compromises-system-availability',
+    'controls-local-machine', 'degrades-security-software', 'degrades-system-updates', 'determines-c2-server', 'emails-spam', 'escalates-privileges',
+    'evades-av', 'exfiltrates-data', 'fingerprints-host', 'hides-artifacts', 'hides-executing-code', 'infects-files', 'infects-remote-machines',
+    'installs-other-components', 'persists-after-system-reboot', 'prevents-artifact-access', 'prevents-artifact-deletion',
+    'probes-network-environment', 'self-modifies', 'steals-authentication-credentials', 'violates-system-operational-integrity',
+  ],
+  malware_result_ov: ['malicious', 'suspicious', 'benign', 'unknown'],
+  malware_type_ov: [
+    'adware', 'backdoor', 'bot', 'bootkit', 'ddos', 'downloader', 'dropper', 'exploit-kit', 'keylogger', 'ransomware', 'remote-access-trojan',
+    'resource-exploitation', 'rogue-security-software', 'rootkit', 'screen-capture', 'spyware', 'trojan', 'unknown', 'virus', 'webshell', 'wiper',
+    'worm',
+  ],
+  note_types_ov: ['internal', 'assessment', 'analysis', 'feedback', 'external'],
+  opinion_ov: ['strongly-disagree', 'disagree', 'neutral', 'agree', 'strongly-agree'],
+  organization_type_ov: ['constituent', 'csirt', 'partner', 'vendor', 'other'],
+  permissions_ov: ['User', 'Administrator'],
+  platforms_ov: ['android', 'macos', 'linux', 'windows'],
+  collection_layers_ov: ['container', 'cloud-control-plane', 'host', 'OSINT', 'network'],
+  pattern_type_ov: ['stix', 'pcre', 'sigma', 'snort', 'suricata', 'yara', 'tanium-signal', 'spl', 'eql', 'shodan', 'nova'],
+  processor_architecture_ov: ['alpha', 'arm', 'ia-64', 'mips', 'powerpc', 'sparc', 'x86', 'x86-64'],
+  persona_type_ov: ['true name', 'previous true name', 'nickname', 'moniker', 'assumed name', 'alternative spelling/transliteration', 'unknown'],
+  reliability_ov: [
+    'A - Completely reliable', 'B - Usually reliable', 'C - Fairly reliable', 'D - Not usually reliable', 'E - Unreliable',
+    'F - Reliability cannot be judged',
+  ],
+  report_types_ov: ['threat-report', 'internal-report'],
+  request_for_information_types_ov: ['none'],
+  request_for_takedown_types_ov: ['phishing', 'brand-abuse'],
+  security_platform_type_ov: ['EDR', 'XDR', 'SIEM', 'SOAR', 'NDR', 'ISPM'],
+  service_status_ov: [
+    'SERVICE_CONTINUE_PENDING', 'SERVICE_PAUSE_PENDING', 'SERVICE_PAUSED', 'SERVICE_RUNNING', 'SERVICE_START_PENDING', 'SERVICE_STOP_PENDING',
+    'SERVICE_STOPPED',
+  ],
+  service_type_ov: ['SERVICE_KERNEL_DRIVER', 'SERVICE_FILE_SYSTEM_DRIVER', 'SERVICE_WIN32_OWN_PROCESS', 'SERVICE_WIN32_SHARE_PROCESS'],
+  start_type_ov: ['SERVICE_AUTO_START', 'SERVICE_BOOT_START', 'SERVICE_DEMAND_START', 'SERVICE_DISABLED', 'SERVICE_SYSTEM_ALERT'],
+  threat_actor_group_type_ov: [
+    'activist', 'competitor', 'crime-syndicate', 'criminal', 'hacker', 'insider-accidental', 'insider-disgruntled', 'nation-state', 'sensationalist',
+    'spy', 'terrorist', 'unknown',
+  ],
+  threat_actor_group_role_ov: [
+    'agent', 'director', 'independent', 'infrastructure-architect', 'infrastructure-operator', 'malware-author', 'sponsor',
+  ],
+  threat_actor_group_sophistication_ov: ['none', 'minimal', 'intermediate', 'advanced', 'expert', 'innovator', 'strategic'],
+  threat_actor_individual_type_ov: [
+    'activist', 'competitor', 'crime-syndicate', 'criminal', 'hacker', 'insider-accidental', 'insider-disgruntled', 'nation-state', 'sensationalist',
+    'spy', 'terrorist', 'unknown',
+  ],
+  threat_actor_individual_role_ov: [
+    'agent', 'director', 'independent', 'infrastructure-architect', 'infrastructure-operator', 'malware-author', 'sponsor',
+  ],
+  threat_actor_individual_sophistication_ov: ['none', 'minimal', 'intermediate', 'advanced', 'expert', 'innovator', 'strategic'],
+  tool_types_ov: [
+    'denial-of-service', 'exploitation', 'information-gathering', 'network-capture', 'credential-exploitation', 'remote-access',
+    'vulnerability-scanning', 'unknown',
+  ],
+  gender_ov: ['male', 'female', 'nonbinary', 'other', 'unknown'],
+  marital_status_ov: [
+    'annulled', 'divorced', 'domestic_partner', 'legally_separated', 'separated', 'married', 'never_married', 'polygamous', 'single', 'widowed',
+  ],
+  hair_color_ov: ['black', 'brown', 'blond', 'red', 'green', 'blue', 'gray', 'bald', 'other'],
+  eye_color_ov: ['black', 'brown', 'green', 'blue', 'hazel', 'other'],
+  key_type_ov: ['rsa', 'ecdsa', 'ed25519', 'dsa'],
+};

@@ -38,7 +38,7 @@ import {
 import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { lockResources } from '../../lock/master-lock';
-import { withBuiltInExportId } from '../../schema/identifier';
+import { withBuiltInExportId } from '../globalExport/globalExport-built-ins';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -355,7 +355,7 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
       ...templateWidget,
       widget: { ...templateWidget.widget, id: uuidv4() },
     })),
-  }, ENTITY_TYPE_FINTEL_TEMPLATE, { name: input.name, target_type: input.settings_types[0] }));
+  }, ENTITY_TYPE_FINTEL_TEMPLATE));
   await Promise.all(finalInputs
     .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
 };
