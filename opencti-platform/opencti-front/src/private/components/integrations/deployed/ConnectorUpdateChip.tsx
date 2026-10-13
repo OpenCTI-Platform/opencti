@@ -28,8 +28,10 @@ const ConnectorUpdateChip: React.FC<ConnectorUpdateChipProps> = ({ version, vers
     <Tooltip>
       <TooltipTrigger asChild>
         {/* Known gap: focusable only so keyboard users can reach the hints of a chip
-            that is not interactive; showing them inline or behind a real button is
-            pending a Product Design decision. */}
+            that is not interactive. Same span as LIBRARY-FEEDBACK #68, but not a library
+            gap: the chip is not a disabled control, so no library change removes it.
+            Showing the hints inline or behind a real button is pending a Product
+            Design decision. */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span className="inline-flex" tabIndex={0}>
           {chip}
