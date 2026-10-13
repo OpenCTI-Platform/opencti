@@ -1,6 +1,6 @@
 import { buildStixDomain } from '../../database/stix-2-1-converter';
 import { INPUT_CREATED_BY, INPUT_OBJECTS } from '../../schema/general';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_TASK, type Stix2Task, type StixTask, type StoreEntityTask } from './task-types';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
@@ -20,6 +20,8 @@ export const convertCaseTaskToStix_2_1 = (instance: StoreEntityTask): StixTask =
         extension_type: 'new-sdo',
         object_refs_inferred: convertObjectReferences(instance, true),
       }),
+      // Like the other timeline fields, carried by the timeline extension, and only when set
+      ...(instance.completes_containment ? { [STIX_EXT_OCTI_TIMELINE]: { extension_type: 'property-extension' as const, completes_containment: true } } : {}),
     },
   };
 };

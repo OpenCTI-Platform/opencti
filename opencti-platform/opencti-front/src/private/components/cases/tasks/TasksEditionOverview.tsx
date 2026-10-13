@@ -9,13 +9,15 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
+import SwitchField from '../../../../components/fields/SwitchField';
+import { convertAssignees, convertLabels, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { adaptFieldValue } from '../../../../utils/String';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
@@ -56,11 +58,18 @@ const tasksEditionOverviewFragment = graphql`
     description
     created
     due_date
+    completes_containment
+    workflow_completed
     creators {
       id
       name
     }
     x_opencti_stix_ids
+    objectLabel {
+      id
+      value
+      color
+    }
     status {
       id
       order
@@ -135,7 +144,9 @@ interface TasksEditionFormValues {
   objectMarking?: FieldOption[];
   objectAssignee?: FieldOption[];
   objectParticipant?: FieldOption[];
+  objectLabel?: FieldOption[];
   x_opencti_workflow_id: FieldOption;
+  completes_containment: boolean;
 }
 
 const TASK_TYPE = 'Task';
@@ -187,6 +198,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
       objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
+      objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
@@ -209,8 +221,12 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
     objectParticipant: convertParticipants(taskData),
+    objectLabel: convertLabels(taskData),
     x_opencti_workflow_id: convertStatus(t_i18n, taskData) as FieldOption,
+    completes_containment: taskData.completes_containment ?? false,
   };
+  // Offered once the task reaches the last status of its workflow, and kept visible while it is set
+  const offersContainment = !!taskData.workflow_completed || !!taskData.completes_containment;
 
   return (
     <Formik
@@ -221,7 +237,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({ setFieldValue }) => (
+      {({ setFieldValue, values }) => (
         <Form>
           <Field
             component={TextField}
@@ -284,6 +300,17 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
+          <ObjectLabelField
+            name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
+            style={fieldSpacingContainerStyle}
+            values={values.objectLabel}
+            onChange={editor.changeLabel}
+            setFieldValue={(name, labels) => {
+              setFieldValue(name, labels);
+              editor.changeLabel(name, labels);
+            }}
+          />
           {taskData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -298,6 +325,17 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
                   fieldName="x_opencti_workflow_id"
                 />
               )}
+            />
+          )}
+          {offersContainment && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="completes_containment"
+              label={t_i18n('This task completes the containment')}
+              containerstyle={fieldSpacingContainerStyle}
+              onChange={editor.changeField}
+              helpertext={t_i18n('Its completion sets the containment date in the timeline of the case')}
             />
           )}
           <ObjectMarkingField

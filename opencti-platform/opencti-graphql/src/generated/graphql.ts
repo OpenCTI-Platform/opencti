@@ -35078,6 +35078,8 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
+  /** When the task is completed, its completion records the containment in the timeline of the case */
+  completes_containment?: Maybe<Scalars['Boolean']['output']>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
@@ -35136,6 +35138,8 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  /** True when the task is in the last status of its workflow */
+  workflow_completed?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -35328,6 +35332,7 @@ export type TaskToStixArgs = {
 };
 
 export type TaskAddInput = {
+  completes_containment?: InputMaybe<Scalars['Boolean']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   customFieldValues?: InputMaybe<Array<CustomFieldValueAddInput>>;
@@ -54042,6 +54047,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   authorized_members_activation_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<TaskCasesArgs>>;
+  completes_containment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TaskConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TaskContainersArgs>>;
@@ -54100,6 +54106,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  workflow_completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

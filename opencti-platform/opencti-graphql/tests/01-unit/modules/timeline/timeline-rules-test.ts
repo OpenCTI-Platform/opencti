@@ -7,6 +7,7 @@ import {
   deriveTimelineEvents,
   huntRunRule,
   investigationRunRule,
+  isContainmentTask,
   isTimelineContextWindow,
   MAX_DETAILED_OBJECT_ADDITIONS,
   RULE_ENTITY_SEEN,
@@ -316,6 +317,28 @@ describe('Timeline response rules', () => {
     // Completed again: the first completion still dates it
     const completedAgain = derive(buildInput({ statuses, tasks: [task('task-done')], taskHistory: history }));
     expect(completedAgain.filter((e) => e.kind === 'task_completed')).toEqual([expect.objectContaining(firstCompletion)]);
+  });
+
+  it('should record the containment with the completion of a task that completes it, the containment label kept as the legacy route', () => {
+    const task = (id: string, extra: Partial<TimelineElementData>) => element({
+      id, entity_type: 'Task', name: id, created: '2026-03-10T09:00:00.000Z', updated_at: '2026-03-12T09:00:00.000Z', workflow_id: 'task-done', ...extra,
+    });
+    const completions = derive(buildInput({
+      statuses,
+      tasks: [
+        task('switch', { completes_containment: true }),
+        task('label', { labels: ['Containment'] }),
+        task('plain', { completes_containment: false }),
+      ],
+    })).filter((e) => e.kind === 'task_completed');
+    const ruleOf = (id: string) => completions.find((e) => e.element_id === id)?.rule_id;
+    expect(ruleOf('switch')).toEqual(RULE_TASK_CONTAINMENT);
+    expect(ruleOf('label')).toEqual(RULE_TASK_CONTAINMENT);
+    expect(ruleOf('plain')).toEqual('task-lifecycle');
+    // The switch alone never makes an open task a containment: only its completion counts
+    const open = derive(buildInput({ statuses, tasks: [task('switch', { completes_containment: true, workflow_id: 'task-open' })] }));
+    expect(open.filter((e) => e.kind === 'task_completed')).toEqual([]);
+    expect(isContainmentTask(element({ id: 't', entity_type: 'Task', completes_containment: true }))).toBe(true);
   });
 
   it('should fall back to the task update date when the history has no transition', () => {

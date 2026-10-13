@@ -32,6 +32,7 @@ export interface TimelineElementData {
   valid_until?: string | null;
   published?: string | null;
   due_date?: string | null;
+  completes_containment?: boolean | null;
   workflow_id?: string | null;
   kill_chain_phase_ids?: string[];
   // relationships
@@ -574,9 +575,13 @@ const taskCompletionTime = (input: TimelineDerivationInput, task: TimelineElemen
   return fallback !== null ? { time: fallback, exact: false } : null;
 };
 
+// The switch of the task, or the label of the tasks marked before the switch existed
+export const isContainmentTask = (task: TimelineElementData): boolean => task.completes_containment === true
+  || (task.labels ?? []).some((label) => label.toLowerCase() === CONTAINMENT_LABEL);
+
 const taskRule: TimelineRule = {
   id: 'task-lifecycle',
-  label: 'Tasks created, due and completed (tasks labelled containment drive the containment anchor)',
+  label: 'Tasks created, due and completed (the completion of a task that completes the containment sets the containment anchor)',
   kinds: ['task_created', 'task_due', 'task_completed'],
   derive: (input) => input.tasks.flatMap((task) => {
     const events: DerivedTimelineEvent[] = [];
@@ -598,10 +603,9 @@ const taskRule: TimelineRule = {
     }
     const completion = taskCompletionTime(input, task);
     if (completion) {
-      const isContainment = (task.labels ?? []).some((label) => label.toLowerCase() === CONTAINMENT_LABEL);
       events.push({
         ...base,
-        rule_id: isContainment ? RULE_TASK_CONTAINMENT : 'task-lifecycle',
+        rule_id: isContainmentTask(task) ? RULE_TASK_CONTAINMENT : 'task-lifecycle',
         kind: 'task_completed',
         event_time: iso(completion.time),
         time_precision: completion.exact ? 'exact' : 'approximate',

@@ -1,7 +1,7 @@
 import { UseMutationConfig } from 'react-relay';
 import type { GraphQLTaggedNode, MutationParameters } from 'relay-runtime';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
-import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
+import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertLabels, convertMarkings, convertParticipants } from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
 import useApiMutation from './useApiMutation';
 import { FieldOption } from '../field';
@@ -126,6 +126,9 @@ const useFormEditor = (
   const changeParticipant = (name: string, values: FieldOption[]) => {
     changeMultiple(name, values, 'object-participant', convertParticipants);
   };
+  const changeLabel = (name: string, values: FieldOption[]) => {
+    changeMultiple(name, values, 'object-label', convertLabels);
+  };
   const changeKillChainPhases = (name: string, values: FieldOption[]) => {
     changeMultiple(name, values, 'kill-chain-phase', convertKillChainPhases);
   };
@@ -211,6 +214,7 @@ const useFormEditor = (
     changeMarking,
     changeAssignee,
     changeParticipant,
+    changeLabel,
     changeCreated,
     changeKillChainPhases,
     changeExternalReferences,

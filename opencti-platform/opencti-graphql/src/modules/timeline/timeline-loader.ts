@@ -136,6 +136,7 @@ export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map
     valid_until: dateString(element.valid_until),
     published: dateString(element.published),
     due_date: dateString(element.due_date),
+    completes_containment: element.completes_containment ?? null,
     workflow_id: element.x_opencti_workflow_id ?? null,
     kill_chain_phase_ids: timelineRefIds(element, RELATION_KILL_CHAIN_PHASE),
     relationship_type: isRelation ? element.entity_type : undefined,
@@ -314,12 +315,15 @@ const loadStatuses = async (context: AuthContext): Promise<Map<string, TimelineS
   return buildTimelineStatuses(statuses, terminalStatesByType);
 };
 
-export const isContainerClosed = async (context: AuthContext, container: AnyStoreElement): Promise<boolean> => {
-  const statusId = container.x_opencti_workflow_id;
+/** Whether a case or a task is in the last status of its workflow, the way the timeline reads it. */
+export const isInFinalWorkflowStatus = async (context: AuthContext, element: { x_opencti_workflow_id?: string | null }): Promise<boolean> => {
+  const statusId = element.x_opencti_workflow_id;
   if (!statusId) return false;
   const statuses = await loadStatuses(context);
   return statuses.get(statusId)?.is_final === true;
 };
+
+export const isContainerClosed = (context: AuthContext, container: AnyStoreElement): Promise<boolean> => isInFinalWorkflowStatus(context, container);
 
 const loadSoftSources = async (
   context: AuthContext,

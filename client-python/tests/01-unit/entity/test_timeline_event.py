@@ -377,3 +377,33 @@ def test_stix_import_raises_other_failures(local_api_client):
     extension = {"events": [{"id": "timeline-event--1"}], "annotations": []}
     with pytest.raises(ValueError):
         stix2.import_timeline_extension(timeline_case(extension), {"id": CONTAINER_ID})
+
+
+def test_task_import_reads_the_containment_switch_from_the_timeline_extension(
+    local_api_client,
+):
+    local_api_client.query.return_value = {
+        "data": {
+            "taskAdd": {"id": "t1", "standard_id": "task--1", "entity_type": "Task"}
+        }
+    }
+    task = {
+        "id": "task--8a3c1c4e-1f7a-4c39-9c55-2f3b3f0c9e11",
+        "type": "task",
+        "name": "Isolate the mail server",
+    }
+    local_api_client.task.import_from_stix2(
+        stixObject={
+            **task,
+            "extensions": {
+                STIX_EXT_OCTI_TIMELINE: {
+                    "extension_type": "property-extension",
+                    "completes_containment": True,
+                }
+            },
+        }
+    )
+    assert sent_variables(local_api_client)["input"]["completes_containment"] is True
+    # Without the extension, the switch is left unset
+    local_api_client.task.import_from_stix2(stixObject=dict(task))
+    assert sent_variables(local_api_client)["input"]["completes_containment"] is None

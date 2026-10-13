@@ -121,6 +121,11 @@ const TASK_FIELD_PATCH = gql`
     taskFieldPatch(id: $id, input: $input) { id }
   }
 `;
+const TASK_CONTAINMENT = gql`
+  query TimelineTaskContainment($id: String!) {
+    task(id: $id) { id completes_containment workflow_completed toStix }
+  }
+`;
 const STATUS_TEMPLATES = gql`
   query TimelineStatusTemplates {
     statusTemplates(first: 100) { edges { node { id name } } }
@@ -614,6 +619,7 @@ describe('Incident and case timeline', () => {
       let containmentCaseId: string;
       let containmentLabelId: string;
       let containmentTaskId: string;
+      let switchTaskId: string;
       let authoredNoteId: string;
       let authoredOpinionId: string;
       let authorId: string;
@@ -658,6 +664,11 @@ describe('Incident and case timeline', () => {
           },
         });
         containmentTaskId = task.data.taskAdd.id;
+        const switchTask = await queryAsAdminWithSuccess({
+          query: TASK_ADD,
+          variables: { input: { name: 'Block the command and control domain', created: '2026-03-01T09:30:00.000Z', objects: [containmentCaseId], completes_containment: true } },
+        });
+        switchTaskId = switchTask.data.taskAdd.id;
         const note = await queryAsAdminWithSuccess({
           query: NOTE_ADD,
           variables: { input: { attribute_abstract: 'Timeline authored note', content: 'Mail server isolated', created: '2026-03-01T10:00:00.000Z', objects: [containmentCaseId], createdBy: TEST_ORGANIZATION.id } },
@@ -669,6 +680,7 @@ describe('Incident and case timeline', () => {
         });
         authoredOpinionId = opinion.data.opinionAdd.id;
         await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: containmentTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
+        await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: switchTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
         await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: containmentCaseId } });
       });
 
@@ -677,6 +689,7 @@ describe('Incident and case timeline', () => {
           [STIX_CORE_OBJECT_DELETE, authoredOpinionId],
           [STIX_CORE_OBJECT_DELETE, authoredNoteId],
           [STIX_CORE_OBJECT_DELETE, containmentTaskId],
+          [STIX_CORE_OBJECT_DELETE, switchTaskId],
           [STIX_CORE_OBJECT_DELETE, containmentCaseId],
           [LABEL_DELETE, containmentLabelId],
         ];
@@ -690,17 +703,31 @@ describe('Incident and case timeline', () => {
         if (containmentCaseId) await deleteContainerTimeline(containmentCaseId);
       });
 
-      it('a closed task labelled containment sets the containment anchor', async () => {
+      it('a closed task that completes the containment, or labelled containment, sets the containment anchor', async () => {
         const completions = await listTimeline(containmentCaseId, { kinds: ['task_completed'] });
-        expect(completions).toHaveLength(1);
-        expect(completions[0]).toMatchObject({ element_id: containmentTaskId, rule_id: 'task-containment', lane: 'response' });
+        expect(completions).toHaveLength(2);
+        const completionOf = (taskId: string) => completions.find((event) => event.element_id === taskId);
+        expect(completionOf(containmentTaskId)).toMatchObject({ rule_id: 'task-containment', lane: 'response' });
+        expect(completionOf(switchTaskId)).toMatchObject({ rule_id: 'task-containment', lane: 'response' });
         const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: containmentCaseId } });
-        expect(iso(anchors.data.timelineAnchors.containment)).toEqual(completions[0].event_time);
+        const first = completions.map((event) => event.event_time).sort()[0];
+        expect(iso(anchors.data.timelineAnchors.containment)).toEqual(first);
+      });
+
+      it('should expose the containment switch of a task and carry it in the timeline extension of its STIX', async () => {
+        const switchTask = await queryAsAdminWithSuccess({ query: TASK_CONTAINMENT, variables: { id: switchTaskId } });
+        expect(switchTask.data.task).toMatchObject({ completes_containment: true, workflow_completed: true });
+        const stix = JSON.parse(switchTask.data.task.toStix);
+        expect(stix.extensions[STIX_EXT_OCTI_TIMELINE]).toEqual({ extension_type: 'property-extension', completes_containment: true });
+        const labelledTask = await queryAsAdminWithSuccess({ query: TASK_CONTAINMENT, variables: { id: containmentTaskId } });
+        expect(labelledTask.data.task.completes_containment).toBeFalsy();
+        expect(JSON.parse(labelledTask.data.task.toStix).extensions[STIX_EXT_OCTI_TIMELINE]).toBeUndefined();
       });
 
       it('should keep the authors of the tasks, notes and opinions and the kill chain phases of the techniques', async () => {
         const events = await listTimeline(containmentCaseId, { kinds: ['task_created', 'task_completed', 'note_added', 'opinion_added', 'technique_used'] });
-        const byKind = (kind: string) => events.filter((event) => event.kind === kind);
+        // The task completing the containment by its switch has no author
+        const byKind = (kind: string) => events.filter((event) => event.kind === kind && event.element_id !== switchTaskId);
         ['task_created', 'task_completed', 'note_added', 'opinion_added'].forEach((kind) => {
           expect(byKind(kind), kind).toHaveLength(1);
           expect(byKind(kind)[0].createdBy?.id, kind).toEqual(authorId);

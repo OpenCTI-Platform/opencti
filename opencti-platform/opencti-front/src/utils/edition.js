@@ -47,6 +47,12 @@ export const convertParticipants = (element) => (element?.objectParticipant ?? [
   value: n.id,
 }));
 
+export const convertLabels = (element) => (element?.objectLabel ?? []).map((n) => ({
+  label: n.value,
+  value: n.id,
+  color: n.color,
+}));
+
 export const convertOrganizations = (element) => (element?.objectOrganization?.edges ?? []).map((n) => ({
   label: n.node.name,
   value: n.node.id,

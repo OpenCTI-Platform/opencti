@@ -12218,6 +12218,14 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   description: String
   due_date: DateTime
   content_mapping: String
+
+  """
+  When the task is completed, its completion records the containment in the timeline of the case
+  """
+  completes_containment: Boolean
+
+  """True when the task is in the last status of its workflow"""
+  workflow_completed: Boolean
 }
 
 enum TasksOrdering {
@@ -12253,6 +12261,7 @@ input TaskAddInput {
   description: String
   created: DateTime
   due_date: DateTime
+  completes_containment: Boolean
   objectAssignee: [String]
   objectParticipant: [String]
   objectLabel: [String]
