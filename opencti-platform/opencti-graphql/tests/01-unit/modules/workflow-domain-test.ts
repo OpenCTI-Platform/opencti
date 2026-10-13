@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { booleanConf, isFeatureEnabled, logApp } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
@@ -160,6 +160,7 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
   };
 });
 
+const defaultCreateDefinition = (WorkflowFactory.createDefinition as any).getMockImplementation();
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
 const mockUser = { id: 'user-id' } as any;
 
@@ -3909,7 +3910,36 @@ describe('getWorkflowInstance — read-repair', () => {
     }
   });
 
-  it('keeps an external write whose Status maps to no state of the published workflow', async () => {
+  it('keeps a Status recorded as a kept external write', async () => {
+    setup();
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([{ state: 'reviewing', event: 'event_external_unmapped', status_id: 'stale-status-id', reason: 'unmapped' }]),
+    });
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('realigns a kept external write once an admin cleared it', async () => {
+    setup();
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([
+        { state: 'reviewing', event: 'event_external_unmapped', status_id: 'stale-status-id', reason: 'unmapped' },
+        { state: 'reviewing', event: 'admin_clear_pending_state' },
+      ]),
+    });
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).toHaveBeenCalledOnce();
+  });
+
+  it('realigns a legacy Status mapped to no state when no external write kept it', async () => {
     setup();
     (getEntitiesListFromCache as any).mockResolvedValue([
       { id: 'stale-status-id', internal_id: 'stale-status-id', template_id: 'unrelated-state', scope: StatusScope.Global },
@@ -3918,6 +3948,17 @@ describe('getWorkflowInstance — read-repair', () => {
 
     await getWorkflowInstance(mockContext, mockUser, 'entity-id');
 
+    expect(projectWorkflowState).toHaveBeenCalledOnce();
+  });
+
+  it('does not repair while a workflow mutation holds the lock of the entity', async () => {
+    setup();
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+    (lockResources as any).mockRejectedValueOnce(new Error('lock held'));
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(lockResources).toHaveBeenCalledWith(['workflow-mutation-entity-id'], { retryCount: 0 });
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 
@@ -3941,13 +3982,22 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
       { id: 'status-draft-id', internal_id: 'status-draft-id', template_id: 'draft', scope: StatusScope.Global },
       { id: 'status-orphan-id', internal_id: 'status-orphan-id', template_id: 'unrelated-state', scope: StatusScope.Global },
       { id: 'status-rfi-reviewing-id', internal_id: 'status-rfi-reviewing-id', template_id: 'reviewing', scope: StatusScope.RequestAccess },
+      { id: 'status-closed-id', internal_id: 'status-closed-id', template_id: 'closed', scope: StatusScope.Global },
     ]);
+    (WorkflowFactory.createDefinition as any).mockReturnValue({
+      getInitialState: () => 'draft',
+      hasState: () => true,
+      getTransitions: (state: string) => (state === 'draft' ? [{ event: 'review', to: 'reviewing', actionTypes: [] }] : []),
+    });
+  });
+  afterEach(() => {
+    (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
   });
 
   const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
   const definitionContent = JSON.stringify({
     initialState: 'draft',
-    states: [{ statusId: 'draft' }],
+    states: [{ statusId: 'draft' }, { statusId: 'closed' }],
     transitions: [{ from: 'draft', to: 'reviewing', event: 'review' }],
   });
   let storedStatusId: string | null = null;
@@ -3966,6 +4016,7 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
   };
   const draftInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: '[]', scope: 'standard' };
   const lastUpdateInputs = () => (updateAttribute as any).mock.calls.at(-1)[4];
+  const lastHistory = () => JSON.parse(lastUpdateInputs().find((input: any) => input.key === 'history').value[0]);
   const syncWrite = (statusId: string | null) => {
     storedStatusId = statusId;
     return syncWorkflowInstanceFromExternalWrite(mockContext, mockUser, entity, statusId);
@@ -4063,12 +4114,16 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [null] }]);
   });
 
-  it('keeps the current state and records a pendingError when the new status maps to no state', async () => {
+  it('keeps the current state, records the kept write and a pendingError when the new status maps to no state', async () => {
     setupPublishedDefinition(draftInstance);
 
     await syncWrite('status-orphan-id');
 
-    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [expect.stringContaining('status-orphan-id')] }]);
+    expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
+    expect(lastUpdateInputs()[1].value[0]).toContain('status-orphan-id');
+    expect(lastHistory()).toEqual([
+      expect.objectContaining({ state: 'draft', event: 'event_external_unmapped', status_id: 'status-orphan-id', reason: 'unmapped', user_id: 'user-id' }),
+    ]);
   });
 
   it('treats a status of another scope as unmapped', async () => {
@@ -4076,7 +4131,52 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
 
     await syncWrite('status-rfi-reviewing-id');
 
-    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [expect.stringContaining('status-rfi-reviewing-id')] }]);
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_unmapped', status_id: 'status-rfi-reviewing-id', reason: 'unmapped' })]);
+  });
+
+  it('keeps the current state when no transition allowed for the writer leads to the mapped state', async () => {
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite('status-closed-id');
+
+    expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
+    expect(lastHistory()).toEqual([
+      expect.objectContaining({ state: 'draft', event: 'event_external_unmapped', status_id: 'status-closed-id', reason: 'no_transition' }),
+    ]);
+  });
+
+  it('moves the instance without a transition when the writer has BYPASS', async () => {
+    setupPublishedDefinition(draftInstance);
+    storedStatusId = 'status-closed-id';
+    const bypassUser = { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any;
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, bypassUser, entity, 'status-closed-id');
+
+    expect(lastUpdateInputs()[0]).toEqual({ key: 'currentState', value: ['closed'] });
+    expect(lastHistory()).toEqual([expect.objectContaining({ state: 'closed', event: 'event_external', user_id: 'bypass-id' })]);
+  });
+
+  it('replaces a failed transition and says so in history', async () => {
+    setupPublishedDefinition({ ...draftInstance, pendingStatus: 'error', pendingError: 'action failed', pendingTransition: JSON.stringify({ event: 'review' }) });
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lastUpdateInputs()).toEqual(expect.arrayContaining([
+      { key: 'currentState', value: ['reviewing'] },
+      { key: 'pendingStatus', value: [null] },
+      { key: 'pendingTransition', value: [null] },
+      { key: 'pendingError', value: [null] },
+    ]));
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external', cleared_failed_transition: 'review' })]);
+  });
+
+  it('keeps the error of a failed transition when the write is kept without moving the state', async () => {
+    setupPublishedDefinition({ ...draftInstance, pendingStatus: 'error', pendingError: 'action failed' });
+
+    await syncWrite('status-orphan-id');
+
+    expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history']);
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_unmapped', reason: 'unmapped' })]);
   });
 
   it('ignores the write while a transition is pending, recording it in history without touching state or pendingError', async () => {
@@ -4109,5 +4209,16 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     await expect(syncWrite('status-reviewing-id')).resolves.toBeUndefined();
 
     expect(logApp.error).toHaveBeenCalledOnce();
+  });
+
+  it('records the kept write when the sync cannot take the lock, so read-repair does not erase it', async () => {
+    setupPublishedDefinition(draftInstance);
+    (lockResources as any).mockRejectedValueOnce(new Error('lock timeout'));
+
+    await syncWrite('status-reviewing-id');
+
+    expect(logApp.error).toHaveBeenCalledOnce();
+    expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_unmapped', status_id: 'status-reviewing-id', reason: 'sync_failed' })]);
   });
 });
