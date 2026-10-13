@@ -108,6 +108,10 @@ export const validateDraft = (
     if (draft.type !== 'boolean' && draft.type !== 'date') errors.defaultValue = t_i18n('Default value is required');
   } else if (draft.type === 'numeric' && !Number.isFinite(Number(defaultValue))) {
     errors.defaultValue = t_i18n('Default value must be a number');
+  } else if (draft.type === 'boolean' && defaultValue !== 'true' && defaultValue !== 'false') {
+    errors.defaultValue = t_i18n('Default value is not valid');
+  } else if (draft.type === 'date' && Number.isNaN(Date.parse(defaultValue))) {
+    errors.defaultValue = t_i18n('Default value is not valid');
   }
   return errors;
 };

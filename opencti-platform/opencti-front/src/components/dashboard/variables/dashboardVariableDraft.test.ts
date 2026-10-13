@@ -132,6 +132,24 @@ describe('validateDraft', () => {
     expect(validateDraft(validDraft({ type: 'numeric', defaultValue: '-12.5' }), [], t_i18n)).toEqual({});
   });
 
+  it('refuses a boolean default value that is neither true nor false', () => {
+    expect(validateDraft(validDraft({ type: 'boolean', defaultValue: 'maybe' }), [], t_i18n).defaultValue)
+      .toBe('Default value is not valid');
+  });
+
+  it.each(['true', 'false', '  true ', ''])('accepts the boolean default value "%s"', (defaultValue) => {
+    expect(validateDraft(validDraft({ type: 'boolean', defaultValue }), [], t_i18n)).toEqual({});
+  });
+
+  it('refuses a date default value that cannot be parsed', () => {
+    expect(validateDraft(validDraft({ type: 'date', defaultValue: 'not a date' }), [], t_i18n).defaultValue)
+      .toBe('Default value is not valid');
+  });
+
+  it.each(['2026-10-13T10:00:00.000Z', ''])('accepts the date default value "%s"', (defaultValue) => {
+    expect(validateDraft(validDraft({ type: 'date', defaultValue }), [], t_i18n)).toEqual({});
+  });
+
   it('refuses a default value referencing another variable', () => {
     expect(validateDraft(validDraft({ defaultValue: '$var:abc' }), [], t_i18n).defaultValue)
       .toBe('A value cannot reference another variable');
