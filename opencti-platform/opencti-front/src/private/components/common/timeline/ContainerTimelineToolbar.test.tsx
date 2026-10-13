@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
-import { parseTimelineViewState, TIMELINE_KINDS, TIMELINE_LANES, type TimelineViewState } from './timelineUtils';
+import { parseTimelineViewState, TIMELINE_KIND_LABELS, TIMELINE_KINDS, TIMELINE_LANES, type TimelineViewState } from './timelineUtils';
 
 const baseState = (patch: Partial<TimelineViewState> = {}): TimelineViewState => ({
   ...parseTimelineViewState(new URLSearchParams(), { grouping: 'day', zoom: 'fit' }),
@@ -44,7 +44,14 @@ describe('ContainerTimelineToolbar', () => {
     const kinds = screen.getByRole('combobox', { name: 'Event kinds' });
     expect(kinds).toHaveValue('Kinds (1)');
     await user.click(kinds);
-    expect(screen.getAllByRole('option')).toHaveLength(TIMELINE_KINDS.length);
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(TIMELINE_KINDS.length);
+    // Each row writes the name of its kind next to its check mark, and is named by it
+    TIMELINE_KINDS.forEach((kind, index) => {
+      expect(options[index]).toBeVisible();
+      expect(options[index]).toHaveTextContent(TIMELINE_KIND_LABELS[kind]);
+      expect(options[index]).toHaveAccessibleName(TIMELINE_KIND_LABELS[kind]);
+    });
     expect(screen.getByRole('option', { name: 'Sighting' })).toHaveAttribute('aria-selected', 'true');
     const malwareSeen = screen.getByRole('option', { name: 'Malware seen' });
     expect(malwareSeen).toHaveAttribute('aria-selected', 'false');

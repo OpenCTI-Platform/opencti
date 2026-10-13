@@ -2541,3 +2541,39 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+---
+
+## 67. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
+
+**Needed.** A menu or list row that is itself the control (a `MenuItem` or a
+`role="option"` toggling a filter value) draws a check box next to the name of
+the value. The incident timeline's kinds filter did this with
+`<Checkbox checked={...} presentational label={t_i18n(kindLabel)} />` inside
+each `MenuItem`.
+
+**Today.** Measured from `@filigran/design-system` 1.2.0: `CheckboxProps`
+declares both `label` and `presentational`. With `presentational`, the
+component returns only the box (an `aria-hidden` `<span>`) and ignores
+`label`, `description` and `wrapperClassName`, with no type error and no
+development warning. The JSDoc of `presentational` explains why the box is
+inert, but not that the label is dropped. The timeline filter therefore
+rendered a column of empty boxes with no visible text and rows with no
+accessible name, and nothing caught it before review.
+
+**Workaround.** The timeline kinds filter is now the library `Combobox` in
+`multiple` mode (`ContainerTimelineToolbar.tsx`), whose items write their own
+text next to the presentational box. Any other row that keeps a
+presentational `Checkbox` must render the name itself, next to the box, as a
+child of the row. `ContainerTimelineToolbar.test.tsx` asserts that every kind
+row shows its name and is named by it.
+
+**Ask.** Make the two props exclusive in the type (a discriminated union where
+`presentational: true` has no `label` / `description`), or render the label
+as plain text next to the presentational box, or at least warn in development
+when `label` is passed with `presentational`.
+
+**Removal test.** In a scratch component, `<Checkbox presentational
+label="Sighting" />` must either fail `yarn check-ts` or show "Sighting" next
+to the box. Then this entry can be closed; no code in OpenCTI depends on the
+current behaviour.
