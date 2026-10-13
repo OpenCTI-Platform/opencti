@@ -522,6 +522,50 @@
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/TextValueInput.tsx"
       ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the chip of a variable, `Name : value`, clickable to open its value input; severity critical when the value cannot be resolved (Restricted), neutral otherwise.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: explains `Not used by any widget` on the muted chip of a variable no widget references.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the Edit variable / Delete variable menu of a chip, only rendered when the page provides the matching callback.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the trigger of the chip menu, tertiary, removed from image and PDF exports.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
+      ]
     }
   ]
 }

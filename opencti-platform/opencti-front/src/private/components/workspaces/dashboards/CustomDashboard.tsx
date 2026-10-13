@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Stack from '@mui/material/Stack';
 import DashboardTimeFilters from '../../../../components/dashboard/DashboardTimeFilters';
@@ -14,6 +15,10 @@ import DashboardRefreshControl from '../../../../components/dashboard/DashboardR
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
+import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
+import { useDashboardVariableMutations } from '../../../../components/dashboard/variables/useDashboardVariableMutations';
+import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -95,6 +100,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
+  const { isFeatureEnable } = useHelper();
+  const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
+  const canManageVariables = userCanEdit;
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
@@ -172,6 +180,23 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const { handleAddWidget, handleImportWidget, handleDateChange, config, variables } = helpers;
   // The home dashboard (noToolbar) only ever shows the manifest defaults: no per user value is read or written.
   const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar });
+  const { setAsDefaults } = useDashboardVariableMutations(workspace.id);
+  const usedInWidgetIdsByVariable = useMemo(
+    () => new Map(workspace.variables.map((variable) => [variable.id, [...variable.usedInWidgetIds]])),
+    [workspace.variables],
+  );
+  const showVariablesBar = isVariablesEnabled && !noToolbar
+    && (canManageVariables || config.allowViewersToChangeVariables === true);
+  const onSetAsDefaults = async () => {
+    try {
+      await setAsDefaults(variables, variableControls.values);
+      // The server default now is the current value: the local entry is redundant.
+      variableControls.reset();
+    } catch {
+      // The mutation hook already notified the user: this only avoids an unhandled rejection.
+      // The local values are kept so nothing the user chose is lost.
+    }
+  };
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
   const {
@@ -220,6 +245,18 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       }
       <div id="container">
         <DashboardRefreshProvider refreshToken={refreshToken}>
+          {showVariablesBar && (
+            <DashboardVariablesBar
+              variables={variables}
+              values={variableControls.values}
+              defaults={variableControls.defaults}
+              usedInWidgetIdsByVariable={usedInWidgetIdsByVariable}
+              canManage={canManageVariables}
+              onSetValue={variableControls.setValue}
+              onReset={variableControls.reset}
+              onSetAsDefaults={onSetAsDefaults}
+            />
+          )}
           {!noToolbar && (
             <Security
               needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}

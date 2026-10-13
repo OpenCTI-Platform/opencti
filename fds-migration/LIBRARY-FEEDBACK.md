@@ -2541,3 +2541,23 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+## 67. `Chip` has no muted state that stays clickable, so a dashboard variable no widget uses is dimmed by hand
+
+**Where.** `DashboardVariableChip.tsx` (dashboard variables bar). A variable that
+no widget references must read as inactive (it still has to open its value
+input, so the user can change it) and explain itself in a `Tooltip`.
+
+**Gap.** The only muted state of `Chip` is `disabled`, which is non-interactive:
+the click that opens the value popover would be lost. There is no tone between
+`neutral` and `disabled`.
+
+**Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`). The `Delete variable` menu entry
+also carries no destructive tone (see #64).
+
+**Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
+fill contrast but keeps the chip a focusable, clickable `<button>`.
+
+**Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
+variable must still open its popover on click and keep its hover tooltip.
