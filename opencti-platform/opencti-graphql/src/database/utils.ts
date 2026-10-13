@@ -363,7 +363,7 @@ export const runFunctionAsLongRunning = async (
   let lock: { unlock: () => any } | undefined;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(executionId, { draftId: getDraftContext(context, user) });
+    lock = await lockResources([executionId], { draftId: getDraftContext(context, user) });
     const currentAsyncCall = await redisGetAsyncCall(executionId);
     // If a call was already processed and is finished, return true
     if (currentAsyncCall && currentAsyncCall !== '0') {
