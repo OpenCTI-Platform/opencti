@@ -1777,7 +1777,7 @@ const recordKeptExternalWrite = async (
   user: AuthUser,
   instanceEntity: WorkflowInstanceStoreEntity,
   newStatusId: string,
-  reason: 'unmapped' | 'no_transition' | 'sync_failed',
+  reason: 'unmapped' | 'no_transition' | 'transition_has_actions' | 'sync_failed',
   message: string,
 ): Promise<void> => {
   const history = appendWorkflowHistoryEntry(parseWorkflowHistory(instanceEntity), {
@@ -1830,14 +1830,23 @@ const applyExternalStatusWrite = async (
     }
     return;
   }
-  // Same guarantee as the engine: BYPASS, or a transition whose conditions pass for the writer.
-  // Transition and state actions never run on this path.
-  const isAllowed = isBypassUser(user) || (await getAllowedTransitions(context, user, entity.internal_id, {
-    entity, entitySetting, definitionData, instanceEntity, statuses: [],
-  })).some((transition) => transition.toState === stateId);
-  if (!isAllowed) {
-    await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'no_transition', `x_opencti_workflow_id was set to Status "${newStatusId}", but no transition allowed for this user leads from "${instanceEntity.currentState}" to "${stateId}"`);
-    return;
+  // Actions never run on this path, so only BYPASS, or an allowed transition with nothing to run
+  // or ask (no action, no required comment, no onExit/onEnter), may move the state.
+  if (!isBypassUser(user)) {
+    const transition = (await getAllowedTransitions(context, user, entity.internal_id, {
+      entity, entitySetting, definitionData, instanceEntity, statuses: [],
+    })).find((allowed) => allowed.toState === stateId);
+    if (!transition) {
+      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'no_transition', `x_opencti_workflow_id was set to Status "${newStatusId}", but no transition allowed for this user leads from "${instanceEntity.currentState}" to "${stateId}"`);
+      return;
+    }
+    const states = definitionData.states ?? [];
+    const hasStateActions = (states.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []).length > 0
+      || (states.find((state) => state.statusId === stateId)?.onEnter ?? []).length > 0;
+    if (transition.actions.length > 0 || transition.comment === 'required' || hasStateActions) {
+      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'transition_has_actions', `x_opencti_workflow_id was set to Status "${newStatusId}", but the transition to "${stateId}" has actions or requires a comment: trigger it from the workflow instead`);
+      return;
+    }
   }
   const failedTransition = instanceEntity.pendingStatus === 'error';
   const history = appendWorkflowHistoryEntry(parseWorkflowHistory(instanceEntity), {
@@ -1875,9 +1884,9 @@ const recordFailedExternalSync = async (context: AuthContext, user: AuthUser, en
 
 /**
  * Keep the WorkflowInstance aligned when x_opencti_workflow_id is written outside the workflow
- * engine. The write itself is never rejected. The state moves only for a writer with BYPASS or an
- * allowed transition; any other write is kept on the entity, recorded in history, and sets a
- * pendingError. Never throws, the write is already saved.
+ * engine. The write itself is never rejected. The state moves only for a writer with BYPASS, or
+ * through an allowed transition with no action and no required comment; any other write is kept on
+ * the entity, recorded in history, and sets a pendingError. Never throws, the write is already saved.
  */
 export const syncWorkflowInstanceFromExternalWrite = async (
   context: AuthContext,

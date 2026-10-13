@@ -4048,7 +4048,7 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     transitions: [{ from: 'draft', to: 'reviewing', event: 'review' }],
   });
   let storedStatusId: string | null = null;
-  const setupPublishedDefinition = (instance: any) => {
+  const setupPublishedDefinition = (instance: any, content: string = definitionContent) => {
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (loadEntity as any).mockResolvedValue(instance);
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
@@ -4056,9 +4056,16 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
         return Promise.resolve({ ...entity, x_opencti_workflow_id: storedStatusId });
       }
       if (id === 'workflow-def-id') {
-        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content, validation_errors: [] } });
       }
       return Promise.resolve(null);
+    });
+  };
+  const mockTransitionFromDraft = (transition: Record<string, unknown>) => {
+    (WorkflowFactory.createDefinition as any).mockReturnValue({
+      getInitialState: () => 'draft',
+      hasState: () => true,
+      getTransitions: () => [{ event: 'review', to: 'reviewing', actionTypes: [], ...transition }],
     });
   };
   const draftInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: '[]', scope: 'standard' };
@@ -4190,6 +4197,47 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(lastHistory()).toEqual([
       expect.objectContaining({ state: 'draft', event: 'event_external_kept', status_id: 'status-closed-id', reason: 'no_transition' }),
     ]);
+  });
+
+  it('keeps the current state when the allowed transition has actions', async () => {
+    setupPublishedDefinition(draftInstance);
+    mockTransitionFromDraft({ actionTypes: ['updateAuthorizedMembers'] });
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
+  });
+
+  it('keeps the current state when the allowed transition requires a comment', async () => {
+    setupPublishedDefinition(draftInstance);
+    mockTransitionFromDraft({ comment: 'required' });
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
+  });
+
+  it('keeps the current state when the target state has onEnter actions', async () => {
+    setupPublishedDefinition(draftInstance, JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'reviewing', onEnter: [{ type: 'updateAuthorizedMembers' }] }],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'review' }],
+    }));
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', reason: 'transition_has_actions' })]);
+  });
+
+  it('moves the instance without running the actions of the transition when the writer has BYPASS', async () => {
+    setupPublishedDefinition(draftInstance);
+    mockTransitionFromDraft({ actionTypes: ['updateAuthorizedMembers'], comment: 'required' });
+    storedStatusId = 'status-reviewing-id';
+    const bypassUser = { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any;
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, bypassUser, entity, 'status-reviewing-id');
+
+    expect(lastUpdateInputs()[0]).toEqual({ key: 'currentState', value: ['reviewing'] });
   });
 
   it('moves the instance without a transition when the writer has BYPASS', async () => {
