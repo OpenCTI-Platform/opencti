@@ -171,6 +171,15 @@ type ManagerContractConfiguration {
   value: String
 }
 
+type ManagedConnectorAddInputFromImport {
+  name: String!
+  catalog_id: String!
+  contract: String! # JSON.Stringified GraphqlCatalogContract item
+  confidence_level: Int
+  manager_contract_configuration: [ManagerContractConfiguration!]!
+  required_at_import: [String!]!
+}
+
 type ManagerContractExcerpt {
   title: String!
   slug: String!
@@ -296,6 +305,7 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  toConfigurationExport: String @auth(for: [CONNECTORAPI]) @ff(flags: ["GLOBAL_EXPORT_BUNDLE"]) # null if the connector is not managed
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -357,6 +367,7 @@ extend type Query {
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment! @auth(for: [MODULES_MODMANAGE])
+  managedConnectorAddInputFromImport(file: Upload!): ManagedConnectorAddInputFromImport! @auth(for: [CONNECTORAPI]) @ff(flags: ["GLOBAL_EXPORT_BUNDLE"])
 }
 
 extend type Mutation {

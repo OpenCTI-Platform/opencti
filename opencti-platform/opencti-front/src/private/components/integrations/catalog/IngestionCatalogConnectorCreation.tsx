@@ -39,6 +39,7 @@ import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { isEmptyField } from '../../../../utils/utils';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
@@ -96,6 +97,14 @@ const customRenderers = [
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
 
+// Configuration of a managed connector imported from a configuration export (secrets excluded)
+export interface ImportedConnectorConfiguration {
+  name: string;
+  confidence_level?: number | null;
+  manager_contract_configuration: ReadonlyArray<{ readonly key?: string | null; readonly value?: string | null }>;
+  required_at_import: ReadonlyArray<string>;
+}
+
 interface IngestionCatalogConnectorCreationProps {
   connector: IngestionConnector;
   open: boolean;
@@ -105,6 +114,7 @@ interface IngestionCatalogConnectorCreationProps {
   hasActiveManagers: boolean;
   deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
+  importedConfiguration?: ImportedConnectorConfiguration;
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
@@ -133,6 +143,7 @@ const IngestionCatalogConnectorCreation = ({
   hasActiveManagers,
   deploymentCount = 0,
   onCreate,
+  importedConfiguration,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -247,13 +258,22 @@ const IngestionCatalogConnectorCreation = ({
       properties: optionalProps,
     };
 
+    // Imported values are stored as strings, booleans are converted back as in the edition
+    (importedConfiguration?.manager_contract_configuration ?? []).forEach(({ key, value }) => {
+      if (key && value && nonDeprecatedProperties[key] && key !== 'CONNECTOR_NAME') {
+        defaults[key] = ['true', 'false'].includes(value) ? value === 'true' : value;
+      }
+    });
+
     return {
       requiredProperties: reqProperties,
       optionalProperties: optProperties,
       configDefaults: defaults,
-      connectorName: defaultConnectorName,
+      connectorName: importedConfiguration?.name ?? defaultConnectorName,
     };
-  }, [connector, deploymentCount]);
+  }, [connector, deploymentCount, importedConfiguration]);
+
+  const defaultConfidenceLevel = importedConfiguration?.confidence_level ?? connector.max_confidence_level;
 
   const hasRequiredProperties = Object.keys(requiredProperties.properties || {}).length > 0;
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
@@ -332,7 +352,7 @@ const IngestionCatalogConnectorCreation = ({
             initialValues={{
               display_name: connectorName,
               name: sanitizeContainerName(connectorName),
-              confidence_level: connector.max_confidence_level.toString(),
+              confidence_level: defaultConfidenceLevel.toString(),
               user_id: { label: '', value: '' },
               automatic_user: true,
               ...configDefaults,
@@ -344,7 +364,11 @@ const IngestionCatalogConnectorCreation = ({
               const canDeploy = hasActiveManagers && isEnterpriseEdition && canDeployConnector(connector);
               const disableForm = !canDeploy;
 
-              const disableCreate = !canDeploy || !isValid || isSubmitting || !!errors?.[0];
+              // The secrets excluded from an imported configuration must be provided again
+              const missingImportedSecrets = (importedConfiguration?.required_at_import ?? [])
+                .filter((key) => isEmptyField((values as unknown as Record<string, unknown>)[key]));
+
+              const disableCreate = !canDeploy || !isValid || isSubmitting || !!errors?.[0] || missingImportedSecrets.length > 0;
 
               const createConnectorDeployment = () => {
                 if (!canDeploy) {
@@ -372,6 +396,11 @@ const IngestionCatalogConnectorCreation = ({
                     </Alert>
                   )}
                   <IngestionCatalogCompatibilityAlert connector={connector} />
+                  {missingImportedSecrets.length > 0 && (
+                    <Alert severity="warning" variant="outlined" className="mt-5">
+                      {`${t_i18n('The sensitive fields excluded from the export must be filled in before deploying the connector')}: ${missingImportedSecrets.join(', ')}`}
+                    </Alert>
+                  )}
 
                   <fieldset
                     disabled={disableForm}
@@ -405,7 +434,7 @@ const IngestionCatalogConnectorCreation = ({
                     />
 
                     <IngestionCreationUserHandling
-                      default_confidence_level={connector.max_confidence_level}
+                      default_confidence_level={defaultConfidenceLevel}
                       labelTag="C"
                       isSensitive={true}
                     />

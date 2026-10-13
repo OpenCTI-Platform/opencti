@@ -62,7 +62,7 @@ const ExportBundleInstancesAccordion: FunctionComponent<ExportBundleInstancesAcc
       .toPromise()
       .then((response) => {
         if (!isLatestRequest()) return;
-        const data = config.extractData(response);
+        const data = config.extractData(response, searchValue);
         const newItems = (data?.edges ?? [])
           .map((edge) => edge?.node)
           .filter((node): node is InstanceItem => !!node)

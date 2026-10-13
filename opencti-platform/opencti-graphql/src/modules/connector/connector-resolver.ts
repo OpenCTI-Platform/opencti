@@ -29,7 +29,9 @@ import {
   registerConnectorsManager,
   resetStateConnector,
   managedConnectorAdd,
+  managedConnectorAddInputFromImport,
   managedConnectorEdit,
+  managedConnectorExport,
   updateConnectorCurrentStatus,
   updateConnectorManagerStatus,
   updateConnectorRequestedStatus,
@@ -38,6 +40,7 @@ import { redisGetConnectorLogs } from './connector-redis';
 import { PLATFORM_VERSION } from '../../config/conf';
 import { assessConnectorMigration, migrateConnectorToManaged } from './connector-migration';
 import { sinceNowInMinutes } from '../../utils/format';
+import { isNotEmptyField } from '../../database/utils';
 import { waitForManagedConnectorAutoUpgrade } from './managed-connector-auto-upgrade-readiness';
 
 const connectorResolvers: Resolvers = {
@@ -58,6 +61,7 @@ const connectorResolvers: Resolvers = {
     connectorMigrationAssessment: (_, { connectorId, containerImage, configuration }, context) => {
       return assessConnectorMigration(context, context.user, connectorId, containerImage, configuration);
     },
+    managedConnectorAddInputFromImport: (_, { file }, context) => managedConnectorAddInputFromImport(context, context.user, file),
   },
   Connector: {
     connector_queue_details: (cn) => queueDetails(cn.id),
@@ -75,6 +79,7 @@ const connectorResolvers: Resolvers = {
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
+    toConfigurationExport: (cn, _, context) => (isNotEmptyField(cn.catalog_id) ? managedConnectorExport(context, cn) : null),
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
