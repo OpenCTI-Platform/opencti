@@ -18,9 +18,9 @@ import DashboardVariableValueInput, { type DashboardVariableShape } from './Dash
 
 const none = { mode: 'none' } as const;
 
-const renderInput = (variable: DashboardVariableShape, value = '') => {
+const renderInput = (variable: DashboardVariableShape, value = '', commitOn?: 'change' | 'blur') => {
   const onChange = vi.fn();
-  const rendered = testRender(<DashboardVariableValueInput variable={variable} value={value} onChange={onChange} />);
+  const rendered = testRender(<DashboardVariableValueInput variable={variable} value={value} onChange={onChange} commitOn={commitOn} />);
   return { ...rendered, onChange };
 };
 
@@ -67,6 +67,63 @@ describe('DashboardVariableValueInput', () => {
       await user.paste('$var:5f1c3b4e-8f8a-4c4b-9a59-2a1f2c3d4e5f');
       expect(onChange).not.toHaveBeenCalled();
       expect(screen.getByText('A value cannot reference another variable')).toBeInTheDocument();
+    });
+
+    describe('committed on blur', () => {
+      it('emits the final text once, on blur, and nothing while typing', async () => {
+        const { user, onChange } = renderInput({ type: 'text', restriction: none }, '', 'blur');
+        await user.type(screen.getByRole('textbox'), 'Financial services');
+        expect(onChange).not.toHaveBeenCalled();
+        await user.tab();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith('Financial services');
+      });
+
+      it('emits the final number once, on blur', async () => {
+        const { user, onChange } = renderInput({ type: 'numeric', restriction: none }, '7', 'blur');
+        const input = screen.getByRole('spinbutton');
+        await user.clear(input);
+        await user.type(input, '42');
+        expect(onChange).not.toHaveBeenCalled();
+        await user.tab();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith('42');
+      });
+
+      it('emits on Enter', async () => {
+        const { user, onChange } = renderInput({ type: 'text', restriction: none }, '', 'blur');
+        await user.type(screen.getByRole('textbox'), 'Energy{Enter}');
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith('Energy');
+      });
+
+      it('emits nothing on blur when the text did not change', async () => {
+        const { user, onChange } = renderInput({ type: 'text', restriction: none }, 'Energy', 'blur');
+        await user.click(screen.getByRole('textbox'));
+        await user.tab();
+        expect(onChange).not.toHaveBeenCalled();
+      });
+
+      it('emits nothing for an emptied field, nor for a value referencing a variable', async () => {
+        const { user, onChange } = renderInput({ type: 'text', restriction: none }, 'Energy', 'blur');
+        const input = screen.getByRole('textbox');
+        await user.clear(input);
+        await user.tab();
+        expect(onChange).not.toHaveBeenCalled();
+        await user.click(input);
+        await user.paste('$var:5f1c3b4e-8f8a-4c4b-9a59-2a1f2c3d4e5f');
+        await user.tab();
+        expect(onChange).not.toHaveBeenCalled();
+      });
+
+      it('shows the value received after a reset, dropping the typed text', async () => {
+        const onChange = vi.fn();
+        const variable = { type: 'text', restriction: none } as const;
+        const { user, rerender } = testRender(<DashboardVariableValueInput variable={variable} value="Energy" onChange={onChange} commitOn="blur" />);
+        await user.type(screen.getByRole('textbox'), ' and more');
+        rerender(<DashboardVariableValueInput variable={variable} value="Finance" onChange={onChange} commitOn="blur" />);
+        expect(screen.getByRole('textbox')).toHaveValue('Finance');
+      });
     });
 
     it('shows the value received after a reset', () => {

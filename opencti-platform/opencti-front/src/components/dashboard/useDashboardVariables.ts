@@ -52,10 +52,11 @@ export const useDashboardVariables = (
 
   const setValue = useCallback((variableId: string, value: string) => {
     if (ignoreLocalValues || !enabled) return;
-    const { [variableId]: _previous, ...others } = load();
+    // Based on the in-memory state, not on a re-read of the storage, which may have refused the previous write.
+    const { [variableId]: _previous, ...others } = stored;
     // Une valeur vide signifie « non définie » : le défaut du manifest s'applique.
     commit(value === '' ? others : { ...others, [variableId]: value });
-  }, [commit, key, ignoreLocalValues, enabled]);
+  }, [commit, stored, ignoreLocalValues, enabled]);
 
   const reset = useCallback(() => {
     if (ignoreLocalValues || !enabled) return;

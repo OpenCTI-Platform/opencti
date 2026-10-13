@@ -106,6 +106,7 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onE
             variable={variable}
             value={value ?? ''}
             onChange={onChange}
+            commitOn="blur"
           />
         </Box>
       </Popover>

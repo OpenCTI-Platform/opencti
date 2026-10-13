@@ -12,10 +12,14 @@ export const readStoredVariableValues = (key: string): Record<string, string> =>
 };
 
 export const writeStoredVariableValues = (key: string, values: Record<string, string>) => {
-  if (Object.keys(values).length === 0) {
-    window.localStorage.removeItem(key);
-  } else {
-    window.localStorage.setItem(key, JSON.stringify(values));
+  try {
+    if (Object.keys(values).length === 0) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, JSON.stringify(values));
+    }
+  } catch {
+    // Storage full or denied: the values stay in memory for the session, they are just not persisted.
   }
 };
 
@@ -42,5 +46,9 @@ export const writeVariablesParam = (values: Record<string, string>) => {
   const url = new URL(window.location.href);
   if (Object.keys(values).length === 0) url.searchParams.delete('variables');
   else url.searchParams.set('variables', serializeVariablesParam(values));
-  window.history.replaceState(window.history.state, '', url);
+  try {
+    window.history.replaceState(window.history.state, '', url);
+  } catch {
+    // Browsers rate-limit history updates (SecurityError): the URL then lags behind, the state is not affected.
+  }
 };

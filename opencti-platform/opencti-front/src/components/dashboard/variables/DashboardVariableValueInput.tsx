@@ -20,6 +20,9 @@ export interface DashboardVariableValueInputProps {
   disabled?: boolean;
   // Visible label of the field, `Value` by default.
   label?: string;
+  // When a typed text or number is emitted: on each keystroke (default, a form field) or once on Enter or blur
+  // (a live filter, such as the chips, where each value re-queries the widgets). Other kinds of input ignore it.
+  commitOn?: 'change' | 'blur';
 }
 
 export type ValueInputProps = Required<Omit<DashboardVariableValueInputProps, 'disabled'>> & { disabled?: boolean };
@@ -29,9 +32,9 @@ export type ValueInputProps = Required<Omit<DashboardVariableValueInputProps, 'd
  * A selection restriction narrows every family to its list of values. A filters restriction is not computed yet
  * (PR 2b): such a variable falls back to the free search of its type.
  */
-const DashboardVariableValueInput = ({ label, ...props }: DashboardVariableValueInputProps) => {
+const DashboardVariableValueInput = ({ label, commitOn = 'change', ...props }: DashboardVariableValueInputProps) => {
   const { t_i18n } = useFormatter();
-  const inputProps = { ...props, label: label ?? t_i18n('Value') };
+  const inputProps = { ...props, commitOn, label: label ?? t_i18n('Value') };
   const { restriction, type } = props.variable;
   if (restriction.mode === 'selection') {
     return <SelectionValueInput {...inputProps} values={restriction.values} />;

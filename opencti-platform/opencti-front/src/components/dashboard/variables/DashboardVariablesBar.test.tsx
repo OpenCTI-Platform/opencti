@@ -65,6 +65,7 @@ describe('DashboardVariablesBar', () => {
     await user.click(screen.getByRole('button', { name: 'Country : Not set' }));
     await user.click(screen.getByRole('textbox'));
     await user.paste('France');
+    await user.tab();
     expect(onSetValue).toHaveBeenLastCalledWith('var-2', 'France');
     expect(onReset).not.toHaveBeenCalled();
     expect(onSetAsDefaults).not.toHaveBeenCalled();

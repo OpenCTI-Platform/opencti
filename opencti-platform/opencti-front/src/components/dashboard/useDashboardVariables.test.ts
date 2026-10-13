@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardVariable } from './dashboard-types';
 
 const mocks = vi.hoisted(() => ({ userId: 'user-1', flags: ['DASHBOARD_VARIABLES'] as string[] }));
@@ -25,6 +25,10 @@ describe('useDashboardVariables', () => {
     window.history.replaceState(null, '', '/');
     mocks.userId = 'user-1';
     mocks.flags = ['DASHBOARD_VARIABLES'];
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('starts from the manifest defaults', () => {
@@ -192,5 +196,38 @@ describe('useDashboardVariables', () => {
     const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
     act(() => result.current.setValue(sector.id, 'Finance'));
     expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Retail`);
+  });
+
+  it('still updates the values when the storage write throws', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    });
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    expect(result.current.values.get(sector.id)).toBe('Finance');
+    // The in-memory state is the source for the session: the next change keeps the previous one.
+    act(() => result.current.setValue(country.id, 'DE'));
+    expect(result.current.values.get(sector.id)).toBe('Finance');
+    expect(result.current.values.get(country.id)).toBe('DE');
+  });
+
+  it('still updates the values when the URL write throws', () => {
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {
+      throw new DOMException('Too many calls', 'SecurityError');
+    });
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    expect(result.current.values.get(sector.id)).toBe('Finance');
+    expect(JSON.parse(window.localStorage.getItem('dashboard-variables-user-1-ws-1') as string)).toEqual({ [sector.id]: 'Finance' });
+  });
+
+  it('still resets when the storage write throws', () => {
+    const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+    act(() => result.current.setValue(sector.id, 'Finance'));
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Denied', 'SecurityError');
+    });
+    act(() => result.current.reset());
+    expect(result.current.values.get(sector.id)).toBe('Energy');
   });
 });

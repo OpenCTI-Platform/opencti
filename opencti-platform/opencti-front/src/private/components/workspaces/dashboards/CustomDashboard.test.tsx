@@ -250,6 +250,7 @@ describe('CustomDashboard variables bar', () => {
     await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
     await user.tripleClick(screen.getByRole('textbox'));
     await user.paste('Finance');
+    await user.tab();
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     await user.keyboard('{Escape}');
     expect(await screen.findByRole('button', { name: 'Reset' })).toBeInTheDocument();

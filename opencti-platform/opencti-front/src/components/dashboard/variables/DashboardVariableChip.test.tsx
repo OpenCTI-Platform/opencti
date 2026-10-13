@@ -52,6 +52,9 @@ describe('DashboardVariableChip', () => {
     await user.click(screen.getByRole('button', { name: 'Sector : Not set' }));
     await user.click(screen.getByRole('textbox'));
     await user.paste('Finance');
+    expect(onChange).not.toHaveBeenCalled();
+    await user.tab();
+    expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenLastCalledWith('Finance');
   });
 
