@@ -9200,7 +9200,6 @@ type Query {
   customFieldDefinitions(first: Int, after: ID, orderBy: CustomFieldDefinitionsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): CustomFieldDefinitionConnection
   customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection
   customFieldStixFilterKeys(entityType: String): [String!]
-  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!]): String!
 }
 
 type Subscription {
