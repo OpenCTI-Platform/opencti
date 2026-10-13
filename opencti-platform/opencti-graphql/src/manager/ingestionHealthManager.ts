@@ -34,8 +34,6 @@ interface IngestionSource<T extends IngestionElement> {
   // Connectors authenticate with their own user; feeds and syncs without one run as the system user
   isUserRequired: boolean;
   isEvaluated?: (element: T) => boolean;
-  // Only connectors are cached on every node
-  isCached?: boolean;
 }
 
 const connectorSource: IngestionSource<CachedConnector> = {
@@ -46,7 +44,6 @@ const connectorSource: IngestionSource<CachedConnector> = {
   isUserRequired: true,
   // Built-ins (feed twins) are not deployed: no process runs them
   isEvaluated: (connector) => !connector.built_in,
-  isCached: true,
 };
 
 const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement & { user_id?: string | null }> => ({
@@ -80,8 +77,8 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   }
   // Direct write: an entity update would move updated_at and emit a stream event
   await elReplace(context, element._index, element.internal_id, { doc: patch });
-  if (source.isCached) {
-    // Refresh the cache of every node
+  if (source.entityType === ENTITY_TYPE_CONNECTOR) {
+    // Only connectors are cached: refresh the cache of every node
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, { ...element, ...patch }, SYSTEM_USER);
   }
 };
