@@ -421,6 +421,18 @@
       ]
     },
     {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "keyboard access (#16818): the clear button of the basic filter value input and of the entity filter search (default, tertiary, small), a real tab stop replacing the native type=\"search\" clear icon that keyboard users cannot reach.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/filters/BasicFilterInput.tsx",
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
+      ]
+    },
+    {
       "component": "Text",
       "importFrom": "@filigran/design-system",
       "guards": [
