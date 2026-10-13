@@ -294,13 +294,7 @@ const SSODefinitions = () => {
                   : undefined
               }
             />
-            {!isEnterpriseEdition && (
-              // This wrapper only stops the click from bubbling up to the
-              // row's own click handler; EEChip's own onClick already
-              // handles activation and stops propagation itself.
-              // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-              <span onClick={(e) => e.stopPropagation()}><EEChip /></span>
-            )}
+            {!isEnterpriseEdition && <EEChip />}
           </Box>
         );
       },
