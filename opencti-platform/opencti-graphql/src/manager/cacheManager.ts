@@ -110,8 +110,12 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       const { inPirFilters } = configurations[index];
       if (inPirFilters !== null && inPirFilters !== undefined) {
         const inPirFilterIds = (Array.isArray(inPirFilters) ? inPirFilters : [])
-          .map((i: { value?: string } | null) => i?.value)
-          .filter((id) => isNotEmptyField(id));
+          .map((i: unknown) => (
+            typeof i === 'object' && i !== null && 'value' in i
+              ? i.value
+              : undefined
+          ))
+          .filter((id): id is string => typeof id === 'string' && isNotEmptyField(id));
         if (!Array.isArray(inPirFilters) || inPirFilterIds.length !== inPirFilters.length) {
           logApp.warn('[CACHE] Malformed inPirFilters in playbook configuration, invalid values are ignored', {
             playbook_id: instance.internal_id,
