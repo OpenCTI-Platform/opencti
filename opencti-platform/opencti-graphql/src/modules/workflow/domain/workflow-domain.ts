@@ -1761,13 +1761,14 @@ const parsePendingTransition = (instanceEntity: WorkflowInstanceStoreEntity): Wo
   }
 };
 
-// An external write the workflow keeps on the entity without moving to it. Read-repair skips the
-// Status of the latest such entry, unless an admin cleared it since, and realigns any other divergence.
+// An external write the workflow keeps on the entity without moving to it. Read-repair skips its
+// Status while it is the latest meaningful history entry: a later transition, sync or admin clear ends it.
 const EVENT_EXTERNAL_KEPT = 'event_external_kept';
+const EVENT_EXTERNAL_IGNORED = 'event_external_ignored';
 const EVENT_ADMIN_CLEAR = 'admin_clear_pending_state';
 
 const findKeptExternalStatusId = (instanceEntity: WorkflowInstanceStoreEntity): string | undefined => {
-  const entry = parseWorkflowHistory(instanceEntity).findLast((e) => e.event === EVENT_EXTERNAL_KEPT || e.event === EVENT_ADMIN_CLEAR);
+  const entry = parseWorkflowHistory(instanceEntity).findLast((e) => e.event !== EVENT_EXTERNAL_IGNORED);
   return entry?.event === EVENT_EXTERNAL_KEPT ? entry.status_id : undefined;
 };
 
@@ -1813,7 +1814,7 @@ const applyExternalStatusWrite = async (
       status_id: newStatusId,
       user_id: user.id,
       timestamp: now(),
-      event: 'event_external_ignored',
+      event: EVENT_EXTERNAL_IGNORED,
     });
     await updateInstance([{ key: 'history', value: [JSON.stringify(history)] }]);
     return;

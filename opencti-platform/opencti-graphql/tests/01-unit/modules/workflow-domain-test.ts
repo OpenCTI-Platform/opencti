@@ -3932,6 +3932,23 @@ describe('getWorkflowInstance — read-repair', () => {
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 
+  it('realigns a kept external write once a later transition changed the state', async () => {
+    setup();
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([
+        { state: 'draft', event: 'event_external_kept', status_id: 'stale-status-id', reason: 'unmapped' },
+        { state: 'reviewing', event: 'review' },
+        { state: 'reviewing', event: 'event_external_ignored', status_id: 'other-status-id' },
+      ]),
+    });
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).toHaveBeenCalledOnce();
+  });
+
   it('realigns a kept external write once an admin cleared it', async () => {
     setup();
     (loadEntity as any).mockResolvedValue({
