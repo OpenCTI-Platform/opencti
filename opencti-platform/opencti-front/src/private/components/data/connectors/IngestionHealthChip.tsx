@@ -15,6 +15,15 @@ interface IngestionHealthChipProps {
   healthChecks?: ReadonlyArray<IngestionHealthCheck> | null;
 }
 
+// Design system feedback tones: critical is red, high is orange, low is green, neutral is grey
+const HEALTH_STATUS_SEVERITIES: Record<string, ChipSeverity> = {
+  critical: 'critical',
+  degraded: 'high',
+  healthy: 'low',
+  stopped: 'neutral',
+  unknown: 'neutral',
+};
+
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ healthStatus, healthStatusSince, healthChecks }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -31,7 +40,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ healthStatus,
     <Tooltip>
       <TooltipTrigger asChild>
         <span tabIndex={0} style={{ display: 'inline-flex' }}>
-          <Chip label={t_i18n(capitalizeFirstLetter(status))} severity={status as ChipSeverity} />
+          <Chip label={t_i18n(capitalizeFirstLetter(status))} severity={HEALTH_STATUS_SEVERITIES[status] ?? 'neutral'} />
         </span>
       </TooltipTrigger>
       <TooltipContent>
