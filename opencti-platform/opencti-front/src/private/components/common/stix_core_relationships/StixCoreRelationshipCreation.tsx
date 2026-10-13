@@ -32,7 +32,6 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import { List, ListItemButton } from '@mui/material';
-import { onActivationKey } from '../../../../utils/domEvent';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -488,9 +487,6 @@ const StixCoreRelationshipCreation = ({
               key={relation.node.id}
               className={classes.relation}
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={onActivationKey(() => handleSelectRelation(relation.node as unknown as ObjectToParse))}
             >
               <div
                 className={classes.item}
@@ -598,9 +594,6 @@ const StixCoreRelationshipCreation = ({
             focusVisibleClassName="focus-visible"
             className={classes.relationCreation}
             onClick={handleChangeStep}
-            role="button"
-            tabIndex={0}
-            onKeyDown={onActivationKey(() => handleChangeStep())}
           >
             <div
               className={classes.item}
