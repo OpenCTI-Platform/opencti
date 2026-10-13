@@ -15,6 +15,8 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
+import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
+import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -1255,6 +1257,9 @@ export const getSelectedOptions = (
   filtersRepresentativesMap: Map<string,
     FilterRepresentative>,
   t_i18n: (s: string) => string,
+  // Dashboard variables, only given in a dashboard: a `$var:` token is then shown under the variable name.
+  // Not given (anywhere else), a token-looking value is handled as any other value.
+  variables?: DashboardVariable[],
 ): FilterOptionValue[] => {
   // we try to get first the element from the search
   // and if we did not find we tried one from filterRepresentative
@@ -1262,10 +1267,20 @@ export const getSelectedOptions = (
   const mapFilterValues: FilterOptionValue[] = [];
   filterValues.forEach((value: string) => {
     const mapRepresentative = entitiesOptions.find((f) => f.value === value);
+    const variableId = variables ? parseVariableToken(value) : null;
     if (mapRepresentative) {
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else if (variableId !== null) {
+      // The representatives query cannot resolve a token: never rely on its answer.
+      mapFilterValues.push({
+        value,
+        type: 'Variable',
+        parentTypes: [],
+        group: capitalizeFirstLetter(t_i18n('selected')),
+        label: variables?.find((variable) => variable.id === variableId)?.name ?? t_i18n('Deleted variable'),
       });
     } else if (value === SELF_ID) {
       mapFilterValues.push({

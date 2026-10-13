@@ -14,6 +14,7 @@ import { getDashboardExportHandler } from '../../../../components/dashboard/impo
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
+import { DashboardVariablesProvider } from '../../../../components/dashboard/DashboardVariablesContext';
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
 import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
@@ -203,6 +204,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       // The local values are kept so nothing the user chose is lost.
     }
   };
+  // Definitions offered in the widget filters. CustomDashboard always is the workspace host (WIDGET_WORKSPACE_HOST);
+  // the home dashboard (noToolbar) edits no widget. Undefined: filters strictly unchanged.
+  const variableDefinitions = isVariablesEnabled && !noToolbar ? variables : undefined;
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
   const {
@@ -236,95 +240,98 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   });
 
   return (
-    <Stack gap={2}>
-      {!noToolbar && (
-        <Stack gap={1}>
-          <WorkspaceHeader
-            handleAddWidget={handleAddWidget}
-            handleImportWidget={handleImportWidget}
-            handleExport={handleExport}
-            data={workspace}
-            variant="dashboard"
-          />
-        </Stack>
-      )
-      }
-      <div id="container">
-        <DashboardRefreshProvider refreshToken={refreshToken}>
-          {showVariablesBar && (
-            <DashboardVariablesBar
-              variables={variables}
-              values={variableControls.values}
-              defaults={variableControls.defaults}
-              usedInWidgetIdsByVariable={usedInWidgetIdsByVariable}
-              canManage={canManageVariables}
-              onSetValue={variableControls.setValue}
-              onReset={variableControls.reset}
-              onSetAsDefaults={onSetAsDefaults}
-              onCreate={canManageVariables ? () => setDialogVariable(null) : undefined}
-              onEdit={canManageVariables ? setDialogVariable : undefined}
-              onDelete={canManageVariables ? setVariableToDelete : undefined}
+    // Around the whole page: the Create widget entry point lives in the header.
+    <DashboardVariablesProvider variables={variableDefinitions}>
+      <Stack gap={2}>
+        {!noToolbar && (
+          <Stack gap={1}>
+            <WorkspaceHeader
+              handleAddWidget={handleAddWidget}
+              handleImportWidget={handleImportWidget}
+              handleExport={handleExport}
+              data={workspace}
+              variant="dashboard"
             />
-          )}
-          {showVariablesBar && variableToDelete && (
-            <DashboardVariableDeletion
-              workspaceId={workspace.id}
-              variable={variableToDelete}
-              usedInWidgetIds={usedInWidgetIdsByVariable.get(variableToDelete.id) ?? []}
-              widgets={widgetsArray}
-              onClose={() => setVariableToDelete(undefined)}
-            />
-          )}
-          {showVariablesBar && dialogVariable !== undefined && (
-            <DashboardVariableDialog
-              open
-              workspaceId={workspace.id}
-              variable={dialogVariable ?? undefined}
-              existingVariables={variables}
-              onClose={() => setDialogVariable(undefined)}
-            />
-          )}
-          {!noToolbar && (
-            <Security
-              needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-              hasAccess={userCanEdit}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 1.5,
-                }}
+          </Stack>
+        )
+        }
+        <div id="container">
+          <DashboardRefreshProvider refreshToken={refreshToken}>
+            {showVariablesBar && (
+              <DashboardVariablesBar
+                variables={variables}
+                values={variableControls.values}
+                defaults={variableControls.defaults}
+                usedInWidgetIdsByVariable={usedInWidgetIdsByVariable}
+                canManage={canManageVariables}
+                onSetValue={variableControls.setValue}
+                onReset={variableControls.reset}
+                onSetAsDefaults={onSetAsDefaults}
+                onCreate={canManageVariables ? () => setDialogVariable(null) : undefined}
+                onEdit={canManageVariables ? setDialogVariable : undefined}
+                onDelete={canManageVariables ? setVariableToDelete : undefined}
+              />
+            )}
+            {showVariablesBar && variableToDelete && (
+              <DashboardVariableDeletion
+                workspaceId={workspace.id}
+                variable={variableToDelete}
+                usedInWidgetIds={usedInWidgetIdsByVariable.get(variableToDelete.id) ?? []}
+                widgets={widgetsArray}
+                onClose={() => setVariableToDelete(undefined)}
+              />
+            )}
+            {showVariablesBar && dialogVariable !== undefined && (
+              <DashboardVariableDialog
+                open
+                workspaceId={workspace.id}
+                variable={dialogVariable ?? undefined}
+                existingVariables={variables}
+                onClose={() => setDialogVariable(undefined)}
+              />
+            )}
+            {!noToolbar && (
+              <Security
+                needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
+                hasAccess={userCanEdit}
               >
-                <DashboardTimeFilters
-                  config={config}
-                  handleDateChange={handleDateChange}
-                />
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <DashboardRefreshControl
-                    onRefresh={handleManualRefresh}
-                    interval={localRefreshRateSeconds}
-                    onIntervalChange={handleRefreshRateChange}
-                    isRefreshing={isAutoRefreshing}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 1.5,
+                  }}
+                >
+                  <DashboardTimeFilters
+                    config={config}
+                    handleDateChange={handleDateChange}
                   />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <DashboardRefreshControl
+                      onRefresh={handleManualRefresh}
+                      interval={localRefreshRateSeconds}
+                      onIntervalChange={handleRefreshRateChange}
+                      isRefreshing={isAutoRefreshing}
+                    />
+                  </Box>
                 </Box>
-              </Box>
-            </Security>
-          )
-          }
-          <DashboardVariableValuesProvider values={variableControls.values}>
-            <DashboardContent
-              helpers={helpers}
-              isEditable={userCanEdit}
-              entity={workspace}
-              host={WIDGET_WORKSPACE_HOST}
-              refreshRate={refreshRate}
-            />
-          </DashboardVariableValuesProvider>
-        </DashboardRefreshProvider>
-      </div>
-    </Stack>
+              </Security>
+            )
+            }
+            <DashboardVariableValuesProvider values={variableControls.values}>
+              <DashboardContent
+                helpers={helpers}
+                isEditable={userCanEdit}
+                entity={workspace}
+                host={WIDGET_WORKSPACE_HOST}
+                refreshRate={refreshRate}
+              />
+            </DashboardVariableValuesProvider>
+          </DashboardRefreshProvider>
+        </div>
+      </Stack>
+    </DashboardVariablesProvider>
   );
 };
 

@@ -1,6 +1,8 @@
 import type { FilterDefinition } from '../../utils/hooks/useAuth';
 import { entityTypesFilters } from '../../utils/filters/filtersUtils';
+import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import type { DashboardVariable, DashboardVariableType } from './dashboard-types';
+import { toVariableToken } from './dashboardVariablesResolution';
 
 // Values read from the back schema (schema/internalObject.ts, schema/stixMetaObject.ts): do not invent other literals.
 const ID_VARIABLE_ENTITY_TYPE: Partial<Record<DashboardVariableType, string>> = {
@@ -42,3 +44,23 @@ export const isVariableCompatibleWithFilter = (
     }
   }
 };
+
+// Group of the variable options in a filter value list; translated where the list is rendered (key in lang/front).
+export const VARIABLES_OPTION_GROUP = 'Variables';
+
+/**
+ * Options offering the variables compatible with a filter: picking one adds the variable token as filter value.
+ */
+export const getVariableOptions = (
+  variables: DashboardVariable[],
+  filterDefinition: FilterDefinition | undefined,
+  helpers: { isSubTypeOf: (type: string, parent: string) => boolean },
+): FilterOptionValue[] => variables
+  .filter((variable) => isVariableCompatibleWithFilter(variable, filterDefinition, helpers))
+  .map((variable) => ({
+    value: toVariableToken(variable.id),
+    label: variable.name,
+    type: 'Variable',
+    group: VARIABLES_OPTION_GROUP,
+    parentTypes: [],
+  }));

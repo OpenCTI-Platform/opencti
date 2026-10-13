@@ -8,6 +8,7 @@ import CustomDashboard from './CustomDashboard';
 
 const captured = vi.hoisted(() => ({
   values: undefined as ReadonlyMap<string, string> | undefined,
+  contentDefinitions: undefined as { name: string }[] | undefined,
   granted: true,
   commit: vi.fn(),
 }));
@@ -36,10 +37,31 @@ vi.mock('../../../../utils/Security', () => ({
 }));
 // This module otherwise preloads its query on the application environment at import time.
 vi.mock('../../../../utils/hooks/useVocabularyCategory', () => ({ default: vi.fn() }));
-vi.mock('../workspaceHeader/WorkspaceHeader', () => ({ default: () => <div>workspace-header</div> }));
+// The Create widget entry point lives in the header: it must see the variable definitions too.
+vi.mock('../workspaceHeader/WorkspaceHeader', async () => {
+  const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
+  const Header = () => {
+    const definitions = useOptionalDashboardVariableDefinitions();
+    return (
+      <>
+        <div>workspace-header</div>
+        <div data-testid="header-variable-definitions">{definitions ? definitions.map((v) => v.name).join(',') : 'none'}</div>
+      </>
+    );
+  };
+  return { default: Header };
+});
 vi.mock('../../../../components/dashboard/DashboardTimeFilters', () => ({ default: () => null }));
 vi.mock('../../../../components/dashboard/DashboardRefreshControl', () => ({ default: () => null }));
-vi.mock('../../../../components/dashboard/DashboardContent', () => ({ default: () => <div>dashboard-content</div> }));
+vi.mock('../../../../components/dashboard/DashboardContent', async () => {
+  const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
+  const Content = () => {
+    const definitions = useOptionalDashboardVariableDefinitions();
+    captured.contentDefinitions = definitions;
+    return <div>dashboard-content</div>;
+  };
+  return { default: Content };
+});
 
 const SECTOR_ID = '11111111-1111-4111-8111-111111111111';
 const widgetLayout = { w: 4, h: 2, x: 0, y: 0, i: 'x' };
@@ -272,5 +294,43 @@ describe('CustomDashboard variables bar', () => {
     process.off('unhandledRejection', unhandled);
     expect(unhandled).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Sector : Finance' })).toBeInTheDocument();
+  });
+});
+
+describe('CustomDashboard variable definitions for the widget filters', () => {
+  const headerDefinitions = () => screen.getByTestId('header-variable-definitions').textContent;
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.granted = true;
+    captured.contentDefinitions = undefined;
+  });
+
+  it('provides the definitions to the whole dashboard, header (widget creation) included, when the flag is on', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(headerDefinitions()).toBe('Sector');
+    expect(captured.contentDefinitions?.map((v) => v.name)).toEqual(['Sector']);
+  });
+
+  it('provides an empty list, still in scope, for a dashboard without variables', () => {
+    const noVariables = buildWorkspace({
+      manifest: toB64(JSON.stringify({ widgets: manifestWidgets, config: {} })),
+      variables: [],
+    });
+    testRender(<CustomDashboard data={noVariables as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(headerDefinitions()).toBe('');
+    expect(captured.contentDefinitions).toEqual([]);
+  });
+
+  it('provides nothing when the flag is off', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
+    expect(headerDefinitions()).toBe('none');
+    expect(captured.contentDefinitions).toBeUndefined();
+  });
+
+  it('provides nothing on the home dashboard (noToolbar)', () => {
+    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(captured.contentDefinitions).toBeUndefined();
   });
 });
