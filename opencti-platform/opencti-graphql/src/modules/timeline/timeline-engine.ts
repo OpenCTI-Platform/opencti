@@ -855,7 +855,14 @@ export const refreshTimelineContributions = async (
   const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
   const scope = await resolveContainerVisibilityScope(context, container, [...anchorEvents, ...cappedAnnotated], opts.elements);
   const anchorInput = anchorEvents.filter(scope.isEventAsVisibleAsContainer);
-  const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
+  const toAnchorEvent = (e: StoredTimelineEvent) => ({
+    lane: e.lane,
+    kind: e.kind,
+    rule_id: e.rule_id,
+    event_time: e.event_time,
+    time_precision: e.time_precision,
+    hidden: e.hidden,
+  });
   const computedAt = now();
   const previousGeneratedAt = previousAnchors?.computed_at ? new Date(previousAnchors.computed_at as string).toISOString() : undefined;
   // A contribution to a timeline never generated keeps it so: the first read or the consistency pass still generates it

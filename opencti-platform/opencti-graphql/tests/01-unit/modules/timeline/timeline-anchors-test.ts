@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors } from '../../../../src/modules/timeline/timeline-anchors';
-import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
+import { RULE_ENTITY_SEEN, RULE_TASK_CONTAINMENT, RULE_TECHNIQUE, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 
 const computedAt = '2026-04-01T00:00:00.000Z';
 
@@ -58,6 +58,24 @@ describe('Timeline anchors', () => {
     const legacy = { first_adversary_activity: '2026-03-01T00:00:00.000Z', computed_at: computedAt };
     const anchors = computeTimelineAnchors(events, { isClosed: false, computedAt: '2026-04-02T00:00:00.000Z', previous: legacy });
     expect(anchors.changed_at).toEqual('2026-04-02T00:00:00.000Z');
+  });
+
+  it('should date the first adversary activity from the incident only, never from a global first seen', () => {
+    const anchors = computeTimelineAnchors([
+      ...events,
+      // A malware family first seen years ago and a threat first seen anywhere are context, not this incident
+      { lane: 'adversary' as const, kind: 'malware_seen' as const, rule_id: RULE_ENTITY_SEEN, event_time: '2014-05-01T00:00:00.000Z' },
+      { lane: 'adversary' as const, kind: 'threat_seen' as const, rule_id: RULE_ENTITY_SEEN, event_time: '2019-01-01T00:00:00.000Z' },
+      // A technique placed by kill chain order has no date of its own
+      { lane: 'adversary' as const, kind: 'technique_used' as const, rule_id: RULE_TECHNIQUE, time_precision: 'approximate', event_time: '2026-01-15T00:00:00.000Z' },
+    ], { isClosed: false, computedAt });
+    expect(anchors.first_adversary_activity).toEqual('2026-03-01T00:00:00.000Z');
+    const withIncident = computeTimelineAnchors([
+      ...events,
+      { lane: 'adversary' as const, kind: 'incident_seen' as const, rule_id: RULE_ENTITY_SEEN, event_time: '2026-02-20T00:00:00.000Z' },
+      { lane: 'adversary' as const, kind: 'technique_used' as const, rule_id: RULE_TECHNIQUE, time_precision: 'exact', event_time: '2026-02-25T00:00:00.000Z' },
+    ], { isClosed: false, computedAt });
+    expect(withIncident.first_adversary_activity).toEqual('2026-02-20T00:00:00.000Z');
   });
 
   it('should never start the response with the due date of a task, even one set before the case opened', () => {

@@ -622,6 +622,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
       id: event.internal_id,
       lane: event.lane,
       kind: event.kind,
+      rule_id: event.rule_id,
       event_time: event.event_time,
       event_end_time: event.event_end_time,
       open_ended: event.open_ended ?? null,

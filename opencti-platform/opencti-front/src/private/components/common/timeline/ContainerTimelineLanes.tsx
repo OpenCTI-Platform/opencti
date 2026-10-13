@@ -11,6 +11,7 @@ import {
   compactDayTicks,
   describeTimelineEventTimes,
   groupOverflowItems,
+  isTimelineContextWindow,
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
@@ -36,6 +37,7 @@ export interface TimelineChartEvent {
   open_ended?: boolean | null;
   lane: string;
   kind: string;
+  rule_id?: string | null;
   precision: string;
   pinned: boolean;
   hidden: boolean;
@@ -80,6 +82,8 @@ const MARKER_WIDTH = 14;
 const LABEL_CHARS = 26;
 const ZOOM_STEP = 0.7;
 const PAN_STEP = 0.15;
+const CONTEXT_OPACITY = 0.45;
+const CONTEXT_LEGEND = 'Global first and last seen of the entity, context only: not dated in this incident';
 
 const truncate = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 1)}\u2026` : value);
 
@@ -317,13 +321,15 @@ const ContainerTimelineLanes = ({
     const x = scale(new Date(start));
     const approximate = event.precision === 'approximate';
     const selected = event.id === selectedId;
-    const opacity = event.hidden ? 0.35 : 1;
+    const context = isTimelineContextWindow(event);
+    const opacity = (event.hidden ? 0.35 : 1) * (context ? CONTEXT_OPACITY : 1);
     const dash = approximate ? '3 2' : undefined;
     let shape: React.ReactNode;
     if (end !== null) {
       const x2 = Math.max(scale(new Date(end)), x + 3);
+      const fillOpacity = (context ? 0.25 : 0.35) * opacity;
       shape = (
-        <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={0.35 * opacity} stroke={color} strokeOpacity={opacity} strokeDasharray={dash} />
+        <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={fillOpacity} stroke={color} strokeOpacity={opacity} strokeDasharray={dash} />
       );
     } else if (isStillOpen(event)) {
       // No known end: the window runs to the right edge of the plot, lighter and with a dashed outline
@@ -357,9 +363,10 @@ const ContainerTimelineLanes = ({
         className="timeline-event"
         role={onSelect ? 'button' : undefined}
         tabIndex={onSelect ? 0 : undefined}
-        aria-label={eventLabel(event)}
+        aria-label={context ? `${eventLabel(event)}, ${t_i18n(CONTEXT_LEGEND)}` : eventLabel(event)}
         aria-pressed={onSelect ? selected : undefined}
         data-testid={`timeline-event-${event.id}`}
+        data-context={context ? 'true' : undefined}
         style={{ cursor: onSelect ? 'pointer' : 'default', outline: 'none' }}
         onClick={() => onSelect?.(event.id)}
         onKeyDown={(keyEvent) => onMarkerKeyDown(keyEvent, () => onSelect?.(event.id))}
@@ -424,6 +431,7 @@ const ContainerTimelineLanes = ({
   );
   const anchorRows = anchorLabels.reduce((rows, label) => Math.max(rows, label.row + 1), 1);
   const totalHeight = lanesBottom + (compact ? 4 : ANCHOR_HEIGHT * anchorRows + 6);
+  const showsContextLegend = !compact && events.some((event) => (lanes as readonly string[]).includes(event.lane) && isTimelineContextWindow(event));
 
   return (
     <div
@@ -521,6 +529,27 @@ const ContainerTimelineLanes = ({
           })}
         </g>
       </svg>
+      {showsContextLegend && (
+        <div
+          data-testid="timeline-legend"
+          style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), paddingLeft: plotLeft, marginTop: theme.spacing(0.5) }}
+        >
+          <svg width={24} height={10} aria-hidden="true" style={{ flexShrink: 0 }}>
+            <rect
+              x={0.5}
+              y={0.5}
+              width={23}
+              height={9}
+              rx={3}
+              fill={colors.lanes.adversary}
+              fillOpacity={0.25 * CONTEXT_OPACITY}
+              stroke={colors.lanes.adversary}
+              strokeOpacity={CONTEXT_OPACITY}
+            />
+          </svg>
+          <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(CONTEXT_LEGEND)}</Text>
+        </div>
+      )}
       {hover && (
         <div
           role="tooltip"
@@ -545,6 +574,9 @@ const ContainerTimelineLanes = ({
           </Text>
           {hover.event.precision === 'approximate' && (
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Approximate time')}</Text>
+          )}
+          {isTimelineContextWindow(hover.event) && (
+            <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-context">{t_i18n(CONTEXT_LEGEND)}</Text>
           )}
           {hoverState && (
             <Text variant="content-compact-medium" as="div">{t_i18n(hoverState.label)}</Text>

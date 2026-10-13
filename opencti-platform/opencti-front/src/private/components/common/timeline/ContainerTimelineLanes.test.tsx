@@ -41,6 +41,40 @@ describe('ContainerTimelineLanes tooltip', () => {
   });
 });
 
+describe('ContainerTimelineLanes context windows', () => {
+  const domain: [number, number] = [new Date('2026-01-01T00:00:00.000Z').getTime(), new Date('2026-03-01T00:00:00.000Z').getTime()];
+  const seen = (id: string, kind: string): TimelineChartEvent => ({
+    ...event(id, 'derived'),
+    lane: 'adversary',
+    kind,
+    rule_id: 'entity-first-last-seen',
+    event_time: '2026-01-10T00:00:00.000Z',
+    event_end_time: '2026-02-20T00:00:00.000Z',
+  });
+
+  it('draws the global first and last seen of a malware lighter, explained by a legend entry and the tooltip', () => {
+    testRender(
+      <ContainerTimelineLanes events={[seen('malware-1', 'malware_seen')]} lanes={['adversary']} domain={domain} grouping="day" ariaLabel="Timeline" />,
+    );
+    const marker = screen.getByTestId('timeline-event-malware-1');
+    expect(marker).toHaveAttribute('data-context', 'true');
+    expect(Number(marker.querySelector('rect')?.getAttribute('stroke-opacity'))).toBeLessThan(1);
+    expect(screen.getByTestId('timeline-legend')).toHaveTextContent('Global first and last seen of the entity, context only: not dated in this incident');
+    fireEvent.mouseEnter(marker);
+    expect(screen.getByTestId('timeline-tooltip-context')).toBeInTheDocument();
+  });
+
+  it('draws the first seen of the incident like its other activity, without a legend', () => {
+    testRender(
+      <ContainerTimelineLanes events={[seen('incident-1', 'incident_seen')]} lanes={['adversary']} domain={domain} grouping="day" ariaLabel="Timeline" />,
+    );
+    const marker = screen.getByTestId('timeline-event-incident-1');
+    expect(marker).not.toHaveAttribute('data-context');
+    expect(marker.querySelector('rect')).toHaveAttribute('stroke-opacity', '1');
+    expect(screen.queryByTestId('timeline-legend')).toBeNull();
+  });
+});
+
 describe('ContainerTimelineLanes accessibility', () => {
   const domain: [number, number] = [new Date('2026-02-01T00:00:00.000Z').getTime(), new Date('2026-02-10T00:00:00.000Z').getTime()];
 

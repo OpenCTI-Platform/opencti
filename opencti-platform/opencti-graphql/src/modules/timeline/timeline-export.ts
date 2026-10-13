@@ -1,9 +1,11 @@
+import { isTimelineContextWindow } from './timeline-rules';
 import { TIMELINE_ANCHOR_KEYS, type TimelineAnchorKey, type TimelineAnchors, type TimelineLaneValue } from './timeline-types';
 
 export interface TimelineExportEvent {
   id: string;
   lane: TimelineLaneValue;
   kind: string;
+  rule_id?: string | null;
   event_time: string;
   event_end_time?: string | null;
   open_ended?: boolean | null;
@@ -69,6 +71,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'column.source': 'Source',
   'column.annotation': 'Annotation',
   still_open: 'Still open',
+  context_window: 'Global first and last seen of the entity, context only: not dated in this incident',
 };
 
 const label = (input: TimelineExportInput, key: string, fallback?: string) => input.labels?.[key] ?? DEFAULT_LABELS[key] ?? fallback ?? key;
@@ -138,6 +141,8 @@ const MAX_LANE_ROWS = 6;
 const DOT_RADIUS = 4;
 const PINNED_DOT_RADIUS = 6;
 const BUBBLE_RADIUS = 8;
+const LEGEND_HEIGHT = 20;
+const CONTEXT_STYLE = 'fill-opacity="0.12" stroke-opacity="0.45"';
 const ITEM_GAP = 4;
 const MAX_LABEL_CHARS = 28;
 // Approximate widths of a character of the 11 px event labels and of the 10 px anchor labels
@@ -354,7 +359,9 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
     plotRight,
   );
   const anchorRows = anchorLabels.length > 0 ? Math.max(...anchorLabels.map((anchor) => anchor.row)) + 1 : 0;
-  const height = lanesBottom + anchorRows * ANCHOR_ROW_HEIGHT + PADDING;
+  const hasContextWindows = input.events.some((event) => lanes.includes(event.lane) && isTimelineContextWindow(event));
+  const legendTop = lanesBottom + anchorRows * ANCHOR_ROW_HEIGHT;
+  const height = legendTop + (hasContextWindows ? LEGEND_HEIGHT : 0) + PADDING;
   open(height);
   drawLanes(positioned);
   // Axis: the first and last dates are aligned on the edges of the plot, never cut by the edges of the image
@@ -385,16 +392,20 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
       const opacity = event.precision === 'approximate' ? 0.5 : 1;
       const stillOpen = item.type === 'window' && item.open ? ` - ${label(input, 'still_open')}` : '';
       const title = `<title>${escapeXml(`${formatExportDate(event.event_time)} - ${event.title}${stillOpen}`)}</title>`;
+      // The global first and last seen of an entity are context: lighter, explained by the legend
+      const context = isTimelineContextWindow(event);
       if (item.type === 'window') {
         const width = Math.max(item.x2 - item.x1, 2);
         // A window without a known end runs to the right edge of the plot, its outline dashed
-        const style = item.open
+        let style = item.open
           ? `fill-opacity="${opacity * 0.3}" stroke="${color}" stroke-dasharray="4 3"`
           : `fill-opacity="${opacity * 0.6}" stroke="${color}"`;
+        if (context) style = `${CONTEXT_STYLE} stroke="${color}"${item.open ? ' stroke-dasharray="4 3"' : ''}`;
         parts.push(`<rect x="${item.x1.toFixed(1)}" y="${centerY - 5}" width="${width.toFixed(1)}" height="10" rx="3" fill="${color}" ${style}>${title}</rect>`);
         return;
       }
-      parts.push(`<circle cx="${item.x.toFixed(1)}" cy="${centerY}" r="${event.pinned ? PINNED_DOT_RADIUS : DOT_RADIUS}" fill="${color}" fill-opacity="${opacity}" stroke="#ffffff">${title}</circle>`);
+      const dotStyle = context ? `${CONTEXT_STYLE} stroke="${color}"` : `fill-opacity="${opacity}" stroke="#ffffff"`;
+      parts.push(`<circle cx="${item.x.toFixed(1)}" cy="${centerY}" r="${event.pinned ? PINNED_DOT_RADIUS : DOT_RADIUS}" fill="${color}" ${dotStyle}>${title}</circle>`);
       if (item.labelled) {
         parts.push(`<text x="${(item.x + PINNED_DOT_RADIUS + 3).toFixed(1)}" y="${centerY + 4}" fill="${TEXT_COLOR}">${escapeXml(truncate(event.title, MAX_LABEL_CHARS))}</text>`);
       }
@@ -407,6 +418,11 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
     parts.push(`<line x1="${anchorX}" y1="${lanesTop}" x2="${anchorX}" y2="${lanesBottom + anchor.row * ANCHOR_ROW_HEIGHT + 3}" stroke="${TEXT_COLOR}" stroke-dasharray="4 3"/>`);
     parts.push(`<text x="${anchor.x.toFixed(1)}" y="${labelY}" fill="${TEXT_COLOR}" text-anchor="middle" font-size="10">${escapeXml(anchor.label)}</text>`);
   });
+  if (hasContextWindows) {
+    const legendY = legendTop + LEGEND_HEIGHT / 2;
+    parts.push(`<g data-legend="context_window"><rect x="${plotLeft}" y="${legendY - 5}" width="24" height="10" rx="3" fill="${LANE_COLORS.adversary}" ${CONTEXT_STYLE} stroke="${LANE_COLORS.adversary}"/>`);
+    parts.push(`<text x="${plotLeft + 30}" y="${legendY + 4}" fill="${TEXT_SECONDARY_COLOR}" font-size="10">${escapeXml(label(input, 'context_window'))}</text></g>`);
+  }
   parts.push('</svg>');
   return parts.join('');
 };

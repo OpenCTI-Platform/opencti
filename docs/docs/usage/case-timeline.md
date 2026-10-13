@@ -38,7 +38,7 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Attack patterns in the case | One event per technique, with the exact window of its `uses` and `targets` relationships when they have a start time (from the first start to the last stop, open-ended while one of them has no stop time), otherwise placed in kill chain order with an approximate precision |
 | Observed data | Observation window (first and last observed) |
 | Sightings | Sighting window; sightings from a security platform land in the detection lane, the others in the adversary lane |
-| Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen |
+| Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen. Except for incidents, these dates are global: they tell when the entity was seen anywhere, not in this incident, so the window is drawn lighter as context (see the legend under the lanes) and never sets the first adversary activity |
 | Indicators | Validity window (valid from, valid until) |
 | Reports and external references | Publication |
 | Files of the container | Upload |
@@ -68,7 +68,7 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 
 | Anchor | Definition |
 |:-------|:-----------|
-| First adversary activity | First event of the adversary lane |
+| First adversary activity | First activity of this incident on the adversary lane: a dated `uses` or `targets` relationship of a technique, a sighting, observed data, the first seen of the incident or a contained incident, an adversary milestone. The global first and last seen of malware, tools, infrastructures and threats, and the techniques placed in kill chain order, never count |
 | First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
 | First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts |
 | Containment | First containment milestone, or completion of a task labelled containment |

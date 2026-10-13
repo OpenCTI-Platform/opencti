@@ -7,7 +7,9 @@ import {
   deriveTimelineEvents,
   huntRunRule,
   investigationRunRule,
+  isTimelineContextWindow,
   MAX_DETAILED_OBJECT_ADDITIONS,
+  RULE_ENTITY_SEEN,
   RULE_TASK_CONTAINMENT,
   RULE_WORKFLOW_CLOSURE,
   TIMELINE_CORE_RULES,
@@ -134,6 +136,29 @@ describe('Timeline adversary rules', () => {
     expect(Date.parse(reconEvent?.event_time as string)).toBeLessThan(Date.parse(impactEvent?.event_time as string));
     expect(Date.parse(reconEvent?.event_time as string)).toBeGreaterThan(Date.parse('2026-03-01T00:00:00.000Z'));
     expect(Date.parse(impactEvent?.event_time as string)).toBeLessThan(Date.parse('2026-03-05T00:00:00.000Z'));
+  });
+
+  it('should never stretch the adversary window of the incident with the global first seen of a malware or a threat', () => {
+    const malware = element({ id: 'malware-1', entity_type: 'Malware', first_seen: '2014-05-01T00:00:00.000Z', last_seen: '2026-09-01T00:00:00.000Z' });
+    const group = element({ id: 'is-1', entity_type: 'Intrusion-Set', first_seen: '2019-01-01T00:00:00.000Z' });
+    const observed = element({ id: 'od-1', entity_type: 'Observed-Data', first_observed: '2026-03-01T00:00:00.000Z', last_observed: '2026-03-05T00:00:00.000Z' });
+    const technique = element({ id: 'ap-1', entity_type: 'Attack-Pattern', name: 'Phishing' });
+    const input = buildInput({ entities: [malware, group, observed, technique] });
+    expect(computeAdversaryWindow(input)).toEqual({ from: Date.parse('2026-03-01T00:00:00.000Z'), to: Date.parse('2026-03-05T00:00:00.000Z') });
+    const events = derive(input);
+    // The global windows stay on the adversary lane, as context
+    expect(events.filter((e) => e.rule_id === RULE_ENTITY_SEEN).map((e) => e.element_id).sort()).toEqual(['is-1', 'malware-1']);
+    expect(events.filter((e) => e.rule_id === RULE_ENTITY_SEEN).every((e) => isTimelineContextWindow(e))).toBe(true);
+    // A technique without a dated relationship is placed within the activity of the incident, not in 2014
+    const [placed] = events.filter((e) => e.kind === 'technique_used');
+    expect(Date.parse(placed.event_time)).toBeGreaterThan(Date.parse('2026-03-01T00:00:00.000Z'));
+    // The first seen of an incident is its own activity, never context
+    const incident = element({ id: 'incident-1', entity_type: 'Incident', first_seen: '2026-02-20T00:00:00.000Z' });
+    expect(computeAdversaryWindow(buildInput({ entities: [malware, incident] }))).toEqual({
+      from: Date.parse('2026-02-20T00:00:00.000Z'),
+      to: Date.parse('2026-02-20T00:00:00.000Z'),
+    });
+    expect(isTimelineContextWindow({ rule_id: RULE_ENTITY_SEEN, kind: 'incident_seen' })).toBe(false);
   });
 
   it('should derive first and last seen of incidents, infrastructures, malware and threats', () => {

@@ -139,6 +139,7 @@ export const useTimelineFileRenderer = () => {
     { key: 'column.element', label: t_i18n('Element') },
     { key: 'column.annotation', label: t_i18n('Annotation') },
     { key: 'still_open', label: t_i18n('Still open') },
+    { key: 'context_window', label: t_i18n('Global first and last seen of the entity, context only: not dated in this incident') },
   ];
 
   const fetchServerExport = async (options: TimelineFileOptions, format: TimelineServerFormat) => {

@@ -121,6 +121,32 @@ describe('Timeline exports', () => {
     expect(renderTimelineSvg({ ...input, events: [{ ...open, open_ended: false }] })).not.toContain('Still open');
   });
 
+  it('should draw the global first and last seen of an entity lighter, with a legend entry', () => {
+    const context = {
+      id: 'e4',
+      lane: 'adversary' as const,
+      kind: 'malware_seen',
+      rule_id: 'entity-first-last-seen',
+      event_time: '2026-01-01T00:00:00.000Z',
+      event_end_time: '2026-03-10T00:00:00.000Z',
+      precision: 'exact',
+      title: 'Malware Emotet active',
+      source: 'derived',
+      pinned: false,
+      hidden: false,
+    };
+    const svg = renderTimelineSvg({ ...input, events: [...input.events, context], labels: { context_window: 'Contexte' } });
+    const bar = svg.split('<rect').find((part) => part.includes('Malware Emotet active')) as string;
+    expect(bar).toContain('fill-opacity="0.12"');
+    expect(svg).toContain('data-legend="context_window"');
+    expect(svg).toContain('>Contexte</text>');
+    // The first seen of the incident itself is its own activity: drawn like the others, no legend
+    const incident = renderTimelineSvg({ ...input, events: [...input.events, { ...context, kind: 'incident_seen', title: 'Incident active' }] });
+    expect(incident.split('<rect').find((part) => part.includes('Incident active'))).not.toContain('fill-opacity="0.12"');
+    expect(incident).not.toContain('data-legend');
+    expect(renderTimelineSvg(input)).not.toContain('data-legend');
+  });
+
   it('should format dates and escape XML', () => {
     expect(formatExportDate('2026-03-05T07:08:00.000Z')).toEqual('2026-03-05 07:08 UTC');
     expect(formatExportDate(null)).toEqual('');

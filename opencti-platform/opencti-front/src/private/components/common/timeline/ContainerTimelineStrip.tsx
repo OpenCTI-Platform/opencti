@@ -81,6 +81,7 @@ const containerTimelineStripEventsQuery = graphql`
           precision
           lane
           kind
+          rule_id
           title
           pinned
           hidden

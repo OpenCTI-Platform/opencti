@@ -88,6 +88,13 @@ export const TIMELINE_ZOOM_LABELS: Record<TimelineZoomWindow, string> = {
 export const TIMELINE_SOURCES = ['derived', 'manual'] as const;
 export type TimelineSource = typeof TIMELINE_SOURCES[number];
 
+/**
+ * The global first and last seen of a malware, a tool, an infrastructure or a threat date the entity anywhere it was
+ * seen, not in this incident: drawn lighter as context, they never date the first adversary activity.
+ */
+export const isTimelineContextWindow = (event: { rule_id?: string | null; kind: string }): boolean => event.rule_id === 'entity-first-last-seen'
+  && event.kind !== 'incident_seen';
+
 export type TimelineExportFormat = 'csv' | 'pdf' | 'svg' | 'png';
 
 // Entity types carrying a timeline

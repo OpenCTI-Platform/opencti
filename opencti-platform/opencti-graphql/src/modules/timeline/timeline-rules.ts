@@ -164,7 +164,8 @@ export interface TimelineRule {
 // endregion
 
 // region helpers
-const RULE_TECHNIQUE = 'technique-kill-chain';
+export const RULE_TECHNIQUE = 'technique-kill-chain';
+export const RULE_ENTITY_SEEN = 'entity-first-last-seen';
 export const RULE_TASK_CONTAINMENT = 'task-containment';
 export const RULE_WORKFLOW_CLOSURE = 'workflow-closure';
 
@@ -220,8 +221,15 @@ const ENTITY_SEEN_KINDS: Record<string, TimelineKindValue> = {
   Incident: 'incident_seen',
 };
 
+/**
+ * First and last seen of a malware, a tool, an infrastructure or a threat: they date the entity anywhere it was seen, not
+ * in this incident. They stay on the adversary lane as context, and never date the activity of the incident.
+ */
+export const isTimelineContextWindow = (event: { rule_id?: string | null; kind: string }): boolean => event.rule_id === RULE_ENTITY_SEEN
+  && event.kind !== 'incident_seen';
+
 const entitySeenRule: TimelineRule = {
-  id: 'entity-first-last-seen',
+  id: RULE_ENTITY_SEEN,
   label: 'First and last seen of incidents, infrastructures, malware and threats',
   kinds: ['infrastructure_seen', 'malware_seen', 'threat_seen', 'incident_seen'],
   derive: (input) => {
@@ -234,7 +242,7 @@ const entitySeenRule: TimelineRule = {
       const window = windowOf(element.first_seen, element.last_seen);
       if (!window) return [];
       return [{
-        rule_id: 'entity-first-last-seen',
+        rule_id: RULE_ENTITY_SEEN,
         kind,
         lane: 'adversary',
         element_id: element.id,
@@ -304,7 +312,10 @@ const sightingRule: TimelineRule = {
     }),
 };
 
-/** Compute the adversary activity window from every element carrying an exact adversary time. */
+/**
+ * Compute the adversary activity window of this incident from every element carrying an exact adversary time. The global
+ * first and last seen of malware, tools, infrastructures and threats are left out: they would stretch it over years.
+ */
 export const computeAdversaryWindow = (input: TimelineDerivationInput): { from: number; to: number } | null => {
   const times: number[] = [];
   const push = (start: string | null | undefined, end: string | null | undefined) => {
@@ -315,7 +326,7 @@ export const computeAdversaryWindow = (input: TimelineDerivationInput): { from: 
     }
   };
   const seenSources = input.container.is_case ? input.entities : [...input.entities, input.container];
-  seenSources.filter((e) => ENTITY_SEEN_KINDS[e.entity_type]).forEach((e) => push(e.first_seen, e.last_seen));
+  seenSources.filter((e) => ENTITY_SEEN_KINDS[e.entity_type] === 'incident_seen').forEach((e) => push(e.first_seen, e.last_seen));
   input.entities.filter((e) => e.entity_type === 'Observed-Data').forEach((e) => push(e.first_observed, e.last_observed));
   input.relationships.forEach((r) => {
     if (r.entity_type === 'stix-sighting-relationship') {
