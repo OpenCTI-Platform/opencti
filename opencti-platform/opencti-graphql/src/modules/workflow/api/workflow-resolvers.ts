@@ -18,7 +18,7 @@ import {
 } from '../domain/workflow-domain';
 import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
-const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_unmapped']);
+const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
 
 const workflowResolvers = {
   Query: {

@@ -1225,7 +1225,7 @@ describe('Workflow instance sync from external status writes (Report)', () => {
 
     const { currentState, history } = await readInstance();
     expect(currentState).toBe('open');
-    expect(history.at(-1)).toEqual(expect.objectContaining({ event: 'event_external_unmapped', status_id: archivedStatusId, reason: 'no_transition' }));
+    expect(history.at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: archivedStatusId, reason: 'no_transition' }));
   });
 
   it('should move the WorkflowInstance when an upsert changes the legacy status field', async () => {
@@ -1240,12 +1240,14 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     // Diverge the instance from the entity Status: a sync running on this upsert would realign it.
     const instance = await findWorkflowInstance(reportInternalId) as any;
     await updateAttribute(testContext, ADMIN_USER, instance.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [{ key: 'currentState', value: ['open'] }]);
+    try {
+      await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, description: 'upserted' }, ENTITY_TYPE_CONTAINER_REPORT);
 
-    await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, description: 'upserted' }, ENTITY_TYPE_CONTAINER_REPORT);
-
-    const { currentState } = await readInstance();
-    expect(currentState).toBe('open');
-    await updateAttribute(testContext, ADMIN_USER, instance.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [{ key: 'currentState', value: ['validated'] }]);
+      const { currentState } = await readInstance();
+      expect(currentState).toBe('open');
+    } finally {
+      await updateAttribute(testContext, ADMIN_USER, instance.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [{ key: 'currentState', value: ['validated'] }]);
+    }
   });
 
   it('should ignore a Status of another entity type sent along with another field change', async () => {

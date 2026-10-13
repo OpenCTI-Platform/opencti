@@ -3,8 +3,9 @@
  * that are not covered by WorkflowStatus.test.tsx (which tests the normal transition UI).
  */
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
+import { useMutation } from 'react-relay';
 import { WorkflowTransitions } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
@@ -288,6 +289,12 @@ describe('WorkflowTransitions – status out of sync with the workflow', () => {
 
   beforeEach(() => {
     mocks.isBypass = false;
+    mockCommitClear.mockReset();
+    vi.mocked(useMutation).mockImplementation(() => [mockCommitClear, false]);
+  });
+
+  afterEach(() => {
+    vi.mocked(useMutation).mockImplementation(() => [vi.fn(), false]);
   });
 
   it('shows the divergence when pendingError is set without a pending transition', () => {
@@ -296,9 +303,10 @@ describe('WorkflowTransitions – status out of sync with the workflow', () => {
     expect(screen.queryByText('Clear')).toBeNull();
   });
 
-  it('lets a bypass user clear the divergence', () => {
+  it('lets a bypass user clear the divergence', async () => {
     mocks.isBypass = true;
-    testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
-    expect(screen.getByRole('button', { name: 'Clear' })).toBeDefined();
+    const { user } = testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
+    await user.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(mockCommitClear).toHaveBeenCalledWith(expect.objectContaining({ variables: { entityId: 'draft-1' } }));
   });
 });

@@ -214,7 +214,7 @@ describe('WorkflowInstance resolver – lastHistoryEntry comment', () => {
       history: [
         { state: 'reviewed', event: 'review', user_id: 'u1', timestamp: '2024-01-02T00:00:00Z', comment: 'Looks good' },
         { state: 'reviewed', event: 'event_external_ignored', user_id: 'u2', timestamp: '2024-01-03T00:00:00Z' },
-        { state: 'reviewed', event: 'event_external_unmapped', user_id: 'u2', timestamp: '2024-01-04T00:00:00Z' },
+        { state: 'reviewed', event: 'event_external_kept', user_id: 'u2', timestamp: '2024-01-04T00:00:00Z' },
       ],
     };
 

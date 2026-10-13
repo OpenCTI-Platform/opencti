@@ -1149,18 +1149,23 @@ export const getWorkflowInstance = async (
       try {
         const scope = resolveProjectionScope(instanceEntity.scope);
         const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-        const entityStatusId = (entity as BasicStoreEntity).x_opencti_workflow_id;
-        const isKeptExternalWrite = !!entityStatusId && findKeptExternalStatusId(instanceEntity) === entityStatusId;
-        const expectedStatusId = isKeptExternalWrite
-          ? null
-          : await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, currentState);
-        if (expectedStatusId && entityStatusId !== expectedStatusId) {
+        const needsRepair = async (entityStatusId: string | undefined, repairInstance: WorkflowInstanceStoreEntity) => {
+          if (entityStatusId && findKeptExternalStatusId(repairInstance) === entityStatusId) return false;
+          const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, repairInstance.currentState);
+          return !!expectedStatusId && entityStatusId !== expectedStatusId;
+        };
+        if (await needsRepair((entity as BasicStoreEntity).x_opencti_workflow_id, instanceEntity)) {
           // Never repair under a running workflow mutation or external sync: it owns the Status.
           const lock = await lockResources([`workflow-mutation-${effectiveEntityId}`], { retryCount: 0 }).catch(() => null);
           if (lock) {
             try {
-              await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, entity as BasicStoreEntity, currentState, scope);
-              logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
+              // Re-read under the lock: a write may have landed since the first read.
+              const lockedEntity = await storeLoadById<BasicStoreEntity>(repairContext, WORKFLOW_MANAGER_USER, effectiveEntityId, entity.entity_type);
+              const lockedInstance = await findWorkflowInstanceEntity(repairContext, WORKFLOW_MANAGER_USER, effectiveEntityId);
+              if (lockedEntity && lockedInstance && await needsRepair(lockedEntity.x_opencti_workflow_id, lockedInstance)) {
+                await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, lockedEntity, lockedInstance.currentState, scope);
+                logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState: lockedInstance.currentState });
+              }
             } finally {
               await lock.unlock();
             }
@@ -1486,6 +1491,8 @@ export const triggerWorkflowEvent = async (
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
+      // The transition re-projects the status, ending any kept external write.
+      ...(instanceEntity.pendingStatus ? [] : [{ key: 'pendingError', value: [null] }]),
     ]);
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
@@ -1756,7 +1763,7 @@ const parsePendingTransition = (instanceEntity: WorkflowInstanceStoreEntity): Wo
 
 // An external write the workflow keeps on the entity without moving to it. Read-repair skips the
 // Status of the latest such entry, unless an admin cleared it since, and realigns any other divergence.
-const EVENT_EXTERNAL_KEPT = 'event_external_unmapped';
+const EVENT_EXTERNAL_KEPT = 'event_external_kept';
 const EVENT_ADMIN_CLEAR = 'admin_clear_pending_state';
 
 const findKeptExternalStatusId = (instanceEntity: WorkflowInstanceStoreEntity): string | undefined => {
@@ -1849,9 +1856,13 @@ const applyExternalStatusWrite = async (
 };
 
 // Best effort, without the lock: keeps read-repair from silently reverting a write the sync could not apply.
+// A concurrent history write by a lock holder can still drop this entry.
 const recordFailedExternalSync = async (context: AuthContext, user: AuthUser, entityId: string, newStatusId: string): Promise<void> => {
   try {
     const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+    // A later write replaced the status: its own sync owns the instance.
+    const storedEntity = await storeLoadById<BasicStoreEntity>(executionContext, WORKFLOW_MANAGER_USER, entityId, 'Basic-Object');
+    if (storedEntity?.x_opencti_workflow_id !== newStatusId) return;
     const instanceEntity = await findWorkflowInstanceEntity(executionContext, WORKFLOW_MANAGER_USER, entityId);
     if (instanceEntity) {
       await recordKeptExternalWrite(executionContext, user, instanceEntity, newStatusId, 'sync_failed', `x_opencti_workflow_id was set to Status "${newStatusId}", but the workflow could not be synced`);
