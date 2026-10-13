@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import { cloneElement, ReactElement, useState } from 'react';
+import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -30,12 +30,64 @@ const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   );
 };
 
+// Anything a keyboard user can reach with Tab
+const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, summary, iframe, [tabindex], [contenteditable="true"]';
+
+/**
+ * The gate shown instead of a feature the platform cannot run yet: one button that opens
+ * `onActivate` instead of whatever the wrapped content would do. The content stays visible
+ * and clickable (its clicks are intercepted), but is hidden from assistive tech and out of
+ * the tab order at any depth, so the gate is the only control for it. An `inert` content
+ * would do both, but its clicks would then fall through to the gate's parent whenever the
+ * content is a block.
+ */
+// `label` names the gate: its content is hidden from assistive tech, so cannot name it
+const EEGate = ({ title, label, onActivate, children }: { title?: string; label: string; onActivate: () => void; children: ReactNode }) => {
+  const contentRef = useRef<HTMLSpanElement>(null);
+
+  // Watched, not set once: the content may render or re-enable a control later
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return undefined;
+    const removeFromTabOrder = () => {
+      content.querySelectorAll<HTMLElement>(TABBABLE_SELECTOR).forEach((element) => {
+        if (element.getAttribute('tabindex') !== '-1') element.setAttribute('tabindex', '-1');
+      });
+    };
+    removeFromTabOrder();
+    const observer = new MutationObserver(removeFromTabOrder);
+    observer.observe(content, { subtree: true, childList: true, attributes: true, attributeFilter: ['tabindex', 'disabled', 'href', 'contenteditable'] });
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <EETooltipComponent title={title}>
+      <span
+        role="button"
+        tabIndex={0}
+        aria-label={label}
+        onClickCapture={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onActivate();
+        }}
+        onKeyDownCapture={onActivationKey((e) => {
+          e.stopPropagation();
+          onActivate();
+        })}
+      >
+        <span ref={contentRef} aria-hidden>{children}</span>
+      </span>
+    </EETooltipComponent>
+  );
+};
+
 const EETooltip = ({
   children,
   title,
   forAi,
 }: {
-  children: ReactElement<{ tabIndex?: number }>;
+  children: ReactElement;
   title?: string;
   forAi?: boolean;
 }) => {
@@ -62,32 +114,13 @@ const EETooltip = ({
   if (isEnterpriseEdition && forAi && !configured) {
     return (
       <>
-        <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-          <span
-            role="button"
-            tabIndex={0}
-            onClickCapture={(e) => {
-              setOpenConfigAI(true);
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onKeyDownCapture={onActivationKey((e) => {
-              e.stopPropagation();
-              setOpenConfigAI(true);
-            })}
-          >
-            {/*
-              The wrapping span is the single interactive control here (it
-              intercepts the click/keyboard activation, in the capture phase
-              so before the child's own handlers, to open the "enable AI"
-              dialog instead of whatever the child would normally do);
-              take the child out of the tab order so children that already
-              render a focusable control (e.g. a Button/IconButton) don't
-              create a second, redundant tab stop for the same action.
-            */}
-            {cloneElement(children, { tabIndex: -1 })}
-          </span>
-        </EETooltipComponent>
+        <EEGate
+          title={title ? t_i18n(title) : undefined}
+          label={title ? t_i18n(title) : t_i18n('Enable AI powered platform')}
+          onActivate={() => setOpenConfigAI(true)}
+        >
+          {children}
+        </EEGate>
         <Dialog
           open={openConfigAI}
           onClose={() => setOpenConfigAI(false)}
@@ -106,33 +139,13 @@ const EETooltip = ({
   }
   return (
     <>
-      <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-        <span
-          role="button"
-          tabIndex={0}
-          onClickCapture={(e) => {
-            setFeedbackCreation(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onKeyDownCapture={onActivationKey((e) => {
-            e.stopPropagation();
-            setFeedbackCreation(true);
-          })}
-        >
-          {/*
-            The wrapping span is the single interactive control here (it
-            intercepts the click/keyboard activation, in the capture phase
-            so before the child's own handlers, to open the EE
-            feedback/agreement flow instead of whatever the child would
-            normally do); take the child out of the tab order so children
-            that already render a focusable control (e.g. a Button/
-            IconButton/ToggleButton) don't create a second, redundant tab
-            stop for the same action.
-          */}
-          {cloneElement(children, { tabIndex: -1 })}
-        </span>
-      </EETooltipComponent>
+      <EEGate
+        title={title ? t_i18n(title) : undefined}
+        label={title ? t_i18n(title) : t_i18n('Enterprise Edition')}
+        onActivate={() => setFeedbackCreation(true)}
+      >
+        {children}
+      </EEGate>
       {isAdmin ? (
         <EnterpriseEditionAgreement
           open={feedbackCreation}
