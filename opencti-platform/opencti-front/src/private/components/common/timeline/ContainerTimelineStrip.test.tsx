@@ -75,7 +75,7 @@ describe('ContainerTimelineStrip', () => {
 
   it('points to the timeline settings when they hide every event of the case', async () => {
     await renderStrip(4, []);
-    expect(await screen.findByTestId('timeline-strip-empty')).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.');
+    expect(await screen.findByTestId('timeline-strip-empty')).toHaveTextContent('The timeline settings hide every event of the case (lanes switched off or events hidden by default). Change the settings from the Timeline tab.');
     expect(screen.getByRole('button', { name: 'Timeline settings' })).toBeInTheDocument();
     expect(screen.queryByTestId('timeline-strip-summary')).toBeNull();
   });
@@ -96,7 +96,7 @@ describe('ContainerTimelineStrip', () => {
   it('tells readers why the card is empty without offering a change they cannot make', async () => {
     await renderStrip(4, [], { canEdit: false });
     const empty = await screen.findByTestId('timeline-strip-empty');
-    expect(empty).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide.');
+    expect(empty).toHaveTextContent('The timeline settings hide every event of the case (lanes switched off or events hidden by default).');
     expect(empty).not.toHaveTextContent('Change the settings');
     expect(screen.queryByRole('button')).toBeNull();
   });

@@ -38,15 +38,15 @@ const StatefulToolbar = ({ initial }: { initial: TimelineViewState }) => {
 };
 
 describe('ContainerTimelineToolbar', () => {
-  it('names every kind of the kinds filter, shows which are selected and toggles them', async () => {
+  it('names every event of the events filter, shows which are selected and toggles them', async () => {
     const onChange = vi.fn();
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ kinds: ['sighting'] }), onChange)} />);
-    const kinds = screen.getByRole('combobox', { name: 'Event kinds' });
-    expect(kinds).toHaveValue('Kinds (1)');
+    const kinds = screen.getByRole('combobox', { name: 'Events' });
+    expect(kinds).toHaveValue('Events (1)');
     await user.click(kinds);
     const options = screen.getAllByRole('option');
     expect(options).toHaveLength(TIMELINE_KINDS.length);
-    // Each row writes the name of its kind next to its check mark, and is named by it
+    // Each row writes the name of its event next to its check mark, and is named by it
     TIMELINE_KINDS.forEach((kind, index) => {
       expect(options[index]).toBeVisible();
       expect(options[index]).toHaveTextContent(TIMELINE_KIND_LABELS[kind]);
@@ -57,6 +57,21 @@ describe('ContainerTimelineToolbar', () => {
     expect(malwareSeen).toHaveAttribute('aria-selected', 'false');
     await user.click(malwareSeen);
     expect(onChange).toHaveBeenCalledWith({ kinds: ['sighting', 'malware_seen'] });
+  });
+
+  it('says events, not kinds, and tells the events filter from the sources filter', async () => {
+    const onChange = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ kinds: ['sighting'] }), onChange)} />);
+    expect(screen.queryByText(/kinds?\b/i)).toBeNull();
+    const source = screen.getByRole('combobox', { name: 'Event source' });
+    expect(source).toHaveTextContent('All sources');
+    await user.click(screen.getByRole('button', { name: 'Clear the event filter' }));
+    expect(onChange).toHaveBeenLastCalledWith({ kinds: [] });
+  });
+
+  it('reads All events when no event is picked', () => {
+    testRender(<ContainerTimelineToolbar {...toolbarProps(baseState(), vi.fn())} />);
+    expect(screen.getByRole('combobox', { name: 'Events' })).toHaveValue('All events');
   });
 
   it('shows every lane when the lane kept in the URL was disabled since, and leaves the disabled lane out', async () => {

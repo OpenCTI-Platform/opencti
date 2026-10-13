@@ -59,7 +59,7 @@ const TIMELINE_EVENT_DEFINITION: ModuleDefinition<StoreEntityTimelineEvent, Stix
     { name: 'open_ended', label: 'Open-ended window', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
     { name: 'time_precision', label: 'Time precision', type: 'string', format: 'enum', values: [...TIMELINE_PRECISIONS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'lane', label: 'Timeline lane', type: 'string', format: 'enum', values: [...TIMELINE_LANES], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'kind', label: 'Timeline event kind', type: 'string', format: 'enum', values: [...TIMELINE_KINDS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'kind', label: 'Timeline event type', type: 'string', format: 'enum', values: [...TIMELINE_KINDS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'event_source', label: 'Timeline event source', type: 'string', format: 'enum', values: [...TIMELINE_SOURCES], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
     { name: 'rule_id', label: 'Timeline derivation rule', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
     { name: 'element_id', label: 'Element ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },

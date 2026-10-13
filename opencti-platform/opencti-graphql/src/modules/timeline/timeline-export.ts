@@ -64,7 +64,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'column.time': 'Time',
   'column.end_time': 'End time',
   'column.lane': 'Lane',
-  'column.kind': 'Kind',
+  'column.kind': 'Event',
   'column.precision': 'Precision',
   'column.title': 'Title',
   'column.element': 'Element',

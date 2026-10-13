@@ -133,7 +133,7 @@ export const useTimelineFileRenderer = () => {
     { key: 'column.time', label: t_i18n('Time') },
     { key: 'column.end_time', label: t_i18n('End time') },
     { key: 'column.lane', label: t_i18n('Lane') },
-    { key: 'column.kind', label: t_i18n('Kind') },
+    { key: 'column.kind', label: t_i18n('Event') },
     { key: 'column.precision', label: t_i18n('Precision') },
     { key: 'column.title', label: t_i18n('Title') },
     { key: 'column.element', label: t_i18n('Element') },

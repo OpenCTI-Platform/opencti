@@ -234,10 +234,10 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
             <Field
               component={SelectFieldFds}
               name="kind"
-              label={t_i18n('Kind')}
+              label={t_i18n('Event')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
-              helpertext={t_i18n('What happened. Adding a milestone kind (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the containment anchor.')}
+              helpertext={t_i18n('What happened. Adding a milestone (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the containment anchor.')}
             >
               {KIND_OPTIONS.map((kind) => (
                 <SelectItem key={kind} value={kind}>{t_i18n(TIMELINE_KIND_LABELS[kind])}</SelectItem>

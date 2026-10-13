@@ -48,7 +48,7 @@ describe('ContainerTimelineEmptyState', () => {
   it('points to the timeline settings, not to the filters, when the settings hide every event', () => {
     const handlers = { ...actions(), onOpenSettings: vi.fn() };
     testRender(<ContainerTimelineEmptyState filtered={false} hiddenBySettings={true} canEdit={true} regenerating={false} {...handlers} />);
-    expect(screen.getByRole('status')).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide.');
+    expect(screen.getByRole('status')).toHaveTextContent('The timeline settings hide every event of the case (lanes switched off or events hidden by default).');
     fireEvent.click(screen.getByRole('button', { name: 'Timeline settings' }));
     expect(handlers.onOpenSettings).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
@@ -56,7 +56,7 @@ describe('ContainerTimelineEmptyState', () => {
 
   it('only explains the settings to readers who cannot change them', () => {
     testRender(<ContainerTimelineEmptyState filtered={false} hiddenBySettings={true} canEdit={false} regenerating={false} {...actions()} onOpenSettings={vi.fn()} />);
-    expect(screen.getByRole('status')).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide.');
+    expect(screen.getByRole('status')).toHaveTextContent('The timeline settings hide every event of the case (lanes switched off or events hidden by default).');
     expect(screen.queryByRole('button')).toBeNull();
   });
 });

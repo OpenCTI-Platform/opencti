@@ -327,9 +327,9 @@ const ContainerTimelineToolbar = ({
           testId="timeline-lanes-filter"
         />
         <ToolbarMultiFilter
-          label={t_i18n('Event kinds')}
-          summary={state.kinds.length > 0 ? t_i18n('Kinds ({count})', { values: { count: state.kinds.length } }) : t_i18n('All kinds')}
-          clearLabel={t_i18n('Clear the kinds')}
+          label={t_i18n('Events')}
+          summary={state.kinds.length > 0 ? t_i18n('Events ({count})', { values: { count: state.kinds.length } }) : t_i18n('All events')}
+          clearLabel={t_i18n('Clear the event filter')}
           options={TIMELINE_KINDS.map((kind) => ({ value: kind, label: t_i18n(TIMELINE_KIND_LABELS[kind]) }))}
           selected={state.kinds}
           onSelectedChange={(next) => onChange({ kinds: next })}
@@ -340,7 +340,7 @@ const ContainerTimelineToolbar = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Event source')}>
-            <SelectItem value="all">{t_i18n('All events')}</SelectItem>
+            <SelectItem value="all">{t_i18n('All sources')}</SelectItem>
             <SelectItem value="derived">{t_i18n('Derived from the knowledge')}</SelectItem>
             <SelectItem value="manual">{t_i18n('Analyst milestones')}</SelectItem>
           </SelectContent>

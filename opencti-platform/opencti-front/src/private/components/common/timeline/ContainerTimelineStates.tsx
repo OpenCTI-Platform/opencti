@@ -44,7 +44,7 @@ export const ContainerTimelineEmptyState = ({
         role="status"
         style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(4, 2) }}
       >
-        <Text variant="content-base-medium">{t_i18n('Every event of the case is in a lane or a kind the timeline settings hide.')}</Text>
+        <Text variant="content-base-medium">{t_i18n('The timeline settings hide every event of the case (lanes switched off or events hidden by default).')}</Text>
         {canEdit && onOpenSettings && (
           <Button variant="secondary" size="small" onClick={onOpenSettings} data-testid="timeline-empty-open-settings">
             {t_i18n('Timeline settings')}

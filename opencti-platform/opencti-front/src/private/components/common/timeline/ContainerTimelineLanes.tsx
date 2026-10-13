@@ -621,9 +621,9 @@ const ContainerTimelineLanes = ({
             <Text variant="content-compact-medium" as="div">{t_i18n(hoverState.label)}</Text>
           )}
           <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
-            {t_i18n('{kind} in the {lane} lane', {
+            {t_i18n('{event} in the {lane} lane', {
               values: {
-                kind: t_i18n(TIMELINE_KIND_LABELS[hover.event.kind] ?? hover.event.kind),
+                event: t_i18n(TIMELINE_KIND_LABELS[hover.event.kind] ?? hover.event.kind),
                 lane: t_i18n(TIMELINE_LANE_LABELS[hover.event.lane as TimelineLane] ?? hover.event.lane),
               },
             })}

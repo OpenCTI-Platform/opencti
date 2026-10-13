@@ -198,8 +198,8 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
     return (
       <ContainerTimelineStripEmpty
         message={canEdit
-          ? t_i18n('Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.')
-          : t_i18n('Every event of the case is in a lane or a kind the timeline settings hide.')}
+          ? t_i18n('The timeline settings hide every event of the case (lanes switched off or events hidden by default). Change the settings from the Timeline tab.')
+          : t_i18n('The timeline settings hide every event of the case (lanes switched off or events hidden by default).')}
         canEdit={canEdit}
         timelinePath={timelinePath}
         hiddenBySettings={true}

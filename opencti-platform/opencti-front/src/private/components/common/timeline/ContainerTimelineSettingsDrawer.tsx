@@ -146,9 +146,9 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
           </div>
         </div>
         <div style={{ marginTop: theme.spacing(2.5) }}>
-          <SectionTitle>{t_i18n('Kinds hidden by default')}</SectionTitle>
+          <SectionTitle>{t_i18n('Events hidden by default')}</SectionTitle>
           <Text variant="content-caption" as="p" style={helpStyle}>
-            {t_i18n('Hidden kinds are left out of the default view of every reader; choosing them in the kinds filter shows them again.')}
+            {t_i18n('Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.')}
           </Text>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
@@ -157,7 +157,7 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
               key={kind}
               label={t_i18n(TIMELINE_KIND_LABELS[kind])}
               checked={values.hidden_kinds.includes(kind)}
-              // At least one kind stays visible
+              // At least one event stays visible
               disabled={!values.hidden_kinds.includes(kind) && TIMELINE_KINDS.every((other) => other === kind || values.hidden_kinds.includes(other))}
               onCheckedChange={() => setValues({ ...values, hidden_kinds: toggle(values.hidden_kinds, kind) })}
             />
