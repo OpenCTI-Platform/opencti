@@ -489,6 +489,39 @@
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityOption.tsx",
         "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
       ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the value of a boolean or vocabulary variable, and of any variable restricted to a selection of values (one SelectItem per allowed value, labelled through the filters representatives).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SelectValueInputs.tsx"
+      ]
+    },
+    {
+      "component": "Combobox",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SearchValueInput.tsx"
+      ]
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the free value of a text or numeric variable (type=number), with the library error state when the value references another variable.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/TextValueInput.tsx"
+      ]
     }
   ]
 }
