@@ -8,6 +8,7 @@ import {
   CustomFieldStoredValue,
   CustomFieldValue,
   customFieldDefinitionsToWidgetColumns,
+  getCustomFieldLabelFromFilterKeysSchema,
   getCustomFieldCurrentValue,
   getCustomFieldDisplayValue,
   getCustomFieldLabel,
@@ -272,5 +273,20 @@ describe('customFieldDefinitionsToWidgetColumns', () => {
     expect(attributes('targets', true)).toEqual(['x_opencti_cf_relationship', 'x_opencti_cf_targets']);
     expect(attributes('stix-core-relationship', true)).toEqual(['x_opencti_cf_relationship']);
     expect(attributes('Report', false)).toEqual(['x_opencti_cf_level', 'x_opencti_cf_report']);
+  });
+});
+
+describe('getCustomFieldLabelFromFilterKeysSchema', () => {
+  const filterKeysSchema = new Map([
+    ['Report', new Map([['x_opencti_cf_level', { label: 'Level' }]])],
+    ['Case-Incident', new Map([['x_opencti_cf_note', { label: 'Analyst note' }]])],
+  ]);
+
+  it('should return the label of the custom field for one of the entity types', () => {
+    expect(getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, ['Report', 'Case-Incident'], 'x_opencti_cf_note')).toEqual('Analyst note');
+  });
+
+  it('should return the technical name if the custom field is unknown for these entity types', () => {
+    expect(getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, ['Report'], 'x_opencti_cf_note')).toEqual('x_opencti_cf_note');
   });
 });
