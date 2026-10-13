@@ -17,11 +17,13 @@ const isSubFilterLike = (value: unknown): value is SubFilterLike => {
   return typeof value === 'object' && value !== null && 'key' in value && Array.isArray((value as SubFilterLike).values);
 };
 
-const parseVariableToken = (value: unknown): string | null => {
+export const parseVariableToken = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
   const match = TOKEN_REGEXP.exec(value);
   return match ? match[1] : null;
 };
+
+export const toVariableToken = (variableId: string) => `$var:${variableId}`;
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
