@@ -32,13 +32,15 @@ vi.mock('../../../common/form/ObjectParticipantField', () => ({
   default: (props: { name?: string }) => <div data-testid={`participant-field-${props.name}`} />,
 }));
 
+const mockNavigate = vi.hoisted(() => vi.fn());
+
 // Mock useParams
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useParams: () => ({ formId: 'form-id' }),
-    useNavigate: () => vi.fn(),
+    useNavigate: () => mockNavigate,
   };
 });
 
@@ -292,5 +294,50 @@ describe('FormView', () => {
     relayEnv.mock.rejectMostRecentOperation(error);
     expect(await screen.findByText('You are not allowed to create labels.')).toBeTruthy();
     expect(screen.queryByText(/Relay request/)).toBeNull();
+  });
+});
+
+describe('FormView submission into a draft', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const submitForm = async (canOpenDraft: boolean, onSuccess = vi.fn(), embedded = false) => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE)) return canOpenDraft;
+      return true;
+    });
+    const { relayEnv, user } = testRender(<FormView embedded={embedded} onSuccess={onSuccess} />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+    await user.type(screen.getByRole('textbox', { name: /Name/ }), 'My report');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { formSubmit: { success: true, message: null, entityId: 'draft-id' } } });
+    });
+    return { user, onSuccess };
+  };
+
+  it('opens the draft, closing the dialog first, when the user can open it', async () => {
+    const { onSuccess } = await submitForm(true, vi.fn(), true);
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import/draft/draft-id');
+    });
+    expect(onSuccess).toHaveBeenCalled();
+  });
+
+  it('confirms the submission instead of opening a draft the user cannot open', async () => {
+    await submitForm(false);
+    expect(await screen.findByText('Your submission has been sent and is being processed.')).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('offers to close the dialog, and to submit again, once the submission is confirmed', async () => {
+    const { user, onSuccess } = await submitForm(false, vi.fn(), true);
+    await screen.findByText('Your submission has been sent and is being processed.');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onSuccess).toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Submit again' }));
+    expect(screen.getByRole('button', { name: 'Submit' })).toBeTruthy();
   });
 });
