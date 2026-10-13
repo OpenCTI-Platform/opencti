@@ -44,6 +44,9 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity {
 
 export interface StoreEntityConnector extends BasicStoreEntityConnector, StoreEntity {}
 
+// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness
+export type CachedConnector = Omit<BasicStoreEntityConnector, 'active'>;
+
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
   public_key: string;
   last_sync_execution?: Date | string;

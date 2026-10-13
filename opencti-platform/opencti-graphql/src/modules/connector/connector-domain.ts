@@ -33,7 +33,14 @@ import { findManagedConnectorsByCatalogId } from './connector-repository';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityUser } from '../user/user-types';
-import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, ConnectorInfo, StoreEntityConnector, StoreEntityConnectorManager } from './connector-types';
+import type {
+  BasicStoreEntityConnector,
+  BasicStoreEntityConnectorManager,
+  CachedConnector,
+  ConnectorInfo,
+  StoreEntityConnector,
+  StoreEntityConnectorManager,
+} from './connector-types';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -149,6 +156,20 @@ const loadConnectorsHeartbeats = async () => {
   }
 };
 
+// Liveness is not part of the connectors cache (see connectorsForCache):
+// consumers of the cache must compute it before relying on `active`.
+export const refreshConnectorsLiveness = async <T extends { internal_id: string; built_in?: boolean }>(cachedConnectors: T[]) => {
+  if (cachedConnectors.length === 0) {
+    return [];
+  }
+  const heartbeats = await loadConnectorsHeartbeats();
+  return cachedConnectors.map((conn) => {
+    // Built-in connectors do not send heartbeats
+    const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
+    return { ...conn, last_seen_at: lastSeenAt, active: isConnectorActive(conn, lastSeenAt) };
+  });
+};
+
 export const completeConnector = (connector: any, lastSeenAt?: string | null) => {
   if (!connector) {
     return null;
@@ -173,6 +194,19 @@ export const connectors = async (context: AuthContext, user: AuthUser) => {
   ]);
   const heartbeats = await loadConnectorsHeartbeats();
   return [...storedConnectors, ...builtInConnectors].map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+};
+
+// The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
+// it holds connectors without liveness, see refreshConnectorsLiveness. Built-in connectors keep their configured `active`.
+export const connectorsForCache = async (context: AuthContext, user: AuthUser): Promise<CachedConnector[]> => {
+  const [storedConnectors, builtInConnectors] = await Promise.all([
+    findConnectors(context, user),
+    builtInConnectorsRuntime(context, user),
+  ]);
+  return [...storedConnectors, ...builtInConnectors].map((connector) => {
+    const { active, last_seen_at: _, ...completed } = completeConnector(connector);
+    return completed.built_in ? { ...completed, active } : completed;
+  });
 };
 
 export const connector = async (context: AuthContext, user: AuthUser, connectorId: string) => {
