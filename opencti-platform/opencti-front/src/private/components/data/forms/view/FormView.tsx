@@ -148,6 +148,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
+  // A submission into a draft the user cannot open: confirm it instead of navigating to a page that does not exist for them
+  const [submittedToDraft, setSubmittedToDraft] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
   const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
@@ -155,7 +157,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
-  const { isForcedImportToDraft } = useImportAccess();
+  const { isForcedImportToDraft, canOpenDraft } = useImportAccess();
   const pendingStore = useIntakePendingStore();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -515,8 +517,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
-            if (response.formSubmit.entityId) {
+            if (isDraft && !canOpenDraft) {
+              setSubmittedToDraft(true);
+            } else if (response.formSubmit.entityId) {
               if (isDraft) {
+                if (onSuccess) onSuccess(); // Close dialog before navigating
                 navigate(`/dashboard/data/import/draft/${response.formSubmit.entityId}`);
               } else {
                 setPollingEntityId(response.formSubmit.entityId);
@@ -538,6 +543,18 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       setSubmitting(false);
     }
   };
+
+  if (submittedToDraft) {
+    return (
+      <div className={classes.container}>
+        <Alert severity="success">{t_i18n('Your submission has been sent and is being processed.')}</Alert>
+        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+          <Button onClick={() => setSubmittedToDraft(false)}>{t_i18n('Submit again')}</Button>
+          {embedded && onSuccess && <Button variant="secondary" onClick={onSuccess}>{t_i18n('Close')}</Button>}
+        </div>
+      </div>
+    );
+  }
 
   if (submitted && (pollingEntityId || pollingEntityType)) {
     return (
