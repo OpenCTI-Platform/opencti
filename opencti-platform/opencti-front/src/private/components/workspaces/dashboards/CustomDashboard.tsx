@@ -12,7 +12,8 @@ import useDashboardRefresh from '../../../../components/dashboard/useDashboardRe
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
-import { DashboardVariableValuesProvider, useDashboardDefaultVariableValues } from '../../../../components/dashboard/DashboardVariableValuesContext';
+import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
+import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -63,6 +64,10 @@ const dashboardFragment = graphql`
       entity_type
     }
     currentUserAccessRight
+    variables {
+      id
+      usedInWidgetIds
+    }
     ...WorkspaceEditionContainer_workspace
     ...WorkspaceHeaderFragment
   }
@@ -165,7 +170,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onExportWidget,
   });
   const { handleAddWidget, handleImportWidget, handleDateChange, config, variables } = helpers;
-  const variableValues = useDashboardDefaultVariableValues(variables);
+  // The home dashboard (noToolbar) only ever shows the manifest defaults: no per user value is read or written.
+  const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar });
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
   const {
@@ -243,7 +249,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             </Security>
           )
           }
-          <DashboardVariableValuesProvider values={variableValues}>
+          <DashboardVariableValuesProvider values={variableControls.values}>
             <DashboardContent
               helpers={helpers}
               isEditable={userCanEdit}
