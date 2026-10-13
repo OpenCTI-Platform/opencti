@@ -1,18 +1,19 @@
 # Ingestion Health — Chunk 1 Brainstorm (and what moves to chunk 2)
 
-> Status: **brainstorm**, no code. Revised on 2026-10-13: new architecture (Redis fed by a PubSub listener, Elasticsearch written by the manager), new storage and API formats, and a smaller chunk 1 (the structure, with one check). The previous implementation plan was deleted; a new one will follow this brainstorm.
+> Status: **brainstorm**, no code. Revised on 2026-10-13: new architecture (Redis fed by a PubSub listener, Elasticsearch written by the manager), new storage and API formats, and a smaller chunk 1 (the structure, with one check, and the UI chip). Aligned on the implemented scope: connectors, feeds and syncs. The previous implementation plan was deleted.
 > Summary: `2026-10-08-ingestion-health-chunk-1-summary.md`.
 > Sources: Notion TAS-1415 › « Brainstorm chunk 1: Health check minimal version », RFC 0001 (`filigran-private` PR #229), issue #18305, PO decisions of 2026-10-07, 2026-10-08 and 2026-10-13.
 
 ## 1. Goal
 
-**Chunk 1 ships the structure, with as few checks as possible:**
+**Chunk 1 ships the structure, with as few checks as possible, for connectors, feeds and syncs:**
 - the **health manager**;
 - **one check**: `USER_MISSING`;
 - the **Elasticsearch fields**;
-- the **GraphQL types**.
+- the **GraphQL types**;
+- the **UI chip** and its tooltip (§8 bis).
 
-**Chunk 2** adds the rest: the PubSub listener, the runtime check `NO_HEARTBEAT`, the check `USER_NOT_SERVICE_ACCOUNT`, the `stopped` status, the activity event and the UI chip (§10).
+**Chunk 2** adds the rest: the PubSub listener, the runtime check `NO_HEARTBEAT`, the check `USER_NOT_SERVICE_ACCOUNT`, the `stopped` status and the activity event (§10).
 
 Everything is behind the `INGESTION_HEALTH` feature flag. Chunk 1 is a single PR for #18305.
 
@@ -22,14 +23,16 @@ Why this shape: the later chunks only add sources, checks and outputs to a struc
 
 **In:**
 - every **deployed connector**, whatever its type: import, enrichment, file import/export, analysis, notification, stream. Managed by the composer or self-hosted;
+- every **feed** (RSS, CSV, JSON, TAXII, TAXII collection) and every **sync**;
 - the health manager, its cycle and its Elasticsearch write (§4);
 - the `USER_MISSING` check (§6);
-- the stored fields (§7) and the GraphQL types (§8), with every status and the check registry.
+- the stored fields (§7) and the GraphQL types (§8), with every status and the check registry;
+- the UI chip and its tooltip (§8 bis).
 
 **Out of chunk 1:**
-- **chunk 2:** the PubSub channel and the listener, `NO_HEARTBEAT`, `USER_NOT_SERVICE_ACCOUNT`, `NOT_EVALUATED`, the `stopped` status, the `ingestion_health` activity event, the UI chip;
+- **chunk 2:** the PubSub channel and the listener, `NO_HEARTBEAT`, `USER_NOT_SERVICE_ACCOUNT`, `NOT_EVALUATED`, the `stopped` status, the `ingestion_health` activity event;
 - **later chunks:**
-  - feeds (RSS, CSV, JSON, TAXII) and syncs, with their sources (ingestion manager, stream manager);
+  - the runtime sources of feeds and syncs (ingestion manager, stream manager);
   - the composer health source;
   - notifications;
   - `TOKEN_EXPIRED`;
@@ -37,11 +40,11 @@ Why this shape: the later chunks only add sources, checks and outputs to a struc
   - the platform's built-in connectors (CSV mapper import, draft validation, internal queues, the hidden connectors behind feeds). No process deploys them and they never ping;
   - any change to the authentication path.
 
-The design must leave room for feeds: the status model, the stored fields, the check format and the chip must not be connector-specific.
+The status model, the stored fields, the check format and the chip are not connector-specific: the same ones serve connectors, feeds and syncs.
 
 ## 3. Target architecture
 
-Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elasticsearch, API.
+Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elasticsearch, API and UI.
 
 ```
  sources ──PubSub──► listener ──► Redis (raw check data)        ← chunk 2
@@ -53,7 +56,7 @@ Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elast
                   Elasticsearch (status, since, health_checks)  ← chunk 1
                                      │
                                      ▼
-                             GraphQL API ──► UI                 ← chunk 1 (API) / chunk 2 (UI)
+                             GraphQL API ──► UI                 ← chunk 1
 ```
 
 - **Redis** holds raw check data (last ping date, a 404 when fetching a feed, logs sent by the connector…), written by the listener. Never a verdict. See chunk 2 (§10).
@@ -62,13 +65,13 @@ Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elast
 
 ## 4. The health manager (chunk 1)
 
-At each period (**60 s by default**, `ingestion_health_manager:interval`), with its own lock, for each deployed connector, the manager:
-1. computes the configuration check data itself (the connector user);
+At each period (**60 s by default**, `ingestion_health_manager:interval`), with its own lock, for each deployed connector, feed and sync, the manager:
+1. computes the configuration check data itself (the user of the connector, feed or sync);
 2. *(chunk 2)* reads the runtime check data from Redis;
 3. computes from those checks the final **status** and the final **`health_checks` list**, with a **pure function**, with no I/O;
 4. **only if the status or the checks changed**:
    - writes them in Elasticsearch;
-   - invalidates the connector cache;
+   - invalidates the connector cache (connectors only: feeds and syncs are not cached);
    - *(chunk 2)* if the **status** changed, publishes an `ingestion_health` activity event.
 
 The Elasticsearch write:
@@ -76,7 +79,7 @@ The Elasticsearch write:
 - must not touch `updated_at` (an entity update would also emit a stream event);
 - must not emit a stream event.
 
-In chunk 1 the manager does not use Redis: `USER_MISSING` only needs the connector and the user cache.
+In chunk 1 the manager does not use Redis. It reads connectors and users from the cache, feeds and syncs from Elasticsearch (they are not cached).
 
 The manager is registered only when the flag is on. It is disabled in `config/test.json`.
 
@@ -101,10 +104,11 @@ The API exposes these five values from chunk 1, so the list never changes later.
 - Message « User is missing », **with no user id or name**, neither in the message nor in the stored metadata. Reading a connector only needs the `MODULES` capability, while the name of its user is reserved to `SETTINGS_SETACCESSES`.
 - Effect: the status becomes `degraded` (unless it is `stopped` or `critical`, from chunk 2).
 - `connector_user_id` is set again at every registration, so a running connector always has one. An empty value only exists on an old record of a connector that has not restarted since.
+- **Feeds and syncs:** `USER_MISSING` fires only when their `user_id` points to a user that no longer exists. An empty `user_id` (or SYSTEM) is a supported setup: they then run as the system user, so no check fires.
 
 ## 7. Elasticsearch storage format (chunk 1)
 
-Stored on the connector (later on feeds and syncs), written by the manager only:
+Stored on connectors, feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, written by the manager only:
 
 ```
 health_status:        critical | unknown | stopped | healthy | degraded
@@ -123,18 +127,19 @@ health_checks: [                                   # nested
 ```
 
 - `health_checks` is **nested**; `health_check_metadata` is **raw**.
+- Every attribute and every nested mapping carries `featureFlag: INGESTION_HEALTH_FEATURE_FLAG`.
 - **Kind and severity are not stored**: they are derived from the code, through one registry (code → kind, severity, message). They describe the check type, not one occurrence; changing a severity must not require rewriting Elasticsearch.
 - No stored human message, no stored summary: the message is computed by the API from the code and the metadata.
 - The metadata never holds a value that changes with every ping (for example the last ping date), so the manager only writes on a real change.
 
 ## 8. GraphQL API (chunk 1)
 
-On the connector:
+On `Connector`, `IngestionRss`, `IngestionCsv`, `IngestionJson`, `IngestionTaxii`, `IngestionTaxiiCollection` and `Synchronizer`:
 
 ```graphql
 health_status: IngestionHealthStatus!
 health_status_since: DateTime                    # nullable
-healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES])
+healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES])   # INGESTION on feeds and syncs
 
 type IngestionHealthCheck {
   health_check_code: String!                     # from Elasticsearch
@@ -146,15 +151,30 @@ type IngestionHealthCheck {
 
 - A connector the manager has not evaluated yet: `unknown`, `health_status_since` null, no check.
 - The raw metadata is not exposed: only what the UI uses.
-- `healthChecks` requires the ingestion management capability (`MODULES` for connectors; `INGESTION_SETINGESTIONS` is the natural one for feeds later).
+- `healthChecks` requires the capability that already reads the entity: `MODULES` for connectors, `INGESTION` for feeds and syncs. A stricter one would make the field fail, and break the page, for a user who can read the list.
 - No resolver calls Redis.
+
+## 8 bis. What the user sees (chunk 1)
+
+| Where | Chip | Tooltip |
+|---|---|---|
+| Data › Connectors list, rows | Status | « since », then check messages |
+| Connector detail page, next to the existing status chip | Status | « since », then check messages |
+| Integrations › Deployed, cards and lines (connectors, feeds, syncs; not forms) | Status | « since », then check messages |
+| Feed and sync detail page, next to the Active/Inactive chip | Status | « since », then check messages |
+
+- Design system chip (`@filigran/design-system`), label = the status with a capital first letter, translated.
+- Colors, from the design system feedback tones: `critical` red, `degraded` orange, `healthy` green, `stopped` and `unknown` grey.
+- The check messages come from the server, in English, shown as is. With no check: « No health issue detected », or « Not evaluated yet » when the manager has not looked yet.
+- Hidden when the flag is off.
 
 ## 9. Chunk 1: flag off and accepted risks
 
 **With the flag off**, nothing differs from `master`:
 - no manager;
 - no stored field;
-- the API fields return empty, without error.
+- the API fields return empty, without error;
+- no chip.
 
 **Accepted risks:**
 - **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing says so. `health_status_since` is when the status last changed, not when the manager last looked. Whether the manager runs is visible in Settings › Parameters.
@@ -228,19 +248,7 @@ A managed connector whose **requested** status is `stopping` or `stopped`. It wi
 
 When the status changes, the manager publishes an `ingestion_health` activity event.
 
-### 10.7 What the user sees
-
-| Where | Chip | Tooltip |
-|---|---|---|
-| Deployed list, rows | Status | Check messages |
-| Deployed list, cards | Status | Check messages |
-| Connector detail page, next to the existing status chip | Status | « since », runtime check messages, then configuration check messages |
-
-Colors: `critical` in red, `degraded` in orange, `stopped` and `unknown` neutral.
-
-The tooltip text is the server message, in English and shown as is; only the status label is translated.
-
-### 10.8 Chunk 2 accepted risks
+### 10.7 Chunk 2 accepted risks
 
 - **A connector already dead when the flag is turned on is never flagged.** The manager never sees it ping, so it stays `unknown` until it restarts. Nothing tells it apart from a legacy connector between two runs.
 - **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period) look like connectors pinging every 40 s, and turn red when their schedule pauses. Rare. A longer period widens this risk.
@@ -255,7 +263,7 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 ## 12. Follow-ups
 
 - Update RFC 0001 with the gaps:
-  - connectors only;
+  - connectors, feeds and syncs, with only `USER_MISSING` in chunk 1;
   - `unknown` instead of `healthy`, explained by `NOT_EVALUATED`;
   - two configuration checks (service account, missing user), `TOKEN_EXPIRED` not shipped;
   - the 5 min threshold;
@@ -298,6 +306,7 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 | 2026-10-13 | Composer health is not in chunks 1 and 2. |
 | 2026-10-13 | The old `unknown` summaries become a `NOT_EVALUATED` advisory check, with the sentence in `health_check_metadata.reason`. |
 | 2026-10-13 | The service account check keeps the code `USER_NOT_SERVICE_ACCOUNT`. |
-| 2026-10-13 | GraphQL: `health_status`, `health_status_since` (nullable), `healthChecks` (code, message, kind, severity) under `@auth` for the ingestion management capability (`MODULES`). Raw metadata not exposed. |
-| 2026-10-13 | **Chunk 1 = the structure**: the manager with the single check `USER_MISSING`, the Elasticsearch fields, the GraphQL types. Everything else (listener, `NO_HEARTBEAT`, `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`, `stopped`, activity event, UI chip) moves to chunk 2. |
+| 2026-10-13 | GraphQL: `health_status`, `health_status_since` (nullable), `healthChecks` (code, message, kind, severity) under `@auth`: `MODULES` on connectors, `INGESTION` on feeds and syncs. Raw metadata not exposed. |
+| 2026-10-13 | **Chunk 1 = the structure**: the manager with the single check `USER_MISSING`, the Elasticsearch fields, the GraphQL types. Everything else (listener, `NO_HEARTBEAT`, `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`, `stopped`, activity event) moves to chunk 2. |
+| 2026-10-13 | Chunk 1 also ships, as implemented: the UI chip and its tooltip (connector list and detail, deployed cards and lines, feed and sync detail), and feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, with the same fields, GraphQL types and `USER_MISSING` (empty or SYSTEM user allowed for them). |
 | 2026-10-13 | Tests and acceptance criteria deferred until the design is settled. |

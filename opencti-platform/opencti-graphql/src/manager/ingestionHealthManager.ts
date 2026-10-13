@@ -90,7 +90,6 @@ export const ingestionHealthHandler = async () => {
   const context = executionContext('ingestion_health_manager');
   const users = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const isExistingUser = (userId: string) => users.has(userId) || userId in INTERNAL_USERS;
-  let count = 0;
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
@@ -101,12 +100,10 @@ export const ingestionHealthHandler = async () => {
         await evaluateIngestionHealth(context, source, element, isExistingUser);
       } catch (e) {
         // One broken ingestion must not stop the evaluation of the others, retried at the next period
-        logApp.error('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
+        logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
       }
     }
-    count += evaluatedElements.length;
   }
-  logApp.debug('[OPENCTI-MODULE] Ingestion health manager process complete', { count });
 };
 
 const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
