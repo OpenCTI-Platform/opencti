@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { DashboardVariablesProvider, useDashboardVariableDefinitions, useOptionalDashboardVariableDefinitions } from './DashboardVariablesContext';
+import { DashboardVariablesProvider, useOptionalDashboardVariableDefinitions } from './DashboardVariablesContext';
 import type { DashboardVariable } from './dashboard-types';
 
 const LABEL_VARIABLE: DashboardVariable = {
@@ -20,14 +20,12 @@ const wrapWith = (variables: DashboardVariable[] | undefined) => {
 };
 
 describe('DashboardVariablesContext', () => {
-  it('exposes no variable and no dashboard scope without provider', () => {
-    expect(renderHook(() => useDashboardVariableDefinitions()).result.current).toEqual([]);
+  it('exposes no dashboard scope without provider', () => {
     expect(renderHook(() => useOptionalDashboardVariableDefinitions()).result.current).toBeUndefined();
   });
 
   it('exposes the provided definitions', () => {
     const wrapper = wrapWith([LABEL_VARIABLE]);
-    expect(renderHook(() => useDashboardVariableDefinitions(), { wrapper }).result.current).toEqual([LABEL_VARIABLE]);
     expect(renderHook(() => useOptionalDashboardVariableDefinitions(), { wrapper }).result.current).toEqual([LABEL_VARIABLE]);
   });
 
@@ -38,7 +36,6 @@ describe('DashboardVariablesContext', () => {
 
   it('behaves as no provider when given no variables (feature off, home dashboard)', () => {
     const wrapper = wrapWith(undefined);
-    expect(renderHook(() => useDashboardVariableDefinitions(), { wrapper }).result.current).toEqual([]);
     expect(renderHook(() => useOptionalDashboardVariableDefinitions(), { wrapper }).result.current).toBeUndefined();
   });
 });

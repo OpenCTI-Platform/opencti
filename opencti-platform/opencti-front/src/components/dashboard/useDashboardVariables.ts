@@ -63,6 +63,5 @@ export const useDashboardVariables = (
     commit({});
   }, [commit, ignoreLocalValues, enabled]);
 
-  const isModified = [...values].some(([id, value]) => defaults.get(id) !== value);
-  return { values, defaults, setValue, reset, isModified };
+  return { values, defaults, setValue, reset };
 };

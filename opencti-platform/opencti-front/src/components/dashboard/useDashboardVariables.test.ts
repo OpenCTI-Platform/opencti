@@ -34,7 +34,6 @@ describe('useDashboardVariables', () => {
   it('starts from the manifest defaults', () => {
     const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
     expect(result.current.values.get(sector.id)).toBe('Energy');
-    expect(result.current.isModified).toBe(false);
   });
 
   it('persists a value and finds it again after a remount', () => {
@@ -43,7 +42,6 @@ describe('useDashboardVariables', () => {
     first.unmount();
     const second = renderHook(() => useDashboardVariables('ws-1', [sector]));
     expect(second.result.current.values.get(sector.id)).toBe('Finance');
-    expect(second.result.current.isModified).toBe(true);
   });
 
   it('isolates two dashboards', () => {

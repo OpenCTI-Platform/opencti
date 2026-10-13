@@ -1,8 +1,6 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import type { DashboardVariable } from './dashboard-types';
 
-const NO_VARIABLES: DashboardVariable[] = [];
-
 // Definitions of the dashboard variables, for the widget filter editors (not to be confused with
 // DashboardVariableValuesContext, the current values used to resolve the widget queries).
 // `undefined` means "not in a dashboard with variables" (no provider: lists, feeds, triggers, playbooks,
@@ -16,9 +14,6 @@ export const DashboardVariablesProvider = ({ variables, children }: PropsWithChi
     {children}
   </DashboardVariablesContext.Provider>
 );
-
-/** The variables of the dashboard, an empty list outside a dashboard with variables. */
-export const useDashboardVariableDefinitions = (): DashboardVariable[] => useContext(DashboardVariablesContext) ?? NO_VARIABLES;
 
 /** The variables of the dashboard, `undefined` outside a dashboard with variables (tokens are then not interpreted). */
 export const useOptionalDashboardVariableDefinitions = (): DashboardVariable[] | undefined => useContext(DashboardVariablesContext);
