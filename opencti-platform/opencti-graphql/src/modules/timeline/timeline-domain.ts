@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreMarkingDefinition } from '../../types/store';
 import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlCreateInputWithUserConfidence, controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -8,8 +8,9 @@ import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode, TimelineExportFormat } from '../../generated/graphql';
 import type {
+  MutationTimelineExportFileAddArgs,
   QueryContainerTimelineArgs,
   QueryContainerTimelineBoundsArgs,
   QueryContainerTimelineExportArgs,
@@ -26,7 +27,7 @@ import type {
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { getExportFilter } from '../../utils/getExportFilter';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
@@ -92,6 +93,8 @@ import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './ti
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
 import conf, { logApp } from '../../config/conf';
 import { enqueueTimelineRegeneration } from './timeline-queue';
+import { type LoadedFile, uploadToStorage } from '../../database/file-storage';
+import { buildContextDataForFile, publishUserAction } from '../../listener/UserActionListener';
 
 type AnyStoreElement = BasicStoreBase & Record<string, any>;
 
@@ -666,19 +669,78 @@ export const exportContainerTimeline = async (context: AuthContext, user: AuthUs
  * A stored export and its markings come from the same events: the file is never marked less strictly than the events
  * it contains nor than the elements and sources they reference (highest marking per definition type).
  */
-export const exportContainerTimelineFile = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportFileArgs) => {
-  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
-  validateMarkings(user, selected);
-  const snapshot = await loadExportedTimelineEvents(context, user, args, { storedInContainer: true });
-  const content = renderTimelineExport(snapshot, args);
+const storedExportFileMarkings = async (context: AuthContext, snapshot: TimelineExportSnapshot, selected: string[]) => {
   // The file always names the container: its markings are required even when no event is exported
   const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => [
     ...markingsOf(event),
     ...referencedElementIds(event, snapshot.container.internal_id).flatMap((id) => markingsOf(snapshot.elements[id] ?? event)),
   ])];
-  const fileMarkings = await cleanMarkings(context, Array.from(new Set([...selected, ...required])));
+  return cleanMarkings(context, Array.from(new Set([...selected, ...required])));
+};
+
+export const exportContainerTimelineFile = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportFileArgs) => {
+  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
+  validateMarkings(user, selected);
+  const snapshot = await loadExportedTimelineEvents(context, user, args, { storedInContainer: true });
+  const content = renderTimelineExport(snapshot, args);
+  const fileMarkings = await storedExportFileMarkings(context, snapshot, selected);
   addTimelineExportCount();
   return { content, file_markings: fileMarkings };
+};
+
+// Formats of a stored export, by file extension: the PDF and PNG files are produced in the browser from the server export
+const TIMELINE_EXPORT_FILE_TYPES: Record<string, string> = {
+  pdf: 'application/pdf',
+  csv: 'text/csv',
+  svg: 'image/svg+xml',
+  png: 'image/png',
+};
+
+/**
+ * Stores a timeline export in the exported files of its container, next to the other exports of the entity. The
+ * markings of the file are computed again from the events the export holds within the content ceiling, so a file is
+ * never marked less strictly than what it contains, whatever markings the caller selected.
+ */
+export const addTimelineExportFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationTimelineExportFileAddArgs,
+): Promise<LoadedFile & { entity_type: string }> => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Timeline exports cannot be stored in a draft');
+  }
+  const upload = await args.file;
+  const extension = (upload.filename.split('.').pop() ?? '').toLowerCase();
+  const expectedMimeType = TIMELINE_EXPORT_FILE_TYPES[extension];
+  const mimeType = (upload.mimetype ?? '').split(';')[0].trim().toLowerCase();
+  if (!expectedMimeType || (mimeType && mimeType !== expectedMimeType)) {
+    throw FunctionalError('A timeline export is a PDF, CSV, SVG or PNG file', { filename: upload.filename, mimetype: upload.mimetype });
+  }
+  const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
+  validateMarkings(user, selected);
+  const snapshot = await loadExportedTimelineEvents(
+    context,
+    user,
+    { id: args.containerId, format: TimelineExportFormat.Csv, contentMaxMarkings: args.contentMaxMarkings },
+    { storedInContainer: true },
+  );
+  const fileMarkings = await storedExportFileMarkings(context, snapshot, selected);
+  const { container } = snapshot;
+  const path = `export/${container.entity_type}/${container.internal_id}`;
+  const { upload: stored } = await uploadToStorage(context, user, path, upload, {
+    entity: container,
+    meta: { mimetype: expectedMimeType },
+    file_markings: fileMarkings.map((marking) => marking.internal_id),
+  });
+  await publishUserAction({
+    user,
+    event_type: 'file',
+    event_access: 'extended',
+    event_scope: 'create',
+    context_data: buildContextDataForFile(container as BasicStoreObject, path, stored.name, fileMarkings.map((marking) => marking.internal_id)),
+  });
+  addTimelineExportCount();
+  return { ...stored, entity_type: ENTITY_TYPE_INTERNAL_FILE };
 };
 // endregion
 

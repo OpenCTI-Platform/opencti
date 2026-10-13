@@ -12,6 +12,7 @@ import { isStixRelationship } from '../../schema/stixRelationship';
 import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
 import {
   addTimelineEvent,
+  addTimelineExportFile,
   canContributeToTimeline,
   deleteTimelineEvent,
   editTimelineEvent,
@@ -89,6 +90,8 @@ const timelineResolvers: Resolvers = {
     timelineRegenerate: (_, { containerId }, context) => regenerateTimeline(context, context.user, containerId),
     timelineImport: (_, { containerId, extension }, context) => importTimelineExtension(context, context.user, containerId, extension),
     timelineViewed: (_, { containerId }, context) => recordTimelineView(context, context.user, containerId),
+    // The markings and works of a stored file are resolved by the File type from its metadata
+    timelineExportFileAdd: (_, args, context) => addTimelineExportFile(context, context.user, args) as any,
   },
   Subscription: {
     containerTimelineUpdated: {

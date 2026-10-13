@@ -436,6 +436,8 @@ type Mutation {
   timelineImport(containerId: ID!, extension: String!): TimelineRegenerationResult @auth(for: [KNOWLEDGE_KNUPDATE])
   "Record that the Timeline tab of a container was opened (usage telemetry, no data change)"
   timelineViewed(containerId: ID!): Boolean @auth(for: [KNOWLEDGE])
+  "Store a timeline export (PDF, CSV, SVG or PNG) in the exported files of the container, marked at least like the events it holds within the content ceiling"
+  timelineExportFileAdd(containerId: ID!, file: Upload!, contentMaxMarkings: [String!], fileMarkings: [String!]): File @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
 }
 
 type Subscription {

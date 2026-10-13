@@ -167,6 +167,25 @@ export const containerTimelineExportFileQuery = graphql`
   }
 `;
 
+export const timelineExportFileAddMutation = graphql`
+  mutation ContainerTimelineMutationsExportFileAddMutation(
+    $containerId: ID!
+    $file: Upload!
+    $contentMaxMarkings: [String!]
+    $fileMarkings: [String!]
+  ) {
+    timelineExportFileAdd(
+      containerId: $containerId
+      file: $file
+      contentMaxMarkings: $contentMaxMarkings
+      fileMarkings: $fileMarkings
+    ) {
+      id
+      name
+    }
+  }
+`;
+
 export const timelineViewedMutation = graphql`
   mutation ContainerTimelineMutationsViewedMutation($containerId: ID!) {
     timelineViewed(containerId: $containerId)

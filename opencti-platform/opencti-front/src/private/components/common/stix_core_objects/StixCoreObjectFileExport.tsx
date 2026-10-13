@@ -30,6 +30,8 @@ import { insertOngoingExports } from '../../../../utils/store';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import { TIMELINE_EXPORT_MIME_TYPE_LIST, timelineExportErrorMessage, timelineFormatOfMimeType, useTimelineFileRenderer } from '../timeline/useContainerTimelineExport';
 import { TIMELINE_CONTAINER_TYPES } from '../timeline/timelineUtils';
+import { timelineExportFileAddMutation } from '../timeline/ContainerTimelineMutations';
+import type { ContainerTimelineMutationsExportFileAddMutation } from '../timeline/__generated__/ContainerTimelineMutationsExportFileAddMutation.graphql';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -285,8 +287,8 @@ const StixCoreObjectFileExportComponent = ({
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
   // A transport failure carries no GraphQL error to show: the timeline export reports it with its own message
-  const [commitUploadTimelineFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
-    stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+  const [commitTimelineExportFile] = useApiMutation<ContainerTimelineMutationsExportFileAddMutation>(
+    timelineExportFileAddMutation,
     undefined,
     { errorMessage: t_i18n('The timeline export failed') },
   );
@@ -495,7 +497,8 @@ const StixCoreObjectFileExportComponent = ({
   };
 
   /**
-   * Timeline export: the timeline of the incident or case, as the current user sees it, stored as a file of the entity.
+   * Timeline export: the timeline of the incident or case, as the current user sees it, stored in the exported files of
+   * the entity like the other exports.
    *
    * @param values Form filled values.
    * @param helpers Formik helpers to manage form.
@@ -513,22 +516,22 @@ const StixCoreObjectFileExportComponent = ({
       const selectedFileMarkings = values.fileMarkings.map(({ value }) => value);
       const { blob, fileMarkings } = await renderStoredTimelineFile(scoId, format, contentMaxMarkings, selectedFileMarkings);
       const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
-      commitUploadTimelineFile({
-        variables: { id: scoId, file, fileMarkings: fileMarkings.ids, noTriggerImport: true },
+      commitTimelineExportFile({
+        variables: { containerId: scoId, file, contentMaxMarkings, fileMarkings: fileMarkings.ids },
         onCompleted: (result, errors) => {
           setSubmitting(false);
           if (errors?.length) {
             MESSAGING$.notifyError(t_i18n('The timeline export failed'));
             return;
           }
-          if (result.stixCoreObjectEdit?.importPush) {
-            onExportCompleted?.(result.stixCoreObjectEdit.importPush.id);
+          if (result.timelineExportFileAdd) {
+            onExportCompleted?.(result.timelineExportFileAdd.id);
           }
           MESSAGING$.notifySuccess(fileMarkings.raised.length > 0
-            ? t_i18n('The timeline export has been saved in the files of the entity, marked {markings} to cover its events', {
+            ? t_i18n('The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events', {
                 values: { markings: fileMarkings.raised.join(', ') },
               })
-            : t_i18n('The timeline export has been saved in the files of the entity'));
+            : t_i18n('The timeline export has been saved in the exported files of the entity'));
           resetForm();
           close();
         },

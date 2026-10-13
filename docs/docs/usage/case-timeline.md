@@ -178,15 +178,17 @@ Milestones can be edited and deleted by the users who can update the case.
 
     ![Export menu of the Timeline tab](assets/case-timeline-toolbar-export-menu.png)
 
-- From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the files of the entity, like the other exports (see [Manual export](export.md)).
+- From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the **exported files** of the entity, next to the other exports (see [Manual export](export.md)).
 
 The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
+
+In the drawing (SVG, PNG and PDF), each lane grows to give overlapping windows and close events their own row, events too close to be told apart are grouped into a numbered circle whose tooltip lists them, and the labels of the headline dates are staggered so that two dates of the same day stay readable.
 
 What an export contains and how it is marked:
 
 - An export only contains the events the exporting user can see, and leaves out the events marked above the user's max shareable markings, like every export of the platform.
 - In the export menu of the container, the **Content max marking definitions** field sets a ceiling: the events marked above it, and the events about an element or dated by a source (such as a relationship) marked above it, are left out of the file.
-- A file stored in the entity is never marked less strictly than what it contains: when the selected file markings are weaker than the markings of the exported events or of the elements and sources they refer to, the platform raises them (highest marking per marking type) and the confirmation message names the markings added. The content of the file and its markings are computed together from the same events.
+- A file stored in the entity is never marked less strictly than what it contains: when the selected file markings are weaker than the markings of the exported events or of the elements and sources they refer to, the platform raises them (highest marking per marking type) and the confirmation message names the markings added. The platform computes the markings of the stored file again when it saves it, from the same events as its content.
 - A file stored in the entity can be opened by every user who can read the entity and the markings of the file, not only by the user who exported it. It therefore leaves out the events about elements restricted to some authorized members, or shared with fewer organizations than the entity, even when the exporting user can see them. A downloaded export keeps them, since it only reaches the user who downloads it.
 
 ## Dashboards and custom views

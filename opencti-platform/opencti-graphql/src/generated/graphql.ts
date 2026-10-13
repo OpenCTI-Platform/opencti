@@ -17841,6 +17841,8 @@ export type Mutation = {
   timelineEventEdit?: Maybe<TimelineEvent>;
   timelineEventHide?: Maybe<TimelineEvent>;
   timelineEventPin?: Maybe<TimelineEvent>;
+  /** Store a timeline export (PDF, CSV, SVG or PNG) in the exported files of the container, marked at least like the events it holds within the content ceiling */
+  timelineExportFileAdd?: Maybe<File>;
   /** Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker) */
   timelineImport?: Maybe<TimelineRegenerationResult>;
   timelineRegenerate?: Maybe<TimelineRegenerationResult>;
@@ -20462,6 +20464,14 @@ export type MutationTimelineEventHideArgs = {
 export type MutationTimelineEventPinArgs = {
   id: Scalars['ID']['input'];
   pinned: Scalars['Boolean']['input'];
+};
+
+
+export type MutationTimelineExportFileAddArgs = {
+  containerId: Scalars['ID']['input'];
+  contentMaxMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -49995,6 +50005,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   timelineEventEdit?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventEditArgs, 'id' | 'input'>>;
   timelineEventHide?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventHideArgs, 'hidden' | 'id'>>;
   timelineEventPin?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventPinArgs, 'id' | 'pinned'>>;
+  timelineExportFileAdd?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationTimelineExportFileAddArgs, 'containerId' | 'file'>>;
   timelineImport?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineImportArgs, 'containerId' | 'extension'>>;
   timelineRegenerate?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineRegenerateArgs, 'containerId'>>;
   timelineSettingsUpdate?: Resolver<Maybe<ResolversTypes['TimelineSettings']>, ParentType, ContextType, RequireFields<MutationTimelineSettingsUpdateArgs, 'containerId' | 'input'>>;

@@ -1,5 +1,7 @@
+import { Readable } from 'stream';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import {
   awaitUntilCondition,
   queryAsAdmin,
@@ -42,6 +44,7 @@ import { createEntity, createRelation, deleteElementById } from '../../../src/da
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
+import { deleteFile, loadFile } from '../../../src/database/file-storage';
 
 const KILL_CHAIN_PHASE_ADD = gql`
   mutation TimelineKillChainPhaseAdd($input: KillChainPhaseAddInput!) {
@@ -289,6 +292,23 @@ const CONTAINER_TIMELINE_EXPORT_FILE = gql`
     }
   }
 `;
+const TIMELINE_EXPORT_FILE_ADD = gql`
+  mutation TimelineExportFileAdd($containerId: ID!, $file: Upload!, $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
+    timelineExportFileAdd(containerId: $containerId, file: $file, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) {
+      id
+      name
+    }
+  }
+`;
+const timelineExportUpload = (filename: string, mimetype: string, content: string) => {
+  const fileUpload = { filename, mimetype, encoding: '7bit', createReadStream: () => Readable.from([content]) };
+  const upload = new Upload();
+  upload.promise = new Promise((executor) => {
+    executor(fileUpload);
+  });
+  upload.file = fileUpload;
+  return upload;
+};
 const TIMELINE_VIEWED = gql`
   mutation TimelineViewed($containerId: ID!) {
     timelineViewed(containerId: $containerId)
@@ -1222,6 +1242,32 @@ describe('Incident and case timeline', () => {
         await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
         await deleteElementById(testContext, SYSTEM_USER, restricted.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
       }
+    });
+
+    it('should store a timeline export in the exported files of the case, marked at least like its events', async () => {
+      const green = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_GREEN } });
+      const amber = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_AMBER } });
+      const stored = await queryAsAdminWithSuccess({
+        query: TIMELINE_EXPORT_FILE_ADD,
+        variables: { containerId: caseIncident.id, file: timelineExportUpload('timeline-review.csv', 'text/csv', 'time,title\r\n'), fileMarkings: [green.data.markingDefinition.id] },
+      });
+      const fileId = stored.data.timelineExportFileAdd.id;
+      try {
+        // Next to the other exports of the case, never in its imported files
+        expect(fileId).toEqual(`export/Case-Incident/${caseIncident.id}/timeline-review.csv`);
+        const file = await loadFile(testContext, ADMIN_USER, fileId);
+        expect(file?.metaData.mimetype).toEqual('text/csv');
+        expect(file?.metaData.entity_id).toEqual(caseIncident.id);
+        // TLP:AMBER of the amber indicator events replaces the weaker TLP:GREEN selected for the file
+        expect(file?.metaData.file_markings).toContain(amber.data.markingDefinition.id);
+        expect(file?.metaData.file_markings).not.toContain(green.data.markingDefinition.id);
+      } finally {
+        await deleteFile(testContext, ADMIN_USER, fileId);
+      }
+      await queryAsAdminWithError(
+        { query: TIMELINE_EXPORT_FILE_ADD, variables: { containerId: caseIncident.id, file: timelineExportUpload('timeline.html', 'text/html', '<p></p>') } },
+        'A timeline export is a PDF, CSV, SVG or PNG file',
+      );
     });
 
     it('should name the referenced elements in the exports', async () => {

@@ -223,12 +223,8 @@ describe('Timeline export', () => {
     });
   });
 
-  it('reports an upload that fails before reaching the API with the message of the timeline export', async () => {
-    const notifyError = vi.spyOn(MESSAGING$, 'notifyError');
-    const notifyRelayError = vi.spyOn(MESSAGING$, 'notifyRelayError');
-    const onExportCompleted = vi.fn();
-    const onClose = vi.fn();
-    const { relayEnv, user } = testRender(
+  const openTimelineExport = async (onExportCompleted = vi.fn(), onClose = vi.fn()) => {
+    const result = testRender(
       <StixCoreObjectFileExport
         scoId="case-1"
         scoEntityType="Case-Incident"
@@ -240,6 +236,7 @@ describe('Timeline export', () => {
       />,
       { userContext: createMockUserContext({ me: { capabilities: [{ name: 'BYPASS' }] } }) },
     );
+    const { relayEnv, user } = result;
     await act(async () => {
       relayEnv.mock.resolveMostRecentOperation({
         data: {
@@ -266,7 +263,32 @@ describe('Timeline export', () => {
     await user.type(screen.getByLabelText('Export file name'), 'timeline');
     await user.click(screen.getByRole('button', { name: 'Create' }));
     await waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
+    return { ...result, onExportCompleted, onClose };
+  };
+
+  it('stores the export in the exported files of the entity, never through the upload of imported files', async () => {
+    const notifySuccess = vi.spyOn(MESSAGING$, 'notifySuccess');
+    const { relayEnv, onExportCompleted, onClose } = await openTimelineExport();
     expect(renderStoredTimelineFile).toHaveBeenCalledWith('case-1', 'csv', [], []);
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.node.operation.name).toBe('ContainerTimelineMutationsExportFileAddMutation');
+    expect(operation.request.variables).toMatchObject({ containerId: 'case-1', contentMaxMarkings: [], fileMarkings: [] });
+    expect(operation.request.variables.file.name).toBe('timeline.csv');
+    await act(async () => {
+      relayEnv.mock.resolve(operation, {
+        data: { timelineExportFileAdd: { id: 'export/Case-Incident/case-1/timeline.csv', name: 'timeline.csv' } },
+      });
+    });
+    await waitFor(() => expect(onExportCompleted).toHaveBeenCalledWith('export/Case-Incident/case-1/timeline.csv'));
+    expect(notifySuccess).toHaveBeenCalledWith('The timeline export has been saved in the exported files of the entity');
+    expect(onClose).toHaveBeenCalledOnce();
+    notifySuccess.mockRestore();
+  });
+
+  it('reports an upload that fails before reaching the API with the message of the timeline export', async () => {
+    const notifyError = vi.spyOn(MESSAGING$, 'notifyError');
+    const notifyRelayError = vi.spyOn(MESSAGING$, 'notifyRelayError');
+    const { relayEnv, onExportCompleted, onClose } = await openTimelineExport();
     expect(relayEnv.mock.getMostRecentOperation().request.variables.file.name).toBe('timeline.csv');
     await act(async () => {
       relayEnv.mock.rejectMostRecentOperation(new Error('Failed to fetch'));

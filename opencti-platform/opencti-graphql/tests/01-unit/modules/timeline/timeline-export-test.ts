@@ -3,10 +3,14 @@ import {
   csvCell,
   escapeXml,
   formatExportDate,
+  layoutExportAnchorLabels,
+  layoutExportLane,
+  layoutExportRows,
   renderTimelineCsv,
   renderTimelineHtml,
   renderTimelineSvg,
   TIMELINE_EXPORT_LANE_ORDER,
+  type TimelineExportEvent,
   type TimelineExportInput,
 } from '../../../../src/modules/timeline/timeline-export';
 import { TIMELINE_LANES } from '../../../../src/modules/timeline/timeline-types';
@@ -112,5 +116,109 @@ describe('Timeline exports', () => {
     expect(formatExportDate('2026-03-05T07:08:00.000Z')).toEqual('2026-03-05 07:08 UTC');
     expect(formatExportDate(null)).toEqual('');
     expect(escapeXml('<a href="x">&\'</a>')).toEqual('&lt;a href=&quot;x&quot;&gt;&amp;&#39;&lt;/a&gt;');
+  });
+});
+
+describe('Timeline export layout', () => {
+  const DAY = 86400000;
+  const START = Date.parse('2026-03-01T00:00:00.000Z');
+  // One pixel per hour from x = 100
+  const x = (time: number) => 100 + (time - START) / 3600000;
+  const at = (hours: number) => new Date(START + hours * 3600000).toISOString();
+  const event = (id: string, hours: number, extra: Partial<TimelineExportEvent> = {}): TimelineExportEvent => ({
+    id, lane: 'adversary', kind: 'technique_used', event_time: at(hours), precision: 'exact', title: id, source: 'derived', pinned: false, hidden: false, ...extra,
+  });
+
+  it('should spread overlapping spans over rows and reuse a row once it is free', () => {
+    const { rows, rowCount } = layoutExportRows([
+      { id: 'a', x1: 0, x2: 100 },
+      { id: 'b', x1: 50, x2: 150 },
+      { id: 'c', x1: 120, x2: 200 },
+    ]);
+    expect(rowCount).toEqual(2);
+    expect(rows.get('a')).toEqual(0);
+    expect(rows.get('b')).toEqual(1);
+    expect(rows.get('c')).toEqual(0);
+  });
+
+  it('should draw overlapping windows of a lane on different rows', () => {
+    const layout = layoutExportLane('adversary', [
+      event('Phishing', 0, { event_end_time: at(48) }),
+      event('Lateral movement', 24, { event_end_time: at(72) }),
+      event('Exfiltration', 100, { event_end_time: at(120) }),
+    ], x, 1000);
+    const rowOf = (id: string) => layout.items.find((item) => item.id === id)?.row;
+    expect(layout.rowCount).toEqual(2);
+    expect(rowOf('Phishing')).not.toEqual(rowOf('Lateral movement'));
+    expect(rowOf('Exfiltration')).toEqual(0);
+  });
+
+  it('should group events too close to be told apart into one count bubble', () => {
+    const layout = layoutExportLane('detection', [event('a', 10), event('b', 11), event('c', 12), event('far', 200)], x, 1000);
+    const bubble = layout.items.find((item) => item.type === 'bubble');
+    expect(bubble?.type === 'bubble' && bubble.events.map((e) => e.id)).toEqual(['a', 'b', 'c']);
+    expect(layout.items.filter((item) => item.type === 'point').map((item) => item.id)).toEqual(['far']);
+  });
+
+  it('should keep the labelled events (pinned or milestones) apart from each other', () => {
+    const layout = layoutExportLane('response', [
+      event('Mail server isolated', 10, { pinned: true }),
+      event('Containment confirmed', 12, { source: 'manual' }),
+    ], x, 1000);
+    expect(layout.items.every((item) => item.type === 'point' && item.labelled)).toBe(true);
+    expect(new Set(layout.items.map((item) => item.row)).size).toEqual(2);
+  });
+
+  it('should group the items beyond the last row of a lane into count bubbles', () => {
+    const windows = Array.from({ length: 10 }, (_, index) => event(`w${index}`, index, { event_end_time: at(100) }));
+    const layout = layoutExportLane('adversary', windows, x, 1000);
+    expect(layout.rowCount).toEqual(6);
+    expect(Math.max(...layout.items.map((item) => item.row))).toEqual(5);
+    const bubbles = layout.items.filter((item) => item.type === 'bubble');
+    expect(bubbles).toHaveLength(1);
+    expect(bubbles[0].row).toEqual(5);
+    // Every event is still drawn, as a window or inside a bubble
+    const drawn = layout.items.flatMap((item) => (item.type === 'bubble' ? item.events.map((e) => e.id) : [item.id]));
+    expect(drawn.sort()).toEqual(windows.map((w) => w.id).sort());
+  });
+
+  it('should stagger the labels of headline dates of the same day and keep them inside the plot', () => {
+    const labels = layoutExportAnchorLabels([
+      { key: 'first_detection', x: 500, label: 'First detection' },
+      { key: 'first_response', x: 502, label: 'First response' },
+      { key: 'closure', x: 1195, label: 'Closure' },
+    ], 156, 1184);
+    const byKey = Object.fromEntries(labels.map((anchor) => [anchor.key, anchor]));
+    expect(byKey.first_detection.row).not.toEqual(byKey.first_response.row);
+    expect(byKey.closure.row).toEqual(0);
+    // A label near the edge is moved inside the plot while its line stays on the date
+    expect(byKey.closure.anchorX).toEqual(1195);
+    expect(byKey.closure.x + ('Closure'.length * 5.6) / 2).toBeLessThanOrEqual(1184.001);
+  });
+
+  it('should give the lanes and the headline labels the height they need and align the edge dates inside the image', () => {
+    const anchors = {
+      ...(input.anchors as NonNullable<TimelineExportInput['anchors']>),
+      first_adversary_activity: at(0),
+      first_detection: at(1),
+      first_response: at(2),
+      containment: at(3),
+      closure: at(4),
+    };
+    const crowded = renderTimelineSvg({
+      ...input,
+      anchors,
+      events: Array.from({ length: 4 }, (_, index) => event(`w${index}`, index, { event_end_time: at(10 * DAY / 3600000) })),
+      lanes: ['adversary'],
+    });
+    const single = renderTimelineSvg({ ...input, anchors: null, events: [event('alone', 0)], lanes: ['adversary'] });
+    const heightOf = (svg: string) => Number(/height="(\d+(\.\d+)?)"/.exec(svg)?.[1]);
+    expect(heightOf(crowded)).toBeGreaterThan(heightOf(single) + 3 * 18);
+    const tickAnchors = Array.from(crowded.matchAll(/fill="#494a50" text-anchor="(start|middle|end)"/g)).map((match) => match[1]);
+    expect(tickAnchors[0]).toEqual('start');
+    expect(tickAnchors[tickAnchors.length - 1]).toEqual('end');
+    // Five headline dates within four hours: their labels sit on more than one row
+    const labelRows = new Set(Array.from(crowded.matchAll(/<text x="[\d.]+" y="([\d.]+)" fill="#18191b" text-anchor="middle" font-size="10">/g)).map((match) => match[1]));
+    expect(labelRows.size).toBeGreaterThan(1);
   });
 });
