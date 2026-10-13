@@ -96,14 +96,52 @@ Move focus explicitly, when the user's action calls for it, never on page load:
   `eslint.config.ts`. Map a component only if every component of that name renders
   that element: the mapping matches by JSX name, not import source.
 
-## Tests
+## Keyboard navigation
 
-When you change an interactive component, test its keyboard path, not only the click:
+A feature should be usable without a mouse:
 
-```tsx
-const { user } = testRender(<TruncatedRawValue value={LONG_VALUE} variant="text" />); // src/utils/tests/test-render
-await user.tab();
-await user.keyboard('{Enter}');
-```
+- **Reach**: every action is reachable with Tab, and Shift+Tab goes back, in the
+  order things appear on screen. That order comes from the DOM: use only
+  `tabIndex={0}` or `-1`, never a positive value.
+- **Operate**: buttons respond to Enter and Space, links to Enter. Inside menus,
+  selects, tabs and lists, the arrow keys move between items; the design system and
+  MUI components already do it, so do not override their key handling.
+- **See**: the focused element always shows a focus ring. Never remove `outline`
+  without drawing another one; reuse the theme's (`theme.palette.border.focus`).
+- **Leave**: Escape closes menus, popovers, dialogs and inline fields, and the focus
+  goes back to the control that opened them. Tab never gets stuck inside a widget,
+  except a modal dialog until it closes.
+- **Hover**: anything shown on hover is shown on focus too.
+- **Gestures**: a drag-only interaction should offer another way to reach the same
+  result. Where it cannot, say so where the handler is (see `RectangleSelection.tsx`).
 
-See `TruncatedRawValue.test.tsx` or `BasicFilterInput.test.tsx`.
+### How to test and enforce it
+
+1. **Lint** catches part of it: a click handler with no key handler or role
+   (`click-events-have-key-events`, `no-static-element-interactions`), an
+   interactive role with no tab stop (`interactive-supports-focus`), a positive
+   `tabIndex`, `autoFocus`. It cannot see tab order, focus visibility, Escape,
+   focus return or traps: those rely on the next steps.
+2. **Manual pass** before opening the PR: put the mouse aside and go through the
+   feature with Tab, Shift+Tab, Enter, Space, Escape and the arrow keys, checking
+   each point above. Describe that keyboard path in the PR's "How to test" section.
+3. **Unit tests** (Vitest + Testing Library): when you change an interactive
+   component, drive it with the keyboard and assert where the focus is, not only
+   what a click does:
+
+   ```tsx
+   const { user } = testRender(<TruncatedRawValue value={LONG_VALUE} variant="text" />); // src/utils/tests/test-render
+   await user.tab();
+   expect(screen.getByRole('button', { name: LONG_VALUE })).toHaveFocus();
+   await user.keyboard('{Enter}');
+   ```
+
+   For a popover or inline field, also press `{Escape}` and assert the focus is
+   back on its trigger. See `TruncatedRawValue.test.tsx`, `BasicFilterInput.test.tsx`
+   or `FilterIconButtonGlobalMode.test.tsx`.
+4. **E2E tests** (Playwright): locate controls by role and name
+   (`getByRole('button', { name: ... })`), which fails when a control has no
+   accessible name, and drive the critical flows of a feature with
+   `page.keyboard.press('Tab')`, `'Enter'` and `'Escape'`.
+5. **Review**: reviewers walk the keyboard path like any other behaviour, and the
+   code-review instructions flag the recurring mistakes.

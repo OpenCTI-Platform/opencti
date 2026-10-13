@@ -52,7 +52,10 @@ On opencti-front changes, flag: an `onClick` on a `<div>` or `<span>` instead of
 button or link; an `onClickCapture` used to keep a row or card from reacting to a
 nested action (it swallows the action's own click; use `stopLinkNavigation`); a new
 `autoFocus` or focus moved on page load; an icon-only button without a translated
-`aria-label`; and a `jsx-a11y` rule disabled with no comment saying why, or for a
+`aria-label`; a positive `tabIndex`, or an `outline` removed with no other focus
+ring; a menu, popover or inline field that Escape does not close or that does not
+give the focus back to its trigger; a changed interactive component whose tests
+only click; and a `jsx-a11y` rule disabled with no comment saying why, or for a
 whole file outside test fixtures.
 See [Accessibility](frontend/patterns/accessibility.md).
 
