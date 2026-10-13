@@ -1,66 +1,180 @@
-# Ingestion Health — Chunk 1 Brainstorm
+# Ingestion Health — Chunk 1 Brainstorm (and what moves to chunk 2)
 
-> Status: **brainstorm**, no code. The step-by-step implementation plan is
-> `docs/superpowers/plans/2026-10-07-ingestion-health-chunk-1.md`.
-> Sources: Notion TAS-1415 › « Brainstorm chunk 1: Health check minimal version », RFC 0001 (`filigran-private` PR #229), issue #18305, PO decisions of 2026-10-07 and 2026-10-08.
+> Status: **brainstorm**, no code. Revised on 2026-10-13: new architecture (Redis fed by a PubSub listener, Elasticsearch written by the manager), new storage and API formats, and a smaller chunk 1 (the structure, with one check). The previous implementation plan was deleted; a new one will follow this brainstorm.
+> Summary: `2026-10-08-ingestion-health-chunk-1-summary.md`.
+> Sources: Notion TAS-1415 › « Brainstorm chunk 1: Health check minimal version », RFC 0001 (`filigran-private` PR #229), issue #18305, PO decisions of 2026-10-07, 2026-10-08 and 2026-10-13.
 
 ## 1. Goal
 
-Deliver the **full workflow once, at its smallest**:
-- **2 configuration checks**: the connector user is not a service account, or the connector user is missing;
-- **1 runtime check**: the connector stopped pinging;
-- the result shown as **chips in the UI**;
-- **no notification yet**.
+**Chunk 1 ships the structure, with as few checks as possible:**
+- the **health manager**;
+- **one check**: `USER_MISSING`;
+- the **Elasticsearch fields**;
+- the **GraphQL types**.
 
-Everything is behind the `INGESTION_HEALTH` feature flag, in a single PR (backend and front) for #18305.
+**Chunk 2** adds the rest: the PubSub listener, the runtime check `NO_HEARTBEAT`, the check `USER_NOT_SERVICE_ACCOUNT`, the `stopped` status, the activity event and the UI chip (§10).
 
-Why this shape: the later chunks (feeds, more checks, notifications) only add checks and outputs to a pipeline that already works end to end.
+Everything is behind the `INGESTION_HEALTH` feature flag. Chunk 1 is a single PR for #18305.
+
+Why this shape: the later chunks only add sources, checks and outputs to a structure that already works.
 
 ## 2. Scope of chunk 1
 
-**In:** every **deployed connector**, whatever its type: import, enrichment, file import/export, analysis, notification, stream. Managed by the composer or self-hosted.
+**In:**
+- every **deployed connector**, whatever its type: import, enrichment, file import/export, analysis, notification, stream. Managed by the composer or self-hosted;
+- the health manager, its cycle and its Elasticsearch write (§4);
+- the `USER_MISSING` check (§6);
+- the stored fields (§7) and the GraphQL types (§8), with every status and the check registry.
 
 **Out of chunk 1:**
-- the platform's built-in connectors: CSV mapper import, draft validation, internal queues, the hidden connectors behind feeds. No process deploys them and they never ping;
-- feeds (RSS, CSV, JSON, TAXII) and syncs. They belong to the feature, but come in a later chunk;
-- events and notifications (chunk 2);
-- `TOKEN_EXPIRED`;
-- any change to the authentication path.
+- **chunk 2:** the PubSub channel and the listener, `NO_HEARTBEAT`, `USER_NOT_SERVICE_ACCOUNT`, `NOT_EVALUATED`, the `stopped` status, the `ingestion_health` activity event, the UI chip;
+- **later chunks:**
+  - feeds (RSS, CSV, JSON, TAXII) and syncs, with their sources (ingestion manager, stream manager);
+  - the composer health source;
+  - notifications;
+  - `TOKEN_EXPIRED`;
+- **never:**
+  - the platform's built-in connectors (CSV mapper import, draft validation, internal queues, the hidden connectors behind feeds). No process deploys them and they never ping;
+  - any change to the authentication path.
 
-The design must leave room for feeds: the status model, the stored fields and the chip must not be connector-specific.
+The design must leave room for feeds: the status model, the stored fields, the check format and the chip must not be connector-specific.
 
-## 3. Two axes, never mixed
+## 3. Target architecture
 
-|                    | Runtime check                                                          | Configuration check                          |
-|--------------------|------------------------------------------------------------------------|----------------------------------------------|
-| Chunk 1 check      | `NO_HEARTBEAT`: no ping                                                | `USER_NOT_SERVICE_ACCOUNT`                   |
-| Question           | Is the connector working right now?                                    | Is the connector set up correctly?           |
-| Computed by        | The **ingestion health manager**, at each cycle (60 s by default)      | A **GraphQL resolver**, at **each API call** |
-| Stored             | **In Elasticsearch**, on the connector: status, since, summary, checks | **Never**                                    |
-| Decides the status | Yes                                                                    | **Never**                                    |
-| Shown              | Chip in the Deployed list, the cards and the detail page               | Detail page only, in the chip tooltip        |
+Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elasticsearch, API.
 
-Why:
-- A runtime check needs history (several pings seen over time). It must also give the same answer to the UI and, later, to the alerts. So there is a single evaluator, run by the manager, whose result everyone else reads.
-- A configuration check only reads current data that is cheap to get (the user cache). Recomputing it on every call means the warning disappears the moment an admin fixes the user.
+```
+ sources ──PubSub──► listener ──► Redis (raw check data)        ← chunk 2
+                                     │
+                                     ▼  each period
+                     health manager (+ configuration data)      ← chunk 1
+                                     │  only on change
+                                     ▼
+                  Elasticsearch (status, since, health_checks)  ← chunk 1
+                                     │
+                                     ▼
+                             GraphQL API ──► UI                 ← chunk 1 (API) / chunk 2 (UI)
+```
 
-## 4. Statuses
+- **Redis** holds raw check data (last ping date, a 404 when fetching a feed, logs sent by the connector…), written by the listener. Never a verdict. See chunk 2 (§10).
+- **Elasticsearch** holds the verdict, written by the health manager only.
+- **Redis is never called from the read path.** The Deployed list is polled every 5 s per open tab, and a single GraphQL error would break the whole page. The API only reads Elasticsearch.
 
-| Status             | When                                                                                                             | In chunk 1                                                               |
-|--------------------|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| `stopped`          | A managed connector switched off by a person: its **requested** status is `stopping` or `stopped`. It wins over everything: a source stopped on purpose is never red. A crashed container (requested `starting`, current `stopped`) is **not** stopped: it goes through the heartbeat check. | Produced                                                                 |
-| `critical`         | The runtime check fails.                                                                                         | Produced                                                                 |
-| `unknown`          | Nothing proves the connector works or fails.                                                                     | Produced                                                                 |
-| `healthy`          | Proven to bring data in.                                                                                         | **Never**: a ping proves the connector is alive, not that data comes in. |
-| `degraded`, `idle` | For later checks.                                                                                                | Not produced                                                             |
+## 4. The health manager (chunk 1)
 
-The API exposes all six values from the start, so the list never changes in later chunks.
+At each period (**60 s by default**, `ingestion_health_manager:interval`), with its own lock, for each deployed connector, the manager:
+1. computes the configuration check data itself (the connector user);
+2. *(chunk 2)* reads the runtime check data from Redis;
+3. computes from those checks the final **status** and the final **`health_checks` list**, with a **pure function**, with no I/O;
+4. **only if the status or the checks changed**:
+   - writes them in Elasticsearch;
+   - invalidates the connector cache;
+   - *(chunk 2)* if the **status** changed, publishes an `ingestion_health` activity event.
 
-## 5. The runtime check: `NO_HEARTBEAT`
+The Elasticsearch write:
+- `health_status_since` moves only when the status changes;
+- must not touch `updated_at` (an entity update would also emit a stream event);
+- must not emit a stream event.
+
+In chunk 1 the manager does not use Redis: `USER_MISSING` only needs the connector and the user cache.
+
+The manager is registered only when the flag is on. It is disabled in `config/test.json`.
+
+## 5. Statuses
+
+Priority: `stopped` > `critical` > `degraded` > `unknown`.
+
+| Status     | When                                                                                                             | Produced from |
+|------------|------------------------------------------------------------------------------------------------------------------|---------------|
+| `stopped`  | A managed connector switched off by a person: its **requested** status is `stopping` or `stopped`. A crashed container (requested `starting`, current `stopped`) is **not** stopped. | Chunk 2 |
+| `critical` | A runtime check fails.                                                                                           | Chunk 2 (`NO_HEARTBEAT`) |
+| `degraded` | A `blocking` configuration check fires, and no runtime check fails.                                              | **Chunk 1** (`USER_MISSING`) |
+| `unknown`  | Nothing proves the connector works or fails.                                                                     | **Chunk 1**   |
+| `healthy`  | Proven to bring data in.                                                                                         | Not before a check proves data comes in: a ping only proves the connector is alive. |
+
+The API exposes these five values from chunk 1, so the list never changes later. `idle` is dropped.
+
+## 6. The chunk 1 check: `USER_MISSING`
+
+- Configuration check, severity `blocking`.
+- Fires when the connector has no user: `connector_user_id` is empty, or the user it points to no longer exists (deleted).
+- Message « User is missing », **with no user id or name**, neither in the message nor in the stored metadata. Reading a connector only needs the `MODULES` capability, while the name of its user is reserved to `SETTINGS_SETACCESSES`.
+- Effect: the status becomes `degraded` (unless it is `stopped` or `critical`, from chunk 2).
+- `connector_user_id` is set again at every registration, so a running connector always has one. An empty value only exists on an old record of a connector that has not restarted since.
+
+## 7. Elasticsearch storage format (chunk 1)
+
+Stored on the connector (later on feeds and syncs), written by the manager only:
+
+```
+health_status:        critical | unknown | stopped | healthy | degraded
+health_status_since:  Datetime                    # null until the manager first evaluates the connector
+health_checks: [                                   # nested
+  {
+    health_check_code:     string                  # USER_MISSING; later NO_HEARTBEAT, USER_NOT_SERVICE_ACCOUNT, NOT_EVALUATED, LAST_RUN_FAIL…
+    health_check_metadata: {                       # raw object, depends on the code
+      reason?:   string                            # NOT_EVALUATED (chunk 2)
+      log?:      string                            # sent by the connector
+      entityId?: string                            # when the issue concerns one entity
+      …
+    }
+  }
+]
+```
+
+- `health_checks` is **nested**; `health_check_metadata` is **raw**.
+- **Kind and severity are not stored**: they are derived from the code, through one registry (code → kind, severity, message). They describe the check type, not one occurrence; changing a severity must not require rewriting Elasticsearch.
+- No stored human message, no stored summary: the message is computed by the API from the code and the metadata.
+- The metadata never holds a value that changes with every ping (for example the last ping date), so the manager only writes on a real change.
+
+## 8. GraphQL API (chunk 1)
+
+On the connector:
+
+```graphql
+health_status: IngestionHealthStatus!
+health_status_since: DateTime                    # nullable
+healthChecks: [IngestionHealthCheck!]! @auth(for: [MODULES])
+
+type IngestionHealthCheck {
+  health_check_code: String!                     # from Elasticsearch
+  health_check_message: String                   # from the code and the metadata
+  health_check_kind: runtime | configuration     # derived from the code
+  health_check_severity: blocking | advisory     # derived from the code
+}
+```
+
+- A connector the manager has not evaluated yet: `unknown`, `health_status_since` null, no check.
+- The raw metadata is not exposed: only what the UI uses.
+- `healthChecks` requires the ingestion management capability (`MODULES` for connectors; `INGESTION_SETINGESTIONS` is the natural one for feeds later).
+- No resolver calls Redis.
+
+## 9. Chunk 1: flag off and accepted risks
+
+**With the flag off**, nothing differs from `master`:
+- no manager;
+- no stored field;
+- the API fields return empty, without error.
+
+**Accepted risks:**
+- **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing says so. `health_status_since` is when the status last changed, not when the manager last looked. Whether the manager runs is visible in Settings › Parameters.
+- **Lag.** A fixed user stays `degraded` up to one period.
+- **Leftovers.** Turning the flag on, then off, leaves the stored fields behind. Nothing reads them, and nothing cleans them up.
+
+## 10. Chunk 2
+
+### 10.1 Redis, fed by the listener
+
+- **Sources** send their issues on a new PubSub channel: the connector **ping** in chunk 2; the composer health, the ingestion manager (feeds) and the stream manager (syncs) in later chunks.
+- **The listener** subscribes to that channel and writes the data in Redis. It only records what it sees: it never evaluates anything.
+- **Pings:** the last ping date is the existing `connector_heartbeats` value (#18851), written on every ping and registration, the same source as Active/Inactive. This may change or be improved later.
+- With the flag off: no listener, no message published, no Redis key of the feature read, written or deleted.
+
+### 10.2 The runtime check: `NO_HEARTBEAT`
 
 **Rule:** no ping for **5 minutes or more** → `critical`.
 - It is the same threshold as Active/Inactive, so the two always agree. The POC's 10 min is rejected.
-- The ping date is the connector's **Redis heartbeat** (`connector_heartbeats`), written by every ping and every registration since #18851. It is the same source as Active/Inactive, read by the manager once per cycle.
+- The ping date is read from `connector_heartbeats`, by the manager, once per cycle. If that read fails, the cycle fails and is retried.
 
 **Only for connectors that ping every 40 s.** A long-running pycti connector has a thread that pings every 40 s.
 Many legacy run-and-terminate connectors (about 30, e.g. `cape`) behave differently:
@@ -70,7 +184,7 @@ Many legacy run-and-terminate connectors (about 30, e.g. `cape`) behave differen
 
 Without a guard, they would turn red between every run.
 
-So a connector is checked only once the manager has seen **3 pings in a row, each at most 2 manager periods after the previous one, and never less than 120 s** (120 s with the default 60 s period).
+So the **manager** checks a connector only once it has seen **3 pings in a row, each at most 2 manager periods after the previous one, and never less than 120 s** (120 s with the default 60 s period). The listener only records the pings; this logic lives in the manager.
 - With the default period, a live pycti connector shows a new ping 40 to 80 s after the previous one at each cycle, so it qualifies after about 4 minutes.
 - The bound follows the period: with a 5 min period, the manager sees a new ping up to about 5 min 40 s after the previous one, so the bound becomes 10 min.
 - A legacy run shows at most 2 pings, so it never qualifies, whatever its length and whatever the period.
@@ -87,127 +201,103 @@ So a connector is checked only once the manager has seen **3 pings in a row, eac
 - After each full cycle, the manager records **the time that cycle started** in a single Redis key, `ingestion-health-manager-last-run`.
 - At the start of the next cycle, it reads that key. If the previous full cycle started more than 2 periods ago (and at least 120 s ago), the manager knows it was blind.
 - It then keeps the count of the connectors **already seen pinging every 40 s** (count at 3), instead of restarting it. A connector that was pinging every 40 s and dies right after the outage is therefore still caught.
-- Every other count restarts as usual: a newly started connector, and above all a legacy one. Outages can never add up, run after run, into a false proof: a legacy connector's count stays at 2 or less.
-- Side effect: a connector that had just started (1 or 2 pings seen) before the outage starts its count again, and is checked a few minutes later.
+- Every other count restarts as usual. Outages can never add up, run after run, into a false proof: a legacy connector's count stays at 2 or less.
 
 The same key also tells an operator whether the manager is alive.
 
-## 6. The configuration check: `USER_NOT_SERVICE_ACCOUNT`
+### 10.3 `NOT_EVALUATED`
 
-- Fires when the connector user is not a service account.
-- The message is « User is not a service account », **with no user name**, neither in the message nor in its parameters. Reading a connector only needs the `MODULES` capability, while the name of its user is reserved to `SETTINGS_SETACCESSES`: the platform hides it from everyone else, and the warning must not leak it.
-- Advisory only: it never changes the status.
-- No user at all → `USER_NOT_SERVICE_ACCOUNT` does not apply; `USER_MISSING` does (below).
-- Shown only on the connector detail page, in the chip tooltip, after the runtime explanation.
-
-## 6 bis. The configuration check: `USER_MISSING`
-
-- Fires when the connector has no user: `connector_user_id` is empty, or the user it points to no longer exists (deleted).
-- The message is « User is missing », with no user id or name, for the same reason as above.
-- Severity `blocking`: a connector without a user cannot authenticate. As every configuration check, it still never changes the status. When the connector stops pinging because of it, the status turns `critical` through `NO_HEARTBEAT`, and the warning tells why on the detail page.
-- A connector gets either `USER_MISSING` or `USER_NOT_SERVICE_ACCOUNT`, never both.
-- `connector_user_id` is set again at every registration, so a running connector always has one. An empty value only exists on an old record of a connector that has not restarted since.
-
-## 7. How it works
-
-1. **The ingestion health manager** runs every **60 s by default**, with its own lock. The period can be changed in the configuration (`ingestion_health_manager:interval`). The manager is registered only when the flag is on. The « close pings » bound and the « blind manager » threshold both follow the period: 2 periods, never less than 120 s.
-2. For each deployed connector, it reads the connector, and what it remembers in **Redis**: the last ping it saw and how many close pings came in a row. Redis keys have no expiry and are deleted with the connector.
-3. It evaluates the connector with a **pure function**, with no I/O.
-4. **Only when** the status, the summary or the checks change, it writes them on the connector in **Elasticsearch**:
-   - `since` moves only when the status changes;
-   - the write must not touch `updated_at` (an entity update would also emit a stream event);
-   - it must not emit a stream event.
-5. **Redis is used by the manager only.** The Deployed list is polled every 5 s per open tab, and a single GraphQL error would break the whole page.
-6. **The API** returns the stored runtime verdict as is, and computes the configuration warning at each call.
-7. **The front** shows an FDS chip and tooltip. The tooltip text is the server summary, in English and shown as is; only the status label is translated.
-
-## 8. What the user sees
-
-| Where | Chip | Tooltip |
-|---|---|---|
-| Deployed list, rows | Status | Summary |
-| Deployed list, cards | Status | Summary |
-| Connector detail page, next to the existing status chip | Status | Summary, « since », other runtime checks, then the configuration warning |
-
-Colors: `critical` in red, `stopped` and `unknown` neutral.
-
-Summaries, in plain words:
-- « Not evaluated yet »: the manager has not looked at it yet;
+Runtime check, severity `advisory`. It explains an `unknown` status when the heartbeat is not checked. Its message is the sentence stored in `health_check_metadata.reason`:
 - « No ping every 40 seconds observed, heartbeat not evaluated »: a legacy or newly started connector;
 - « Pinging every 40 seconds, data intake not evaluated yet »: alive, but not `healthy`, on purpose;
-- « No ping received since <date> »: `critical`;
-- « Stopped by a user »;
 - « Heartbeat not evaluated for run-and-terminate connectors »;
 - « Never seen running ».
 
-These sentences never contain a value that changes with every ping, so the manager only writes on a real change.
+### 10.4 `USER_NOT_SERVICE_ACCOUNT`
 
-## 9. With the flag off
+- Configuration check, severity `advisory`: no effect on the status.
+- Fires when the connector user is not a service account.
+- Message « User is not a service account », with no user name, for the same reason as `USER_MISSING`.
+- A connector gets either `USER_MISSING` or `USER_NOT_SERVICE_ACCOUNT`, never both.
 
-Nothing differs from `master`:
-- no manager;
-- no Redis key read, written or deleted;
-- no stored field;
-- both API fields return empty, without error;
-- no chip.
+### 10.5 The `stopped` status
 
-## 10. Accepted risks
+A managed connector whose **requested** status is `stopping` or `stopped`. It wins over everything: a source stopped on purpose is never red. A crashed container (requested `starting`, current `stopped`) goes through the heartbeat check and turns `critical`.
 
-- **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing in the UI says so. « since » is when the health status last changed, not when the manager last looked. A connector never evaluated says « Not evaluated yet ». One cached `critical` that comes back while the manager is down stays red next to « Active ». Whether the manager runs is visible in Settings › Parameters.
-- **A connector already dead when the flag is turned on is never flagged.** The manager never sees it ping, so it stays `unknown` until it restarts. Nothing tells it apart from a legacy connector between two runs. Accepted.
-- **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period). They look like connectors pinging every 40 s, and turn red when their schedule pauses. Rare, accepted. A longer period widens this risk.
-- **Lag.** The chip turns red up to one period (60 s by default) after Active/Inactive turns « Inactive », plus the 5 s poll. A longer period means a longer lag, and a longer wait (about 3 periods) before a new connector is checked.
-- **A connector deleted during a manager cycle.** The cycle can write its Redis key again right after the deletion removed it, leaving a key with no expiry. Accepted for chunk 1; a later chunk makes sure the key of a deleted connector is gone for good.
-- **Leftovers.** Turning the flag on, then off, leaves the Redis keys and the stored fields behind. Nothing reads them, and nothing cleans them up.
+### 10.6 The activity event
+
+When the status changes, the manager publishes an `ingestion_health` activity event.
+
+### 10.7 What the user sees
+
+| Where | Chip | Tooltip |
+|---|---|---|
+| Deployed list, rows | Status | Check messages |
+| Deployed list, cards | Status | Check messages |
+| Connector detail page, next to the existing status chip | Status | « since », runtime check messages, then configuration check messages |
+
+Colors: `critical` in red, `degraded` in orange, `stopped` and `unknown` neutral.
+
+The tooltip text is the server message, in English and shown as is; only the status label is translated.
+
+### 10.8 Chunk 2 accepted risks
+
+- **A connector already dead when the flag is turned on is never flagged.** The manager never sees it ping, so it stays `unknown` until it restarts. Nothing tells it apart from a legacy connector between two runs.
+- **Run-and-terminate jobs scheduled at least as often as the close-pings bound** (every 2 minutes or less with the default period) look like connectors pinging every 40 s, and turn red when their schedule pauses. Rare. A longer period widens this risk.
+- **Lag.** The chip turns red up to one period after Active/Inactive turns « Inactive », plus the 5 s poll. A longer period means a longer lag, and a longer wait (about 3 periods) before a new connector is checked.
+- **A connector deleted during a manager cycle.** The cycle can write its Redis key again right after the deletion removed it, leaving a key with no expiry. A later chunk makes sure the key of a deleted connector is gone for good.
+- **Leftovers.** Turning the flag on, then off, also leaves the Redis keys behind.
 
 ## 11. How we will know it works
 
-- A connector silent 299 s is not `critical`; at 300 s it is.
-- A connector pinging every 40 s is checked after 3 close pings, never before, with the default period and with a longer one.
-- A legacy run of 30 s, 90 s or 10 min never makes the connector `critical`, including between two runs.
-- Right after the flag is turned on, no connector is `critical`.
-- After a manager outage of several minutes, a connector that was pinging every 40 s and then dies still turns `critical`. A legacy connector still never does, even with outages run after run.
-- A stopped managed connector is `stopped`, even with no ping. A crashed managed container (requested `starting`, current `stopped`) turns `critical` once its pings stop.
-- The manager write never moves `updated_at`.
-- One broken connector does not stop the evaluation of the others, and the error is logged with its id.
-- Neither API field ever calls Redis. This is checked by a test, and by watching Redis while the Deployed list is open.
-- With the flag off, nothing changes compared with `master`.
-- The service account warning shows on the detail page only, and never contains the user name. It disappears as soon as the user becomes a service account, without a restart.
-- The manager is disabled in the integration test configuration, so the suite stays deterministic: there, every connector is `unknown` / « Not evaluated yet ». The manager is covered by unit tests, and end to end by the manual run below.
-- Manual run: stop a live pycti connector; « Inactive », then a red chip one cycle later; restart it, and the chip goes back to `unknown`.
+Deferred: the acceptance criteria and tests will be written once the design is settled.
 
-## 12. At the end of chunk 1
+## 12. Follow-ups
 
 - Update RFC 0001 with the gaps:
   - connectors only;
-  - `unknown` instead of `healthy`;
-  - two configuration warnings (service account, missing user) instead of three, `TOKEN_EXPIRED` not shipped;
+  - `unknown` instead of `healthy`, explained by `NOT_EVALUATED`;
+  - two configuration checks (service account, missing user), `TOKEN_EXPIRED` not shipped;
   - the 5 min threshold;
   - the 40 s rule;
-  - the manager as the only evaluator.
-- Open four follow-up issues:
+  - the Redis / listener / manager / Elasticsearch pipeline.
+- Open follow-up issues:
   - `TOKEN_EXPIRED` without touching authentication;
   - the suspected composer token revocation between connectors sharing a user;
-  - the health fields are readable by users with only the `KNOWLEDGE` capability (through `connectorsForImport`/`Export`/`Analysis`), so they can tell whether a connector user is a service account (no name);
+  - `health_status` stays readable by users with only the `KNOWLEDGE` capability (through `connectorsForImport`/`Export`/`Analysis`); `healthChecks` is protected by `@auth`;
   - deleting a connector deletes its Redis key for good, even during a manager cycle.
-- Tick the chunk 1 items in Notion.
+- Tick the chunk items in Notion.
 
-## 13. Decisions log
+## 13. Open questions
+
+1. **Listener on several nodes (chunk 2):** every node subscribed to the PubSub channel would write the same data. Accept idempotent writes, or have a single node listen? To discuss later.
+
+## 14. Decisions log
 
 | Date | Decision |
 |---|---|
 | 2026-10-07 | Start from `master`, one PR for backend and front, #18305. The draft and POC branches are reference only. |
-| 2026-10-07 | 5 min threshold, aligned on Active/Inactive. Never `healthy`. `stopped` > `critical` > `unknown`. |
-| 2026-10-07 | `USER_NOT_SERVICE_ACCOUNT` only, in a separate field, detail page only. `TOKEN_EXPIRED` dropped. Authentication untouched. |
+| 2026-10-07 | 5 min threshold, aligned on Active/Inactive. Never `healthy`. `TOKEN_EXPIRED` dropped. Authentication untouched. |
 | 2026-10-08 | Every deployed connector, whatever its type. Built-ins excluded. |
 | 2026-10-08 | `NO_HEARTBEAT` only for connectors pinging every 40 s. |
-| 2026-10-08 | Runtime checks: manager, each cycle, stored in Elasticsearch. Configuration checks: resolver, each API call, never stored. |
-| 2026-10-08 | No Redis outside the manager. |
+| 2026-10-08 | No Redis on the read path. |
 | 2026-10-08 | The ingestion health manager is disabled in `config/test.json`. |
-| 2026-10-08 | After a manager outage of more than 2 periods (at least 120 s), only the counts of connectors already seen pinging every 40 s are kept; every other count restarts (`ingestion-health-manager-last-run`, start time of the last full cycle). A connector already dead at activation stays undetected (accepted). |
-| 2026-10-08 | A badly written manager period is not handled. Deleting the Redis key of a connector deleted during a cycle: later chunk. |
+| 2026-10-08 | After a manager outage of more than 2 periods (at least 120 s), only the counts already at 3 are kept (`ingestion-health-manager-last-run`, start time of the last full cycle). A connector already dead at activation stays undetected (accepted). |
 | 2026-10-08 | The service account warning says « User is not a service account », with no user name (reserved to `SETTINGS_SETACCESSES`). |
 | 2026-10-08 | Manager period: 60 s by default, configurable (`ingestion_health_manager:interval`). The close-pings bound and the blind threshold follow it: 2 periods, never less than 120 s. |
-| 2026-10-08 | `USER_MISSING` added to chunk 1 (PO): empty `connector_user_id` or deleted user, message « User is missing », severity `blocking`, exclusive with `USER_NOT_SERVICE_ACCOUNT`. |
-| 2026-10-08 | Final review: the heartbeat is the Redis `connector_heartbeats` value (#18851), read by the manager once per cycle; if that read fails, the cycle fails and is retried. `stopped` = requested status `stopping`/`stopped` only, so a crashed managed container turns `critical`. |
-| 2026-10-08 | Accepted: no fresh status without the manager (`since` = last change of the health status), leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |
+| 2026-10-08 | `USER_MISSING` added (PO): empty `connector_user_id` or deleted user, « User is missing », severity `blocking`, exclusive with `USER_NOT_SERVICE_ACCOUNT`. |
+| 2026-10-08 | `stopped` = requested status `stopping`/`stopped` only, so a crashed managed container turns `critical`. |
+| 2026-10-08 | Accepted: no fresh status without the manager, leftovers after the flag is turned off, run-and-terminate jobs scheduled every ≤ 2 min. PR title free. |
+| 2026-10-13 | New pipeline: sources (ping; later composer health, ingestion manager, stream manager) publish on a new PubSub channel; a listener records the raw check data in Redis; the manager reads it each period, adds the configuration data, computes status and `health_checks`, and writes Elasticsearch only on change. |
+| 2026-10-13 | Configuration checks move from the resolver to the manager and are stored with the runtime checks (reverses 2026-10-08). |
+| 2026-10-13 | On change: write Elasticsearch, invalidate the connector cache; on a status change, publish an `ingestion_health` activity event. |
+| 2026-10-13 | Stored fields: `health_status` (critical, unknown, stopped, healthy, degraded), `health_status_since`, `health_checks` (nested: code + raw metadata). No stored summary; the message is computed by the API. `idle` dropped. |
+| 2026-10-13 | Kind and severity derived from the code (registry), not stored. |
+| 2026-10-13 | A `blocking` configuration check makes the status `degraded`. Priority: `stopped` > `critical` > `degraded` > `unknown`. |
+| 2026-10-13 | The listener only records the pings; the 3-close-pings logic stays in the manager. The ping date is read from `connector_heartbeats` (may change later). |
+| 2026-10-13 | Composer health is not in chunks 1 and 2. |
+| 2026-10-13 | The old `unknown` summaries become a `NOT_EVALUATED` advisory check, with the sentence in `health_check_metadata.reason`. |
+| 2026-10-13 | The service account check keeps the code `USER_NOT_SERVICE_ACCOUNT`. |
+| 2026-10-13 | GraphQL: `health_status`, `health_status_since` (nullable), `healthChecks` (code, message, kind, severity) under `@auth` for the ingestion management capability (`MODULES`). Raw metadata not exposed. |
+| 2026-10-13 | **Chunk 1 = the structure**: the manager with the single check `USER_MISSING`, the Elasticsearch fields, the GraphQL types. Everything else (listener, `NO_HEARTBEAT`, `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`, `stopped`, activity event, UI chip) moves to chunk 2. |
+| 2026-10-13 | Tests and acceptance criteria deferred until the design is settled. |
