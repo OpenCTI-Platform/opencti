@@ -108,7 +108,7 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     const playbookInPirFilterIds: string[] = [];
     for (let index = 0; index < definition.nodes.length; index += 1) {
       const { inPirFilters } = configurations[index];
-      if (isNotEmptyField(inPirFilters)) {
+      if (inPirFilters !== null && inPirFilters !== undefined) {
         const inPirFilterIds = (Array.isArray(inPirFilters) ? inPirFilters : [])
           .map((i: { value?: string } | null) => i?.value)
           .filter((id) => isNotEmptyField(id));
