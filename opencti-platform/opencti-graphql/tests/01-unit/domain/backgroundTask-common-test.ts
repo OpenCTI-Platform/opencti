@@ -159,6 +159,18 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('A workflow status action requires exactly one target status');
     });
 
+    it('should throw an error if a workflow bypass action has an empty target status', async () => {
+      const nullBypassAction = { ...bypassAction, context: { ...bypassAction.context, values: [null] } };
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([nullBypassAction]), scope, type))
+        .rejects.toThrowError('A workflow status action requires exactly one target status');
+    });
+
+    it('should throw an error if a workflow transition action has an empty event name', async () => {
+      const emptyTransitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: null } } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([emptyTransitionAction]), scope, type))
+        .rejects.toThrowError('A workflow transition action requires an event name');
+    });
+
     it('should accept a workflow transition action for a user without BYPASS capability', async () => {
       const transitionAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: [], options: { eventName: 'approve' } } };
       await expect(checkActionValidity(testContext, userUpdate, buildInput([transitionAction]), scope, type)).resolves.toEqual(undefined);
