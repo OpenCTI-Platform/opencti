@@ -2,9 +2,8 @@ import { logApp } from '../../../config/conf';
 import { updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { FilterMode, StatusScope } from '../../../generated/graphql';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { ENTITY_TYPE_STATUS } from '../../../schema/internalObject';
-import { schemaTypesDefinition } from '../../../schema/schema-types';
+import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { bypassDraftContext } from '../../../utils/draftContext';
@@ -87,7 +86,8 @@ export const projectWorkflowState = async (
     } else {
       logApp.warn('[OPENCTI-MODULE] No Status mapped for workflow state, skipping projection', { entityType, scope, stateId });
     }
-    if (closingReason !== undefined && schemaTypesDefinition.isTypeIncludedIn(entityType, ABSTRACT_STIX_DOMAIN_OBJECT)) {
+    // Not registered on non domain objects, nor at all while the workflow engine is off
+    if (closingReason !== undefined && schemaAttributesDefinition.getAttribute(entityType, 'x_opencti_closing_reason')) {
       inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
     }
     if (inputs.length === 0) {
