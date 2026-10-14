@@ -59,7 +59,10 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
   const currentToken = (filter?.values ?? []).find((value) => parseVariableToken(value) !== null);
   const [source, setSource] = useState<ValueSource>(currentToken ? 'variable' : 'fixed');
   const variableId = currentToken ? parseVariableToken(currentToken) : null;
-  const isKnownVariable = variables.some(({ id }) => id === variableId);
+  // "Deleted" is decided on all the variables of the dashboard: one that exists but no longer fits the filter is not deleted.
+  const definitions = useOptionalDashboardVariableDefinitions();
+  const currentVariable = definitions?.find(({ id }) => id === variableId);
+  const isCompatible = variables.some(({ id }) => id === variableId);
 
   const handleSourceChange = (value: string) => {
     const nextSource = value as ValueSource;
@@ -97,9 +100,12 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
         {source === 'fixed'
           ? children
           : (
-              <Select value={isKnownVariable && variableId ? variableId : ''} onValueChange={handleVariableChange}>
+              <Select value={currentVariable ? currentVariable.id : ''} onValueChange={handleVariableChange}>
                 <SelectTrigger className="w-full" aria-label={t_i18n('Variable')}>
-                  <SelectValue placeholder={currentToken ? t_i18n('Deleted variable') : t_i18n('Select a variable')} />
+                  <SelectValue placeholder={currentToken ? t_i18n('Deleted variable') : t_i18n('Select a variable')}>
+                    {/* The list holds the compatible variables only: the name of an incompatible current one is given here. */}
+                    {currentVariable && !isCompatible ? currentVariable.name : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Variable')}>
                   {variables.map(({ id, name }) => (

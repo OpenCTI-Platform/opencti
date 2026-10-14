@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { Filter, FilterEditorInputValue, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
 import type { WidgetHost } from '../../../utils/widget/widget';
@@ -174,6 +174,25 @@ describe('FilterValueInput with dashboard variables (date and free inputs)', () 
       expect(screen.getByRole('combobox', { name: 'Variable' })).toHaveTextContent(compatible.name);
       expect(container.innerHTML).not.toContain('$var:');
       expect(container.textContent).not.toContain('Invalid Date');
+    });
+
+    it('shows the name of an existing variable that is not compatible, never "Deleted variable"', () => {
+      renderInput({ ...filter, values: [token(incompatible.id)] }, { variables: [compatible, incompatible] });
+      const trigger = screen.getByRole('combobox', { name: 'Variable' });
+      expect(trigger).toHaveTextContent(incompatible.name);
+      expect(trigger).not.toHaveTextContent('Deleted variable');
+    });
+
+    it('shows "Deleted variable" for a token of a variable that no longer exists', () => {
+      renderInput({ ...filter, values: [token(DELETED_VARIABLE_ID)] }, { variables: [compatible, incompatible] });
+      expect(screen.getByRole('combobox', { name: 'Variable' })).toHaveTextContent('Deleted variable');
+    });
+
+    it('offers only the compatible variables, even while an incompatible one is the current value', async () => {
+      const { user } = renderInput({ ...filter, values: [token(incompatible.id)] }, { variables: [compatible, incompatible] });
+      await user.click(screen.getByRole('combobox', { name: 'Variable' }));
+      const listbox = await screen.findByRole('listbox');
+      expect(within(listbox).getAllByRole('option').map((option) => option.textContent)).toEqual([compatible.name]);
     });
 
     it('back to fixed value, restores an empty fixed input and drops the token', async () => {
