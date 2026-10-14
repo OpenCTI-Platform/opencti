@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRawListObjects = vi.fn();
 const mockDeleteFileFromStorage = vi.fn();
+const mockRegisterManager = vi.fn();
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 vi.mock('../../../src/manager/managerModule', () => ({
-  registerManager: vi.fn(),
+  registerManager: (...args: unknown[]) => mockRegisterManager(...args),
 }));
 vi.mock('../../../src/database/raw-file-storage', () => ({
   rawListObjects: (...args: unknown[]) => mockRawListObjects(...args),
@@ -21,6 +23,7 @@ describe('sync inflight cleanup manager (f3 - TTL backstop)', () => {
     vi.resetModules();
     mockRawListObjects.mockReset();
     mockDeleteFileFromStorage.mockReset();
+    mockRegisterManager.mockReset();
     ({ syncInflightCleanupHandler } = await import('../../../src/manager/syncInflightCleanupManager'));
   });
 
@@ -30,7 +33,7 @@ describe('sync inflight cleanup manager (f3 - TTL backstop)', () => {
     const recentKey = 'sync/inflight/sync-id-2/file-2/content';
     mockRawListObjects.mockResolvedValue({
       Contents: [
-        { Key: oldKey, LastModified: new Date(now - (25 * 60 * 60 * 1000)) }, // 25h old, past default 24h TTL
+        { Key: oldKey, LastModified: new Date(now - (8 * DAY_MS)) },
         { Key: recentKey, LastModified: new Date(now - (60 * 1000)) }, // 1 minute old
       ],
       IsTruncated: false,
@@ -41,6 +44,30 @@ describe('sync inflight cleanup manager (f3 - TTL backstop)', () => {
     expect(mockRawListObjects).toHaveBeenCalledWith('sync/inflight/', true, undefined);
     expect(mockDeleteFileFromStorage).toHaveBeenCalledTimes(1);
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith(oldKey);
+  });
+
+  it('keeps a staged file younger than the default TTL of one week, so a slow worker backlog can still consume it', async () => {
+    const backloggedKey = 'sync/inflight/sync-id-7/file-7/content';
+    mockRawListObjects.mockResolvedValue({
+      Contents: [{ Key: backloggedKey, LastModified: new Date(Date.now() - (6 * DAY_MS)) }],
+      IsTruncated: false,
+    });
+
+    await syncInflightCleanupHandler();
+
+    expect(mockDeleteFileFromStorage).not.toHaveBeenCalled();
+  });
+
+  it('stays enabled with the sync manager after file reference mode is turned off, so earlier staged files are still cleaned', async () => {
+    vi.resetModules();
+    vi.doMock('../../../src/config/conf', async (importOriginal) => {
+      const actual = await importOriginal() as Record<string, unknown>;
+      return { ...actual, ENABLED_SYNC_MANAGER: true, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: false };
+    });
+    await import('../../../src/manager/syncInflightCleanupManager');
+    vi.doUnmock('../../../src/config/conf');
+
+    expect(mockRegisterManager).toHaveBeenCalledWith(expect.objectContaining({ id: 'SYNC_INFLIGHT_CLEANUP_MANAGER', enabledByConfig: true }));
   });
 
   it('does nothing when sync/inflight is empty (the expected steady state, since the happy path self-cleans)', async () => {
@@ -57,12 +84,12 @@ describe('sync inflight cleanup manager (f3 - TTL backstop)', () => {
     const oldKeyPage2 = 'sync/inflight/sync-id-4/file-4/content';
     mockRawListObjects
       .mockResolvedValueOnce({
-        Contents: [{ Key: oldKeyPage1, LastModified: new Date(now - (48 * 60 * 60 * 1000)) }],
+        Contents: [{ Key: oldKeyPage1, LastModified: new Date(now - (8 * DAY_MS)) }],
         IsTruncated: true,
         NextContinuationToken: 'token-1',
       })
       .mockResolvedValueOnce({
-        Contents: [{ Key: oldKeyPage2, LastModified: new Date(now - (48 * 60 * 60 * 1000)) }],
+        Contents: [{ Key: oldKeyPage2, LastModified: new Date(now - (8 * DAY_MS)) }],
         IsTruncated: false,
       });
 
@@ -81,8 +108,8 @@ describe('sync inflight cleanup manager (f3 - TTL backstop)', () => {
     const succeedingKey = 'sync/inflight/sync-id-6/file-6/content';
     mockRawListObjects.mockResolvedValue({
       Contents: [
-        { Key: failingKey, LastModified: new Date(now - (48 * 60 * 60 * 1000)) },
-        { Key: succeedingKey, LastModified: new Date(now - (48 * 60 * 60 * 1000)) },
+        { Key: failingKey, LastModified: new Date(now - (8 * DAY_MS)) },
+        { Key: succeedingKey, LastModified: new Date(now - (8 * DAY_MS)) },
       ],
       IsTruncated: false,
     });

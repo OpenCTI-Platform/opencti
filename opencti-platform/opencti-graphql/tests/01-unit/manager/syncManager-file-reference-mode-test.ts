@@ -152,6 +152,24 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     expect(resultFile.data).toBeUndefined();
   });
 
+  it('uses reference mode for every non-empty file when the size threshold is configured to 0', async () => {
+    vi.doMock('../../../src/config/conf', async (importOriginal) => {
+      const actual = await importOriginal() as Record<string, unknown>;
+      const actualConf = actual.default as { get: (key: string) => unknown };
+      const conf = { get: (key: string) => (key === 'sync_manager:file_reference_mode_size_threshold_kb' ? 0 : actualConf.get(key)) };
+      return { ...actual, default: conf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
+    });
+    const fakeStream = Symbol('stream');
+    mockHttpClientGet.mockResolvedValue({ data: fakeStream, headers: { 'content-length': '1' } });
+    mockRawUpload.mockResolvedValue(undefined);
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const { data } = await transformDataWithReverseIdAndFilesData(sync, httpClient, buildRemoteFileData(), {});
+
+    expect(mockRawUpload).toHaveBeenCalledWith(expect.stringMatching(/^sync\/inflight\/sync--id-1\/[0-9a-f]{32}\/content$/), fakeStream);
+    expect(data.extensions[STIX_EXT_OCTI].files[0].data).toBeUndefined();
+  });
+
   it('treats a missing/invalid content-length as large, never buffering an unbounded stream', async () => {
     vi.doMock('../../../src/config/conf', async (importOriginal) => {
       const actual = await importOriginal() as Record<string, unknown>;
@@ -211,10 +229,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
   });
 
   it('generates a fresh, unguessable storage key per file, never derived from the remote file URI', async () => {
-    // Security model: storage_key is the actual bearer-capability that gates copying a staged
-    // file (see copyFileFromSyncReference's doc comment) -- the platform can't otherwise tell
-    // "the real sync worker" apart from any other caller with edit rights on some entity, since
-    // all opencti-worker traffic shares one platform-wide token. If the key's remoteFileId segment
+    // Security model: storage_key is a capability that gates copying a staged file. If the key's remoteFileId segment
     // were derived from fileUri (e.g. a hash of it), anyone who separately learns fileUri -- which
     // is not secret, it can appear in bundle content or logs -- could compute the same key
     // themselves without ever being this sync's worker. It must be independently random every time,

@@ -1,10 +1,11 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { downloadFile, rawUpload } from '../../../src/database/raw-file-storage';
-import { deleteElementById } from '../../../src/database/middleware';
+import { createEntity, deleteElementById } from '../../../src/database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_SYNC } from '../../../src/schema/internalObject';
 
 // This test proves the real end-to-end pipeline for issue #17896 works against actual
 // S3 (minio) and Elasticsearch - no mocks. It stages a file exactly the way syncManager.js
@@ -47,6 +48,37 @@ const REPORT_FILES_QUERY = gql`
   }
 `;
 
+const createTestSync = async (name: string, userId: string): Promise<string> => {
+  const creationResult = await createEntity(testContext, ADMIN_USER, {
+    name,
+    uri: 'http://localhost:4242',
+    token: 'token',
+    stream_id: `stream--${name}`,
+    running: false,
+    listen_deletion: true,
+    no_dependencies: false,
+    ssl_verify: false,
+    synchronized: false,
+    user_id: userId,
+  }, ENTITY_TYPE_SYNC, { complete: true });
+  const synchronizer = 'element' in creationResult ? creationResult.element : creationResult;
+  return synchronizer.internal_id;
+};
+
+// importPushRef only accepts the user a sync runs as, and queryAsAdmin calls as admin.
+let adminSyncId: string;
+let editorSyncId: string;
+
+beforeAll(async () => {
+  adminSyncId = await createTestSync('import-push-ref-admin-sync', ADMIN_USER.id);
+  editorSyncId = await createTestSync('import-push-ref-editor-sync', USER_EDITOR.id);
+});
+
+afterAll(async () => {
+  await deleteElementById(testContext, ADMIN_USER, adminSyncId, ENTITY_TYPE_SYNC);
+  await deleteElementById(testContext, ADMIN_USER, editorSyncId, ENTITY_TYPE_SYNC);
+});
+
 describe('f10 - importPushRef end-to-end', () => {
   let reportId: string;
 
@@ -66,7 +98,7 @@ describe('f10 - importPushRef end-to-end', () => {
     reportId = reportResult.data?.reportAdd.id;
 
     // 01. Stage a file exactly the way syncManager.js does in ref mode (real S3 write, no mocks)
-    const syncId = 'sync--f10-verify';
+    const syncId = adminSyncId;
     const storageKey = `sync/inflight/${syncId}/f10-verify-file/content`;
     const content = Buffer.from('hello from the f10 end-to-end check');
     await rawUpload(storageKey, content);
@@ -131,10 +163,6 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
     reportIds.push(reportId);
 
     // Stage a file for sync A, then try to consume it while claiming to be sync B.
-    // This is the real attack this segment's fix was built for: sync_id/storage_key are only
-    // cross-checked for internal consistency, never against caller identity (every worker shares
-    // one platform-wide token) -- so the only thing that can still stop this is that a genuine
-    // storage_key for sync A is never derivable/guessable by whoever only knows sync B's id.
     const realSyncId = 'sync--f14-real-owner';
     const attackerClaimedSyncId = 'sync--f14-attacker';
     const storageKey = `sync/inflight/${realSyncId}/f14-real-file/content`;
@@ -163,6 +191,31 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
     expect(Buffer.concat(chunks).toString()).toEqual(content.toString());
   });
 
+  it('rejects a caller who is not the user the sync runs as, without consuming the staged file', async () => {
+    const reportResult = await queryAsAdmin({
+      query: REPORT_ADD_QUERY,
+      variables: { input: { name: 'f14-foreign-sync-report', published: '2020-02-26T00:51:35.000Z' } },
+    });
+    expect(reportResult.errors).toBeUndefined();
+    const reportId = reportResult.data?.reportAdd.id;
+    reportIds.push(reportId);
+
+    const storageKey = `sync/inflight/${editorSyncId}/f14-foreign-sync-file/content`;
+    await rawUpload(storageKey, Buffer.from('staged for a sync that runs as the editor'));
+
+    const pushResult = await queryAsAdmin({
+      query: IMPORT_PUSH_REF_QUERY,
+      variables: {
+        id: reportId,
+        fileRef: { sync_id: editorSyncId, storage_key: storageKey, name: 'foreign.txt', mime_type: 'text/plain' },
+      },
+    });
+    expect(pushResult.errors?.[0]?.message).toEqual('Cannot copy referenced sync file');
+    const stillStaged = await downloadFile(storageKey);
+    expect(stillStaged).not.toBeNull();
+    stillStaged?.destroy();
+  });
+
   it('fails cleanly on a redelivered message replaying an already-consumed storage_key (no duplicate file, no crash)', async () => {
     const reportResult = await queryAsAdmin({
       query: REPORT_ADD_QUERY,
@@ -172,7 +225,7 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
     const reportId = reportResult.data?.reportAdd.id;
     reportIds.push(reportId);
 
-    const syncId = 'sync--f14-redelivery';
+    const syncId = adminSyncId;
     const storageKey = `sync/inflight/${syncId}/f14-redelivery-file/content`;
     await rawUpload(storageKey, Buffer.from('delivered once, replayed once'));
     const fileRef = { sync_id: syncId, storage_key: storageKey, name: 'redelivered.txt', mime_type: 'text/plain' };
@@ -210,7 +263,7 @@ describe('f14 - importPushRef failure injection and adversarial scenarios', () =
     const largeContent = Buffer.alloc(8 * 1024 * 1024);
     for (let i = 0; i < largeContent.length; i += 4) largeContent.writeUInt32LE((i * 2654435761) >>> 0, i);
 
-    const syncId = 'sync--f14-large-file';
+    const syncId = adminSyncId;
     const storageKey = `sync/inflight/${syncId}/f14-large-file/content`;
     await rawUpload(storageKey, largeContent);
 

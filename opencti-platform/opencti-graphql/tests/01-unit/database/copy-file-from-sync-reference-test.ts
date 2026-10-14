@@ -1,6 +1,12 @@
+import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { OPENCTI_SYSTEM_UUID } from '../../../src/schema/general';
+import { ENTITY_TYPE_SYNC } from '../../../src/schema/internalObject';
 
+const STAGED_CONTENT = 'staged sync file content';
 const mockRawCopyFile = vi.fn();
+const mockDownloadFile = vi.fn(async (..._args: unknown[]) => Readable.from([Buffer.from(STAGED_CONTENT)]) as Readable | null);
 const mockGetFileSize = vi.fn();
 const mockDeleteFileFromStorage = vi.fn();
 const mockIndexFileToDocument = vi.fn();
@@ -9,10 +15,12 @@ const mockUnlock = vi.fn();
 const mockLockResources = vi.fn(async (..._args: unknown[]) => ({ unlock: mockUnlock }));
 const mockConnectorsForImport = vi.fn(async (..._args: unknown[]) => [] as unknown[]);
 const TLP_AMBER = { internal_id: 'marking-internal-amber', standard_id: 'marking-definition--amber', entity_type: 'Marking-Definition' };
+const mockInternalLoadById = vi.fn(async (..._args: unknown[]) => ({ internal_id: 'sync-id-1', user_id: 'user-1' }) as unknown);
 const mockGetEntitiesMapFromCache = vi.fn(async (..._args: unknown[]) => new Map([[TLP_AMBER.internal_id, TLP_AMBER], [TLP_AMBER.standard_id, TLP_AMBER]]));
 
 vi.mock('../../../src/database/raw-file-storage', () => ({
   rawCopyFile: (...args: unknown[]) => mockRawCopyFile(...args),
+  downloadFile: (...args: unknown[]) => mockDownloadFile(...args),
   getFileSize: (...args: unknown[]) => mockGetFileSize(...args),
   deleteFileFromStorage: (...args: unknown[]) => mockDeleteFileFromStorage(...args),
   rawListObjects: vi.fn(),
@@ -27,6 +35,10 @@ vi.mock('../../../src/modules/internal/document/document-domain', () => ({
 vi.mock('../../../src/database/cache', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/cache')>()),
   getEntitiesMapFromCache: (...args: unknown[]) => mockGetEntitiesMapFromCache(...args),
+}));
+vi.mock('../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/middleware-loader')>()),
+  internalLoadById: (...args: unknown[]) => mockInternalLoadById(...args),
 }));
 vi.mock('../../../src/lock/master-lock', () => ({
   lockResources: (...args: unknown[]) => mockLockResources(...args),
@@ -60,6 +72,52 @@ describe('copyFileFromSyncReference', () => {
     mockLockResources.mockImplementation(async () => ({ unlock: mockUnlock }));
     mockConnectorsForImport.mockReset();
     mockConnectorsForImport.mockImplementation(async () => []);
+    mockInternalLoadById.mockReset();
+    mockInternalLoadById.mockImplementation(async () => ({ internal_id: SYNC_ID, user_id: 'user-1' }));
+  });
+
+  it('rejects a caller who is not the user the sync runs as, without touching S3', async () => {
+    mockInternalLoadById.mockResolvedValue({ internal_id: SYNC_ID, user_id: 'sync-user' });
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+    });
+
+    expect(result).toBeNull();
+    expect(mockInternalLoadById).toHaveBeenCalledWith(context, expect.objectContaining({ id: OPENCTI_SYSTEM_UUID }), SYNC_ID, { type: ENTITY_TYPE_SYNC });
+    expect(mockLockResources).not.toHaveBeenCalled();
+    expect(mockRawCopyFile).not.toHaveBeenCalled();
+  });
+
+  it('rejects a sync_id that does not match any synchronizer, without touching S3', async () => {
+    mockInternalLoadById.mockResolvedValue(undefined);
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+    });
+
+    expect(result).toBeNull();
+    expect(mockRawCopyFile).not.toHaveBeenCalled();
+  });
+
+  it('accepts the system user for a sync without a user, as the sync manager sends its bundles as system', async () => {
+    mockGetFileSize.mockResolvedValue(10);
+    mockInternalLoadById.mockResolvedValue({ internal_id: SYNC_ID });
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, { id: OPENCTI_SYSTEM_UUID, allowed_marking: [] } as never, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      entityId: 'entity-1',
+    });
+
+    expect(result).not.toBeNull();
   });
 
   it('rejects a storage_key that does not belong to the calling sync, without touching S3', async () => {
@@ -101,6 +159,12 @@ describe('copyFileFromSyncReference', () => {
         mimetype: 'application/pdf',
         entity_id: 'entity-1',
         file_markings: [TLP_AMBER.internal_id],
+        filename: 'report.pdf',
+        encoding: '7bit',
+        creator_id: 'user-1',
+        sha256: crypto.createHash('sha256').update(STAGED_CONTENT).digest('hex'),
+        messages: [],
+        errors: [],
       }),
     }));
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
@@ -172,6 +236,26 @@ describe('copyFileFromSyncReference', () => {
     expect(mockIndexFileToDocument).toHaveBeenCalled();
   });
 
+  it('overwrites an older existing file under its own id and keeps its creator, same as a direct upload', async () => {
+    mockGetFileSize.mockResolvedValue(1234);
+    mockFindById.mockResolvedValue({
+      internal_id: 'import/Report/entity-1/Report.PDF',
+      metaData: { version: '2023-01-01T00:00:00.000Z', mimetype: 'application/pdf', creator_id: 'original-creator' },
+    });
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    const result = await copyFileFromSyncReference(context, user, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'Report.PDF',
+      version: '2024-01-01T00:00:00.000Z',
+      entityId: 'entity-1',
+    });
+
+    expect(mockRawCopyFile).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content', 'import/Report/entity-1/Report.PDF');
+    expect(result?.upload.id).toEqual('import/Report/entity-1/Report.PDF');
+    expect(result?.upload.metaData.creator_id).toEqual('original-creator');
+  });
+
   it('does not delete the staged source when the copy itself fails', async () => {
     mockRawCopyFile.mockRejectedValue(new Error('S3 unavailable'));
     const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
@@ -203,10 +287,7 @@ describe('copyFileFromSyncReference', () => {
   });
 
   it('cannot be replayed: a storage_key already consumed once is gone from S3, so a second attempt fails', async () => {
-    // Security model: since any caller with edit rights on some entity can call this (the
-    // platform can't tell "the real sync worker" from any other caller by identity -- see
-    // copyFileFromSyncReference's doc comment), the only thing that actually gates re-use is
-    // that a consumed storage_key stops existing in S3. Simulate that: first call succeeds and
+    // A consumed storage_key stops existing in S3. Simulate that: first call succeeds and
     // deletes the source (already covered above); a second call against the SAME key must find
     // nothing there and fail closed, exactly as if an attacker replayed an intercepted key.
     mockGetFileSize.mockResolvedValue(10);

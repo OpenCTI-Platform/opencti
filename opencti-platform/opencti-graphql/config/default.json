@@ -334,6 +334,12 @@
     "file_reference_mode_enabled": false,
     "file_reference_mode_size_threshold_kb": 5000
   },
+  "sync_inflight_cleanup_manager": {
+    "enabled": true,
+    "lock_key": "sync_inflight_cleanup_manager_lock",
+    "interval": 3600000,
+    "ttl": 604800000
+  },
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",

@@ -1,12 +1,12 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import conf, { booleanConf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_SYNC_MANAGER, logApp } from '../config/conf';
 import { deleteFileFromStorage, rawListObjects } from '../database/raw-file-storage';
 import { SYNC_INFLIGHT_STORAGE_PATH } from '../modules/internal/document/document-types';
 
 const SYNC_INFLIGHT_CLEANUP_MANAGER_ENABLED = booleanConf('sync_inflight_cleanup_manager:enabled', true);
 const SYNC_INFLIGHT_CLEANUP_MANAGER_KEY = conf.get('sync_inflight_cleanup_manager:lock_key') || 'sync_inflight_cleanup_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_inflight_cleanup_manager:interval') || 3600000; // 1 hour
-const INFLIGHT_TTL_MS = conf.get('sync_inflight_cleanup_manager:ttl') || 86400000; // 24 hours
+const INFLIGHT_TTL_MS = conf.get('sync_inflight_cleanup_manager:ttl') ?? 604800000; // 1 week
 
 export const syncInflightCleanupHandler = async () => {
   const prefix = `${SYNC_INFLIGHT_STORAGE_PATH}/`;
@@ -45,7 +45,7 @@ const SYNC_INFLIGHT_CLEANUP_MANAGER_DEFINITION: ManagerDefinition = {
     interval: SCHEDULE_TIME,
     lockKey: SYNC_INFLIGHT_CLEANUP_MANAGER_KEY,
   },
-  enabledByConfig: SYNC_INFLIGHT_CLEANUP_MANAGER_ENABLED && ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE,
+  enabledByConfig: SYNC_INFLIGHT_CLEANUP_MANAGER_ENABLED && ENABLED_SYNC_MANAGER,
   enabledToStart(): boolean {
     return this.enabledByConfig;
   },

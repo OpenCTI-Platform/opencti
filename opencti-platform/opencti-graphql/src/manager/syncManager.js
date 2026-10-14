@@ -37,7 +37,7 @@ const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
-const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') || 5_000;
+const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') ?? 5_000;
 const FILE_REFERENCE_MODE_SIZE_THRESHOLD = FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB * 1024;
 
 const waitLoopTimer = new InterruptibleTimer();

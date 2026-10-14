@@ -1,8 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PassThrough, Readable } from 'node:stream';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import nconf from 'nconf';
 import createApp, { decodeStoragePath, sanitizeReferer, shouldIncludeHealthDetails } from '../../../src/http/httpPlatform';
 import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
+import * as httpAuthenticatedContext from '../../../src/http/httpAuthenticatedContext';
+import * as fileStorage from '../../../src/database/file-storage';
+import type { LoadedFile } from '../../../src/database/file-storage';
+import * as rawFileStorage from '../../../src/database/raw-file-storage';
+import * as userActionListener from '../../../src/listener/UserActionListener';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual: object = await importOriginal();
@@ -286,5 +293,77 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({ status: 'success' });
     expect(usageMetricsSpy).not.toHaveBeenCalled();
+  });
+});
+
+interface StorageGetParams {
+  file: string[];
+}
+
+interface StorageGetRequest {
+  params: StorageGetParams;
+}
+
+interface StorageGetResponse extends PassThrough {
+  attachment: Mock;
+  cookie: Mock;
+  set: Mock;
+  status: Mock;
+  send: Mock;
+}
+
+interface StorageGetHandler {
+  (req: StorageGetRequest, res: StorageGetResponse): Promise<void>;
+}
+
+describe('httpPlatform: /storage/get behavior', () => {
+  const content = Buffer.from('hello world');
+  const storedFile: LoadedFile = {
+    id: 'import/Report/report-id/report.pdf',
+    name: 'report.pdf',
+    size: content.length,
+    information: '',
+    lastModified: new Date(),
+    lastModifiedSinceMin: 0,
+    metaData: {},
+    uploadStatus: 'complete',
+  };
+
+  const setupStorageGetHandler = async (): Promise<StorageGetHandler | undefined> => {
+    const routes = new Map<string, StorageGetHandler>();
+    const app = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn((path: unknown, handler: unknown) => {
+        if (typeof path === 'string' && typeof handler === 'function') {
+          routes.set(path, handler as StorageGetHandler);
+        }
+      }),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      all: vi.fn(),
+    };
+    await createApp(app as never, {} as never);
+    return Array.from(routes.entries()).find(([path]) => path.endsWith('/storage/get/*file'))?.[1];
+  };
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(httpAuthenticatedContext, 'createAuthenticatedContext').mockResolvedValue({ ...testContext, user: ADMIN_USER });
+    vi.spyOn(fileStorage, 'loadFile').mockResolvedValue(storedFile);
+    vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue([]);
+    vi.spyOn(rawFileStorage, 'downloadFileRange').mockResolvedValue({ stream: Readable.from([content]), contentLength: content.length, totalSize: content.length });
+  });
+
+  it('should send the stored object size as Content-Length, so a sync client can tell a small file from a large one', async () => {
+    const storageGetHandler = await setupStorageGetHandler();
+    const res: StorageGetResponse = Object.assign(new PassThrough(), { attachment: vi.fn(), cookie: vi.fn(), set: vi.fn(), status: vi.fn(), send: vi.fn() });
+
+    await storageGetHandler?.({ params: { file: storedFile.id.split('/') } }, res);
+
+    expect(res.set).toHaveBeenCalledWith('Content-Length', String(content.length));
+    expect(res.status).not.toHaveBeenCalled();
   });
 });
