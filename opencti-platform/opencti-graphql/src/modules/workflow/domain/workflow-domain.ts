@@ -1321,21 +1321,44 @@ export const getAllowedTransitions = async (
 
 const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
 
-// A closing state is the target of a transition capturing a closing reason: leaving it (e.g. reopen) clears the reason.
-const leavesClosingState = (transitions: Array<{ to: string | null; closingReason?: string }> | undefined, fromState: string, toState: string) => {
-  return fromState !== toState && (transitions ?? []).some((t) => t.to === fromState && isClosingReasonMode(t.closingReason));
+type ClosingReasonTransition = Pick<WorkflowSerializedTransition, 'from' | 'to' | 'closingReason'>;
+
+// Whether a closing reason transition can still be taken from this state, directly or further down the graph.
+const canReachClosingTransition = (transitions: ClosingReasonTransition[], state: string) => {
+  const visited = new Set<string>();
+  const queue = [state];
+  while (queue.length > 0) {
+    const current = queue.shift() as string;
+    if (!visited.has(current)) {
+      visited.add(current);
+      for (const t of transitions) {
+        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+        if (fromStates.includes(current)) {
+          if (isClosingReasonMode(t.closingReason)) return true;
+          if (t.to) queue.push(t.to);
+        }
+      }
+    }
+  }
+  return false;
+};
+
+// A held closing reason is cleared when the entity moves to a state from which it can be closed again (e.g. reopen,
+// or a bypass out of a dead end), and kept when it moves to a state that cannot be closed again (e.g. archive).
+const clearsClosingReason = (transitions: ClosingReasonTransition[] | undefined, entity: { x_opencti_closing_reason?: string }, fromState: string, toState: string) => {
+  return fromState !== toState && !!entity.x_opencti_closing_reason && canReachClosingTransition(transitions ?? [], toState);
 };
 
 const resolveTransitionClosingReason = (
   user: AuthUser,
   mode: string | undefined,
   closingReason: string | undefined,
-  clearsClosingReason: boolean,
+  clears: boolean,
 ): { closingReason: string | null | undefined } | { error: string } => {
   const value = closingReason?.trim() || null;
   if (!isClosingReasonMode(mode)) {
     if (value) return { error: 'Closing reason is not enabled for this transition' };
-    return { closingReason: clearsClosingReason ? null : undefined };
+    return { closingReason: clears ? null : undefined };
   }
   if (mode === 'required' && !value && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
     return { error: 'A closing reason is required for this transition' };
@@ -1415,8 +1438,8 @@ export const triggerWorkflowEvent = async (
       const fromStates = Array.isArray(t.from) ? t.from : [t.from];
       return fromStates.includes(currentStateId) && t.event === eventName;
     });
-    const clearsClosingReason = !!targetTransition?.to && leavesClosingState(definitionData.transitions, currentStateId, targetTransition.to);
-    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clearsClosingReason);
+    const clears = !!targetTransition?.to && clearsClosingReason(definitionData.transitions, entity, currentStateId, targetTransition.to);
+    const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clears);
     if ('error' in resolvedClosingReason) {
       return { success: false, reason: resolvedClosingReason.error };
     }
@@ -1682,7 +1705,7 @@ const executeWorkflowBypass = async (
     triggeredAt: new Date().toISOString(),
     runtimeParams,
     ...(normalizedComment ? { comment: normalizedComment } : {}),
-    ...(leavesClosingState(definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
+    ...(clearsClosingReason(definitionData.transitions, entity, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
     asyncActions: [],
     syncActions: applyTransitionActions ? [
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
