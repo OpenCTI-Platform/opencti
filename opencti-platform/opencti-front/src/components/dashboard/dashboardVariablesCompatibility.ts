@@ -37,7 +37,8 @@ export const isVariableCompatibleWithFilter = (
       return filterDefinition.type === 'vocabulary' && domain.includes(variable.vocabularyCategory);
     case 'entity':
       return filterDefinition.type === 'id'
-        && variable.entityTypes.some((type) => domain.some((d) => helpers.isSubTypeOf(type, d)));
+        // An id filter whose domain is empty accepts any entity (e.g. `objects`, "Contains"): no type to intersect with.
+        && (domain.length === 0 || variable.entityTypes.some((type) => domain.some((d) => helpers.isSubTypeOf(type, d))));
     default: {
       const entityType = ID_VARIABLE_ENTITY_TYPE[variable.type];
       return filterDefinition.type === 'id' && !!entityType && domain.includes(entityType);
