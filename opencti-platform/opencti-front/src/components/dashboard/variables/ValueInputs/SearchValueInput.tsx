@@ -1,5 +1,5 @@
 import { SyntheticEvent, useState } from 'react';
-import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import { Combobox, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../../i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
@@ -13,7 +13,7 @@ import type { ValueInputProps } from '../DashboardVariableValueInput';
  * Server side search of the value of an entity pool variable (entity, label, marking, user, group, status,
  * kill chain phase) or of an entity type, through the same search as the filters.
  */
-const SearchValueInput = ({ variable, value, onChange, disabled, label }: ValueInputProps) => {
+const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
   const searchKey = VARIABLE_TYPE_SEARCH[variable.type] ?? 'id';
   const searchScope = variable.type === 'entity' ? { [searchKey]: variable.entityTypes ?? [] } : {};
@@ -35,6 +35,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label }: ValueI
   return (
     <Combobox<FilterOptionValue>
       disabled={disabled}
+      clearable={commitOn === 'change'}
       options={options}
       value={selected}
       getOptionLabel={(option) => option.label ?? ''}
@@ -44,12 +45,15 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label }: ValueI
       onValueChange={(next) => {
         const nextValue = (next as FilterOptionValue | null)?.value;
         if (nextValue) onChange(nextValue);
+        // Clearing is for a form only: in a live filter (the chips) an empty value would mean "unset".
+        else if (commitOn === 'change') onChange('');
       }}
     >
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField>
         <ComboboxInput onFocus={search} />
         <ComboboxControls>
+          {commitOn === 'change' && <ComboboxClear />}
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>

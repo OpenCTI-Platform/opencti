@@ -12,8 +12,18 @@ interface SelectOption {
   label: string;
 }
 
-const OptionsSelect = ({ label, value, options, onChange, disabled }: Omit<ValueInputProps, 'variable'> & { options: SelectOption[] }) => (
-  <Select value={value} onValueChange={(next) => next && onChange(next)} disabled={disabled}>
+// A form (`commitOn="change"`) can clear its value, which it reads as no value. A live filter (`commitOn="blur"`, the chips)
+// never does: an empty value there is "unset", which the chip does not offer.
+const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn }: Omit<ValueInputProps, 'variable'> & { options: SelectOption[] }) => (
+  <Select
+    value={value}
+    onValueChange={(next) => {
+      if (next) onChange(next);
+      else if (commitOn === 'change') onChange('');
+    }}
+    disabled={disabled}
+    clearable={commitOn === 'change'}
+  >
     <SelectLabel>{label}</SelectLabel>
     <SelectTrigger className="w-full">
       <SelectValue />

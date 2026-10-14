@@ -15,7 +15,8 @@ export type DashboardVariableShape = Pick<DashboardVariable, 'type' | 'restricti
 export interface DashboardVariableValueInputProps {
   variable: DashboardVariableShape;
   value: string;
-  // Never called with an empty value nor with a value referencing a variable.
+  // Never called with a value referencing a variable. Called with an empty value only when the user clears the field
+  // and `commitOn` is `change`: a form then forgets its value. With `blur` an empty value is never emitted.
   onChange: (value: string) => void;
   disabled?: boolean;
   // Visible label of the field, `Value` by default.

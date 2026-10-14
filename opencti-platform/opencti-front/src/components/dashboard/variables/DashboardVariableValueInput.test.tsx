@@ -41,17 +41,51 @@ describe('DashboardVariableValueInput', () => {
       await user.click(screen.getByRole('option', { name: 'True' }));
       expect(onChange).toHaveBeenCalledWith('true');
     });
+
+    it('emits an empty value when cleared, so a form can drop its default', async () => {
+      const { user, onChange } = renderInput({ type: 'boolean', restriction: none }, 'true');
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('');
+    });
+
+    it('offers no clear control, and emits nothing empty, when committed on blur', async () => {
+      const { onChange } = renderInput({ type: 'boolean', restriction: none }, 'true', 'blur');
+      expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+      expect(onChange).not.toHaveBeenCalled();
+    });
   });
 
   describe('numeric and text', () => {
-    it('emits a number typed in a number field and never an empty value', async () => {
+    it('emits a number typed in a number field, and an empty value once it is emptied', async () => {
       const { user, onChange } = renderInput({ type: 'numeric', restriction: none }, '7');
       const input = screen.getByRole('spinbutton');
       await user.clear(input);
+      expect(onChange).toHaveBeenLastCalledWith('');
       await user.type(input, '42');
       expect(input).toHaveValue(42);
       expect(onChange).toHaveBeenLastCalledWith('42');
-      expect(onChange).not.toHaveBeenCalledWith('');
+    });
+
+    it('emits an empty value when the text is emptied, or only blank', async () => {
+      const { user, onChange } = renderInput({ type: 'text', restriction: none }, 'Energy');
+      const input = screen.getByRole('textbox');
+      await user.clear(input);
+      expect(onChange).toHaveBeenLastCalledWith('');
+      await user.type(input, '   ');
+      expect(onChange).toHaveBeenLastCalledWith('');
+      expect(input).toHaveValue('   ');
+    });
+
+    it('keeps refusing a value referencing a variable after emptying the field', async () => {
+      const { user, onChange } = renderInput({ type: 'text', restriction: none }, 'Energy');
+      const input = screen.getByRole('textbox');
+      await user.clear(input);
+      onChange.mockClear();
+      await user.click(input);
+      await user.paste('$var:5f1c3b4e-8f8a-4c4b-9a59-2a1f2c3d4e5f');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByText('A value cannot reference another variable')).toBeInTheDocument();
     });
 
     it('emits the typed text', async () => {
@@ -104,6 +138,13 @@ describe('DashboardVariableValueInput', () => {
         expect(onChange).not.toHaveBeenCalled();
       });
 
+      it('emits nothing for an emptied number field', async () => {
+        const { user, onChange } = renderInput({ type: 'numeric', restriction: none }, '7', 'blur');
+        await user.clear(screen.getByRole('spinbutton'));
+        await user.tab();
+        expect(onChange).not.toHaveBeenCalled();
+      });
+
       it('emits nothing for an emptied field, nor for a value referencing a variable', async () => {
         const { user, onChange } = renderInput({ type: 'text', restriction: none }, 'Energy', 'blur');
         const input = screen.getByRole('textbox');
@@ -145,6 +186,16 @@ describe('DashboardVariableValueInput', () => {
       expect(mockUseSearchEntities).not.toHaveBeenCalled();
     });
 
+    it('emits an empty value when cleared, and nothing empty when committed on blur', async () => {
+      const variable: DashboardVariableShape = { type: 'text', restriction: { mode: 'selection', values: ['alpha', 'beta'] } };
+      const changing = renderInput(variable, 'alpha');
+      await changing.user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(changing.onChange).toHaveBeenCalledWith('');
+      changing.unmount();
+      renderInput(variable, 'alpha', 'blur');
+      expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+    });
+
     it('labels the selected entities and never shows a raw id', async () => {
       const variable: DashboardVariableShape = { type: 'label', restriction: { mode: 'selection', values: ['label-1', 'label-2'] } };
       const { user, relayEnv } = renderInput(variable);
@@ -172,6 +223,32 @@ describe('DashboardVariableValueInput', () => {
       expect(optionNames()).toEqual(['malicious']);
       await user.click(screen.getByRole('option', { name: 'malicious' }));
       expect(onChange).toHaveBeenCalledWith('label-1');
+    });
+
+    it('emits an empty value when the selected entity is cleared', async () => {
+      mockEntities = { objectLabel: [{ label: 'malicious', value: 'label-1', type: 'Label' }] };
+      const { user, onChange, relayEnv } = renderInput({ type: 'label', restriction: none }, 'label-1');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: { filtersRepresentatives: [{ representativeId: 'label-1', value: 'malicious', entity_type: 'Label', color: null }] },
+        });
+      });
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('');
+    });
+
+    it('emits nothing empty, and offers no clear control, when committed on blur', async () => {
+      const { user, onChange, relayEnv } = renderInput({ type: 'label', restriction: none }, 'label-1', 'blur');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: { filtersRepresentatives: [{ representativeId: 'label-1', value: 'malicious', entity_type: 'Label', color: null }] },
+        });
+      });
+      expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+      await user.clear(screen.getByRole('combobox'));
+      await user.tab();
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('scopes an entity search to the variable entity types', () => {
@@ -265,6 +342,26 @@ describe('DashboardVariableValueInput', () => {
       expect(onChange).not.toHaveBeenCalled();
       await user.keyboard('{Enter}');
       expect(onChange).toHaveBeenCalledWith(new Date(2024, 1, 20, 12).toISOString());
+    });
+
+    const clearDate = async (user: ReturnType<typeof testRender>['user']) => {
+      const input = screen.getByRole('textbox');
+      await user.click(input);
+      await user.keyboard('{Control>}a{/Control}{Backspace}{Enter}');
+      await user.tab();
+    };
+
+    it('emits an empty value when the date is cleared', async () => {
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, new Date(2024, 0, 15, 12).toISOString());
+      await clearDate(user);
+      expect(onChange).toHaveBeenCalledWith('');
+      expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/\d{4}-/));
+    });
+
+    it('emits nothing for a cleared date when committed on blur', async () => {
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, new Date(2024, 0, 15, 12).toISOString(), 'blur');
+      await clearDate(user);
+      expect(onChange).not.toHaveBeenCalled();
     });
   });
 });
