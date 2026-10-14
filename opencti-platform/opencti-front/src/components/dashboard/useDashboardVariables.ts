@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import useAuth from '../../utils/hooks/useAuth';
 import useHelper from '../../utils/hooks/useHelper';
 import type { DashboardVariable } from './dashboard-types';
@@ -68,5 +68,18 @@ export const useDashboardVariables = (
     commit({});
   }, [commit, ignoreLocalValues, enabled]);
 
-  return { values, defaults, setValue, reset };
+  // `resetValues` is called once an asynchronous action is done: it must read the values as they are then, not as
+  // they were when the action started, otherwise it would put back what the user changed in the meantime.
+  const latest = useRef({ stored, commit });
+  useEffect(() => {
+    latest.current = { stored, commit };
+  });
+  // Drops the stored values that still are the given ones, and keeps any other (a value changed since).
+  const resetValues = useCallback((submitted: ReadonlyMap<string, string>) => {
+    if (ignoreLocalValues || !enabled) return;
+    const { stored: current, commit: commitCurrent } = latest.current;
+    commitCurrent(Object.fromEntries(Object.entries(current).filter(([id, value]) => submitted.get(id) !== value)));
+  }, [ignoreLocalValues, enabled]);
+
+  return { values, defaults, setValue, reset, resetValues };
 };

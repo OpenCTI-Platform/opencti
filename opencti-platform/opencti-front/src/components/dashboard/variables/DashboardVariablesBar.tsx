@@ -82,6 +82,7 @@ const DashboardVariablesBar = ({
           variable={variable}
           value={values.get(variable.id)}
           valueLabels={valueLabels.get(variable.id)}
+          disabled={isSubmitting}
           usedInWidgetIds={usedInWidgetIdsByVariable.get(variable.id) ?? []}
           onChange={(value) => onSetValue(variable.id, value)}
           onEdit={onEdit}

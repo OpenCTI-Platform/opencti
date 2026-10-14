@@ -68,6 +68,23 @@ describe('DashboardVariableChip', () => {
     expect(onChange).toHaveBeenLastCalledWith('Finance');
   });
 
+  it('is inert when disabled: it cannot be clicked open and its value cannot change', async () => {
+    const { user, onChange } = renderChip({ disabled: true });
+    const chip = screen.getByRole('button', { name: 'Sector : Energy' });
+    expect(chip).toBeDisabled();
+    await user.click(chip);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('closes its value input when it becomes disabled', async () => {
+    const { user, rerender } = renderChip();
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    rerender(<DashboardVariableChip variable={sector} value="Energy" usedInWidgetIds={['w-1']} onChange={() => {}} disabled />);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
   it('mutes the chip and explains why on hover when no widget uses the variable', async () => {
     const { user } = renderChip({ usedInWidgetIds: [] });
     const chip = screen.getByTestId('dashboard-variable-chip-Sector');

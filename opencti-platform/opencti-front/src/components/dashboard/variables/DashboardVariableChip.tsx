@@ -21,6 +21,8 @@ export interface DashboardVariableChipProps {
   // The labels of the current value, when the bar already resolved those of all its chips at once.
   // The chip resolves its own value when it is not provided.
   valueLabels?: VariableValueLabels;
+  // The value cannot be edited for now (the values are being saved): the chip is inert and shows it.
+  disabled?: boolean;
   onChange: (value: string) => void;
   // The menu entries only exist when their callback is provided.
   onEdit?: (variable: DashboardVariable) => void;
@@ -34,7 +36,7 @@ const inputKey = (variable: DashboardVariable) => [
   'killChainName' in variable ? variable.killChainName : '',
 ].join('|');
 
-const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
+const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, disabled = false, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,6 +58,7 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
     <Chip
       label={`${variable.name} : ${valueLabel}`}
       severity={isRestricted ? 'critical' : 'neutral'}
+      disabled={disabled}
       onClick={(event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget)}
     />
   );
@@ -103,7 +106,7 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
         </Menu>
       )}
       <Popover
-        open={anchorEl !== null}
+        open={anchorEl !== null && !disabled}
         anchorEl={anchorEl}
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}

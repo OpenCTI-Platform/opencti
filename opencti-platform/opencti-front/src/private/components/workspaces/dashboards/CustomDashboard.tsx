@@ -199,9 +199,10 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   );
   const onSetAsDefaults = async () => {
     try {
-      await setAsDefaults(variables, variableControls.values);
-      // The server default now is the current value: the local entry is redundant.
-      variableControls.reset();
+      const submitted = variableControls.values;
+      await setAsDefaults(variables, submitted);
+      // The server default now is the submitted value: the local entry is redundant, unless it changed since.
+      variableControls.resetValues(submitted);
     } catch {
       // The mutation hook already notified the user: this only avoids an unhandled rejection.
       // The local values are kept so nothing the user chose is lost.

@@ -167,6 +167,54 @@ describe('useDashboardVariables', () => {
     expect(new URLSearchParams(window.location.search).has('variables')).toBe(false);
   });
 
+  describe('resetValues', () => {
+    const other = { ...country, defaultValue: 'FR' };
+    const STORAGE_KEY = 'dashboard-variables-user-1-ws-1';
+
+    it('drops only the given values from the storage and the URL, and keeps the others', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, other]));
+      act(() => result.current.setValue(sector.id, 'Finance'));
+      act(() => result.current.setValue(other.id, 'DE'));
+      act(() => result.current.resetValues(new Map([[sector.id, 'Finance']])));
+      expect(result.current.values.get(sector.id)).toBe('Energy');
+      expect(result.current.values.get(other.id)).toBe('DE');
+      expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) as string)).toEqual({ [other.id]: 'DE' });
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${other.id}:DE`);
+    });
+
+    it('removes the storage key and the URL param when nothing else is left', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+      act(() => result.current.setValue(sector.id, 'Finance'));
+      act(() => result.current.resetValues(new Map([[sector.id, 'Finance']])));
+      expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(new URLSearchParams(window.location.search).has('variables')).toBe(false);
+    });
+
+    it('keeps a value that is not the given one any more, even when called from a stale closure', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, other]));
+      act(() => result.current.setValue(sector.id, 'Finance'));
+      act(() => result.current.setValue(other.id, 'DE'));
+      // What an asynchronous action captured when it started.
+      const staleResetValues = result.current.resetValues;
+      const submitted = result.current.values;
+      act(() => result.current.setValue(sector.id, 'Retail'));
+      act(() => staleResetValues(submitted));
+      expect(result.current.values.get(sector.id)).toBe('Retail');
+      expect(result.current.values.get(other.id)).toBe('FR');
+      expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) as string)).toEqual({ [sector.id]: 'Retail' });
+    });
+
+    it('does nothing with ignoreLocalValues nor when the feature flag is off', () => {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ [sector.id]: 'Finance' }));
+      const ignoring = renderHook(() => useDashboardVariables('ws-1', [sector], { ignoreLocalValues: true }));
+      act(() => ignoring.result.current.resetValues(new Map([[sector.id, 'Finance']])));
+      mocks.flags = [];
+      const disabled = renderHook(() => useDashboardVariables('ws-1', [sector]));
+      act(() => disabled.result.current.resetValues(new Map([[sector.id, 'Finance']])));
+      expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) as string)).toEqual({ [sector.id]: 'Finance' });
+    });
+  });
+
   it('ignores a malformed variables param', () => {
     window.history.replaceState(null, '', '/?variables=%%%');
     const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));

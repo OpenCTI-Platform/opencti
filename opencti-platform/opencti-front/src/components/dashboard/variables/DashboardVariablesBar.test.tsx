@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { DashboardVariable } from '../dashboard-types';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
@@ -105,6 +105,24 @@ describe('DashboardVariablesBar', () => {
     expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
     finish();
     expect(await screen.findByRole('button', { name: 'Reset' })).toBeEnabled();
+  });
+
+  it('makes the chips inert while the values are being saved, so no value changes meanwhile', async () => {
+    let finish: () => void = () => {};
+    const onSetAsDefaults = vi.fn(() => new Promise<void>((resolve) => {
+      finish = resolve;
+    }));
+    const { user } = renderBar({ canManage: true, values: new Map([['var-1', 'Energy'], ['var-2', 'France']]), onSetAsDefaults });
+    expect(screen.getByRole('button', { name: 'Country : France' })).toBeEnabled();
+    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    const chip = screen.getByRole('button', { name: 'Country : France' });
+    expect(chip).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeDisabled();
+    await user.click(chip);
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    finish();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Country : France' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled();
   });
 
   it('marks the action buttons for removal from an image export, not the chips', () => {

@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { toB64 } from '../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../components/dashboard/dashboardVariablesStorage';
@@ -8,6 +8,7 @@ import CustomDashboard from './CustomDashboard';
 
 const captured = vi.hoisted(() => ({
   values: undefined as ReadonlyMap<string, string> | undefined,
+  onSetValue: undefined as ((variableId: string, value: string) => void) | undefined,
   contentDefinitions: undefined as { name: string }[] | undefined,
   granted: true,
   commit: vi.fn(),
@@ -20,6 +21,17 @@ vi.mock('../../../../components/dashboard/DashboardVariableValuesContext', async
     return <>{children}</>;
   },
 }));
+
+// The real bar, which also hands out its way of changing a value: a change that does not come from a chip.
+vi.mock('../../../../components/dashboard/variables/DashboardVariablesBar', async (importOriginal) => {
+  const Original = (await importOriginal<typeof import('../../../../components/dashboard/variables/DashboardVariablesBar')>()).default;
+  return {
+    default: (props: React.ComponentProps<typeof Original>) => {
+      captured.onSetValue = props.onSetValue;
+      return <Original {...props} />;
+    },
+  };
+});
 
 vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
@@ -325,6 +337,37 @@ describe('CustomDashboard variables bar', () => {
       input: { id: SECTOR_ID, defaultValue: 'Finance' },
     });
     await waitFor(() => expect(window.localStorage.getItem(dashboardVariablesStorageKey('user-1', 'ws-1'))).toBeNull());
+  });
+
+  it('makes the chips inert while the defaults are being saved', async () => {
+    storeFinanceEverywhere();
+    let completeMutation: () => void = () => {};
+    captured.commit.mockImplementation((args) => {
+      completeMutation = () => args.onCompleted?.({});
+    });
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    expect(screen.getByRole('button', { name: 'Sector : Finance' })).toBeDisabled();
+    act(() => completeMutation());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled());
+  });
+
+  it('keeps a value changed while the defaults are being saved', async () => {
+    storeFinanceEverywhere();
+    let completeMutation: () => void = () => {};
+    captured.commit.mockImplementation((args) => {
+      completeMutation = () => args.onCompleted?.({});
+    });
+    const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
+    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    // Finance is what is being saved: another value is chosen while the request is pending.
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    act(() => completeMutation());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Set as default values' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Sector : Retail' })).toBeInTheDocument();
+    expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
+    expect(window.localStorage.getItem(dashboardVariablesStorageKey('user-1', 'ws-1'))).toBe(JSON.stringify({ [SECTOR_ID]: 'Retail' }));
   });
 
   it('keeps the local values when setting the defaults fails, without an unhandled rejection', async () => {
