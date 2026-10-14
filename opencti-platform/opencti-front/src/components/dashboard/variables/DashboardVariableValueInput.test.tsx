@@ -256,6 +256,23 @@ describe('DashboardVariableValueInput', () => {
       expect(mockUseSearchEntities).toHaveBeenCalledWith(expect.objectContaining({ searchScope: { id: ['Sector'] } }));
     });
 
+    it('searches entities as soon as the field is focused', async () => {
+      const { user } = renderInput({ type: 'entity', entityTypes: ['Sector'], restriction: none });
+      await user.click(screen.getByRole('combobox'));
+      expect(mockSearchEntities).toHaveBeenCalledWith('id', expect.anything(), expect.anything(), expect.anything());
+    });
+
+    it('never searches, nor offers, unrelated entities for a variable of External-Reference only', async () => {
+      // The shared search drops External-Reference from the scope and, left empty, reads it as "any entity".
+      mockEntities = { id: [{ label: 'APT28', value: 'malware-1', type: 'Malware', parentTypes: ['Stix-Domain-Object'] }] };
+      const { user } = renderInput({ type: 'entity', entityTypes: ['External-Reference'], restriction: none });
+      await user.click(screen.getByRole('combobox'));
+      await user.type(screen.getByRole('combobox'), 'apt');
+      expect(mockSearchEntities).not.toHaveBeenCalled();
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
+      expect(screen.getByText('No available options')).toBeInTheDocument();
+    });
+
     it('falls back to the free search of its type for a filters restriction', () => {
       const filters = { mode: 'and' as const, filters: [], filterGroups: [] };
       renderInput({ type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'filters', filters } });

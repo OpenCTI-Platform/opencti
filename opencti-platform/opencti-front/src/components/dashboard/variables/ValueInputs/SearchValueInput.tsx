@@ -17,12 +17,16 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   const { t_i18n } = useFormatter();
   const searchKey = VARIABLE_TYPE_SEARCH[variable.type] ?? 'id';
   const searchScope = variable.type === 'entity' ? { [searchKey]: variable.entityTypes ?? [] } : {};
+  // The shared search drops External-Reference from the scope, which it can only search for a regardingOf filter:
+  // left with no type, it would read the scope as "any entity". Such a variable searches nothing.
+  const entityTypes = variable.type === 'entity' ? variable.entityTypes ?? [] : [];
+  const isSearchable = entityTypes.length === 0 || entityTypes.some((type) => type !== 'External-Reference');
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [entities, searchEntities] = useSearchEntities({ searchContext: VARIABLE_SEARCH_CONTEXT, searchScope, setInputValues: () => {} });
   const labels = useVariableValueLabels(variable, value ? [value] : []);
 
   const { killChainName } = variable;
-  const options = getOptionsFromEntities(entities, searchScope, searchKey)
+  const options = (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
     // A variable holds an id: neither the "No label" option nor the dynamic @me user can be a value.
     .filter((option) => option.value !== null && option.value !== ME_FILTER_VALUE)
     // Kill chain phase options are labelled `[kill chain name] phase name`.
@@ -30,7 +34,9 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
 
-  const search = (event: SyntheticEvent) => searchEntities(searchKey, cacheEntities, setCacheEntities, event);
+  const search = (event: SyntheticEvent) => {
+    if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
+  };
 
   return (
     <Combobox<FilterOptionValue>
