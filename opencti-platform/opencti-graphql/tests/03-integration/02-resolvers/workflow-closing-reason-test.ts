@@ -145,6 +145,12 @@ describe('Workflow closing reason (Case-Incident)', () => {
     expect((await readCase(caseId)).workflowInstance.currentState).toBe('open');
   });
 
+  it('should reject a closing reason that is not in the vocabulary', async () => {
+    const result = await trigger(caseId, 'close', 'not-a-closing-reason');
+    expect(result).toMatchObject({ success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' });
+    expect((await readCase(caseId)).workflowInstance.currentState).toBe('open');
+  });
+
   it('should store the closing reason on the entity when closing', async () => {
     const result = await trigger(caseId, 'close', 'false-positive');
     expect(result).toMatchObject({ success: true, newState: 'closed' });
