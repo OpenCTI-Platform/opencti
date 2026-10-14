@@ -9,7 +9,7 @@ export default class SecurityCoverageResultFormPage {
 
   constructor(private page: Page) {
     this.formLocator = this.page.getByRole('heading', { name: this.updateTitle }).locator('../..');
-    this.nameField = new TextFieldPageModel(this.page, 'Name', 'text', this.formLocator);
+    this.nameField = new TextFieldPageModel(this.page, 'Name', 'text-no-label', this.formLocator);
   }
 
   async openUpdateForm() {
