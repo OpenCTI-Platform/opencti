@@ -3,6 +3,7 @@ import * as cacheModule from '../../../../src/database/cache';
 import {
   extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
+  foldCustomFieldValuesInputs,
   getCustomFieldDefaultValueFromEntitySettings,
   mergeCustomFieldValues,
   normalizeCustomFieldValues,
@@ -920,5 +921,35 @@ describe('mergeCustomFieldValues', () => {
   it('keeps a single entry per custom field', () => {
     const merged = mergeCustomFieldValues(undefined, [[note('source 1'), tags(['a'])], [note('source 2'), tags(['b'])]]);
     expect(merged).toEqual([note('source 1'), tags(['a', 'b'])]);
+  });
+});
+
+describe('foldCustomFieldValuesInputs', () => {
+  const SCORE = { field_id: 'cf-score', field_name: 'x_opencti_cf_score', int_value: 1 };
+  const SECTORS = { field_id: 'cf-sectors', field_name: 'x_opencti_cf_sectors', select_values: ['a', 'b'] };
+  const current = [SCORE, SECTORS];
+  const input = (operation: EditOperation, value: any[]) => ({ key: 'custom_field_values', operation, value });
+
+  it('replaces the options of a multi_select with a remove then an add', () => {
+    const result = foldCustomFieldValuesInputs(current, [
+      input(EditOperation.Remove, [{ field_id: 'cf-sectors' }]),
+      input(EditOperation.Add, [{ field_id: 'cf-sectors', select_values: ['c'] }]),
+    ]);
+    expect(result).toEqual([SCORE, { field_id: 'cf-sectors', select_values: ['c'] }]);
+  });
+
+  it('removes only the given options of a multi_select', () => {
+    expect(foldCustomFieldValuesInputs(current, [input(EditOperation.Remove, [{ field_id: 'cf-sectors', select_values: ['a'] }])]))
+      .toEqual([SCORE, { ...SECTORS, select_values: ['b'] }]);
+    expect(foldCustomFieldValuesInputs(current, [input(EditOperation.Remove, [{ field_id: 'cf-sectors', select_values: ['a', 'b'] }])]))
+      .toEqual([SCORE]);
+  });
+
+  it('unites the options on add and sets a single value field', () => {
+    const result = foldCustomFieldValuesInputs(current, [
+      input(EditOperation.Add, [{ field_id: 'cf-sectors', select_values: ['c'] }]),
+      input(EditOperation.Add, [{ field_id: 'cf-score', int_value: 42 }]),
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-sectors', select_values: ['a', 'b', 'c'] }, { field_id: 'cf-score', int_value: 42 }]);
   });
 });
