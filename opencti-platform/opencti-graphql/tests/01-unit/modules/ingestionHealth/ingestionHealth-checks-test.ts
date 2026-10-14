@@ -15,15 +15,9 @@ const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_M
 const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
 
 describe('computeIngestionHealthPatch', () => {
-  it('should write healthy with no check and set since on the first evaluation', () => {
+  it('should write nothing with no check since on the first evaluation', () => {
     const patch = computeIngestionHealthPatch({}, [], EVALUATED_AT);
-    expect(patch).toEqual({
-      ingestion_health: {
-        status: IngestionHealthStatus.Healthy,
-        health_checks: [],
-        status_since: EVALUATED_AT,
-      },
-    });
+    expect(patch).toEqual(null);
   });
 
   it('should write degraded with the check and set since when the user is missing on the first evaluation', () => {
