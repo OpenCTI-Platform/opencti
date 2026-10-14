@@ -69,13 +69,17 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 
 // Returns the fields to write, or null when neither the status nor the checks changed.
 // The write replaces the whole ingestion_health object, so it carries the unchanged since.
+// When no status can be computed anymore, a stored ingestion_health is removed: absence reads as unknown.
 export const computeIngestionHealthPatch = (current: IngestionHealthFields, checks: StoredHealthCheck[], evaluatedAt: string): IngestionHealthFields | null => {
   const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks);
   const nextChecks = normalizeHealthChecks(checks);
   const isStatusChanged = currentHealth?.status !== status;
   const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
-  if (!status || (!isStatusChanged && !isChecksChanged)) {
+  if (!status) {
+    return currentHealth ? { ingestion_health: null } : null;
+  }
+  if (!isStatusChanged && !isChecksChanged) {
     return null;
   }
   return {
@@ -108,7 +112,7 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
 // Spread into the resolvers of every type carrying an ingestion health.
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
 // Null until the manager first evaluates the ingestion, which reads as unknown.
-export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | undefined): IngestionHealth | null => {
+export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined): IngestionHealth | null => {
   if (!health) {
     return null;
   }

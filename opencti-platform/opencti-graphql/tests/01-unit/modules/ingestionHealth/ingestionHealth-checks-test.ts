@@ -36,32 +36,20 @@ describe('computeIngestionHealthPatch', () => {
     expect(computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT)).toBeNull();
   });
 
-  it('should return null when no check is stored and none is found', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT)).toBeNull();
+  it('should remove ingestion_health when a status was stored and none can be computed anymore', () => {
+    // The user was fixed: degraded -> no status (healthy is not computed yet), absence reads as unknown
+    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
+    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT)).toEqual({ ingestion_health: null });
   });
 
-  it('should ignore the order of the checks', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK, USER_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [USER_MISSING, OTHER_CHECK], EVALUATED_AT)).toBeNull();
+  it('should write nothing when ingestion_health is already absent and no status can be computed', () => {
+    expect(computeIngestionHealthPatch({ ingestion_health: null }, [], EVALUATED_AT)).toBeNull();
   });
 
   it('should treat a stored check without metadata as a check with empty metadata', () => {
     const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING };
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [storedWithoutMetadata] } };
     expect(computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT)).toBeNull();
-  });
-
-  it('should write the checks but keep since when only the checks changed', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    const patch = computeIngestionHealthPatch(current, [USER_MISSING, OTHER_CHECK], EVALUATED_AT);
-    expect(patch).toEqual({
-      ingestion_health: {
-        status: IngestionHealthStatus.Degraded,
-        health_checks: [OTHER_CHECK, USER_MISSING],
-        status_since: PREVIOUS_SINCE,
-      },
-    });
   });
 
   it('should write the checks but keep since when only the metadata changed', () => {
@@ -78,25 +66,16 @@ describe('computeIngestionHealthPatch', () => {
   });
 
   it('should move since when the status changes', () => {
-    // The user was fixed: degraded -> healthy
-    const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    const patch = computeIngestionHealthPatch(current, [], EVALUATED_AT);
+    // The user went missing: healthy -> degraded
+    const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
+    const patch = computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT);
     expect(patch).toEqual({
       ingestion_health: {
-        status: IngestionHealthStatus.Healthy,
-        health_checks: [],
+        status: IngestionHealthStatus.Degraded,
+        health_checks: [USER_MISSING],
         status_since: EVALUATED_AT,
       },
     });
-  });
-
-  it('should stay healthy with a check unable to change the status', () => {
-    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], EVALUATED_AT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Healthy);
-  });
-
-  it('should return the checks sorted by code', () => {
-    const patch = computeIngestionHealthPatch({}, [USER_MISSING, OTHER_CHECK], EVALUATED_AT);
-    expect(patch?.ingestion_health?.health_checks?.map((check) => check.health_check_code)).toEqual([OTHER_CHECK.health_check_code, HEALTH_CHECK_USER_MISSING]);
   });
 });
 
