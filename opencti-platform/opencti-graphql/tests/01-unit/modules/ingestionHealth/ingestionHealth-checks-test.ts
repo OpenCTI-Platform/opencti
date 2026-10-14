@@ -175,6 +175,18 @@ describe('computeHealthTransition', () => {
   it('should return null when the status becomes stopped', () => {
     expect(computeHealthTransition(IngestionHealthStatus.Healthy, IngestionHealthStatus.Stopped)).toBeNull();
   });
+
+  it.each([IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded])('should return recovered when the health is removed after %s', (previous) => {
+    expect(computeHealthTransition(previous, undefined)).toBe(HealthTransition.Recovered);
+  });
+
+  it.each([IngestionHealthStatus.Healthy, IngestionHealthStatus.Stopped])('should return null when the health is removed after %s: nothing failing to recover from', (previous) => {
+    expect(computeHealthTransition(previous, undefined)).toBeNull();
+  });
+
+  it('should return null when there is no health before and after', () => {
+    expect(computeHealthTransition(undefined, undefined)).toBeNull();
+  });
 });
 
 describe('buildHealthTransitionMessage', () => {

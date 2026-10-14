@@ -79,7 +79,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
 ) => {
   const checks = computeIngestionHealthChecks({ userId: source.getUserId(element), isUserRequired: source.isUserRequired }, isExistingUser);
   const patch = computeIngestionHealthPatch(element, checks, now());
-  if (!patch?.ingestion_health) {
+  if (!patch) {
     return;
   }
   // Standard update: moves updated_at and emits an update event
@@ -91,7 +91,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   // Published an health activity event after the write
   // a failed write is retried at the next period and reports the transition then
   const nextHealth = patch.ingestion_health;
-  const transition = computeHealthTransition(element.ingestion_health?.status, nextHealth.status);
+  const transition = computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
@@ -99,7 +99,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
       event_scope: transition,
       event_access: 'administration',
       status: transition === HealthTransition.Recovered ? 'success' : 'error',
-      message: buildHealthTransitionMessage(element, transition, nextHealth.health_checks ?? []),
+      message: buildHealthTransitionMessage(element, transition, nextHealth?.health_checks ?? []),
       context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
     });
   }

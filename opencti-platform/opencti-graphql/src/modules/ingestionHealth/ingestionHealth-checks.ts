@@ -100,8 +100,10 @@ export const HealthTransition = {
 } as const;
 export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
 
-// previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from
-export const computeHealthTransition = (previous: IngestionHealthStatus | undefined, next: IngestionHealthStatus): HealthTransition | null => {
+// previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from.
+// next is undefined when the health object is removed because no status can be computed anymore (no more failing check):
+// it is a recovery only for an ingestion that was failing.
+export const computeHealthTransition = (previous: IngestionHealthStatus | undefined, next: IngestionHealthStatus | undefined): HealthTransition | null => {
   if (previous === next) {
     return null;
   }
@@ -112,6 +114,9 @@ export const computeHealthTransition = (previous: IngestionHealthStatus | undefi
     return HealthTransition.Degraded;
   }
   if (next === IngestionHealthStatus.Healthy && previous) {
+    return HealthTransition.Recovered;
+  }
+  if (!next && (previous === IngestionHealthStatus.Critical || previous === IngestionHealthStatus.Degraded)) {
     return HealthTransition.Recovered;
   }
   // TODO case of IngestionHealthStatus.Stopped
