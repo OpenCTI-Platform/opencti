@@ -461,6 +461,7 @@ class DataTableToolBar extends Component {
       statuses: [],
       workflowPublished: false,
       workflowBypass: false,
+      workflowLoading: false,
       transitionEvents: [],
       externalReferences: [],
       enrichConnectors: [],
@@ -513,16 +514,29 @@ class DataTableToolBar extends Component {
   }
 
   handleOpenUpdate(workflowEntityType, canBypassWorkflow) {
-    this.setState({ displayUpdate: true, workflowPublished: false, workflowBypass: false, transitionEvents: [] });
+    this.workflowQueryId = (this.workflowQueryId ?? 0) + 1;
+    const queryId = this.workflowQueryId;
+    this.setState({
+      displayUpdate: true,
+      workflowPublished: false,
+      workflowBypass: false,
+      workflowLoading: !!workflowEntityType,
+      transitionEvents: [],
+    });
     if (workflowEntityType) {
       fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType })
         .toPromise()
         .then((data) => {
+          if (queryId !== this.workflowQueryId) return;
           this.setState({
             workflowPublished: data?.workflowDefinitionPublished === true,
             workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
+            workflowLoading: false,
             transitionEvents: (data?.workflowTransitionEvents ?? []).map((event) => ({ label: event, value: event })),
           });
+        })
+        .catch(() => {
+          if (queryId === this.workflowQueryId) this.setState({ workflowLoading: false });
         });
     }
   }
@@ -2342,11 +2356,19 @@ class DataTableToolBar extends Component {
   }
 
   areStepValid() {
-    const { actionsInputs } = this.state;
+    const { actionsInputs, workflowLoading, workflowBypass } = this.state;
+    // The update mode of the workflow fields depends on the workflow query
+    if (workflowLoading) {
+      return false;
+    }
     for (const n of actionsInputs) {
       // Removing a custom field without value clears it
       const isCustomFieldClear = n?.type === 'REMOVE' && isCustomFieldAttribute(n.field) && Array.isArray(n.values);
       if (!n || !n.type || !n.field || !n.values || (n.values.length === 0 && !isCustomFieldClear)) {
+        return false;
+      }
+      const isWorkflowField = n.field === WORKFLOW_TRANSITION_FIELD || (n.field === 'x_opencti_workflow_id' && workflowBypass);
+      if (isWorkflowField && !n.values[0]) {
         return false;
       }
     }
@@ -3017,7 +3039,7 @@ class DataTableToolBar extends Component {
                                   ', ',
                                   R.map(
                                     (p) => this.constructor.displayActionValue(p),
-                                    R.pathOr([], ['context', 'values'], o),
+                                    o.context?.options?.eventName ? [o.context.options.eventName] : R.pathOr([], ['context', 'values'], o),
                                   ),
                                 ),
                                 80,
