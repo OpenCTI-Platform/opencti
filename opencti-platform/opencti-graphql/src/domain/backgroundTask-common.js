@@ -89,6 +89,10 @@ const isDeleteRestrictedAction = ({ type }) => {
 const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat().every((type) => isKnowledge(type));
 
 const checkWorkflowActionsValidity = (context, user, actions) => {
+  // An empty event name must not fall back to a plain replace, which would clear the status
+  if (actions.some((a) => isWorkflowStatusAction(a) && a.context.options && 'eventName' in a.context.options && !isWorkflowTransitionAction(a))) {
+    throw FunctionalError('A workflow transition action requires an event name');
+  }
   const hasBypassAction = actions.some((a) => isWorkflowBypassAction(a));
   const hasTransitionAction = actions.some((a) => isWorkflowTransitionAction(a));
   if (!hasBypassAction && !hasTransitionAction) {
@@ -106,7 +110,7 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   if (hasBypassAction && !isBypassUser(user)) {
     throw ForbiddenAccess();
   }
-  if (actions.some((a) => isWorkflowBypassAction(a) && a.context.values?.length !== 1)) {
+  if (actions.some((a) => isWorkflowBypassAction(a) && (a.context.values?.length !== 1 || !isNotEmptyField(a.context.values[0])))) {
     throw FunctionalError('A workflow status action requires exactly one target status');
   }
 };
