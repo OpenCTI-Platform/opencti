@@ -217,7 +217,17 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  customFieldValues,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  type RefAttribute,
+  updatedAt,
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -284,6 +294,7 @@ import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
+  mergeCustomFieldValues,
   normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
@@ -1869,7 +1880,13 @@ const mergeEntitiesRaw = async (
     const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
     const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
-    if (isObjectAttribute(targetFieldKey)) {
+    if (targetFieldKey === customFieldValues.name) {
+      // Custom fields are merged one by one as standard attributes, not appended as a list of objects
+      if (fieldValues.length > 0) {
+        const sourcesCustomFieldValues = (sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey]);
+        updateAttributes.push({ key: targetFieldKey, value: mergeCustomFieldValues(mergedEntityCurrentFieldValue, sourcesCustomFieldValues) });
+      }
+    } else if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {

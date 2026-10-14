@@ -37,6 +37,24 @@ export const normalizeCustomFieldValues = (values: CustomFieldValue[]): CustomFi
   return normalizedDate ? { ...entry, date_value: normalizedDate } : entry;
 });
 
+// Merge of entities: each custom field is merged as the standard attribute it stands for. A single value
+// custom field keeps the target value, or else takes the value of the first source having one. A multi_select
+// custom field gets the union of the selected options. The result holds a single entry per custom field.
+export const mergeCustomFieldValues = (targetValues: CustomFieldValue[] | undefined, sourcesValues: (CustomFieldValue[] | undefined)[]): CustomFieldValue[] => {
+  const mergedByFieldId = new Map<string, CustomFieldValue>();
+  [targetValues, ...sourcesValues].forEach((values) => {
+    (values ?? []).forEach((value) => {
+      const existing = mergedByFieldId.get(value.field_id);
+      if (!existing) {
+        mergedByFieldId.set(value.field_id, value);
+      } else if (Array.isArray(existing.select_values) && Array.isArray(value.select_values)) {
+        mergedByFieldId.set(value.field_id, { ...existing, select_values: R.uniq([...existing.select_values, ...value.select_values]) });
+      }
+    });
+  });
+  return Array.from(mergedByFieldId.values());
+};
+
 // Edit path (stored format): the technical name is unique and immutable, so the server derives field_id
 // from field_name (or an alias) instead of trusting the client. A missing field_id is filled, an inconsistent
 // one is rejected, and an alias is replaced by the technical name. Unknown names are left for validation.
