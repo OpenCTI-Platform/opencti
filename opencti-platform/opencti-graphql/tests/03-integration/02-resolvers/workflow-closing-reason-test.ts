@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_EDITOR } from '../../utils/testQuery';
 
 const ENTITY_TYPE = 'Case-Incident';
@@ -93,6 +93,17 @@ const definition = JSON.stringify({
 });
 
 // The editor cannot bypass mandatory fields, unlike the admin
+const FIELD_PATCH_MUTATION = gql`
+  mutation WorkflowClosingReasonFieldPatch($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        x_opencti_closing_reason
+      }
+    }
+  }
+`;
+
 const trigger = async (entityId: string, eventName: string, closingReason?: string) => {
   const result = await queryAsUserWithSuccess(USER_EDITOR, { query: TRIGGER_MUTATION, variables: { entityId, eventName, closingReason } });
   return result.data.triggerWorkflowEvent;
@@ -171,5 +182,22 @@ describe('Workflow closing reason (Case-Incident)', () => {
     const result = await trigger(caseId, 'archive');
     expect(result).toMatchObject({ success: true, newState: 'archived' });
     expect((await readCase(caseId)).x_opencti_closing_reason).toBe('duplicate');
+  });
+
+  it('should reject a direct edit of the closing reason outside the workflow', async () => {
+    await queryAsUserIsExpectedError(
+      USER_EDITOR,
+      { query: FIELD_PATCH_MUTATION, variables: { id: caseId, input: [{ key: 'x_opencti_closing_reason', value: ['other'] }] } },
+      'Closing reason can only be changed through a workflow transition',
+    );
+    expect((await readCase(caseId)).x_opencti_closing_reason).toBe('duplicate');
+  });
+
+  it('should let a bypass user edit the closing reason directly', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: FIELD_PATCH_MUTATION,
+      variables: { id: caseId, input: [{ key: 'x_opencti_closing_reason', value: ['other'] }] },
+    });
+    expect(result.data.stixDomainObjectEdit.fieldPatch.x_opencti_closing_reason).toBe('other');
   });
 });
