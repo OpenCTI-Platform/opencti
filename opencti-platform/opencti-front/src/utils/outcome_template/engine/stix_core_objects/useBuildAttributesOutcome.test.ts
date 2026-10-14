@@ -106,7 +106,7 @@ describe('Hook: useBuildAttributesOutcome', () => {
     propertySpy.mockRestore();
   });
 
-  it('should preserve valid metadata columns when another metadata lookup is invalid', async () => {
+  it('should treat a null intermediate value as an empty value in metadata mode', async () => {
     const { hook } = testRenderHook(() => useBuildAttributesOutcome());
     vi.spyOn(env, 'fetchQuery').mockReturnValue({
       toPromise: async () => ({
@@ -130,6 +130,35 @@ describe('Hook: useBuildAttributesOutcome', () => {
       { includeMetadata: true },
     );
 
+    expect(outcomes).toEqual([
+      { variableName: 'reportName', attributeData: 'Super Report', isEmpty: false },
+      { variableName: 'createdByName', attributeData: '', isEmpty: true },
+    ]);
+  });
+
+  it('should preserve valid metadata columns when another metadata lookup goes through a non-object value', async () => {
+    const { hook } = testRenderHook(() => useBuildAttributesOutcome());
+    vi.spyOn(env, 'fetchQuery').mockReturnValue({
+      toPromise: async () => ({
+        stixCoreObject: {
+          name: 'Super Report',
+        },
+      }),
+    } as never);
+    const { buildAttributesOutcome } = hook.result.current;
+
+    const outcomes = await buildAttributesOutcome(
+      'id_XX',
+      {
+        instance_id: SELF_ID,
+        columns: [
+          { variableName: 'reportName', attribute: 'name', label: 'Name' },
+          { variableName: 'nameValue', attribute: 'name.value', label: 'Invalid' },
+        ],
+      },
+      { includeMetadata: true },
+    );
+
     expect(outcomes).toHaveLength(2);
     expect(outcomes[0]).toEqual({
       variableName: 'reportName',
@@ -137,8 +166,8 @@ describe('Hook: useBuildAttributesOutcome', () => {
       isEmpty: false,
     });
     expect(outcomes[1]).toMatchObject({
-      variableName: 'createdByName',
-      attributeData: '$createdByName',
+      variableName: 'nameValue',
+      attributeData: '$nameValue',
       isEmpty: false,
       preserveSection: true,
     });

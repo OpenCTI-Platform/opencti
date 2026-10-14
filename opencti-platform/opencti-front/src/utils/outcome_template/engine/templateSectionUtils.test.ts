@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplateContentWithOptionalSectionPruning, isSemanticallyEmptyHtmlFragment } from './templateSectionUtils';
+import { buildTemplateContentWithOptionalSectionPruning, isSemanticallyEmptyHtmlFragment, parseHtmlInInertDocument } from './templateSectionUtils';
 
 describe('templateSectionUtils', () => {
   it('should preserve empty placeholders within retained sections and before the first heading', () => {
     const content = buildTemplateContentWithOptionalSectionPruning(
       '<div><p>$empty</p><h2>Keep</h2><table><tbody><tr><td>Label</td><td>$empty</td></tr></tbody></table><p>$full</p></div>',
       [
-        { variableName: 'empty', replacement: '', isEmpty: true },
+        { variableName: 'empty', replacement: '', isEmpty: true, replaceAll: true },
         { variableName: 'full', replacement: 'Filled', isEmpty: false },
       ],
       { removeEmptySections: true },
@@ -92,5 +92,73 @@ describe('templateSectionUtils', () => {
     );
 
     expect(content).toEqual('<div><section><div><h1>Keep</h1></div><p>Body</p></section></div>');
+  });
+  it('should parse HTML in a document without browsing context so handlers never run', async () => {
+    const container = parseHtmlInInertDocument('<img src="x" onerror="window.__xss = true">');
+    expect(container.ownerDocument).not.toBe(document);
+    expect(container.ownerDocument.defaultView).toBeNull();
+
+    expect(isSemanticallyEmptyHtmlFragment('<img src="x" onerror="window.__xss = true">')).toEqual(false);
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    expect((window as unknown as { __xss?: boolean }).__xss).toBeUndefined();
+  });
+
+  it('should match the longest known variable name so adjacent variables split on hyphens', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h2>Keep</h2><p>$first-$last</p></div>',
+      [
+        { variableName: 'first', replacement: 'A', isEmpty: false },
+        { variableName: 'last', replacement: 'B', isEmpty: false },
+      ],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h2>Keep</h2><p>A-B</p></div>');
+  });
+
+  it('should treat dollar text that is not a template variable as prose', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h2>Budget</h2><p>Budget: $5000 in $HOME</p><p>$empty</p><h2>Keep</h2><p>Price: $5000</p></div>',
+      [{ variableName: 'empty', replacement: '', isEmpty: true }],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h2>Keep</h2><p>Price: $5000</p></div>');
+  });
+
+  it('should replace only the first occurrence of a variable unless replaceAll is set', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h2>Keep</h2><p>$list</p><p>$list</p><p>$attr $attr</p></div>',
+      [
+        { variableName: 'list', replacement: '<table></table>', isEmpty: false },
+        { variableName: 'attr', replacement: 'value', isEmpty: false, replaceAll: true },
+      ],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h2>Keep</h2><p><table></table></p><p>$list</p><p>value value</p></div>');
+  });
+
+  it('should drop a page break left at the end of the document by a removed trailing section', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h3>Keep</h3><p>$full</p><div class="page-break"><span>&nbsp;</span></div><h3>Empty</h3><p>$empty</p></div>',
+      [
+        { variableName: 'full', replacement: 'Filled', isEmpty: false },
+        { variableName: 'empty', replacement: '', isEmpty: true },
+      ],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h3>Keep</h3><p>Filled</p></div>');
+  });
+
+  it('should keep page breaks the template already ends with when nothing around them is pruned', () => {
+    const content = buildTemplateContentWithOptionalSectionPruning(
+      '<div><h3>Keep</h3><p>$full</p><div class="page-break"></div></div>',
+      [{ variableName: 'full', replacement: 'Filled', isEmpty: false }],
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h3>Keep</h3><p>Filled</p><div class="page-break"></div></div>');
   });
 });

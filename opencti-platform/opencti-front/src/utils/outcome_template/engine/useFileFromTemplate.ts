@@ -79,7 +79,18 @@ const useFileFromTemplate = () => {
         });
       } catch (error) {
         MESSAGING$.notifyError(`One of the attribute widgets resolution raised an error. ${error}`);
-        return [];
+        if (!includeMetadata) {
+          return [];
+        }
+        // Keep the declared variables known to pruning: left unresolved, their sections are preserved.
+        return (widget.dataSelection[0]?.columns ?? []).flatMap((column) => (column.variableName
+          ? [{
+              variableName: column.variableName,
+              replacement: `$${column.variableName}`,
+              isEmpty: false,
+              preserveSection: true,
+            }]
+          : []));
       }
     }
 

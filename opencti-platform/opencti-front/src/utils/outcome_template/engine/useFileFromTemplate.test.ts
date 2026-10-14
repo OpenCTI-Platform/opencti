@@ -551,4 +551,90 @@ describe('Hook: useFileFromTemplate', () => {
     expect(content).toEqual('<div><h1>Summary</h1><p>Super report</p><h1>Author</h1><p>$createdByName</p></div>');
     expect(notifyErrorMock).toHaveBeenCalledWith('One of the attribute widgets resolution raised an error. Invalid path "createdBy.name", a subpart is not an object');
   });
+
+  it('should render the same HTML with pruning enabled when no section is empty', async () => {
+    buildAttributesOutcomeMock.mockImplementation(async () => [
+      { variableName: 'pName', attributeData: 'Super report', isEmpty: false },
+      { variableName: 'pPublished', attributeData: '2026-10-01', isEmpty: false },
+    ]);
+    buildListOutcomeMock.mockImplementation(async () => '<table><tbody><tr><td>obs</td></tr></tbody></table>');
+    const { hook } = testRenderHook(() => useFileFromTemplate());
+    const { buildFileFromTemplate } = hook.result.current;
+
+    const template = {
+      id: 'testTemplate',
+      name: 'Test template',
+      fintel_template_widgets: [
+        {
+          id: 'ATTR',
+          variable_name: 'attributes',
+          widget: {
+            type: 'attribute',
+            dataSelection: [{
+              columns: [
+                { variableName: 'pName', attribute: 'name' },
+                { variableName: 'pPublished', attribute: 'published' },
+              ],
+            }],
+          },
+        },
+        {
+          id: 'LIST',
+          variable_name: 'observables',
+          widget: {
+            type: 'list',
+            dataSelection: [{ filters: null }],
+          },
+        },
+      ],
+      template_content: '<div><h1>Title</h1><p>$pName-$pPublished costs $5000</p><h2>Observables</h2><div>$observables</div><div>$observables</div></div>',
+    } as never;
+
+    const legacyContent = await buildFileFromTemplate('aaaID', [], undefined, template);
+    const prunedContent = await buildFileFromTemplate('aaaID', [], undefined, template, { removeEmptySections: true });
+
+    expect(legacyContent).toEqual('<div><h1>Title</h1><p>Super report-2026-10-01 costs $5000</p><h2>Observables</h2><div><table><tbody><tr><td>obs</td></tr></tbody></table></div><div>$observables</div></div>');
+    expect(prunedContent).toEqual(legacyContent);
+  });
+
+  it('should keep sections of an attribute widget that failed entirely when pruning is enabled', async () => {
+    buildAttributesOutcomeMock.mockImplementation(async () => {
+      throw new Error('boom');
+    });
+    buildListOutcomeMock.mockImplementation(async () => '');
+    const { hook } = testRenderHook(() => useFileFromTemplate());
+    const { buildFileFromTemplate } = hook.result.current;
+
+    const content = await buildFileFromTemplate(
+      'aaaID',
+      [],
+      undefined,
+      {
+        id: 'testTemplate',
+        name: 'Test template',
+        fintel_template_widgets: [
+          {
+            id: 'ATTR',
+            variable_name: 'attributes',
+            widget: {
+              type: 'attribute',
+              dataSelection: [{ columns: [{ variableName: 'author', attribute: 'createdBy.name' }] }],
+            },
+          },
+          {
+            id: 'LIST',
+            variable_name: 'containerList',
+            widget: {
+              type: 'list',
+              dataSelection: [{ filters: null }],
+            },
+          },
+        ],
+        template_content: '<div><h1>Author</h1><p>$author</p><p>$containerList</p></div>',
+      } as never,
+      { removeEmptySections: true },
+    );
+
+    expect(content).toEqual('<div><h1>Author</h1><p>$author</p><p></p></div>');
+  });
 });

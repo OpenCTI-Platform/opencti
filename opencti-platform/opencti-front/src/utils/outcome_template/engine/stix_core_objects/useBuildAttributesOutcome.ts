@@ -64,7 +64,8 @@ const useBuildAttributesOutcome = () => {
       try {
         const result = isCustomFieldAttribute(col.attribute)
           ? getCustomFieldRawValueByFieldName(data.stixCoreObject?.customFieldValues, col.attribute ?? '') ?? ''
-          : getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
+          // With metadata, a missing intermediate value (e.g. createdBy.name without author) is an empty value, not an error.
+          : getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '', options?.includeMetadata ? { nullableSubparts: true } : undefined);
         const isEmpty = options?.includeMetadata ? isRawAttributeEmpty(result) : false;
         const readableAttribute = options?.includeMetadata && isEmpty
           ? ''
