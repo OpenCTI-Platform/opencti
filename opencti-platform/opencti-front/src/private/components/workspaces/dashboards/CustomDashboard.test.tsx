@@ -137,6 +137,50 @@ describe('CustomDashboard variable values', () => {
       .toBe(JSON.stringify({ [SECTOR_ID]: 'Finance' }));
   });
 
+  describe('for a reader (no edit right)', () => {
+    const readerWorkspace = (config: Record<string, unknown> = {}) => buildWorkspace({ currentUserAccessRight: 'view' }, config);
+    const url = `/dashboard?variables=${SECTOR_ID}:Defense`;
+
+    beforeEach(() => {
+      captured.granted = false;
+      storeFinanceEverywhere();
+    });
+
+    it('ignores, and leaves untouched, the local values when viewers may not change variables', () => {
+      testRender(
+        <CustomDashboard data={readerWorkspace() as never} />,
+        { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
+      );
+      expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+      expect(window.location.search).toBe(`?variables=${SECTOR_ID}:Defense`);
+      expect(window.localStorage.getItem(dashboardVariablesStorageKey('user-1', 'ws-1')))
+        .toBe(JSON.stringify({ [SECTOR_ID]: 'Finance' }));
+    });
+
+    it('applies the local values when viewers may change variables', () => {
+      testRender(
+        <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: true }) as never} />,
+        { userContext: userContext(['DASHBOARD_VARIABLES']) },
+      );
+      expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    });
+
+    it('applies the URL value over the stored one when viewers may change variables', () => {
+      testRender(
+        <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: true }) as never} />,
+        { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
+      );
+      expect(captured.values?.get(SECTOR_ID)).toBe('Defense');
+    });
+  });
+
+  it('applies the local values for a manager', () => {
+    storeFinanceEverywhere();
+    captured.granted = true;
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+  });
+
   it('exposes no variable at all when the flag is off', () => {
     storeFinanceEverywhere();
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });

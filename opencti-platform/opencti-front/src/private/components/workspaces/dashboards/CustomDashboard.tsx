@@ -185,15 +185,18 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onExportWidget,
   });
   const { handleAddWidget, handleImportWidget, handleDateChange, config, variables, widgetsArray } = helpers;
-  // The home dashboard (noToolbar) only ever shows the manifest defaults: no per user value is read or written.
-  const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar });
+  // The bar is the only way to see, change and clear a per user value: to a user who does not get it, such a
+  // value (stored, or from the URL) would filter the widgets with no chip to show or reset it.
+  const showVariablesBar = isVariablesEnabled && !noToolbar
+    && (canManageVariables || config.allowViewersToChangeVariables === true);
+  // The home dashboard (noToolbar) and a user without the bar only ever see the manifest defaults:
+  // no per user value is read or written.
+  const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar || !showVariablesBar });
   const { setAsDefaults } = useDashboardVariableMutations(workspace.id);
   const usedInWidgetIdsByVariable = useMemo(
     () => new Map(workspace.variables.map((variable) => [variable.id, [...variable.usedInWidgetIds]])),
     [workspace.variables],
   );
-  const showVariablesBar = isVariablesEnabled && !noToolbar
-    && (canManageVariables || config.allowViewersToChangeVariables === true);
   const onSetAsDefaults = async () => {
     try {
       await setAsDefaults(variables, variableControls.values);
