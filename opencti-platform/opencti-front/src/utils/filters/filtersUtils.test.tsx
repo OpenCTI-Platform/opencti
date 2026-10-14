@@ -26,6 +26,7 @@ import {
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
   useStixFilters,
+  getStixFiltersDisplayedKeys,
   GqlFilterGroup,
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
@@ -1579,6 +1580,29 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('getStixFiltersDisplayedKeys', () => {
+  const availableKeys = ['entity_type', 'x_opencti_cf_score'];
+  const filterGroup = (keys: string[], nestedKeys: string[] = []): FilterGroup => ({
+    mode: 'and',
+    filters: keys.map((key) => ({ id: key, key, values: ['a'], operator: 'eq', mode: 'or' })),
+    filterGroups: nestedKeys.length > 0 ? [filterGroup(nestedKeys)] : [],
+  }) as unknown as FilterGroup;
+
+  it('keeps the available keys when no stored filter uses a deleted custom field', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, undefined)).toBe(availableKeys);
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['entity_type', 'x_opencti_cf_score']))).toBe(availableKeys);
+  });
+
+  it('adds the stored filters on a deleted custom field, even nested, so that they can be removed', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['x_opencti_cf_deleted'], ['x_opencti_cf_nested', 'x_opencti_cf_deleted'])))
+      .toEqual([...availableKeys, 'x_opencti_cf_nested', 'x_opencti_cf_deleted']);
+  });
+
+  it('never adds an unavailable standard key', () => {
+    expect(getStixFiltersDisplayedKeys(availableKeys, filterGroup(['objectLabel']))).toBe(availableKeys);
   });
 });
 

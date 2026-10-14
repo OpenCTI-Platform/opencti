@@ -3,7 +3,7 @@ import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, useAvailableFilterKeysForEntityTypes, useStixFilters } from '../../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getStixFiltersDisplayedKeys, useAvailableFilterKeysForEntityTypes, useStixFilters } from '../../../../../utils/filters/filtersUtils';
 import { useEffect } from 'react';
 import { FieldProps } from 'formik';
 import { WORKFLOW_FILTER_KEYS } from '../../../../../utils/filters/filterKeyGrouping';
@@ -69,7 +69,7 @@ const WorkflowConditionFilters = ({
       <FilterIconButton
         filters={filters}
         helpers={helpers}
-        availableFilterKeys={availableFilterKeys}
+        availableFilterKeys={getStixFiltersDisplayedKeys(availableFilterKeys, filters)}
         searchContext={searchContext}
         availableEntityTypes={availableEntityTypes}
         entityTypes={searchContext.entityTypes}

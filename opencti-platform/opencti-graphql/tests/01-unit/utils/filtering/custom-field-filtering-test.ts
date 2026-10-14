@@ -67,10 +67,23 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
     vi.restoreAllMocks();
   });
 
-  it('throws when the definition is not found in the cache', async () => {
-    seed();
-    const filter = makeFilter({ key: ['x_opencti_cf_unknown'] });
-    await expect(adapt(filter)).rejects.toThrow('Custom field definition not found for filter key');
+  describe('deleted custom field (definition not found)', () => {
+    const unmatchableNested = [
+      { key: 'field_name', values: ['x_opencti_cf_deleted'], operator: FilterOperator.Eq },
+      { key: 'field_id', values: [], operator: FilterOperator.Nil },
+    ];
+
+    it('matches nothing with a positive operator', async () => {
+      seed();
+      const { newFilter } = await adapt(makeFilter({ key: ['x_opencti_cf_deleted'], values: ['a'], operator: FilterOperator.Eq }));
+      expect(newFilter).toEqual({ key: ['custom_field_values'], values: [], nested: unmatchableNested });
+    });
+
+    it('matches everything with a negative operator', async () => {
+      seed();
+      const { newFilter } = await adapt(makeFilter({ key: ['x_opencti_cf_deleted'], values: [], operator: FilterOperator.Nil }));
+      expect(newFilter).toEqual({ key: ['custom_field_values'], values: [], nested: unmatchableNested, negateNested: true });
+    });
   });
 
   describe('string fields', () => {

@@ -12,6 +12,7 @@ import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
+import { isCustomFieldAttribute } from '../customFields';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
@@ -298,6 +299,23 @@ export const useStixFilters = (entityType?: string): string[] => {
 
 const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
+};
+
+/**
+ * The filter keys displayed by a stix filters form: a stored filter on a custom field deleted since stays
+ * displayed, so that it can be removed on its own (the backend rejects saving it).
+ */
+export const getStixFiltersDisplayedKeys = (availableFilterKeys: string[], filters?: FilterGroup | null): string[] => {
+  if (!filters) return availableFilterKeys;
+  const unavailableCustomFieldKeys = new Set<string>();
+  mapFilterGroupTree(filters, (group) => {
+    (group.filters ?? []).forEach((filter) => {
+      const key = getStringFilterKey(filter.key);
+      if (isCustomFieldAttribute(key) && !availableFilterKeys.includes(key)) unavailableCustomFieldKeys.add(key);
+    });
+    return group;
+  });
+  return unavailableCustomFieldKeys.size > 0 ? [...availableFilterKeys, ...unavailableCustomFieldKeys] : availableFilterKeys;
 };
 
 export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
