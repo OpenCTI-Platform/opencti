@@ -108,3 +108,30 @@ describe('FilterValues with dashboard variable tokens', () => {
     expect(container.textContent).not.toContain('Invalid');
   });
 });
+
+const plainUserContext = createMockUserContext({ schema: { scrs: [], sdos: [], scos: [], smos: [], filterKeysSchema: new Map() } });
+
+const emptyNameFilter: Filter = { id: 'filter-1', key: 'name', operator: 'nil', values: [], mode: 'or' };
+
+describe('FilterValues', () => {
+  it('renders the label as a button that opens the filter editor', async () => {
+    const onClickLabel = vi.fn();
+    const { user } = testRender(
+      <FilterValues label="Name" currentFilter={emptyNameFilter} filtersRepresentativesMap={new Map()} isReadWriteFilter onClickLabel={onClickLabel} />,
+      { userContext: plainUserContext },
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Name' }));
+    expect(onClickLabel).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the label of a read-only filter as plain text, not as a button that does nothing', () => {
+    testRender(
+      <FilterValues label="Name" currentFilter={emptyNameFilter} filtersRepresentativesMap={new Map()} isReadWriteFilter={false} onClickLabel={vi.fn()} />,
+      { userContext: plainUserContext },
+    );
+
+    expect(screen.getByText('Name')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Name' })).not.toBeInTheDocument();
+  });
+});

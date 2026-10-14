@@ -74,7 +74,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
-  const onCLick = deactivatePopoverMenu ? () => { } : onClickLabel;
 
   const buttonStyles = {
     minWidth: 'unset',
@@ -86,30 +85,36 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     font: 'inherit',
     color: 'inherit',
     backgroundColor: 'inherit !important',
+    cursor: 'pointer',
+    '&:hover': {
+      textDecorationLine: 'underline',
+    },
     ...(tooltip && {
       pointerEvents: 'none',
     }),
-    ...(!deactivatePopoverMenu && {
-      cursor: 'pointer',
-      '&:hover': {
-        textDecorationLine: 'underline',
-      },
-    }),
   };
+
+  // A read-only filter has no editor to open: its label is plain text, not a
+  // focusable button that does nothing.
+  const filterLabel = deactivatePopoverMenu || !onClickLabel
+    ? (
+        <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
+          <strong>{label}</strong>
+        </Box>
+      )
+    : (
+        <Button type="button" sx={buttonStyles} onClick={onClickLabel}>
+          <strong>
+            {label}
+          </strong>
+        </Button>
+      );
 
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
       <>
-        <Button
-          type="button"
-          sx={buttonStyles}
-          onClick={onCLick}
-        >
-          <strong>
-            {label}
-          </strong>
-        </Button>{' '}
+        {filterLabel}{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
         </span>
@@ -121,15 +126,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (isOperatorChange) {
     return (
       <>
-        <Button
-          type="button"
-          sx={buttonStyles}
-          onClick={onCLick}
-        >
-          <strong>
-            {label}
-          </strong>
-        </Button>{' '}
+        {filterLabel}{' '}
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
@@ -144,15 +141,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const relativeValue = translateDateInterval(filterValues, t_i18n);
     return (
       <>
-        <Button
-          type="button"
-          sx={buttonStyles}
-          onClick={onCLick}
-        >
-          <strong>
-            {label}
-          </strong>
-        </Button>{' '}
+        {filterLabel}{' '}
         <span>
           {relativeValue}
         </span>
@@ -253,7 +242,12 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                 }
                 {last(filterValues) !== id && !isRegardingOfFilter
                   && (
-                    <Button type="button" sx={localModeStyle} onClick={operatorOnClick}>
+                    <Button
+                      type="button"
+                      sx={localModeStyle}
+                      onClick={operatorOnClick}
+                      disabled={!operatorOnClick}
+                    >
                       {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
                     </Button>
                   )
@@ -292,15 +286,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             />
           </Tooltip>
         )}
-        <Button
-          type="button"
-          sx={buttonStyles}
-          onClick={onCLick}
-        >
-          <strong>
-            {label}
-          </strong>
-        </Button>{' '}
+        {filterLabel}{' '}
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', overflow: 'hidden' }}>
           {sortedFilterValues
             .map((val) => {
@@ -371,15 +357,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return (
       <>
-        <Button
-          type="button"
-          sx={buttonStyles}
-          onClick={onCLick}
-        >
-          <strong>
-            {label}
-          </strong>
-        </Button>{' '}
+        {filterLabel}{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
           severity={chipSeverity(chipColor)}
@@ -389,15 +367,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   }
   return (
     <>
-      <Button
-        type="button"
-        sx={buttonStyles}
-        onClick={onCLick}
-      >
-        <strong>
-          {label}
-        </strong>
-      </Button>{' '}
+      {filterLabel}{' '}
       {values}
     </>
   );

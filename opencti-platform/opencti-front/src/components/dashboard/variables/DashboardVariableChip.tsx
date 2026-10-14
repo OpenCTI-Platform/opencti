@@ -11,7 +11,7 @@ import DashboardVariableValueInput from './DashboardVariableValueInput';
 import useVariableValueLabels from './useVariableValueLabels';
 import { isIdVariableType } from './variableTypeSearch';
 
-// FDS-WORKAROUND: the library Chip has no muted (still clickable) state, `disabled` would block the click.
+// FDS-WORKAROUND #69: the library Chip has no muted (still clickable) state, `disabled` would block the click.
 const UNUSED_OPACITY = 0.6;
 
 export interface DashboardVariableChipProps {

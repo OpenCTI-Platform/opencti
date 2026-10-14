@@ -23,6 +23,8 @@ const GraphToolbarItem = ({
           inline-flex keeps the button's size and alignment in the toolbar. */}
       <span
         style={{ display: 'inline-flex' }}
+        // FDS-WORKAROUND #68: a disabled IconButton cannot trigger its own tooltip, so this span takes the focus — see fds-migration/LIBRARY-FEEDBACK.md #68
+        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={disabled ? 0 : undefined}
       >
         <IconButton

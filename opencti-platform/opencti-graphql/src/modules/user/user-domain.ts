@@ -2330,6 +2330,15 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
+  // Regenerate the session id before binding the identity, preventing session fixation.
+  // The referer is kept as the auth callback still reads it from the session as a redirect fallback
+  const { referer } = req.session!;
+  await new Promise<void>((resolve, reject) => {
+    req.session!.regenerate((err) => (err ? reject(err) : resolve()));
+  });
+  if (referer) {
+    req.session!.referer = referer;
+  }
   const withOrigin = userWithOrigin(req, logged!);
   // Build and save the session
   req.session!.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged!.password_valid_until ?? null };
