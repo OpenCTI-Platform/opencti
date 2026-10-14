@@ -47,6 +47,14 @@ describe('DashboardVariableChip', () => {
     expect(screen.getByTestId('dashboard-variable-chip-Sector')).toHaveAttribute('data-unused', 'false');
   });
 
+  it('shows the value of a date variable as a readable date, not as its raw ISO string', () => {
+    const since: DashboardVariable = { id: 'var-3', name: 'Since', type: 'date', restriction: { mode: 'none' }, defaultValue: null };
+    renderChip({ variable: since, value: '2026-01-01T00:00:00.000Z' });
+    const chip = screen.getByTestId('dashboard-variable-chip-Since');
+    expect(chip).toHaveTextContent(/Since : .*2026/);
+    expect(chip).not.toHaveTextContent('T00:00:00');
+  });
+
   it('opens the value input on click and forwards the typed value', async () => {
     const { user, onChange } = renderChip({ value: undefined });
     await user.click(screen.getByRole('button', { name: 'Sector : Not set' }));

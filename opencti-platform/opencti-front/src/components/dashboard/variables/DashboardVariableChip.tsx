@@ -33,7 +33,7 @@ const inputKey = (variable: DashboardVariable) => [
 ].join('|');
 
 const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const labels = useVariableValueLabels(variable, value ? [value] : []);
@@ -41,7 +41,10 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onE
   const hasMenu = onEdit !== undefined || onDelete !== undefined;
 
   // No entry yet means the id is still resolving: the chip stays neutral until the label is known.
-  const valueLabel = value ? labels.get(value) ?? '…' : t_i18n('Not set');
+  // A date is stored as an ISO string: show it as the platform shows any other date.
+  const valueLabel = value
+    ? (variable.type === 'date' ? fsd(value) : labels.get(value) ?? '…')
+    : t_i18n('Not set');
   const isRestricted = isIdVariableType(variable.type) && valueLabel === t_i18n('Restricted');
 
   const chip = (
