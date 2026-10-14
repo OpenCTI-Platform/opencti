@@ -160,7 +160,7 @@ describe('projectWorkflowState – closing reason', () => {
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
       { key: 'x_opencti_workflow_id', value: ['status-closed-id'] },
       { key: 'x_opencti_closing_reason', value: ['false-positive'] },
-    ]);
+    ], { workflowInternalWrite: true });
   });
 
   it('should clear the closing reason when null is given', async () => {
@@ -169,7 +169,7 @@ describe('projectWorkflowState – closing reason', () => {
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
       { key: 'x_opencti_workflow_id', value: ['status-closed-id'] },
       { key: 'x_opencti_closing_reason', value: [null] },
-    ]);
+    ], { workflowInternalWrite: true });
   });
 
   it('should still write the closing reason when no Status is mapped', async () => {
@@ -179,7 +179,7 @@ describe('projectWorkflowState – closing reason', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
       { key: 'x_opencti_closing_reason', value: ['duplicate'] },
-    ]);
+    ], { workflowInternalWrite: true });
   });
 
   it('should ignore the closing reason for types without the attribute', async () => {
@@ -194,7 +194,7 @@ describe('projectWorkflowState – closing reason', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'draft-1', 'DraftWorkspace', [
       { key: 'x_opencti_workflow_id', value: ['status-draft-id'] },
-    ]);
+    ], { workflowInternalWrite: true });
   });
 });
 
