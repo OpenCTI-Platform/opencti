@@ -41,17 +41,25 @@ export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExis
 
 // Priority: critical > degraded > healthy. stopped comes with the checks able to prove it.
 // Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealthStatus => {
-  const blockingDefinitions = checks
-    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
-    .filter((definition) => definition?.severity === IngestionHealthCheckSeverity.Blocking);
-  if (blockingDefinitions.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime)) {
+export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealthStatus | null => {
+  // TODO check the connector is stopped
+  const healthChecks = checks
+    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code]);
+  // blocking AND runtime -> critical
+  if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
+    && definition?.severity === IngestionHealthCheckSeverity.Blocking)) {
     return IngestionHealthStatus.Critical;
   }
-  if (blockingDefinitions.some((definition) => definition.kind === IngestionHealthCheckKind.Configuration)) {
+  // advisory runtime OR advisory/blocking configuration -> degraded
+  if (healthChecks.some((definition) => definition?.severity === IngestionHealthCheckSeverity.Advisory
+    || definition.kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
-  return IngestionHealthStatus.Healthy;
+  // TODO: check there is a runtime check of live in Redis
+  // if () {
+  // return IngestionHealthStatus.Healthy;
+  // }
+  return null;
 };
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
@@ -67,7 +75,7 @@ export const computeIngestionHealthPatch = (current: IngestionHealthFields, chec
   const nextChecks = normalizeHealthChecks(checks);
   const isStatusChanged = currentHealth?.status !== status;
   const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
-  if (!isStatusChanged && !isChecksChanged) {
+  if (!status || (!isStatusChanged && !isChecksChanged)) {
     return null;
   }
   return {

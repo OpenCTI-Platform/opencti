@@ -10,6 +10,7 @@ import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
@@ -27,6 +28,7 @@ const COLUMNS = {
   throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
   status: { width: '9%', minWidth: 84, display: 'flex' },
+  healthStatus: { width: '9%', minWidth: 84, display: 'flex' },
   actions: { width: 34, display: 'flex', justifyContent: 'center' },
 } as const;
 
@@ -40,6 +42,7 @@ const cellSx = (column: keyof typeof COLUMNS) => ({
 export const DeployedIntegrationLinesHeader = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isFeatureEnable } = useHelper();
   const headerCellSx = {
     fontSize: 10,
     fontWeight: 600,
@@ -81,6 +84,11 @@ export const DeployedIntegrationLinesHeader = () => {
       <Typography component="div" sx={{ ...headerCellSx, ...cellSx('status') }}>
         {t_i18n('Status')}
       </Typography>
+      {isFeatureEnable('INGESTION_HEALTH') && (
+        <Typography component="div" sx={{ ...headerCellSx, ...cellSx('healthStatus') }}>
+          {t_i18n('Health status')}
+        </Typography>
+      )}
       <Box sx={cellSx('actions')} />
     </Box>
   );
@@ -96,6 +104,7 @@ export interface DeployedIntegrationLineProps {
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
+  const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -297,11 +306,20 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           {item.status === 'processing'
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
-          {item.kind !== 'form' && (
-            <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
-          )}
         </Stack>
       </Box>
+      {/* Health status column: forms are not ingestions, they have no health. */}
+      {isFeatureEnable('INGESTION_HEALTH') && (
+        <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('healthStatus')}>
+          {item.kind !== 'form' ? (
+            <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
+          ) : (
+            <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary }}>
+              {EMPTY_VALUE}
+            </Typography>
+          )}
+        </Box>
+      )}
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>
         <DeployedIntegrationPopover item={item} onChange={onChange} />
