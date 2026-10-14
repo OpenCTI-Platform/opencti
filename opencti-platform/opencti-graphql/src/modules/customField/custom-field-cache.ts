@@ -24,6 +24,11 @@ const getCustomFieldInheritedTypes = (entityType: string): string[] => (
     : [entityType]
 );
 
+export const isCustomFieldDefinitionOfEntityType = (definition: BasicStoreEntityCustomFieldDefinition, entityType: string): boolean => {
+  const types = getCustomFieldInheritedTypes(entityType);
+  return (definition.entity_types ?? []).some((type) => types.includes(type));
+};
+
 /**
  * Get cached custom field definitions for a given entity type.
  */
@@ -33,8 +38,7 @@ export const getCustomFieldDefinitionsForEntityType = async (
   entityType: string,
 ): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
   const definitions = await getCustomFieldDefinitions(context, user);
-  const types = getCustomFieldInheritedTypes(entityType);
-  return definitions.filter((def) => def.entity_types && def.entity_types.some((type) => types.includes(type)));
+  return definitions.filter((def) => isCustomFieldDefinitionOfEntityType(def, entityType));
 };
 
 /**
