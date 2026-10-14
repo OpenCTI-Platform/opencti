@@ -60,6 +60,22 @@ describe('useDashboardVariableMutations', () => {
   });
 });
 
+// Contract with the network layer, not a behavior of this hook: a GraphQL response carrying `errors` never reaches
+// `onCompleted`. `react-relay-network-modern` (fetchWithMiddleware, `noThrow` is off in relay/environment.tsx) throws a
+// request error as soon as the body has `errors`, even with a partial `data`, so Relay calls `onError` and
+// `useApiMutation` notifies it. `onCompleted` is therefore only reached on success (or by the deferred creation
+// shortcut, which passes no errors), and the hook rightly resolves there without looking at the `errors` argument.
+// If the network layer ever delivers payload errors, this test must be replaced by one expecting a rejection.
+describe('useDashboardVariableMutations payload errors', () => {
+  it('resolves on completion, the network layer having already rejected any response carrying errors', async () => {
+    commit.mockReset();
+    commit.mockImplementation(({ onCompleted }) => onCompleted?.({ workspaceVariableUpsert: null }, [{ message: 'boom' }]));
+    const { result } = renderHook(() => useDashboardVariableMutations('ws-1'));
+    await expect(result.current.upsert(sector)).resolves.toBeUndefined();
+    await expect(result.current.remove('a')).resolves.toBeUndefined();
+  });
+});
+
 describe('setAsDefaults', () => {
   beforeEach(() => {
     commit.mockReset();
