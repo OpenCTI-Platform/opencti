@@ -1420,7 +1420,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // `field_id` is a stable per-entry identifier used by nested object attributes that don't
           // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
           // against the live value at apply time instead of a stale pre-computed snapshot.
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
+          const isRemoved = (c: any) => toRemove.some((r) => (r.id !== undefined && r.id === c.id)
+            || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c));
+          const newValues = current.filter((c) => !isRemoved(c));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
