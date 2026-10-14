@@ -154,6 +154,25 @@ describe('DashboardVariableDialog', () => {
     expect(screen.queryByText('By filter')).not.toBeInTheDocument();
   });
 
+  it.each(['Boolean', 'Date'])('starts a %s variable without default value, and keeps Create disabled until one is chosen', async (typeLabel) => {
+    const { user } = renderDialog();
+    await user.type(nameInput(), 'Flag');
+    await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+    await user.click(screen.getByRole('option', { name: typeLabel }));
+    const valueInput = await screen.findByTestId('value-input');
+    expect(valueInput).toBeEnabled();
+    expect(valueInput).toHaveValue('');
+    expect(submit()).toBeDisabled();
+    await user.click(submit());
+    expect(mocks.upsert).not.toHaveBeenCalled();
+
+    await user.type(valueInput, typeLabel === 'Boolean' ? 'true' : '2026-10-13T00:00:00.000Z');
+    await waitFor(() => expect(submit()).toBeEnabled());
+    await user.click(submit());
+    await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+    expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ type: typeLabel.toLowerCase() }));
+  });
+
   it('keeps Create disabled for an entity variable without entity type, with the restriction and the value disabled', async () => {
     const { user } = renderDialog();
     await user.type(nameInput(), 'Entity');

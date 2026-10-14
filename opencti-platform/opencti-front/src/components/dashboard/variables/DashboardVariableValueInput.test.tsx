@@ -49,6 +49,12 @@ describe('DashboardVariableValueInput', () => {
       expect(onChange).toHaveBeenCalledWith('');
     });
 
+    it('starts with no choice and emits nothing on its own when the value is empty', () => {
+      const { onChange } = renderInput({ type: 'boolean', restriction: none }, '');
+      expect(screen.getByRole('combobox')).not.toHaveTextContent(/True|False/);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
     it('offers no clear control, and emits nothing empty, when committed on blur', async () => {
       const { onChange } = renderInput({ type: 'boolean', restriction: none }, 'true', 'blur');
       expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
@@ -395,6 +401,12 @@ describe('DashboardVariableValueInput', () => {
       await user.click(await screen.findByRole('gridcell', { name: /January 20, 2024/ }));
       expect(onChange).toHaveBeenCalledTimes(1);
       expect(onChange).toHaveBeenCalledWith(new Date(2024, 0, 20).toISOString());
+    });
+
+    it('starts empty and emits nothing on its own when the value is empty', () => {
+      const { onChange } = renderInput({ type: 'date', restriction: none }, '');
+      expect(dateInput()).toHaveValue('');
+      expect(onChange).not.toHaveBeenCalled();
     });
 
     it('is disabled when asked to', () => {

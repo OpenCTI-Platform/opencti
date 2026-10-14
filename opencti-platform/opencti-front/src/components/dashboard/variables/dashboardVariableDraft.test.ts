@@ -120,8 +120,14 @@ describe('validateDraft', () => {
     expect(validateDraft(validDraft({ defaultValue: '  ' }), [], t_i18n).defaultValue).toBe('Default value is required');
   });
 
-  it.each(['boolean', 'date'] as const)('accepts a %s variable without default value', (type) => {
-    expect(validateDraft(validDraft({ type, defaultValue: '' }), [], t_i18n)).toEqual({});
+  it.each(['boolean', 'date'] as const)('requires an explicit default value for a %s variable', (type) => {
+    expect(validateDraft(validDraft({ type, defaultValue: '' }), [], t_i18n).defaultValue).toBe('Default value is required');
+    expect(validateDraft(validDraft({ type, defaultValue: '  ' }), [], t_i18n).defaultValue).toBe('Default value is required');
+  });
+
+  it('starts a new draft without default value', () => {
+    expect(emptyDraft.defaultValue).toBe('');
+    expect(validateDraft({ ...emptyDraft, name: 'Flag', type: 'boolean' }, [], t_i18n).defaultValue).toBe('Default value is required');
   });
 
   it('requires a finite default value for numeric variables', () => {
@@ -137,7 +143,7 @@ describe('validateDraft', () => {
       .toBe('Default value is not valid');
   });
 
-  it.each(['true', 'false', '  true ', ''])('accepts the boolean default value "%s"', (defaultValue) => {
+  it.each(['true', 'false', '  true '])('accepts the boolean default value "%s"', (defaultValue) => {
     expect(validateDraft(validDraft({ type: 'boolean', defaultValue }), [], t_i18n)).toEqual({});
   });
 
@@ -146,7 +152,7 @@ describe('validateDraft', () => {
       .toBe('Default value is not valid');
   });
 
-  it.each(['2026-10-13T10:00:00.000Z', ''])('accepts the date default value "%s"', (defaultValue) => {
+  it.each(['2026-10-13T10:00:00.000Z'])('accepts the date default value "%s"', (defaultValue) => {
     expect(validateDraft(validDraft({ type: 'date', defaultValue }), [], t_i18n)).toEqual({});
   });
 

@@ -105,7 +105,8 @@ export const validateDraft = (
   if (defaultValue.includes(VARIABLE_TOKEN_PREFIX)) {
     errors.defaultValue = t_i18n('A value cannot reference another variable');
   } else if (defaultValue === '') {
-    if (draft.type !== 'boolean' && draft.type !== 'date') errors.defaultValue = t_i18n('Default value is required');
+    // The server defaults a blank boolean or date, but the form makes the user choose one.
+    errors.defaultValue = t_i18n('Default value is required');
   } else if (draft.type === 'numeric' && !Number.isFinite(Number(defaultValue))) {
     errors.defaultValue = t_i18n('Default value must be a number');
   } else if (draft.type === 'boolean' && defaultValue !== 'true' && defaultValue !== 'false') {
