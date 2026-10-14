@@ -13,6 +13,7 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import type { WorkflowStatusStixDomainObject_data$data } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 
+vi.mock('../form/OpenVocabField', () => ({ default: () => null }));
 vi.mock('../../drafts/useSwitchDraft', () => ({ default: () => ({ exitDraft: vi.fn() }) }));
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../relay/environment')>(),
@@ -197,6 +198,26 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     await resolveRefresh(relayEnv, null, 'B');
     expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
     expect(screen.getByTestId('legacy-status')).toHaveTextContent('B');
+  });
+
+  it('pre-fills the closing reason with the current one', async () => {
+    const rendered = testRender(<Suspense><Harness /></Suspense>, {
+      userContext: createMockUserContext({
+        me: { capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }], capabilitiesInDraft: [] },
+        settings: { platform_feature_flags: [{ id: 'ENTITIES_WORKFLOW', enable: true }] },
+      }),
+    });
+    const transition = { ...instance(null).allowedTransitions[0], closingReason: 'allowed' };
+    await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+      Report: () => ({
+        id: 'entity-1', currentUserAccessRight: 'edit', status: status('A'), x_opencti_closing_reason: 'duplicate',
+        workflowInstance: { ...instance(null), allowedTransitions: [transition] },
+      }),
+    })));
+    await rendered.user.click(screen.getByRole('button', { name: 'approve' }));
+    await rendered.user.click(await screen.findByRole('button', { name: 'Confirm' }));
+    const mutation = rendered.relayEnv.mock.getAllOperations().find((operation) => operation.request.node.params.name === 'WorkflowStatusTriggerMutation');
+    expect(mutation?.request.variables).toMatchObject({ eventName: 'approve', closingReason: 'duplicate' });
   });
 
   it('cancels polling and the active refresh on unmount', async () => {
