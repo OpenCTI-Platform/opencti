@@ -31,6 +31,10 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
+import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
+import { CUSTOM_FIELD_PREFIX } from '../../customField/custom-field-types';
+import { getCustomFieldDefinitionsForEntityType } from '../../customField/custom-field-cache';
+import { buildCustomFieldPlaybookOperations } from '../../customField/custom-field-playbook';
 
 const attributePathMapping: any = {
   [INPUT_MARKINGS]: {
@@ -192,6 +196,10 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       return value;
     };
 
+    const customFieldActions = isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)
+      ? actions.filter((action) => action.attribute.startsWith(CUSTOM_FIELD_PREFIX))
+      : [];
+
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
@@ -269,6 +277,15 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
             applyOperationFieldPatch(element, operationObject);
           }
           pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
+        }
+        // Custom fields depend on the definitions attached to the element type
+        if (customFieldActions.length > 0) {
+          const definitions = await getCustomFieldDefinitionsForEntityType(context, AUTOMATION_MANAGER_USER, type);
+          const customFieldOperations = buildCustomFieldPlaybookOperations(element, `/objects/${index}`, customFieldActions, definitions);
+          if (id && customFieldOperations.upsertOperations.length > 0) {
+            applyOperationFieldPatch(element, customFieldOperations.upsertOperations);
+          }
+          pushAll(patchOperations, customFieldOperations.patchOperations);
         }
       }
     }

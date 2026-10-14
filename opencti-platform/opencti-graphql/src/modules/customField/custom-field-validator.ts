@@ -135,7 +135,7 @@ const verifyAddInputValueType = (
   return true;
 };
 
-const extractCustomFieldValueFromAddInputValue = (
+export const extractCustomFieldValueFromAddInputValue = (
   customFieldValueAddInputValue: any[],
   customFieldDefinition: BasicStoreEntityCustomFieldDefinition,
 ) => {
