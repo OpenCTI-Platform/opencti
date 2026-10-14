@@ -224,11 +224,6 @@ const SETTINGS_SET_ACCESS_KEYS = [
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
   'password_policy_validity_days',
-  'local_auth_lockout_enabled',
-  'local_auth_lockout_max_attempts',
-  'local_auth_lockout_window',
-  'local_auth_lockout_duration',
-  'local_auth_lockout_max_duration',
   'smtp_configuration',
 ];
 

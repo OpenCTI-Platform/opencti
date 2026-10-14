@@ -65,6 +65,12 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   local_auth_lockout_max_duration: 180, // minutes, 3h
 };
 
+// Upper bounds of the lockout policy, mirrored by the local strategy form
+export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
+export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 43200; // minutes, 30 days
+// Locks are capped to 3h by the specification: the max duration can only be lowered
+export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration;
+
 const buildLocalAuthLockoutPatch = (currentSettings: BasicStoreSettings, input: LocalAuthConfigInput) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return {};
@@ -76,6 +82,11 @@ const buildLocalAuthLockoutPatch = (currentSettings: BasicStoreSettings, input: 
     ...(input.local_auth_lockout_duration !== undefined && { local_auth_lockout_duration: input.local_auth_lockout_duration }),
     ...(input.local_auth_lockout_max_duration !== undefined && { local_auth_lockout_max_duration: input.local_auth_lockout_max_duration }),
   };
+  // Leaving the values untouched or disabling the lockout never checks them, so stored values cannot block other local auth updates
+  const changesValues = Object.keys(patch).some((key) => key !== 'local_auth_lockout_enabled');
+  if (!changesValues && patch.local_auth_lockout_enabled !== true) {
+    return patch;
+  }
   // Validate the values the settings will hold once patched (a null input falls back to the default)
   const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration' | 'local_auth_lockout_max_duration') => {
     const value = key in patch ? input[key] : currentSettings[key];
@@ -88,6 +99,9 @@ const buildLocalAuthLockoutPatch = (currentSettings: BasicStoreSettings, input: 
   if (maxAttempts < 1) {
     throw FunctionalError('Lockout max attempts must be greater or equal to 1', { local_auth_lockout_max_attempts: maxAttempts });
   }
+  if (maxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
+    throw FunctionalError(`Lockout max attempts must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
+  }
   if (lockoutWindow <= 0) {
     throw FunctionalError('Lockout window must be greater than 0', { local_auth_lockout_window: lockoutWindow });
   }
@@ -96,6 +110,13 @@ const buildLocalAuthLockoutPatch = (currentSettings: BasicStoreSettings, input: 
   }
   if (maxDuration <= 0) {
     throw FunctionalError('Lockout max duration must be greater than 0', { local_auth_lockout_max_duration: maxDuration });
+  }
+  if (lockoutWindow > LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT) {
+    throw FunctionalError(`Lockout window must be lower or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`, { local_auth_lockout_window: lockoutWindow });
+  }
+  // The duration is capped too, as it cannot exceed the max duration
+  if (maxDuration > LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT) {
+    throw FunctionalError(`Lockout max duration must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`, { local_auth_lockout_max_duration: maxDuration });
   }
   if (duration > maxDuration) {
     throw FunctionalError('Lockout duration must be lower or equal to lockout max duration', {
