@@ -130,6 +130,9 @@ Will not be published.
 
 ```
 
+> [!WARNING]
+> With `render_macros: true`, the **whole page** is processed by Jinja, code blocks included: any `{{`, `{%` or `{#` breaks the build (`on_undefined: strict`).
+> Wrap such content in `{% raw %}` … `{% endraw %}`. 
 To render locally with your feature flag:
 
 ```sh
@@ -141,7 +144,7 @@ mkdocs serve
 
 #### For full new pages that should not be published yet
 
-You can use the `feature-flags`, all documentation inside is exxcluded from the publication.
+You can use the `feature-flags`, all documentation inside is excluded from the publication.
 See also `/docs/feature-flags/feature_under_ff_doc_example.md`
 
 ```sh
@@ -150,10 +153,10 @@ mkdocs serve
 ```
 
 And then open the page with direct URL such as `http://127.0.0.1:8000/feature-flags/feature_under_ff_doc_example/`.
-The URL should be display in the `mkdocs serve` logs.
+The URL should be displayed in the `mkdocs serve` logs.
 
 
-If you want to see the publicated site only:
+If you want to see the published site only:
 
 ```sh
 mkdocs build

@@ -42,4 +42,4 @@ fds-migration/reports/
 .env.development.local
 
 # Docs
-__pycache__
+__pycache__/
