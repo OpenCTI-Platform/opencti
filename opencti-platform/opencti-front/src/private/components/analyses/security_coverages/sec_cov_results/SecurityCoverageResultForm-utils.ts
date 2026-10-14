@@ -1,31 +1,18 @@
 import { convertCreatedBy, convertMarkings } from '../../../../../utils/edition';
 import { FieldOption } from '../../../../../utils/field';
 import type { SecurityCoverageResultFormData } from './SecurityCoverageResultFormDetails';
+import type { SecurityCoverageResultFormDrawerFragment$data } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
 
 export interface ExistingSecurityCoverageResult {
   name: string;
   external_uri?: string | null;
 }
 
-export interface EditableSecurityCoverageResult extends ExistingSecurityCoverageResult {
-  id: string;
-  coverage_valid_from?: string | null;
-  coverage_valid_to?: string | null;
-  coverage_information?: readonly { coverage_name: string; coverage_score: number }[] | null;
-  createdBy?: { id: string; name: string; entity_type: string } | null;
-  objectMarking?: readonly {
-    id: string;
-    definition?: string | null;
-    definition_type?: string | null;
-    x_opencti_color?: string | null;
-    x_opencti_order: number;
-  }[] | null;
-  objectLabel?: readonly { id: string; value: string | null | undefined; color: string | null | undefined }[] | null;
-}
+export type SecurityCoverageResultToEdit = NonNullable<SecurityCoverageResultFormDrawerFragment$data['results']>[number];
 
 export const isManualResult = (result: ExistingSecurityCoverageResult) => !result.external_uri;
 
-export const resultToFormData = (result: EditableSecurityCoverageResult): SecurityCoverageResultFormData => ({
+export const resultToFormData = (result: SecurityCoverageResultToEdit): SecurityCoverageResultFormData => ({
   name: result.name,
   // Not editable in update mode: a result has no description nor confidence.
   description: '',

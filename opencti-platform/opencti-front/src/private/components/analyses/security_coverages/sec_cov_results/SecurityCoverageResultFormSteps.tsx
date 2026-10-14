@@ -15,10 +15,10 @@ const SecurityCoverageResultFormSteps = ({
   const { t_i18n } = useFormatter();
 
   const steps = [
-    ...(isUpdate ? ['Select security coverage result to update'] : []),
-    'Coverage Result details',
-    'Select entities to test coverage',
-    'Add coverage scores to relationships',
+    ...(isUpdate ? [t_i18n('Select security coverage result to update')] : []),
+    t_i18n('Coverage Result details'),
+    t_i18n('Select entities to test coverage'),
+    t_i18n('Add coverage scores to relationships'),
   ];
   const lastStep = steps.length - 1;
 
@@ -31,7 +31,7 @@ const SecurityCoverageResultFormSteps = ({
       {steps.map((label, step) => (
         <Step key={label} disabled={stepDisabled(step)}>
           <StepButton onClick={step < lastStep ? () => onStepClick(step) : undefined}>
-            {t_i18n(label)}
+            {label}
           </StepButton>
         </Step>
       ))}

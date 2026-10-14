@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import SecurityCoverageResultFormSteps from './SecurityCoverageResultFormSteps';
 import SecurityCoverageResultFormDetails, { SecurityCoverageResultFormData } from './SecurityCoverageResultFormDetails';
 import SelectEntitiesToCoverStep from '../security_coverage_creation/select_entities_to_cover_step/SelectEntitiesToCoverStep';
-import { SecurityCoverageResultFormDrawerFragment$data, SecurityCoverageResultFormDrawerFragment$key } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
+import { SecurityCoverageResultFormDrawerFragment$key } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
 import { SelectedEntities } from '../security_coverage_creation/SecurityCoverageCreation-types';
 import { SecurityCoverageResultCreationMutation } from './__generated__/SecurityCoverageResultCreationMutation.graphql';
 import { SecurityCoverageResultEditionMutation } from './__generated__/SecurityCoverageResultEditionMutation.graphql';
@@ -20,8 +20,8 @@ import { formatDate } from '../../../../../utils/Time';
 import { CoverageInformation } from '../SecurityCoverage-types';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
-import SecurityCoverageResultSelectStep from './SecurityCoverageResultSelectStep';
-import { isManualResult, resultToFormData } from './SecurityCoverageResultForm-utils';
+import SecurityCoverageResultList from './SecurityCoverageResultList';
+import { isManualResult, resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -87,8 +87,6 @@ const securityCoverageResultEditionMutation = graphql`
   }
 `;
 
-type SecurityCoverageResultToEdit = NonNullable<SecurityCoverageResultFormDrawerFragment$data['results']>[number];
-
 interface SecurityCoverageResultFormDrawerProps {
   data: SecurityCoverageResultFormDrawerFragment$key;
 }
@@ -122,7 +120,10 @@ const SecurityCoverageResultFormDrawer = ({
   const submitting = creating || updating;
 
   const notifySuccess = (hasRelatedEntities: boolean) => {
-    const successMessage = `${t_i18n('entity_Security-Coverage-Result')} ${t_i18n(isUpdate ? 'successfully updated' : 'successfully created')}`;
+    const entityType = t_i18n('entity_Security-Coverage-Result');
+    const successMessage = isUpdate
+      ? t_i18n('{entity_type} successfully updated', { values: { entity_type: entityType } })
+      : t_i18n('{entity_type} successfully created', { values: { entity_type: entityType } });
     if (!hasRelatedEntities) {
       MESSAGING$.notifySuccess(successMessage);
       return;
@@ -133,9 +134,9 @@ const SecurityCoverageResultFormDrawer = ({
     MESSAGING$.notifySuccess(
       <span>
         {successMessage}.{' '}
-        {t_i18n('Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on')}{' '}
-        {monitoringLink}
-        .
+        {t_i18n('Has-covered relationships are being created by a background task and will appear in the results after a refresh. You can monitor it on {link}.', {
+          values: { link: monitoringLink },
+        })}
       </span>,
     );
   };
@@ -258,7 +259,7 @@ const SecurityCoverageResultFormDrawer = ({
           />
 
           {isUpdate && activeStep === 0 && (
-            <SecurityCoverageResultSelectStep
+            <SecurityCoverageResultList
               results={manualResults}
               onCancel={close}
               onSelect={(result) => {
