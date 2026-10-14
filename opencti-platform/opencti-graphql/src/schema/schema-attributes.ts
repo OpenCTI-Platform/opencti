@@ -55,7 +55,7 @@ const isEnabledMapping = (mapping: MappingDefinition) => !mapping.featureFlag ||
 
 /**
  * Check that two attributes sharing the same name are stored the same way, as they share the same engine mapping.
- * Mappings of nested objects are checked recursively, path being the dotted path of the mapping inside the nested object.
+ * Mappings of objects (standard and nested) are checked recursively, path being the dotted path of the mapping inside the object.
  */
 const checkAttributesHomogeneity = (
   existingAttribute: AttributeDefinition,
@@ -77,8 +77,8 @@ const checkAttributesHomogeneity = (
   if (existingAttribute.type === 'object' && attribute.type === 'object' && existingAttribute.format !== attribute.format) {
     throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
   }
-  // Nested objects with the same name share the same engine mapping, so their mappings must be identical
-  if (isObjectAttributeWithMappings(existingAttribute) && isObjectAttributeWithMappings(attribute) && (path || attribute.format === 'nested')) {
+  // Objects with the same name share the same engine mapping, so their mappings must be identical
+  if (isObjectAttributeWithMappings(existingAttribute) && isObjectAttributeWithMappings(attribute)) {
     const existingMappings = new Map(existingAttribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
     const mappings = new Map(attribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
     new Set([...existingMappings.keys(), ...mappings.keys()]).forEach((name) => {
@@ -86,7 +86,7 @@ const checkAttributesHomogeneity = (
       const existingMapping = existingMappings.get(name);
       const mapping = mappings.get(name);
       if (!existingMapping || !mapping) {
-        throw UnsupportedError('You can\'t have two nested attributes with the same name and different mappings in the platform', { ...errorData, path: mappingPath });
+        throw UnsupportedError('You can\'t have two object attributes with the same name and different mappings in the platform', { ...errorData, path: mappingPath });
       }
       checkAttributesHomogeneity(existingMapping, mapping, mappingPath);
     });

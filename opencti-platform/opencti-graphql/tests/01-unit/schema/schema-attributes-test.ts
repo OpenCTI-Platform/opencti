@@ -29,7 +29,7 @@ const registerSameName = (existingAttribute: AttributeDefinition, attribute: Att
   return () => schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_GROUP, [attribute]);
 };
 
-const NESTED_ERROR = 'You can\'t have two nested attributes with the same name and different mappings in the platform';
+const MAPPINGS_ERROR = 'You can\'t have two object attributes with the same name and different mappings in the platform';
 const TYPE_ERROR = 'You can\'t have two attributes with the same name and a different type in the platform';
 const STRING_FORMAT_ERROR = 'You can\'t have two string attributes with the same name and different format if the formats are not both short format';
 
@@ -76,12 +76,15 @@ describe('Schema attributes registration of attributes with the same name', () =
   });
 });
 
-describe('Schema attributes registration of nested objects', () => {
+describe.each([
+  { format: 'standard', object: standard },
+  { format: 'nested', object: nested },
+])('Schema attributes registration of $format objects', ({ format, object }) => {
   const register = (name: string, existingMappings: MappingDefinition[], mappings: MappingDefinition[]) => {
-    return registerSameName(nested(name, existingMappings), nested(name, mappings));
+    return registerSameName(object(`${format}_${name}`, existingMappings), object(`${format}_${name}`, mappings));
   };
 
-  it('should accept nested objects with identical mappings', () => {
+  it('should accept objects with identical mappings', () => {
     const sub = nested('test_sub', [short('test_value')]);
     const registration = register('test_identical', [short('test_id'), integer('test_count'), sub], [integer('test_count'), sub, short('test_id')]);
     expect(registration).not.toThrow();
@@ -92,27 +95,27 @@ describe('Schema attributes registration of nested objects', () => {
     expect(register('test_short_formats', [short('test_id')], [idMapping])).not.toThrow();
   });
 
-  it('should reject nested objects with missing or additional mappings', () => {
-    expect(register('test_missing', [short('test_id'), short('test_name')], [short('test_id')])).toThrow(NESTED_ERROR);
-    expect(register('test_additional', [short('test_id')], [short('test_id'), short('test_name')])).toThrow(NESTED_ERROR);
+  it('should reject objects with missing or additional mappings', () => {
+    expect(register('test_missing', [short('test_id'), short('test_name')], [short('test_id')])).toThrow(MAPPINGS_ERROR);
+    expect(register('test_additional', [short('test_id')], [short('test_id'), short('test_name')])).toThrow(MAPPINGS_ERROR);
   });
 
-  it('should reject nested objects with mappings of a different storage', () => {
+  it('should reject objects with mappings of a different storage', () => {
     expect(register('test_string_format', [short('test_id')], [text('test_id')])).toThrow(STRING_FORMAT_ERROR);
     expect(register('test_type', [short('test_id')], [integer('test_id')])).toThrow(TYPE_ERROR);
     expect(register('test_precision', [integer('test_count')], [float('test_count')])).toThrow(TYPE_ERROR);
   });
 
-  it('should ignore nested mappings under a disabled feature flag', () => {
+  it('should ignore mappings under a disabled feature flag', () => {
     const disabledMapping = { ...short('test_name'), featureFlag: DISABLED_FEATURE_FLAG };
     expect(register('test_ff_disabled_mapping', [short('test_id')], [short('test_id'), disabledMapping])).not.toThrow();
     const enabledMapping = { ...short('test_name'), featureFlag: ENABLED_FEATURE_FLAG };
-    expect(register('test_ff_enabled_mapping', [short('test_id')], [short('test_id'), enabledMapping])).toThrow(NESTED_ERROR);
+    expect(register('test_ff_enabled_mapping', [short('test_id')], [short('test_id'), enabledMapping])).toThrow(MAPPINGS_ERROR);
   });
 
-  it('should reject nested objects with inconsistencies deep inside sub objects', () => {
+  it('should reject objects with inconsistencies deep inside sub objects', () => {
     const missing = register('test_deep_missing', [nested('test_sub', [short('test_value')])], [nested('test_sub', [])]);
-    expect(missing).toThrow(NESTED_ERROR);
+    expect(missing).toThrow(MAPPINGS_ERROR);
     const type = register('test_deep_type', [nested('test_sub', [short('test_value')])], [nested('test_sub', [integer('test_value')])]);
     expect(type).toThrow(TYPE_ERROR);
   });
