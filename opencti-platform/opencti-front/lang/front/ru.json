@@ -2285,6 +2285,8 @@
   "False": "Ложь",
   "False positive": "Ложное срабатывание",
   "Favorite entities": "Любимые сущности",
+  "Feed execution failed": "Ошибка при выполнении фида",
+  "Feed execution failed: {failure}": "Ошибка при выполнении фида: {failure}",
   "Feedback": "Обратная связь",
   "Feedback already submitted": "Оценка уже отправлена",
   "Feedbacks": "Отзывы",

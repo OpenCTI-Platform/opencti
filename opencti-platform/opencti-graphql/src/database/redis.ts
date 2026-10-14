@@ -976,7 +976,7 @@ export interface IngestionLogEntry {
   meta?: Record<string, unknown>;
 }
 
-const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
+export const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
 
 export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
   try {

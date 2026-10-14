@@ -2285,6 +2285,8 @@
   "False": "Falsch",
   "False positive": "Falsch positiv",
   "Favorite entities": "Bevorzugte Entitäten",
+  "Feed execution failed": "Die Ausführung des Feeds ist fehlgeschlagen",
+  "Feed execution failed: {failure}": "Die Ausführung des Feeds ist fehlgeschlagen: {failure}",
   "Feedback": "Rückmeldungen",
   "Feedback already submitted": "Feedback bereits gesendet",
   "Feedbacks": "Rückmeldungen",

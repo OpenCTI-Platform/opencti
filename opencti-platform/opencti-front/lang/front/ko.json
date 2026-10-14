@@ -2285,6 +2285,8 @@
   "False": "False",
   "False positive": "오탐",
   "Favorite entities": "즐겨찾기 엔터티",
+  "Feed execution failed": "피드 실행에 실패했습니다",
+  "Feed execution failed: {failure}": "피드 실행에 실패했습니다: {failure}",
   "Feedback": "피드백",
   "Feedback already submitted": "피드백이 이미 제출되었습니다",
   "Feedbacks": "피드백",
