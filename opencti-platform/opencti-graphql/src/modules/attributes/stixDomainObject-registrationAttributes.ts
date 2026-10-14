@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../../config/conf';
+
 import {
   aliases,
   type AttributeDefinition,
@@ -81,6 +83,7 @@ const closingReason: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: true,
+  featureFlag: ENTITIES_WORKFLOW_FEATURE_FLAG,
 };
 
 const stixDomainObjectAttributes: Array<AttributeDefinition<any>> = [
