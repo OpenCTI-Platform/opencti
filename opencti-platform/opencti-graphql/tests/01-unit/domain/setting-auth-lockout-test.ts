@@ -5,7 +5,13 @@ import { Kind, parse, type ObjectTypeDefinitionNode, type StringValueNode } from
 import { isFeatureEnabled } from '../../../src/config/conf';
 import { patchAttribute } from '../../../src/database/middleware';
 import { getEntityFromCache } from '../../../src/database/cache';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS, updateLocalAuth } from '../../../src/domain/setting-auth';
+import {
+  LOCAL_AUTH_LOCKOUT_DEFAULTS,
+  LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
+  LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT,
+  LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT,
+  updateLocalAuth,
+} from '../../../src/domain/setting-auth';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 
@@ -82,6 +88,52 @@ describe('updateLocalAuth - lockout policy', () => {
     mockStoredSettings({ local_auth_lockout_max_duration: 30 });
     await updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_duration: 20, local_auth_lockout_max_duration: null });
     expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, local_auth_lockout_duration: 20, local_auth_lockout_max_duration: null });
+  });
+
+  it('should not check an invalid stored policy when the input leaves it untouched', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockStoredSettings({ local_auth_lockout_duration: 500, local_auth_lockout_max_duration: 120 });
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, password_policy_min_length: 8 });
+    expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, password_policy_min_length: 8 });
+  });
+
+  it('should not check an invalid stored policy when the input disables the lockout', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockStoredSettings({ local_auth_lockout_duration: 500, local_auth_lockout_max_duration: 120 });
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_enabled: false });
+    expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, local_auth_lockout_enabled: false });
+  });
+
+  it('should check the stored policy when the input enables the lockout', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockStoredSettings({ local_auth_lockout_duration: 500, local_auth_lockout_max_duration: 120 });
+    await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_enabled: true }))
+      .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['max attempts', { local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT + 1 }, `Lockout max attempts must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`],
+    ['window', { local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT + 1 }, `Lockout window must be lower or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`],
+    ['max duration', { local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT + 1 }, `Lockout max duration must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`],
+  ])('should reject a %s above its upper bound', async (_, lockoutInput, expectedMessage) => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCKOUT_INPUT, ...lockoutInput }))
+      .rejects.toThrowError(expectedMessage);
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should accept every value at its upper bound', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    const boundInput = {
+      ...LOCKOUT_INPUT,
+      local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
+      local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT,
+      local_auth_lockout_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT,
+      local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT,
+    };
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...boundInput });
+    expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, ...boundInput });
   });
 });
 
