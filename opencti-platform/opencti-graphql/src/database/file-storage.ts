@@ -407,6 +407,19 @@ export interface SyncFileReferenceCopyProps {
   importContextEntities?: BasicStoreEntity[];
 }
 
+const normalizeAndValidateFileMarkings = async (context: AuthContext, user: AuthUser, fileMarkings: string[]): Promise<string[]> => {
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalizedMarkings = fileMarkings.map((m) => {
+    const marking = markings.get(m);
+    return marking ? marking.internal_id : m;
+  });
+  const filteredMarkings = normalizedMarkings.filter((id) => id);
+  for (let index = 0; index < filteredMarkings.length; index += 1) {
+    await validateMarking(context, user, filteredMarkings[index], markings);
+  }
+  return filteredMarkings;
+};
+
 const resolveSyncCopyTargetId = (context: AuthContext, user: AuthUser, filePath: string, name: string) => {
   const truncatedName = `${truncate(path.parse(name).name, 200, false)}${truncate(path.parse(name).ext, 10, false)}`;
   const draftContext = getDraftContext(context, user);
@@ -495,6 +508,8 @@ export const copyFileFromSyncReference = async (
     logApp.warn('[FILE STORAGE] Rejected sync file reference copy: invalid or unauthorized storage_key', { syncId, reason: validation.reason });
     return null;
   }
+  const fileMarkings = await normalizeAndValidateFileMarkings(context, user, copyProps.fileMarkings ?? []);
+  const validatedCopyProps: SyncFileReferenceCopyProps = { ...copyProps, fileMarkings };
   let lock;
   try {
     lock = await lockResources([`sync-inflight-copy:${validation.normalizedKey}`], { retryCount: 0 });
@@ -509,7 +524,7 @@ export const copyFileFromSyncReference = async (
       await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId);
       return { upload: untouchedFile, untouched: true };
     }
-    const file = await copyAndIndexSyncFile(context, user, validation.normalizedKey, targetId, truncatedName, copyProps);
+    const file = await copyAndIndexSyncFile(context, user, validation.normalizedKey, targetId, truncatedName, validatedCopyProps);
     if (await deleteStagedSyncFile(validation.normalizedKey, syncId, targetId)) {
       logApp.info('[FILE STORAGE] Copy referenced sync file to S3 in success', { document: file, storageKey: validation.normalizedKey, targetId });
     }
@@ -783,17 +798,7 @@ export const upload = async (
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [], creatorId: creatorIdOpt } = opts;
-  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const normalized_file_markings = file_markings?.map((m) => {
-    const marking = markings.get(m);
-    return marking ? marking.internal_id : m;
-  }) ?? [];
-  const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
-  // Verify markings
-  for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
-    const markingId = filtered_markings[index];
-    await validateMarking(context, user, markingId, markings);
-  }
+  const filtered_markings = await normalizeAndValidateFileMarkings(context, user, file_markings ?? []);
   const metadata: FileMetadata = { ...meta };
   if (!metadata.version) {
     metadata.version = now();

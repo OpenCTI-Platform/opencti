@@ -8,6 +8,8 @@ const mockFindById = vi.fn(async (..._args: unknown[]) => undefined as unknown);
 const mockUnlock = vi.fn();
 const mockLockResources = vi.fn(async (..._args: unknown[]) => ({ unlock: mockUnlock }));
 const mockConnectorsForImport = vi.fn(async (..._args: unknown[]) => [] as unknown[]);
+const TLP_AMBER = { internal_id: 'marking-internal-amber', standard_id: 'marking-definition--amber', entity_type: 'Marking-Definition' };
+const mockGetEntitiesMapFromCache = vi.fn(async (..._args: unknown[]) => new Map([[TLP_AMBER.internal_id, TLP_AMBER], [TLP_AMBER.standard_id, TLP_AMBER]]));
 
 vi.mock('../../../src/database/raw-file-storage', () => ({
   rawCopyFile: (...args: unknown[]) => mockRawCopyFile(...args),
@@ -21,6 +23,10 @@ vi.mock('../../../src/modules/internal/document/document-domain', () => ({
   allFilesForPaths: vi.fn(),
   deleteDocumentIndex: vi.fn(),
   findById: (...args: unknown[]) => mockFindById(...args),
+}));
+vi.mock('../../../src/database/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/cache')>()),
+  getEntitiesMapFromCache: (...args: unknown[]) => mockGetEntitiesMapFromCache(...args),
 }));
 vi.mock('../../../src/lock/master-lock', () => ({
   lockResources: (...args: unknown[]) => mockLockResources(...args),
@@ -39,7 +45,7 @@ vi.mock('../../../src/utils/confidence-level', () => ({
 
 const SYNC_ID = 'sync-id-1';
 const context = {} as never;
-const user = { id: 'user-1' } as never;
+const user = { id: 'user-1', allowed_marking: [{ internal_id: TLP_AMBER.internal_id }] } as never;
 
 describe('copyFileFromSyncReference', () => {
   afterEach(() => {
@@ -81,7 +87,7 @@ describe('copyFileFromSyncReference', () => {
       name: 'report.pdf',
       mimeType: 'application/pdf',
       version: '2024-01-01T00:00:00.000Z',
-      fileMarkings: ['marking-1'],
+      fileMarkings: [TLP_AMBER.standard_id],
       entityId: 'entity-1',
     });
 
@@ -94,7 +100,7 @@ describe('copyFileFromSyncReference', () => {
         version: '2024-01-01T00:00:00.000Z',
         mimetype: 'application/pdf',
         entity_id: 'entity-1',
-        file_markings: ['marking-1'],
+        file_markings: [TLP_AMBER.internal_id],
       }),
     }));
     expect(mockDeleteFileFromStorage).toHaveBeenCalledWith('sync/inflight/sync-id-1/remote-file-1/content');
@@ -102,6 +108,20 @@ describe('copyFileFromSyncReference', () => {
     expect(result?.untouched).toEqual(false);
     expect(mockLockResources).toHaveBeenCalledWith(['sync-inflight-copy:sync/inflight/sync-id-1/remote-file-1/content'], { retryCount: 0 });
     expect(mockUnlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a marking the user does not hold before anything is copied, same as a direct upload', async () => {
+    const { copyFileFromSyncReference } = await import('../../../src/database/file-storage');
+
+    await expect(copyFileFromSyncReference(context, { id: 'user-1', allowed_marking: [] } as never, SYNC_ID, 'import/Report/entity-1', {
+      storageKey: 'sync/inflight/sync-id-1/remote-file-1/content',
+      name: 'report.pdf',
+      fileMarkings: [TLP_AMBER.standard_id],
+      entityId: 'entity-1',
+    })).rejects.toThrow('User trying to create the data has missing markings');
+
+    expect(mockRawCopyFile).not.toHaveBeenCalled();
+    expect(mockIndexFileToDocument).not.toHaveBeenCalled();
   });
 
   it('skips the copy and marks the result untouched when the target already has this version (re-sync of an already-attached file)', async () => {
