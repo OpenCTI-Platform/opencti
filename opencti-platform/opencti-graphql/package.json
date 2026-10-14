@@ -182,7 +182,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "ws": "8.22.0",
     "xml2js": "0.6.2",
-    "zod": "4.6.5"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
