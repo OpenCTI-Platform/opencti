@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findDuplicateResultField, isManualResult, resultToFormData } from './SecurityCoverageResultForm-utils';
+import { findDuplicateResultField, isManualResult, resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
 
 const existingResults = [
   { name: 'Result of my coverage', external_uri: null },
@@ -53,12 +53,21 @@ describe('isManualResult', () => {
 });
 
 describe('resultToFormData', () => {
-  const baseResult = { id: 'scr-1', name: 'Manual result' };
+  const baseResult: SecurityCoverageResultToEdit = {
+    id: 'scr-1',
+    name: 'Manual result',
+    external_uri: null,
+    coverage_valid_from: null,
+    coverage_valid_to: null,
+    coverage_information: null,
+    createdBy: null,
+    objectMarking: null,
+    objectLabel: null,
+  };
 
   it('should fill the form with the values of the result', () => {
     const formData = resultToFormData({
       ...baseResult,
-      external_uri: null,
       coverage_valid_from: '2026-01-01T00:00:00.000Z',
       coverage_valid_to: '2026-12-31T00:00:00.000Z',
       coverage_information: [{ coverage_name: 'detection', coverage_score: 80 }],

@@ -4,19 +4,19 @@ import Button from '../../../../../components/common/button/Button';
 import { useFormatter } from '../../../../../components/i18n';
 import SecurityCoverageScores from '../security_coverage_scores/SecurityCoverageScores';
 import StixCoreObjectLabels from '../../../common/stix_core_objects/StixCoreObjectLabels';
-import { EditableSecurityCoverageResult } from './SecurityCoverageResultForm-utils';
+import { SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
 
-interface SecurityCoverageResultSelectStepProps<T extends EditableSecurityCoverageResult> {
-  results: readonly T[];
-  onSelect: (result: T) => void;
+interface SecurityCoverageResultListProps {
+  results: readonly SecurityCoverageResultToEdit[];
+  onSelect: (result: SecurityCoverageResultToEdit) => void;
   onCancel: () => void;
 }
 
-const SecurityCoverageResultSelectStep = <T extends EditableSecurityCoverageResult>({
+const SecurityCoverageResultList = ({
   results,
   onSelect,
   onCancel,
-}: SecurityCoverageResultSelectStepProps<T>) => {
+}: SecurityCoverageResultListProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -54,4 +54,4 @@ const SecurityCoverageResultSelectStep = <T extends EditableSecurityCoverageResu
   );
 };
 
-export default SecurityCoverageResultSelectStep;
+export default SecurityCoverageResultList;
