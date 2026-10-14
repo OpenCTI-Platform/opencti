@@ -135,7 +135,7 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  callback(elements);
+  await callback(elements);
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {

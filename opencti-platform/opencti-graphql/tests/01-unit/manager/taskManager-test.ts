@@ -3,6 +3,7 @@ import {
   baseOperationBuilder,
   buildContainersElementsBundle,
   sendResultToQueue,
+  taskList,
   workflowBypassOperationCallback,
   workflowTransitionOperationCallback,
 } from '../../../src/manager/taskManager';
@@ -12,6 +13,7 @@ import { pushBundleToWorker } from '../../../src/database/rabbitmq';
 import { reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
 import { updateTask } from '../../../src/domain/backgroundTask';
 import { setWorkflowStatus, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import { internalFindByIds } from '../../../src/database/middleware-loader';
 import {
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
@@ -104,6 +106,7 @@ const relationshipElement = {
 
 vi.mock('../../../src/database/middleware-loader', () => {
   return {
+    internalFindByIds: vi.fn(),
     fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
       const { callback, fromOrToId } = args;
       const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
@@ -576,5 +579,22 @@ describe('workflowTransitionOperationCallback', () => {
     expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
     expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'Transition not allowed', source: 'entity-1' });
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
+  });
+});
+
+describe('taskList', () => {
+  it('should wait for the callback to process the elements', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'entity-1' }] as any);
+    let processed = false;
+    const callback = async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+      processed = true;
+    };
+
+    await taskList(testContext, ADMIN_USER, { task_ids: ['entity-1'] }, callback);
+
+    expect(processed).toBe(true);
   });
 });
