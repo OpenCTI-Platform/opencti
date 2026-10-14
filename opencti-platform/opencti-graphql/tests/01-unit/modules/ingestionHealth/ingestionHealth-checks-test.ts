@@ -3,6 +3,7 @@ import {
   buildHealthTransitionMessage,
   buildIngestionHealthContext,
   computeHealthTransition,
+  HEALTH_NOTIFICATION_DELAY_MS,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   isRuntimeCheckEnabled,
@@ -10,21 +11,31 @@ import {
   toGraphqlHealthChecks,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
-import { HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_REGISTRY, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import {
+  HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+  HEALTH_CHECK_HEARTBEAT_MISSING,
+  HEALTH_CHECK_REGISTRY,
+  HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+  type HealthCheckIngestor,
+  type HealthCheckUser,
+} from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
-import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
+import type { StoredHealthCheck, StoredIngestionHealth } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
-const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), isExistingUser: () => true };
+const SERVICE_ACCOUNT = { internal: false, user_service_account: true };
+const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), user: SERVICE_ACCOUNT };
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
 // Not in the registry (stored by another platform version): never changes the status
 const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
 const CONNECTOR = { internal_id: 'connector-id', entity_type: 'Connector' };
 const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
+const SYNC = { internal_id: 'sync-id', entity_type: 'Sync' };
 const PINGING = { pingingConnectorsIds: new Set([CONNECTOR.internal_id]) };
 const NOT_PINGING = { pingingConnectorsIds: new Set<string>() };
 
@@ -137,44 +148,39 @@ describe('computeIngestionHealthPatch with runtime data', () => {
 });
 
 describe('heartbeat check', () => {
-  const isExistingUser = () => true;
   const input = { ...CONNECTOR, connector_user_id: 'user' };
 
   it('should flag a missing heartbeat when the source reports one', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: {}, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: {} })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat that is there', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } })).toEqual([]);
   });
 
   it('should not flag a heartbeat younger than the max age', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS - 1000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat } })).toEqual([]);
   });
 
   it('should flag a heartbeat older than the max age as missing', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
     const runtimeData = { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat };
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat in the future, clock skew between nodes', () => {
     const heartbeat = utcDate(EVALUATED_AT).add(10_000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: heartbeat } })).toEqual([]);
   });
 
   it('should not flag sources without heartbeat, such as feeds and syncs', () => {
-    expect(computeIngestionHealthChecks({ ...FEED, user_id: 'user' }, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks({ ...FEED, user_id: 'user' }, { ...CONTEXT, ...PINGING })).toEqual([]);
   });
 
   it('should not flag connectors not pinging continuously, such as run and terminate ones', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...NOT_PINGING, isExistingUser })).toEqual([]);
-  });
-
-  it('should not flag built-in connectors', () => {
-    expect(computeIngestionHealthChecks({ ...input, built_in: true }, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...NOT_PINGING })).toEqual([]);
   });
 
   it('should be healthy with a fresh heartbeat when the connector pings continuously', () => {
@@ -187,16 +193,10 @@ describe('heartbeat check', () => {
     expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, context), context)).toBeNull();
   });
 
-  it('should give no status with a fresh heartbeat on a built-in connector', () => {
-    const builtIn = { ...input, built_in: true };
-    const context = buildIngestionHealthContext(builtIn, { ...CONTEXT, ...PINGING, runtimeData: { [HEALTH_CHECK_HEARTBEAT_MISSING]: EVALUATED_AT } });
-    expect(computeIngestionHealthPatch({}, computeIngestionHealthChecks(builtIn, context), context)).toBeNull();
-  });
-
   it('should give a critical status with the check message', () => {
-    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, isExistingUser }), CONTEXT);
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING }), CONTEXT);
     expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
-    expect(toGraphqlIngestionHealth(patch?.ingestion_health)?.healthChecks).toEqual([{
+    expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
       health_check_message: 'No heartbeat received',
       health_check_kind: IngestionHealthCheckKind.Runtime,
@@ -215,19 +215,64 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
   });
 
-  it('should be false for a built-in connector', () => {
-    expect(isRuntimeCheckEnabled({ ...CONNECTOR, built_in: true }, { ...CONTEXT, ...PINGING })).toBe(false);
+  it('should be true for feeds and syncs, whose last execution is checked', () => {
+    expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+    expect(isRuntimeCheckEnabled(SYNC, { ...CONTEXT, ...NOT_PINGING })).toBe(true);
+  });
+});
+
+describe('execution failed check', () => {
+  const NOT_FOUND = { http_status: 404, http_status_text: 'Not Found', error_code: 'ERR_BAD_REQUEST' };
+  const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { level: 'error' as const, meta } } });
+  const messageOf = (meta?: Record<string, unknown>, ingestor = FEED) => {
+    return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0]?.health_check_message;
+  };
+
+  it('should flag a feed or sync whose last execution failed, with the details of the failure', () => {
+    expect(computeIngestionHealthChecks(FEED, failedWith(NOT_FOUND)))
+      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: NOT_FOUND }]);
   });
 
-  it('should be false for feeds and syncs, which have no runtime check', () => {
-    expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...PINGING })).toBe(false);
+  it.each(['IngestionRss', 'IngestionCsv', 'IngestionJson', 'IngestionTaxii', 'Sync'])('should evaluate %s', (entityType) => {
+    expect(computeIngestionHealthChecks({ ...FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toHaveLength(1);
+  });
+
+  it.each(['IngestionTaxiiCollection', 'Connector'])('should not evaluate %s, not executed by the ingestion or sync manager', (entityType) => {
+    expect(computeIngestionHealthChecks({ ...FEED, entity_type: entityType }, failedWith(NOT_FOUND))).toEqual([]);
+  });
+
+  it('should not flag a feed or sync whose last execution succeeded, or that has no execution logged', () => {
+    const checksContext = { ...CONTEXT, ...NOT_PINGING };
+    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: { level: 'success' } } })).toEqual([]);
+    expect(computeIngestionHealthChecks(FEED, { ...checksContext, runtimeData: {} })).toEqual([]);
+  });
+
+  it('should give a critical status', () => {
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(FEED, failedWith(NOT_FOUND)), CONTEXT);
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+
+  it.each([
+    ['an HTTP status', NOT_FOUND, 'Feed execution failed: HTTP 404 Not Found'],
+    ['an HTTP status without text', { http_status: 500 }, 'Feed execution failed: HTTP 500'],
+    ['a Cloudflare challenge', { http_status: 403, http_status_text: 'Forbidden', cloudflare: 'Cloudflare challenge fail' }, 'Feed execution failed: HTTP 403 Forbidden (Cloudflare challenge fail)'],
+    ['a network error', { error_code: 'ECONNABORTED' }, 'Feed execution failed: ECONNABORTED'],
+    ['another error', { error: 'Invalid JSON feed configuration' }, 'Feed execution failed: Invalid JSON feed configuration'],
+    ['no details', undefined, 'Feed execution failed'],
+  ])('should describe %s in the message', (_, meta, message) => {
+    expect(messageOf(meta)).toBe(message);
+  });
+
+  it('should name a sync in the message', () => {
+    expect(messageOf(NOT_FOUND, SYNC)).toBe('Sync execution failed: HTTP 404 Not Found');
+    expect(messageOf(undefined, SYNC)).toBe('Sync execution failed');
   });
 });
 
 describe('check metadata', () => {
   const TEST_CODE = 'TEST_CHECK';
   const registry = HEALTH_CHECK_REGISTRY as Record<string, unknown>;
-  const checksContext = { ...CONTEXT, ...NOT_PINGING, isExistingUser: () => true };
+  const checksContext = { ...CONTEXT, ...NOT_PINGING };
   const failWith = (metadata: Record<string, unknown> | null) => {
     registry[TEST_CODE] = {
       kind: IngestionHealthCheckKind.Configuration,
@@ -246,7 +291,7 @@ describe('check metadata', () => {
     failWith({ reason: 'test' });
     const checks = computeIngestionHealthChecks(CONNECTOR, checksContext);
     expect(checks).toContainEqual({ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } });
-    expect(toGraphqlHealthChecks(checks).find((check) => check.health_check_code === TEST_CODE)?.health_check_message).toBe('Failing for test');
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type).find((check) => check.health_check_code === TEST_CODE)?.health_check_message).toBe('Failing for test');
   });
 
   it('should not store a check that passes', () => {
@@ -256,57 +301,97 @@ describe('check metadata', () => {
 });
 
 describe('computeIngestionHealthChecks', () => {
-  const EXISTING_USER_ID = 'existing-user-id';
-  const DELETED_USER_ID = 'deleted-user-id';
-  const isExistingUser = (userId: string) => userId === EXISTING_USER_ID;
-  const checksContext = { ...CONTEXT, ...NOT_PINGING, isExistingUser };
+  // The user is resolved by the manager: undefined when not set or deleted
+  const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
 
   describe('connector (user required)', () => {
     it.each([undefined, null, ''])('should flag USER_MISSING when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: userId }, checksContext)).toEqual([USER_MISSING]);
+      expect(checksFor({ ...CONNECTOR, connector_user_id: userId })).toEqual([USER_MISSING]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: DELETED_USER_ID }, checksContext)).toEqual([USER_MISSING]);
+      expect(checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: EXISTING_USER_ID }, checksContext)).toEqual([]);
+      expect(checksFor({ ...CONNECTOR, connector_user_id: 'user-id' }, SERVICE_ACCOUNT)).toEqual([]);
     });
   });
 
   describe('feed or sync (user optional: runs as the system user without one)', () => {
     it.each([undefined, null, ''])('should return no check when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ ...FEED, user_id: userId }, checksContext)).toEqual([]);
+      expect(checksFor({ ...FEED, user_id: userId })).toEqual([]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ ...FEED, user_id: DELETED_USER_ID }, checksContext)).toEqual([USER_MISSING]);
+      expect(checksFor({ ...FEED, user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ ...FEED, user_id: EXISTING_USER_ID }, checksContext)).toEqual([]);
+      expect(checksFor({ ...FEED, user_id: 'user-id' }, SERVICE_ACCOUNT)).toEqual([]);
     });
   });
 
-  it('should not flag USER_MISSING on built-in connectors', () => {
-    expect(computeIngestionHealthChecks({ ...CONNECTOR, built_in: true, connector_user_id: DELETED_USER_ID }, checksContext)).toEqual([]);
+  it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
+    const checks = checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' });
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+});
+
+describe('user not service account check', () => {
+  const REGULAR_USER = { internal: false, user_service_account: false };
+  const INTERNAL_USER = { internal: true, user_service_account: false };
+  const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
+  const NOT_SERVICE_ACCOUNT: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} };
+
+  it.each([
+    ['connector', { ...CONNECTOR, connector_user_id: 'user-id' }],
+    ['feed', { ...FEED, user_id: 'user-id' }],
+  ])('should flag a %s running as a regular user', (_, ingestor) => {
+    expect(checksFor(ingestor, REGULAR_USER)).toEqual([NOT_SERVICE_ACCOUNT]);
   });
 
-  it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
-    const checks = computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: DELETED_USER_ID }, checksContext);
-    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  it.each([
+    ['connector', { ...CONNECTOR, connector_user_id: 'user-id' }],
+    ['feed', { ...FEED, user_id: 'user-id' }],
+  ])('should not flag a %s running as a service account', (_, ingestor) => {
+    expect(checksFor(ingestor, SERVICE_ACCOUNT)).toEqual([]);
+  });
+
+  it('should not judge an internal user, such as the system user', () => {
+    expect(checksFor({ ...FEED, user_id: 'system-id' }, INTERNAL_USER)).toEqual([]);
+  });
+
+  it('should not judge a missing user: reported by USER_MISSING only', () => {
+    expect(checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
+    expect(checksFor({ ...CONNECTOR, connector_user_id: null })).toEqual([USER_MISSING]);
+  });
+
+  it('should not judge a feed without user: it runs as the system user', () => {
+    expect(checksFor({ ...FEED, user_id: null })).toEqual([]);
+  });
+
+  it('should make the status degraded with an advisory configuration check', () => {
+    const checks = checksFor({ ...CONNECTOR, connector_user_id: 'user-id' }, REGULAR_USER);
+    const patch = computeIngestionHealthPatch({}, checks, CONTEXT);
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
+      health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+      health_check_message: 'User is not a service account',
+      health_check_kind: IngestionHealthCheckKind.Configuration,
+      health_check_severity: IngestionHealthCheckSeverity.Advisory,
+    }]);
   });
 });
 
 describe('toGraphqlIngestionHealth', () => {
   it('should return null when the ingestion was never evaluated', () => {
-    expect(toGraphqlIngestionHealth(undefined)).toBeNull();
+    expect(toGraphqlIngestionHealth(undefined, CONNECTOR.entity_type)).toBeNull();
   });
 
   it('should expose status and since, and the checks enriched from the registry', () => {
     const health = { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] };
-    expect(toGraphqlIngestionHealth(health)).toEqual({
+    expect(toGraphqlIngestionHealth(health, CONNECTOR.entity_type)).toEqual({
       status: IngestionHealthStatus.Degraded,
       status_since: PREVIOUS_SINCE,
       healthChecks: [{
@@ -319,46 +404,166 @@ describe('toGraphqlIngestionHealth', () => {
   });
 
   it('should drop the checks unknown to the registry and return no check when none is stored', () => {
-    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK] })?.healthChecks).toEqual([]);
-    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE })?.healthChecks).toEqual([]);
+    const healthy = { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE };
+    expect(toGraphqlIngestionHealth({ ...healthy, health_checks: [OTHER_CHECK] }, CONNECTOR.entity_type)?.healthChecks).toEqual([]);
+    expect(toGraphqlIngestionHealth(healthy, CONNECTOR.entity_type)?.healthChecks).toEqual([]);
   });
 });
 
 describe('computeHealthTransition', () => {
-  it.each([
-    [IngestionHealthStatus.Healthy, IngestionHealthStatus.Critical, HealthTransition.Critical],
-    [IngestionHealthStatus.Degraded, IngestionHealthStatus.Critical, HealthTransition.Critical],
-    [IngestionHealthStatus.Healthy, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
-    [IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
-    [IngestionHealthStatus.Degraded, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
-    [IngestionHealthStatus.Critical, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
-  ])('should return the transition from %s to %s', (previous, next, expected) => {
-    expect(computeHealthTransition(previous, next)).toBe(expected);
+  const SINCE = '2026-10-13T11:00:00.000Z';
+  const OLD_EVENT = '2026-10-13T10:00:00.000Z';
+  const at = (ms: number) => new Date(new Date(SINCE).getTime() + ms).toISOString();
+  const AFTER_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS);
+  const BEFORE_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS - 1);
+  const health = (status: IngestionHealthStatus, last_event_date?: string): StoredIngestionHealth => (
+    { status, status_since: SINCE, health_checks: [], ...(last_event_date ? { last_event_date } : {}) }
+  );
+  // Health of the previous period: only its presence matters
+  const PREVIOUS = health(IngestionHealthStatus.Healthy);
+
+  describe('no previous or no next health', () => {
+    it.each([
+      [IngestionHealthStatus.Critical, HealthTransition.Critical],
+      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
+    ])('should report %s on the first evaluation once the delay is elapsed', (status, expected) => {
+      expect(computeHealthTransition(undefined, health(status), AFTER_DELAY)).toBe(expected);
+      expect(computeHealthTransition(null, health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
+    });
+
+    it.each(Object.values(IngestionHealthStatus))('should defer %s on the first evaluation inside the delay', (status) => {
+      expect(computeHealthTransition(undefined, health(status), BEFORE_DELAY)).toBeNull();
+      expect(computeHealthTransition(null, health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
+    });
+
+    it('should not report a recovery on the first evaluation of healthy, even after an older event', () => {
+      expect(computeHealthTransition(undefined, health(IngestionHealthStatus.Healthy), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(null, health(IngestionHealthStatus.Healthy, OLD_EVENT), AFTER_DELAY)).toBeNull();
+    });
+
+    it.each(Object.values(IngestionHealthStatus))('should return null when the health is removed after a notified %s: unknown is not a recovery', (status) => {
+      expect(computeHealthTransition(health(status, OLD_EVENT), null, AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, OLD_EVENT), undefined, AFTER_DELAY)).toBeNull();
+    });
+
+    it('should return null when there is no health at all', () => {
+      expect(computeHealthTransition(undefined, undefined, AFTER_DELAY)).toBeNull();
+    });
   });
 
-  it.each(Object.values(IngestionHealthStatus))('should return null when the status stays %s', (status) => {
-    expect(computeHealthTransition(status, status)).toBeNull();
+  describe('already notified', () => {
+    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event is after its start', (status) => {
+      expect(computeHealthTransition(PREVIOUS, health(status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
+    });
+
+    it.each(Object.values(IngestionHealthStatus))('should report %s when the last event is at its start: strictly after is required', (status) => {
+      const result = computeHealthTransition(PREVIOUS, health(status, SINCE), AFTER_DELAY);
+      expect(result).not.toBeNull();
+    });
   });
 
-  it('should return the transition on the first evaluation of a failing ingestion', () => {
-    expect(computeHealthTransition(undefined, IngestionHealthStatus.Critical)).toBe(HealthTransition.Critical);
-    expect(computeHealthTransition(undefined, IngestionHealthStatus.Degraded)).toBe(HealthTransition.Degraded);
+  describe('delay', () => {
+    it.each(Object.values(IngestionHealthStatus))('should defer %s inside the delay', (status) => {
+      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), SINCE)).toBeNull();
+      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), BEFORE_DELAY)).toBeNull();
+    });
+
+    it.each(Object.values(IngestionHealthStatus))('should report %s exactly when the delay is elapsed', (status) => {
+      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), AFTER_DELAY)).not.toBeNull();
+    });
   });
 
-  it('should return null on the first evaluation of a healthy ingestion: nothing recovered', () => {
-    expect(computeHealthTransition(undefined, IngestionHealthStatus.Healthy)).toBeNull();
+  describe('transition', () => {
+    it.each([
+      [IngestionHealthStatus.Critical, HealthTransition.Critical],
+      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
+    ])('should report %s never notified before', (status, expected) => {
+      expect(computeHealthTransition(PREVIOUS, health(status), AFTER_DELAY)).toBe(expected);
+    });
+
+    it.each([
+      [IngestionHealthStatus.Critical, HealthTransition.Critical],
+      [IngestionHealthStatus.Degraded, HealthTransition.Degraded],
+      [IngestionHealthStatus.Healthy, HealthTransition.Recovered],
+    ])('should report %s after an older event', (status, expected) => {
+      expect(computeHealthTransition(PREVIOUS, health(status, OLD_EVENT), AFTER_DELAY)).toBe(expected);
+    });
+
+    it('should return null for a healthy ingestion never notified: nothing to recover from', () => {
+      expect(computeHealthTransition(PREVIOUS, health(IngestionHealthStatus.Healthy), AFTER_DELAY)).toBeNull();
+    });
   });
 
-  it.each([IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded])('should return recovered when the health is removed after %s', (previous) => {
-    expect(computeHealthTransition(previous, undefined)).toBe(HealthTransition.Recovered);
-  });
+  // Replays periods as the ingestion health manager does: status_since moves on a status change,
+  // last_event_date is kept and set when an event is published. Returns the published events.
+  describe('scenarios over periods', () => {
+    const MINUTE = 60 * 1000;
+    const run = (steps: [number, IngestionHealthStatus | null][]) => {
+      let stored: StoredIngestionHealth | null = null;
+      const events: [number, HealthTransition][] = [];
+      steps.forEach(([minute, status]) => {
+        const evaluatedAt = at(minute * MINUTE);
+        let next: StoredIngestionHealth | null = null;
+        if (status) {
+          const since = stored?.status === status ? stored.status_since : evaluatedAt;
+          next = { status, status_since: since, health_checks: [], ...(stored?.last_event_date ? { last_event_date: stored.last_event_date } : {}) };
+        }
+        const transition = computeHealthTransition(stored, next, evaluatedAt);
+        if (transition && next) {
+          next = { ...next, last_event_date: evaluatedAt };
+        }
+        if (transition) {
+          events.push([minute, transition]);
+        }
+        stored = next;
+      });
+      return events;
+    };
+    const minutes = (from: number, to: number, status: IngestionHealthStatus | null) => (
+      Array.from({ length: to - from + 1 }, (_, i): [number, IngestionHealthStatus | null] => [from + i, status])
+    );
+    const DELAY_MINUTES = HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
+    const { Critical, Degraded, Healthy } = IngestionHealthStatus;
 
-  it('should return null when the health is removed after healthy: nothing failing to recover from', () => {
-    expect(computeHealthTransition(IngestionHealthStatus.Healthy, undefined)).toBeNull();
-  });
+    it('should report a stable failure once, after the delay', () => {
+      expect(run(minutes(0, 30, Critical))).toEqual([[DELAY_MINUTES, HealthTransition.Critical]]);
+    });
 
-  it('should return null when there is no health before and after', () => {
-    expect(computeHealthTransition(undefined, undefined)).toBeNull();
+    it('should report nothing for an ingestion always healthy', () => {
+      expect(run(minutes(0, 30, Healthy))).toEqual([]);
+    });
+
+    it('should report the failure then the recovery, once each', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 30, Healthy)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Degraded],
+        [11 + DELAY_MINUTES, HealthTransition.Recovered],
+      ]);
+    });
+
+    it('should report nothing for a status flapping faster than the delay', () => {
+      const flapping = minutes(0, 30, Healthy).map(([minute]): [number, IngestionHealthStatus] => [minute, minute % 2 ? Critical : Healthy]);
+      expect(run(flapping)).toEqual([]);
+    });
+
+    it('should report a degraded becoming critical', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 30, Critical)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Degraded],
+        [11 + DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+    });
+
+    it('should report nothing when the health becomes unknown, and no recovery when healthy after unknown', () => {
+      expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, null), ...minutes(21, 40, Healthy)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+    });
+
+    it('should report a failure again after going back to it inside the delay: the delay runs on the status', () => {
+      expect(run([...minutes(0, 10, Critical), [11, Healthy], ...minutes(12, 30, Critical)])).toEqual([
+        [DELAY_MINUTES, HealthTransition.Critical],
+        [12 + DELAY_MINUTES, HealthTransition.Critical],
+      ]);
+    });
   });
 });
 

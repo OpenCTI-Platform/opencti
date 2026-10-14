@@ -126,6 +126,8 @@ export const computeIngestionHealthPatch = (
       status,
       status_since: currentHealth && !isStatusChanged ? currentHealth.status_since : evaluatedAt,
       health_checks: nextChecks,
+      // Kept across status changes: it tells whether the current status was already notified
+      ...(currentHealth?.last_event_date ? { last_event_date: currentHealth.last_event_date } : {}),
     },
   };
 };
@@ -139,41 +141,68 @@ export const HealthTransition = {
 } as const;
 export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
 
-// previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from.
-// next is undefined when the health object is removed because no status can be computed anymore (no more failing check):
-// it is a recovery only for an ingestion that was failing.
-// A stopped ingestion is not evaluated: its health is removed and nothing is reported.
-// A restart is reported only when it fails: a stopped ingestion has no health, it has nothing to recover from.
+// ponytail: hardcoded guard, moves to a settings object editable from the UI later
+export const HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
+
+// The current status was already notified: the last event was published after its start
+const isStatusNotified = (health: StoredIngestionHealth) => !!health.last_event_date
+  && new Date(health.last_event_date).getTime() > new Date(health.status_since).getTime();
+
+/**
+ * Computes the health activity event to publish for an ingestion, evaluated at every period of the ingestion health manager.
+ *
+ * The event is deferred to avoid notifying a flapping status: it is due once the status has not changed
+ * for {@link HEALTH_NOTIFICATION_DELAY_MS}, and was not notified since it started.
+ * The delay runs on the status, not on the event: going back to the notified status inside the delay is notified again.
+ *
+ * A stopped ingestion is not evaluated: its health is removed and nothing is reported.
+ *
+ * @param previous health before the write of this period, absent on the first evaluation
+ * @param next health after the write of this period, null when removed (no status can be computed anymore: unknown)
+ * @param evaluatedAt date of the evaluation period
+ * @returns the transition to publish, or null when nothing is due
+ */
 export const computeHealthTransition = (
-  previous: IngestionHealthStatus | undefined,
-  next: IngestionHealthStatus | undefined,
+  previous: StoredIngestionHealth | null | undefined,
+  next: StoredIngestionHealth | null | undefined,
+  evaluatedAt: string,
 ): HealthTransition | null => {
-  if (previous === next) {
+  // Health removed: the status is unknown, no proof of failure nor of recovery, nothing to report.
+  if (!next) {
     return null;
   }
-  if (next === IngestionHealthStatus.Critical) {
+  // The current status was already notified (last event after its start): one event per status change
+  if (isStatusNotified(next)) {
+    return null;
+  }
+  // The status changed less than the delay ago: it may still flap, wait for the next periods
+  if (new Date(evaluatedAt).getTime() - new Date(next.status_since).getTime() < HEALTH_NOTIFICATION_DELAY_MS) {
+    return null;
+  }
+  // Stable and not notified failing status: report it
+  if (next.status === IngestionHealthStatus.Critical) {
     return HealthTransition.Critical;
   }
-  if (next === IngestionHealthStatus.Degraded) {
+  if (next.status === IngestionHealthStatus.Degraded) {
     return HealthTransition.Degraded;
   }
-  const wasFailing = previous === IngestionHealthStatus.Critical || previous === IngestionHealthStatus.Degraded;
-  if (wasFailing && (next === IngestionHealthStatus.Healthy || !next)) {
-    return HealthTransition.Recovered;
-  }
-  return null;
+  // Stable and not notified healthy status: a recovery only when an event was already published and a health
+  // was evaluated before this period; a healthy ingestion never notified (new, restarted, back from unknown)
+  // or evaluated for the first time has nothing to recover from
+  return next.last_event_date && previous ? HealthTransition.Recovered : null;
 };
 
 // The activity log prefixes the message with the manager user name
 export const buildHealthTransitionMessage = (element: { name: string; entity_type: string }, transition: HealthTransition, checks: StoredHealthCheck[]) => {
-  const checkMessages = toGraphqlHealthChecks(checks).map((check) => check.health_check_message);
+  const checkMessages = toGraphqlHealthChecks(checks, element.entity_type).map((check) => check.health_check_message);
   const details = checkMessages.length > 0 ? `: ${checkMessages.join(', ')}` : '';
   return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details}`;
 };
 // endregion
 
 // region api
-export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
+// The entity type of the ingestor carrying the checks adapts their messages to the kind of ingestion
+export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined, entityType: string): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
     const definition = findHealthCheckDefinition(check.health_check_code);
     if (!definition) {
@@ -182,7 +211,7 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
     }
     return [{
       health_check_code: check.health_check_code,
-      health_check_message: definition.message(check.health_check_metadata ?? {}),
+      health_check_message: definition.message(check.health_check_metadata ?? {}, entityType),
       health_check_kind: definition.kind,
       health_check_severity: definition.severity,
     }];
@@ -191,14 +220,14 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
 
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
 // Null until the manager first evaluates the ingestion, which reads as unknown.
-export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined): IngestionHealth | null => {
+export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined, entityType: string): IngestionHealth | null => {
   if (!health) {
     return null;
   }
   return {
     status: health.status,
     status_since: health.status_since,
-    healthChecks: toGraphqlHealthChecks(health.health_checks),
+    healthChecks: toGraphqlHealthChecks(health.health_checks, entityType),
   };
 };
 // endregion
