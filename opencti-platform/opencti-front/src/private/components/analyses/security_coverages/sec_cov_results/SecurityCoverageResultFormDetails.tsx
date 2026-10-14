@@ -34,6 +34,7 @@ interface SecurityCoverageResultFormDetailsProps {
   onCancel: () => void;
   initValues?: SecurityCoverageResultFormData;
   existingResults?: readonly ExistingSecurityCoverageResult[] | null;
+  isUpdate?: boolean;
 }
 
 const SecurityCoverageResultFormDetails = ({
@@ -42,6 +43,7 @@ const SecurityCoverageResultFormDetails = ({
   onCancel,
   initValues,
   existingResults,
+  isUpdate = false,
 }: SecurityCoverageResultFormDetailsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -176,7 +178,7 @@ const SecurityCoverageResultFormDetails = ({
               variant="secondary"
               disabled={!isValid}
             >
-              {t_i18n('Create')}
+              {isUpdate ? t_i18n('Update') : t_i18n('Create')}
             </Button>
             <Button
               type="button"

@@ -1,7 +1,50 @@
+import { convertCreatedBy, convertMarkings } from '../../../../../utils/edition';
+import { FieldOption } from '../../../../../utils/field';
+import type { SecurityCoverageResultFormData } from './SecurityCoverageResultFormDetails';
+
 export interface ExistingSecurityCoverageResult {
   name: string;
   external_uri?: string | null;
 }
+
+export interface EditableSecurityCoverageResult extends ExistingSecurityCoverageResult {
+  id: string;
+  description?: string | null;
+  confidence?: number | null;
+  coverage_valid_from?: string | null;
+  coverage_valid_to?: string | null;
+  coverage_information?: readonly { coverage_name: string; coverage_score: number }[] | null;
+  createdBy?: { id: string; name: string; entity_type: string } | null;
+  objectMarking?: readonly {
+    id: string;
+    definition?: string | null;
+    definition_type?: string | null;
+    x_opencti_color?: string | null;
+    x_opencti_order: number;
+  }[] | null;
+  objectLabel?: readonly { id: string; value: string | null | undefined; color: string | null | undefined }[] | null;
+}
+
+export const isManualResult = (result: ExistingSecurityCoverageResult) => !result.external_uri;
+
+export const resultToFormData = (result: EditableSecurityCoverageResult): SecurityCoverageResultFormData => ({
+  name: result.name,
+  description: result.description ?? '',
+  confidence: result.confidence ?? undefined,
+  createdBy: result.createdBy ? convertCreatedBy(result) as FieldOption : undefined,
+  objectMarking: convertMarkings(result),
+  objectLabel: (result.objectLabel ?? []).map((label) => ({
+    label: label.value ?? '',
+    value: label.id,
+    color: label.color ?? undefined,
+  })),
+  coverageInformation: result.coverage_information?.length
+    ? result.coverage_information.map(({ coverage_name, coverage_score }) => ({ coverage_name, coverage_score }))
+    : [{ coverage_name: null, coverage_score: null }],
+  externalUri: result.external_uri ?? '',
+  validFrom: result.coverage_valid_from ? new Date(result.coverage_valid_from) : null,
+  validTo: result.coverage_valid_to ? new Date(result.coverage_valid_to) : null,
+});
 
 // Same normalization as the backend identifier of a security coverage result:
 // the name is case insensitive, the external link is not.
