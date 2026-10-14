@@ -73,3 +73,26 @@ export const buildDefaultVariableValues = (variables: DashboardVariable[] | unde
   });
   return values;
 };
+
+/**
+ * Whether a value coming from the user's browser (localStorage, `variables` URL param) may be applied to a variable.
+ * Same rules as the default value of a variable (`validateDraft` in variables/dashboardVariableDraft.ts):
+ * a boolean is `true` or `false`, a numeric a finite number, a date something `Date.parse` understands, any other type
+ * a non-blank string; no value may reference another variable. A selection restriction also bounds the value to its pool.
+ * A value failing it is ignored, so the default of the variable applies.
+ */
+export const isValidVariableValue = (variable: DashboardVariable, value: string): boolean => {
+  const trimmed = value.trim();
+  if (trimmed === '' || value.includes(toVariableToken(''))) return false;
+  if (variable.restriction.mode === 'selection' && !variable.restriction.values.includes(value)) return false;
+  switch (variable.type) {
+    case 'boolean':
+      return trimmed === 'true' || trimmed === 'false';
+    case 'numeric':
+      return Number.isFinite(Number(trimmed));
+    case 'date':
+      return !Number.isNaN(Date.parse(trimmed));
+    default:
+      return true;
+  }
+};

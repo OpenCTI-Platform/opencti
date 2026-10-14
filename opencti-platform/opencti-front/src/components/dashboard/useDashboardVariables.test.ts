@@ -228,4 +228,70 @@ describe('useDashboardVariables', () => {
     act(() => result.current.reset());
     expect(result.current.values.get(sector.id)).toBe('Energy');
   });
+
+  describe('type validation of the stored and URL values', () => {
+    const flag: DashboardVariable = { id: '33333333-3333-4333-8333-333333333333', name: 'Flag', type: 'boolean', restriction: { mode: 'none' }, defaultValue: 'true' };
+    const size: DashboardVariable = { id: '44444444-4444-4444-8444-444444444444', name: 'Size', type: 'numeric', restriction: { mode: 'none' }, defaultValue: '10' };
+    const since: DashboardVariable = { id: '55555555-5555-4555-8555-555555555555', name: 'Since', type: 'date', restriction: { mode: 'none' }, defaultValue: '2024-01-01T00:00:00.000Z' };
+    const all = [flag, size, since];
+    const invalid = { [flag.id]: 'banana', [size.id]: 'abc', [since.id]: 'not a date' };
+    const valid = { [flag.id]: 'false', [size.id]: '42', [since.id]: '2024-06-01T00:00:00.000Z' };
+
+    it('falls back to the defaults for invalid values of the storage', () => {
+      window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify(invalid));
+      const { result } = renderHook(() => useDashboardVariables('ws-1', all));
+      expect(Object.fromEntries(result.current.values)).toEqual({ [flag.id]: 'true', [size.id]: '10', [since.id]: '2024-01-01T00:00:00.000Z' });
+    });
+
+    it('falls back to the defaults for invalid values of the URL', () => {
+      const param = Object.entries(invalid).map(([id, value]) => `${id}:${encodeURIComponent(value)}`).join(',');
+      window.history.replaceState(null, '', `/?variables=${encodeURIComponent(param)}`);
+      const { result } = renderHook(() => useDashboardVariables('ws-1', all));
+      expect(Object.fromEntries(result.current.values)).toEqual({ [flag.id]: 'true', [size.id]: '10', [since.id]: '2024-01-01T00:00:00.000Z' });
+    });
+
+    it('applies the valid values of the storage and of the URL', () => {
+      window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [flag.id]: 'false', [size.id]: '42' }));
+      window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${since.id}:${encodeURIComponent(valid[since.id])}`)}`);
+      const { result } = renderHook(() => useDashboardVariables('ws-1', all));
+      expect(Object.fromEntries(result.current.values)).toEqual(valid);
+    });
+
+    it('ignores a stored text value referencing another variable', () => {
+      window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: `$var:${country.id}` }));
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+      expect(result.current.values.get(sector.id)).toBe('Energy');
+    });
+  });
+
+  describe('deleted variables', () => {
+    const urlValues = () => new URLSearchParams(window.location.search).get('variables');
+    const storedValues = () => JSON.parse(window.localStorage.getItem('dashboard-variables-user-1-ws-1') as string);
+
+    it('drops the entry of a deleted variable at the next write, from the storage and from the URL', () => {
+      window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ gone: 'x', [sector.id]: 'Finance' }));
+      window.history.replaceState(null, '', `/?variables=${encodeURIComponent('other-gone:y')}`);
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country]));
+      act(() => result.current.setValue(country.id, 'DE'));
+      expect(storedValues()).toEqual({ [sector.id]: 'Finance', [country.id]: 'DE' });
+      expect(urlValues()).toBe(`${sector.id}:Finance,${country.id}:DE`);
+    });
+
+    it('does not persist the value of a variable deleted while the page is open', () => {
+      const { result, rerender } = renderHook(({ vars }) => useDashboardVariables('ws-1', vars), { initialProps: { vars: [sector, country] } });
+      act(() => result.current.setValue(country.id, 'DE'));
+      rerender({ vars: [sector] });
+      act(() => result.current.setValue(sector.id, 'Finance'));
+      expect(storedValues()).toEqual({ [sector.id]: 'Finance' });
+      expect(urlValues()).toBe(`${sector.id}:Finance`);
+    });
+
+    it('removes the storage key and the URL param when only deleted entries remained', () => {
+      window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ gone: 'x' }));
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector]));
+      act(() => result.current.setValue(sector.id, ''));
+      expect(window.localStorage.getItem('dashboard-variables-user-1-ws-1')).toBeNull();
+      expect(urlValues()).toBeNull();
+    });
+  });
 });

@@ -3,12 +3,8 @@ import useAuth from '../../utils/hooks/useAuth';
 import useHelper from '../../utils/hooks/useHelper';
 import type { DashboardVariable } from './dashboard-types';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from './dashboardVariablesFeatureFlag';
-import { buildDefaultVariableValues } from './dashboardVariablesResolution';
+import { buildDefaultVariableValues, isValidVariableValue } from './dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues, writeStoredVariableValues, writeVariablesParam } from './dashboardVariablesStorage';
-
-const isInPool = (variable: DashboardVariable, value: string) => (
-  variable.restriction.mode !== 'selection' || variable.restriction.values.includes(value)
-);
 
 export const useDashboardVariables = (
   workspaceId: string,
@@ -35,7 +31,7 @@ export const useDashboardVariables = (
     if (enabled && !ignoreLocalValues) {
       variables.forEach((variable) => {
         const value = stored[variable.id];
-        if (value !== undefined && isInPool(variable, value)) merged.set(variable.id, value);
+        if (value !== undefined && isValidVariableValue(variable, value)) merged.set(variable.id, value);
       });
     }
     return merged;
@@ -44,11 +40,15 @@ export const useDashboardVariables = (
   const effectiveSignature = JSON.stringify([...effective]);
   const values = useMemo(() => new Map<string, string>(JSON.parse(effectiveSignature)), [effectiveSignature]);
 
+  // Only the variables that still exist are persisted: the entry of a deleted one is dropped at the next write.
+  const idsSignature = JSON.stringify(variables.map((v) => v.id));
   const commit = useCallback((next: Record<string, string>) => {
-    writeStoredVariableValues(key, next);
-    writeVariablesParam(next);
-    setState({ key, stored: next });
-  }, [key]);
+    const ids = new Set<string>(JSON.parse(idsSignature));
+    const kept = Object.fromEntries(Object.entries(next).filter(([id]) => ids.has(id)));
+    writeStoredVariableValues(key, kept);
+    writeVariablesParam(kept);
+    setState({ key, stored: kept });
+  }, [key, idsSignature]);
 
   const setValue = useCallback((variableId: string, value: string) => {
     if (ignoreLocalValues || !enabled) return;
