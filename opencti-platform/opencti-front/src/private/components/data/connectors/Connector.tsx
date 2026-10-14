@@ -1091,6 +1091,7 @@ const Connector = createRefetchContainer(
         is_managed
         ingestionHealth {
           ...IngestionHealthChip_ingestionHealth
+          ...IngestionHealthSummary_ingestionHealth
         }
         manager_contract_configuration {
           key

@@ -456,6 +456,7 @@ const syncManagerInstance = (syncId) => {
             // Process the event with retry: if pushBundleToWorker or saveCurrentState fails,
             // retry indefinitely until it succeeds or the manager is stopped.
             let processed = false;
+            let failed = false;
             while (!processed && running) {
               try {
                 const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
@@ -477,7 +478,16 @@ const syncManagerInstance = (syncId) => {
                 });
                 await saveCurrentState(context, 'event', lastEventId);
                 processed = true;
+                // Recovered from a failed attempt: without a new success, the failure would be the last outcome until the next reconnection
+                if (failed) {
+                  await patchSync(context, SYSTEM_USER, syncId, {
+                    last_execution_date: new Date().toISOString(),
+                    last_execution_status: 'success',
+                  });
+                  await syncLogger.success('Feed execution succeeded');
+                }
               } catch (processingError) {
+                failed = true;
                 logApp.warn('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
                   cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
                 });

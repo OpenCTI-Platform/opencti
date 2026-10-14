@@ -2264,6 +2264,8 @@
   "False": "虚假",
   "False positive": "假阳性",
   "Favorite entities": "最喜欢的实体",
+  "Feed execution failed": "Feed 执行失败",
+  "Feed execution failed: {failure}": "Feed 执行失败：{failure}",
   "Feedback": "反馈",
   "Feedback already submitted": "反馈已提交",
   "Feedbacks": "反馈",

@@ -2264,6 +2264,8 @@
   "False": "Faux",
   "False positive": "Faux positif",
   "Favorite entities": "Entités favorites",
+  "Feed execution failed": "Échec de l'exécution du flux",
+  "Feed execution failed: {failure}": "Échec de l'exécution du flux : {failure}",
   "Feedback": "Feedback",
   "Feedback already submitted": "Avis déjà envoyé",
   "Feedbacks": "Commentaires",

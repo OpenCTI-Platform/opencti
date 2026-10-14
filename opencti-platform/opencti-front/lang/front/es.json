@@ -2264,6 +2264,8 @@
   "False": "Falso",
   "False positive": "Falso positivo",
   "Favorite entities": "Entidades favoritas",
+  "Feed execution failed": "Error en la ejecución del feed",
+  "Feed execution failed: {failure}": "Error en la ejecución del feed: {failure}",
   "Feedback": "Comentarios",
   "Feedback already submitted": "Valoración ya enviada",
   "Feedbacks": "Comentarios",

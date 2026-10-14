@@ -3,6 +3,8 @@ import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import type { IngestionHealthChip_ingestionHealth$key } from '@components/data/connectors/__generated__/IngestionHealthChip_ingestionHealth.graphql';
+import type { IngestionHealthSummary_ingestionHealth$key } from '@components/integrations/deployed/__generated__/IngestionHealthSummary_ingestionHealth.graphql';
+import { HealthIssue, readHealthIssue, readHealthStatus } from '@components/integrations/deployed/IngestionHealthSummary';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
@@ -44,7 +46,11 @@ export interface DeployedIntegrationItem {
   detailUrl: string;
   searchText: string;
   // Ingestion health (connectors, feeds and syncs; forms have none)
-  ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
+  ingestionHealth?: (IngestionHealthChip_ingestionHealth$key & IngestionHealthSummary_ingestionHealth$key) | null;
+  // Derived from ingestionHealth: null when healthy or not evaluated
+  healthIssue?: HealthIssue | null;
+  // Derived from ingestionHealth, for the health facet: null when not evaluated
+  healthStatus?: string | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
@@ -285,7 +291,11 @@ const useDeployedIntegrations = ({
       });
     }
 
-    return items;
+    return items.map((item) => ({
+      ...item,
+      healthIssue: readHealthIssue(item.ingestionHealth),
+      healthStatus: readHealthStatus(item.ingestionHealth),
+    }));
   }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
 };
 

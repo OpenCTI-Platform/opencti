@@ -2264,6 +2264,8 @@
   "False": "偽",
   "False positive": "偽陽性",
   "Favorite entities": "お気に入りのエンティティ",
+  "Feed execution failed": "フィードの実行に失敗しました",
+  "Feed execution failed: {failure}": "フィードの実行に失敗しました: {failure}",
   "Feedback": "フィードバック",
   "Feedback already submitted": "フィードバックは送信済みです",
   "Feedbacks": "フィードバック",

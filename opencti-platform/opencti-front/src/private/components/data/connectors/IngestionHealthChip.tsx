@@ -30,6 +30,18 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   healthy: 'low',
 };
 
+// Label colour the design system Chip paints for these severities, for health markers drawn outside a chip
+const SEVERITY_LABEL_COLORS: Partial<Record<ChipSeverity, string>> = {
+  critical: 'var(--icon-error)',
+  high: 'var(--icon-warning)',
+  low: 'var(--icon-success)',
+};
+
+export const ingestionHealthColor = (status: string): string | undefined => {
+  const severity = HEALTH_STATUS_SEVERITY_COLORS[status];
+  return severity ? SEVERITY_LABEL_COLORS[severity] : undefined;
+};
+
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
