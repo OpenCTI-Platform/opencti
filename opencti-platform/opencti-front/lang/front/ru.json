@@ -4634,6 +4634,7 @@
   "State operation": "Состояние операции",
   "Statistics": "Статистика",
   "Status": "Статус",
+  "Status out of sync with the workflow": "Статус не синхронизирован с рабочим процессом",
   "Status templates": "Шаблоны состояния",
   "Status Templates | Taxonomies | Settings": "Шаблоны состояния | Таксономии | Настройки",
   "Status update failed": "Ошибка обновления статуса",

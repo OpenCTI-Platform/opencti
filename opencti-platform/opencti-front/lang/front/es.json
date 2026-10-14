@@ -4634,6 +4634,7 @@
   "State operation": "Operación de estado",
   "Statistics": "Estadísticas",
   "Status": "Estado",
+  "Status out of sync with the workflow": "Estado no sincronizado con el flujo de trabajo",
   "Status templates": "Plantillas de estado",
   "Status Templates | Taxonomies | Settings": "Plantillas de estado | Taxonomías | Configuración",
   "Status update failed": "Error al actualizar el estado",
