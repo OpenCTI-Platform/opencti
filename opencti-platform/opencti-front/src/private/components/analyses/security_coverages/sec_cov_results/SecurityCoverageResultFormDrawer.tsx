@@ -33,6 +33,8 @@ const fragment = graphql`
     results {
       id
       name
+      description
+      confidence
       external_uri
       coverage_valid_from
       coverage_valid_to
@@ -196,8 +198,12 @@ const SecurityCoverageResultFormDrawer = ({
       return cov.coverage_name && Number.isFinite(cov.coverage_score) ? cov : [];
     }) as CoverageInformation[];
 
+    const confidence = parseInt(String(details.confidence), 10);
     const input = {
       name: details.name,
+      description: details.description,
+      // An empty confidence is not sent, instead of NaN.
+      confidence: Number.isNaN(confidence) ? undefined : confidence,
       createdBy: details.createdBy?.value,
       objectMarking: details.objectMarking.map((v) => v.value),
       objectLabel: details.objectLabel.map((v) => v.value),
@@ -225,8 +231,6 @@ const SecurityCoverageResultFormDrawer = ({
       variables: {
         input: {
           ...input,
-          description: details.description,
-          confidence: parseInt(String(details.confidence), 10),
           resultOf: id,
         },
       },

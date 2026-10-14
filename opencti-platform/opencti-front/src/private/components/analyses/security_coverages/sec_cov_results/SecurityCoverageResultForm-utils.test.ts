@@ -56,6 +56,8 @@ describe('resultToFormData', () => {
   const baseResult: SecurityCoverageResultToEdit = {
     id: 'scr-1',
     name: 'Manual result',
+    description: null,
+    confidence: null,
     external_uri: null,
     coverage_valid_from: null,
     coverage_valid_to: null,
@@ -68,6 +70,8 @@ describe('resultToFormData', () => {
   it('should fill the form with the values of the result', () => {
     const formData = resultToFormData({
       ...baseResult,
+      description: 'Result of the red team exercise',
+      confidence: 75,
       coverage_valid_from: '2026-01-01T00:00:00.000Z',
       coverage_valid_to: '2026-12-31T00:00:00.000Z',
       coverage_information: [{ coverage_name: 'detection', coverage_score: 80 }],
@@ -77,6 +81,8 @@ describe('resultToFormData', () => {
     });
 
     expect(formData.name).toEqual('Manual result');
+    expect(formData.description).toEqual('Result of the red team exercise');
+    expect(formData.confidence).toEqual(75);
     expect(formData.externalUri).toEqual('');
     expect(formData.validFrom).toEqual(new Date('2026-01-01T00:00:00.000Z'));
     expect(formData.validTo).toEqual(new Date('2026-12-31T00:00:00.000Z'));
@@ -89,6 +95,8 @@ describe('resultToFormData', () => {
   it('should use empty values when the result has no optional data', () => {
     const formData = resultToFormData(baseResult);
 
+    expect(formData.description).toEqual('');
+    expect(formData.confidence).toBeUndefined();
     expect(formData.createdBy).toBeUndefined();
     expect(formData.objectMarking).toEqual([]);
     expect(formData.objectLabel).toEqual([]);

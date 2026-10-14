@@ -31028,10 +31028,12 @@ export type SecurityCoverageResultEdge = {
 
 export type SecurityCoverageResultEditInput = {
   add_related_entities?: InputMaybe<SecurityCoverageSelectedEntitiesInput>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
   coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   external_uri?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;

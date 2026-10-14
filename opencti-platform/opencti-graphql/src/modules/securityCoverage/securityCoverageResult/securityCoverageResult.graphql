@@ -235,6 +235,8 @@ input SecurityCoverageResultAddInput {
 
 input SecurityCoverageResultEditInput {
   name: String
+  description: String
+  confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

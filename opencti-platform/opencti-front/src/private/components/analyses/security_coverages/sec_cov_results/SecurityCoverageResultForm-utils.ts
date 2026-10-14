@@ -14,9 +14,8 @@ export const isManualResult = (result: ExistingSecurityCoverageResult) => !resul
 
 export const resultToFormData = (result: SecurityCoverageResultToEdit): SecurityCoverageResultFormData => ({
   name: result.name,
-  // Not editable in update mode: a result has no description nor confidence.
-  description: '',
-  confidence: undefined,
+  description: result.description ?? '',
+  confidence: result.confidence ?? undefined,
   createdBy: result.createdBy ? convertCreatedBy(result) as FieldOption : undefined,
   objectMarking: convertMarkings(result),
   objectLabel: (result.objectLabel ?? []).map((label) => ({
