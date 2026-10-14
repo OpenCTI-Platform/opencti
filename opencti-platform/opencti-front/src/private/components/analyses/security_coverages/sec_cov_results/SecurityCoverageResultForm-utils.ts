@@ -9,8 +9,6 @@ export interface ExistingSecurityCoverageResult {
 
 export interface EditableSecurityCoverageResult extends ExistingSecurityCoverageResult {
   id: string;
-  description?: string | null;
-  confidence?: number | null;
   coverage_valid_from?: string | null;
   coverage_valid_to?: string | null;
   coverage_information?: readonly { coverage_name: string; coverage_score: number }[] | null;
@@ -29,8 +27,9 @@ export const isManualResult = (result: ExistingSecurityCoverageResult) => !resul
 
 export const resultToFormData = (result: EditableSecurityCoverageResult): SecurityCoverageResultFormData => ({
   name: result.name,
-  description: result.description ?? '',
-  confidence: result.confidence ?? undefined,
+  // Not editable in update mode: a result has no description nor confidence.
+  description: '',
+  confidence: undefined,
   createdBy: result.createdBy ? convertCreatedBy(result) as FieldOption : undefined,
   objectMarking: convertMarkings(result),
   objectLabel: (result.objectLabel ?? []).map((label) => ({

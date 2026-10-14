@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 22;
+testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 9;
 testCreatedCounter['case-rfi'] = 9;
@@ -70,8 +70,8 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 26;
-testCreatedCounter['security-coverage-result'] = 21;
+testCreatedCounter['security-coverage'] = 27;
+testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
@@ -115,6 +115,7 @@ testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
 testUpdatedCounter.imsi = 1;
 testUpdatedCounter['security-coverage'] = 1;
+testUpdatedCounter['security-coverage-result'] = 1;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 5;
@@ -126,7 +127,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 17;
+testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 9;
 testDeletedCounter['case-rfi'] = 9;
@@ -178,8 +179,8 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 24;
-testDeletedCounter['security-coverage-result'] = 19;
+testDeletedCounter['security-coverage'] = 25;
+testDeletedCounter['security-coverage-result'] = 20;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
