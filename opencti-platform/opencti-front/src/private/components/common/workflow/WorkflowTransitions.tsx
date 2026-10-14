@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogTitle,
   Icon,
+  IconButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -44,6 +45,22 @@ import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus
 import Button from '@common/button/Button';
 
 const COMMENT_FIELD_ID = 'workflow-transition-comment';
+
+// The reason only lives in a tooltip, so the trigger is a button: keyboard and screen-reader users reach it too.
+const WorkflowErrorHint = ({ message, severity }: { message: string; severity: 'error' | 'warning' }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <IconButton
+        size="sm"
+        priority="tertiary"
+        variant={severity === 'error' ? 'destructive' : 'default'}
+        aria-label={message}
+        icon={<ErrorOutline color={severity} fontSize="small" />}
+      />
+    </TooltipTrigger>
+    <TooltipContent>{message}</TooltipContent>
+  </Tooltip>
+);
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
@@ -147,12 +164,10 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ErrorOutline color="error" fontSize="small" />
-            </TooltipTrigger>
-            <TooltipContent>{workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}</TooltipContent>
-          </Tooltip>
+          <WorkflowErrorHint
+            severity="error"
+            message={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}
+          />
           <Text as="span" variant="content-compact" style={{ color: 'var(--text-input-error)' }}>
             {t_i18n('Transition failed')}
           </Text>
@@ -182,14 +197,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   // An external write kept the entity Status off the workflow without any transition running.
   const divergence = workflowInstance.pendingError ? (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex" tabIndex={0}>
-            <ErrorOutline color="warning" fontSize="small" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{workflowInstance.pendingError}</TooltipContent>
-      </Tooltip>
+      <WorkflowErrorHint severity="warning" message={workflowInstance.pendingError} />
       <Text as="span" variant="content-compact" className="whitespace-nowrap">
         {t_i18n('Status out of sync with the workflow')}
       </Text>
