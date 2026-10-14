@@ -12,11 +12,13 @@ export const connectorsStateQuery = graphql`
       auto
       manager_current_status
       manager_requested_status
-      health_status
-      health_status_since
-      healthChecks {
-        health_check_code
-        health_check_message
+      ingestionHealth {
+        status
+        status_since
+        healthChecks {
+          health_check_code
+          health_check_message
+        }
       }
     }
     rabbitMQMetrics {

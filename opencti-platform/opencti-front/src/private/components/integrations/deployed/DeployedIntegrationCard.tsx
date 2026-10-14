@@ -252,7 +252,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
             {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
             {statusChip}
             {item.kind !== 'form' && (
-              <IngestionHealthChip healthStatus={item.healthStatus} healthStatusSince={item.healthStatusSince} healthChecks={item.healthChecks} />
+              <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
             )}
           </Stack>
         </Stack>

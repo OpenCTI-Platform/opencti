@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
-import type { IngestionHealthFields, StoredHealthCheck } from './ingestionHealth-types';
+import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
+import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
 
 // region registry
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
@@ -58,20 +58,24 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
   return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code));
 };
 
-// Returns the fields to write, or null when neither the status nor the checks changed
+// Returns the fields to write, or null when neither the status nor the checks changed.
+// The write replaces the whole ingestion_health object, so it carries the unchanged since.
 export const computeIngestionHealthPatch = (current: IngestionHealthFields, checks: StoredHealthCheck[], evaluatedAt: string): IngestionHealthFields | null => {
+  const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks);
   const nextChecks = normalizeHealthChecks(checks);
-  const isStatusChanged = current.health_status !== status;
-  const isChecksChanged = !R.equals(normalizeHealthChecks(current.health_checks ?? []), nextChecks);
+  const isStatusChanged = currentHealth?.status !== status;
+  const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
   if (!isStatusChanged && !isChecksChanged) {
     return null;
   }
-  const patch: IngestionHealthFields = { health_status: status, health_checks: nextChecks };
-  if (isStatusChanged) {
-    patch.health_status_since = evaluatedAt;
-  }
-  return patch;
+  return {
+    ingestion_health: {
+      status,
+      status_since: currentHealth && !isStatusChanged ? currentHealth.status_since : evaluatedAt,
+      health_checks: nextChecks,
+    },
+  };
 };
 // endregion
 
@@ -94,9 +98,19 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
 
 // Spread into the resolvers of every type carrying an ingestion health.
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
+// Null until the manager first evaluates the ingestion.
+export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | undefined): IngestionHealth | null => {
+  if (!health) {
+    return null;
+  }
+  return {
+    status: health.status,
+    status_since: health.status_since,
+    healthChecks: toGraphqlHealthChecks(health.health_checks),
+  };
+};
+
 export const ingestionHealthFieldResolvers = {
-  health_status: (element: IngestionHealthFields) => element.health_status ?? IngestionHealthStatus.Unknown,
-  health_status_since: (element: IngestionHealthFields) => element.health_status_since ?? null,
-  healthChecks: (element: IngestionHealthFields) => toGraphqlHealthChecks(element.health_checks),
+  ingestionHealth: (element: IngestionHealthFields) => toGraphqlIngestionHealth(element.ingestion_health),
 };
 // endregion

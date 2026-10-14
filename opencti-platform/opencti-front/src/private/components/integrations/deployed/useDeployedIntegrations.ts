@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import { type IngestionHealthData } from '@components/data/connectors/IngestionHealthChip';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
@@ -43,9 +44,7 @@ export interface DeployedIntegrationItem {
   detailUrl: string;
   searchText: string;
   // Ingestion health (connectors, feeds and syncs; forms have none)
-  healthStatus?: string | null;
-  healthStatusSince?: string | null;
-  healthChecks?: ReadonlyArray<{ readonly health_check_code: string; readonly health_check_message?: string | null }> | null;
+  ingestionHealth?: IngestionHealthData | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
@@ -172,9 +171,7 @@ const useDeployedIntegrations = ({
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
-        healthStatus: state?.health_status,
-        healthStatusSince: (state?.health_status_since as string | null | undefined) ?? null,
-        healthChecks: state?.healthChecks,
+        ingestionHealth: state?.ingestionHealth,
         connector: merged,
       });
     }
@@ -204,9 +201,7 @@ const useDeployedIntegrations = ({
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/sync/${node.id}`,
         searchText: buildSearchText([node.name, node.uri, builtInLabel('sync')]),
-        healthStatus: node.health_status,
-        healthStatusSince: (node.health_status_since as string | null | undefined) ?? null,
-        healthChecks: node.healthChecks,
+        ingestionHealth: node.ingestionHealth,
       });
     }
 
@@ -221,9 +216,7 @@ const useDeployedIntegrations = ({
         last_execution_date?: string | null;
         updated_at?: string | null;
         user?: { readonly name: string } | null;
-        health_status?: string | null;
-        health_status_since?: string | null;
-        healthChecks?: DeployedIntegrationItem['healthChecks'];
+        ingestionHealth?: DeployedIntegrationItem['ingestionHealth'];
       },
     ) => {
       items.push({
@@ -247,9 +240,7 @@ const useDeployedIntegrations = ({
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/${kind}/${node.id}`,
         searchText: buildSearchText([node.name, node.description, node.uri, builtInLabel(kind)]),
-        healthStatus: node.health_status,
-        healthStatusSince: node.health_status_since,
-        healthChecks: node.healthChecks,
+        ingestionHealth: node.ingestionHealth,
       });
     };
 

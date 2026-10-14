@@ -1,6 +1,6 @@
 # Ingestion Health — Chunk 1 Brainstorm (and what moves to chunk 2)
 
-> Status: **brainstorm**, no code. Revised on 2026-10-13: new architecture (Redis fed by a PubSub listener, Elasticsearch written by the manager), new storage and API formats, and a smaller chunk 1 (the structure, with one check, and the UI chip). Aligned on the implemented scope: connectors, feeds and syncs. The previous implementation plan was deleted.
+> Status: **brainstorm**, no code. Revised on 2026-10-14: the stored fields move inside one nested `ingestion_health` object (§7). Revised on 2026-10-13: new architecture (Redis fed by a PubSub listener, Elasticsearch written by the manager), new storage and API formats, and a smaller chunk 1 (the structure, with one check, and the UI chip). Aligned on the implemented scope: connectors, feeds and syncs. The previous implementation plan was deleted.
 > Summary: `2026-10-08-ingestion-health-chunk-1-summary.md`.
 > Sources: Notion TAS-1415 › « Brainstorm chunk 1: Health check minimal version », RFC 0001 (`filigran-private` PR #229), issue #18305, PO decisions of 2026-10-07, 2026-10-08 and 2026-10-13.
 
@@ -53,7 +53,7 @@ Two stores, each with one writer. Chunk 1 builds the bottom half: manager, Elast
                      health manager (+ configuration data)      ← chunk 1
                                      │  only on change
                                      ▼
-                  Elasticsearch (status, since, health_checks)  ← chunk 1
+         Elasticsearch (ingestion_health: status, since, checks) ← chunk 1
                                      │
                                      ▼
                              GraphQL API ──► UI                 ← chunk 1
@@ -75,7 +75,8 @@ At each period (**60 s by default**, `ingestion_health_manager:interval`), with 
    - *(chunk 2)* if the **status** changed, publishes an `ingestion_health` activity event.
 
 The Elasticsearch write:
-- `health_status_since` moves only when the status changes;
+- replaces the whole `ingestion_health` object, so it always carries `status_since`;
+- `status_since` moves only when the status changes;
 - must not touch `updated_at` (an entity update would also emit a stream event);
 - must not emit a stream event.
 
@@ -108,25 +109,31 @@ The API exposes these five values from chunk 1, so the list never changes later.
 
 ## 7. Elasticsearch storage format (chunk 1)
 
-Stored on connectors, feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, written by the manager only:
+Stored on connectors, feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, written by the manager only, in **one nested object** `ingestion_health`:
 
 ```
-health_status:        critical | unknown | stopped | healthy | degraded
-health_status_since:  Datetime                    # null until the manager first evaluates the connector
-health_checks: [                                   # nested
-  {
-    health_check_code:     string                  # USER_MISSING; later NO_HEARTBEAT, USER_NOT_SERVICE_ACCOUNT, NOT_EVALUATED, LAST_RUN_FAIL…
-    health_check_metadata: {                       # raw object, depends on the code
-      reason?:   string                            # NOT_EVALUATED (chunk 2)
-      log?:      string                            # sent by the connector
-      entityId?: string                            # when the issue concerns one entity
-      …
+ingestion_health: {                                # nested, single, optional: absent until the manager first evaluates the ingestion
+  status:        critical | unknown | stopped | healthy | degraded   # mandatory
+  status_since:  Datetime                   # mandatory: last change of the status
+  health_checks: [                                 # nested, optional
+    {
+      health_check_code:     string                # mandatory. USER_MISSING; later NO_HEARTBEAT, USER_NOT_SERVICE_ACCOUNT, NOT_EVALUATED, LAST_RUN_FAIL…
+      health_check_metadata: {                     # raw object, optional, depends on the code
+        reason?:   string                          # NOT_EVALUATED (chunk 2)
+        log?:      string                          # sent by the connector
+        entityId?: string                          # when the issue concerns one entity
+        …
+      }
     }
-  }
-]
+  ]
+}
 ```
 
+- `ingestion_health` is **nested** and single (`multiple: false`), `mandatoryType: 'no'`.
+- Inside it, `status` and `status_since` are mandatory (`mandatoryType: 'internal'`: written by the platform, never by a user); `health_checks` is not.
+- Inside `health_checks`, `health_check_code` is mandatory (`internal`); `health_check_metadata` is not.
 - `health_checks` is **nested**; `health_check_metadata` is **raw**.
+- Grouping the fields under one top-level name keeps them apart from the other attributes of the platform: a top-level attribute name must have the same type on every entity (`registerAttributes`), while a sub-field name is scoped by its parent.
 - Every attribute and every nested mapping carries `featureFlag: INGESTION_HEALTH_FEATURE_FLAG`.
 - **Kind and severity are not stored**: they are derived from the code, through one registry (code → kind, severity, message). They describe the check type, not one occurrence; changing a severity must not require rewriting Elasticsearch.
 - No stored human message, no stored summary: the message is computed by the API from the code and the metadata.
@@ -149,7 +156,8 @@ type IngestionHealthCheck {
 }
 ```
 
-- A connector the manager has not evaluated yet: `unknown`, `health_status_since` null, no check.
+- The API shape is unchanged by the nesting: the three fields stay flat on each type, and the resolvers read them from `ingestion_health` (`health_status` ← `status`, `health_status_since` ← `status_since`, `healthChecks` ← `health_checks`).
+- A connector the manager has not evaluated yet (no `ingestion_health`): `unknown`, `health_status_since` null, no check.
 - The raw metadata is not exposed: only what the UI uses.
 - Health is visible to whoever can access the ingestion. On `Connector`, all three fields require `MODULES`: a connector is also reachable without it (the `connectors` field of every entity, `connectorsForImport`/`Export`/`Analysis`). Feeds and syncs are only reachable through queries that already require `INGESTION`, so their fields carry no extra `@auth`.
 - No resolver calls Redis.
@@ -177,7 +185,7 @@ type IngestionHealthCheck {
 - no chip.
 
 **Accepted risks:**
-- **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing says so. `health_status_since` is when the status last changed, not when the manager last looked. Whether the manager runs is visible in Settings › Parameters.
+- **No manager, no fresh status.** If no node runs the manager, the stored status gets old, and nothing says so. `status_since` is when the status last changed, not when the manager last looked. Whether the manager runs is visible in Settings › Parameters.
 - **Lag.** A fixed user stays `degraded` up to one period.
 - **Leftovers.** Turning the flag on, then off, leaves the stored fields behind. Nothing reads them, and nothing cleans them up.
 
@@ -309,3 +317,5 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 | 2026-10-13 | **Chunk 1 = the structure**: the manager with the single check `USER_MISSING`, the Elasticsearch fields, the GraphQL types. Everything else (listener, `NO_HEARTBEAT`, `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`, `stopped`, activity event) moves to chunk 2. |
 | 2026-10-13 | Chunk 1 also ships, as implemented: the UI chip and its tooltip (connector list and detail, deployed cards and lines, feed and sync detail), and feeds (RSS, CSV, JSON, TAXII, TAXII collection) and syncs, with the same fields, GraphQL types and `USER_MISSING` (empty or SYSTEM user allowed for them). |
 | 2026-10-13 | Tests and acceptance criteria deferred until the design is settled. |
+| 2026-10-14 | Elasticsearch: the three fields move inside one nested object `ingestion_health` (single, optional). Inside: `health_status` and `health_status_since` mandatory, `health_checks` optional; in each check, `health_check_code` mandatory, `health_check_metadata` optional. The manager writes the whole object. GraphQL unchanged. |
+| 2026-10-14 | Inside `ingestion_health`, `health_status` is renamed `status` and `health_status_since` is renamed `status_since`. The GraphQL fields keep their names (`health_status`, `health_status_since`). |

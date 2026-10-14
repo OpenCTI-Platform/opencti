@@ -977,11 +977,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Tooltip>
               <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
                 <ConnectorStatusChip connector={connector} />
-                <IngestionHealthChip
-                  healthStatus={connector.health_status}
-                  healthStatusSince={connector.health_status_since}
-                  healthChecks={connector.healthChecks}
-                />
+                <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
               </div>
             </TitleMainEntity>
           </Box>
@@ -1077,11 +1073,13 @@ const Connector = createRefetchContainer(
         version
         connector_user_id
         is_managed
-        health_status
-        health_status_since
-        healthChecks {
-          health_check_code
-          health_check_message
+        ingestionHealth {
+          status
+          status_since
+          healthChecks {
+            health_check_code
+            health_check_message
+          }
         }
         manager_contract_configuration {
           key

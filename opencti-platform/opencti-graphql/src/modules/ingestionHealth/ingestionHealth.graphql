@@ -22,3 +22,9 @@ type IngestionHealthCheck {
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
 }
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  status_since: DateTime!
+  healthChecks: [IngestionHealthCheck!]!
+}

@@ -1,6 +1,6 @@
 # Ingestion Health — Chunk 1 Summary
 
-> Summary of `2026-10-08-ingestion-health-chunk-1-brainstorm.md` (revised on 2026-10-13, aligned on the implemented scope).
+> Summary of `2026-10-08-ingestion-health-chunk-1-brainstorm.md` (revised on 2026-10-14: fields nested in `ingestion_health`).
 > Issue #18305, Notion TAS-1415, RFC 0001.
 
 ## In one sentence
@@ -13,7 +13,7 @@ Behind the `INGESTION_HEALTH` flag, chunk 1 ships the **structure** of ingestion
 |------------------------------------------------------------------------------|-----------------------------------------------------|---------------------------------------------------------|
 | Health manager (cycle, pure evaluation, write on change, cache invalidation) | PubSub channel + listener writing Redis             | Runtime sources of feeds and syncs (ingestion manager, stream manager) |
 | `USER_MISSING`                                                               | `NO_HEARTBEAT` (40 s rule, blind-manager logic)     | Composer health                                         |
-| ES fields: `health_status`, `health_status_since`, `health_checks`           | `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`         | Notifications                                           |
+| ES nested object `ingestion_health` (status, since, checks)                 | `NOT_EVALUATED`, `USER_NOT_SERVICE_ACCOUNT`         | Notifications                                           |
 | GraphQL types + check registry                                               | `stopped` status, `ingestion_health` activity event | `TOKEN_EXPIRED`                                         |
 | UI chip and tooltip                                                          |                                                     |                                                         |
 
@@ -29,7 +29,7 @@ Behind the `INGESTION_HEALTH` flag, chunk 1 ships the **structure** of ingestion
 Every period (**60 s by default**, `ingestion_health_manager:interval`), with its own lock, for each deployed connector, feed and sync:
 1. computes the configuration data (its user);
 2. computes the status and the `health_checks` list with a pure function;
-3. **only if the status or the checks changed**: writes Elasticsearch, without touching `updated_at` and without a stream event, then, for connectors, invalidates the connector cache. `health_status_since` moves only when the status changes.
+3. **only if the status or the checks changed**: writes Elasticsearch, without touching `updated_at` and without a stream event, then, for connectors, invalidates the connector cache. `status_since` moves only when the status changes.
 
 In chunk 1 the manager does not use Redis. It reads connectors and users from the cache, feeds and syncs from Elasticsearch (they are not cached). It is registered only when the flag is on, and disabled in `config/test.json`.
 
@@ -53,9 +53,11 @@ Priority: `stopped` > `critical` > `degraded` > `unknown`. All five values (`cri
 On connectors, feeds and syncs:
 
 ```
-health_status:        critical | unknown | stopped | healthy | degraded
-health_status_since:  Datetime          # null until first evaluated
-health_checks: [ { health_check_code, health_check_metadata (raw) } ]   # nested
+ingestion_health: {                     # nested, single, optional: absent until first evaluated
+  status:        critical | unknown | stopped | healthy | degraded   # mandatory
+  status_since:  Datetime                                           # mandatory
+  health_checks: [ { health_check_code (mandatory), health_check_metadata (raw, optional) } ]   # nested, optional
+}
 ```
 
 Kind and severity are **not stored**: they are derived from the code through one registry (code → kind, severity, message). No stored message or summary. Every attribute and nested mapping carries the feature flag.
@@ -98,9 +100,10 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
 ## To do (chunk 1)
 
 - **Elasticsearch fields** on connectors, feeds and syncs, gated by `INGESTION_HEALTH` (`featureFlag` on the attribute definitions and their nested mappings):
-  - `health_status` (`critical`, `unknown`, `stopped`, `healthy`, `degraded`);
-  - `health_status_since` (date, nullable);
-  - `health_checks`, nested: `health_check_code` (string) and `health_check_metadata` (raw).
+  - one nested object `ingestion_health` (single, optional), containing:
+  - `status` (`critical`, `unknown`, `stopped`, `healthy`, `degraded`), mandatory;
+  - `status_since` (date), mandatory;
+  - `health_checks`, nested, optional: `health_check_code` (string, mandatory) and `health_check_metadata` (raw, optional).
 - **Check registry**: one place mapping each code to its kind, severity and message; chunk 1 registers `USER_MISSING` only.
 - **Pure evaluation function**: from the checks, return the status and the `health_checks` list, with the priority `stopped` > `critical` > `degraded` > `unknown`; `USER_MISSING` → `degraded`.
 - **`USER_MISSING` check**: user required for connectors, optional for feeds and syncs; a user missing from the user cache always fires; no user id or name in the metadata.
@@ -108,7 +111,7 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
   - registered only when the flag is on, with its own lock;
   - period `ingestion_health_manager:interval`, 60 s by default;
   - for each deployed connector (built-ins excluded), feed and sync: evaluate, then write only if the status or the checks changed;
-  - the write moves `health_status_since` only on a status change, does not touch `updated_at` and emits no stream event;
+  - the write replaces the whole `ingestion_health` object and moves `status_since` only on a status change, does not touch `updated_at` and emits no stream event;
   - invalidate the connector cache after a connector write;
   - one element that fails to evaluate does not stop the others, and the error is logged with its id;
   - disabled in `config/test.json`.

@@ -298,7 +298,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
             ? <ItemBoolean status={undefined} label={statusText} />
             : <ItemBoolean status={item.status === 'active'} label={statusText} />}
           {item.kind !== 'form' && (
-            <IngestionHealthChip healthStatus={item.healthStatus} healthStatusSince={item.healthStatusSince} healthChecks={item.healthChecks} />
+            <IngestionHealthChip ingestionHealth={item.ingestionHealth} />
           )}
         </Stack>
       </Box>

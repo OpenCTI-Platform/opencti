@@ -9,10 +9,15 @@ interface IngestionHealthCheck {
   readonly health_check_message?: string | null;
 }
 
+export interface IngestionHealthData {
+  readonly status: string;
+  readonly status_since: string;
+  readonly healthChecks: ReadonlyArray<IngestionHealthCheck>;
+}
+
 interface IngestionHealthChipProps {
-  healthStatus?: string | null;
-  healthStatusSince?: string | null;
-  healthChecks?: ReadonlyArray<IngestionHealthCheck> | null;
+  // Null until the manager first evaluates the ingestion
+  ingestionHealth?: IngestionHealthData | null;
 }
 
 // Design system feedback tones
@@ -24,16 +29,16 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   unknown: 'neutral',
 };
 
-const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ healthStatus, healthStatusSince, healthChecks }) => {
+const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
   if (!isFeatureEnable('INGESTION_HEALTH')) {
     return null;
   }
-  const status = healthStatus ?? 'unknown';
-  const checks = healthChecks ?? [];
+  const status = ingestionHealth?.status ?? 'unknown';
+  const checks = ingestionHealth?.healthChecks ?? [];
   let emptyMessage = t_i18n('No health issue detected');
-  if (!healthStatusSince) {
+  if (!ingestionHealth) {
     emptyMessage = t_i18n('Not evaluated yet');
   }
   return (
@@ -44,7 +49,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ healthStatus,
         </span>
       </TooltipTrigger>
       <TooltipContent>
-        {healthStatusSince && <div>{`${t_i18n('Since')} ${nsdt(healthStatusSince)}`}</div>}
+        {ingestionHealth && <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>}
         {checks.length > 0
           ? checks.map((check) => <div key={check.health_check_code}>{check.health_check_message ?? check.health_check_code}</div>)
           : <div>{emptyMessage}</div>}
