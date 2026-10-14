@@ -4,6 +4,7 @@ import {
   extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
   getCustomFieldDefaultValueFromEntitySettings,
+  mergeCustomFieldValues,
   normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
@@ -897,5 +898,27 @@ describe('extractStringifiedCustomFieldValueFromStoreEntity', () => {
     seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'unsupported' as any }));
     const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'a' }] };
     await expect(extract(element, 'x_opencti_cf_field')).rejects.toThrow('Unknown custom field type');
+  });
+});
+
+describe('mergeCustomFieldValues', () => {
+  const note = (value: string): CustomFieldValue => ({ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: value });
+  const tags = (values: string[]): CustomFieldValue => ({ field_id: 'cf-tags', field_name: 'x_opencti_cf_tags', select_values: values });
+
+  it('keeps the value of the target for a single value custom field', () => {
+    expect(mergeCustomFieldValues([note('target')], [[note('source 1')], [note('source 2')]])).toEqual([note('target')]);
+  });
+
+  it('takes the value of the first source having one when the target has none', () => {
+    expect(mergeCustomFieldValues([], [[], [note('source 2')], [note('source 3')]])).toEqual([note('source 2')]);
+  });
+
+  it('merges the options of a multi_select custom field', () => {
+    expect(mergeCustomFieldValues([tags(['a'])], [[tags(['b', 'a'])], [tags(['c'])]])).toEqual([tags(['a', 'b', 'c'])]);
+  });
+
+  it('keeps a single entry per custom field', () => {
+    const merged = mergeCustomFieldValues(undefined, [[note('source 1'), tags(['a'])], [note('source 2'), tags(['b'])]]);
+    expect(merged).toEqual([note('source 1'), tags(['a', 'b'])]);
   });
 });
