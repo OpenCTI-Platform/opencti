@@ -2,10 +2,10 @@ import { useState, type MouseEvent } from 'react';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { Chip, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { DeleteOutlined, EditOutlined, MoreVert } from '@mui/icons-material';
+import Button from '@common/button/Button';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../i18n';
-import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableValueInput from './DashboardVariableValueInput';
 import useVariableValueLabels, { type VariableValueLabels } from './useVariableValueLabels';
@@ -24,7 +24,7 @@ export interface DashboardVariableChipProps {
   // The value cannot be edited for now (the values are being saved): the chip is inert and shows it.
   disabled?: boolean;
   onChange: (value: string) => void;
-  // The menu entries only exist when their callback is provided.
+  // The actions of the popover footer only exist when their callback is provided.
   onEdit?: (variable: DashboardVariable) => void;
   onDelete?: (variable: DashboardVariable) => void;
 }
@@ -39,12 +39,11 @@ const inputKey = (variable: DashboardVariable) => [
 const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, disabled = false, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   // Nothing to resolve (so no query) when the bar already did.
   const ownLabels = useVariableValueLabels(variable, valueLabels || !value ? [] : [value]);
   const { labels, restricted } = valueLabels ?? ownLabels;
   const isUnused = usedInWidgetIds.length === 0;
-  const hasMenu = onEdit !== undefined || onDelete !== undefined;
+  const hasActions = onEdit !== undefined || onDelete !== undefined;
 
   // No entry yet means the id is still resolving: the chip stays neutral until the label is known.
   // A date is stored as an ISO string: show it as the platform shows any other date.
@@ -53,6 +52,12 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
     : t_i18n('Not set');
   // Decided by the resolution, not by the label: an entity can really be named `Restricted`.
   const isRestricted = value !== undefined && restricted.has(value);
+
+  // The popover closes before the page opens its own dialog.
+  const handleAction = (action: (variable: DashboardVariable) => void) => {
+    setAnchorEl(null);
+    action(variable);
+  };
 
   const chip = (
     <Chip
@@ -79,32 +84,6 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
           <TooltipContent>{t_i18n('Not used by any widget')}</TooltipContent>
         </Tooltip>
       ) : chip}
-      {hasMenu && (
-        <Menu open={menuOpen} onOpenChange={setMenuOpen}>
-          <MenuTrigger asChild>
-            <IconButton
-              className={EXPORT_REMOVE_CLASS}
-              variant="default"
-              priority="tertiary"
-              aria-label={`${t_i18n('Open menu')}: ${variable.name}`}
-              active={menuOpen}
-              icon={<MoreVert />}
-            />
-          </MenuTrigger>
-          <MenuContent align="end">
-            {onEdit && (
-              <MenuItem startIcon={<EditOutlined fontSize="small" />} onSelect={() => onEdit(variable)}>
-                {t_i18n('Edit variable')}
-              </MenuItem>
-            )}
-            {onDelete && (
-              <MenuItem startIcon={<DeleteOutlined fontSize="small" />} onSelect={() => onDelete(variable)}>
-                {t_i18n('Delete variable')}
-              </MenuItem>
-            )}
-          </MenuContent>
-        </Menu>
-      )}
       <Popover
         open={anchorEl !== null && !disabled}
         anchorEl={anchorEl}
@@ -119,6 +98,32 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
             onChange={onChange}
             commitOn="blur"
           />
+          {hasActions && (
+            <Stack direction="row" justifyContent="flex-end" gap={1} sx={{ marginTop: 2 }}>
+              {onEdit && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  data-testid="dashboard-variable-edit"
+                  startIcon={<EditOutlined />}
+                  onClick={() => handleAction(onEdit)}
+                >
+                  {t_i18n('Edit variable')}
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  intent="destructive"
+                  size="small"
+                  data-testid="dashboard-variable-delete"
+                  startIcon={<DeleteOutlined />}
+                  onClick={() => handleAction(onDelete)}
+                >
+                  {t_i18n('Delete variable')}
+                </Button>
+              )}
+            </Stack>
+          )}
         </Box>
       </Popover>
     </Stack>

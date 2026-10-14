@@ -7,7 +7,8 @@ import AutocompleteFieldPageModel from './field/AutocompleteField.pageModel';
  * Selectors come from the real components (src/components/dashboard/variables/*):
  *  - DashboardVariablesBar        -> data-testid `dashboard-variables-bar`, `create-variable-button`
  *  - DashboardVariableChip        -> wrapper data-testid `dashboard-variable-chip-<name>`, a button named
- *                                    `<name> : <value label>` and a menu button named `Open menu: <name>`
+ *                                    `<name> : <value label>` opening a popover with the value input and, for the
+ *                                    users who may edit, the buttons `dashboard-variable-edit` / `dashboard-variable-delete`
  *  - DashboardVariableDialog      -> data-testid `dashboard-variable-dialog`, `variable-dialog-submit`
  *  - DashboardVariableDeleteDialog -> data-testid `dashboard-variable-delete-dialog`, `dashboard-variable-delete-confirm`
  */
@@ -30,14 +31,10 @@ export default class DashboardVariablesPageModel {
 
   /**
    * The clickable chip, named `<name> : <value label>`. The value label is the resolved entity name,
-   * or `Not set`. Exact: the sibling menu button is named `Open menu: <name>`.
+   * or `Not set`.
    */
   getChipButton(variableName: string, valueLabel: string) {
     return this.getChip(variableName).getByRole('button', { name: `${variableName} : ${valueLabel}`, exact: true });
-  }
-
-  getChipMenuButton(variableName: string) {
-    return this.getChip(variableName).getByRole('button', { name: `Open menu: ${variableName}`, exact: true });
   }
 
   // endregion
@@ -100,10 +97,10 @@ export default class DashboardVariablesPageModel {
     return this.page.getByTestId('dashboard-variable-delete-dialog');
   }
 
-  /** Deletes the variable from the menu of its chip and confirms the dialog. */
-  async deleteVariable(variableName: string): Promise<Locator> {
-    await this.getChipMenuButton(variableName).click();
-    await this.page.getByRole('menuitem', { name: 'Delete variable' }).click();
+  /** Opens the popover of the chip and clicks its Delete variable button (the confirmation dialog opens). */
+  async deleteVariable(variableName: string, valueLabel: string): Promise<Locator> {
+    await this.getChipButton(variableName, valueLabel).click();
+    await this.page.getByTestId('dashboard-variable-delete').click();
     const dialog = this.getDeleteDialog();
     await expect(dialog).toBeVisible();
     return dialog;

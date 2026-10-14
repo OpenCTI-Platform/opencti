@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableChip from './DashboardVariableChip';
@@ -130,25 +130,38 @@ describe('DashboardVariableChip', () => {
     expect(screen.getByRole('button', { name: 'Org : Not set' })).toBeInTheDocument();
   });
 
-  it('has no menu unless an edit or delete callback is provided', () => {
-    renderChip();
+  it('has no menu button: the actions live in the value popover', () => {
+    renderChip({ onEdit: vi.fn(), onDelete: vi.fn() });
     expect(screen.queryByRole('button', { name: /Open menu/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-variable-edit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-variable-delete')).not.toBeInTheDocument();
   });
 
-  it('offers only the provided menu actions', async () => {
+  it('offers no action in the popover unless an edit or delete callback is provided', async () => {
+    const { user } = renderChip();
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit variable' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete variable' })).not.toBeInTheDocument();
+  });
+
+  it('offers only the provided actions, and closes the popover when one is used', async () => {
     const onEdit = vi.fn();
     const { user } = renderChip({ onEdit });
-    await user.click(screen.getByRole('button', { name: 'Open menu: Sector' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Edit variable' }));
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.queryByTestId('dashboard-variable-delete')).not.toBeInTheDocument();
+    await user.click(screen.getByTestId('dashboard-variable-edit'));
     expect(onEdit).toHaveBeenCalledWith(sector);
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
   });
 
   it('offers delete when a delete callback is provided', async () => {
     const onDelete = vi.fn();
     const { user } = renderChip({ onDelete });
-    await user.click(screen.getByRole('button', { name: 'Open menu: Sector' }));
-    expect(screen.queryByRole('menuitem', { name: 'Edit variable' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('menuitem', { name: 'Delete variable' }));
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.queryByTestId('dashboard-variable-edit')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Delete variable' }));
     expect(onDelete).toHaveBeenCalledWith(sector);
+    await waitFor(() => expect(screen.queryByRole('textbox')).not.toBeInTheDocument());
   });
 });

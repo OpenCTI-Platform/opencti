@@ -558,28 +558,6 @@
       ]
     },
     {
-      "component": "Menu",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "dashboard variables: the Edit variable / Delete variable menu of a chip, only rendered when the page provides the matching callback.",
-      "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
-      ]
-    },
-    {
-      "component": "IconButton",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "dashboard variables: the trigger of the chip menu, tertiary, removed from image and PDF exports.",
-      "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
-      ]
-    },
-    {
       "component": "Input",
       "importFrom": "@filigran/design-system",
       "guards": [

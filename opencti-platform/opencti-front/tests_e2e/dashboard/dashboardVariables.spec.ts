@@ -30,7 +30,7 @@ test.describe.configure({ mode: 'serial' });
  * Create a widget listing reports, whose "Contains" filter is the variable, and see the report of the first sector.
  * Change the value through the chip: the widget lists the report of the second sector.
  * Reload the dashboard: the value is back (stored in the browser).
- * Delete the variable from the menu of its chip: the widget has no data anymore.
+ * Delete the variable from the popover of its chip: the widget has no data anymore.
  *
  * Viewer (second user, 'can view' on the dashboard): the variables bar is not displayed.
  */
@@ -152,7 +152,7 @@ test.describe('Dashboard variables', { tag: ['@ce', '@groupff'] }, () => {
     // region Delete the variable
     // --------------------------
 
-    const deleteDialog = await variablesPage.deleteVariable(variableName);
+    const deleteDialog = await variablesPage.deleteVariable(variableName, sectors[1].name);
     // The widget using the variable is listed as impacted.
     await expect(deleteDialog.getByText(widgetTitle)).toBeVisible();
     await variablesPage.confirmDeletion();

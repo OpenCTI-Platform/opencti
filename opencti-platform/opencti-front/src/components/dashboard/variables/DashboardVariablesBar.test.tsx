@@ -156,21 +156,23 @@ describe('DashboardVariablesBar', () => {
     });
   });
 
-  describe('chip menu', () => {
-    it('is absent without edit and delete callbacks', () => {
-      renderBar({ canManage: true });
-      expect(screen.queryByRole('button', { name: /Open menu/ })).not.toBeInTheDocument();
+  describe('chip actions', () => {
+    it('are absent without edit and delete callbacks', async () => {
+      const { user } = renderBar({ canManage: true });
+      await user.click(screen.getByRole('button', { name: /^Country :/ }));
+      expect(screen.queryByTestId('dashboard-variable-edit')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('dashboard-variable-delete')).not.toBeInTheDocument();
     });
 
     it('forwards the edited and deleted variable', async () => {
       const onEdit = vi.fn();
       const onDelete = vi.fn();
       const { user } = renderBar({ canManage: true, onEdit, onDelete });
-      await user.click(screen.getByRole('button', { name: 'Open menu: Country' }));
-      await user.click(screen.getByRole('menuitem', { name: 'Edit variable' }));
+      await user.click(screen.getByRole('button', { name: /^Country :/ }));
+      await user.click(screen.getByRole('button', { name: 'Edit variable' }));
       expect(onEdit).toHaveBeenCalledWith(country);
-      await user.click(screen.getByRole('button', { name: 'Open menu: Sector' }));
-      await user.click(screen.getByRole('menuitem', { name: 'Delete variable' }));
+      await user.click(screen.getByRole('button', { name: /^Sector :/ }));
+      await user.click(screen.getByRole('button', { name: 'Delete variable' }));
       expect(onDelete).toHaveBeenCalledWith(sector);
     });
   });

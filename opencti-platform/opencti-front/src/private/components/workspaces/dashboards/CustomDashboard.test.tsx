@@ -218,14 +218,14 @@ describe('CustomDashboard variables bar', () => {
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-variable-chip-Sector')).toHaveAttribute('data-unused', 'false');
     expect(screen.getByTestId('create-variable-button')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Open menu/ }));
-    expect(screen.getByRole('menuitem', { name: 'Edit variable' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'Delete variable' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.getByRole('button', { name: 'Edit variable' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete variable' })).toBeInTheDocument();
   });
 
   const openDeleteDialog = async (user: ReturnType<typeof testRender>['user']) => {
-    await user.click(screen.getByRole('button', { name: /Open menu/ }));
-    await user.click(screen.getByRole('menuitem', { name: 'Delete variable' }));
+    await user.click(screen.getByRole('button', { name: /^Sector :/ }));
+    await user.click(screen.getByRole('button', { name: 'Delete variable' }));
   };
 
   it('warns about the widgets using the variable by title, falling back to their type', async () => {
@@ -274,8 +274,8 @@ describe('CustomDashboard variables bar', () => {
 
   it('opens the dialog on the variable from its Edit variable entry', async () => {
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
-    await user.click(screen.getByRole('button', { name: /Open menu/ }));
-    await user.click(screen.getByRole('menuitem', { name: 'Edit variable' }));
+    await user.click(screen.getByRole('button', { name: /^Sector :/ }));
+    await user.click(screen.getByRole('button', { name: 'Edit variable' }));
     expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Name/ })).toHaveValue('Sector');
   });
@@ -302,8 +302,9 @@ describe('CustomDashboard variables bar', () => {
     const { user } = testRender(<CustomDashboard data={readerWorkspace as never} />, { userContext: flagOn() });
     expect(bar()).toBeInTheDocument();
     expect(screen.queryByTestId('create-variable-button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Open menu/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.queryByRole('button', { name: 'Edit variable' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete variable' })).not.toBeInTheDocument();
     await user.tripleClick(screen.getByRole('textbox'));
     await user.paste('Finance');
     await user.tab();

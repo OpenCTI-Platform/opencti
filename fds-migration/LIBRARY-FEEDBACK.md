@@ -2654,8 +2654,7 @@ the click that opens the value popover would be lost. There is no tone between
 `neutral` and `disabled`.
 
 **Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
-(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`). The `Delete variable` menu entry
-also carries no destructive tone (see #64).
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`).
 
 **Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
 fill contrast but keeps the chip a focusable, clickable `<button>`.
