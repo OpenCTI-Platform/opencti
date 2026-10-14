@@ -4,7 +4,7 @@ import { filterValuesContentQuery } from '../../FilterValuesContent';
 import type { FilterValuesContentQuery } from '../../__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from '../../i18n';
 import type { DashboardVariableShape } from './DashboardVariableValueInput';
-import { isIdVariableType } from './variableTypeSearch';
+import { formatKillChainPhaseLabel, isIdVariableType } from './variableTypeSearch';
 
 export interface VariableValueLabels {
   // Display label of each value. No entry for an id still resolving.
@@ -55,10 +55,12 @@ const NO_LABELS: VariableValueLabels = { labels: new Map(), restricted: new Set(
 /**
  * Labels of the values of one variable once its ids are known: an id that cannot be resolved is labelled
  * `Restricted`, never shown raw, and reported in `restricted`; while the ids are resolving there is no entry for
- * them. An entity type is labelled by its translated name, other types by their value.
+ * them. A kill chain phase is labelled `[kill chain name] phase name`. An entity type is labelled by its translated
+ * name, other types by their value.
  */
 const buildLabels = (
   type: DashboardVariableShape['type'],
+  killChainName: string | undefined,
   values: readonly string[],
   representatives: Representatives | null,
   translate: (text: string) => string,
@@ -72,8 +74,13 @@ const buildLabels = (
   }
   const ids = values.filter((value) => value !== '');
   if (!representatives || ids.length === 0) return NO_LABELS;
+  const toLabel = (id: string) => {
+    const name = representatives.get(id);
+    if (name == null) return translate('Restricted');
+    return type === 'killChainPhase' ? formatKillChainPhaseLabel(name, killChainName) : name;
+  };
   return {
-    labels: new Map(ids.map((id) => [id, representatives.get(id) ?? translate('Restricted')])),
+    labels: new Map(ids.map((id) => [id, toLabel(id)])),
     restricted: new Set(ids.filter((id) => representatives.get(id) == null)),
   };
 };
@@ -90,8 +97,8 @@ const useVariableValueLabels = (variable: DashboardVariableShape, values: string
   const ids = useMemo<string[]>(() => JSON.parse(idsSignature), [idsSignature]);
   const representatives = useRepresentatives(ids);
   return useMemo(
-    () => buildLabels(variable.type, JSON.parse(valuesSignature), representatives, t_i18n),
-    [variable.type, valuesSignature, representatives, t_i18n],
+    () => buildLabels(variable.type, variable.killChainName, JSON.parse(valuesSignature), representatives, t_i18n),
+    [variable.type, variable.killChainName, valuesSignature, representatives, t_i18n],
   );
 };
 
@@ -108,15 +115,18 @@ export interface VariableCurrentValue {
  */
 export const useVariablesValueLabels = (current: readonly VariableCurrentValue[]): ReadonlyMap<string, VariableValueLabels> => {
   const { t_i18n } = useFormatter();
-  const signature = JSON.stringify(current.map(({ id, variable, value }) => [id, variable.type, value ?? '']));
+  const signature = JSON.stringify(current.map(({ id, variable, value }) => [id, variable.type, value ?? '', variable.killChainName ?? '']));
   const ids = useMemo(() => {
-    const entries: [string, DashboardVariableShape['type'], string][] = JSON.parse(signature);
+    const entries: [string, DashboardVariableShape['type'], string, string][] = JSON.parse(signature);
     return [...new Set(entries.filter(([, type, value]) => isIdVariableType(type) && value !== '').map(([, , value]) => value))];
   }, [signature]);
   const representatives = useRepresentatives(ids);
   return useMemo(() => {
-    const entries: [string, DashboardVariableShape['type'], string][] = JSON.parse(signature);
-    return new Map(entries.map(([id, type, value]) => [id, buildLabels(type, value === '' ? [] : [value], representatives, t_i18n)]));
+    const entries: [string, DashboardVariableShape['type'], string, string][] = JSON.parse(signature);
+    return new Map(entries.map(([id, type, value, killChainName]) => [
+      id,
+      buildLabels(type, killChainName || undefined, value === '' ? [] : [value], representatives, t_i18n),
+    ]));
   }, [signature, representatives, t_i18n]);
 };
 

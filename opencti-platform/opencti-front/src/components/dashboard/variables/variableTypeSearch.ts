@@ -6,6 +6,14 @@ export const ID_VARIABLE_TYPES: readonly DashboardVariableType[] = ['entity', 'l
 
 export const isIdVariableType = (type: DashboardVariableType) => ID_VARIABLE_TYPES.includes(type);
 
+/**
+ * Label of a kill chain phase, `[kill chain name] phase name` as in the options of the search. The representatives
+ * of a phase only carry its name: a label that already starts with a kill chain is left as is.
+ */
+export const formatKillChainPhaseLabel = (phaseName: string, killChainName: string | undefined) => (
+  !killChainName || phaseName.startsWith('[') ? phaseName : `[${killChainName}] ${phaseName}`
+);
+
 // The schema keys below (objectLabel, objectMarking, workflow_id, killChainPhases) are Stix-Core-Object keys.
 export const VARIABLE_SEARCH_CONTEXT: FilterSearchContext = { entityTypes: ['Stix-Core-Object'] };
 

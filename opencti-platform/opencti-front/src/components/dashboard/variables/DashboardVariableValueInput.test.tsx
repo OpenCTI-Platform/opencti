@@ -192,6 +192,27 @@ describe('DashboardVariableValueInput', () => {
       expect(mockUseSearchEntities).not.toHaveBeenCalled();
     });
 
+    it('labels the selected kill chain phase `[kill chain] phase`', async () => {
+      const variable: DashboardVariableShape = {
+        type: 'killChainPhase',
+        killChainName: 'mitre-attack',
+        restriction: { mode: 'selection', values: ['phase-1', 'phase-2'] },
+      };
+      const { user, relayEnv } = renderInput(variable, 'phase-1');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: {
+            filtersRepresentatives: [
+              { representativeId: 'phase-1', value: 'persistence', entity_type: 'Kill-Chain-Phase', color: null },
+              { representativeId: 'phase-2', value: 'execution', entity_type: 'Kill-Chain-Phase', color: null },
+            ],
+          },
+        });
+      });
+      await user.click(screen.getByRole('combobox'));
+      expect(optionNames()).toEqual(['[mitre-attack] persistence', '[mitre-attack] execution']);
+    });
+
     it('emits an empty value when cleared, and nothing empty when committed on blur', async () => {
       const variable: DashboardVariableShape = { type: 'text', restriction: { mode: 'selection', values: ['alpha', 'beta'] } };
       const changing = renderInput(variable, 'alpha');
@@ -317,6 +338,16 @@ describe('DashboardVariableValueInput', () => {
         });
       });
       expect(screen.getByRole('combobox')).toHaveValue('malicious');
+    });
+
+    it('shows the current kill chain phase as `[kill chain] phase`, the way the options are', () => {
+      const { relayEnv } = renderInput({ type: 'killChainPhase', killChainName: 'mitre-attack', restriction: none }, 'phase-1');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: { filtersRepresentatives: [{ representativeId: 'phase-1', value: 'persistence', entity_type: 'Kill-Chain-Phase', color: null }] },
+        });
+      });
+      expect(screen.getByRole('combobox')).toHaveValue('[mitre-attack] persistence');
     });
   });
 

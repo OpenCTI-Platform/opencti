@@ -53,6 +53,44 @@ describe('useVariableValueLabels', () => {
     expect(hook.result.current.restricted).toEqual(new Set(['deleted-id']));
   });
 
+  describe('kill chain phase', () => {
+    const phase: DashboardVariableShape = { type: 'killChainPhase', killChainName: 'mitre-attack', restriction: { mode: 'none' } };
+    const resolvePhases = (relayEnv: ReturnType<typeof renderLabels>['relayEnv'], representatives: Record<string, string>) => act(() => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: {
+          filtersRepresentatives: Object.entries(representatives)
+            .map(([representativeId, value]) => ({ representativeId, value, entity_type: 'Kill-Chain-Phase', color: null })),
+        },
+      });
+    });
+
+    it('labels a phase `[kill chain] phase`, as the options of the value input are', () => {
+      const { relayEnv, hook } = renderLabels(phase, ['phase-1']);
+      resolvePhases(relayEnv, { 'phase-1': 'persistence' });
+      expect(hook.result.current.labels).toEqual(new Map([['phase-1', '[mitre-attack] persistence']]));
+      expect(hook.result.current.restricted.size).toBe(0);
+    });
+
+    it('does not prefix a label that already carries its kill chain', () => {
+      const { relayEnv, hook } = renderLabels(phase, ['phase-1']);
+      resolvePhases(relayEnv, { 'phase-1': '[mitre-attack] persistence' });
+      expect(hook.result.current.labels).toEqual(new Map([['phase-1', '[mitre-attack] persistence']]));
+    });
+
+    it('keeps Restricted unprefixed for a phase that cannot be resolved', () => {
+      const { relayEnv, hook } = renderLabels(phase, ['gone-id']);
+      resolvePhases(relayEnv, {});
+      expect(hook.result.current.labels).toEqual(new Map([['gone-id', 'Restricted']]));
+      expect(hook.result.current.restricted).toEqual(new Set(['gone-id']));
+    });
+
+    it('labels a phase of a variable without kill chain name by its name alone', () => {
+      const { relayEnv, hook } = renderLabels({ type: 'killChainPhase', restriction: { mode: 'none' } }, ['phase-1']);
+      resolvePhases(relayEnv, { 'phase-1': 'persistence' });
+      expect(hook.result.current.labels).toEqual(new Map([['phase-1', 'persistence']]));
+    });
+  });
+
   it('has no label while the representatives are loading', () => {
     const { hook } = renderLabels(label, ['label-1']);
     expect(hook.result.current.labels.size).toBe(0);

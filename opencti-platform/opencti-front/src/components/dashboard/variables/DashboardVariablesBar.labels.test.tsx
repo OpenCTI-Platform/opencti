@@ -59,6 +59,24 @@ describe('DashboardVariablesBar labels', () => {
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
   });
 
+  it('labels the chip of a kill chain phase `[kill chain] phase`', () => {
+    const phase: DashboardVariable = {
+      id: 'var-5',
+      name: 'Phase',
+      type: 'killChainPhase',
+      killChainName: 'mitre-attack',
+      restriction: { mode: 'none' },
+      defaultValue: null,
+    };
+    const { relayEnv } = renderBar([phase], [['var-5', 'phase-id']]);
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: { filtersRepresentatives: [{ representativeId: 'phase-id', value: 'persistence', entity_type: 'Kill-Chain-Phase', color: null }] },
+      });
+    });
+    expect(screen.getByRole('button', { name: 'Phase : [mitre-attack] persistence' })).toBeInTheDocument();
+  });
+
   it('sends no query when no chip holds an id', () => {
     const { relayEnv } = renderBar([text, idVariable(1, 'label')], [['var-4', 'Energy']]);
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
