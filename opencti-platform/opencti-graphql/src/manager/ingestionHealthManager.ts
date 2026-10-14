@@ -1,6 +1,6 @@
 import conf, { BUS_TOPICS, INGESTION_HEALTH_FEATURE_FLAG, booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
-import { elReplace } from '../database/engine';
+import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { type ManagerDefinition, registerManager } from './managerModule';
@@ -8,7 +8,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { executionContext, INTERNAL_USERS, SYSTEM_USER } from '../utils/access';
+import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS } from '../utils/access';
 import { now } from '../utils/format';
 import type { CachedConnector } from '../modules/connector/connector-types';
 import {
@@ -38,8 +38,8 @@ interface IngestionSource<T extends IngestionElement> {
 
 const connectorSource: IngestionSource<CachedConnector> = {
   entityType: ENTITY_TYPE_CONNECTOR,
-  // Cached on every node, and reloaded after each health write
-  load: (context) => getEntitiesListFromCache<CachedConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR),
+  // Cached on every node, and refreshed cache after each health write
+  load: (context) => getEntitiesListFromCache<CachedConnector>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_CONNECTOR),
   getUserId: (connector) => connector.connector_user_id,
   isUserRequired: true,
   // Built-ins (feed twins) are not deployed: no process runs them
@@ -49,7 +49,7 @@ const connectorSource: IngestionSource<CachedConnector> = {
 const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement & { user_id?: string | null }> => ({
   entityType,
   // Feeds and syncs are not cached
-  load: (context) => fullEntitiesList(context, SYSTEM_USER, [entityType]),
+  load: (context) => fullEntitiesList(context, INGESTION_HEALTH_MANAGER_USER, [entityType]),
   getUserId: (element) => element.user_id,
   isUserRequired: false,
 });
@@ -75,17 +75,17 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   if (!patch) {
     return;
   }
-  // Direct write: an entity update would move updated_at and emit a stream event
-  await elReplace(context, element._index, element.internal_id, { doc: patch });
+  // Standard update: moves updated_at and emits an update event
+  const { element: updatedElement } = await patchAttribute(context, INGESTION_HEALTH_MANAGER_USER, element.internal_id, source.entityType, patch);
   if (source.entityType === ENTITY_TYPE_CONNECTOR) {
-    // Only connectors are cached: refresh the cache of every node
-    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, { ...element, ...patch }, SYSTEM_USER);
+    // patchAttribute does not refresh the caches: notify every node, as registerConnector does
+    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
   }
 };
 
 export const ingestionHealthHandler = async () => {
   const context = executionContext('ingestion_health_manager');
-  const users = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const users = await getEntitiesMapFromCache<AuthUser>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_USER);
   const isExistingUser = (userId: string) => users.has(userId) || userId in INTERNAL_USERS;
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     const source = INGESTION_SOURCES[sourceIndex];

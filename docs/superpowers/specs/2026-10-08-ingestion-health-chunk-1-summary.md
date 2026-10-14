@@ -29,7 +29,7 @@ Behind the `INGESTION_HEALTH` flag, chunk 1 ships the **structure** of ingestion
 Every period (**60 s by default**, `ingestion_health_manager:interval`), with its own lock, for each deployed connector, feed and sync:
 1. computes the configuration data (its user);
 2. computes the status and the `health_checks` list with a pure function;
-3. **only if the status or the checks changed**: writes Elasticsearch, without touching `updated_at` and without a stream event, then, for connectors, invalidates the connector cache. `status_since` moves only when the status changes.
+3. **only if the status or the checks changed**: updates the entity with a standard update (`updated_at` moves, an update event is emitted), then, for connectors, invalidates the connector cache with an explicit `notify`. `status_since` moves only when the status changes.
 
 In chunk 1 the manager does not use Redis. It reads connectors and users from the cache, feeds and syncs from Elasticsearch (they are not cached). It is registered only when the flag is on, and disabled in `config/test.json`.
 
@@ -67,16 +67,15 @@ Kind and severity are **not stored**: they are derived from the code through one
 On `Connector`, `IngestionRss`, `IngestionCsv`, `IngestionJson`, `IngestionTaxii`, `IngestionTaxiiCollection` and `Synchronizer`:
 
 ```graphql
-health_status: IngestionHealthStatus!   # @auth(for: [MODULES]) on Connector
-health_status_since: DateTime            # nullable; @auth(for: [MODULES]) on Connector
-healthChecks: [IngestionHealthCheck!]!   # @auth(for: [MODULES]) on Connector
+ingestionHealth: IngestionHealth         # nullable; @auth(for: [MODULES]) on Connector
+# IngestionHealth: status (IngestionHealthStatus!), status_since (DateTime!), healthChecks ([IngestionHealthCheck!]!)
 # IngestionHealthCheck: health_check_code, health_check_message, health_check_kind, health_check_severity
 ```
 
 - The API only reads Elasticsearch, **never Redis**.
-- Not evaluated yet: `unknown`, no date, no check.
+- Not evaluated yet (or flag off): `ingestionHealth` is `null`.
 - The raw metadata is not exposed.
-- On `Connector`, the three fields require `MODULES` (a connector is also reachable without it). Feeds and syncs are already behind `INGESTION`.
+- On `Connector`, `ingestionHealth` requires `MODULES` (a connector is also reachable without it). Feeds and syncs are already behind `INGESTION`.
 
 ## UI
 
@@ -89,7 +88,7 @@ healthChecks: [IngestionHealthCheck!]!   # @auth(for: [MODULES]) on Connector
 
 ## Flag off
 
-Nothing changes compared with `master`: no manager, no stored field, the API fields return empty without error, no chip.
+Nothing changes compared with `master`: no manager, no stored field, `ingestionHealth` returns `null` without error, no chip.
 
 ## Chunk 1 accepted risks
 
@@ -111,15 +110,15 @@ Nothing changes compared with `master`: no manager, no stored field, the API fie
   - registered only when the flag is on, with its own lock;
   - period `ingestion_health_manager:interval`, 60 s by default;
   - for each deployed connector (built-ins excluded), feed and sync: evaluate, then write only if the status or the checks changed;
-  - the write replaces the whole `ingestion_health` object and moves `status_since` only on a status change, does not touch `updated_at` and emits no stream event;
-  - invalidate the connector cache after a connector write;
+  - the write is a standard update (`patchAttribute`) that replaces the whole `ingestion_health` object and moves `status_since` only on a status change; `updated_at` moves and an update event is emitted;
+  - invalidate the connector cache after a connector write (`notify`: `patchAttribute` does not refresh the caches);
   - one element that fails to evaluate does not stop the others, and the error is logged with its id;
   - disabled in `config/test.json`.
 - **GraphQL**:
   - `IngestionHealthStatus` enum, `IngestionHealthCheck` type;
-  - `health_status`, `health_status_since` (nullable), `healthChecks`, all three with `@auth(for: [MODULES])` on `Connector`;
-  - resolvers read Elasticsearch only: message, kind and severity come from the registry; raw metadata not exposed; `unknown` with no date and no check when not evaluated yet;
-  - flag off: empty fields, no error.
+  - `IngestionHealth` type (`status`, `status_since`, `healthChecks`) and a nullable `ingestionHealth` field, with `@auth(for: [MODULES])` on `Connector`;
+  - resolvers read Elasticsearch only: message, kind and severity come from the registry; raw metadata not exposed; `null` when not evaluated yet;
+  - flag off: `null`, no error.
 - **UI**: the health chip and its tooltip on the connector list and detail page, the deployed cards and lines, and the feed and sync detail pages.
 
 ## Chunk 2 in short

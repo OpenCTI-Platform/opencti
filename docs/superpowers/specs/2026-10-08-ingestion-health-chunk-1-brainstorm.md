@@ -77,12 +77,14 @@ At each period (**60 s by default**, `ingestion_health_manager:interval`), with 
 The Elasticsearch write:
 - replaces the whole `ingestion_health` object, so it always carries `status_since`;
 - `status_since` moves only when the status changes;
-- must not touch `updated_at` (an entity update would also emit a stream event);
-- must not emit a stream event.
+- is a standard entity update (`patchAttribute`): it moves `updated_at` and emits an update event when the entity type has one (none for connectors, internal objects), which is accepted;
+- is followed, for connectors, by an explicit `notify` on the internal objects edit topic: `patchAttribute` does not refresh the caches (same pattern as `registerConnector`).
 
-In chunk 1 the manager does not use Redis. It reads connectors and users from the cache, feeds and syncs from Elasticsearch (they are not cached).
+In chunk 1 the manager does not use Redis. It reads connectors and users from the cache, feeds and syncs from Elasticsearch (they are not cached). The cache must be refreshed after each connector write: otherwise the manager would read the old status at the next cycle and write again, with a new `status_since`.
 
 The manager is registered only when the flag is on. It is disabled in `config/test.json`.
+
+The manager reads and writes as its own internal user, `INGESTION_HEALTH_MANAGER_USER` (« INGESTION HEALTH MANAGER »), not `SYSTEM_USER`, so its updates are attributed to it.
 
 ## 5. Statuses
 
@@ -144,9 +146,13 @@ ingestion_health: {                                # nested, single, optional: a
 On `Connector`, `IngestionRss`, `IngestionCsv`, `IngestionJson`, `IngestionTaxii`, `IngestionTaxiiCollection` and `Synchronizer`:
 
 ```graphql
-health_status: IngestionHealthStatus!           # @auth(for: [MODULES]) on Connector
-health_status_since: DateTime                    # nullable; @auth(for: [MODULES]) on Connector
-healthChecks: [IngestionHealthCheck!]!           # @auth(for: [MODULES]) on Connector
+ingestionHealth: IngestionHealth                 # nullable; @auth(for: [MODULES]) on Connector
+
+type IngestionHealth {
+  status: IngestionHealthStatus!                 # ingestion_health.status
+  status_since: DateTime!                        # ingestion_health.status_since
+  healthChecks: [IngestionHealthCheck!]!         # ingestion_health.health_checks, enriched from the registry
+}
 
 type IngestionHealthCheck {
   health_check_code: String!                     # from Elasticsearch
@@ -156,10 +162,10 @@ type IngestionHealthCheck {
 }
 ```
 
-- The API shape is unchanged by the nesting: the three fields stay flat on each type, and the resolvers read them from `ingestion_health` (`health_status` ← `status`, `health_status_since` ← `status_since`, `healthChecks` ← `health_checks`).
-- A connector the manager has not evaluated yet (no `ingestion_health`): `unknown`, `health_status_since` null, no check.
+- One field, `ingestionHealth`, mirrors the stored `ingestion_health` object.
+- `ingestionHealth` is `null` when the manager has not evaluated the ingestion yet (no `ingestion_health` stored), and when the flag is off. When present, `status` and `status_since` are always set, as in Elasticsearch.
 - The raw metadata is not exposed: only what the UI uses.
-- Health is visible to whoever can access the ingestion. On `Connector`, all three fields require `MODULES`: a connector is also reachable without it (the `connectors` field of every entity, `connectorsForImport`/`Export`/`Analysis`). Feeds and syncs are only reachable through queries that already require `INGESTION`, so their fields carry no extra `@auth`.
+- Health is visible to whoever can access the ingestion. On `Connector`, `ingestionHealth` requires `MODULES`: a connector is also reachable without it (the `connectors` field of every entity, `connectorsForImport`/`Export`/`Analysis`). Feeds and syncs are only reachable through queries that already require `INGESTION`, so their field carries no extra `@auth`.
 - No resolver calls Redis.
 
 ## 8 bis. What the user sees (chunk 1)
@@ -173,7 +179,7 @@ type IngestionHealthCheck {
 
 - Design system chip (`@filigran/design-system`), label = the status with a capital first letter, translated.
 - Colors, from the design system feedback tones: `critical` red, `degraded` orange, `healthy` green, `stopped` and `unknown` grey.
-- The check messages come from the server, in English, shown as is. With no check: « No health issue detected », or « Not evaluated yet » when the manager has not looked yet.
+- The check messages come from the server, in English, shown as is. With no check: « No health issue detected », or « Not evaluated yet » when `ingestionHealth` is `null`.
 - Hidden when the flag is off.
 
 ## 9. Chunk 1: flag off and accepted risks
@@ -181,7 +187,7 @@ type IngestionHealthCheck {
 **With the flag off**, nothing differs from `master`:
 - no manager;
 - no stored field;
-- the API fields return empty, without error;
+- `ingestionHealth` returns `null`, without error;
 - no chip.
 
 **Accepted risks:**
@@ -319,3 +325,6 @@ Deferred: the acceptance criteria and tests will be written once the design is s
 | 2026-10-13 | Tests and acceptance criteria deferred until the design is settled. |
 | 2026-10-14 | Elasticsearch: the three fields move inside one nested object `ingestion_health` (single, optional). Inside: `health_status` and `health_status_since` mandatory, `health_checks` optional; in each check, `health_check_code` mandatory, `health_check_metadata` optional. The manager writes the whole object. GraphQL unchanged. |
 | 2026-10-14 | Inside `ingestion_health`, `health_status` is renamed `status` and `health_status_since` is renamed `status_since`. The GraphQL fields keep their names (`health_status`, `health_status_since`). |
+| 2026-10-14 | The manager writes with a standard update (`patchAttribute`) instead of a direct Elasticsearch write: `updated_at` moves and an update event is emitted (accepted). `patchAttribute` does not refresh the caches, so the connector cache is still invalidated with an explicit `notify` after a connector write, and connectors are still read from the cache. |
+| 2026-10-14 | The manager uses a dedicated internal user, `INGESTION_HEALTH_MANAGER_USER`, instead of `SYSTEM_USER`. |
+| 2026-10-14 | GraphQL: `health_status`, `health_status_since` and `healthChecks` are replaced by one nullable field `ingestionHealth: IngestionHealth` (`status`, `status_since`, `healthChecks`), `null` until first evaluated. Same `@auth(for: [MODULES])` on `Connector` and `@ff(INGESTION_HEALTH, softFail)`. |

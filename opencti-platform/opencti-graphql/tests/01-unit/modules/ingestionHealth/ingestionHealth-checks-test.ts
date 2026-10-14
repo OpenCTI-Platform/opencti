@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeIngestionHealthChecks, computeIngestionHealthPatch, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
-import { IngestionHealthStatus } from '../../../../src/generated/graphql';
+import {
+  computeIngestionHealthChecks,
+  computeIngestionHealthPatch,
+  HEALTH_CHECK_USER_MISSING,
+  toGraphqlIngestionHealth,
+} from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
+import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
@@ -133,5 +138,30 @@ describe('computeIngestionHealthChecks', () => {
   it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
     const checks = computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, isExistingUser);
     expect(computeIngestionHealthPatch({}, checks, EVALUATED_AT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+});
+
+describe('toGraphqlIngestionHealth', () => {
+  it('should return null when the ingestion was never evaluated', () => {
+    expect(toGraphqlIngestionHealth(undefined)).toBeNull();
+  });
+
+  it('should expose status and since, and the checks enriched from the registry', () => {
+    const health = { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] };
+    expect(toGraphqlIngestionHealth(health)).toEqual({
+      status: IngestionHealthStatus.Degraded,
+      status_since: PREVIOUS_SINCE,
+      healthChecks: [{
+        health_check_code: HEALTH_CHECK_USER_MISSING,
+        health_check_message: 'User is missing',
+        health_check_kind: IngestionHealthCheckKind.Configuration,
+        health_check_severity: IngestionHealthCheckSeverity.Blocking,
+      }],
+    });
+  });
+
+  it('should drop the checks unknown to the registry and return no check when none is stored', () => {
+    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK] })?.healthChecks).toEqual([]);
+    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE })?.healthChecks).toEqual([]);
   });
 });
