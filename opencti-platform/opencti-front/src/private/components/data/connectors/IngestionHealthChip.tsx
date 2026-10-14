@@ -44,6 +44,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
   return (
     <Tooltip>
       <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} style={{ display: 'inline-flex' }}>
           <Chip label={t_i18n(capitalizeFirstLetter(status))} severity={HEALTH_STATUS_SEVERITY_COLORS[status] ?? 'neutral'} />
         </span>

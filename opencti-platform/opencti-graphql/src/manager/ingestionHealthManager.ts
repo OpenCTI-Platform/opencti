@@ -83,15 +83,18 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   }
 };
 
-export const ingestionHealthHandler = async () => {
+export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const context = executionContext('ingestion_health_manager');
   const users = await getEntitiesMapFromCache<AuthUser>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_USER);
   const isExistingUser = (userId: string) => users.has(userId) || userId in INTERNAL_USERS;
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
+    lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
     const evaluatedElements = source.isEvaluated ? elements.filter(source.isEvaluated) : elements;
     for (let i = 0; i < evaluatedElements.length; i += 1) {
+      // Outside the try: losing the lock must stop the scan, not be logged as an element failure
+      lock.signal.throwIfAborted();
       const element = evaluatedElements[i];
       try {
         await evaluateIngestionHealth(context, source, element, isExistingUser);
@@ -111,6 +114,7 @@ const INGESTION_HEALTH_MANAGER_DEFINITION: ManagerDefinition = {
     handler: ingestionHealthHandler,
     interval: SCHEDULE_TIME,
     lockKey: INGESTION_HEALTH_MANAGER_KEY,
+    lockInHandlerParams: true,
   },
   enabledByConfig: INGESTION_HEALTH_MANAGER_ENABLED,
   enabledToStart(): boolean {
