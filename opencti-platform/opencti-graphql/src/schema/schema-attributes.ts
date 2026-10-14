@@ -54,6 +54,16 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
 const isEnabledMapping = (mapping: MappingDefinition) => !mapping.featureFlag || isFeatureEnabled(mapping.featureFlag);
 
 /**
+ * Returns a copy of the attribute without the mappings under a disabled feature flag, at every level of the object.
+ */
+const removeDisabledMappings = <T extends AttributeDefinition>(attribute: T): T => {
+  if (!isObjectAttributeWithMappings(attribute)) {
+    return { ...attribute };
+  }
+  return { ...attribute, mappings: attribute.mappings.filter(isEnabledMapping).map(removeDisabledMappings) };
+};
+
+/**
  * Check that two attributes sharing the same name are stored the same way, as they share the same engine mapping.
  * Mappings of objects (standard and nested) are checked recursively, path being the dotted path of the mapping inside the object.
  */
@@ -79,8 +89,8 @@ const checkAttributesHomogeneity = (
   }
   // Objects with the same name share the same engine mapping, so their mappings must be identical
   if (isObjectAttributeWithMappings(existingAttribute) && isObjectAttributeWithMappings(attribute)) {
-    const existingMappings = new Map(existingAttribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
-    const mappings = new Map(attribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
+    const existingMappings = new Map(existingAttribute.mappings.map((m) => [m.name, m]));
+    const mappings = new Map(attribute.mappings.map((m) => [m.name, m]));
     new Set([...existingMappings.keys(), ...mappings.keys()]).forEach((name) => {
       const mappingPath = path ? `${path}.${name}` : `${attribute.name}.${name}`;
       const existingMapping = existingMappings.get(name);
@@ -135,10 +145,12 @@ export const schemaAttributesDefinition = {
             });
           }
         });
+      // Filter feature flagged mappings, so the attribute is checked and registered as it will be stored
+      const registeredAttribute = removeDisabledMappings(attribute);
       // Check the homogeneity of attribute types
       const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
-        checkAttributesHomogeneity(existingAttribute, attribute);
+        checkAttributesHomogeneity(existingAttribute, registeredAttribute);
       }
       // Check duplicate attributes
       if (directAttributes.has(attribute.name)) {
@@ -156,14 +168,6 @@ export const schemaAttributesDefinition = {
             entityType,
           });
         }
-      }
-      let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (isObjectAttributeWithMappings(registeredAttribute) && registeredAttribute.mappings.length > 0) {
-        registeredAttribute = {
-          ...registeredAttribute,
-          // filter feature flagged attributes
-          mappings: registeredAttribute.mappings.filter((a) => !a.featureFlag || isFeatureEnabled(a.featureFlag)),
-        };
       }
       // set attribute
       directAttributes.set(registeredAttribute.name, registeredAttribute);

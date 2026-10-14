@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import type { AttributeDefinition, MappingDefinition } from '../../../src/schema/attribute-definition';
+import type { AttributeDefinition, ComplexAttributeWithMappings, MappingDefinition } from '../../../src/schema/attribute-definition';
 
 // Test configuration enables all feature flags, keep one disabled to check flagged attributes are ignored
 const DISABLED_FEATURE_FLAG = 'TEST_DISABLED_FEATURE_FLAG';
@@ -111,6 +111,18 @@ describe.each([
     expect(register('test_ff_disabled_mapping', [short('test_id')], [short('test_id'), disabledMapping])).not.toThrow();
     const enabledMapping = { ...short('test_name'), featureFlag: ENABLED_FEATURE_FLAG };
     expect(register('test_ff_enabled_mapping', [short('test_id')], [short('test_id'), enabledMapping])).toThrow(MAPPINGS_ERROR);
+  });
+
+  it('should ignore mappings under a disabled feature flag inside sub objects', () => {
+    const sub = nested('test_sub', [short('test_value')]);
+    const subWithDisabledMapping = nested('test_sub', [short('test_value'), { ...short('test_name'), featureFlag: DISABLED_FEATURE_FLAG }]);
+    expect(register('test_ff_deep_disabled_last', [sub], [subWithDisabledMapping])).not.toThrow();
+    expect(register('test_ff_deep_disabled_first', [subWithDisabledMapping], [sub])).not.toThrow();
+    // Disabled mapping is not registered, so it's not part of the engine mapping
+    const registered = schemaAttributesDefinition.attributes[ENTITY_TYPE_USER].get(`${format}_test_ff_deep_disabled_first`) as ComplexAttributeWithMappings;
+    expect((registered.mappings[0] as ComplexAttributeWithMappings).mappings.map((m) => m.name)).toEqual(['test_value']);
+    const subWithEnabledMapping = nested('test_sub', [short('test_value'), { ...short('test_name'), featureFlag: ENABLED_FEATURE_FLAG }]);
+    expect(register('test_ff_deep_enabled', [sub], [subWithEnabledMapping])).toThrow(MAPPINGS_ERROR);
   });
 
   it('should reject objects with inconsistencies deep inside sub objects', () => {
