@@ -72,6 +72,8 @@ const EDIT_MUTATION = gql`
     securityCoverageResultEdit(id: $id, input: $input) {
       id
       name
+      description
+      confidence
       coverage_information {
         coverage_name
         coverage_score
@@ -162,6 +164,8 @@ describe('SecurityCoverageResult resolver', () => {
         id: createdScrId,
         input: {
           name: 'Updated result',
+          description: 'Updated description',
+          confidence: 60,
           coverage_information: [{
             coverage_name: 'detection',
             coverage_score: 80,
@@ -174,6 +178,8 @@ describe('SecurityCoverageResult resolver', () => {
     expect(securityCoverageResultData).toBeDefined();
     expect(securityCoverageResultData.id).toEqual(createdScrId);
     expect(securityCoverageResultData.name).toEqual('Updated result');
+    expect(securityCoverageResultData.description).toEqual('Updated description');
+    expect(securityCoverageResultData.confidence).toEqual(60);
     expect(securityCoverageResultData.coverage_information).toEqual([{ coverage_name: 'detection', coverage_score: 80 }]);
   });
 
