@@ -138,6 +138,15 @@ vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
   resolveMappedStatusId: vi.fn(),
 }));
 
+vi.mock('../../../src/schema/identifier', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/schema/identifier')>();
+  return {
+    ...actual,
+    // Vocabulary ids are case insensitive, like the real normalizeName based identifier
+    generateStandardId: (type: string, data: any) => (type === 'Vocabulary' ? `vocabulary--${data.name.toLowerCase()}` : actual.generateStandardId(type, data)),
+  };
+});
+
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   return {
@@ -4484,6 +4493,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
       if (type === 'WorkflowDefinition') {
         return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
       }
+      if (type === 'Vocabulary') return ['vocabulary--duplicate', 'vocabulary--false-positive', 'vocabulary--true-positive'].includes(id) ? { id, name: id.replace('vocabulary--', '') } : null;
       return null;
     });
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
@@ -4565,6 +4575,24 @@ describe('triggerWorkflowEvent — closing reason', () => {
 
     expect(result.success).toBe(true);
     expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, closedEntity, toState, StatusScope.Global, expected);
+  });
+
+  it('writes the vocabulary value name rather than the given spelling', async () => {
+    setup('allowed');
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close', undefined, {}, 'DUPLICATE');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, 'closed', StatusScope.Global, 'duplicate');
+  });
+
+  it('rejects a closing reason that is not a value of the closing reason vocabulary', async () => {
+    setup('allowed');
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close', undefined, {}, 'not-a-reason');
+
+    expect(result).toMatchObject({ success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' });
+    expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 
   it('rejects a missing closing reason on a required transition', async () => {

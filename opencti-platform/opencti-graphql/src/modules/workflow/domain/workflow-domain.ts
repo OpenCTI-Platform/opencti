@@ -12,7 +12,9 @@ import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode } from '../../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, VocabularyCategory } from '../../../generated/graphql';
+import { generateStandardId } from '../../../schema/identifier';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
@@ -1366,6 +1368,13 @@ const resolveTransitionClosingReason = (
   return { closingReason: value };
 };
 
+// Vocabulary ids ignore case: the stored value takes the vocabulary spelling so usages, renames and filters match it
+const findClosingReasonVocabularyName = async (context: AuthContext, value: string): Promise<string | undefined> => {
+  const vocabularyId = generateStandardId(ENTITY_TYPE_VOCABULARY, { name: value, category: VocabularyCategory.ClosingReasonOv });
+  const vocabulary = await storeLoadById<BasicStoreEntityVocabulary>(context, SYSTEM_USER, vocabularyId, ENTITY_TYPE_VOCABULARY);
+  return vocabulary?.name;
+};
+
 /**
  * Trigger a workflow event on an entity.
  * This is the main entry point for the backend logic.
@@ -1442,6 +1451,13 @@ export const triggerWorkflowEvent = async (
     const resolvedClosingReason = resolveTransitionClosingReason(user, targetTransition?.closingReason, closingReason, clears);
     if ('error' in resolvedClosingReason) {
       return { success: false, reason: resolvedClosingReason.error };
+    }
+    if (resolvedClosingReason.closingReason) {
+      const vocabularyName = await findClosingReasonVocabularyName(bypassDraftContext(context), resolvedClosingReason.closingReason);
+      if (!vocabularyName) {
+        return { success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' };
+      }
+      resolvedClosingReason.closingReason = vocabularyName;
     }
 
     // 4. Inject createListTask and instance metadata into context for asyncBulkAction.
