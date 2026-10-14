@@ -141,7 +141,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     const runtimeParams: Record<string, string[]> = {};
     if (wizard.requiresShareOrg) runtimeParams.shareOrganizationIds = values.shareOrganizations.map((organization) => organization.value);
     if (wizard.requiresUnshareOrg) runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((organization) => organization.value);
-    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined, values.closingReason || undefined);
+    return fireTransition(wizard.event, wizard.actions, runtimeParams, values.comment.trim() || undefined, (wizard.closingReasonMode && values.closingReason) || undefined);
   };
 
   const handleClear = () => {

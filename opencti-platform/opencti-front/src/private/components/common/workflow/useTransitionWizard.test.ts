@@ -370,6 +370,20 @@ describe('useTransitionWizard closing reason inputs', () => {
     const [{ variables }] = mockCommit.mock.calls[0];
     expect(variables.closingReason).toBeUndefined();
   });
+
+  it('does not submit a pre-filled closing reason on a transition that does not enable it', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('reopen', [], CommentMode.required, false, false, null);
+    });
+    act(() => {
+      result.current.handleApplyWizard({ ...emptyValues, comment: 'why', closingReason: 'false-positive' });
+    });
+
+    const [{ variables }] = mockCommit.mock.calls[0];
+    expect(variables.closingReason).toBeUndefined();
+  });
 });
 
 describe('useTransitionWizard draft confirmation', () => {

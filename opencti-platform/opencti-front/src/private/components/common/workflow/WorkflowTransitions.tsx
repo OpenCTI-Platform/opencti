@@ -75,6 +75,7 @@ interface WorkflowTransitionsViewProps {
   processingCount?: number;
   workflowInstance: WorkflowStatus_data$data['workflowInstance'];
   entityType: string;
+  currentClosingReason?: string | null;
   refreshing?: boolean;
   onCompleted?: () => void;
 }
@@ -86,6 +87,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   processingCount = 0,
   workflowInstance,
   entityType,
+  currentClosingReason,
   refreshing = false,
   onCompleted,
 }) => {
@@ -288,7 +290,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
       )}
       {wizard && (
         <Formik<TransitionFormValues>
-          initialValues={{ comment: '', closingReason: '', shareOrganizations: [], unshareOrganizations: [] }}
+          initialValues={{ comment: '', closingReason: currentClosingReason ?? '', shareOrganizations: [], unshareOrganizations: [] }}
           validationSchema={Yup.object({
             comment: wizard.commentMode === CommentMode.required && !canBypassMandatoryFields
               ? Yup.string().trim().required(t_i18n('This field is required')).max(COMMENT_MAX_LENGTH)
@@ -529,6 +531,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityId={entity.id}
         workflowInstance={entity.workflowInstance}
         entityType={entityType}
+        currentClosingReason={entity.x_opencti_closing_reason}
         refreshing={refreshing}
         onCompleted={refresh}
       />
