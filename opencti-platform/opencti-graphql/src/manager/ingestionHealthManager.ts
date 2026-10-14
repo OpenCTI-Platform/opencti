@@ -18,7 +18,14 @@ import {
   ENTITY_TYPE_INGESTION_TAXII,
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
-import { computeIngestionHealthChecks, computeIngestionHealthPatch } from '../modules/ingestionHealth/ingestionHealth-checks';
+import {
+  buildHealthTransitionMessage,
+  computeHealthTransition,
+  computeIngestionHealthChecks,
+  computeIngestionHealthPatch,
+  HealthTransition,
+} from '../modules/ingestionHealth/ingestionHealth-checks';
+import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
@@ -72,7 +79,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
 ) => {
   const checks = computeIngestionHealthChecks({ userId: source.getUserId(element), isUserRequired: source.isUserRequired }, isExistingUser);
   const patch = computeIngestionHealthPatch(element, checks, now());
-  if (!patch) {
+  if (!patch?.ingestion_health) {
     return;
   }
   // Standard update: moves updated_at and emits an update event
@@ -80,6 +87,21 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   if (source.entityType === ENTITY_TYPE_CONNECTOR) {
     // patchAttribute does not refresh the caches: notify every node, as registerConnector does
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
+  }
+  // Published an health activity event after the write
+  // a failed write is retried at the next period and reports the transition then
+  const nextHealth = patch.ingestion_health;
+  const transition = computeHealthTransition(element.ingestion_health?.status, nextHealth.status);
+  if (transition) {
+    await publishUserAction({
+      user: INGESTION_HEALTH_MANAGER_USER,
+      event_type: 'health',
+      event_scope: transition,
+      event_access: 'administration',
+      status: transition === HealthTransition.Recovered ? 'success' : 'error',
+      message: buildHealthTransitionMessage(element, transition, nextHealth.health_checks ?? []),
+      context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
+    });
   }
 };
 

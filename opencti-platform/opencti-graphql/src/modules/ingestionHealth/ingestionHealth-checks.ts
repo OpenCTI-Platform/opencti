@@ -90,6 +90,40 @@ export const computeIngestionHealthPatch = (current: IngestionHealthFields, chec
     },
   };
 };
+
+// region transition
+// Scope of the activity event published when the status changes
+export const HealthTransition = {
+  Critical: 'critical',
+  Degraded: 'degraded',
+  Recovered: 'recovered',
+} as const;
+export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
+
+// previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from
+export const computeHealthTransition = (previous: IngestionHealthStatus | undefined, next: IngestionHealthStatus): HealthTransition | null => {
+  if (previous === next) {
+    return null;
+  }
+  if (next === IngestionHealthStatus.Critical) {
+    return HealthTransition.Critical;
+  }
+  if (next === IngestionHealthStatus.Degraded) {
+    return HealthTransition.Degraded;
+  }
+  if (next === IngestionHealthStatus.Healthy && previous) {
+    return HealthTransition.Recovered;
+  }
+  // TODO case of IngestionHealthStatus.Stopped
+  return null;
+};
+
+// The activity log prefixes the message with the manager user name
+export const buildHealthTransitionMessage = (element: { name: string; entity_type: string }, transition: HealthTransition, checks: StoredHealthCheck[]) => {
+  const checkMessages = toGraphqlHealthChecks(checks).map((check) => check.health_check_message);
+  const details = checkMessages.length > 0 ? `: ${checkMessages.join(', ')}` : '';
+  return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details}`;
+};
 // endregion
 
 // region api

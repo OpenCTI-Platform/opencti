@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildHealthTransitionMessage,
+  computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   HEALTH_CHECK_USER_MISSING,
+  HealthTransition,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
@@ -140,5 +143,55 @@ describe('toGraphqlIngestionHealth', () => {
   it('should drop the checks unknown to the registry and return no check when none is stored', () => {
     expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK] })?.healthChecks).toEqual([]);
     expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE })?.healthChecks).toEqual([]);
+  });
+});
+
+describe('computeHealthTransition', () => {
+  it.each([
+    [IngestionHealthStatus.Healthy, IngestionHealthStatus.Critical, HealthTransition.Critical],
+    [IngestionHealthStatus.Degraded, IngestionHealthStatus.Critical, HealthTransition.Critical],
+    [IngestionHealthStatus.Healthy, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
+    [IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
+    [IngestionHealthStatus.Degraded, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
+    [IngestionHealthStatus.Critical, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
+    [IngestionHealthStatus.Stopped, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
+  ])('should return the transition from %s to %s', (previous, next, expected) => {
+    expect(computeHealthTransition(previous, next)).toBe(expected);
+  });
+
+  it.each(Object.values(IngestionHealthStatus))('should return null when the status stays %s', (status) => {
+    expect(computeHealthTransition(status, status)).toBeNull();
+  });
+
+  it('should return the transition on the first evaluation of a failing ingestion', () => {
+    expect(computeHealthTransition(undefined, IngestionHealthStatus.Critical)).toBe(HealthTransition.Critical);
+    expect(computeHealthTransition(undefined, IngestionHealthStatus.Degraded)).toBe(HealthTransition.Degraded);
+  });
+
+  it('should return null on the first evaluation of a healthy ingestion: nothing recovered', () => {
+    expect(computeHealthTransition(undefined, IngestionHealthStatus.Healthy)).toBeNull();
+  });
+
+  it('should return null when the status becomes stopped', () => {
+    expect(computeHealthTransition(IngestionHealthStatus.Healthy, IngestionHealthStatus.Stopped)).toBeNull();
+  });
+});
+
+describe('buildHealthTransitionMessage', () => {
+  const element = { name: 'My connector', entity_type: 'Connector' };
+
+  it('should name the ingestion, the transition and the check messages', () => {
+    expect(buildHealthTransitionMessage(element, HealthTransition.Degraded, [USER_MISSING]))
+      .toBe('reports `My connector` (Connector) as degraded: User is missing');
+  });
+
+  it('should name the ingestion and the transition only when recovered', () => {
+    expect(buildHealthTransitionMessage(element, HealthTransition.Recovered, []))
+      .toBe('reports `My connector` (Connector) as recovered');
+  });
+
+  it('should ignore the checks unknown to the registry', () => {
+    expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [OTHER_CHECK]))
+      .toBe('reports `My connector` (Connector) as critical');
   });
 });
