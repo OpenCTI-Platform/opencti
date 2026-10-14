@@ -39,7 +39,8 @@ testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+// - 5 created by investigation-enrichment-test (4 deleted, 1 merged into another)
+testCreatedCounter['intrusion-set'] = 13;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -125,6 +126,7 @@ testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
 testMergedCounter['case-incident'] = 1;
+testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
@@ -150,7 +152,8 @@ testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+// - 4 deleted by investigation-enrichment-test (the merged one is removed by the merge, without a delete event)
+testDeletedCounter['intrusion-set'] = 11;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;

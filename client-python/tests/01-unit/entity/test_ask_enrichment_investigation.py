@@ -34,16 +34,31 @@ def local_api_client():
 class TestAskEnrichmentInvestigation:
     """Forwarding of the investigation id by the enrichment calls of pycti."""
 
-    def test_ask_enrichments_without_investigation_keeps_the_original_mutation(
-        self, opencti_mock
-    ):
-        """Without an investigation, ask_enrichments sends the mutation unchanged."""
+    def test_ask_enrichments_without_investigation_sends_none(self, opencti_mock):
+        """Without an investigation, ask_enrichments sends a null investigation id."""
         StixCoreObject(opencti_mock).ask_enrichments(
             element_id="element-1", connector_ids=["c1"]
         )
         query, variables = opencti_mock.query.call_args[0]
-        assert "investigationId" not in query
-        assert variables == {"id": "element-1", "connectorIds": ["c1"]}
+        assert "investigationId: $investigationId" in query
+        assert variables == {
+            "id": "element-1",
+            "connectorIds": ["c1"],
+            "investigationId": None,
+        }
+
+    def test_ask_enrichment_without_investigation_sends_none(self, opencti_mock):
+        """Without an investigation, ask_enrichment sends a null investigation id."""
+        StixCoreObject(opencti_mock).ask_enrichment(
+            element_id="element-1", connector_id="c1"
+        )
+        query, variables = opencti_mock.query.call_args[0]
+        assert "investigationId: $investigationId" in query
+        assert variables == {
+            "id": "element-1",
+            "connectorId": "c1",
+            "investigationId": None,
+        }
 
     def test_ask_enrichments_sends_the_investigation_when_set(self, opencti_mock):
         """ask_enrichments adds $investigationId when an investigation is given."""

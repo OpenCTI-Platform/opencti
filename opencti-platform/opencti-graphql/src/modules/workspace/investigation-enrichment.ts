@@ -1,15 +1,14 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { internalFindByIdsMapped, storeLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateUserAccessOperation } from '../../utils/access';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { findWorkPaginated } from '../../domain/work';
-import { emptyPaginationResult, isNotEmptyField } from '../../database/utils';
+import { emptyPaginationResult } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
-import type { BasicConnection, BasicStoreBase } from '../../types/store';
-
-type EnrichmentWork = BasicStoreBase & { event_source_id?: string };
+import type { BasicStoreBase } from '../../types/store';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 
 const INVESTIGATION_UPDATE_CAPABILITY = 'INVESTIGATION_INUPDATE';
 
@@ -44,11 +43,11 @@ export const validateEnrichmentInvestigation = async (
  * The caller filters are nested under a top level AND with the investigation filter:
  * they can narrow the result, never reach works of another investigation.
  * A workspace that is not an investigation has no enrichment works.
- * Access to the workspace is checked when it is loaded. On top of that, a work is only returned when
- * the reader can load its enriched entity (event_source_id): an investigation reader must not learn about
- * enrichments of entities hidden by markings or organization sharing (nor of deleted entities).
- * Works without an event_source_id are kept. Filtering happens after pagination, with one batched
- * lookup per page: a page can come back shorter than `first`, and its pageInfo is the one of the underlying page.
+ * Only the works of the entities of the investigation are returned, or of the given entityIds among them,
+ * matched on their current standard id: like the entity jobs, the works of an entity merged into another one or whose
+ * standard id changed are not found, nor those of an entity removed from the investigation.
+ * The entities are loaded as the reader, so that the works of entities hidden by markings or organization sharing
+ * (or deleted) are filtered before the pagination: they are not counted in the pageInfo either.
  */
 export const findInvestigationEnrichmentWorks = async (
   context: AuthContext,
@@ -59,22 +58,25 @@ export const findInvestigationEnrichmentWorks = async (
   if (workspace.type !== 'investigation') {
     return emptyPaginationResult();
   }
-  const page = await findWorkPaginated(
+  const { entityIds, ...paginationArgs } = args;
+  const investigatedIds = new Set(workspace.investigated_entities_ids ?? []);
+  const entities = await internalFindByIds(
     context,
     user,
-    { ...args, filters: addFilter(args.filters, 'investigation_id', workspace.id) },
-  ) as BasicConnection<EnrichmentWork>;
-  const sourceIds = Array.from(new Set(page.edges.map((edge) => edge.node.event_source_id).filter(isNotEmptyField)));
-  if (sourceIds.length === 0) {
-    return page;
+    entityIds ?? [...investigatedIds],
+    { type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], baseData: true },
+  ) as BasicStoreBase[];
+  // An enrichment work stores the standard id of its entity, as matched by the entity jobs
+  const standardIds = entities
+    .filter((entity) => investigatedIds.has(entity.internal_id))
+    .map((entity) => entity.standard_id);
+  if (standardIds.length === 0) {
+    return emptyPaginationResult();
   }
-  // event_source_id is the standard id of the enriched entity at enrichment time: match it on every id of the entities
-  const readable = await internalFindByIdsMapped(
-    context,
-    user,
-    sourceIds,
-    { mapWithAllIds: true, baseData: true, baseFields: ['x_opencti_stix_ids'] },
+  const filters = addFilter(
+    addFilter(args.filters, 'investigation_id', workspace.id),
+    'event_source_id',
+    standardIds,
   );
-  const edges = page.edges.filter((edge) => !edge.node.event_source_id || readable[edge.node.event_source_id]);
-  return { ...page, edges };
+  return findWorkPaginated(context, user, { ...paginationArgs, filters });
 };

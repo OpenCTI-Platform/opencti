@@ -2094,30 +2094,23 @@ class StixCoreObject:
         element_id = kwargs.get("element_id", None)
         connector_id = kwargs.get("connector_id", None)
         investigation_id = kwargs.get("investigation_id", None)
-        variables = {"id": element_id, "connectorId": connector_id}
-        # Only send the argument when set, to stay compatible with platforms without it
-        if investigation_id is not None:
-            query = """
-                mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!, $investigationId: ID) {
-                    stixCoreObjectEdit(id: $id) {
-                        askEnrichment(connectorId: $connectorId, investigationId: $investigationId) {
-                          id
-                        }
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!, $investigationId: ID) {
+                stixCoreObjectEdit(id: $id) {
+                    askEnrichment(connectorId: $connectorId, investigationId: $investigationId) {
+                      id
                     }
                 }
-            """
-            variables["investigationId"] = investigation_id
-        else:
-            query = """
-                mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
-                    stixCoreObjectEdit(id: $id) {
-                        askEnrichment(connectorId: $connectorId) {
-                          id
-                        }
-                    }
-                }
-            """
-        self.opencti.query(query, variables)
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": element_id,
+                "connectorId": connector_id,
+                "investigationId": investigation_id,
+            },
+        )
 
     def ask_enrichments(self, **kwargs):
         """Ask enrichment with multiple connectors.
@@ -2132,30 +2125,23 @@ class StixCoreObject:
         element_id = kwargs.get("element_id", None)
         connector_ids = kwargs.get("connector_ids", None)
         investigation_id = kwargs.get("investigation_id", None)
-        variables = {"id": element_id, "connectorIds": connector_ids}
-        # Only send the argument when set, to stay compatible with platforms without it
-        if investigation_id is not None:
-            query = """
-                mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!, $investigationId: ID) {
-                    stixCoreObjectEdit(id: $id) {
-                        askEnrichments(connectorIds: $connectorIds, investigationId: $investigationId) {
-                          id
-                        }
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!, $investigationId: ID) {
+                stixCoreObjectEdit(id: $id) {
+                    askEnrichments(connectorIds: $connectorIds, investigationId: $investigationId) {
+                      id
                     }
                 }
-            """
-            variables["investigationId"] = investigation_id
-        else:
-            query = """
-                mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
-                    stixCoreObjectEdit(id: $id) {
-                        askEnrichments(connectorIds: $connectorIds) {
-                          id
-                        }
-                    }
-                }
-            """
-        self.opencti.query(query, variables)
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": element_id,
+                "connectorIds": connector_ids,
+                "investigationId": investigation_id,
+            },
+        )
 
     def organization_share(self, entity_id, organization_ids, sharing_direct_container):
         """Share element to multiple organizations.

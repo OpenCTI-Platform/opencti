@@ -852,6 +852,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -13018,7 +13019,7 @@ type Workspace implements InternalObject & BasicObject {
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
   variables: [DashboardVariable!]!
-  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
+  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup, entityIds: [String!]): WorkConnection
 }
 
 enum WorkspacesOrdering {

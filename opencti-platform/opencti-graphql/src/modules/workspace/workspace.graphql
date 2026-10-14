@@ -43,6 +43,7 @@ type Workspace implements InternalObject & BasicObject {
         orderMode: OrderingMode
         search: String
         filters: FilterGroup
+        entityIds: [String!]
     ): WorkConnection
 }
 
