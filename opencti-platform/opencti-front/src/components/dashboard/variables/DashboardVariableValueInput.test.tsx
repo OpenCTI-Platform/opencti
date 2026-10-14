@@ -349,34 +349,75 @@ describe('DashboardVariableValueInput', () => {
   });
 
   describe('date', () => {
+    // The library picker emits the start of the picked day, in the local time zone.
+    const jan15 = new Date(2024, 0, 15).toISOString();
+    const feb20 = new Date(2024, 1, 20).toISOString();
+    const dateInput = () => screen.getByRole('textbox', { name: 'Value' });
+    const typeDate = async (user: ReturnType<typeof testRender>['user'], text: string) => {
+      await user.click(dateInput());
+      await user.keyboard(`{Control>}a{/Control}${text}`);
+    };
+
+    it('shows the stored date in the format of the platform language', () => {
+      renderInput({ type: 'date', restriction: none }, jan15);
+      expect(dateInput()).toHaveValue('01/15/2024');
+    });
+
     it('emits the typed date as an ISO string once validated', async () => {
-      // Local noon: the picker keeps the time of day, and the day stays the same in any time zone.
-      const { user, onChange } = renderInput({ type: 'date', restriction: none }, new Date(2024, 0, 15, 12).toISOString());
-      const input = screen.getByRole('textbox');
-      expect(input).toHaveValue('01/15/2024');
-      await user.click(input);
-      await user.keyboard('02202024');
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15);
+      await typeDate(user, '02/20/2024');
       expect(onChange).not.toHaveBeenCalled();
       await user.keyboard('{Enter}');
-      expect(onChange).toHaveBeenCalledWith(new Date(2024, 1, 20, 12).toISOString());
+      expect(onChange).toHaveBeenCalledWith(feb20);
+    });
+
+    it('emits the typed date on blur', async () => {
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15, 'blur');
+      await typeDate(user, '02/20/2024');
+      await user.tab();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(feb20);
+    });
+
+    it('emits nothing for a date that is incomplete or unchanged', async () => {
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15, 'blur');
+      await typeDate(user, '02/2');
+      await user.tab();
+      expect(onChange).not.toHaveBeenCalled();
+      await typeDate(user, '01/15/2024');
+      await user.keyboard('{Enter}');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('emits the day picked in the calendar', async () => {
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15, 'blur');
+      await user.click(screen.getByRole('button', { name: 'Open calendar' }));
+      await user.click(await screen.findByRole('gridcell', { name: /January 20, 2024/ }));
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith(new Date(2024, 0, 20).toISOString());
+    });
+
+    it('is disabled when asked to', () => {
+      const onChange = vi.fn();
+      testRender(<DashboardVariableValueInput variable={{ type: 'date', restriction: none }} value={jan15} onChange={onChange} disabled />);
+      expect(dateInput()).toBeDisabled();
     });
 
     const clearDate = async (user: ReturnType<typeof testRender>['user']) => {
-      const input = screen.getByRole('textbox');
-      await user.click(input);
+      await user.click(dateInput());
       await user.keyboard('{Control>}a{/Control}{Backspace}{Enter}');
       await user.tab();
     };
 
     it('emits an empty value when the date is cleared', async () => {
-      const { user, onChange } = renderInput({ type: 'date', restriction: none }, new Date(2024, 0, 15, 12).toISOString());
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15);
       await clearDate(user);
       expect(onChange).toHaveBeenCalledWith('');
       expect(onChange).not.toHaveBeenCalledWith(expect.stringMatching(/\d{4}-/));
     });
 
     it('emits nothing for a cleared date when committed on blur', async () => {
-      const { user, onChange } = renderInput({ type: 'date', restriction: none }, new Date(2024, 0, 15, 12).toISOString(), 'blur');
+      const { user, onChange } = renderInput({ type: 'date', restriction: none }, jan15, 'blur');
       await clearDate(user);
       expect(onChange).not.toHaveBeenCalled();
     });

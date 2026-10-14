@@ -688,6 +688,17 @@
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
       ]
+    },
+    {
+      "component": "DatePicker",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables: the value of a date variable (chip popover and default value of the variable dialog), stored as an ISO string, committed on accept (calendar pick, Enter, blur). Replaces the MUI X DatePicker; the platform language is passed as the picker locale.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/DateValueInput.tsx"
+      ]
     }
   ]
 }

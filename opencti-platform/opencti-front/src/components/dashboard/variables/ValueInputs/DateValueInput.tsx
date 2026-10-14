@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { useIntl } from 'react-intl';
+import { DatePicker } from '@filigran/design-system';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
 
 const toDate = (value: string) => (value ? new Date(value) : null);
 
 /**
- * Date value, emitted as an ISO string. As in `FilterDate`, a typed date is committed on accept, Enter or blur,
- * never on each keystroke.
+ * Date value, emitted as an ISO string. As in `FilterDate`, a typed date is committed on accept (a day picked in the
+ * calendar, Enter, blur), never on each keystroke: the typed date is only a draft until then.
  */
 const DateValueInput = ({ value, onChange, disabled, label, commitOn }: ValueInputProps) => {
+  const { locale } = useIntl();
   const [date, setDate] = useState<Date | null>(toDate(value));
   const [received, setReceived] = useState(value);
   if (value !== received) {
@@ -28,21 +30,11 @@ const DateValueInput = ({ value, onChange, disabled, label, commitOn }: ValueInp
   return (
     <DatePicker
       label={label}
+      locale={locale}
       value={date}
       disabled={disabled}
       onChange={setDate}
       onAccept={commit}
-      slotProps={{
-        textField: {
-          size: 'small',
-          variant: 'outlined',
-          fullWidth: true,
-          onKeyDown: (event) => {
-            if (event.key === 'Enter') commit(date);
-          },
-          onBlur: () => commit(date),
-        },
-      }}
     />
   );
 };
