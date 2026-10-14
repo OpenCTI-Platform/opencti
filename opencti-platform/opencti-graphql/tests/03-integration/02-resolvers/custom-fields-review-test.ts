@@ -192,6 +192,7 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
 
   describe('mandatory custom fields', () => {
     let requiredDefinitionId: string;
+    let mandatoryCaseId: string;
 
     beforeAll(async () => {
       requiredDefinitionId = await addDefinition({ name: REQUIRED, label: 'Review required', field_type: 'string' }, [
@@ -201,6 +202,8 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     });
 
     afterAll(async () => {
+      // Delete the entity holding a value before the definition, so that the values cleanup task has nothing to update
+      await queryAsAdmin({ query: SDO_DELETE, variables: { id: mandatoryCaseId } });
       await queryAsAdmin({ query: CUSTOM_FIELD_DELETE, variables: { id: requiredDefinitionId } });
     });
 
@@ -213,11 +216,10 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     });
 
     it('should not allow a user without bypass to remove a mandatory custom field value', async () => {
-      const caseId = await createCase('Custom fields review mandatory case', [{ field_name: REQUIRED, value: ['set'] }]);
-      caseIds.push(caseId);
+      mandatoryCaseId = await createCase('Custom fields review mandatory case', [{ field_name: REQUIRED, value: ['set'] }]);
       const result = await queryAsUser(USER_EDITOR, {
         query: SDO_FIELD_PATCH,
-        variables: { id: caseId, input: [{ key: 'custom_field_values', value: [] }] },
+        variables: { id: mandatoryCaseId, input: [{ key: 'custom_field_values', value: [] }] },
       });
       expect(result.errors?.[0].message).toEqual('Mandatory custom field is missing');
     });
