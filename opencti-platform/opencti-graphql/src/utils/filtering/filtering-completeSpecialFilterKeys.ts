@@ -644,7 +644,18 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
 
   const definition = await getCustomFieldDefinitionByNameOrAlias(context, user, filterKey);
   if (!definition) {
-    throw FunctionalError('Custom field definition not found for filter key', { filterKey });
+    // A deleted custom field is filtered as a custom field no entity has: no element can match (an element always
+    // has a field_id), so the positive operators match nothing and the negative ones match everything.
+    const newFilter = {
+      key: ['custom_field_values'],
+      values: [],
+      nested: [
+        { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
+        { key: 'field_id', values: [], operator: FilterOperator.Nil },
+      ],
+      ...(positiveOperator ? { negateNested: true } : {}),
+    };
+    return { newFilter, newFilterGroup: undefined };
   }
 
   const valueField = getCustomFieldValueField(definition.field_type);
