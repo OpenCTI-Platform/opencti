@@ -58,12 +58,13 @@ export default class DashboardVariablesPageModel {
     await this.getCreateButton().click();
     await expect(dialog).toBeVisible();
 
-    // The steps of the dialog appear one after the other: each field only exists once the previous one is valid.
+    // Every field is there from the start; the ones depending on the type (its parameter, the restriction and
+    // the default value) are disabled until it is chosen.
     await new TextFieldPageModel(this.page, 'Name', 'text', dialog).fill(name);
     await new SelectFieldPageModel(this.page, 'Type', false, dialog).selectOption('Entity');
     await new AutocompleteFieldPageModel(this.page, 'Entity types', true, dialog).selectOption(entityType);
 
-    // The restriction step only offers `No restriction` (mode none): it must be the checked one.
+    // The restriction only offers `No restriction` (mode none): it must be the checked one.
     await expect(dialog.getByRole('radio', { name: 'No restriction' })).toBeChecked();
 
     await new AutocompleteFieldPageModel(this.page, 'Default value', false, dialog).selectOption(defaultValueLabel);

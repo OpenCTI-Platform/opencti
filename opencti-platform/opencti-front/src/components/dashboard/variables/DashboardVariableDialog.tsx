@@ -147,14 +147,12 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
           onSubmit={onSubmit}
         >
           {({ values, touched, setFieldValue, setFieldTouched, submitForm, isSubmitting }) => {
-            // Computed here rather than read from the form state: the steps depend on it at the very render of a change.
+            // Computed here rather than read from the form state: the fields depend on it at the very render of a change.
             const errors = validateDraft(values, existingVariables, t_i18n);
             const type = values.type === '' ? undefined : values.type;
             const parameter = type ? TYPE_PARAMETER[type] : undefined;
-            const hasNameStep = !errors.name;
-            const hasParameterStep = hasNameStep && parameter !== undefined;
-            const hasRestrictionStep = hasNameStep && !!type && RESTRICTABLE_TYPES.includes(type) && (!parameter || !errors[parameter]);
-            const hasValueStep = hasNameStep && !!type && (!parameter || !errors[parameter]);
+            // The restriction and the default value wait for the type and for its parameter, which they depend on.
+            const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
             // A type, or one of its parameters, changing makes the default value meaningless.
             const forgetDefaultValue = () => setFieldValue('defaultValue', '');
 
@@ -173,27 +171,27 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                       onBlur={() => setFieldTouched('name', true)}
                       error={errors.name && (touched.name || values.name !== '') ? errors.name : undefined}
                     />
-                    {hasNameStep && (
-                      <Field
-                        component={SelectFieldFds}
-                        name="type"
-                        label={t_i18n('Type')}
-                        fullWidth
-                        required
-                        disabled={isEditing}
-                        onChange={forgetDefaultValue}
-                      >
-                        {DASHBOARD_VARIABLE_TYPES.map((variableType) => (
-                          <SelectItem key={variableType} value={variableType}>{typeLabels[variableType]}</SelectItem>
-                        ))}
-                      </Field>
-                    )}
-                    {hasParameterStep && parameter === 'vocabularyCategory' && (
+                    <Field
+                      component={SelectFieldFds}
+                      name="type"
+                      label={t_i18n('Type')}
+                      fullWidth
+                      required
+                      disabled={isEditing}
+                      onChange={forgetDefaultValue}
+                    >
+                      {DASHBOARD_VARIABLE_TYPES.map((variableType) => (
+                        <SelectItem key={variableType} value={variableType}>{typeLabels[variableType]}</SelectItem>
+                      ))}
+                    </Field>
+                    {/* Stands for the parameter of the type until it is chosen. A type without parameter shows none. */}
+                    {!type && <Input label={t_i18n('Type parameter')} disabled value="" onChange={() => {}} />}
+                    {parameter === 'vocabularyCategory' && (
                       <Suspense fallback={null}>
                         <VocabularyCategoryField disabled={isEditing} onChange={forgetDefaultValue} />
                       </Suspense>
                     )}
-                    {hasParameterStep && parameter === 'killChainName' && (
+                    {parameter === 'killChainName' && (
                       <Input
                         label={t_i18n('Kill chain')}
                         required
@@ -206,30 +204,32 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                         onBlur={() => setFieldTouched('killChainName', true)}
                       />
                     )}
-                    {hasParameterStep && parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
-                    {hasRestrictionStep && (
+                    {parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
+                    {/* A type that cannot be restricted shows no restriction. */}
+                    {(!type || RESTRICTABLE_TYPES.includes(type)) && (
                       <RadioGroup
                         aria-label={t_i18n('Restriction')}
                         orientation="vertical"
                         value={values.restrictionMode}
                         onValueChange={() => {}}
                       >
-                        <Radio value="none" label={t_i18n('No restriction')} disabled={values.restrictionMode !== 'none'} />
+                        <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete || values.restrictionMode !== 'none'} />
                         {values.restrictionMode !== 'none' && (
                           <Radio value={values.restrictionMode} label={keptRestrictionLabel} disabled />
                         )}
                       </RadioGroup>
                     )}
-                    {hasValueStep && (
+                    {type ? (
                       <DashboardVariableValueInput
-                      // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
+                        // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
                         key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}`}
                         label={t_i18n('Default value')}
                         variable={draftToVariable(values, values.id ?? 'draft')}
                         value={values.defaultValue}
+                        disabled={isTypeIncomplete}
                         onChange={(defaultValue) => setFieldValue('defaultValue', defaultValue)}
                       />
-                    )}
+                    ) : <Input label={t_i18n('Default value')} disabled value="" onChange={() => {}} />}
                   </div>
                 </DialogBody>
                 <DialogFooter>

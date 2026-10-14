@@ -5264,6 +5264,7 @@
   "Type is required": "種別は必須です",
   "Type or copy paste data in this area.": "このエリアにデータを入力またはコピーペーストします。",
   "Type or copy paste data. Each entity should be on a new line.": "貼り付けデータを入力またはコピーします。各エンティティは新しい行にある必要があります。",
+  "Type parameter": "タイプのパラメーター",
   "Type the code generated in your application": "アプリケーションが生成したコードを入力してください",
   "Types": "種類",
   "Types of the targeting": "標的の種別",

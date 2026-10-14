@@ -18,14 +18,16 @@ vi.mock('../../../utils/hooks/useVocabularyCategory', () => ({
 vi.mock('../../../utils/filters/useSearchEntities', () => ({ default: () => [{}, vi.fn()] }));
 // The value inputs have their own tests: this one exposes what the dialog hands them.
 vi.mock('./DashboardVariableValueInput', () => ({
-  default: ({ variable, value, onChange, label }: {
+  default: ({ variable, value, onChange, label, disabled }: {
     variable: unknown;
     value: string;
     onChange: (value: string) => void;
     label: string;
+    disabled?: boolean;
   }) => (
     <input
       aria-label={label}
+      disabled={disabled}
       data-testid="value-input"
       data-variable={JSON.stringify(variable)}
       value={value}
@@ -92,41 +94,52 @@ describe('DashboardVariableDialog', () => {
     expect(mocks.onClose).toHaveBeenCalledTimes(2);
   });
 
-  it('shows the steps one after the other, each one once the previous is valid', async () => {
+  it('shows every field from the start, the ones depending on the type disabled until it is chosen', async () => {
     const { user } = renderDialog();
-    expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();
-    // Only the name at first.
-    expect(screen.queryByRole('combobox', { name: /Type/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(nameInput()).toBeEnabled();
+    expect(screen.getByRole('combobox', { name: /Type/ })).toBeEnabled();
+    // Generic fields standing for what the type will bring.
+    expect(screen.getByRole('textbox', { name: 'Type parameter' })).toBeDisabled();
+    const group = screen.getByRole('radiogroup', { name: 'Restriction' });
+    expect(within(group).getByRole('radio', { name: 'No restriction' })).toBeDisabled();
+    expect(screen.getByRole('textbox', { name: 'Default value' })).toBeDisabled();
     expect(submit()).toBeDisabled();
 
     await user.type(nameInput(), 'Malware family');
-    const type = await screen.findByRole('combobox', { name: /Type/ });
-    // The type opens the step of its parameter.
-    expect(screen.queryByRole('combobox', { name: /Vocabulary category/ })).not.toBeInTheDocument();
-    await user.click(type);
+    expect(screen.getByRole('textbox', { name: 'Type parameter' })).toBeDisabled();
+    await user.click(screen.getByRole('combobox', { name: /Type/ }));
     expect(screen.getAllByRole('option')).toHaveLength(13);
     await user.click(screen.getByRole('option', { name: 'Vocabulary' }));
+    // The real parameter field replaces the generic one; the restriction and the value wait for the category.
     const category = await screen.findByRole('combobox', { name: /Vocabulary category/ });
-    // The restriction and the default value wait for the category.
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('value-input')).not.toBeInTheDocument();
+    expect(category).toBeEnabled();
+    expect(screen.queryByRole('textbox', { name: 'Type parameter' })).not.toBeInTheDocument();
+    expect(within(screen.getByRole('radiogroup')).getByRole('radio', { name: 'No restriction' })).toBeDisabled();
+    expect(screen.getByTestId('value-input')).toBeDisabled();
     await user.click(category);
     await user.click(screen.getByRole('option', { name: 'event_type' }));
-    expect(await screen.findByRole('radiogroup')).toBeInTheDocument();
-    expect(await screen.findByTestId('value-input')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('value-input')).toBeEnabled());
+    expect(within(screen.getByRole('radiogroup')).getByRole('radio', { name: 'No restriction' })).toBeEnabled();
   });
 
-  it('offers no restriction step for a type that cannot be restricted', async () => {
+  it('does not show an error on a field the user has not touched', () => {
+    renderDialog();
+    expect(screen.queryByText('Name is required')).not.toBeInTheDocument();
+    expect(screen.queryByText('Type is required')).not.toBeInTheDocument();
+    expect(screen.queryByText('Default value is required')).not.toBeInTheDocument();
+  });
+
+  it('hides the type parameter once a type without parameter is chosen, and the restriction of a type that cannot be restricted', async () => {
     const { user } = renderDialog();
     await user.type(nameInput(), 'Threshold');
     await user.click(await screen.findByRole('combobox', { name: /Type/ }));
     await user.click(screen.getByRole('option', { name: 'Numeric' }));
-    expect(await screen.findByTestId('value-input')).toBeInTheDocument();
+    expect(await screen.findByTestId('value-input')).toBeEnabled();
     expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Type parameter' })).not.toBeInTheDocument();
   });
 
-  it('offers nothing but No restriction, checked, in the restriction step', async () => {
+  it('offers nothing but No restriction, checked, in the restriction group', async () => {
     const { user } = renderDialog();
     await user.type(nameInput(), 'Label');
     await user.click(await screen.findByRole('combobox', { name: /Type/ }));
@@ -135,20 +148,21 @@ describe('DashboardVariableDialog', () => {
     const radios = within(group).getAllByRole('radio');
     expect(radios).toHaveLength(1);
     expect(radios[0]).toBeChecked();
+    expect(radios[0]).toBeEnabled();
     expect(within(group).getByText('No restriction')).toBeInTheDocument();
     expect(screen.queryByText('Manual selection')).not.toBeInTheDocument();
     expect(screen.queryByText('By filter')).not.toBeInTheDocument();
   });
 
-  it('keeps Create disabled for an entity variable without entity type', async () => {
+  it('keeps Create disabled for an entity variable without entity type, with the restriction and the value disabled', async () => {
     const { user } = renderDialog();
     await user.type(nameInput(), 'Entity');
     await user.click(await screen.findByRole('combobox', { name: /Type/ }));
     await user.click(screen.getByRole('option', { name: 'Entity' }));
-    expect(await screen.findByRole('combobox', { name: /Entity types/ })).toBeInTheDocument();
+    expect(await screen.findByRole('combobox', { name: /Entity types/ })).toBeEnabled();
     expect(submit()).toBeDisabled();
-    // The restriction waits for the entity types.
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('radiogroup')).getByRole('radio', { name: 'No restriction' })).toBeDisabled();
+    expect(screen.getByTestId('value-input')).toBeDisabled();
   });
 
   it('upserts the expected variable, with a generated id, then closes', async () => {
@@ -284,7 +298,6 @@ describe('DashboardVariableDialog', () => {
     expect(submit()).toBeDisabled();
     await user.click(submit());
     expect(mocks.upsert).not.toHaveBeenCalled();
-    expect(screen.queryByRole('combobox', { name: /Type/ })).not.toBeInTheDocument();
   });
 
   it('shows the quota error and refuses to create beyond 50 variables', async () => {
