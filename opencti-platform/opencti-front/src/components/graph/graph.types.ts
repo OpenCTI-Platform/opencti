@@ -1,5 +1,6 @@
 import { ForceGraphProps } from 'react-force-graph-3d';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
+import { InvestigationEnrichmentWorks } from '../../private/components/workspaces/investigations/investigations_enrichment/investigation-enrichment.types';
 
 interface GraphElement {
   id: string;
@@ -66,6 +67,8 @@ export interface GraphEntity {
   createdBy?: unknown | null | undefined;
   published?: string | null | undefined;
   objectMarking?: readonly DefaultMarking[] | null | undefined;
+  currentUserAccessRight?: string | null;
+  enrichmentWorks?: InvestigationEnrichmentWorks;
 }
 
 // Stuff kept in URL and local storage.

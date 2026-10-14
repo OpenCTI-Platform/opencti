@@ -65,6 +65,13 @@ const Investigation = createFragmentContainer(InvestigationComponent, {
         name
         focusOn
       }
+      enrichmentWorks {
+        edges {
+          node {
+            id
+          }
+        }
+      }
     }
   `,
 });

@@ -18,6 +18,7 @@ import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
+import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -158,13 +159,19 @@ const GraphToolbarContentTools = ({
         />
       )}
       {entity && context === 'investigation' && (
-        <InvestigationAddStixCoreObjects
-          workspaceId={entity.id}
-          workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-          targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode}
-          onDelete={removeFromAddPanel}
-        />
+        <>
+          <InvestigationAddStixCoreObjects
+            workspaceId={entity.id}
+            workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+            targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+            onAdd={addNode}
+            onDelete={removeFromAddPanel}
+          />
+
+          <InvestigationEnrichmentTool
+            entity={entity}
+          />
+        </>
       )}
 
       {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
