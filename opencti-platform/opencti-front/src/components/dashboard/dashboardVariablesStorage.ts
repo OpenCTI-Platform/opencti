@@ -37,7 +37,7 @@ export const parseVariablesParam = (search: string): Record<string, string> => {
     try {
       const value = decodeURIComponent(pair.slice(separator + 1));
       if (value) result[pair.slice(0, separator)] = value;
-    } catch { /* paramètre mal formé : ignoré */ }
+    } catch { /* malformed parameter: ignored */ }
   });
   return result;
 };

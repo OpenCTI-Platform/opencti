@@ -15,16 +15,16 @@ export const useDashboardVariables = (
   const { isFeatureEnable } = useHelper();
   const enabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const key = dashboardVariablesStorageKey(me.id, workspaceId);
-  // Priorité : URL > localStorage > défaut (le défaut est appliqué plus bas).
+  // Priority: URL > localStorage > default (the default is applied below).
   const load = () => (ignoreLocalValues || !enabled ? {} : { ...readStoredVariableValues(key), ...parseVariablesParam(window.location.search) });
   const [state, setState] = useState(() => ({ key, stored: load() }));
-  // Changement de compte ou de dashboard : on relit, on ne garde jamais l'état d'une autre clé.
+  // Account or dashboard change: read again, never keep the state of another key.
   const stored = state.key === key ? state.stored : load();
 
   const defaultsSignature = JSON.stringify([...buildDefaultVariableValues(enabled ? variables : [])]);
   const defaults = useMemo(() => new Map<string, string>(JSON.parse(defaultsSignature)), [defaultsSignature]);
 
-  // `variables` est volontairement résumé par sa signature (id + pool de sélection).
+  // `variables` is deliberately summarized by its signature (id + selection pool).
   const variablesSignature = JSON.stringify(variables.map((v) => [v.id, v.restriction.mode === 'selection' ? v.restriction.values : null]));
   const effective = useMemo(() => {
     const merged = new Map(defaults);
@@ -54,7 +54,7 @@ export const useDashboardVariables = (
     if (ignoreLocalValues || !enabled) return;
     // Based on the in-memory state, not on a re-read of the storage, which may have refused the previous write.
     const { [variableId]: _previous, ...others } = stored;
-    // Une valeur vide signifie « non définie » : le défaut du manifest s'applique.
+    // An empty value means "unset": the manifest default applies.
     commit(value === '' ? others : { ...others, [variableId]: value });
   }, [commit, stored, ignoreLocalValues, enabled]);
 
