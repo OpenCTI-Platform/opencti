@@ -10099,6 +10099,7 @@ type Mutation {
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult
+  securityCoverageResultEdit(id: ID!, input: SecurityCoverageResultEditInput!): SecurityCoverageResult
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
@@ -16356,6 +16357,18 @@ input SecurityCoverageResultAddInput {
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
   customFieldValues: [CustomFieldValueAddInput!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
+}
+
+input SecurityCoverageResultEditInput {
+  name: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  external_uri: String
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
   add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 

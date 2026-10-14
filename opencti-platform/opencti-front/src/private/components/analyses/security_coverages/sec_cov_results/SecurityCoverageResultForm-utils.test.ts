@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findDuplicateResultField } from './SecurityCoverageResultForm-utils';
+import { findDuplicateResultField, isManualResult, resultToFormData } from './SecurityCoverageResultForm-utils';
 
 const existingResults = [
   { name: 'Result of my coverage', external_uri: null },
@@ -38,5 +38,54 @@ describe('findDuplicateResultField', () => {
 
   it('should not flag anything without existing results', () => {
     expect(findDuplicateResultField({ name: 'Result of my coverage', externalUri: '' }, null)).toBeNull();
+  });
+});
+
+describe('isManualResult', () => {
+  it('should consider a result without external link as manual', () => {
+    expect(isManualResult({ name: 'Manual', external_uri: null })).toBe(true);
+    expect(isManualResult({ name: 'Manual', external_uri: '' })).toBe(true);
+  });
+
+  it('should not consider a result linked to OpenAEV as manual', () => {
+    expect(isManualResult({ name: 'OpenAEV', external_uri: 'https://openaev.io/simulations/1' })).toBe(false);
+  });
+});
+
+describe('resultToFormData', () => {
+  const baseResult = { id: 'scr-1', name: 'Manual result' };
+
+  it('should fill the form with the values of the result', () => {
+    const formData = resultToFormData({
+      ...baseResult,
+      external_uri: null,
+      coverage_valid_from: '2026-01-01T00:00:00.000Z',
+      coverage_valid_to: '2026-12-31T00:00:00.000Z',
+      coverage_information: [{ coverage_name: 'detection', coverage_score: 80 }],
+      createdBy: { id: 'identity-1', name: 'Filigran', entity_type: 'Organization' },
+      objectMarking: [{ id: 'marking-1', definition: 'TLP:CLEAR', definition_type: 'TLP', x_opencti_color: '#fff', x_opencti_order: 1 }],
+      objectLabel: [{ id: 'label-1', value: 'red-team', color: '#f00' }],
+    });
+
+    expect(formData.name).toEqual('Manual result');
+    expect(formData.externalUri).toEqual('');
+    expect(formData.validFrom).toEqual(new Date('2026-01-01T00:00:00.000Z'));
+    expect(formData.validTo).toEqual(new Date('2026-12-31T00:00:00.000Z'));
+    expect(formData.coverageInformation).toEqual([{ coverage_name: 'detection', coverage_score: 80 }]);
+    expect(formData.createdBy).toEqual({ label: 'Filigran', value: 'identity-1', type: 'Organization' });
+    expect(formData.objectMarking.map((m) => m.value)).toEqual(['marking-1']);
+    expect(formData.objectLabel).toEqual([{ label: 'red-team', value: 'label-1', color: '#f00' }]);
+  });
+
+  it('should use empty values when the result has no optional data', () => {
+    const formData = resultToFormData(baseResult);
+
+    expect(formData.createdBy).toBeUndefined();
+    expect(formData.objectMarking).toEqual([]);
+    expect(formData.objectLabel).toEqual([]);
+    expect(formData.validFrom).toBeNull();
+    expect(formData.validTo).toBeNull();
+    // At least one coverage score is required by the form
+    expect(formData.coverageInformation).toEqual([{ coverage_name: null, coverage_score: null }]);
   });
 });

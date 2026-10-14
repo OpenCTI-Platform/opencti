@@ -21,6 +21,8 @@ import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LO
 
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
+  // Hide the entities already covered by this security coverage result.
+  excludedCoveredResultId?: string;
   onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCancel?: () => void;
@@ -131,6 +133,7 @@ const DATA_COLUMNS = {
 
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
+  excludedCoveredResultId,
   onNext,
   onCreate,
   onCancel,
@@ -160,7 +163,7 @@ const SelectEntitiesToCoverStep = ({
 
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: buildCoveredEntitiesFilters(coveredEntity),
+    filters: buildCoveredEntitiesFilters(coveredEntity, excludedCoveredResultId),
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 

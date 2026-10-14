@@ -8,9 +8,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import SecurityCoverageResultFormSteps from './SecurityCoverageResultFormSteps';
 import SecurityCoverageResultFormDetails, { SecurityCoverageResultFormData } from './SecurityCoverageResultFormDetails';
 import SelectEntitiesToCoverStep from '../security_coverage_creation/select_entities_to_cover_step/SelectEntitiesToCoverStep';
-import { SecurityCoverageResultFormDrawerFragment$key } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
+import { SecurityCoverageResultFormDrawerFragment$data, SecurityCoverageResultFormDrawerFragment$key } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
 import { SelectedEntities } from '../security_coverage_creation/SecurityCoverageCreation-types';
 import { SecurityCoverageResultCreationMutation } from './__generated__/SecurityCoverageResultCreationMutation.graphql';
+import { SecurityCoverageResultEditionMutation } from './__generated__/SecurityCoverageResultEditionMutation.graphql';
 import StixCoreRelationshipCreationForm from '../../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { UseEntityToggleType } from '../../../../../utils/hooks/useEntityToggle';
@@ -19,6 +20,8 @@ import { formatDate } from '../../../../../utils/Time';
 import { CoverageInformation } from '../SecurityCoverage-types';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
+import SecurityCoverageResultSelectStep from './SecurityCoverageResultSelectStep';
+import { isManualResult, resultToFormData } from './SecurityCoverageResultForm-utils';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -31,6 +34,29 @@ const fragment = graphql`
       id
       name
       external_uri
+      coverage_valid_from
+      coverage_valid_to
+      coverage_information {
+        coverage_name
+        coverage_score
+      }
+      createdBy {
+        id
+        name
+        entity_type
+      }
+      objectMarking {
+        id
+        definition
+        definition_type
+        x_opencti_color
+        x_opencti_order
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
     }
   }
 `;
@@ -42,16 +68,26 @@ const securityCoverageResultMutation = graphql`
       # Refresh the list of results of the coverage in the store,
       # so the results table includes the newly created one.
       resultOf {
-        id
-        results {
-          id
-          name
-          external_uri
-        }
+        ...SecurityCoverageResultFormDrawerFragment
       }
     }
   }
 `;
+
+const securityCoverageResultEditionMutation = graphql`
+  mutation SecurityCoverageResultEditionMutation($id: ID!, $input: SecurityCoverageResultEditInput!) {
+    securityCoverageResultEdit(id: $id, input: $input) {
+      id
+      # Refresh the results of the coverage in the store,
+      # so the update form shows the new values.
+      resultOf {
+        ...SecurityCoverageResultFormDrawerFragment
+      }
+    }
+  }
+`;
+
+type SecurityCoverageResultToEdit = NonNullable<SecurityCoverageResultFormDrawerFragment$data['results']>[number];
 
 interface SecurityCoverageResultFormDrawerProps {
   data: SecurityCoverageResultFormDrawerFragment$key;
@@ -66,18 +102,27 @@ const SecurityCoverageResultFormDrawer = ({
 
   const [activeStep, setActiveStep] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [resultToEdit, setResultToEdit] = useState<SecurityCoverageResultToEdit>();
+  const manualResults = (results ?? []).filter(isManualResult);
+  // In update mode, the first step is the selection of the result to update.
+  const offset = isUpdate ? 1 : 0;
 
   // Data of the differents steps.
   const [formDetails, setFormDetails] = useState<SecurityCoverageResultFormData>();
   const [selectedEntities, setSelectedEntities] = useState<SelectedEntities | null>();
   const [relToEntities, setRelToEntities] = useState<UseEntityToggleType[]>();
 
-  const [commitCreation, submitting] = useApiMutation<SecurityCoverageResultCreationMutation>(
+  const [commitCreation, creating] = useApiMutation<SecurityCoverageResultCreationMutation>(
     securityCoverageResultMutation,
   );
+  const [commitEdition, updating] = useApiMutation<SecurityCoverageResultEditionMutation>(
+    securityCoverageResultEditionMutation,
+  );
+  const submitting = creating || updating;
 
-  const notifyCreation = (hasRelatedEntities: boolean) => {
-    const successMessage = `${t_i18n('entity_Security-Coverage-Result')} ${t_i18n('successfully created')}`;
+  const notifySuccess = (hasRelatedEntities: boolean) => {
+    const successMessage = `${t_i18n('entity_Security-Coverage-Result')} ${t_i18n(isUpdate ? 'successfully updated' : 'successfully created')}`;
     if (!hasRelatedEntities) {
       MESSAGING$.notifySuccess(successMessage);
       return;
@@ -95,9 +140,16 @@ const SecurityCoverageResultFormDrawer = ({
     );
   };
 
+  const open = (update: boolean) => {
+    setIsUpdate(update);
+    setDrawerOpen(true);
+  };
+
   const close = () => {
     setActiveStep(0);
     setDrawerOpen(false);
+    setIsUpdate(false);
+    setResultToEdit(undefined);
     setFormDetails(undefined);
     setSelectedEntities(undefined);
     setRelToEntities(undefined);
@@ -107,7 +159,7 @@ const SecurityCoverageResultFormDrawer = ({
   // entities in step 2.
   const stepVisibility = (step: number) => {
     return {
-      display: activeStep === step ? 'block' : 'none',
+      display: activeStep === offset + step ? 'block' : 'none',
     };
   };
 
@@ -139,30 +191,45 @@ const SecurityCoverageResultFormDrawer = ({
     } : undefined;
 
     const coverage_information = details.coverageInformation.flatMap((cov) => {
-      return cov.coverage_name && cov.coverage_score ? cov : [];
+      // A score of 0 is valid, only drop rows left empty.
+      return cov.coverage_name && Number.isFinite(cov.coverage_score) ? cov : [];
     }) as CoverageInformation[];
+
+    const input = {
+      name: details.name,
+      createdBy: details.createdBy?.value,
+      objectMarking: details.objectMarking.map((v) => v.value),
+      objectLabel: details.objectLabel.map((v) => v.value),
+      coverage_information,
+      external_uri: details.externalUri,
+      coverage_valid_from: details.validFrom,
+      coverage_valid_to: details.validTo,
+      add_related_entities: related_entities,
+    };
+    const onCompleted = () => {
+      notifySuccess(!!related_entities);
+      close();
+    };
+
+    if (isUpdate && resultToEdit) {
+      commitEdition({
+        // Send null to clear the author of the result.
+        variables: { id: resultToEdit.id, input: { ...input, createdBy: input.createdBy ?? null } },
+        onCompleted,
+      });
+      return;
+    }
 
     commitCreation({
       variables: {
         input: {
-          name: details.name,
+          ...input,
           description: details.description,
-          createdBy: details.createdBy?.value,
-          objectMarking: details.objectMarking.map((v) => v.value),
-          objectLabel: details.objectLabel.map((v) => v.value),
           confidence: parseInt(String(details.confidence), 10),
-          coverage_information,
-          external_uri: details.externalUri,
-          coverage_valid_from: details.validFrom,
-          coverage_valid_to: details.validTo,
-          add_related_entities: related_entities,
           resultOf: id,
         },
       },
-      onCompleted: () => {
-        notifyCreation(!!related_entities);
-        close();
-      },
+      onCompleted,
     });
   };
 
@@ -173,19 +240,36 @@ const SecurityCoverageResultFormDrawer = ({
   return (
     <>
       <SecurityCoverageResultsDropdown
-        onCreate={() => setDrawerOpen(true)}
+        onCreate={() => open(false)}
+        onUpdate={() => open(true)}
+        canUpdate={manualResults.length > 0}
       />
 
       <Drawer
         open={drawerOpen}
         onClose={close}
-        title={t_i18n('Create Security Coverage Result')}
+        title={isUpdate ? t_i18n('Update a security coverage result') : t_i18n('Create Security Coverage Result')}
       >
         <>
           <SecurityCoverageResultFormSteps
             activeStep={activeStep}
             onStepClick={setActiveStep}
+            isUpdate={isUpdate}
           />
+
+          {isUpdate && activeStep === 0 && (
+            <SecurityCoverageResultSelectStep
+              results={manualResults}
+              onCancel={close}
+              onSelect={(result) => {
+                setResultToEdit(result);
+                setFormDetails(resultToFormData(result));
+                setSelectedEntities(undefined);
+                setRelToEntities(undefined);
+                setActiveStep(1);
+              }}
+            />
+          )}
 
           <div style={{ ...stepVisibility(0) }}>
             <SecurityCoverageResultFormDetails
@@ -196,24 +280,30 @@ const SecurityCoverageResultFormDrawer = ({
                 setActiveStep((a) => a + 1);
               }}
               initValues={formDetails}
-              existingResults={results}
+              // The result being updated is not a duplicate of itself.
+              existingResults={results?.filter((r) => r.id !== resultToEdit?.id)}
+              isUpdate={isUpdate}
             />
           </div>
 
-          <div style={{ ...stepVisibility(1) }}>
-            <SelectEntitiesToCoverStep
-              onCancel={close}
-              coveredEntity={objectCovered}
-              onNext={(entities, elements) => {
-                setSelectedEntities(entities);
-                setRelToEntities(elements);
-                setActiveStep((a) => a + 1);
-              }}
-              onCreate={(entities) => {
-                submit(formDetails, entities);
-              }}
-            />
-          </div>
+          {(!isUpdate || resultToEdit) && (
+            <div style={{ ...stepVisibility(1) }}>
+              <SelectEntitiesToCoverStep
+                key={resultToEdit?.id}
+                onCancel={close}
+                coveredEntity={objectCovered}
+                excludedCoveredResultId={resultToEdit?.id}
+                onNext={(entities, elements) => {
+                  setSelectedEntities(entities);
+                  setRelToEntities(elements);
+                  setActiveStep((a) => a + 1);
+                }}
+                onCreate={(entities) => {
+                  submit(formDetails, entities);
+                }}
+              />
+            </div>
+          )}
 
           {formDetails && (
             <div style={{ ...stepVisibility(2) }}>

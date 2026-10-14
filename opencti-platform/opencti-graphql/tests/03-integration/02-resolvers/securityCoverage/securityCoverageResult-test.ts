@@ -67,6 +67,19 @@ const CREATE_MUTATION = gql`
   }
 `;
 
+const EDIT_MUTATION = gql`
+  mutation EditSecurityCoverageResult($id: ID!, $input: SecurityCoverageResultEditInput!) {
+    securityCoverageResultEdit(id: $id, input: $input) {
+      id
+      name
+      coverage_information {
+        coverage_name
+        coverage_score
+      }
+    }
+  }
+`;
+
 const DELETE_MUTATION = gql`
   mutation DeleteSecurityCoverageResult($id: ID!) {
     securityCoverageResultDelete(id: $id)
@@ -140,6 +153,60 @@ describe('SecurityCoverageResult resolver', () => {
     expect(securityCoverageResultData.external_uri).toEqual('http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322');
     expect(securityCoverageResultData.coverage_information[0].coverage_name).toEqual('vulnerability');
     expect(securityCoverageResultData.coverage_information[0].coverage_score).toEqual(50);
+  });
+
+  it('should update the attributes of a security coverage result', async () => {
+    const scr = await queryAsAdmin({
+      query: EDIT_MUTATION,
+      variables: {
+        id: createdScrId,
+        input: {
+          name: 'Updated result',
+          coverage_information: [{
+            coverage_name: 'detection',
+            coverage_score: 80,
+          }],
+        },
+      },
+    });
+
+    const securityCoverageResultData = scr.data?.securityCoverageResultEdit;
+    expect(securityCoverageResultData).toBeDefined();
+    expect(securityCoverageResultData.id).toEqual(createdScrId);
+    expect(securityCoverageResultData.name).toEqual('Updated result');
+    expect(securityCoverageResultData.coverage_information).toEqual([{ coverage_name: 'detection', coverage_score: 80 }]);
+  });
+
+  it('should keep a coverage score of 0 and clear a list set to null', async () => {
+    const withZero = await queryAsAdmin({
+      query: EDIT_MUTATION,
+      variables: {
+        id: createdScrId,
+        input: { coverage_information: [{ coverage_name: 'detection', coverage_score: 0 }] },
+      },
+    });
+    expect(withZero.data?.securityCoverageResultEdit.coverage_information).toEqual([{ coverage_name: 'detection', coverage_score: 0 }]);
+
+    const cleared = await queryAsAdmin({
+      query: EDIT_MUTATION,
+      variables: {
+        id: createdScrId,
+        input: { coverage_information: null },
+      },
+    });
+    expect(cleared.errors).toBeUndefined();
+    expect(cleared.data?.securityCoverageResultEdit.coverage_information ?? []).toEqual([]);
+  });
+
+  it('should fail to update an unknown security coverage result', async () => {
+    const scr = await queryAsAdmin({
+      query: EDIT_MUTATION,
+      variables: {
+        id: 'unknown-security-coverage-result-id',
+        input: { name: 'Updated result' },
+      },
+    });
+    expect(scr.errors?.length).toBeGreaterThan(0);
   });
 
   it('should delete a security coverage result by its ID', async () => {
