@@ -4572,7 +4572,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-hierarchy@npm:*":
+"@types/d3-hierarchy@npm:*, @types/d3-hierarchy@npm:3.1.7":
   version: 3.1.7
   resolution: "@types/d3-hierarchy@npm:3.1.7"
   checksum: 10c0/873711737d6b8e7b6f1dda0bcd21294a48f75024909ae510c5d2c21fad2e72032e0958def4d9f68319d3aaac298ad09c49807f8bfc87a145a82693b5208613c7
@@ -4623,7 +4623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-scale@npm:*, @types/d3-scale@npm:4.0.9, @types/d3-scale@npm:^4.0.2":
+"@types/d3-scale@npm:*, @types/d3-scale@npm:^4.0.2":
   version: 4.0.9
   resolution: "@types/d3-scale@npm:4.0.9"
   dependencies:
@@ -4662,7 +4662,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-timer@npm:*, @types/d3-timer@npm:^3.0.0":
+"@types/d3-timer@npm:*, @types/d3-timer@npm:3.0.2, @types/d3-timer@npm:^3.0.0":
   version: 3.0.2
   resolution: "@types/d3-timer@npm:3.0.2"
   checksum: 10c0/c644dd9571fcc62b1aa12c03bcad40571553020feeb5811f1d8a937ac1e65b8a04b759b4873aef610e28b8714ac71c9885a4d6c127a048d95118f7e5b506d9e1
@@ -4913,7 +4913,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/prop-types@npm:*, @types/prop-types@npm:^15.7.12, @types/prop-types@npm:^15.7.14, @types/prop-types@npm:^15.7.15":
+"@types/prop-types@npm:*, @types/prop-types@npm:15.7.15, @types/prop-types@npm:^15.7.12, @types/prop-types@npm:^15.7.14, @types/prop-types@npm:^15.7.15":
   version: 15.7.15
   resolution: "@types/prop-types@npm:15.7.15"
   checksum: 10c0/b59aad1ad19bf1733cf524fd4e618196c6c7690f48ee70a327eb450a42aab8e8a063fbe59ca0a5701aebe2d92d582292c0fb845ea57474f6a15f6994b0e260b2
@@ -4935,17 +4935,6 @@ __metadata:
   dependencies:
     types-ramda: "npm:^0.32.0"
   checksum: 10c0/3787a771abc3ea1372577a4507988a850c917e46ba2adb565a42ba55bf78ac212ce992dba9df9bb18de1adacc9eae33323940d7ae3cd688469cc3523e47ce0b4
-  languageName: node
-  linkType: hard
-
-"@types/react-color@npm:3.0.13":
-  version: 3.0.13
-  resolution: "@types/react-color@npm:3.0.13"
-  dependencies:
-    "@types/reactcss": "npm:*"
-  peerDependencies:
-    "@types/react": "*"
-  checksum: 10c0/a26a2a628dc98d2186743a52e18fc1a4622ba9ec69989be1e51614084fd90a52c139ea6689aa9706fcea94356d277c87d69f11a5c1f66c19b45e6b0132db40bb
   languageName: node
   linkType: hard
 
@@ -5011,15 +5000,6 @@ __metadata:
   dependencies:
     csstype: "npm:^3.2.2"
   checksum: 10c0/fbcabf303f935ca9f36ed2dcf81751cf84744098c5a683c8a62a0fa7edd31714b48d5c46b12fd0014f7f2dfe4d9ec6de428a850748eec719a70294e51029551b
-  languageName: node
-  linkType: hard
-
-"@types/reactcss@npm:*":
-  version: 1.2.13
-  resolution: "@types/reactcss@npm:1.2.13"
-  peerDependencies:
-    "@types/react": "*"
-  checksum: 10c0/f1b1e257dd7f02e1b50b2622c05a3fdcdb67045fdbbeab1f6ed7ef91e06f19d8899a3d7bd828c34bd2b243b7b7dd4c35376b947a683f5c0d56ea8a16b482f73d
   languageName: node
   linkType: hard
 
@@ -12264,15 +12244,17 @@ __metadata:
     "@testing-library/jest-dom": "npm:7.0.1"
     "@testing-library/react": "npm:16.3.3"
     "@testing-library/user-event": "npm:14.6.7"
-    "@types/d3-scale": "npm:4.0.9"
+    "@types/d3-hierarchy": "npm:3.1.7"
+    "@types/d3-timer": "npm:3.0.2"
     "@types/eslint-plugin-jsx-a11y": "npm:6.10.1"
     "@types/geojson": "npm:7946.0.16"
     "@types/html-to-pdfmake": "npm:2.4.5"
     "@types/node": "npm:22.20.5"
+    "@types/pdfmake": "npm:0.3.3"
+    "@types/prop-types": "npm:15.7.15"
     "@types/qrcode": "npm:1.5.6"
     "@types/ramda": "npm:0.32.0"
     "@types/react": "npm:19.3.0"
-    "@types/react-color": "npm:3.0.13"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:19.3.0"
     "@types/react-syntax-highlighter": "npm:15.5.13"
