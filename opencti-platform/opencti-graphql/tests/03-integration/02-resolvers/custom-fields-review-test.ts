@@ -277,4 +277,18 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       expect(values.find((v) => v.field_name === TAGS)?.select_values.sort()).toEqual(['a', 'b', 'c']);
     });
   });
+
+  describe('remove', () => {
+    it('should only remove the targeted custom field value', async () => {
+      const caseId = await createCase('Custom fields review remove', [{ field_name: NOTE, value: ['note'] }, { field_name: TAGS, value: ['a'] }]);
+      caseIds.push(caseId);
+      const patched = await queryAsAdmin({
+        query: SDO_FIELD_PATCH,
+        variables: { id: caseId, input: [{ key: 'custom_field_values', value: [{ field_name: NOTE }], operation: 'remove' }] },
+      });
+      expect(patched.errors).toBeUndefined();
+      const values = await readCaseValues(caseId);
+      expect(values).toMatchObject([{ field_name: TAGS, select_values: ['a'] }]);
+    });
+  });
 });
