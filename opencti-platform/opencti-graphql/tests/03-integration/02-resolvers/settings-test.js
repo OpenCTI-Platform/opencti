@@ -299,7 +299,8 @@ describe('Settings resolver local authentication lockout policy', () => {
     ['window equal to 0', { local_auth_lockout_window: 0 }, 'Lockout window must be greater than 0'],
     ['negative duration', { local_auth_lockout_duration: -5 }, 'Lockout duration must be greater than 0'],
     ['max duration equal to 0', { local_auth_lockout_max_duration: 0 }, 'Lockout max duration must be greater than 0'],
-    ['max duration above 3 hours', { local_auth_lockout_max_duration: 181 }, 'Lockout max duration must be lower or equal to 180'],
+    ['window above 24 hours', { local_auth_lockout_window: 1441 }, 'Lockout window must be lower or equal to 1440'],
+    ['max duration above 3 hours',{ local_auth_lockout_max_duration: 181 }, 'Lockout max duration must be lower or equal to 180'],
     ['duration greater than max duration', { local_auth_lockout_duration: 200, local_auth_lockout_max_duration: 120 }, 'Lockout duration must be lower or equal to lockout max duration'],
     ['duration greater than the stored max duration', { local_auth_lockout_duration: 121 }, 'Lockout duration must be lower or equal to lockout max duration'],
   ])('should reject a lockout policy with %s', async (_, lockoutInput, expectedMessage) => {

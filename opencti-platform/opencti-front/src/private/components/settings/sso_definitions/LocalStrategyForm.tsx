@@ -85,7 +85,7 @@ type Translate = (message: string, options?: { values: Record<string, number> })
 
 // Upper bounds of the lockout policy, mirrored from setting-auth.ts
 const LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
-const LOCKOUT_WINDOW_LIMIT = 43200; // minutes, 30 days
+const LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h
 const LOCKOUT_MAX_DURATION_LIMIT = 180; // minutes, locks are capped to 3h
 
 // Lockout values are only checked when the lockout is enabled, as their fields are hidden otherwise

@@ -67,8 +67,8 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
-export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 43200; // minutes, 30 days
-// Locks are capped to 3h by the specification: the max duration can only be lowered
+// The window is capped to 24h and locks to 3h by the specification: both can only be lowered
+export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window;
 export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration;
 
 const buildLocalAuthLockoutPatch = (currentSettings: BasicStoreSettings, input: LocalAuthConfigInput) => {
