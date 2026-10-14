@@ -25,7 +25,17 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { applyKeepAliveTimeout, buildRateLimiterOptions } from './httpUtils';
+import {
+  applyKeepAliveTimeout,
+  buildGraphqlUploadOptions,
+  buildRateLimiterOptions,
+  clientErrorResponse,
+  DEFAULT_MAX_UPLOAD_FILE_SIZE,
+  DEFAULT_MAX_UPLOAD_FILES,
+  isClientRequestError,
+  logMalformedRequest,
+  normalizeUploadError,
+} from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -149,6 +159,9 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
+  const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
+  const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;
+  const graphqlUpload = graphqlUploadExpress(buildGraphqlUploadOptions(requestSizeLimit, uploadFileSizeLimit, uploadMaxFiles));
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
   app.use(`${basePath}/graphql`, graphqlMethodRestriction);
@@ -157,7 +170,20 @@ const createHttpServer = async () => {
     if (req.path.startsWith(`${basePath}/chatbot/`)) {
       return next();
     }
-    return graphqlUploadExpress()(req, res, next);
+    return graphqlUpload(req, res, (uploadError) => {
+      // Body not following the graphql multipart request spec, or not parsable as multipart at all:
+      // answer the caller, do not 500.
+      const error = normalizeUploadError(uploadError);
+      if (error && isClientRequestError(error)) {
+        logMalformedRequest(req, error, 'Malformed graphql request call');
+        const { status, body } = clientErrorResponse(error);
+        // graphql-upload patches res.send to wait for the request to close, and busboy can throw
+        // before the body is piped, so it has to be drained here or the answer never flushes.
+        req.resume();
+        return res.status(status).send(body);
+      }
+      return next(error);
+    });
   });
   app.use(
     `${basePath}/graphql`,

@@ -101,7 +101,8 @@ const baseV1Contract = {
   subscription_link: null,
   source_code: '',
   manager_supported: true,
-  support_version: '6.7.0',
+  min_version: '6.7.0',
+  max_version: '7.5.0',
   license_type: null,
   contact: null,
   solution_categories: [],
@@ -126,10 +127,10 @@ describe('catalog-sync-source-gateway', () => {
     mockGetOrCompileValidator.mockReturnValue({});
   });
 
-  it('should normalize support_version and id from V0 contract DTO', () => {
+  it('should preserve support_version range and id from V0 contract DTO', () => {
     const mapped = mapCatalogContractDtoToCatalogContractSyncSource(baseV0Contract as any);
     expect(mapped.id).toBe('ipinfo-1.2.3');
-    expect(mapped.support_version).toBe('6.7.0');
+    expect(mapped.support_version).toBe('>= 6.7.0');
   });
 
   it('should map V0 catalog sources', async () => {
@@ -149,7 +150,7 @@ describe('catalog-sync-source-gateway', () => {
     expect(source.manifest_version).toBeNull();
     expect(source.product_version).toBe('6.8.0');
     expect(source.contracts).toHaveLength(1);
-    expect(source.contracts[0].support_version).toBe('6.7.0');
+    expect(source.contracts[0].support_version).toBe('>= 6.7.0');
   });
 
   it('should map V1 catalog sources', async () => {
@@ -172,6 +173,9 @@ describe('catalog-sync-source-gateway', () => {
     expect(source.product_version).toBe('6.8.0');
     expect(source.contracts[0].id).toBe('ipinfo-1.2.3');
     expect(source.contracts[0].container_image).toBe('opencti/connector-ipinfo');
+    expect(source.contracts[0].support_version).toBeNull();
+    expect(source.contracts[0].min_version).toBe('6.7.0');
+    expect(source.contracts[0].max_version).toBe('7.5.0');
   });
 
   it('should reject unsupported schema versions', async () => {

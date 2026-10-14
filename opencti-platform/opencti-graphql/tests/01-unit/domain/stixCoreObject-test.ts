@@ -10,7 +10,8 @@ import * as entitySettingUtils from '../../../src/modules/entitySetting/entitySe
 import * as engine from '../../../src/database/engine';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import * as userActionListener from '../../../src/listener/UserActionListener';
-import { batchInternalRels, stixCoreObjectImportPush, stixCoreObjectImportPushRef } from '../../../src/domain/stixCoreObject';
+import * as work from '../../../src/domain/work';
+import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectImportPushRef, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
 
 describe('stix core object domain import push', () => {
   beforeEach(() => {
@@ -172,6 +173,55 @@ describe('stix core object domain import push ref (sync file reference mode)', (
 
     const [, , , , calledCopyProps] = copySpy.mock.calls[0];
     expect((calledCopyProps as { externalReferenceId?: string }).externalReferenceId).toBeDefined();
+  });
+});
+
+describe('stix core object domain export push', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const setupExportPush = (applicantId: string | undefined) => {
+    vi.spyOn(middleware, 'storeLoadByIdWithRefs').mockResolvedValue({ internal_id: 'report--1', entity_type: 'Report' } as never);
+    vi.spyOn(middlewareLoader, 'internalLoadById').mockResolvedValue({ internal_id: 'report--1', entity_type: 'Report' } as never);
+    vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue(true as never);
+    const applicantSpy = vi.spyOn(work, 'findExportApplicantId').mockResolvedValue(applicantId);
+    const uploadSpy = vi.spyOn(fileStorage, 'uploadToStorage').mockResolvedValue({
+      upload: { id: 'file--1', name: 'export.json' },
+      untouched: false,
+    } as never);
+    return { applicantSpy, uploadSpy };
+  };
+
+  it('should register the user who asked for an entity export as file creator', async () => {
+    const { applicantSpy, uploadSpy } = setupExportPush('applicant--1');
+    const file = Promise.resolve({ filename: 'export.json' } as never);
+
+    await stixCoreObjectExportPush({}, { id: 'connector-user--1' } as never, 'report--1', { file, file_markings: [] });
+
+    expect(applicantSpy).toHaveBeenCalledWith({}, { id: 'connector-user--1' }, 'export/Report/report--1', 'export.json');
+    expect(uploadSpy.mock.calls[0][2]).toEqual('export/Report/report--1');
+    expect((uploadSpy.mock.calls[0][4] as { creatorId?: string }).creatorId).toEqual('applicant--1');
+  });
+
+  it('should register the user who asked for a list export as file creator', async () => {
+    const { applicantSpy, uploadSpy } = setupExportPush('applicant--1');
+    const file = Promise.resolve({ filename: 'export.json' } as never);
+
+    await stixCoreObjectsExportPush({}, { id: 'connector-user--1' } as never, undefined, 'Report', file, [], null);
+
+    expect(applicantSpy).toHaveBeenCalledWith({}, { id: 'connector-user--1' }, 'export/Report', 'export.json');
+    expect(uploadSpy.mock.calls[0][2]).toEqual('export/Report');
+    expect((uploadSpy.mock.calls[0][4] as { creatorId?: string }).creatorId).toEqual('applicant--1');
+  });
+
+  it('should leave the creator to the uploading user when no export work matches', async () => {
+    const { uploadSpy } = setupExportPush(undefined);
+    const file = Promise.resolve({ filename: 'export.json' } as never);
+
+    await stixCoreObjectExportPush({}, { id: 'connector-user--1' } as never, 'report--1', { file, file_markings: [] });
+
+    expect((uploadSpy.mock.calls[0][4] as { creatorId?: string }).creatorId).toBeUndefined();
   });
 });
 

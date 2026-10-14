@@ -24,6 +24,7 @@ import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 // region registration modules, need to be imported before graphql code registration
 import './channel/channel';
+import './connector/connector';
 import './language/language';
 import './event/event';
 import './grouping/grouping';
@@ -85,6 +86,7 @@ import './customView/customView';
 import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
+import './user/user';
 
 // incomplete modules
 import './report/report';
@@ -105,6 +107,7 @@ import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
+import './connector/connector-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
@@ -172,6 +175,7 @@ import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
+import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';

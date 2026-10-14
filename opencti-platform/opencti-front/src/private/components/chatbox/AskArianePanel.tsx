@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 import { ChatPanel, ChatMode } from '@filigran/chatbot';
@@ -45,6 +45,16 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     const message = intl.messages[key];
     return typeof message === 'string' ? message : key;
   }, [intl]);
+  // The full tag, region included: it picks the date format and the
+  // read-aloud voice. Canonical case (`en-us` -> `en-US`) is how browsers
+  // report their voices.
+  const chatbotLocale = useMemo(() => {
+    try {
+      return Intl.getCanonicalLocales(intl.locale)[0];
+    } catch {
+      return undefined;
+    }
+  }, [intl.locale]);
   const { me, bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
@@ -163,7 +173,16 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
         sessions: '/sessions',
         upload: '/upload',
         download: '/files',
+        // Composer prompt picker and quota indicator. The chatbot defaults
+        // ('/chat/prompts', '/chat/quota') are XTM One-style paths the proxy
+        // does not serve, which left both affordances hidden.
+        prompts: '/prompts',
+        quota: '/quota',
+        // Persisted thumbs rating of an answer, sent as POST / DELETE
+        // `{apiBaseUrl}/conversations/{conversation_id}/messages/{message_id}/feedback`.
+        feedback: '/conversations',
       }}
+      locale={chatbotLocale}
       user={{ firstName }}
       disableFileManagement={false}
       t={tChatbot}

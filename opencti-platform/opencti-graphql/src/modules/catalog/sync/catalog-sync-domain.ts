@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import conf, { isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
+import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../../../config/conf';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
@@ -33,8 +33,6 @@ import {
 } from '../catalog-repository';
 import type { CatalogContractSyncSource, CatalogSyncSource, CatalogSyncSourceConfig } from './catalog-sync-types';
 import { type CatalogSyncSourceGatewayOptions, fetchSourceCatalog, fetchSourceCatalogRevisionHint } from './catalog-sync-source-gateway';
-
-const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
 const getFiligranCatalogRemoteUri = (): string | undefined => {
   const xtmHubUrl = conf.get('xtm:xtmhub_url');
@@ -152,6 +150,8 @@ const computeCatalogSyncOps = (params: {
         playbook_supported: sourceContract.playbook_supported,
         max_confidence_level: sourceContract.max_confidence_level,
         support_version: sourceContract.support_version ?? undefined,
+        min_version: sourceContract.min_version ?? undefined,
+        max_version: sourceContract.max_version ?? undefined,
         subscription_link: sourceContract.subscription_link ?? undefined,
         source_code: sourceContract.source_code ?? undefined,
         manager_supported: sourceContract.manager_supported,
@@ -187,6 +187,8 @@ const computeCatalogSyncOps = (params: {
       playbook_supported: sourceContract.playbook_supported,
       max_confidence_level: sourceContract.max_confidence_level,
       support_version: sourceContract.support_version,
+      min_version: sourceContract.min_version ?? null,
+      max_version: sourceContract.max_version ?? null,
       subscription_link: sourceContract.subscription_link,
       manager_supported: sourceContract.manager_supported,
       contract_version: sourceContract.container_version,
@@ -447,7 +449,6 @@ export const synchronizeCatalogs = async (
     filigranCatalogRemoteUri,
   });
   const syncedCatalogs: string[] = [];
-  const syncedCatalogsWithChanges: string[] = [];
   // Sync catalogs from sources
   for (const source of sources) {
     let result = await synchronizeCatalog(context, user, source, options);
@@ -464,14 +465,11 @@ export const synchronizeCatalogs = async (
     }
     if (!result.error) {
       syncedCatalogs.push(result.catalogId);
-      if (result.synced) {
-        syncedCatalogsWithChanges.push(result.catalogId);
-      }
     }
   };
   // Cleanup obsolete catalogs only if no sync failed
   if (syncedCatalogs.length === sources.length) {
     await cleanupObsoleteCatalogs(context, syncedCatalogs);
   }
-  return syncedCatalogsWithChanges;
+  return syncedCatalogs;
 };

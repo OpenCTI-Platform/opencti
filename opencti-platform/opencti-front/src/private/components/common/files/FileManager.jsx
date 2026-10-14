@@ -9,7 +9,6 @@ import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as Yup from 'yup';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import inject18n, { useFormatter } from '../../../../components/i18n';
@@ -18,6 +17,7 @@ import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '..
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { convertMarkings } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertOngoingExports } from '../../../../utils/store';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
@@ -249,38 +249,16 @@ const FileManager = ({
   const onSubmitExport = (values, { setSubmitting, setErrors, resetForm }) => {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitMutation({
       mutation: fileManagerExportMutation,
-      variables: {
-        id,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixCoreObjectEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
-          input: {
-            format: values.format,
-            exportType: values.type,
-            contentMaxMarkings,
-            fileMarkings,
-          },
-        });
-        const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
-        for (let index = 0; index < payloads.length; index += 1) {
-          const payload = payloads[index];
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        }
-      },
+      variables: { id, input },
+      updater: (store) => insertOngoingExports(store, id, 'stixCoreObjectEdit', input),
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);

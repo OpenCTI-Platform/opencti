@@ -16,6 +16,7 @@ import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { refreshConnectorsLiveness } from '../modules/connector/connector-domain';
 import {
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_FEED,
@@ -31,7 +32,7 @@ import {
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
@@ -63,7 +64,7 @@ import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redi
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import { findRolesWithCapabilityInDraft } from '../domain/user';
+import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
@@ -486,7 +487,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Connectors information
-    const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    const cachedConnectors = await getEntitiesListFromCache<CachedConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+    const connectors: BasicStoreEntityConnector[] = await refreshConnectorsLiveness(cachedConnectors);
     const activeConnectors = connectors.filter((c) => c.active);
     const oaevConnectors = connectors.filter((c) => c.name.toLowerCase().startsWith('openaev coverage'));
     manager.setActiveConnectorsCount(activeConnectors.length);
@@ -816,7 +818,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
   } catch (e) {
-    logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
+    logApp.warn('[TELEMETRY] Error fetching platform information', { cause: e });
   }
 };
 

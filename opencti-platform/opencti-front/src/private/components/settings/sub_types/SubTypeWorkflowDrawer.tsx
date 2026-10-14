@@ -91,6 +91,9 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
         title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)}`}
         onClose={handleClose}
         size="medium"
+        header={(
+          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} scope={scope} />
+        )}
       >
         <>
           <List
@@ -160,7 +163,6 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
                 );
               })}
           </List>
-          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} scope={scope} />
         </>
       </Drawer>
     );

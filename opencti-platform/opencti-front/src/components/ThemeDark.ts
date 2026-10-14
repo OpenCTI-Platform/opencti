@@ -7,6 +7,8 @@ import { alpha, darken, lighten } from '@mui/material';
 import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00f18d';
+// Focus ring of the toggle buttons, also drawn by the AI search caret (palette.border.focus).
+const FOCUS_RING_COLOR = '#BDFFED';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = FDS.colors.dark['--bg-elevation-default-layer-0'];
 const THEME_DARK_DEFAULT_BODY_END_GRADIENT = FDS.colors.dark['--bg-elevation-default-layer-0-gradient'];
@@ -60,6 +62,7 @@ const ThemeDark = (
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
+      focus: FOCUS_RING_COLOR,
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: '#424751',
       pagination: hexToRGB('#ffffff', 0.5),
@@ -392,11 +395,8 @@ const ThemeDark = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
-          // layer 2. A platform-customised paper colour still wins.
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? 'var(--bg-elevation-default)'
-            : (paper ?? 'var(--bg-elevation-default)'),
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at layer 2.
+          backgroundColor: 'var(--bg-elevation-default)',
           borderRadius: 4,
         },
       },
@@ -434,12 +434,12 @@ const ThemeDark = (
             display: 'none',
           },
           '& .MuiToggleButton-root': {
-            border: '1px solid #2B3447',
+            border: '1px solid var(--border-elevation-subtle)',
             color: primary,
 
             '&:focus-visible': {
               outline: 'none',
-              boxShadow: '0 0 0 2px #BDFFED',
+              boxShadow: `0 0 0 2px ${FOCUS_RING_COLOR}`,
             },
 
             '&.Mui-selected': {
@@ -560,9 +560,7 @@ const ThemeDark = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-            ? '#0C1524'
-            : (paper ?? '#0C1524'),
+          backgroundColor: 'var(--bg-input-default)',
         },
       },
     },
@@ -637,6 +635,12 @@ const ThemeDark = (
           },
           // Paragraph spacing belongs between blocks, not against the edges of
           // the field, where it reads as a stray gap now that the editor is painted.
+          // Keeps the edited content inside the editor box whatever its inline
+          // styles (fixed positioning, transform, negative margins...), as
+          // HtmlDisplay does for the read-only rendering.
+          '.rich-text-editor-wrapper .ProseMirror': {
+            contain: 'paint',
+          },
           '.rich-text-editor-wrapper .ProseMirror > :first-child': {
             marginTop: 0,
           },
@@ -807,9 +811,7 @@ const ThemeDark = (
           },
           '& .MuiOutlinedInput-root': {
             // Same layer-aware background as every other outlined field.
-            backgroundColor: paper === THEME_DARK_DEFAULT_PAPER
-              ? 'var(--bg-input-default)'
-              : (paper ?? 'var(--bg-input-default)'),
+            backgroundColor: 'var(--bg-input-default)',
             '& fieldset': {
               borderColor: 'transparent',
             },

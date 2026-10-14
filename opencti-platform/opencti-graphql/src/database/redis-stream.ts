@@ -17,6 +17,7 @@ import { isEmptyField, wait, waitInSec } from './utils';
 import { streamEventId, utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
+import { doYield } from '../utils/eventloop-utils';
 import { roundRate } from '../utils/consumer-metrics';
 import { getFileContent, rawListObjects, rawUpload } from './raw-file-storage';
 // Self namespace import: referencing isEventTooLarge through the module namespace (instead of a direct
@@ -179,16 +180,23 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         startEventId,
       ) as any[];
       // Process the event results
+      let isFullBatch = false;
       if (streamResult && streamResult.length > 0) {
         const [, results] = streamResult[0];
+        isFullBatch = results.length >= MAX_RANGE_MESSAGES;
         const lastElementId = await processStreamResult(results, callback, opts.withInternal);
         startEventId = lastElementId || startEventId;
       } else {
         await processStreamResult([], callback, opts.withInternal);
       }
-      const bufferTime = opts.bufferTime ?? 50;
-      if (bufferTime > 0 && streamListening) {
-        await wait(bufferTime);
+      if (streamListening) {
+        // A full batch means more events are pending: read again right away instead of waiting
+        const bufferTime = opts.bufferTime ?? 50;
+        if (!isFullBatch && bufferTime > 0) {
+          await wait(bufferTime);
+        } else {
+          await doYield();
+        }
       }
     } catch (err) {
       // During shutdown, connection errors are expected (client is disconnected to cancel blocking XREAD)

@@ -21,7 +21,7 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
-import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, streamOriginFilters, useStixFilters } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
@@ -71,6 +71,7 @@ const StreamCollectionCreationForm = ({
   originHelpers,
 }: StreamCollectionFormProps) => {
   const { t_i18n } = useFormatter();
+  const stixFilters = useStixFilters();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [commit] = useApiMutation<StreamCollectionCreationMutation>(streamCollectionCreationMutation);
@@ -212,6 +213,7 @@ const StreamCollectionCreationForm = ({
             <FilterIconButton
               filters={filters}
               helpers={helpers}
+              availableFilterKeys={stixFilters}
               redirection
               searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
             />
@@ -241,6 +243,7 @@ const StreamCollectionCreationForm = ({
                   <FilterIconButton
                     filters={originFilters}
                     helpers={originHelpers}
+                    availableFilterKeys={streamOriginFilters}
                     redirection
                     searchContext={{ entityTypes: ['History'] }}
                   />

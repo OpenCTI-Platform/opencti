@@ -28,7 +28,7 @@ vi.mock('../../../src/lock/master-lock', () => ({
 // triggerJobImport's very first step is looking up eligible connectors; returning none here
 // short-circuits the rest of uploadJobImport (createWork/pushToConnector/RabbitMQ) so this stays
 // a unit test, while still letting us assert whether the import-trigger path ran at all.
-vi.mock('../../../src/database/repository', () => ({
+vi.mock('../../../src/modules/connector/connector-domain', () => ({
   connectorsForImport: (...args: unknown[]) => mockConnectorsForImport(...args),
 }));
 // Real confidence-level control needs the full schema-attributes registry (entity type

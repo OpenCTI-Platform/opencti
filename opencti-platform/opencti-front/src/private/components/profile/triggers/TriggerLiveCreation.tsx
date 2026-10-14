@@ -1,28 +1,23 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import makeStyles from '@mui/styles/makeStyles';
+import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import ComboboxField from '../../../../components/ComboboxField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, useFilterDefinition, useStixFilters } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
@@ -85,6 +80,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const stixFilters = useStixFilters();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
@@ -272,6 +268,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           redirection
           searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+          availableFilterKeys={stixFilters}
         />
       )}
     </React.Fragment>

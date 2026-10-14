@@ -10,6 +10,7 @@ import IngestionCatalogCard from '@components/integrations/catalog/IngestionCata
 import IngestionCatalogConnectorCreation from '@components/integrations/catalog/IngestionCatalogConnectorCreation';
 import IngestionCatalogFacetSidebar from '@components/integrations/catalog/IngestionCatalogFacetSidebar';
 import useConnectorDeployDialog from '@components/integrations/catalog/hooks/useConnectorDeployDialog';
+import useCatalogPolling from '@components/integrations/catalog/hooks/useCatalogPolling';
 import useIngestionCatalogFilters, {
   BUILT_IN_SECTION_KEY,
   BuiltInCatalogInput,
@@ -46,7 +47,20 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   const theme = useTheme();
   const [searchParams] = useSearchParams();
   const { hasActiveManagers } = useConnectorManagerStatus();
-  const { catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms } = data;
+  const {
+    catalogsData,
+    deploymentData,
+    feedsData,
+    formsData,
+    refetchCatalogs,
+    refetchFeeds,
+    refetchForms,
+  } = data;
+
+  useCatalogPolling({
+    enabled: catalogsData !== null,
+    onCatalogRevisionsChanged: refetchCatalogs,
+  });
 
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
   const [builtInCreationKind, setBuiltInCreationKind] = useState<BuiltInIntegrationKind | null>(null);

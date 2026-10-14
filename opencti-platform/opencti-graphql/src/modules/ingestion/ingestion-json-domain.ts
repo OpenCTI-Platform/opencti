@@ -40,6 +40,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
@@ -79,7 +80,7 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
 };
 
 /**
- * Normalises the result of getValueFromPath (typed as any) to a string or null.
+ * Normalises the result of getValueFromPath (typed as unknown) to a string or null.
  * JSONPath can return an array — in that case the first element is used.
  * Non-string, non-array values (objects, numbers, …) are rejected (return null).
  */
@@ -344,6 +345,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   const inputToCreate = { ...input };
   if (inputToCreate.authentication_value) {
     inputToCreate.authentication_value = await encryptIngestionCredential(inputToCreate.authentication_value);
@@ -373,6 +375,7 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
   if (input.uri) {
     verifyIngestionUri(input.uri);
   }
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   let authenticationValue = input.authentication_value;
   if (authenticationValue && input.authentication_type) {
     const { authentication_value: encrypted_value } = await findById(context, user, id);
@@ -398,6 +401,8 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
 
   const patchInput = [...input];
 
@@ -463,6 +468,9 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestion = await findById(context, user, ingestionId);
   const connectorId = connectorIdFromIngestId(ingestion.id);

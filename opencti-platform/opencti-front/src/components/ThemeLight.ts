@@ -7,6 +7,8 @@ import { alpha, darken, lighten } from '@mui/material';
 import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00BD94';
+// Focus ring of the toggle buttons, also drawn by the AI search caret (palette.border.focus).
+const FOCUS_RING_COLOR = '#74E9CA';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--bg-elevation-default-layer-0'];
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = FDS.colors.light['--bg-elevation-default-layer-0-gradient'];
@@ -61,6 +63,7 @@ const ThemeLight = (
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
     border: {
+      focus: FOCUS_RING_COLOR,
       lightBackground: hexToRGB('#000000', 0.15),
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
       secondary: '#C2C2C2',
@@ -390,11 +393,8 @@ const ThemeLight = (
       styleOverrides: {
         paper: {
           backgroundImage: 'none',
-          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at
-          // layer 2. A platform-customised paper colour still wins.
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? 'var(--bg-elevation-default)'
-            : (paper ?? 'var(--bg-elevation-default)'),
+          // A dialog carries the same paper as a drawer: `--bg-elevation-default` at layer 2.
+          backgroundColor: 'var(--bg-elevation-default)',
           borderRadius: 4,
         },
       },
@@ -436,7 +436,7 @@ const ThemeLight = (
 
             '&:focus-visible': {
               outline: 'none',
-              boxShadow: '0 0 0 2px #74E9CA',
+              boxShadow: `0 0 0 2px ${FOCUS_RING_COLOR}`,
             },
 
             '&.Mui-selected': {
@@ -557,9 +557,7 @@ const ThemeLight = (
           },
         },
         outlined: {
-          backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-            ? '#FFFFFF'
-            : (paper ?? '#FFFFFF'),
+          backgroundColor: 'var(--bg-input-default)',
         },
       },
     },
@@ -634,6 +632,12 @@ const ThemeLight = (
           },
           // Paragraph spacing belongs between blocks, not against the edges of
           // the field, where it reads as a stray gap now that the editor is painted.
+          // Keeps the edited content inside the editor box whatever its inline
+          // styles (fixed positioning, transform, negative margins...), as
+          // HtmlDisplay does for the read-only rendering.
+          '.rich-text-editor-wrapper .ProseMirror': {
+            contain: 'paint',
+          },
           '.rich-text-editor-wrapper .ProseMirror > :first-child': {
             marginTop: 0,
           },
@@ -810,9 +814,7 @@ const ThemeLight = (
           },
           '& .MuiOutlinedInput-root': {
             // Same layer-aware background as every other outlined field.
-            backgroundColor: paper === THEME_LIGHT_DEFAULT_PAPER
-              ? 'var(--bg-input-default)'
-              : (paper ?? 'var(--bg-input-default)'),
+            backgroundColor: 'var(--bg-input-default)',
             '& fieldset': {
               borderColor: 'transparent',
             },

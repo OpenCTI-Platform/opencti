@@ -73,7 +73,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 
 const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
   const tlsServername = conf.get('redis:tls_servername') || conf.get('redis:hostname');
-  const omitTLSServerName = booleanConf('tls_cluster_node_mode');
+  const omitTLSServerName = booleanConf('redis:tls_cluster_node_mode');
   const redisOpts = await redisOptions(provider, false, omitTLSServerName ? undefined : tlsServername);
   return {
     keyPrefix: REDIS_PREFIX,
@@ -375,9 +375,20 @@ export const delEditContext = async (user: AuthUser, instanceId: string) => {
   const listIds = [`context:instance:${instanceId}`, `context:user:${user.id}`];
   return delKeyWithList(`edit:${instanceId}:${user.id}`, listIds);
 };
+export const fetchUserContextIds = async (userId: string) => {
+  return getClientBase().zrange(`context:user:${userId}`, 0, -1);
+};
 export const delUserContext = async (user: AuthUser) => {
-  const contextIds = await getClientBase().zrange(`context:user:${user.id}`, 0, -1);
-  return Promise.all(contextIds.map((id) => getClientBase().del(id)));
+  const contextIds = await fetchUserContextIds(user.id);
+  // Deleting the `edit:` key alone leaves its member in both sorted sets, and nothing prunes
+  // `context:user:*` by score the way `keysFromList` does for the instance side — so the user
+  // would keep being reported as holding locks it has already released.
+  const suffix = `:${user.id}`;
+  await Promise.all(contextIds.map((id) => {
+    const instanceId = id.slice('edit:'.length, id.length - suffix.length);
+    return delKeyWithList(id, [`context:instance:${instanceId}`, `context:user:${user.id}`]);
+  }));
+  return contextIds;
 };
 // endregion
 
@@ -834,15 +845,6 @@ export interface FeedLog {
   count?: number;
 }
 
-export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
-  const data = JSON.stringify(logs);
-  await getClientBase().set(`connector-${connectorId}-logs`, data);
-};
-export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
-  const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
-  return rawLogs ? JSON.parse(rawLogs) : [];
-};
-
 const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
 
 const INGESTION_DEDUP_MAX_COUNT = 100;
@@ -899,26 +901,6 @@ export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => 
 export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
   const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
   return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
-};
-// endregion
-
-// region connector health metrics
-export interface ConnectorHealthMetrics {
-  restart_count: number;
-  started_at: string;
-  last_update: string;
-  is_in_reboot_loop: boolean;
-}
-
-export const redisSetConnectorHealthMetrics = async (connectorId: string, metrics: ConnectorHealthMetrics) => {
-  const data = JSON.stringify(metrics);
-  // TTL of 5 minutes (300 seconds)
-  await getClientBase().set(`connector-${connectorId}-health`, data, 'EX', 300);
-};
-
-export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
-  const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
-  return rawMetrics ? JSON.parse(rawMetrics) : null;
 };
 // endregion
 

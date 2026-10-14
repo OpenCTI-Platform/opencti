@@ -1,11 +1,14 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { v4 as uuid } from 'uuid';
+import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
-import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';
-import { ENTITY_TYPE_BACKGROUND_TASK } from '../../../src/schema/internalObject';
+import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { patchAttribute } from '../../../src/database/middleware';
+import { redisDeleteConnectorHeartbeat, redisGetConnectorHeartbeat } from '../../../src/modules/connector/connector-redis';
 import { IMPORT_CSV_CONNECTOR } from '../../../src/connector/importCsv/importCsv';
 import { DRAFT_VALIDATION_CONNECTOR } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 
@@ -94,6 +97,8 @@ const CREATE_CONNECTOR_QUERY = gql`
       id
       connector_state
       name
+      version
+      slug
     }
   }
 `;
@@ -114,6 +119,36 @@ const LIST_CONNECTORS_QUERY = gql`
   }
 `;
 
+const LIST_IMPORT_CONNECTORS_QUERY = gql`
+  query ListImportConnectors {
+    connectorsForImport {
+      id
+      name
+      connector_type
+      connector_trigger_filters
+    }
+  }
+`;
+
+const LIST_WORKER_CONNECTORS_QUERY = gql`
+  query ListWorkerConnectors {
+    connectorsForWorker {
+      id
+      name
+      connector_type
+    }
+  }
+`;
+
+const UPDATE_CONNECTOR_TRIGGER_QUERY = gql`
+  mutation UpdateConnectorTrigger($id: ID!, $input: [EditInput]!) {
+    updateConnectorTrigger(id: $id, input: $input) {
+      id
+      connector_trigger_filters
+    }
+  }
+`;
+
 const READ_CONNECTOR_QUERY = gql`
   query GetConnectors($id: String!) {
     connector(id: $id) {
@@ -125,6 +160,8 @@ const READ_CONNECTOR_QUERY = gql`
       connector_type
       connector_scope
       connector_state
+      version
+      last_seen_at
       connector_queue_details {
         messages_number
         messages_size
@@ -150,6 +187,8 @@ const DELETE_CONNECTOR_QUERY = gql`
 
 const TEST_CN_ID = '5ed680de-75e2-4aa0-bec0-4e8e5a0d1695';
 const TEST_CN_NAME = 'TestConnector';
+const TEST_IMPORT_CN_ID = uuid();
+const TEST_IMPORT_CN_NAME = 'TestInternalImportConnector';
 
 beforeAll(async () => {
   const CONNECTOR_TO_CREATE = {
@@ -170,9 +209,24 @@ beforeAll(async () => {
   expect(connector.data.registerConnector).not.toBeNull();
   expect(connector.data.registerConnector.name).toEqual(TEST_CN_NAME);
   expect(connector.data.registerConnector.id).toEqual(TEST_CN_ID);
+
+  const importConnector = await queryAsUserWithSuccess(USER_CONNECTOR, {
+    query: CREATE_CONNECTOR_QUERY,
+    variables: {
+      input: {
+        id: TEST_IMPORT_CN_ID,
+        name: TEST_IMPORT_CN_NAME,
+        type: 'INTERNAL_IMPORT_FILE',
+        scope: 'application/json',
+        auto: false, // never triggered by the file uploads of other tests
+        only_contextual: false,
+      },
+    },
+  });
+  expect(importConnector.data.registerConnector.id).toEqual(TEST_IMPORT_CN_ID);
 });
 
-const CREATED_CN_COUNT = 1;
+const CREATED_CN_COUNT = 2;
 const BUILT_IN_CN_COUNT = BACKGROUND_TASK_QUEUES + 2;
 
 describe('Connector resolver standard behaviour', () => {
@@ -180,11 +234,12 @@ describe('Connector resolver standard behaviour', () => {
   it('should list all connectors', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: LIST_CONNECTORS_QUERY, variables: {} });
     expect(queryResult.data.connectors).toBeDefined();
-    // currently 7 : 1 created (TestConnector) + 6 built-in connectors (4 background tasks + import csv + draft validation)
+    // 8 connectors: 2 created connectors and 6 built-in connectors (4 background tasks, import csv, and draft validation)
     expect(queryResult.data.connectors.length).toEqual(CREATED_CN_COUNT + BUILT_IN_CN_COUNT);
-    // TestConnector created above
+    // Connectors created above
     expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID)).toBeDefined();
     expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).name).toEqual(TEST_CN_NAME);
+    expect(queryResult.data.connectors.find((c: Connector) => c.id === TEST_IMPORT_CN_ID)).toBeDefined();
     // 6 built-in connectors
     expect(queryResult.data.connectors.filter((c: Connector) => c.built_in).length).toEqual(BUILT_IN_CN_COUNT);
     // check background tasks built_in connectors
@@ -193,6 +248,53 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === IMPORT_CSV_CONNECTOR.id).length).toEqual(1);
     // check built_in draft validation connector
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === DRAFT_VALIDATION_CONNECTOR.id).length).toEqual(1);
+  });
+
+  it('should expose internal import connectors through the dedicated endpoint', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: LIST_IMPORT_CONNECTORS_QUERY,
+      variables: {},
+    });
+
+    expect(queryResult.data.connectorsForImport).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: TEST_IMPORT_CN_ID,
+        name: TEST_IMPORT_CN_NAME,
+        connector_type: 'INTERNAL_IMPORT_FILE',
+      }),
+    ]));
+  });
+
+  it('should expose registered connectors through the worker endpoint', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: LIST_WORKER_CONNECTORS_QUERY,
+      variables: {},
+    });
+
+    expect(queryResult.data.connectorsForWorker).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: TEST_CN_ID, name: TEST_CN_NAME }),
+      expect.objectContaining({ id: TEST_IMPORT_CN_ID, name: TEST_IMPORT_CN_NAME }),
+    ]));
+  });
+
+  it('should update trigger filters for internal import connectors', async () => {
+    const filters = JSON.stringify({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Indicator'] }],
+      filterGroups: [],
+    });
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_CONNECTOR_TRIGGER_QUERY,
+      variables: {
+        id: TEST_IMPORT_CN_ID,
+        input: [{ key: 'connector_trigger_filters', value: [filters] }],
+      },
+    });
+
+    expect(queryResult.data.updateConnectorTrigger).toEqual({
+      id: TEST_IMPORT_CN_ID,
+      connector_trigger_filters: filters,
+    });
   });
   it('should create work', async () => {
     const WORK_TO_CREATE = {
@@ -264,6 +366,72 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connector.connector_queue_details.messages_size).toBe(0);
   });
 
+  it('should register connector with a valid version and slug', async () => {
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: '1.2.3',
+        slug: 'test-connector',
+      },
+    };
+    const connector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(connector.data.registerConnector.version).toEqual('1.2.3');
+    expect(connector.data.registerConnector.slug).toEqual('test-connector');
+  });
+
+  it('should register connector with the "rolling" version', async () => {
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'rolling',
+      },
+    };
+    const connector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(connector.data.registerConnector.version).toEqual('rolling');
+  });
+
+  it('should register connector with an invalid semver version', async () => {
+    const VALID_CONNECTOR = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'rolling',
+      },
+    };
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: CREATE_CONNECTOR_QUERY, variables: VALID_CONNECTOR });
+
+    const CONNECTOR_TO_CREATE = {
+      input: {
+        id: TEST_CN_ID,
+        name: TEST_CN_NAME,
+        type: 'EXTERNAL_IMPORT',
+        scope: 'Observable',
+        auto: true,
+        only_contextual: true,
+        version: 'not-a-version',
+      },
+    };
+    const queryResult = await queryAsAdmin({ query: CREATE_CONNECTOR_QUERY, variables: CONNECTOR_TO_CREATE });
+    expect(queryResult.errors).toBeUndefined();
+
+    const persistedConnector = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(persistedConnector.data.connector.version).toEqual('not-a-version');
+  });
+
   it('should legacy ping still works (without connector_info)', async () => {
     const PING_CONNECTOR_LEGACY_QUERY = gql`
       mutation PingConnector($id: ID!, $state: String) {
@@ -317,6 +485,39 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(490.2);
     expect(queryResult.data.pingConnector.connector_info.next_run_datetime.toISOString()).toBe(datetimeNextRun.toISOString());
     expect(queryResult.data.pingConnector.connector_info.last_run_datetime.toISOString()).toBe(datetimeLastRun.toISOString());
+  });
+});
+
+describe('Connector liveness', () => {
+  const PING_CONNECTOR_LIVENESS_QUERY = gql`
+    mutation PingConnector($id: ID!, $state: String) {
+      pingConnector(id: $id, state: $state) {
+        id
+        active
+        last_seen_at
+      }
+    }
+  `;
+
+  it('should not become active when its entity is updated without heartbeat', async () => {
+    // Simulate a connector that stopped pinging long ago
+    await redisDeleteConnectorHeartbeat(TEST_CN_ID);
+    // Same kind of write as the managed connectors contract migration or the catalog auto-upgrade
+    await patchAttribute(testContext, ADMIN_USER, TEST_CN_ID, ENTITY_TYPE_CONNECTOR, { manager_upgrade_strategy: 'latest' });
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data.connector.active).toBe(false);
+    expect(queryResult.data.connector.last_seen_at).toBeNull();
+  });
+
+  it('should become active again on ping', async () => {
+    const pingResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR_LIVENESS_QUERY, variables: { id: TEST_CN_ID, state: '{}' } });
+    expect(pingResult.data.pingConnector.active).toBe(true);
+    expect(pingResult.data.pingConnector.last_seen_at).toBeDefined();
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+    expect(queryResult.data.connector.active).toBe(true);
+    expect(queryResult.data.connector.last_seen_at).toEqual(pingResult.data.pingConnector.last_seen_at);
+    const listResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: LIST_CONNECTORS_QUERY, variables: {} });
+    expect(listResult.data.connectors.find((c: Connector) => c.id === TEST_CN_ID).active).toBe(true);
   });
 });
 
@@ -527,10 +728,13 @@ describe('Capability checks', () => {
 });
 
 afterAll(async () => {
-  // Delete the connector
-  await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
-  // Verify is no longer found
+  await Promise.all([
+    queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } }),
+    queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_IMPORT_CN_ID } }),
+  ]);
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();
   expect(queryResult.data?.connector).toBeNull();
+  // Its heartbeat is cleaned up as well
+  expect(await redisGetConnectorHeartbeat(TEST_CN_ID)).toBeNull();
 });

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -29,6 +29,7 @@ import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { fetchQuery } from '../../../relay/environment';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
@@ -42,6 +43,7 @@ export interface IntegrationsData {
   deploymentData: IngestionConnectorsQuery['response'] | null;
   feedsData: IngestionFeedsData | null;
   formsData: IngestionFeedsFormsData | null;
+  refetchCatalogs: () => Promise<void>;
   refetchFeeds: () => void;
   refetchForms: () => void;
 }
@@ -64,8 +66,9 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   useEffect(() => {
     if (isConnectorReader) {
-      // fetch once the catalogs and use the cache during runtime
-      loadCatalogs({}, { fetchPolicy: 'store-or-network' });
+      // Refresh catalogs on mount so a stale Relay cache cannot become the
+      // polling baseline for the available integrations view.
+      loadCatalogs({}, { fetchPolicy: 'store-and-network' });
       loadDeployment({}, { fetchPolicy: 'store-and-network' });
     }
     if (isIngestionReader) {
@@ -78,16 +81,25 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
   // store-and-network: the previous data keeps rendering while the refresh
   // happens in the background, so refetching never suspends the whole page.
-  const refetchFeeds = () => {
+  const refetchFeeds = useCallback(() => {
     if (isIngestionReader) {
       loadFeeds({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
-  const refetchForms = () => {
+  }, [isIngestionReader, loadFeeds]);
+  const refetchForms = useCallback(() => {
     if (isFormReader) {
       loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
-  };
+  }, [isFormReader, loadForms]);
+  // Resolves once the fresh catalogs are in the store (rejects if the request fails),
+  // so the catalog polling only moves its baseline after a successful reload.
+  const refetchCatalogs = useCallback(async () => {
+    if (!isConnectorReader) {
+      return;
+    }
+    await fetchQuery<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery, {}, { fetchPolicy: 'network-only' }).toPromise();
+    loadCatalogs({}, { fetchPolicy: 'store-only' });
+  }, [isConnectorReader, loadCatalogs]);
 
   const renderWithForms = (
     catalogsData: IngestionConnectorsCatalogsQuery['response'] | null,
@@ -97,11 +109,27 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     if (formsRef) {
       return (
         <IngestionFeedsForms queryRef={formsRef}>
-          {({ data: formsData }) => children({ catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms })}
+          {({ data: formsData }) => children({
+            catalogsData,
+            deploymentData,
+            feedsData,
+            formsData,
+            refetchCatalogs,
+            refetchFeeds,
+            refetchForms,
+          })}
         </IngestionFeedsForms>
       );
     }
-    return children({ catalogsData, deploymentData, feedsData, formsData: null, refetchFeeds, refetchForms });
+    return children({
+      catalogsData,
+      deploymentData,
+      feedsData,
+      formsData: null,
+      refetchCatalogs,
+      refetchFeeds,
+      refetchForms,
+    });
   };
 
   const renderWithFeeds = (

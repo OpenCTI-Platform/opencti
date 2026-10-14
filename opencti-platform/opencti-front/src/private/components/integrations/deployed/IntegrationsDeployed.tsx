@@ -25,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import useGranted, { MODULES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { paperBg, paperBorder } from '../paperSurface';
 
@@ -54,6 +55,8 @@ const IntegrationsDeployedContent = ({
   const theme = useTheme();
   const [searchParams] = useSearchParams();
   const typeMetadata = useDeployedTypeMetadata();
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
 
   const items = useDeployedIntegrations({
@@ -62,6 +65,7 @@ const IntegrationsDeployedContent = ({
     feedsData,
     formsData,
     logosBySlug,
+    isConnectorUpdateEnabled,
   });
 
   const {
@@ -74,7 +78,7 @@ const IntegrationsDeployedContent = ({
     hasActiveFilters,
     clearAllFilters,
     facets,
-  } = useDeployedIntegrationsFilters({ items, searchParams });
+  } = useDeployedIntegrationsFilters({ items, searchParams, isConnectorUpdateEnabled });
 
   const [searchInput, setSearchInput] = useState(filters.search);
 
@@ -144,6 +148,7 @@ const IntegrationsDeployedContent = ({
         onFiltersChange={setFilters}
         hasActiveFilters={hasActiveFilters}
         onClearAll={handleResetFilters}
+        showUpdateAvailableFacet={isConnectorUpdateEnabled}
         facets={facets}
       />
 

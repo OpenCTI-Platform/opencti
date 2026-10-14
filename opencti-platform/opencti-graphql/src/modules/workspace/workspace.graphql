@@ -35,6 +35,7 @@ type Workspace implements InternalObject & BasicObject {
     toConfigurationExport: String!
     toWidgetExport(widgetId: ID!): String!
     isShared: Boolean
+    variables: [DashboardVariable!]! @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true, defaultValue: "[]")
 }
 
 # Ordering
@@ -69,6 +70,64 @@ type Query {
 type WorkspaceEdge {
     cursor: String!
     node: Workspace!
+}
+
+# Dashboard variables
+enum DashboardVariableType {
+    vocabulary
+    killChainPhase
+    entity
+    entityType
+    label
+    user
+    marking
+    status
+    group
+    boolean
+    numeric
+    text
+    date
+}
+
+enum DashboardVariableRestrictionMode {
+    none
+    selection
+    filters
+}
+
+type DashboardVariableRestriction {
+    mode: DashboardVariableRestrictionMode!
+    values: [String!]
+    filters: String
+}
+
+type DashboardVariable {
+    id: ID!
+    name: String!
+    type: DashboardVariableType!
+    vocabularyCategory: VocabularyCategory
+    killChainName: String
+    entityTypes: [String!]
+    restriction: DashboardVariableRestriction!
+    defaultValue: String
+    usedInWidgetIds: [ID!]!
+}
+
+input DashboardVariableRestrictionInput {
+    mode: DashboardVariableRestrictionMode!
+    values: [String!]
+    filters: String
+}
+
+input DashboardVariableInput {
+    id: ID
+    name: String!
+    type: DashboardVariableType!
+    vocabularyCategory: VocabularyCategory
+    killChainName: String
+    entityTypes: [String!]
+    restriction: DashboardVariableRestrictionInput
+    defaultValue: String
 }
 
 # Mutations
@@ -117,6 +176,8 @@ type Mutation {
     workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
+    workspaceVariableDelete(id: ID!, variableId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
 }
 
 # Subscriptions

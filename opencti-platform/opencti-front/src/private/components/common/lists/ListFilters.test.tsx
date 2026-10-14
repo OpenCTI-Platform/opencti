@@ -1,5 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 
 vi.mock('../../../../relay/environment', () => ({
@@ -24,7 +25,20 @@ describe('ListFilters', () => {
   const mockHelpers = {
     handleAddFilterWithEmptyValue: vi.fn(),
     handleClearAllFilters: vi.fn(),
+    handleAddFilterGroup: vi.fn(),
   };
+
+  const mockUserContext = () => createMockUserContext({
+    schema: {
+      scos: [],
+      sdos: [],
+      smos: [],
+      scrs: [],
+      schemaRelationsTypesMapping: new Map(),
+      schemaRelationsRefTypesMapping: new Map(),
+      filterKeysSchema: new Map(),
+    },
+  });
 
   const baseProps = {
     handleOpenFilters: vi.fn(),
@@ -71,5 +85,37 @@ describe('ListFilters', () => {
     // The component renders a button for the filter
     const buttons = container.querySelectorAll('button');
     expect(buttons.length).toBeGreaterThan(0);
+  });
+
+  it('displays "Add Filter Group" as the first option when the dropdown opens', async () => {
+    const { user } = testRender(<ListFilters {...baseProps} />, { userContext: mockUserContext() });
+    await user.click(screen.getByRole('combobox'));
+    const options = await screen.findAllByRole('option');
+    expect(options.length).toBeGreaterThan(1);
+    expect(options[0]).toHaveTextContent('Add Filter Group');
+  });
+
+  it('keeps "Add Filter Group" first when the search term matches no filter key', async () => {
+    const { user } = testRender(<ListFilters {...baseProps} />, { userContext: mockUserContext() });
+    await user.click(screen.getByRole('combobox'));
+    await user.type(screen.getByRole('combobox'), 'zzzznomatch');
+    const options = await screen.findAllByRole('option');
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent('Add Filter Group');
+  });
+
+  it('calls handleAddFilterGroup at the root with a first default condition and closes the popup on click', async () => {
+    mockHelpers.handleAddFilterGroup.mockClear();
+    const { user } = testRender(<ListFilters {...baseProps} />, { userContext: mockUserContext() });
+    await user.click(screen.getByRole('combobox'));
+    const options = await screen.findAllByRole('option');
+    await user.click(options[0]);
+    expect(mockHelpers.handleAddFilterGroup).toHaveBeenCalledTimes(1);
+    // 'workflow_user' outranks 'entity_type'/'name' here: with an empty filterKeysSchema every key
+    // falls back to 'All other filters' except the hardcoded workflow keys, which group first.
+    expect(mockHelpers.handleAddFilterGroup).toHaveBeenCalledWith(undefined, expect.objectContaining({ key: 'workflow_user' }));
+    expect(mockHelpers.handleAddFilterWithEmptyValue).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
+    expect(screen.getByRole('combobox')).toHaveValue('');
   });
 });

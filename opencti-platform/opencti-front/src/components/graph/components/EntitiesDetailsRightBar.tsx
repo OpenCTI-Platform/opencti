@@ -90,6 +90,16 @@ const EntitiesDetailsRightsBar = () => {
     }
   }, [selectedEntities]);
 
+  // `label` is cut to 20 characters for the canvas, and `name` is the canvas tooltip:
+  // the representative then the date on a second line for an entity, but HTML markup
+  // for a relationship. So a relationship is named after its type instead.
+  const getSelectedObjectName = (entity: GraphNode | GraphLink) => {
+    if (entity.relationship_type) {
+      return t_i18n(`relationship_${entity.relationship_type}`);
+    }
+    return entity.name.split('\n')[0];
+  };
+
   const handleSelectEntity = (value: string) => {
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
@@ -146,8 +156,7 @@ const EntitiesDetailsRightsBar = () => {
             <SelectContent aria-label={t_i18n('Object')}>
               {uniqSelectedEntities.map((entity) => (
                 <SelectItem key={entity.id} value={entity.id}>
-                  {/* `label` is cut to 20 characters for the canvas; `name` trails the tooltip's date on a second line. */}
-                  {entity.name.split('\n')[0]}
+                  {getSelectedObjectName(entity)}
                 </SelectItem>
               ))}
             </SelectContent>

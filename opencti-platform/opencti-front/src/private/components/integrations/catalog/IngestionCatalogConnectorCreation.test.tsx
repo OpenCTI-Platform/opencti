@@ -178,9 +178,9 @@ const connectorFixture: IngestionConnector = {
 };
 
 describe('IngestionCatalogConnectorCreation', () => {
-  const renderComponent = (isEnterpriseEdition: boolean) => testRender(
+  const renderComponent = (isEnterpriseEdition: boolean, connector: IngestionConnector = connectorFixture) => testRender(
     <IngestionCatalogConnectorCreation
-      connector={connectorFixture}
+      connector={connector}
       open
       onClose={vi.fn()}
       catalogId="catalog-1"
@@ -201,5 +201,22 @@ describe('IngestionCatalogConnectorCreation', () => {
     renderComponent(true);
 
     expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
+    expect(screen.queryByText(/This connector is not compatible/)).not.toBeInTheDocument();
+  });
+
+  it('prevents the creation of a connector that is not compatible with the platform version', () => {
+    renderComponent(true, {
+      ...connectorFixture,
+      compatibility: {
+        is_compatible: false,
+        latest_compatible_version: null,
+        minimum_platform_version: '7.261000.0',
+        maximum_platform_version: null,
+      },
+    });
+
+    expect(screen.getByText(/^This connector is not compatible with your current platform version. Please upgrade your platform/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Display name')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Create' })).toBeDisabled();
   });
 });

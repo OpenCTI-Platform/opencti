@@ -6,6 +6,7 @@ import DashboardFormPage from '../model/form/dashboardForm.pageModel';
 import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import MalwareDetailsPage from '../model/malwareDetails.pageModel';
+import type DateFieldPageModel from '../model/field/DateField.pageModel';
 
 // Because of login/logout stuff in access restriction test below, running
 // both in parallel make conflicts.
@@ -264,31 +265,38 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await widgetsPage.createNumberOfEntities();
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '46')).toBeVisible();
 
+  // The field is reset when a saved value comes back from the server: the next date is typed
+  // only once the clear is saved, which puts the widget back on its unfiltered count.
+  const clearDate = async (field: DateFieldPageModel) => {
+    await field.clear();
+    await expect(widgetsPage.getWidgetNumberValue('Number of entities', '46')).toBeVisible();
+  };
+
   // Manipulating field "Start date"
   await dashboardDetailsPage.startDateField.fill('05/19/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '22')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('05/12/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '29')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('04/17/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '36')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.startDateField.fill('12/17/2023');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '43')).toBeVisible();
-  await dashboardDetailsPage.startDateField.clear();
+  await clearDate(dashboardDetailsPage.startDateField);
 
   // Manipulating field "End date"
   await dashboardDetailsPage.endDateField.fill('12/20/2023');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '10')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.endDateField.fill('04/19/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '17')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   // ----> Comment this part for now as the number "24" is making a conflict with 24 hours
   // await dashboardDetailsPage.endDateField.fill('05/20/2024');
@@ -297,7 +305,7 @@ test('Dashboard CRUD', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await dashboardDetailsPage.getTitle(updateDashboardName).click();
   await dashboardDetailsPage.endDateField.fill('05/21/2024');
   await expect(widgetsPage.getWidgetNumberValue('Number of entities', '31')).toBeVisible();
-  await dashboardDetailsPage.endDateField.clear();
+  await clearDate(dashboardDetailsPage.endDateField);
 
   // ---------
   // endregion

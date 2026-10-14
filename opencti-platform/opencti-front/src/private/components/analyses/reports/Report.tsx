@@ -66,6 +66,7 @@ const reportComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     currentUserAccessRight
     ...ReportDetails_report
     ...ContainerHeader_container

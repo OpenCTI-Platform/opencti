@@ -25,13 +25,14 @@ export const isCatalogManagerEnabled = () => CATALOG_MANAGER_ENABLED;
 const catalogManagerHandler = async () => {
   const context = executionContext('catalog_manager');
   // Sync catalogs to ES
-  const syncedCatalogsWithChanges = await synchronizeCatalogs(context, SYSTEM_USER, {
+  const synchronizedCatalogIds = await synchronizeCatalogs(context, SYSTEM_USER, {
     remoteCatalogTimeoutMs: resolveCatalogSyncRemoteTimeoutMs(),
   });
-  // Apply upgrade strategy.
-  // Should be moved another manager maybe (connectorManager).
-  // Consider using an event to invert the dependency.
-  await autoUpgradeManagedConnectors(context, SYSTEM_USER, syncedCatalogsWithChanges);
+  // TODO Replace this cross-module call with a catalog-synchronized event once
+  // manager initialization guarantees that subscribers start before runOnStart handlers.
+  // Process every successfully synchronized catalog so a previous partial
+  // connector auto-upgrade is retried even when the manifest itself is unchanged.
+  await autoUpgradeManagedConnectors(context, SYSTEM_USER, synchronizedCatalogIds);
 };
 
 const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
@@ -48,6 +49,7 @@ const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {
   enterpriseEditionOnly: false,
   cronSchedulerHandler: {
     handler: catalogManagerHandler,
+    runOnStart: true,
     interval: CATALOG_MANAGER_INTERVAL,
     lockKey: CATALOG_MANAGER_LOCK_KEY,
   },

@@ -21,6 +21,7 @@ import {
   stixCyberObservablesTimeSeries,
   stixFileObsArtifact,
   vulnerabilitiesPaginated,
+  stixCyberObservablesExportFiles,
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import {
@@ -54,11 +55,7 @@ const stixCyberObservableResolvers = {
       }
       return stixCyberObservableDistribution(context, context.user, args);
     },
-    stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => {
-      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
-    },
+    stixCyberObservablesExportFiles: (_, { exportContext, first }, context) => stixCyberObservablesExportFiles(context, context.user, exportContext, { first }),
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   HashedObservable: {

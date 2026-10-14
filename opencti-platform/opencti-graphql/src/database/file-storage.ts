@@ -8,14 +8,14 @@ import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
-import { connectorsForImport } from './repository';
-import { pushToConnector } from './rabbitmq';
+import { connectorsForImport } from '../modules/connector/connector-domain';
+import { pushToConnector } from '../modules/connector/connector-rabbitmq';
 import { elDeleteFilesByIds } from './file-search';
 import { isAttachmentProcessorEnabled } from './engine';
 import { allFilesForPaths, deleteDocumentIndex, findById as documentFindById, indexFileToDocument } from '../modules/internal/document/document-domain';
@@ -662,10 +662,13 @@ export const uploadJobImport = async (
   }
   if (connectors.length > 0) {
     // Create job and send ask to broker
-    const createConnectorWork = async (connector: BasicStoreEntityConnector) => {
+    const createConnectorWork = async (connector: BasicStoreEntityConnector): Promise<{ connector: BasicStoreEntityConnector; work: { id: string } }> => {
       const contextOutOfDraft = { ...context, draft_context: '' };
       const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
       const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
+      if (!work) {
+        throw FunctionalError('Unable to create connector work', { connectorId: connector.id });
+      }
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));
@@ -779,7 +782,7 @@ export const upload = async (
   fileUpload: FileUploadData,
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [], creatorId: creatorIdOpt } = opts;
   const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const normalized_file_markings = file_markings?.map((m) => {
     const marking = markings.get(m);
@@ -808,8 +811,9 @@ export const upload = async (
   }
 
   // Stream the file content while incrementally computing the SHA256 hash to avoid holding the entire file twice in memory.
-  const hashReadStream = createReadStream();
+  // As the first full read of the file, it also rejects a file over the upload size limit before anything is stored.
   const hash = crypto.createHash('sha256');
+  const hashReadStream = createReadStream();
   for await (const chunk of hashReadStream) {
     hash.update(chunk);
   }
@@ -832,7 +836,7 @@ export const upload = async (
     }
   }
 
-  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
+  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id || creatorIdOpt || user.id;
 
   // Upload the data from the buffered content
   const uploadReadStream = createReadStream();
@@ -896,6 +900,7 @@ export interface FileUploadOpts {
   errorOnExisting?: boolean;
   file_markings?: string[];
   importContextEntities?: BasicStoreEntity[]; // entities used for import context
+  creatorId?: string; // user to register as file creator when uploading on behalf of someone else, defaults to the uploading user
 }
 
 export interface FileUploadData {

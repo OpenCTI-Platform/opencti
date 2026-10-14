@@ -5,7 +5,7 @@ import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpR
 import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import { BYPASS, checkOTPValidationStatus, OTPValidationStatus, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
+import { BYPASS, checkOTPValidationStatus, OTPValidationStatus, PUBLIC_DASHBOARD_REFERER, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -120,7 +120,11 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               const userCapabilitiesInDraft = authenticatedUser.capabilitiesInDraft?.map((c) => c.name) ?? [];
 
               // Accept everything if bypass capability or the system user (protection).
-              const shouldBypass = userBaseCapabilities.includes(BYPASS) || authenticatedUser.id === OPENCTI_ADMIN_UUID;
+              // Never apply the id-based admin bypass when the user's capabilities were deliberately
+              // downgraded for a restricted execution context (e.g. public dashboard queries)
+              const isRestrictedExecutionContext = authenticatedUser.origin?.referer === PUBLIC_DASHBOARD_REFERER;
+              const shouldBypass = !isRestrictedExecutionContext
+                && (userBaseCapabilities.includes(BYPASS) || authenticatedUser.id === OPENCTI_ADMIN_UUID);
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }

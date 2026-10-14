@@ -8,14 +8,12 @@ interface StixNestedRefRelationshipCreationFromEntityContainerProps {
   entityType: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   paginationOptions: any; // FIXME find the right type
-  variant: string;
 }
 
 const StixNestedRefRelationshipCreationFromEntityContainer: FunctionComponent<StixNestedRefRelationshipCreationFromEntityContainerProps> = ({
   entityId,
   entityType,
   paginationOptions,
-  variant,
 }) => {
   const queryRef = useQueryLoading(stixNestedRefRelationResolveTypes, { type: entityType });
   return (
@@ -29,7 +27,6 @@ const StixNestedRefRelationshipCreationFromEntityContainer: FunctionComponent<St
             entityId={entityId}
             entityType={entityType}
             paginationOptions={paginationOptions}
-            variant={variant}
           />
         </React.Suspense>
       )}

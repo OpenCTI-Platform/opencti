@@ -151,6 +151,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
   # SecurityCoverageResult
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
@@ -228,6 +229,8 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+  customFieldValues: [CustomFieldValueAddInput!]
+  add_related_entities: SecurityCoverageSelectedEntitiesInput
 }
 
 type Mutation {

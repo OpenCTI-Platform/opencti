@@ -238,17 +238,34 @@ container-scoped class themes the component and leaves every portalled layer
 unthemed, and the defect only shows on hover or on a collapsed rail — exactly
 where review does not look.
 
-**Customer surface colour.** Overriding the semantic alias does nothing (same
-substitution rule as
-[elevation-layer-compensation](#elevation-layer-compensation)), so only the
-per-layer BASE can be moved, border base included — the diluted variant is
-derived from it, so re-declaring the diluted value directly would short-circuit
-the 15% dilution. Layer 1 only: that is the Paper default elevation and the
-customer supplies exactly one paper colour.
+**Customer colours.** A theme carries seven colours; the hook writes each one
+that differs from the library onto its token as an inline value on the root, and
+sets `fds-custom-<setting>` next to it. The tokens a setting has no field for —
+the fields, hovers, headings and borders of each layer, layer 2 (drawers and
+dialogs, which follow `paper`), the body gradient's far stop, secondary and
+disabled text, the brand and tonic families — are `color-mix()` rules in
+`src/static/css/custom-theme-tokens.css`, scoped to those classes. A built-in
+theme never gets a class, so it keeps the library's own values.
 
-Accepted consequence: a 15% dilution of the surface colour over that same
-surface composites back to the surface, so a customised install has no visible
-edge on its panels. That is the arbitrated outcome, not a defect.
+Why the mix targets are what they are:
+
+- Surface members mix toward the **text** colour. Every custom theme resolves to
+  `.dark` (see [light-theme-names](#light-theme-names)), including a light-looking
+  one; mixing toward the text follows the theme's real contrast, so a field still
+  darkens on a white paper under `.dark`.
+- The dark members the library puts **below** their surface (headings, and the
+  hover and highlight of layers 2–3) mix toward black, not toward the page: a
+  theme that customises only `paper` would otherwise pull its drawer headers
+  back to the library navy.
+- The disabled families are not derived: their greyness is what reads as
+  disabled.
+- `nav` owns `--bg-elevation-heading-layer-0` inline, which outranks the
+  derivation from `background`.
+
+Every percentage reproduces the library's own lightness step on the library's own
+palette; `custom-theme-tokens.test.ts` enforces it, so a palette change upstream
+turns the suite red instead of silently drifting. Retires with
+LIBRARY-FEEDBACK.md #61.
 
 ## light-theme-names
 
@@ -299,21 +316,3 @@ carried, because some moved more than once: `theme_secondary` on Light was
 seeded as `#00BD94` and later as `#00f0bc`, and installations exist on both.
 `theme_text_color` moved by letter case alone; rewriting it normalises the row
 so the strict comparison downstream succeeds.
-
-## fab-conversion-deferred
-
-Nine floating action buttons across the product — the `<Fab>` mounts in
-`Drawer.tsx`, `NoteCreation.tsx`, `IndicatorCreation.tsx`,
-`StixCyberObservableCreation.jsx`, `ContainerAddStixCoreObjects.jsx`,
-`StixCoreRelationshipCreationFromRelation.jsx`,
-`StixCoreRelationshipCreationSelectEntityStage.tsx`,
-`StixSightingRelationshipCreationFromEntity.jsx` and
-`SubTypeWorkflowStatusAdd.tsx`.
-
-They stay on MUI deliberately. Whether these keep their floating shape or are
-rethought as in-page buttons is a product/UX call, not a mechanical conversion,
-so the Button/Chip wave left all nine untouched. Pending decision, owner Sandy,
-raised 2026-08-26.
-
-Retire this section when the shape is decided: either the nine convert, or they
-are ruled to stay and the markers come out.

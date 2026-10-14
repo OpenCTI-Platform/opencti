@@ -79,7 +79,6 @@ class StixCyberObservableAddIndicators extends Component {
         <IndicatorCreation
           display={false}
           contextual
-          speeddial
           // Remount on close, as in IndicatorAddObservables: the host-driven
           // close does not reset what the dialog's own one resets.
           key={this.state.creationKey}

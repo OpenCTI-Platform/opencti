@@ -19,6 +19,16 @@ import type { HelmetOptions } from 'helmet';
 import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 import type { Server } from 'node:http';
+import bytes from 'bytes';
+
+export const isResponseWorthCompressing = (res: Response): boolean => {
+  const contentType = res.getHeader('Content-Type');
+  if (typeof contentType !== 'string') {
+    return true;
+  }
+  const mediaType = contentType.split(';')[0].trim().toLowerCase();
+  return mediaType !== 'text/event-stream' && mediaType !== 'application/octet-stream';
+};
 
 export const setCookieError = (res: Response, message: string) => {
   // Map error messages to safe, non-sensitive codes exposed to the client.
@@ -61,7 +71,7 @@ export const extractRefererPathFromReq = (req: Request) => {
 //
 // `context.user_with_session` alone does not answer that: it only records that
 // a session cookie was present, while `authenticateUserFromRequest` returns on
-// the bearer-token branch before it ever looks at the session (`domain/user.js`).
+// the bearer-token branch before it ever looks at the session (`modules/user/user-domain.ts`).
 // A request carrying a token *and* any user's cookie therefore authenticates as
 // the token identity while still looking session-backed. Require that the
 // identity actually resolved from the session, by matching it against the
@@ -276,6 +286,43 @@ const logRateLimitThrottled = (ip: string, userAgent: string): void => {
   }
 };
 
+// graphql-upload accepts files of any size and in any number by default, so a single request could fill the
+// temporary directory where uploads are buffered, then the platform storage.
+// Artifacts (malware samples) can legitimately weigh up to 1GB, each platform can tighten these limits.
+export const DEFAULT_MAX_UPLOAD_FILE_SIZE = '1gb';
+export const DEFAULT_MAX_UPLOAD_FILES = 20;
+
+interface GraphqlUploadOptions {
+  maxFieldSize?: number;
+  maxFileSize: number;
+  maxFiles: number;
+}
+
+const parsePositiveSize = (size: string | number): number | null => {
+  const parsed = bytes.parse(size);
+  return parsed !== null && Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const parsePositiveInteger = (value: string | number): number | null => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
+// The multipart 'operations' field carries the GraphQL variables (e.g. markdown with data URI images).
+// Align its limit with the JSON body limit instead of graphql-upload 1MB default.
+// An unparsable size keeps graphql-upload default.
+// An unparsable file limit falls back to the platform default, never to graphql-upload unlimited default.
+export const buildGraphqlUploadOptions = (
+  requestSizeLimit: string | number,
+  uploadFileSizeLimit: string | number = DEFAULT_MAX_UPLOAD_FILE_SIZE,
+  uploadMaxFiles: string | number = DEFAULT_MAX_UPLOAD_FILES,
+): GraphqlUploadOptions => {
+  const maxFieldSize = bytes.parse(requestSizeLimit);
+  const maxFileSize = parsePositiveSize(uploadFileSizeLimit) ?? bytes.parse(DEFAULT_MAX_UPLOAD_FILE_SIZE) as number;
+  const maxFiles = parsePositiveInteger(uploadMaxFiles) ?? DEFAULT_MAX_UPLOAD_FILES;
+  return maxFieldSize === null ? { maxFileSize, maxFiles } : { maxFieldSize, maxFileSize, maxFiles };
+};
+
 export const buildRateLimiterOptions = (): Options => {
   const skipList: string[] = getRateProtectionIpSkipList();
   const skipRanges: string[] = getRateProtectionIpSkipRanges();
@@ -306,6 +353,112 @@ export const buildRateLimiterOptions = (): Options => {
     },
   };
   return rateLimitOptions as Options;
+};
+
+// A 4xx raised while reading the request, by a middleware is a caller mistake, not a platform failure.
+export const isClientRequestError = (error: any): boolean => {
+  const status = error?.status ?? error?.statusCode;
+  return typeof status === 'number' && status >= 400 && status < 500;
+};
+
+// The graphql-upload messages that are pure constants, so they can be safely relayed to the caller as they are.
+const MULTIPART_SPEC_URL = 'https://github.com/jaydenseric/graphql-multipart-request-spec';
+const SAFE_MULTIPART_MESSAGES = new Set([
+  `Missing multipart field ‘operations’ (${MULTIPART_SPEC_URL}).`,
+  `Missing multipart field ‘map’ (${MULTIPART_SPEC_URL}).`,
+  `Misordered multipart fields; ‘map’ should follow ‘operations’ (${MULTIPART_SPEC_URL}).`,
+  `Misordered multipart fields; files should follow ‘map’ (${MULTIPART_SPEC_URL}).`,
+  `Invalid JSON in the ‘operations’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid JSON in the ‘map’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid type for the ‘operations’ multipart field (${MULTIPART_SPEC_URL}).`,
+  `Invalid type for the ‘map’ multipart field (${MULTIPART_SPEC_URL}).`,
+  'Request disconnected during file upload stream parsing.',
+]);
+// graphql-upload builds this one from the configured limit, a platform setting the caller can know.
+const MAX_FILES_EXCEEDED_MESSAGE = /^\d+ max file uploads exceeded\.$/;
+
+// Built for everything else, from the parser error type then the status.
+// The precise cause always stays in the log.
+const CLIENT_ERROR_MESSAGES: Record<string, string> = {
+  'entity.parse.failed': 'Invalid json in request body',
+  'entity.too.large': 'Request body too large',
+  'charset.unsupported': 'Unsupported charset',
+  'encoding.unsupported': 'Unsupported content encoding',
+  'request.aborted': 'Request aborted before completion',
+  'request.size.invalid': 'Request size did not match the content length',
+};
+
+const CLIENT_STATUS_MESSAGES: Record<number, string> = {
+  400: 'Bad request',
+  413: 'Payload too large',
+  415: 'Unsupported media type',
+  499: 'Client closed request',
+};
+
+export const clientErrorResponse = (error: any) => {
+  const status = error?.status ?? error?.statusCode ?? 400;
+  const isSafeMessage = SAFE_MULTIPART_MESSAGES.has(error?.message) || MAX_FILES_EXCEEDED_MESSAGE.test(error?.message ?? '');
+  const message = isSafeMessage
+    ? error.message
+    : CLIENT_ERROR_MESSAGES[error?.type] ?? CLIENT_STATUS_MESSAGES[status] ?? 'Bad request';
+  return { status, body: { status: 'error', error: message } };
+};
+
+// graphql-upload relays raw busboy parsing errors untouched, and those carry no status at all:
+// 'Multipart: Boundary not found' when the content-type has no boundary, 'Malformed part header',
+// 'Unexpected end of form' on a truncated stream. They are caller mistakes like the rest, so they
+// are normalized to 400 instead of reaching the generic handler as a platform failure. Programmer
+// error types are left alone, so a bug inside the parser still surfaces as a 500.
+const PLATFORM_ERROR_NAMES = ['TypeError', 'RangeError', 'ReferenceError', 'EvalError'];
+
+export const normalizeUploadError = (error: any) => {
+  const hasStatus = typeof (error?.status ?? error?.statusCode) === 'number';
+  if (isEmptyField(error) || hasStatus || PLATFORM_ERROR_NAMES.includes(error?.name)) {
+    return error;
+  }
+  return Object.assign(error, { status: 400, statusCode: 400 });
+};
+
+// The platform accepts credentials in the query string (health_access_key, the OIDC code and
+// state), and both originalUrl and referer carry it, so only the pathname is ever logged.
+const withoutQueryString = (url: string | undefined): string | undefined => url?.split('?')[0];
+
+// The schemes the platform authenticates with. An allowlist, not the first word of the header: a
+// malformed client can send a raw credential with no separating space, and splitting would then log
+// the whole token as the scheme. Anything unrecognised is reported as 'unknown'.
+const KNOWN_AUTH_SCHEMES = ['Bearer', 'Basic'];
+
+// The scheme only (Bearer...etc), never the token. 'session' and 'unauthenticated' are spelled out rather than
+// left absent, so a missing authScheme always means a bug here and not an anonymous caller.
+const requestAuthScheme = (req: Request): string => {
+  const authorization = req.headers.authorization;
+  if (isEmptyField(authorization)) {
+    return req.session?.user ? 'session' : 'unauthenticated';
+  }
+  const [scheme] = (authorization as string).split(' ');
+  return KNOWN_AUTH_SCHEMES.find((known) => known.toLowerCase() === scheme.toLowerCase()) ?? 'unknown';
+};
+
+// Add as much non sensitive data as possible for malformatted requests.
+export const logMalformedRequest = (req: Request, error: any, message = 'Malformed http request call'): void => {
+  logApp.info(message, {
+    reason: error?.message,
+    errorName: error?.name,
+    errorType: error?.type, // body-parser: entity.parse.failed, entity.too.large, ...
+    status: error?.status ?? error?.statusCode,
+    method: req.method,
+    path: withoutQueryString(req.originalUrl ?? req.url),
+    userId: req.session?.user?.id,
+    authScheme: requestAuthScheme(req),
+    userAgent: req.headers['user-agent'] ?? 'unknown',
+    ip: req.ip ?? 'unknown',
+    forwardedFor: req.headers['x-forwarded-for'], // req.ip is the proxy unless it is a trusted one
+    referer: withoutQueryString(req.headers?.referer),
+    contentType: req.headers['content-type'],
+    contentLength: req.headers['content-length'],
+    workId: req.headers['opencti-work-id'],
+    draftId: req.headers['opencti-draft-id'],
+  });
 };
 
 /**
