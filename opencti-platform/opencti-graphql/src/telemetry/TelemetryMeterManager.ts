@@ -135,6 +135,7 @@ export class TelemetryMeterManager {
 
   // Number of active drafts
   draftCount = 0;
+  investigationCount = 0;
 
   draftCreationCount = 0;
 
@@ -240,6 +241,9 @@ export class TelemetryMeterManager {
   customViewCreatedCount = 0;
 
   customViewEnabledCount = 0;
+  investigationOpenedCount = 0;
+  investigationMatrixViewedCount = 0;
+  investigationHeatmapEnabledCount = 0;
 
   sharedSavedFiltersCount = 0;
 
@@ -431,6 +435,10 @@ export class TelemetryMeterManager {
     this.draftCount = n;
   }
 
+  setInvestigationCount(n: number) {
+    this.investigationCount = n;
+  }
+
   setDraftCreationCount(n: number) {
     this.draftCreationCount = n;
   }
@@ -549,6 +557,18 @@ export class TelemetryMeterManager {
 
   setCustomViewEnabledCount(n: number) {
     this.customViewEnabledCount = n;
+  }
+
+  setInvestigationOpenedCount(n: number) {
+    this.investigationOpenedCount = n;
+  }
+
+  setInvestigationMatrixViewedCount(n: number) {
+    this.investigationMatrixViewedCount = n;
+  }
+
+  setInvestigationHeatmapEnabledCount(n: number) {
+    this.investigationHeatmapEnabledCount = n;
   }
 
   setSharedSavedFiltersCount(n: number) {
@@ -729,6 +749,7 @@ export class TelemetryMeterManager {
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
     this.registerGauge('capabilities_in_draft_tab_loaded_count', 'number of times the capabilities in draft tab is loaded', 'capabilitiesInDraftTabLoadedCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('investigations_count', 'number of investigations', 'investigationCount');
     this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
     this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
@@ -769,6 +790,9 @@ export class TelemetryMeterManager {
     this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
     this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
     this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
+    this.registerGauge('investigation_opened_count', 'Number of investigations opened', 'investigationOpenedCount');
+    this.registerGauge('investigation_matrix_viewed_count', 'Number of times the investigation tactics matrix was viewed', 'investigationMatrixViewedCount');
+    this.registerGauge('investigation_heatmap_enabled_count', 'Number of times the investigation heatmap was enabled', 'investigationHeatmapEnabledCount');
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');

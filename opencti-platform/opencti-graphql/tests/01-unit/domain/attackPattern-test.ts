@@ -131,6 +131,7 @@ describe('Function getAttackPatternsMatrix()', () => {
       expect(phaseResult.attackPatterns[0].subAttackPatterns).toHaveLength(1);
       expect(phaseResult.attackPatterns[0].subAttackPatterns[0].attack_pattern_id).toBe('ap-sub');
       expect(phaseResult.attackPatterns[0].subAttackPatterns[0].name).toBe('PowerShell');
+      expect(phaseResult.attackPatterns[0].subAttackPatterns[0].x_mitre_id).toBe('T1059.001');
     });
 
     it('should build correct subAttackPatternsSearchText', async () => {

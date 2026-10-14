@@ -25,9 +25,7 @@ import StixCoreRelationships from '@components/common/stix_core_relationships/St
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
-import {
-  StixDomainObjectAttackPatternsKillChainOverlapQuery$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainOverlapQuery.graphql';
+import useShouldCoverOverlap from './useShouldCoverOverlap';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -43,7 +41,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { fetchQuery } from '../../../../relay/environment';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import Stack from '@mui/material/Stack';
@@ -66,19 +63,6 @@ export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
       orderMode: $orderMode
       filters: $filters
     )
-  }
-`;
-
-const stixDomainObjectAttackPatternsKillChainOverlapQuery = graphql`
-  query StixDomainObjectAttackPatternsKillChainOverlapQuery($types: [String], $count: Int!, $filters: FilterGroup) {
-    stixCoreObjects(types: $types, first: $count, filters: $filters) {
-      edges {
-        node {
-          id
-          entity_type
-        }
-      }
-    }
   }
 `;
 
@@ -127,7 +111,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
-  const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
+  const { attackPatternIdsToOverlap, setSecurityPlatformIds } = useShouldCoverOverlap();
   const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
@@ -154,56 +138,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setSelectedKillChain(value);
   };
 
-  const getAttackPatternIdsToOverlap = async (entityIdsToOverlap: string[]) => {
-    if (entityIdsToOverlap.length === 0) return undefined;
-
-    const { stixCoreObjects } = await fetchQuery(
-      stixDomainObjectAttackPatternsKillChainOverlapQuery,
-      {
-        count: 1000,
-        filters: {
-          mode: 'and',
-          filters: [
-            {
-              key: 'entity_type',
-              operator: 'eq',
-              mode: 'or',
-              values: ['Attack-Pattern'],
-            },
-            {
-              key: 'regardingOf',
-              operator: 'eq',
-              mode: 'and',
-              values: [
-                {
-                  key: 'id',
-                  values: entityIdsToOverlap,
-                  operator: 'eq',
-                  mode: 'or',
-                },
-                {
-                  key: 'relationship_type',
-                  values: ['should-cover'],
-                  operator: 'eq',
-                  mode: 'or',
-                },
-              ],
-            },
-          ],
-          filterGroups: [],
-        },
-      },
-    ).toPromise() as StixDomainObjectAttackPatternsKillChainOverlapQuery$data;
-
-    return stixCoreObjects?.edges?.map(({ node }) => node.id);
-  };
-
   const handleSecurityPlatformsChange = async (newSelectedSecurityPlatforms: EntityOption[]) => {
     setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
-
-    const entityIds = newSelectedSecurityPlatforms.map(({ value }) => value);
-    const attackPatternIds = await getAttackPatternIdsToOverlap(entityIds);
-    setAttackPatternIdsToOverlap(attackPatternIds);
+    await setSecurityPlatformIds(newSelectedSecurityPlatforms.map(({ value }) => value));
   };
 
   let csvData: unknown[] | null = null;
@@ -486,7 +423,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             searchTerm={searchTerm}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
-            attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+            attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
           />

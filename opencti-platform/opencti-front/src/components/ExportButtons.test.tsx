@@ -207,3 +207,107 @@ describe('ExportButtons — exportPdf()', () => {
     expect(buttons?.style.display).toBe('flex');
   });
 });
+
+describe('ExportButtons — prepareCapture', () => {
+  let container: HTMLElement;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    container = document.createElement('div');
+    container.id = 'test-container';
+    container.setAttribute('style', 'padding: 16px');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  const resizeForCapture = (undo = vi.fn()) => vi.fn((element: HTMLElement) => {
+    element.style.width = 'max-content';
+    return undo;
+  });
+
+  it('prepares the image target before the capture and puts its style back after', async () => {
+    const undo = vi.fn();
+    const prepareCapture = resizeForCapture(undo);
+    let widthAtCapture = '';
+    vi.mocked(exportImage).mockImplementationOnce(async () => {
+      widthAtCapture = container.style.width;
+    });
+
+    const instance = createExportButtonsInstance(makeProps({ prepareCapture }));
+    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(prepareCapture).toHaveBeenCalledWith(container);
+    expect(widthAtCapture).toBe('max-content');
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+
+  it('wins over the fixed size of `adjust` for the image capture', async () => {
+    const adjust = vi.fn();
+    let styleAtCapture = '';
+    vi.mocked(exportImage).mockImplementationOnce(async () => {
+      styleAtCapture = container.getAttribute('style') ?? '';
+    });
+
+    const instance = createExportButtonsInstance(makeProps({ adjust, prepareCapture: resizeForCapture() }));
+    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(adjust).toHaveBeenCalled();
+    expect(styleAtCapture).toContain('max-content');
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+
+  it('puts the image target back even when the capture fails', async () => {
+    const undo = vi.fn();
+    vi.mocked(exportImage).mockRejectedValueOnce(new Error('canvas error'));
+
+    const instance = createExportButtonsInstance(makeProps({ prepareCapture: resizeForCapture(undo) }));
+    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+
+  it('prepares the PDF target before the capture and puts its style back after', async () => {
+    const undo = vi.fn();
+    const prepareCapture = resizeForCapture(undo);
+    let widthAtCapture = '';
+    vi.mocked(exportPdf).mockImplementationOnce(async () => {
+      widthAtCapture = container.style.width;
+    });
+
+    const instance = createExportButtonsInstance(makeProps({ prepareCapture }));
+    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(prepareCapture).toHaveBeenCalledWith(container);
+    expect(widthAtCapture).toBe('max-content');
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+
+  it('puts the PDF target back even when the capture fails', async () => {
+    const undo = vi.fn();
+    vi.mocked(exportPdf).mockRejectedValueOnce(new Error('pdf generation error'));
+
+    const instance = createExportButtonsInstance(makeProps({ prepareCapture: resizeForCapture(undo) }));
+    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(undo).toHaveBeenCalledTimes(1);
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+
+  it('leaves the target untouched without prepareCapture', async () => {
+    vi.mocked(exportImage).mockResolvedValueOnce(undefined);
+    vi.mocked(exportPdf).mockResolvedValueOnce(undefined);
+
+    const instance = createExportButtonsInstance(makeProps());
+    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+
+    expect(container.getAttribute('style')).toBe('padding: 16px');
+  });
+});

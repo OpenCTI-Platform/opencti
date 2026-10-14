@@ -34,6 +34,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector, CachedConnector } from '../modules/connector/connector-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
 import {
@@ -154,6 +155,9 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_OPENED = 'investigationOpenedCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED = 'investigationMatrixViewedCount';
+export const TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED = 'investigationHeatmapEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
@@ -291,6 +295,21 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addInvestigationOpenedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INVESTIGATION_OPENED, 1)
+    .catch((reason) => logApp.warn('Error adding investigation opened count to telemetry', { reason }));
+};
+
+export const addInvestigationMatrixViewedCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED, 1)
+    .catch((reason) => logApp.warn('Error adding investigation matrix viewed count to telemetry', { reason }));
+};
+
+export const addInvestigationHeatmapEnabledCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED, 1)
+    .catch((reason) => logApp.warn('Error adding investigation heatmap enabled count to telemetry', { reason }));
 };
 
 export const addSharedSavedFiltersPermissionChangesCount = () => {
@@ -508,6 +527,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Draft information
     const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
     manager.setDraftCount(draftWorkspaces.length);
+    // endregion
+
+    // region Investigation information
+    // Investigations are restricted to their authorized members: includeAuthorities lets the
+    // bypass telemetry user count all of them.
+    const investigationCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_WORKSPACE],
+      includeAuthorities: true,
+      filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: ['investigation'] }], filterGroups: [] },
+    });
+    manager.setInvestigationCount(investigationCount);
     // endregion
 
     // region Workbenches information
@@ -772,6 +802,12 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const investigationOpenedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED);
+    manager.setInvestigationOpenedCount(investigationOpenedCountInRedis);
+    const investigationMatrixViewedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED);
+    manager.setInvestigationMatrixViewedCount(investigationMatrixViewedCountInRedis);
+    const investigationHeatmapEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED);
+    manager.setInvestigationHeatmapEnabledCount(investigationHeatmapEnabledCountInRedis);
     const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES);
     manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);

@@ -1,10 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
-import { createUploadFromTestDataFile, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { awaitUntilCondition, createUploadFromTestDataFile, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { redisGetTelemetry } from '../../../src/database/redis';
+import {
+  TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED,
+  TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED,
+  TELEMETRY_GAUGE_INVESTIGATION_OPENED,
+} from '../../../src/manager/telemetryManager';
 import { toB64, fromB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
 
@@ -814,6 +820,96 @@ describe('Workspace resolver standard behavior', () => {
     } finally {
       await queryAsAdmin({ query: DELETE_QUERY, variables: { id: duplicate.id } });
     }
+  });
+
+  describe('Investigation usage event', () => {
+    const USAGE_EVENT_QUERY = gql`
+      mutation InvestigationUsageEvent($id: ID!, $event: InvestigationUsageEvent!) {
+        investigationUsageEvent(id: $id, event: $event)
+      }
+    `;
+    let usageInvestigationId;
+    let usageDashboardId;
+
+    beforeAll(async () => {
+      const investigation = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: { input: { type: 'investigation', name: 'Investigation for usage events' } },
+      });
+      usageInvestigationId = investigation.data.workspaceAdd.id;
+      const dashboard = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: { input: { type: 'dashboard', name: 'Dashboard for usage events' } },
+      });
+      usageDashboardId = dashboard.data.workspaceAdd.id;
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: usageInvestigationId } });
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: usageDashboardId } });
+    });
+
+    it.each([
+      ['OPENED', TELEMETRY_GAUGE_INVESTIGATION_OPENED],
+      ['MATRIX_VIEWED', TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED],
+      ['HEATMAP_ENABLED', TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED],
+    ])('should record the %s event on an investigation', async (event, gauge) => {
+      const before = await redisGetTelemetry(gauge);
+      const queryResult = await queryAsAdmin({
+        query: USAGE_EVENT_QUERY,
+        variables: { id: usageInvestigationId, event },
+      });
+      expect(queryResult.errors).toBeUndefined();
+      expect(queryResult.data.investigationUsageEvent).toBe(true);
+      // The counter is incremented fire-and-forget, so poll until the value lands.
+      await awaitUntilCondition(
+        async () => (await redisGetTelemetry(gauge)) === before + 1,
+        3000,
+        { message: `Gauge ${gauge} was not incremented in time` },
+      );
+    });
+
+    it('should only increment the gauge of the sent event', async () => {
+      const otherGauges = [TELEMETRY_GAUGE_INVESTIGATION_MATRIX_VIEWED, TELEMETRY_GAUGE_INVESTIGATION_HEATMAP_ENABLED];
+      const othersBefore = await Promise.all(otherGauges.map((gauge) => redisGetTelemetry(gauge)));
+      const openedBefore = await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED);
+      await queryAsAdmin({ query: USAGE_EVENT_QUERY, variables: { id: usageInvestigationId, event: 'OPENED' } });
+      await awaitUntilCondition(
+        async () => (await redisGetTelemetry(TELEMETRY_GAUGE_INVESTIGATION_OPENED)) === openedBefore + 1,
+        3000,
+        { message: 'Opened gauge was not incremented in time' },
+      );
+      const othersAfter = await Promise.all(otherGauges.map((gauge) => redisGetTelemetry(gauge)));
+      expect(othersAfter).toEqual(othersBefore);
+    });
+
+    it('should reject the event on a workspace that is not an investigation', async () => {
+      await queryAsUserIsExpectedForbidden(ADMIN_USER, {
+        query: USAGE_EVENT_QUERY,
+        variables: { id: usageDashboardId, event: 'OPENED' },
+      });
+    });
+
+    it('should reject the event when the user is not an authorized member of the investigation', async () => {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: USAGE_EVENT_QUERY,
+        variables: { id: usageInvestigationId, event: 'OPENED' },
+      });
+    });
+
+    it('should reject the event for an unknown id', async () => {
+      await queryAsUserIsExpectedForbidden(ADMIN_USER, {
+        query: USAGE_EVENT_QUERY,
+        variables: { id: 'unknown-id', event: 'OPENED' },
+      });
+    });
+
+    it('should reject the event for a user without the explore or investigation capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+        query: USAGE_EVENT_QUERY,
+        variables: { id: usageInvestigationId, event: 'OPENED' },
+      });
+    });
   });
 
   describe('Widget export', () => {

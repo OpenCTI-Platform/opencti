@@ -2620,6 +2620,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   name: String!
   description: String
+  x_mitre_id: String
 }
 
 type AttackPatternsByKillChain {
@@ -9920,6 +9921,7 @@ type Mutation {
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
   investigationDuplicate(input: InvestigationDuplicateInput!): Workspace
+  investigationUsageEvent(id: ID!, event: InvestigationUsageEvent!): Boolean
   workspaceDelete(id: ID!): ID
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
@@ -13096,6 +13098,12 @@ input ImportConfigurationInput {
 input ImportWidgetInput {
   file: Upload!
   dashboardManifest: String
+}
+
+enum InvestigationUsageEvent {
+  OPENED
+  MATRIX_VIEWED
+  HEATMAP_ENABLED
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
