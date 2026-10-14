@@ -7,7 +7,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 interface BasicUserAction {
   user: AuthUser;
   status?: 'success' | 'error'; // nothing = success
-  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'health';
   event_scope: string;
   event_access: 'extended' | 'administration';
   prevent_indexing?: boolean;
@@ -144,6 +144,20 @@ export interface UserModificationAction extends BasicUserAction {
 }
 // endregion
 
+// region health
+export interface IngestionHealthAction extends BasicUserAction {
+  event_type: 'health';
+  event_scope: 'critical' | 'degraded' | 'recovered';
+  message: string;
+  // Only fields mapped under context_data: the history index mapping is strict
+  context_data: {
+    id: string;
+    entity_type: string;
+    entity_name: string;
+  };
+}
+// endregion
+
 // region authentication
 export interface UserLoginAction extends BasicUserAction {
   event_type: 'authentication';
@@ -169,7 +183,8 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
-  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction
+  | IngestionHealthAction;
 
 export interface ActionListener {
   id: string;
