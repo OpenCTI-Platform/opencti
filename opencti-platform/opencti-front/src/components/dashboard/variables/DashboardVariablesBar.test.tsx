@@ -7,6 +7,10 @@ import DashboardVariablesBar from './DashboardVariablesBar';
 
 vi.mock('./useVariableValueLabels', () => ({
   default: (_variable: unknown, values: string[]) => ({ labels: new Map(values.map((value) => [value, value])), restricted: new Set() }),
+  useVariablesValueLabels: (current: { id: string; value: string | undefined }[]) => new Map(current.map(({ id, value }) => [
+    id,
+    { labels: new Map(value ? [[value, value]] : []), restricted: new Set() },
+  ])),
 }));
 
 const sector: DashboardVariable = {

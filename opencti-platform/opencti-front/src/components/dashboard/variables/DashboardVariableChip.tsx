@@ -8,7 +8,7 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableValueInput from './DashboardVariableValueInput';
-import useVariableValueLabels from './useVariableValueLabels';
+import useVariableValueLabels, { type VariableValueLabels } from './useVariableValueLabels';
 
 // FDS-WORKAROUND #69: the library Chip has no muted (still clickable) state, `disabled` would block the click.
 const UNUSED_OPACITY = 0.6;
@@ -18,6 +18,9 @@ export interface DashboardVariableChipProps {
   // Effective value (undefined when the variable has neither a value nor a default).
   value: string | undefined;
   usedInWidgetIds: readonly string[];
+  // The labels of the current value, when the bar already resolved those of all its chips at once.
+  // The chip resolves its own value when it is not provided.
+  valueLabels?: VariableValueLabels;
   onChange: (value: string) => void;
   // The menu entries only exist when their callback is provided.
   onEdit?: (variable: DashboardVariable) => void;
@@ -31,11 +34,13 @@ const inputKey = (variable: DashboardVariable) => [
   'killChainName' in variable ? variable.killChainName : '',
 ].join('|');
 
-const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
+const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { labels, restricted } = useVariableValueLabels(variable, value ? [value] : []);
+  // Nothing to resolve (so no query) when the bar already did.
+  const ownLabels = useVariableValueLabels(variable, valueLabels || !value ? [] : [value]);
+  const { labels, restricted } = valueLabels ?? ownLabels;
   const isUnused = usedInWidgetIds.length === 0;
   const hasMenu = onEdit !== undefined || onDelete !== undefined;
 

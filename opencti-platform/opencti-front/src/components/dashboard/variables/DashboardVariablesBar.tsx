@@ -6,6 +6,7 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableChip from './DashboardVariableChip';
+import { useVariablesValueLabels } from './useVariableValueLabels';
 
 export interface DashboardVariablesBarProps {
   variables: readonly DashboardVariable[];
@@ -51,6 +52,8 @@ const DashboardVariablesBar = ({
 }: DashboardVariablesBarProps) => {
   const { t_i18n } = useFormatter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // One query for the ids of all the chips, rather than one per chip.
+  const valueLabels = useVariablesValueLabels(variables.map((variable) => ({ id: variable.id, variable, value: values.get(variable.id) })));
 
   if (variables.length === 0 && !onCreate) return null;
 
@@ -78,6 +81,7 @@ const DashboardVariablesBar = ({
           key={variable.id}
           variable={variable}
           value={values.get(variable.id)}
+          valueLabels={valueLabels.get(variable.id)}
           usedInWidgetIds={usedInWidgetIdsByVariable.get(variable.id) ?? []}
           onChange={(value) => onSetValue(variable.id, value)}
           onEdit={onEdit}
