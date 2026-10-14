@@ -51,6 +51,48 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
   return mapping;
 };
 
+const isEnabledMapping = (mapping: MappingDefinition) => !mapping.featureFlag || isFeatureEnabled(mapping.featureFlag);
+
+/**
+ * Check that two attributes sharing the same name are stored the same way, as they share the same engine mapping.
+ * Mappings of nested objects are checked recursively, path being the dotted path of the mapping inside the nested object.
+ */
+const checkAttributesHomogeneity = (
+  existingAttribute: AttributeDefinition,
+  attribute: AttributeDefinition,
+  path?: string,
+) => {
+  const errorData = { existingAttribute, attribute, path };
+  if (existingAttribute.type !== attribute.type) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  if (existingAttribute.type === 'string' && attribute.type === 'string' && existingAttribute.format !== attribute.format) {
+    if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
+      throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', errorData);
+    }
+  }
+  if (existingAttribute.type === 'numeric' && attribute.type === 'numeric' && existingAttribute.precision !== attribute.precision) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  if (existingAttribute.type === 'object' && attribute.type === 'object' && existingAttribute.format !== attribute.format) {
+    throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', errorData);
+  }
+  // Nested objects with the same name share the same engine mapping, so their mappings must be identical
+  if (isObjectAttributeWithMappings(existingAttribute) && isObjectAttributeWithMappings(attribute) && (path || attribute.format === 'nested')) {
+    const existingMappings = new Map(existingAttribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
+    const mappings = new Map(attribute.mappings.filter(isEnabledMapping).map((m) => [m.name, m]));
+    new Set([...existingMappings.keys(), ...mappings.keys()]).forEach((name) => {
+      const mappingPath = path ? `${path}.${name}` : `${attribute.name}.${name}`;
+      const existingMapping = existingMappings.get(name);
+      const mapping = mappings.get(name);
+      if (!existingMapping || !mapping) {
+        throw UnsupportedError('You can\'t have two nested attributes with the same name and different mappings in the platform', { ...errorData, path: mappingPath });
+      }
+      checkAttributesHomogeneity(existingMapping, mapping, mappingPath);
+    });
+  }
+};
+
 // Flag to track if the schema was rea; when read for the first time the schema is then read-only and new registration is diallowed
 let usageProtection = false;
 
@@ -96,46 +138,7 @@ export const schemaAttributesDefinition = {
       // Check the homogeneity of attribute types
       const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute) {
-        if (existingAttribute.type === 'string') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-          if (existingAttribute.format !== attribute.format) {
-            if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
-              throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', {
-                existingAttribute,
-                attribute,
-              });
-            }
-          }
-        }
-        if (existingAttribute.type === 'numeric') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.precision !== attribute.precision) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
-        if (existingAttribute.type === 'object') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
-        if (existingAttribute.type === 'date' || existingAttribute.type === 'boolean') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
+        checkAttributesHomogeneity(existingAttribute, attribute);
       }
       // Check duplicate attributes
       if (directAttributes.has(attribute.name)) {
