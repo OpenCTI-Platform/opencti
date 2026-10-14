@@ -66,6 +66,30 @@ const buildRemoteFileData = () => ({
 });
 
 const sync = { uri: 'http://remote', internal_id: 'sync--id-1' };
+const LARGE_CONTENT_LENGTH = String(10 * 1024 * 1024);
+
+interface ConfReader {
+  get: (key: string) => unknown;
+}
+
+interface StreamResponseHeaders {
+  'content-length'?: string;
+}
+
+interface StreamResponse {
+  data: unknown;
+  headers: StreamResponseHeaders;
+}
+
+const largeFileResponse = (stream: unknown): StreamResponse => ({ data: stream, headers: { 'content-length': LARGE_CONTENT_LENGTH } });
+
+const readBody = async (body: AsyncIterable<Buffer>) => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of body) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+};
 const httpClient = { get: (...args: unknown[]) => mockHttpClientGet(...args) };
 
 describe('syncManager transformDataWithReverseIdAndFilesData - file reference mode', () => {
@@ -100,7 +124,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
       return { ...actual, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
     const fakeStream = Symbol('stream');
-    mockHttpClientGet.mockResolvedValue({ data: fakeStream });
+    mockHttpClientGet.mockResolvedValue(largeFileResponse(fakeStream));
     mockRawUpload.mockResolvedValue(undefined);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -155,7 +179,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
   it('uses reference mode for every non-empty file when the size threshold is configured to 0', async () => {
     vi.doMock('../../../src/config/conf', async (importOriginal) => {
       const actual = await importOriginal() as Record<string, unknown>;
-      const actualConf = actual.default as { get: (key: string) => unknown };
+      const actualConf = actual.default as ConfReader;
       const conf = { get: (key: string) => (key === 'sync_manager:file_reference_mode_size_threshold_kb' ? 0 : actualConf.get(key)) };
       return { ...actual, default: conf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
@@ -170,21 +194,46 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     expect(data.extensions[STIX_EXT_OCTI].files[0].data).toBeUndefined();
   });
 
-  it('treats a missing/invalid content-length as large, never buffering an unbounded stream', async () => {
+  it('inlines a small file when the sending platform sends no content-length', async () => {
     vi.doMock('../../../src/config/conf', async (importOriginal) => {
       const actual = await importOriginal() as Record<string, unknown>;
       return { ...actual, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
-    const fakeStream = Symbol('stream');
-    mockHttpClientGet.mockResolvedValue({ data: fakeStream, headers: { 'content-length': 'not-a-number' } });
-    mockRawUpload.mockResolvedValue(undefined);
+    const { Readable } = await import('node:stream');
+    const smallFileBytes = Buffer.from('tiny-pdf-bytes');
+    mockHttpClientGet.mockResolvedValue({ data: Readable.from([smallFileBytes]), headers: {} });
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
     const { data } = await transformDataWithReverseIdAndFilesData(sync, httpClient, buildRemoteFileData(), {});
 
-    expect(mockRawUpload).toHaveBeenCalled();
+    expect(mockRawUpload).not.toHaveBeenCalled();
     const resultFile = data.extensions[STIX_EXT_OCTI].files[0];
-    expect(resultFile.x_opencti_storage_key).toBeDefined();
+    expect(resultFile.data).toBe(smallFileBytes.toString('base64'));
+    expect(resultFile.x_opencti_storage_key).toBeUndefined();
+  });
+
+  it('stages every byte of a file above the threshold when content-length is missing or invalid', async () => {
+    vi.doMock('../../../src/config/conf', async (importOriginal) => {
+      const actual = await importOriginal() as Record<string, unknown>;
+      const actualConf = actual.default as ConfReader;
+      const conf = { get: (key: string) => (key === 'sync_manager:file_reference_mode_size_threshold_kb' ? 1 : actualConf.get(key)) };
+      return { ...actual, default: conf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
+    });
+    const { Readable } = await import('node:stream');
+    const fileChunks = [Buffer.alloc(700, 'a'), Buffer.alloc(700, 'b'), Buffer.alloc(700, 'c')];
+    mockHttpClientGet.mockResolvedValue({ data: Readable.from(fileChunks), headers: { 'content-length': 'not-a-number' } });
+    const uploadedBodies: Buffer[] = [];
+    mockRawUpload.mockImplementation(async (_key: string, body: AsyncIterable<Buffer>) => {
+      uploadedBodies.push(await readBody(body));
+    });
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const { data } = await transformDataWithReverseIdAndFilesData(sync, httpClient, buildRemoteFileData(), {});
+
+    expect(uploadedBodies).toEqual([Buffer.concat(fileChunks)]);
+    const resultFile = data.extensions[STIX_EXT_OCTI].files[0];
+    expect(resultFile.x_opencti_storage_key).toMatch(/^sync\/inflight\/sync--id-1\/[0-9a-f]{32}\/content$/);
+    expect(resultFile.data).toBeUndefined();
   });
 
   it('skips the file without crashing when the upload fails', async () => {
@@ -192,7 +241,9 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
       const actual = await importOriginal() as Record<string, unknown>;
       return { ...actual, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
-    mockHttpClientGet.mockResolvedValue({ data: Symbol('stream') });
+    const { Readable } = await import('node:stream');
+    const fileStream = Readable.from([Buffer.from('large-pdf-bytes')]);
+    mockHttpClientGet.mockResolvedValue(largeFileResponse(fileStream));
     mockRawUpload.mockRejectedValue(new Error('S3 unavailable'));
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -201,6 +252,26 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     const resultFile = data.extensions[STIX_EXT_OCTI].files[0];
     expect(resultFile.x_opencti_storage_key).toBeUndefined();
     expect(resultFile.data).toBeUndefined();
+    expect(fileStream.destroyed).toBe(true);
+  });
+
+  it('closes the sending platform stream when the upload fails after a bounded read', async () => {
+    vi.doMock('../../../src/config/conf', async (importOriginal) => {
+      const actual = await importOriginal() as Record<string, unknown>;
+      const actualConf = actual.default as ConfReader;
+      const conf = { get: (key: string) => (key === 'sync_manager:file_reference_mode_size_threshold_kb' ? 1 : actualConf.get(key)) };
+      return { ...actual, default: conf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
+    });
+    const { Readable } = await import('node:stream');
+    const fileStream = Readable.from([Buffer.alloc(700, 'a'), Buffer.alloc(700, 'b'), Buffer.alloc(700, 'c')]);
+    mockHttpClientGet.mockResolvedValue({ data: fileStream, headers: {} });
+    mockRawUpload.mockRejectedValue(new Error('S3 unavailable'));
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const { data } = await transformDataWithReverseIdAndFilesData(sync, httpClient, buildRemoteFileData(), {});
+
+    expect(data.extensions[STIX_EXT_OCTI].files[0].x_opencti_storage_key).toBeUndefined();
+    expect(fileStream.destroyed).toBe(true);
   });
 
   it('never lets the remote-controlled file name influence the storage key (no traversal via entityFile.name)', async () => {
@@ -208,7 +279,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
       const actual = await importOriginal() as Record<string, unknown>;
       return { ...actual, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
-    mockHttpClientGet.mockResolvedValue({ data: Symbol('stream') });
+    mockHttpClientGet.mockResolvedValue(largeFileResponse(Symbol('stream')));
     mockRawUpload.mockResolvedValue(undefined);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
@@ -238,7 +309,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
       const actual = await importOriginal() as Record<string, unknown>;
       return { ...actual, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE: true, logApp: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } };
     });
-    mockHttpClientGet.mockResolvedValue({ data: Symbol('stream') });
+    mockHttpClientGet.mockResolvedValue(largeFileResponse(Symbol('stream')));
     mockRawUpload.mockResolvedValue(undefined);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 

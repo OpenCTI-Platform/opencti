@@ -1,6 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
 import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
 import conf, { booleanConf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -163,6 +164,40 @@ export const encodeStorageRelativePath = (relativePath) => {
     .join('/');
 };
 
+const replaySyncFileChunks = async function* (chunks, iterator) {
+  try {
+    yield* chunks;
+    let next = await iterator.next();
+    while (!next.done) {
+      yield next.value;
+      next = await iterator.next();
+    }
+  } finally {
+    await iterator.return?.();
+  }
+};
+
+// Older sending platforms send no content-length, so read at most threshold + 1 bytes to decide.
+const readSyncFileUnderThreshold = async (fileStream, headers) => {
+  const contentLength = Number(headers?.['content-length']);
+  const isDeclaredAboveThreshold = Number.isFinite(contentLength) && contentLength > FILE_REFERENCE_MODE_SIZE_THRESHOLD;
+  if (isDeclaredAboveThreshold) {
+    return { stream: fileStream };
+  }
+  const iterator = fileStream[Symbol.asyncIterator]();
+  const chunks = [];
+  let readSize = 0;
+  while (readSize <= FILE_REFERENCE_MODE_SIZE_THRESHOLD) {
+    const next = await iterator.next();
+    if (next.done) {
+      return { data: Buffer.concat(chunks) };
+    }
+    chunks.push(next.value);
+    readSize += next.value.length;
+  }
+  return { stream: Readable.from(replaySyncFileChunks(chunks, iterator), { objectMode: false }) };
+};
+
 export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
@@ -241,19 +276,19 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
       }
       if (ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE) {
         const { data: fileStream, headers } = await httpClient.get(fetchUri, { responseType: 'stream' });
-        const contentLength = Number(headers?.['content-length']);
-        const isBelowThreshold = Number.isFinite(contentLength) && contentLength <= FILE_REFERENCE_MODE_SIZE_THRESHOLD;
-        if (isBelowThreshold) {
-          const chunks = [];
-          for await (const chunk of fileStream) {
-            chunks.push(chunk);
-          }
-          entityFile.data = Buffer.concat(chunks).toString('base64');
+        const syncFile = await readSyncFileUnderThreshold(fileStream, headers);
+        if (syncFile.data) {
+          entityFile.data = syncFile.data.toString('base64');
           continue;
         }
         const remoteFileId = crypto.randomBytes(16).toString('hex');
         const storageKey = `${SYNC_INFLIGHT_STORAGE_PATH}/${sync.internal_id}/${remoteFileId}/content`;
-        await rawUpload(storageKey, fileStream);
+        try {
+          await rawUpload(storageKey, syncFile.stream);
+        } catch (uploadError) {
+          fileStream.destroy();
+          throw uploadError;
+        }
         entityFile.x_opencti_storage_key = storageKey;
         continue;
       }
