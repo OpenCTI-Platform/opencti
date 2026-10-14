@@ -151,7 +151,7 @@ const AccordionAttackPattern = ({
       elevation={0}
       id={attackPattern.attack_pattern_id}
       key={attackPattern.attack_pattern_id}
-      slotProps={{ transition: { unmountOnExit: true, timeout: skipAnimation ? 0 : undefined } }}
+      slotProps={{ transition: { unmountOnExit: true, ...(skipAnimation && { enter: false, exit: false }) } }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       sx={{
