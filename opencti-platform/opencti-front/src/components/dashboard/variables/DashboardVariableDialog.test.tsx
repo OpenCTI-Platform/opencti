@@ -73,6 +73,25 @@ describe('DashboardVariableDialog', () => {
     mocks.onClose.mockReset();
   });
 
+  it('is a modal dialog named by its title, with the focus on the name', async () => {
+    renderDialog();
+    expect(screen.getByRole('dialog', { name: 'Create variable' })).toBe(screen.getByTestId('dashboard-variable-dialog'));
+    await waitFor(() => expect(nameInput()).toHaveFocus());
+  });
+
+  it('is named Edit variable in edition', () => {
+    renderDialog({ variable: sector, existingVariables: [sector] });
+    expect(screen.getByRole('dialog', { name: 'Edit variable' })).toBeInTheDocument();
+  });
+
+  it('closes on Escape and on Cancel', async () => {
+    const { user } = renderDialog();
+    await user.keyboard('{Escape}');
+    expect(mocks.onClose).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(mocks.onClose).toHaveBeenCalledTimes(2);
+  });
+
   it('shows the steps one after the other, each one once the previous is valid', async () => {
     const { user } = renderDialog();
     expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();

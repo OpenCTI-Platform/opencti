@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import Stack from '@mui/material/Stack';
-import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import Dialog from '@common/dialog/Dialog';
-import { Text } from '@filigran/design-system';
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Text } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 import type { DashboardVariable } from '../dashboard-types';
 
@@ -36,33 +33,42 @@ const DashboardVariableDeleteDialog = ({ open, variable, widgets, onConfirm, onC
   return (
     <Dialog
       open={open}
-      onClose={onClose}
-      size="small"
-      title={t_i18n('Delete variable')}
-      data-testid="dashboard-variable-delete-dialog"
+      // Escape, the overlay and the close button must not abandon a deletion in flight.
+      onOpenChange={(isOpen) => {
+        if (!isOpen && !isSubmitting) onClose();
+      }}
     >
-      <Stack gap={1}>
-        <Text variant="content-base">{t_i18n('Do you want to delete the variable {name}?', { values: { name: variable.name } })}</Text>
-        {widgets.length > 0 && (
-          <>
-            <Text variant="content-base">{t_i18n('These widgets use this variable and will show “No data has been found”:')}</Text>
-            <ul style={{ margin: 0 }}>
-              {widgets.map(({ id, title }) => <Text key={id} as="li" variant="content-base">{title}</Text>)}
-            </ul>
-          </>
-        )}
-      </Stack>
-      <DialogActions>
-        <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
-        <Button
-          intent="destructive"
-          data-testid="dashboard-variable-delete-confirm"
-          onClick={handleConfirm}
-          disabled={isSubmitting}
-        >
-          {t_i18n('Delete')}
-        </Button>
-      </DialogActions>
+      <DialogContent size="sm" data-testid="dashboard-variable-delete-dialog">
+        <DialogTitle>
+          <Text as="span" variant="title-md">{t_i18n('Delete variable')}</Text>
+        </DialogTitle>
+        <DialogBody>
+          <div className="flex flex-col gap-2">
+            <DialogDescription>
+              {t_i18n('Do you want to delete the variable {name}?', { values: { name: variable.name } })}
+            </DialogDescription>
+            {widgets.length > 0 && (
+              <>
+                <Text variant="content-base">{t_i18n('These widgets use this variable and will show “No data has been found”:')}</Text>
+                <ul className="m-0 list-disc pl-6">
+                  {widgets.map(({ id, title }) => <Text key={id} as="li" variant="content-base">{title}</Text>)}
+                </ul>
+              </>
+            )}
+          </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
+          <Button
+            intent="destructive"
+            data-testid="dashboard-variable-delete-confirm"
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+          >
+            {t_i18n('Delete')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

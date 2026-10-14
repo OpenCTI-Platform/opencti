@@ -34,6 +34,31 @@ const renderDialog = (props: {
 const dialog = () => screen.getByTestId('dashboard-variable-delete-dialog');
 
 describe('DashboardVariableDeleteDialog', () => {
+  it('is a dialog named by its title', () => {
+    renderDialog();
+    expect(screen.getByRole('dialog', { name: 'Delete variable' })).toBe(dialog());
+  });
+
+  it('closes on Escape when nothing is in flight', async () => {
+    const { user, onClose } = renderDialog();
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let Escape or the close button abandon a deletion in flight', async () => {
+    let resolve: () => void = () => {};
+    const onConfirm = vi.fn(() => new Promise<void>((done) => {
+      resolve = done;
+    }));
+    const { user, onClose } = renderDialog({ onConfirm });
+    await user.click(screen.getByTestId('dashboard-variable-delete-confirm'));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).not.toHaveBeenCalled();
+    resolve();
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  });
+
   it('lists the impacted widgets by title when the variable is used', () => {
     renderDialog({ widgets: [{ id: 'w1', title: 'Top malwares' }, { id: 'w2', title: 'Reports' }] });
     expect(within(dialog()).getByText(/will show “No data has been found”/)).toBeInTheDocument();
