@@ -23,7 +23,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   const isSearchable = entityTypes.length === 0 || entityTypes.some((type) => type !== 'External-Reference');
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [entities, searchEntities] = useSearchEntities({ searchContext: VARIABLE_SEARCH_CONTEXT, searchScope, setInputValues: () => {} });
-  const labels = useVariableValueLabels(variable, value ? [value] : []);
+  const { labels } = useVariableValueLabels(variable, value ? [value] : []);
 
   const { killChainName } = variable;
   const options = (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])

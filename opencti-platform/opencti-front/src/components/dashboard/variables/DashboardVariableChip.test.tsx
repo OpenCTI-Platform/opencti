@@ -4,12 +4,14 @@ import testRender from '../../../utils/tests/test-render';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableChip from './DashboardVariableChip';
 
-const mockLabels = vi.hoisted(() => ({ current: undefined as ((values: string[]) => Map<string, string>) | undefined }));
+const mockLabels = vi.hoisted(() => ({
+  current: undefined as ((values: string[]) => { labels: Map<string, string>; restricted: Set<string> }) | undefined,
+}));
 
 vi.mock('./useVariableValueLabels', () => ({
   default: (_variable: unknown, values: string[]) => (mockLabels.current
     ? mockLabels.current(values)
-    : new Map(values.map((value) => [value, value]))),
+    : { labels: new Map(values.map((value) => [value, value])), restricted: new Set() }),
 }));
 
 const sector: DashboardVariable = {
@@ -84,15 +86,22 @@ describe('DashboardVariableChip', () => {
   });
 
   it('turns critical and reads Restricted when the value cannot be resolved', () => {
-    mockLabels.current = (values) => new Map(values.map((value) => [value, 'Restricted']));
+    mockLabels.current = (values) => ({ labels: new Map(values.map((value) => [value, 'Restricted'])), restricted: new Set(values) });
     renderChip({ variable: org, value: 'unknown-id' });
     const chip = screen.getByRole('button', { name: 'Org : Restricted' });
     expect(chip.className).toMatch(/feedback-error/);
     expect(screen.queryByText(/unknown-id/)).not.toBeInTheDocument();
   });
 
+  it('stays neutral for an entity that is really named Restricted', () => {
+    mockLabels.current = (values) => ({ labels: new Map(values.map((value) => [value, 'Restricted'])), restricted: new Set() });
+    renderChip({ variable: org, value: 'entity-id' });
+    const chip = screen.getByRole('button', { name: 'Org : Restricted' });
+    expect(chip.className).not.toMatch(/feedback-error/);
+  });
+
   it('stays neutral while the id is still resolving', () => {
-    mockLabels.current = () => new Map();
+    mockLabels.current = () => ({ labels: new Map(), restricted: new Set() });
     renderChip({ variable: org, value: 'some-id' });
     const chip = screen.getByRole('button', { name: 'Org : …' });
     expect(chip.className).not.toMatch(/feedback-error/);

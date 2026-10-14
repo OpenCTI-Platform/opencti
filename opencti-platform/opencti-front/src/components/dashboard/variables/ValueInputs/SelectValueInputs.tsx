@@ -38,7 +38,7 @@ const OptionsSelect = ({ label, value, options, onChange, disabled, commitOn }: 
 
 export const SelectionValueInput = ({ values, ...props }: ValueInputProps & { values: string[] }) => {
   const { t_i18n } = useFormatter();
-  const labels = useVariableValueLabels(props.variable, values);
+  const { labels } = useVariableValueLabels(props.variable, values);
   const options = values.map((value) => ({ value, label: labels.get(value) ?? t_i18n('Loading') }));
   return <OptionsSelect {...props} options={options} />;
 };

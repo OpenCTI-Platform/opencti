@@ -9,7 +9,6 @@ import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
 import DashboardVariableValueInput from './DashboardVariableValueInput';
 import useVariableValueLabels from './useVariableValueLabels';
-import { isIdVariableType } from './variableTypeSearch';
 
 // FDS-WORKAROUND #69: the library Chip has no muted (still clickable) state, `disabled` would block the click.
 const UNUSED_OPACITY = 0.6;
@@ -36,7 +35,7 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onE
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const labels = useVariableValueLabels(variable, value ? [value] : []);
+  const { labels, restricted } = useVariableValueLabels(variable, value ? [value] : []);
   const isUnused = usedInWidgetIds.length === 0;
   const hasMenu = onEdit !== undefined || onDelete !== undefined;
 
@@ -45,7 +44,8 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, onChange, onE
   const valueLabel = value
     ? (variable.type === 'date' ? fsd(value) : labels.get(value) ?? '…')
     : t_i18n('Not set');
-  const isRestricted = isIdVariableType(variable.type) && valueLabel === t_i18n('Restricted');
+  // Decided by the resolution, not by the label: an entity can really be named `Restricted`.
+  const isRestricted = value !== undefined && restricted.has(value);
 
   const chip = (
     <Chip

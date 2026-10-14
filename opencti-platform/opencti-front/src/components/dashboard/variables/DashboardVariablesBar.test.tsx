@@ -6,7 +6,7 @@ import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import DashboardVariablesBar from './DashboardVariablesBar';
 
 vi.mock('./useVariableValueLabels', () => ({
-  default: (_variable: unknown, values: string[]) => new Map(values.map((value) => [value, value])),
+  default: (_variable: unknown, values: string[]) => ({ labels: new Map(values.map((value) => [value, value])), restricted: new Set() }),
 }));
 
 const sector: DashboardVariable = {
