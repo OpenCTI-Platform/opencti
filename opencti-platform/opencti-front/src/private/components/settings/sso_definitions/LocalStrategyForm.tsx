@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Tooltip from '@mui/material/Tooltip';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -14,6 +13,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
 
@@ -221,13 +221,19 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
               disabled={isConfigurationFromEnv || (!canDisableLocal && initialValues.enabled)}
             />
             {isConfigurationFromEnv && (
-              <Tooltip title={t_i18n('Local authentication cannot be changed when authentication is managed by environment configuration')}>
-                <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+                </TooltipTrigger>
+                <TooltipContent>{t_i18n('Local authentication cannot be changed when authentication is managed by environment configuration')}</TooltipContent>
               </Tooltip>
             )}
             {!canDisableLocal && initialValues.enabled && (
-              <Tooltip title={t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}>
-                <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+                </TooltipTrigger>
+                <TooltipContent>{t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}</TooltipContent>
               </Tooltip>
             )}
           </Box>
@@ -314,7 +320,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                 component={SwitchField}
                 type="checkbox"
                 name="local_auth_lockout_enabled"
-                label={t_i18n('Lock accounts after repeated failed login attempts')}
+                label={t_i18n('Temporarily lock accounts after repeated failed login attempts')}
               />
               {values.local_auth_lockout_enabled && (
                 <>
@@ -336,15 +342,22 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     label={t_i18n('Failed login attempts counter reset after (minutes)')}
                     fullWidth
                   />
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_duration"
-                    label={t_i18n('First lock duration (minutes)')}
-                    fullWidth
-                  />
+                  <Box className="mt-5" sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Field
+                      component={TextField}
+                      type="number"
+                      variant="outlined"
+                      name="local_auth_lockout_duration"
+                      label={t_i18n('First lock duration (minutes)')}
+                      fullWidth
+                    />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+                      </TooltipTrigger>
+                      <TooltipContent>{t_i18n('The lock duration increases exponentially with each new lock, up to the maximum lock duration')}</TooltipContent>
+                    </Tooltip>
+                  </Box>
                   <Field
                     component={TextField}
                     type="number"
