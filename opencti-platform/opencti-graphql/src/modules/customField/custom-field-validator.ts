@@ -37,6 +37,45 @@ export const normalizeCustomFieldValues = (values: CustomFieldValue[]): CustomFi
   return normalizedDate ? { ...entry, date_value: normalizedDate } : entry;
 });
 
+// A remove entry carrying select_values only removes these options of the multi_select
+export const isCustomFieldOptionsRemove = (input: EditInput) => input.operation === EditOperation.Remove
+  && (input.value ?? []).some((v: CustomFieldValue) => Array.isArray(v?.select_values) && v.select_values.length > 0);
+
+// Several custom field values inputs of a single edit (e.g. a background task replacing multi_select options
+// with a remove then an add) are applied in order on the current values, the result is a single replace.
+// add sets the field (multi_select options united), remove clears it (or removes the given options), replace sets all.
+export const foldCustomFieldValuesInputs = (currentValues: CustomFieldValue[], inputs: EditInput[]): CustomFieldValue[] => {
+  let values = currentValues;
+  for (let i = 0; i < inputs.length; i += 1) {
+    const { operation, value } = inputs[i];
+    const entries: CustomFieldValue[] = value ?? [];
+    if (operation === EditOperation.Add) {
+      const entryFieldIds = entries.map((e) => e.field_id);
+      const previousValues = values;
+      const addedValues = entries.map((entry) => {
+        const existing = previousValues.find((v) => v.field_id === entry.field_id);
+        return Array.isArray(existing?.select_values) && Array.isArray(entry.select_values)
+          ? { ...entry, select_values: R.uniq([...existing.select_values, ...entry.select_values]) }
+          : entry;
+      });
+      values = [...previousValues.filter((v) => !entryFieldIds.includes(v.field_id)), ...addedValues];
+    } else if (operation === EditOperation.Remove) {
+      values = values.flatMap((current) => {
+        const removed = entries.find((e) => e.field_id === current.field_id);
+        if (!removed) return [current];
+        if (Array.isArray(removed.select_values) && removed.select_values.length > 0 && Array.isArray(current.select_values)) {
+          const remaining = current.select_values.filter((option) => !removed.select_values?.includes(option));
+          return remaining.length > 0 ? [{ ...current, select_values: remaining }] : [];
+        }
+        return [];
+      });
+    } else {
+      values = entries;
+    }
+  }
+  return values;
+};
+
 // Merge of entities: each custom field is merged as the standard attribute it stands for. A single value
 // custom field keeps the target value, or else takes the value of the first source having one. A multi_select
 // custom field gets the union of the selected options. The result holds a single entry per custom field.

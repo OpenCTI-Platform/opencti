@@ -295,6 +295,8 @@ import type * as S2 from '../types/stix-2-0-common';
 import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
+  foldCustomFieldValuesInputs,
+  isCustomFieldOptionsRemove,
   mergeCustomFieldValues,
   normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
@@ -3046,17 +3048,24 @@ export const updateAttribute = async <T extends StoreObject>(
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
   // Validate custom field values against their definitions (mandatory / min-max / select options)
-  if (inputs.filter((input) => input.key === 'custom_field_values').length > 1) {
-    throw FunctionalError('Only one custom_field_values input is allowed', { id, type });
-  }
   let finalInputs = inputs;
-  const customFieldValuesInput = inputs.find((inputData) => inputData.key === 'custom_field_values');
-  if (customFieldValuesInput) {
+  const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
+  if (customFieldValuesInputs.length > 0) {
     if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-      const normalizedCustomFieldValuesInput = { ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) };
-      await validateCustomFieldValuesEditInput(context, user, normalizedCustomFieldValuesInput, initial);
-      finalInputs = inputs.map((inputData) => (inputData === customFieldValuesInput ? normalizedCustomFieldValuesInput : inputData));
+      const normalizedInputs: EditInput[] = [];
+      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+        const customFieldValuesInput = customFieldValuesInputs[i];
+        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
+      }
+      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+      const customFieldValuesInput = isFolded
+        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+        : normalizedInputs[0];
+      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
     } else {
       throw FunctionalError('Custom fields feature is not enabled', { id, type });
     }
