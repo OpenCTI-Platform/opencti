@@ -20,10 +20,7 @@ import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
 import type { ComplexAttributePath, JsonMapperParsed, JsonMapperRepresentation, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
-import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
-import { transformCustomFieldValueAddInput } from '../modules/customField/custom-field-validator';
-import { type BasicStoreEntityCustomFieldDefinition, CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
@@ -90,60 +87,6 @@ export const computeDefaultValue = (
   }
   // Handle single
   return formatValue(defaultValue[0], definition.type, attribute.column);
-};
-
-// -- CUSTOM FIELDS --
-
-// Custom fields are not part of the static schema: each one is described as a standard attribute of its
-// type, so that the mappers compute its value as any other attribute (date pattern, list separator...).
-const toCustomFieldAttributeDefinition = (definition: BasicStoreEntityCustomFieldDefinition): AttributeDefinition => {
-  const base = { name: definition.name, label: definition.label, mandatoryType: 'no', editDefault: false, upsert: false, isFilterable: false } as const;
-  switch (definition.field_type) {
-    case 'integer':
-      return { ...base, type: 'numeric', precision: 'integer', multiple: false };
-    case 'boolean':
-      return { ...base, type: 'boolean', multiple: false };
-    case 'date':
-      return { ...base, type: 'date', multiple: false };
-    case 'multi_select':
-      return { ...base, type: 'string', format: 'short', multiple: true };
-    default:
-      return { ...base, type: 'string', format: 'short', multiple: false };
-  }
-};
-
-export const getCustomFieldMapperAttributes = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-  attributeKeys: string[],
-): Promise<Map<string, AttributeDefinition>> => {
-  // Only load the definitions when the representation maps a custom field
-  if (!isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) || !attributeKeys.some((key) => key.startsWith(CUSTOM_FIELD_PREFIX))) {
-    return new Map();
-  }
-  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
-  return new Map(definitions.map((definition) => [definition.name, toCustomFieldAttributeDefinition(definition)]));
-};
-
-// Move the mapped custom field values to the custom field values of the input, in the stored format.
-export const moveCustomFieldValuesToInput = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: Record<string, any>,
-  customFieldAttributes: Map<string, AttributeDefinition>,
-  entityType: string,
-) => {
-  const customFieldValueAddInputs = [];
-  for (const name of customFieldAttributes.keys()) {
-    if (input[name] !== undefined) {
-      customFieldValueAddInputs.push({ field_name: name, value: Array.isArray(input[name]) ? input[name] : [input[name]] });
-      delete input[name];
-    }
-  }
-  if (customFieldValueAddInputs.length > 0) {
-    input.custom_field_values = await transformCustomFieldValueAddInput(context, user, customFieldValueAddInputs, entityType);
-  }
 };
 
 // -- VALIDATION --
@@ -389,7 +332,7 @@ const mapRecord = async (
   handleType(representation, input);
   input = handleInnerType(input, entity_type);
 
-  const customFieldAttributes = await getCustomFieldMapperAttributes(context, user, entity_type, (representation.attributes ?? []).map((a) => a.key));
+  const customFieldAttributes = await getCustomFieldAttributeDefinitions(context, user, entity_type, (representation.attributes ?? []).map((a) => a.key));
   handleAttributes(record, representation, input, otherEntities, refEntities, customFieldAttributes);
   await moveCustomFieldValuesToInput(context, user, input, customFieldAttributes, entity_type);
 
