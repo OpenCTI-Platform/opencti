@@ -165,4 +165,11 @@ describe('Workflow closing reason (Case-Incident)', () => {
     expect(result).toMatchObject({ success: true, newState: 'open' });
     expect((await readCase(caseId)).x_opencti_closing_reason).toBeNull();
   });
+
+  it('should keep the closing reason when moving to a state that cannot be closed again', async () => {
+    await trigger(caseId, 'close', 'duplicate');
+    const result = await trigger(caseId, 'archive');
+    expect(result).toMatchObject({ success: true, newState: 'archived' });
+    expect((await readCase(caseId)).x_opencti_closing_reason).toBe('duplicate');
+  });
 });
