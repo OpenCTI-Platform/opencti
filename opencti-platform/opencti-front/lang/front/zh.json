@@ -4948,6 +4948,7 @@
   "The value must be between min and max value": "该值必须介于最小值和最大值之间",
   "The value must be greater than or equal to 0": "该值必须大于或等于 0",
   "The value must be greater than or equal to 1": "The value must be greater than or equal to 1",
+  "The value must be less than or equal to {limit}": "该值必须小于或等于 {limit}",
   "The value must be less than or equal to 100": "该值必须小于或等于 100",
   "The value must not be empty": "值不能为空",
   "The value must not be empty.": "值不能为空。",

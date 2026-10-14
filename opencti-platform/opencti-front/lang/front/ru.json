@@ -4948,6 +4948,7 @@
   "The value must be between min and max value": "Значение должно находиться между минимальным и максимальным значением",
   "The value must be greater than or equal to 0": "Значение должно быть больше или равно 0",
   "The value must be greater than or equal to 1": "Значение должно быть больше или равно 1",
+  "The value must be less than or equal to {limit}": "Значение должно быть меньше или равно {limit}",
   "The value must be less than or equal to 100": "Значение должно быть меньше или равно 100",
   "The value must not be empty": "Значение не должно быть пустым",
   "The value must not be empty.": "Значение не должно быть пустым.",

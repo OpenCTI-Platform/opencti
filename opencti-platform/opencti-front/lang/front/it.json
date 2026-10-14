@@ -4948,6 +4948,7 @@
   "The value must be between min and max value": "Il valore deve essere compreso tra il valore minimo e massimo",
   "The value must be greater than or equal to 0": "Il valore deve essere maggiore o uguale a 0",
   "The value must be greater than or equal to 1": "Il valore deve essere maggiore o uguale a 1",
+  "The value must be less than or equal to {limit}": "Il valore deve essere minore o uguale a {limit}",
   "The value must be less than or equal to 100": "Il valore deve essere minore o uguale a 100",
   "The value must not be empty": "Il valore non deve essere vuoto",
   "The value must not be empty.": "Il valore non deve essere vuoto.",
