@@ -1,6 +1,5 @@
 enum IngestionHealthStatus {
   critical
-  unknown
   stopped
   healthy
   degraded

@@ -15,11 +15,11 @@ const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_M
 const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
 
 describe('computeIngestionHealthPatch', () => {
-  it('should write unknown with no check and set since on the first evaluation', () => {
+  it('should write healthy with no check and set since on the first evaluation', () => {
     const patch = computeIngestionHealthPatch({}, [], EVALUATED_AT);
     expect(patch).toEqual({
       ingestion_health: {
-        status: IngestionHealthStatus.Unknown,
+        status: IngestionHealthStatus.Healthy,
         health_checks: [],
         status_since: EVALUATED_AT,
       },
@@ -43,7 +43,7 @@ describe('computeIngestionHealthPatch', () => {
   });
 
   it('should return null when no check is stored and none is found', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE, health_checks: [] } };
+    const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
     expect(computeIngestionHealthPatch(current, [], EVALUATED_AT)).toBeNull();
   });
 
@@ -84,16 +84,20 @@ describe('computeIngestionHealthPatch', () => {
   });
 
   it('should move since when the status changes', () => {
-    // The user was fixed: degraded -> unknown
+    // The user was fixed: degraded -> healthy
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
     const patch = computeIngestionHealthPatch(current, [], EVALUATED_AT);
     expect(patch).toEqual({
       ingestion_health: {
-        status: IngestionHealthStatus.Unknown,
+        status: IngestionHealthStatus.Healthy,
         health_checks: [],
         status_since: EVALUATED_AT,
       },
     });
+  });
+
+  it('should stay healthy with a check unable to change the status', () => {
+    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], EVALUATED_AT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Healthy);
   });
 
   it('should return the checks sorted by code', () => {
@@ -161,7 +165,7 @@ describe('toGraphqlIngestionHealth', () => {
   });
 
   it('should drop the checks unknown to the registry and return no check when none is stored', () => {
-    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK] })?.healthChecks).toEqual([]);
-    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Unknown, status_since: PREVIOUS_SINCE })?.healthChecks).toEqual([]);
+    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [OTHER_CHECK] })?.healthChecks).toEqual([]);
+    expect(toGraphqlIngestionHealth({ status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE })?.healthChecks).toEqual([]);
   });
 });

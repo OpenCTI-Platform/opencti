@@ -10836,7 +10836,6 @@ type ConnectorManager implements BasicObject & InternalObject {
 
 enum IngestionHealthStatus {
   critical
-  unknown
   stopped
   healthy
   degraded

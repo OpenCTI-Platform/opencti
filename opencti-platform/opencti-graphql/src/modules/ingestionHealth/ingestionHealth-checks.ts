@@ -39,7 +39,8 @@ export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExis
   return checks;
 };
 
-// Priority: critical > degraded > unknown. stopped and healthy come with the checks able to prove them.
+// Priority: critical > degraded > healthy. stopped comes with the checks able to prove it.
+// Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
 export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealthStatus => {
   const blockingDefinitions = checks
     .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
@@ -50,7 +51,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealt
   if (blockingDefinitions.some((definition) => definition.kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
-  return IngestionHealthStatus.Unknown;
+  return IngestionHealthStatus.Healthy;
 };
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
@@ -98,7 +99,7 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
 
 // Spread into the resolvers of every type carrying an ingestion health.
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
-// Null until the manager first evaluates the ingestion.
+// Null until the manager first evaluates the ingestion, which reads as unknown.
 export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | undefined): IngestionHealth | null => {
   if (!health) {
     return null;
