@@ -20,6 +20,13 @@ vi.mock('../../../src/config/conf', () => ({
   logApp: { warn: vi.fn(), error: vi.fn(), debug: vi.fn(), info: vi.fn() },
 }));
 
+// Only Incident carries the closing reason attribute (it is not registered while the workflow engine is off)
+vi.mock('../../../src/schema/schema-attributes', () => ({
+  schemaAttributesDefinition: {
+    getAttribute: vi.fn((type: string, name: string) => (type === 'Incident' && name === 'x_opencti_closing_reason' ? { name } : undefined)),
+  },
+}));
+
 vi.mock('../../../src/utils/draftContext', () => ({
   bypassDraftContext: vi.fn((context) => context),
 }));
@@ -145,7 +152,7 @@ describe('projectWorkflowState – closing reason', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, 'Incident');
+    schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, ['Incident', 'Report']);
     (updateAttribute as any).mockResolvedValue({});
     (fullEntitiesList as any).mockResolvedValue([
       {
@@ -179,6 +186,21 @@ describe('projectWorkflowState – closing reason', () => {
 
     expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-1', 'Incident', [
       { key: 'x_opencti_closing_reason', value: ['duplicate'] },
+    ], { workflowInternalWrite: true });
+  });
+
+  it('should still write the status when the closing reason attribute is not registered', async () => {
+    const report = { id: 'report-1', internal_id: 'report-1', entity_type: 'Report' } as BasicStoreEntity;
+    (fullEntitiesList as any).mockResolvedValue([
+      {
+        id: 'status-report-id', type: 'Report', scope: StatusScope.Global, template_id: 'tpl-closed', order: 2,
+      },
+    ]);
+
+    await projectWorkflowState(mockContext, mockUser, report, 'tpl-closed', StatusScope.Global, 'duplicate');
+
+    expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'report-1', 'Report', [
+      { key: 'x_opencti_workflow_id', value: ['status-report-id'] },
     ], { workflowInternalWrite: true });
   });
 
