@@ -264,6 +264,64 @@ describe('useDashboardVariables', () => {
     });
   });
 
+  describe('local values that stop being ignored', () => {
+    const storageKey = 'dashboard-variables-user-1-ws-1';
+    const seed = () => {
+      window.localStorage.setItem(storageKey, JSON.stringify({ [sector.id]: 'Finance' }));
+      window.history.replaceState(null, '', `/?variables=${encodeURIComponent(`${country.id}:DE`)}`);
+    };
+    const render = (initial: boolean) => renderHook(
+      ({ ignore }) => useDashboardVariables('ws-1', [sector, country], { ignoreLocalValues: ignore }),
+      { initialProps: { ignore: initial } },
+    );
+
+    it('applies the stored and URL values once they stop being ignored, and keeps them on the next write', () => {
+      seed();
+      const { result, rerender } = render(true);
+      expect(result.current.values.get(sector.id)).toBe('Energy');
+      expect(result.current.values.get(country.id)).toBe('FR');
+      rerender({ ignore: false });
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+      expect(result.current.values.get(country.id)).toBe('DE');
+      act(() => result.current.setValue(sector.id, 'Retail'));
+      expect(JSON.parse(window.localStorage.getItem(storageKey) as string)).toEqual({ [sector.id]: 'Retail', [country.id]: 'DE' });
+    });
+
+    it('goes back to the defaults, writing nothing, when the values are ignored again', () => {
+      seed();
+      const { result, rerender } = render(false);
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+      rerender({ ignore: true });
+      expect(result.current.values.get(sector.id)).toBe('Energy');
+      expect(result.current.values.get(country.id)).toBe('FR');
+      act(() => result.current.setValue(sector.id, 'Retail'));
+      expect(JSON.parse(window.localStorage.getItem(storageKey) as string)).toEqual({ [sector.id]: 'Finance' });
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${country.id}:DE`);
+    });
+
+    it('keeps the state stable between renders once resynchronised', () => {
+      seed();
+      const { result, rerender } = render(true);
+      rerender({ ignore: false });
+      const before = result.current.values;
+      window.localStorage.setItem(storageKey, JSON.stringify({ [sector.id]: 'Other' }));
+      rerender({ ignore: false });
+      expect(result.current.values).toBe(before);
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+    });
+
+    it('applies the stored values when the feature flag resolves after the mount', () => {
+      mocks.flags = [];
+      seed();
+      const { result, rerender } = render(false);
+      expect(result.current.values.size).toBe(0);
+      mocks.flags = ['DASHBOARD_VARIABLES'];
+      rerender({ ignore: false });
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+      expect(result.current.values.get(country.id)).toBe('DE');
+    });
+  });
+
   describe('deleted variables', () => {
     const urlValues = () => new URLSearchParams(window.location.search).get('variables');
     const storedValues = () => JSON.parse(window.localStorage.getItem('dashboard-variables-user-1-ws-1') as string);

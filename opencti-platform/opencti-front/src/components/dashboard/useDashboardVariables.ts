@@ -17,9 +17,14 @@ export const useDashboardVariables = (
   const key = dashboardVariablesStorageKey(me.id, workspaceId);
   // Priority: URL > localStorage > default (the default is applied below).
   const load = () => (ignoreLocalValues || !enabled ? {} : { ...readStoredVariableValues(key), ...parseVariablesParam(window.location.search) });
-  const [state, setState] = useState(() => ({ key, stored: load() }));
-  // Account or dashboard change: read again, never keep the state of another key.
-  const stored = state.key === key ? state.stored : load();
+  const [state, setState] = useState(() => ({ key, ignoreLocalValues, enabled, stored: load() }));
+  // The stored values are tied to what they were read for: another account or dashboard, or local values that
+  // stop being ignored (viewer toggle opened, flag resolved late), need a fresh read. Once re-read, the state is stable.
+  let { stored } = state;
+  if (state.key !== key || state.ignoreLocalValues !== ignoreLocalValues || state.enabled !== enabled) {
+    stored = load();
+    setState({ key, ignoreLocalValues, enabled, stored });
+  }
 
   const defaultsSignature = JSON.stringify([...buildDefaultVariableValues(enabled ? variables : [])]);
   const defaults = useMemo(() => new Map<string, string>(JSON.parse(defaultsSignature)), [defaultsSignature]);
@@ -47,8 +52,8 @@ export const useDashboardVariables = (
     const kept = Object.fromEntries(Object.entries(next).filter(([id]) => ids.has(id)));
     writeStoredVariableValues(key, kept);
     writeVariablesParam(kept);
-    setState({ key, stored: kept });
-  }, [key, idsSignature]);
+    setState({ key, ignoreLocalValues, enabled, stored: kept });
+  }, [key, ignoreLocalValues, enabled, idsSignature]);
 
   const setValue = useCallback((variableId: string, value: string) => {
     if (ignoreLocalValues || !enabled) return;
