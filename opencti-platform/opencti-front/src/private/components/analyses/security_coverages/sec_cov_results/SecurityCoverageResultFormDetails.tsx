@@ -113,20 +113,25 @@ const SecurityCoverageResultFormDetails = ({
             label={t_i18n('Name')}
             required
           />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={4}
-            style={fieldSpacingContainerStyle}
-            autoPersistOnBlur={false}
-          />
-          <ConfidenceField
-            containerStyle={fieldSpacingContainerStyle}
-            entityType="Security-Coverage"
-          />
+          {/* A result has no description nor confidence, the update cannot save them. */}
+          {!isUpdate && (
+            <>
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows={4}
+                style={fieldSpacingContainerStyle}
+                autoPersistOnBlur={false}
+              />
+              <ConfidenceField
+                containerStyle={fieldSpacingContainerStyle}
+                entityType="Security-Coverage"
+              />
+            </>
+          )}
           <Field
             component={CoverageInformationField}
             name="coverageInformation"
