@@ -1592,6 +1592,14 @@ describe('useStixFilters', () => {
     expect(hook.result.current).toContain('x_opencti_ssvc_automatable');
     expect(hook.result.current).toContain('x_opencti_ssvc_technical_impact');
   });
+
+  it('should include the closing reason filter key', () => {
+    const { hook } = testRenderHook(
+      () => useStixFilters(),
+      { userContext: createMockUserContext({ settings: { platform_feature_flags: [] } }) },
+    );
+    expect(hook.result.current).toContain('x_opencti_closing_reason');
+  });
 });
 
 describe('getAvailableOperatorForFilter', () => {
