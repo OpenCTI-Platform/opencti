@@ -179,12 +179,41 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     );
   }
 
+  // An external write kept the entity Status off the workflow without any transition running.
+  const divergence = workflowInstance.pendingError ? (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex" tabIndex={0}>
+            <ErrorOutline color="warning" fontSize="small" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{workflowInstance.pendingError}</TooltipContent>
+      </Tooltip>
+      <Text as="span" variant="content-compact" className="whitespace-nowrap">
+        {t_i18n('Status out of sync with the workflow')}
+      </Text>
+      {isBypass && (
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={handleClear}
+          disabled={clearing || approving}
+          startIcon={<Close fontSize="small" />}
+        >
+          {t_i18n('Clear')}
+        </Button>
+      )}
+    </Box>
+  ) : null;
+
   if (workflowInstance.allowedTransitions.length === 0) {
-    return null;
+    return divergence;
   }
 
   return (
     <>
+      {divergence}
       {workflowInstance.allowedTransitions.length > 1 ? (
         <Menu open={menuOpen} onOpenChange={setMenuOpen}>
           <MenuTrigger asChild>
