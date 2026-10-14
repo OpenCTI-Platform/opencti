@@ -46,7 +46,12 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity, IngestionHe
 
 export interface StoreEntityConnector extends BasicStoreEntityConnector, StoreEntity {}
 
-// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness
+// Connector of the connectors cache: without liveness, see refreshConnectorsLiveness.
+// The cache is only refreshed by a notify on the connector topics (or a cache reset), and some frequent writes skip it on purpose:
+// a notify reloads every connector on every node. These fields can therefore be stale here, read them from Elasticsearch:
+// - connector_state, connector_state_reset, connector_state_timestamp, connector_info and updated_at (pings, state resets, built-in runs);
+// - manager_contract and manager_contract_image (auto-upgrade of managed connectors).
+// Any new write of a field read from this cache must notify, as registerConnector does.
 export type CachedConnector = Omit<BasicStoreEntityConnector, 'active'>;
 
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
