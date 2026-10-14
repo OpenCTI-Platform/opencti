@@ -57,11 +57,16 @@ describe('useVariableValueLabels', () => {
     ['text', ['Energy']],
     ['boolean', ['true']],
     ['vocabulary', ['high']],
-    ['entityType', ['Malware']],
   ] as const)('uses the value itself as label for a %s variable, without query', (type, values) => {
     const { relayEnv, hook } = renderLabels({ type, restriction: { mode: 'none' } }, [...values]);
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(hook.result.current).toEqual(new Map(values.map((v) => [v, v])));
+  });
+
+  it('labels an entityType variable value with the translated type name, without query', () => {
+    const { relayEnv, hook } = renderLabels({ type: 'entityType', restriction: { mode: 'none' } }, ['Threat-Actor-Group', 'Malware']);
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+    expect(hook.result.current).toEqual(new Map([['Threat-Actor-Group', 'Threat Actor Group'], ['Malware', 'Malware']]));
   });
 
   it('does not query when there is no id to resolve', () => {
