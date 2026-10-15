@@ -273,84 +273,111 @@ export const authenticateForPublic = async (req, res, next) => {
   }
 };
 
-// Load one bounded chunk of missing elements and convert them to STIX.
+// Load a bounded set of missing elements, converted once to STIX, as pending entries of the resolution.
 // Store objects are released when this returns: only what is needed to publish them is kept.
 const loadMissingElements = async (state, ids) => {
-  const { context, user, cache, resolvedIds } = state;
+  const { context, user, seenIds, loadedInternalIds, pending } = state;
+  ids.forEach((id) => seenIds.add(id));
   const missingElements = await storeLoadByIdsWithRefs(context, user, ids);
-  const elementsWithStix = [];
-  const nextRefs = new Set();
   for (let index = 0; index < missingElements.length; index += 1) {
     await doYield();
     const missingElement = missingElements[index];
-    const stix = convertStoreToStix_2_1(missingElement);
-    elementsWithStix.push({ message: generateCreateMessage(missingElement), stix });
-    extractIdsFromStoreObject(missingElement).forEach((id) => resolvedIds.add(id));
-    stixRefsExtractor(stix).forEach((refId) => {
-      if (!cache.has(refId) && !resolvedIds.has(refId)) {
-        nextRefs.add(refId);
-      }
-    });
-  }
-  return { elementsWithStix, nextRefs: Array.from(nextRefs) };
-};
-
-// Dependencies must be sent before dependents: the refs of a loaded chunk are resolved
-// and published (depth first) before the chunk itself.
-const publishResolvedChunk = async (state, { elementsWithStix, nextRefs }) => {
-  const isComplete = await resolveRefsInChunks(state, nextRefs);
-  if (!isComplete || elementsWithStix.length === 0) {
-    return isComplete;
-  }
-  return (await state.onResolved(elementsWithStix)) !== false;
-};
-
-const resolveRefsInChunks = async (state, refs) => {
-  for (let index = 0; index < refs.length; index += RESOLUTION_BATCH_SIZE) {
-    // Filtered per chunk, as the dependencies of a previous chunk may already have resolved some of these refs
-    const ids = refs.slice(index, index + RESOLUTION_BATCH_SIZE).filter((id) => !state.cache.has(id) && !state.resolvedIds.has(id));
-    if (ids.length > 0) {
-      const chunk = await loadMissingElements(state, ids);
-      const isComplete = await publishResolvedChunk(state, chunk);
-      if (!isComplete) {
-        return false;
-      }
+    if (!loadedInternalIds.has(missingElement.internal_id)) {
+      loadedInternalIds.add(missingElement.internal_id);
+      const stix = convertStoreToStix_2_1(missingElement);
+      const elementIds = extractIdsFromStoreObject(missingElement);
+      const entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds };
+      elementIds.forEach((id) => {
+        seenIds.add(id);
+        pending.set(id, entry);
+      });
     }
   }
-  return true;
+};
+
+// Next refs of a frame to load, starting from its current ref, never more than the batch size
+const nextRefsToLoad = (state, refs, fromIndex) => {
+  const ids = new Set();
+  for (let index = fromIndex; index < refs.length && ids.size < RESOLUTION_BATCH_SIZE; index += 1) {
+    const refId = refs[index];
+    if (!state.cache.has(refId) && !state.seenIds.has(refId)) {
+      ids.add(refId);
+    }
+  }
+  return Array.from(ids);
 };
 
 /**
  * Resolve the closure of missing references and hand it to onResolved, chunk by chunk.
  *
  * The closure of a large container can hold tens of thousands of elements, so it is never loaded at once:
- * each load is bounded by app:live_stream:resolution_batch_size, and each chunk is handed to onResolved
- * as soon as its own dependencies have been, so dependencies always come before dependents.
+ * elements are loaded on demand, at most app:live_stream:resolution_batch_size ids per load, and handed
+ * to onResolved in chunks of the same size as soon as they are ready.
  *
- * requiredRefs (from and to of a relationship) are loaded first and alone: if one of them is not
- * accessible, the resolution is invalid and nothing is handed to onResolved.
+ * The closure is walked depth first, element by element: an element is handed to onResolved only after all
+ * its refs, including refs loaded together with it or by an ancestor and not handed yet. Only a circular
+ * reference can break this order, as one element of the cycle has to come first.
+ *
+ * requiredRefs (from and to of a relationship) are loaded first: if one of them is not accessible,
+ * the resolution is invalid and nothing is handed to onResolved.
  *
  * onResolved receives an array of { message, stix } and returns false to stop the resolution.
  * Returns false if a required ref is not accessible or if onResolved stopped the resolution.
  */
 export const resolveMissingReferences = async (context, user, missingRefs, cache, onResolved, opts = {}) => {
   const { requiredRefs = [] } = opts;
-  const state = { context, user, cache, onResolved, resolvedIds: new Set() };
   if (requiredRefs.some((id) => isEmptyField(id))) {
     return false;
   }
+  // seenIds: requested or loaded ids, published or not. pending: loaded entries not walked yet, by each of their ids.
+  const state = { context, user, cache, seenIds: new Set(), loadedInternalIds: new Set(), pending: new Map() };
   const requiredToLoad = [...new Set(requiredRefs.filter((id) => !cache.has(id)))];
   if (requiredToLoad.length > 0) {
-    const requiredChunk = await loadMissingElements(state, requiredToLoad);
-    if (requiredToLoad.some((id) => !state.resolvedIds.has(id))) {
-      return false;
-    }
-    const isComplete = await publishResolvedChunk(state, requiredChunk);
-    if (!isComplete) {
+    await loadMissingElements(state, requiredToLoad);
+    if (requiredToLoad.some((id) => !state.pending.has(id))) {
       return false;
     }
   }
-  return resolveRefsInChunks(state, missingRefs);
+  let toPublish = [];
+  const publish = async (isLast) => {
+    if (toPublish.length === 0 || (!isLast && toPublish.length < RESOLUTION_BATCH_SIZE)) {
+      return true;
+    }
+    const elements = toPublish;
+    toPublish = [];
+    return (await onResolved(elements)) !== false;
+  };
+  // Iterative walk, as chains of refs can be deep: each frame is an element with the index of its next ref to walk
+  const stack = [{ entry: undefined, refs: [...requiredToLoad, ...missingRefs], index: 0 }];
+  while (stack.length > 0) {
+    await doYield();
+    const frame = stack[stack.length - 1];
+    if (frame.index >= frame.refs.length) {
+      // All refs of the element are published, the element can be
+      stack.pop();
+      if (frame.entry) {
+        toPublish.push({ message: frame.entry.message, stix: frame.entry.stix });
+        if (!(await publish(false))) {
+          return false;
+        }
+      }
+    } else {
+      const refId = frame.refs[frame.index];
+      const pendingEntry = state.pending.get(refId);
+      if (pendingEntry) {
+        pendingEntry.ids.forEach((id) => state.pending.delete(id));
+        frame.index += 1;
+        stack.push({ entry: pendingEntry, refs: pendingEntry.refs, index: 0 });
+      } else if (cache.has(refId) || state.seenIds.has(refId)) {
+        // Already published, currently walked (circular reference) or not accessible
+        frame.index += 1;
+      } else {
+        // Not loaded yet: load it with the next refs of this element, then walk it on the next iteration
+        await loadMissingElements(state, nextRefsToLoad(state, frame.refs, frame.index));
+      }
+    }
+  }
+  return publish(true);
 };
 
 // before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access
