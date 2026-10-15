@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import GeoMap from './GeoMap';
 
-const maplibreMock = vi.hoisted(() => ({ isWebGL2Supported: true }));
+const maplibreMock = vi.hoisted(() => ({ isWebGL2Supported: true, createdMaps: 0 }));
 
 vi.mock('maplibre-gl', () => {
   class GPUInitializationError extends Error {}
@@ -10,6 +10,7 @@ vi.mock('maplibre-gl', () => {
     scrollZoom = { setWheelZoomRate: () => {} };
 
     constructor() {
+      maplibreMock.createdMaps += 1;
       if (!maplibreMock.isWebGL2Supported) {
         throw new GPUInitializationError('WebGL2 is required to display this map.');
       }
@@ -36,6 +37,8 @@ vi.mock('./GeoMapFallback', () => ({
 describe('GeoMap', () => {
   beforeEach(() => {
     maplibreMock.isWebGL2Supported = true;
+    maplibreMock.createdMaps = 0;
+    localStorage.removeItem('opencti-map-renderer');
   });
 
   it('renders the MapLibre map when WebGL2 is available', () => {
@@ -49,5 +52,12 @@ describe('GeoMap', () => {
     const { getByText, findByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
     expect(getByText('Mini map')).toBeTruthy();
     expect(await findByText('Fallback map')).toBeTruthy();
+  });
+
+  it('renders the fallback map without creating a MapLibre map when forced from local storage', async () => {
+    localStorage.setItem('opencti-map-renderer', 'fallback');
+    const { findByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
+    expect(await findByText('Fallback map')).toBeTruthy();
+    expect(maplibreMock.createdMaps).toBe(0);
   });
 });
