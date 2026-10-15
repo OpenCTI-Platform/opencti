@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
 import SimpleTextField from '../../../../components/SimpleTextField';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
@@ -68,9 +69,12 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   dryrun,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isDeferredMode, registerPending } = useDeferredCreation();
+  // Form Intake: the label is created on submission from its value only, the platform assigns its color
+  const isDeferred = isDeferredMode && contextual;
   const labelValidation = Yup.object().shape({
     value: Yup.string().required(t_i18n('This field is required')),
-    color: Yup.string().required(t_i18n('This field is required')),
+    color: isDeferred ? Yup.string() : Yup.string().required(t_i18n('This field is required')),
   });
   const initialValues: LabelAddInput = {
     value: contextual ? inputValueContextual : '',
@@ -79,6 +83,14 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const onSubmit: FormikConfig<LabelAddInput>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
     if (dryrun && contextual) {
       creationCallback({ labelAdd: values } as LabelCreationContextualMutation$data);
+      handleClose();
+      return;
+    }
+    if (isDeferred) {
+      // The field keeps the pending id, the label is created on submission
+      const id = registerPending({ entityType: 'Label', input: { value: values.value } });
+      creationCallback({ labelAdd: { value: values.value, id } } as LabelCreationContextualMutation$data);
+      resetForm();
       handleClose();
       return;
     }
@@ -184,13 +196,15 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
                   label={t_i18n('Value')}
                   fullWidth={true}
                 />
-                <Field
-                  component={ColorPickerField}
-                  name="color"
-                  label={t_i18n('Color')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
+                {!isDeferred && (
+                  <Field
+                    component={ColorPickerField}
+                    name="color"
+                    label={t_i18n('Color')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                )}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}

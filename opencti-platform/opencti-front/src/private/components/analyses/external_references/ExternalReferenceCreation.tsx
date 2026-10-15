@@ -9,6 +9,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
+import { useDeferredCreation } from 'src/utils/hooks/useDeferredCreation';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import TextField from '../../../../components/TextField';
@@ -89,6 +90,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   dryrun,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isDeferredMode, registerPending } = useDeferredCreation();
 
   const [open, setOpen] = useState(false);
 
@@ -155,6 +157,16 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
       creationCallback({
         externalReferenceAdd: values,
       } as ExternalReferenceCreationMutation$data);
+      handleCloseContextual();
+      return;
+    }
+    if (isDeferredMode && creationCallback && handleCloseContextual) {
+      // Form Intake: the external reference is created on submission, the field keeps its pending id
+      const id = registerPending({ entityType: 'External-Reference', input: { ...finalValues } });
+      creationCallback({
+        externalReferenceAdd: { ...values, id },
+      } as ExternalReferenceCreationMutation$data);
+      resetForm();
       handleCloseContextual();
       return;
     }
