@@ -104,7 +104,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
     // patchAttribute does not refresh the caches: notify every node, as registerConnector does
     await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
   }
-  // Published an health activity event after the write
+  // Published a health activity event after the write
   // a failed write is retried at the next period and reports the transition then
   const nextHealth = patch.ingestion_health;
   const transition = isStopped ? null : computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
