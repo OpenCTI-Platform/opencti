@@ -28,7 +28,7 @@ import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access
 import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
-import { EditOperation } from '../../../generated/graphql';
+import { EditOperation, WorkflowExecutionStatus } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
@@ -238,7 +238,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
                 const attrPath = computeAttributePath(type, workflowStatusAction.attribute);
                 if (!result.success) {
                   logApp.warn('[OPENCTI-MODULE][PLAYBOOK] Workflow status not applied', { id, reason: result.reason });
-                } else if (result.executionStatus === 'completed' && !result.unchanged && attrPath) {
+                } else if (result.executionStatus === WorkflowExecutionStatus.Completed && !result.unchanged && attrPath) {
                   // Keep the bundle aligned with the new status for the next playbook components.
                   // A pending status only changes once its background actions succeed, an unchanged one leaves the bundle as is.
                   patchOperations.push({ op: EditOperation.Replace, path: `/objects/${index}${attrPath}`, value: targetStatusId });
