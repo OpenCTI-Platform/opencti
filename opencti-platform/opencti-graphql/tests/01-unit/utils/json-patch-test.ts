@@ -82,8 +82,8 @@ describe('computeJsonPatch', () => {
     expect(computeJsonPatch({ values: [{ a: 1 }, 'k'] }, { values: ['{"a":1}', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '{"a":1}' }]);
     expect(computeJsonPatch({ values: [{ id: 'x' }, 'k'] }, { values: ['#x', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '#x' }]);
     expect(computeJsonPatch({ values: [[], 'k'] }, { values: ['[]', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '[]' }]);
-    expect(computeJsonPatch({ values: [[]] }, { values: ['[]'] })).toEqual([{ op: 'replace', path: '/values', value: ['[]'] }]);
-    expect(computeJsonPatch({ values: ['[]'] }, { values: [[]] })).toEqual([{ op: 'replace', path: '/values', value: [[]] }]);
+    expect(computeJsonPatch({ values: [[]] }, { values: ['[]'] })).toEqual([{ op: 'replace', path: '/values/0', value: '[]' }]);
+    expect(computeJsonPatch({ values: ['[]'] }, { values: [[]] })).toEqual([{ op: 'replace', path: '/values/0', value: [] }]);
   });
 
   it('should add, remove and replace object properties', () => {
@@ -114,9 +114,20 @@ describe('computeJsonPatch', () => {
     expect((operation as jsonpatch.AddOperation<unknown>).value).not.toBe(to.values[0]);
   });
 
-  it('should replace the whole array when the edit distance exceeds the target length', () => {
-    expect(computeJsonPatch({ values: ['a', 'b', 'c'] }, { values: [] })).toEqual([{ op: 'replace', path: '/values', value: [] }]);
-    expect(computeJsonPatch({ values: ['a', 'b', 'c'] }, { values: ['x'] })).toEqual([{ op: 'replace', path: '/values', value: ['x'] }]);
+  it('should keep element operations on small arrays', () => {
+    expect(computeJsonPatch({ values: ['a', 'b'] }, { values: ['c'] })).toEqual([
+      { op: 'replace', path: '/values/0', value: 'c' },
+      { op: 'remove', path: '/values/1' },
+    ]);
+    expect(computeJsonPatch({ values: ['a', 'b', 'c'] }, { values: ['a'] })).toEqual([
+      { op: 'remove', path: '/values/1' },
+      { op: 'remove', path: '/values/1' },
+    ]);
+    expect(computeJsonPatch({ values: ['a', 'b', 'c'] }, { values: [] })).toEqual([
+      { op: 'remove', path: '/values/0' },
+      { op: 'remove', path: '/values/0' },
+      { op: 'remove', path: '/values/0' },
+    ]);
   });
 
   it('should replace the whole array when the edit distance exceeds the limit', () => {

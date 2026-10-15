@@ -88,7 +88,7 @@ const diffArray = (from: unknown[], to: unknown[], path: string, operations: Ope
     }
     return;
   }
-  const runs = findCommonRuns(from.map(elementIdentity), to.map(elementIdentity), Math.min(to.length, MAX_ARRAY_EDIT_DISTANCE));
+  const runs = findCommonRuns(from.map(elementIdentity), to.map(elementIdentity), MAX_ARRAY_EDIT_DISTANCE);
   if (!runs) {
     operations.push({ op: 'replace', path, value: cloneValue(to) });
     return;
