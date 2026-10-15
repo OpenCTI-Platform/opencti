@@ -111,3 +111,23 @@ describe('buildDashboardVariable - update', () => {
     expect(() => build({ id: 'id-0', name: 'v0', type: 'text', defaultValue: 'y' }, variables)).not.toThrow();
   });
 });
+
+describe('buildDashboardVariable - typed default values stored trimmed', () => {
+  it.each([
+    ['numeric', '  42 ', '42'],
+    ['boolean', ' true ', 'true'],
+    ['date', ' 2026-01-01T00:00:00.000Z ', '2026-01-01T00:00:00.000Z'],
+  ])('should store the %s default trimmed', (type, defaultValue, expected) => {
+    expect(build({ type, defaultValue }).defaultValue).toEqual(expected);
+  });
+  it('should keep a text default as typed', () => {
+    expect(build({ type: 'text', defaultValue: ' abc ' }).defaultValue).toEqual(' abc ');
+  });
+  it('should match a trimmed numeric default against the selection', () => {
+    const restriction = { mode: 'selection', values: ['42'] };
+    expect(build({ type: 'numeric', defaultValue: ' 42 ', restriction }).defaultValue).toEqual('42');
+  });
+  it('should still require a numeric default', () => {
+    expect(() => build({ type: 'numeric', defaultValue: '  ' })).toThrow('Dashboard variable default value is required');
+  });
+});

@@ -176,14 +176,38 @@ export const computeDashboardVariablesUsage = (widgets: Record<string, ManifestW
 };
 
 /**
+ * Whether a default value is valid for the type of its variable (mirror of the frontend isValidVariableValue, without
+ * its selection pool rule: the default of a selection variable is checked when the variable is written).
+ * A boolean is `true` or `false`, a numeric a finite number, a date something `Date.parse` understands, any other type
+ * a non-blank string. A boolean, numeric or date value is never trimmed: one with surrounding spaces is refused.
+ * No value may reference another variable.
+ */
+export const isValidDashboardVariableValue = (type: unknown, value: string) => {
+  const trimmed = value.trim();
+  if (trimmed === '' || value.includes(DASHBOARD_VARIABLE_TOKEN_PREFIX)) return false;
+  switch (type) {
+    case 'boolean':
+      return value === 'true' || value === 'false';
+    case 'numeric':
+      return value === trimmed && Number.isFinite(Number(value));
+    case 'date':
+      return value === trimmed && !Number.isNaN(Date.parse(value));
+    default:
+      return true;
+  }
+};
+
+/**
  * Default value of each variable of a manifest, keyed by variable id.
- * The manifest may come from an import: anything malformed is ignored, so its tokens stay unresolved.
+ * The manifest may come from an import: anything malformed, or invalid for the type of its variable, is ignored,
+ * so its tokens stay unresolved.
  */
 export const buildDashboardVariableDefaultValues = (variables: unknown) => {
   const values = new Map<string, string>();
   if (!Array.isArray(variables)) return values;
-  variables.forEach((variable: { id?: unknown; defaultValue?: unknown } | null) => {
-    if (typeof variable?.id === 'string' && typeof variable.defaultValue === 'string' && variable.defaultValue !== '') {
+  variables.forEach((variable: { id?: unknown; type?: unknown; defaultValue?: unknown } | null) => {
+    if (typeof variable?.id === 'string' && typeof variable.defaultValue === 'string'
+      && isValidDashboardVariableValue(variable.type, variable.defaultValue)) {
       values.set(variable.id, variable.defaultValue);
     }
   });

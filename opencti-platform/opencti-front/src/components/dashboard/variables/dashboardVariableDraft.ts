@@ -51,12 +51,20 @@ const draftToRestriction = (draft: DashboardVariableDraft): DashboardVariableRes
   return { mode: 'none' };
 };
 
+// A boolean, numeric or date default is stored trimmed (as validateDraft checks it): the spaces would otherwise reach the
+// filters of the widgets. The default of any other type is stored as typed.
+const draftToDefaultValue = (draft: DashboardVariableDraft) => {
+  const isTyped = draft.type === 'boolean' || draft.type === 'numeric' || draft.type === 'date';
+  const defaultValue = isTyped ? draft.defaultValue.trim() : draft.defaultValue;
+  return defaultValue === '' ? null : defaultValue;
+};
+
 export const draftToVariable = (draft: DashboardVariableDraft, id: string): DashboardVariable => {
   const common = {
     id,
     name: draft.name.trim(),
     restriction: draftToRestriction(draft),
-    defaultValue: draft.defaultValue === '' ? null : draft.defaultValue,
+    defaultValue: draftToDefaultValue(draft),
   };
   const type = draft.type as DashboardVariableType;
   if (type === 'vocabulary') return { ...common, type, vocabularyCategory: draft.vocabularyCategory };

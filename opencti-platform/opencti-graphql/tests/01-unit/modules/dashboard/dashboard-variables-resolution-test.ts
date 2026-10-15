@@ -143,3 +143,32 @@ describe('Dashboard variables resolution - publication', () => {
     expect(unresolved).toEqual([VAR_A, VAR_B]);
   });
 });
+
+describe('Dashboard variables resolution - defaults invalid for their type', () => {
+  it.each([
+    ['numeric', ' 42'],
+    ['numeric', '42 '],
+    ['numeric', 'abc'],
+    ['boolean', ' true'],
+    ['boolean', 'maybe'],
+    ['date', ' 2026-01-01T00:00:00.000Z'],
+    ['date', 'not a date'],
+    ['text', '$var:22222222-2222-4222-8222-222222222222'],
+    ['text', '   '],
+  ])('should ignore the %s default "%s"', (type, defaultValue) => {
+    expect(buildDashboardVariableDefaultValues([{ id: VAR_A, type, defaultValue }]).size).toEqual(0);
+  });
+
+  it.each([
+    ['numeric', '42'],
+    ['boolean', 'false'],
+    ['date', '2026-01-01T00:00:00.000Z'],
+    ['text', ' Energy sector '],
+  ])('should keep the valid %s default "%s"', (type, defaultValue) => {
+    expect(buildDashboardVariableDefaultValues([{ id: VAR_A, type, defaultValue }])).toEqual(new Map([[VAR_A, defaultValue]]));
+  });
+
+  it('should check the default of an untyped variable as a text', () => {
+    expect(buildDashboardVariableDefaultValues([{ id: VAR_A, defaultValue: ' 42' }])).toEqual(new Map([[VAR_A, ' 42']]));
+  });
+});

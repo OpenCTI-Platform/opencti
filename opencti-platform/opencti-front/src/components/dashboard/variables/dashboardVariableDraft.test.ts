@@ -174,3 +174,22 @@ describe('validateDraft', () => {
     expect(validateDraft(validDraft({ id: 'v3', name: 'Name 3' }), existing, t_i18n)).toEqual({});
   });
 });
+
+describe('draftToVariable - default value trimming', () => {
+  it.each(['boolean', 'numeric', 'date'] as const)('stores the default of a %s variable trimmed', (type) => {
+    expect(draftToVariable(validDraft({ type, defaultValue: '  42 ' }), 'i').defaultValue).toBe('42');
+  });
+
+  it.each(['boolean', 'numeric', 'date'] as const)('stores a blank default of a %s variable as null', (type) => {
+    expect(draftToVariable(validDraft({ type, defaultValue: '   ' }), 'i').defaultValue).toBeNull();
+  });
+
+  it.each(['text', 'label', 'entity'] as const)('stores the default of a %s variable as typed', (type) => {
+    expect(draftToVariable(validDraft({ type, entityTypes: ['Malware'], defaultValue: ' Energy ' }), 'i').defaultValue).toBe(' Energy ');
+  });
+
+  it('restores a valid typed variable unchanged', () => {
+    const variable = makeVariable('numeric', { defaultValue: '42' });
+    expect(draftToVariable(variableToDraft(variable), variable.id)).toEqual(variable);
+  });
+});

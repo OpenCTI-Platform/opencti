@@ -111,8 +111,10 @@ const buildDefaultValue = (
     if (Number.isNaN(Date.parse(value))) throw FunctionalError('A date variable default value must be a valid date');
   } else if (isBlank) {
     throw FunctionalError('Dashboard variable default value is required');
-  } else if (type === 'numeric' && !Number.isFinite(Number(raw))) {
-    throw FunctionalError('A numeric variable default value must be a number');
+  } else if (type === 'numeric') {
+    // Stored trimmed, like the boolean and the date: surrounding spaces would reach the filters of the widgets.
+    value = raw.trim();
+    if (!Number.isFinite(Number(value))) throw FunctionalError('A numeric variable default value must be a number');
   }
   if (restriction.mode === 'selection' && !restriction.values.includes(value)) {
     throw FunctionalError('The default value must belong to the selection');

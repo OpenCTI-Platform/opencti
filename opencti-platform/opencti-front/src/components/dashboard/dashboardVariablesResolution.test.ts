@@ -88,3 +88,37 @@ describe('isValidVariableValue', () => {
     expect(isValidVariableValue(numeric, 'abc')).toBe(false);
   });
 });
+
+describe('buildDefaultVariableValues - defaults invalid for their type', () => {
+  const variableOf = (type: DashboardVariable['type'], defaultValue: string | null, restriction: unknown = { mode: 'none' }) => (
+    { id: 'v', name: 'V', type, restriction, defaultValue } as DashboardVariable
+  );
+
+  it.each([
+    ['numeric', ' 42'],
+    ['numeric', '42 '],
+    ['numeric', 'abc'],
+    ['boolean', ' true'],
+    ['boolean', 'maybe'],
+    ['date', ' 2026-01-01T00:00:00.000Z'],
+    ['date', 'not a date'],
+    ['text', '$var:22222222-2222-4222-8222-222222222222'],
+    ['text', '   '],
+  ] as const)('ignores the %s default "%s"', (type, defaultValue) => {
+    expect(buildDefaultVariableValues([variableOf(type, defaultValue)])).toEqual(new Map());
+  });
+
+  it.each([
+    ['numeric', '42'],
+    ['boolean', 'false'],
+    ['date', '2026-01-01T00:00:00.000Z'],
+    ['text', ' Energy sector '],
+  ] as const)('keeps the valid %s default "%s"', (type, defaultValue) => {
+    expect(buildDefaultVariableValues([variableOf(type, defaultValue)])).toEqual(new Map([['v', defaultValue]]));
+  });
+
+  it('does not check the selection pool, which is checked when the variable is written', () => {
+    const selection = { mode: 'selection', values: ['FR'] };
+    expect(buildDefaultVariableValues([variableOf('text', 'DE', selection)])).toEqual(new Map([['v', 'DE']]));
+  });
+});

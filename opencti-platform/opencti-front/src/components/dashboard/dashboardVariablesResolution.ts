@@ -147,10 +147,33 @@ export const resolveVariablesInFilterGroup = <T>(
   return { filters: resolveGroup(filterGroup) as T, unresolved };
 };
 
+// The rules of a value that depend on the type of its variable only, not on its selection restriction.
+const isValidValueForType = (type: DashboardVariable['type'], value: string): boolean => {
+  const trimmed = value.trim();
+  if (trimmed === '' || value.includes(toVariableToken(''))) return false;
+  switch (type) {
+    case 'boolean':
+      return value === 'true' || value === 'false';
+    case 'numeric':
+      return value === trimmed && Number.isFinite(Number(value));
+    case 'date':
+      return value === trimmed && !Number.isNaN(Date.parse(value));
+    default:
+      return true;
+  }
+};
+
+/**
+ * Default value of each variable, keyed by variable id. A default invalid for the type of its variable (a manifest
+ * import may hold one, e.g. a numeric with surrounding spaces) is ignored: the widgets using it stay unresolved.
+ * The selection restriction is not checked here: the default of a selection variable is checked when it is written.
+ */
 export const buildDefaultVariableValues = (variables: DashboardVariable[] | undefined) => {
   const values = new Map<string, string>();
   (variables ?? []).forEach((variable) => {
-    if (variable.defaultValue) values.set(variable.id, variable.defaultValue);
+    if (variable.defaultValue && isValidValueForType(variable.type, variable.defaultValue)) {
+      values.set(variable.id, variable.defaultValue);
+    }
   });
   return values;
 };
@@ -165,17 +188,6 @@ export const buildDefaultVariableValues = (variables: DashboardVariable[] | unde
  * A value failing it is ignored, so the default of the variable applies.
  */
 export const isValidVariableValue = (variable: DashboardVariable, value: string): boolean => {
-  const trimmed = value.trim();
-  if (trimmed === '' || value.includes(toVariableToken(''))) return false;
-  if (variable.restriction.mode === 'selection' && !variable.restriction.values.includes(value)) return false;
-  switch (variable.type) {
-    case 'boolean':
-      return value === 'true' || value === 'false';
-    case 'numeric':
-      return value === trimmed && Number.isFinite(Number(value));
-    case 'date':
-      return value === trimmed && !Number.isNaN(Date.parse(value));
-    default:
-      return true;
-  }
+  if (!isValidValueForType(variable.type, value)) return false;
+  return variable.restriction.mode !== 'selection' || variable.restriction.values.includes(value);
 };
