@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { CUSTOM_FIELD_PREFIX, type CustomFieldValue } from '../../../../../../../utils/customFields';
+import { customFieldValueToTaskValues, type CustomFieldValue, isCustomFieldAttribute } from '../../../../../../../utils/customFields';
 import type { CustomFieldDefinition } from '../../../../../common/custom_fields/useCustomFieldDefinitions';
 
 export interface PlaybookUpdateAction {
@@ -46,7 +46,7 @@ export const attributesMultiple = [
 
 // Custom fields are edited through their technical name (x_opencti_cf_*), their value is sent as strings:
 // one entry for a single value, one per option for a multi_select.
-export const isCustomFieldAttribute = (attribute?: string) => !!attribute?.startsWith(CUSTOM_FIELD_PREFIX);
+export { isCustomFieldAttribute };
 
 export const isAttributeMultiple = (attribute: string | undefined, customFieldDefinitions: CustomFieldDefinition[]) => {
   if (isCustomFieldAttribute(attribute)) {
@@ -56,8 +56,7 @@ export const isAttributeMultiple = (attribute: string | undefined, customFieldDe
 };
 
 export const toCustomFieldActionValue = (value: CustomFieldValue): NonNullable<PlaybookUpdateAction['value']> => {
-  const values = Array.isArray(value) ? value : [String(value)];
-  return values.filter((v) => v !== '').map((v) => ({ label: v, value: v, patch_value: v }));
+  return customFieldValueToTaskValues(value).map((v) => ({ label: v, value: v, patch_value: v }));
 };
 
 // Removing a custom field value clears it (or the given multi_select options): no value is required

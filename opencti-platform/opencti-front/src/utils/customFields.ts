@@ -333,3 +333,39 @@ export const getCustomFieldRawValueByFieldName = (
   if (entry.select_value !== null && entry.select_value !== undefined) return entry.select_value;
   return entry.string_value ?? undefined;
 };
+
+// Custom field definitions carried by every given entity type: as in the platform, a relationship type
+// inherits the custom fields attached to stix-core-relationship.
+export const getCustomFieldDefinitionsOfTypes = <T extends { entity_types?: readonly string[] | null }>(
+  definitions: readonly T[],
+  entityTypes: string[],
+  isRelationship: (entityType: string) => boolean,
+): T[] => definitions.filter((definition) => entityTypes.every((entityType) => {
+  const definitionTypes = definition.entity_types ?? [];
+  return definitionTypes.includes(entityType) || (isRelationship(entityType) && definitionTypes.includes('stix-core-relationship'));
+}));
+
+// Types targeted by a background task: the types of the selected rows for a manual selection (a list filtered
+// on an abstract type holds concrete ones), the filtered types or else the list types when everything is selected
+export const getTaskTargetedTypes = (
+  selectAll: boolean,
+  selectedElements: readonly { entity_type?: string }[],
+  filteredTypes: readonly string[],
+  listTypes?: readonly string[] | null,
+): string[] => {
+  if (!selectAll) {
+    return [...new Set(selectedElements.map((element) => element.entity_type).filter((type): type is string => !!type))];
+  }
+  return [...(filteredTypes.length > 0 ? filteredTypes : (listTypes ?? []))];
+};
+
+// Background task values are strings: one per multi_select option, a single one otherwise
+export const customFieldValueToTaskValues = (value: CustomFieldValue): string[] => (Array.isArray(value)
+  ? [...value]
+  : [String(value)].filter((v) => v !== ''));
+
+export const taskValuesToCustomFieldValue = (fieldType: string, values: readonly string[] | undefined): CustomFieldValue => {
+  if (fieldType === 'multi_select') return [...(values ?? [])];
+  if (fieldType === 'boolean') return values?.[0] === 'true';
+  return values?.[0] ?? '';
+};

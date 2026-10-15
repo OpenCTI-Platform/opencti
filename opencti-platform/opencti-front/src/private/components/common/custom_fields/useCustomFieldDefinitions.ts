@@ -42,13 +42,15 @@ export const fetchCustomFieldDefinitions = async (): Promise<CustomFieldDefiniti
 /**
  * All the custom field definitions attached to an entity type, for the screens acting on any entity type
  * (playbooks, background tasks). Empty when the CUSTOM_FIELDS feature flag is disabled.
+ * They are loaded once, when `enabled` (e.g. only once some elements are selected).
  */
-const useCustomFieldDefinitions = (): CustomFieldDefinition[] => {
+const useCustomFieldDefinitions = (enabled = true): CustomFieldDefinition[] => {
   const { isFeatureEnable } = useHelper();
   const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
-  const [definitions, setDefinitions] = useState<CustomFieldDefinition[]>([]);
+  const [definitions, setDefinitions] = useState<CustomFieldDefinition[] | null>(null);
+  const shouldLoad = isCustomFieldsEnabled && enabled && definitions === null;
   useEffect(() => {
-    if (!isCustomFieldsEnabled) return undefined;
+    if (!shouldLoad) return undefined;
     let isMounted = true;
     fetchCustomFieldDefinitions()
       .then((result) => {
@@ -60,8 +62,8 @@ const useCustomFieldDefinitions = (): CustomFieldDefinition[] => {
     return () => {
       isMounted = false;
     };
-  }, [isCustomFieldsEnabled]);
-  return definitions;
+  }, [shouldLoad]);
+  return definitions ?? [];
 };
 
 export default useCustomFieldDefinitions;
