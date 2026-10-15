@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findDuplicateResultField, isManualResult, resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
+import { findDuplicateResultField, resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
 
 const existingResults = [
   { name: 'Result of my coverage', external_uri: null },
@@ -38,17 +38,6 @@ describe('findDuplicateResultField', () => {
 
   it('should not flag anything without existing results', () => {
     expect(findDuplicateResultField({ name: 'Result of my coverage', externalUri: '' }, null)).toBeNull();
-  });
-});
-
-describe('isManualResult', () => {
-  it('should consider a result without external link as manual', () => {
-    expect(isManualResult({ name: 'Manual', external_uri: null })).toBe(true);
-    expect(isManualResult({ name: 'Manual', external_uri: '' })).toBe(true);
-  });
-
-  it('should not consider a result linked to OpenAEV as manual', () => {
-    expect(isManualResult({ name: 'OpenAEV', external_uri: 'https://openaev.io/simulations/1' })).toBe(false);
   });
 });
 
