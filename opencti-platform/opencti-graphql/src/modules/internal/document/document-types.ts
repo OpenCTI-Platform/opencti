@@ -1,4 +1,6 @@
-import type { BasicStoreEntity } from '../../../types/store';
+import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
+import type { StixObject } from '../../../types/stix-2-1-common';
+import { State } from '../../../generated/graphql';
 
 // These storage path constants live in this dependency-free module (rather than document-domain.ts)
 // to avoid a circular import evaluation-order issue: document-domain.ts transitively imports
@@ -10,6 +12,8 @@ export const EMBEDDED_STORAGE_PATH = 'embedded';
 export const EXPORT_STORAGE_PATH = 'export';
 export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
 export const CONFIG_PRESET_STORAGE_PATH = 'config_preset';
+
+export const UPLOAD_STATUS_VALUES = Object.values(State);
 
 export type EntityFileReference = {
   id: string;
@@ -45,4 +49,12 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
     filename?: string;
     file_markings?: string[];
   };
+}
+
+export interface StoreEntityDocument extends StoreEntity {
+  name: string;
+}
+
+export interface StixDocument extends StixObject {
+  name: string;
 }

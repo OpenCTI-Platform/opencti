@@ -1,12 +1,16 @@
-import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, parentTypes, refreshedAt, standardId, updatedAt } from '../../../schema/attribute-definition';
+import { v4 as uuidv4 } from 'uuid';
+import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, parentTypes, refreshedAt, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
-import { UPLOAD_STATUS_VALUES } from './document-domain';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
+import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
+import { objectMarking } from '../../../schema/stixRefRelationship';
+import type { ModuleDefinition } from '../../../schema/module';
+import { type StixDocument, type StoreEntityDocument, UPLOAD_STATUS_VALUES } from './document-types';
+import convertDocumentToStix from './document-converter';
 
-export const INTERNAL_FILE_ATTRIBUTES: Array<AttributeDefinition> = [
+const INTERNAL_FILE_ATTRIBUTES: Array<AttributeDefinition> = [
   id,
   internalId,
-  standardId,
   entityType,
   parentTypes,
   { ...creators, isFilterable: false },
@@ -94,3 +98,25 @@ export const INTERNAL_FILE_ATTRIBUTES: Array<AttributeDefinition> = [
   { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
 ];
+
+export const INTERNAL_FILE_DEFINITION: ModuleDefinition<StoreEntityDocument, StixDocument> = {
+  type: {
+    id: 'internal-file',
+    name: ENTITY_TYPE_INTERNAL_FILE,
+    category: ABSTRACT_INTERNAL_OBJECT,
+    aliased: false,
+  },
+  identifier: {
+    definition: {
+      [ENTITY_TYPE_INTERNAL_FILE]: () => uuidv4(),
+    },
+  },
+  attributes: INTERNAL_FILE_ATTRIBUTES,
+  relations: [],
+  relationsRefs: [{ ...objectMarking, isFilterable: false }],
+  // Same as the representative of any internal object without one
+  representative: (instance: StixDocument) => {
+    return instance.name ?? 'undefined';
+  },
+  converter_2_1: convertDocumentToStix,
+};
