@@ -76,6 +76,8 @@ const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_H
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 const RESOLUTION_BATCH_SIZE = Math.max(conf.get('app:live_stream:resolution_batch_size') ?? 500, 1);
+// Elements are only loaded to be converted to STIX: members of containers are not needed beyond their ids
+const STREAM_LOAD_OPTS = { objectsBaseData: true };
 
 const sendErrorStatus = (_req, res, httpStatus) => {
   try {
@@ -278,7 +280,7 @@ export const authenticateForPublic = async (req, res, next) => {
 const loadMissingElements = async (state, ids) => {
   const { context, user, seenIds, loadedInternalIds, pending } = state;
   ids.forEach((id) => seenIds.add(id));
-  const missingElements = await storeLoadByIdsWithRefs(context, user, ids);
+  const missingElements = await storeLoadByIdsWithRefs(context, user, ids, STREAM_LOAD_OPTS);
   for (let index = 0; index < missingElements.length; index += 1) {
     await doYield();
     const missingElement = missingElements[index];
@@ -639,7 +641,7 @@ const createSseMiddleware = () => {
       const allRelCallback = async (relations) => {
         const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
         const findRelIds = notCachedRelations.map((r) => r.internal_id);
-        const missingRelations = await storeLoadByIdsWithRefs(context, req.user, findRelIds);
+        const missingRelations = await storeLoadByIdsWithRefs(context, req.user, findRelIds, STREAM_LOAD_OPTS);
         for (let relIndex = 0; relIndex < missingRelations.length; relIndex += 1) {
           const missingRelation = missingRelations[relIndex];
           if (channel.connected()) {
@@ -724,7 +726,7 @@ const createSseMiddleware = () => {
         return;
       }
     }
-    const [fromStix, toStix] = await Promise.all([stixLoadById(context, user, fromId), stixLoadById(context, user, toId)]);
+    const [fromStix, toStix] = await Promise.all([stixLoadById(context, user, fromId, STREAM_LOAD_OPTS), stixLoadById(context, user, toId, STREAM_LOAD_OPTS)]);
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
@@ -964,7 +966,7 @@ const createSseMiddleware = () => {
           // noinspection UnnecessaryLocalVariableJS
           const queryCallback = async (elements) => {
             const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);
-            const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds);
+            const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds, STREAM_LOAD_OPTS);
             for (let index = 0; index < instances.length; index += 1) {
               const instance = instances[index];
               const stixData = convertStoreToStix_2_1(instance);
