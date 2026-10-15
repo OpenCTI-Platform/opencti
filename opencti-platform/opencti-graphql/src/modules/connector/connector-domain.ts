@@ -64,7 +64,7 @@ import {
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
 } from '../../modules/catalog/catalog-domain';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
 import { BACKGROUND_TASK_QUEUES, connectorConfig, getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector } from './connector-rabbitmq';
@@ -138,6 +138,26 @@ export const isConnectorActive = (connector: any, lastSeenAt?: string | null) =>
     return false;
   }
   return isNotEmptyField(lastSeenAt) && sinceNowInMs(lastSeenAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
+};
+
+// Connectors pinging continuously: the pycti PingAlive thread pings every 40 s whatever the collection period,
+// so a missing heartbeat means the process is down. Other connectors only ping around their runs.
+// Decided on connector_info, sent by pycti at each ping, as read from the connectors cache. Pings write connector_info
+// without refreshing the cache: it is the value of the last cache reload (registration, edition, health write...).
+// - no connector_info: never pinged with a pycti sending it, not considered as pinging
+// - connector_info.run_and_terminate: declared run and terminate (CONNECTOR_RUN_AND_TERMINATE or a zero duration period),
+//   no ping thread, only a ping at the end of each run
+// Misclassified, accepted:
+// - run and terminate connectors not declaring it (restarted by an external cron, or exiting after one run):
+//   their ping thread sends run_and_terminate false, they are considered as pinging and their heartbeat is missing between runs
+// - connectors switched from continuous to run and terminate: run_and_terminate stays false until the end of their first run
+//   and the next cache reload
+// - connectors pinging continuously without sending connector_info (pycti versions before connector_info, non pycti clients),
+//   or whose connector_info is not yet in the cache (first pings after their registration): not considered as pinging
+export const findRegularlyPingingConnectors = async (context: AuthContext, user: AuthUser) => {
+  const cachedConnectors = await getEntitiesListFromCache<CachedConnector>(context, user, ENTITY_TYPE_CONNECTOR);
+  return cachedConnectors.filter((connector) => !connector.built_in
+    && isNotEmptyField(connector.connector_info) && connector.connector_info.run_and_terminate !== true);
 };
 
 // Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors
