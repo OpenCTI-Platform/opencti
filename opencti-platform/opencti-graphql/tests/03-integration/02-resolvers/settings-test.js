@@ -324,6 +324,16 @@ describe('Settings resolver local authentication lockout policy', () => {
     const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
     expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
   });
+  it('should reject a lockout policy edited through fieldPatch, even with the BYPASS capability', async () => {
+    const queryResult = await queryAsAdmin({
+      query: EDIT_FIELD_QUERY,
+      variables: { id: settingsInternalId, input: { key: 'local_auth_lockout_max_attempts', value: ['0'] } },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toEqual('Local authentication lockout settings can only be edited through updateLocalAuth');
+    const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
+    expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
+  });
 });
 
 const READ_MESSAGES_QUERY = gql`

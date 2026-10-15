@@ -35,7 +35,7 @@ import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
-import { buildAvailableProviders } from './setting-auth';
+import { buildAvailableProviders, LOCAL_AUTH_LOCKOUT_DEFAULTS } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
@@ -307,6 +307,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     .filter((key) => !allowedKeys.has(key)))];
   if (!hasBypassCapability && unauthorizedKeys.length > 0) {
     throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
+  }
+  // The lockout policy is only edited through updateLocalAuth, which validates it, so even BYPASS cannot patch it here
+  const lockoutKeys = input.map((i) => i.key).filter((key) => key in LOCAL_AUTH_LOCKOUT_DEFAULTS);
+  if (lockoutKeys.length > 0) {
+    throw FunctionalError('Local authentication lockout settings can only be edited through updateLocalAuth', { lockoutKeys });
   }
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
