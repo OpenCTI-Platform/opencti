@@ -113,7 +113,11 @@ describe('Should stream parent resolutions correctly working', () => {
     const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
     const refs = stixRefsExtractor(stixReport);
     const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
-    const missingInstances: any[] = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache);
+    const missingInstances: any[] = [];
+    const isComplete = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache, (resolved: any[]) => {
+      missingInstances.push(...resolved);
+    });
+    expect(isComplete).toBe(true);
     expect(missingInstances.length).toBe(4);
     // REPORT01
     expect(missingInstances[0].stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
