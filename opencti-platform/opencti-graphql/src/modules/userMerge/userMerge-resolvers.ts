@@ -1,7 +1,8 @@
+import type { Resolvers } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
 import { userMerge, userMergeCoverage, userMergeDeleteSource, userMergeJournal, userMergeSourceDeletionReadiness, type UserMergeOptionsInput } from './userMerge-domain';
 
-const userMergeResolvers = {
+const userMergeResolvers: Resolvers = {
   Query: {
     userMergeJournal: (
       _: unknown,
