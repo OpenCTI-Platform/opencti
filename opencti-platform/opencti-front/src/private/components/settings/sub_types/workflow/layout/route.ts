@@ -203,15 +203,17 @@ export const routeEdges = ({ graph, ranked, x, place, items, pitch }: RouteConte
         raw.set(e.id, [...exitTo(source, gx, sign, key, [item.id]), { x: gx, y: t.cy }, { x: lx + sign * (t.w / 2), y: t.cy }]);
       }
     });
-    const outKey = `e:${item.out.id}`;
-    if (item.selfLoop) {
-      const p = port(item.to, sign, -P(item.to).h / 4);
-      const gx = p.x + sign * GUIDE;
-      const ref = channel(P(item.to).rank - 1, outKey, t.cx, gx);
-      raw.set(item.out.id, [{ x: t.cx, y: t.cy - t.h / 2 }, { x: t.cx, y: ref }, { x: gx, y: ref }, { x: gx, y: p.y }, p]);
-    } else {
-      raw.set(item.out.id, [{ x: lx, y: t.cy - t.h / 2 }, ...enterFrom(item.to, lx, sign, outKey, [item.id])]);
-    }
+    item.outs.forEach((out) => {
+      const outKey = `e:${out.id}`;
+      if (item.selfLoop && out.target === item.to) {
+        const p = port(out.target, sign, -P(out.target).h / 4);
+        const gx = p.x + sign * GUIDE;
+        const ref = channel(P(out.target).rank - 1, outKey, t.cx, gx);
+        raw.set(out.id, [{ x: t.cx, y: t.cy - t.h / 2 }, { x: t.cx, y: ref }, { x: gx, y: ref }, { x: gx, y: p.y }, p]);
+      } else {
+        raw.set(out.id, [{ x: lx, y: t.cy - t.h / 2 }, ...enterFrom(out.target, lx, sign, outKey, [item.id])]);
+      }
+    });
   });
 
   // Pins: a vertical neighbour coming from above the channel is a top pin, else a bottom pin.

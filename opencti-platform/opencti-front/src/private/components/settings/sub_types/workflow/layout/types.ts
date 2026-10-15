@@ -107,8 +107,8 @@ export interface NodeLaneItem {
   kind: 'node';
   id: string; // backward transition id
   ins: GraphEdge[];
-  out: GraphEdge;
-  to: string;
+  outs: GraphEdge[]; // every outgoing edge goes back up the graph
+  to: string; // target of the first outgoing edge (self-loop check)
   row: number;
   selfLoop: boolean;
   r0: number;

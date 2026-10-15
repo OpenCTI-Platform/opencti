@@ -103,6 +103,44 @@ describe('layoutWorkflow – hints and edge cases', () => {
     expect(result.nodeHints.get('S1499')!.rank).toBe(2 * 1499);
   });
 
+  it('keeps a transition with a forward and a backward target in the flow and routes both edges', () => {
+    const nodes = ['A', 'B', 'C'].map((id) => ({ id, type: 'status' })).concat(['t1', 't'].map((id) => ({ id, type: 'transition' })));
+    const edges = [
+      { id: 'a', source: 'A', target: 't1' },
+      { id: 'b', source: 't1', target: 'B' },
+      { id: 'c', source: 'B', target: 't' },
+      { id: 'd', source: 't', target: 'C' },
+      { id: 'e', source: 't', target: 'A' },
+    ];
+    const result = layoutWorkflow(nodes, edges, OPTIONS);
+    edges.forEach((e) => expect(result.routes.get(e.id)?.length).toBeGreaterThanOrEqual(2));
+    expect(result.nodeHints.get('t')!.backward).toBe(false);
+    expect(result.nodeHints.get('C')!.rank).toBeGreaterThan(result.nodeHints.get('t')!.rank);
+    const back = result.routes.get('e')!;
+    expect(back[back.length - 1].y).toBeCloseTo(result.positions.get('A')!.y);
+  });
+
+  it('routes every target of a backward transition that goes back to several statuses', () => {
+    const nodes = ['A', 'B', 'C'].map((id) => ({ id, type: 'status' })).concat(['t1', 't2', 't'].map((id) => ({ id, type: 'transition' })));
+    const edges = [
+      { id: 'a', source: 'A', target: 't1' },
+      { id: 'b', source: 't1', target: 'B' },
+      { id: 'c', source: 'B', target: 't2' },
+      { id: 'd', source: 't2', target: 'C' },
+      { id: 'e', source: 'C', target: 't' },
+      { id: 'f', source: 't', target: 'A' },
+      { id: 'g', source: 't', target: 'B' },
+    ];
+    const result = layoutWorkflow(nodes, edges, OPTIONS);
+    expect(result.nodeHints.get('t')!.backward).toBe(true);
+    edges.forEach((e) => expect(result.routes.get(e.id)?.length).toBeGreaterThanOrEqual(2));
+    ['f', 'g'].forEach((id) => {
+      const route = result.routes.get(id)!;
+      expect(isAxisAligned(route)).toBe(true);
+      expect(route[0].y).toBeCloseTo(result.positions.get('t')!.y);
+    });
+  });
+
   it('ignores an edge that points to a missing node', () => {
     const result = layoutWorkflow([{ id: 'A', type: 'status' }], [{ id: 'ghost', source: 'A', target: 'gone' }], OPTIONS);
     expect(result.routes.has('ghost')).toBe(false);

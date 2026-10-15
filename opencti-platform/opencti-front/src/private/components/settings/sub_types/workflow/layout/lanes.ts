@@ -28,16 +28,16 @@ export const placeLanes = (graph: Graph, ranked: RankedGraph, x: Map<string, num
   const pending: PendingItem[] = [];
   backwardTransitions.forEach((id) => {
     const ins = graph.inE.get(id)!.filter((e) => place.has(e.source));
-    const out = graph.outE.get(id)![0];
-    const to = out.target;
-    const targetRank = rank.get(to)!;
+    const outs = graph.outE.get(id)!;
+    const to = outs[0].target;
+    const targetRanks = outs.map((e) => rank.get(e.target)!);
     const sourceRanks = ins.map((e) => rank.get(e.source)!);
     const selfLoop = ins.length > 0 && ins.every((e) => e.source === to);
-    // Sit one row above the source it leaves from, like a forward transition; a self-loop
-    // sits beside its status.
-    const row = selfLoop ? targetRank : Math.max(Math.min(...sourceRanks) - 1, targetRank + 1);
-    const all = [targetRank, row, ...sourceRanks];
-    pending.push({ kind: 'node', id, ins, out, to, row, selfLoop, r0: Math.min(...all), r1: Math.max(...all), order: graph.nodes.get(id)!.order });
+    // Sit one row above the source it leaves from, like a forward transition, and below every
+    // target; a self-loop sits beside its status.
+    const row = selfLoop ? rank.get(to)! : Math.max(Math.min(...sourceRanks) - 1, Math.max(...targetRanks) + 1);
+    const all = [...targetRanks, row, ...sourceRanks];
+    pending.push({ kind: 'node', id, ins, outs, to, row, selfLoop, r0: Math.min(...all), r1: Math.max(...all), order: graph.nodes.get(id)!.order });
   });
   graph.edges.filter((e) => backEdges.has(e.id) && !backwardTransitions.has(e.source)).forEach((edge) => {
     pending.push({ kind: 'edge', id: edge.id, edge, r0: rank.get(edge.target)! - 1, r1: rank.get(edge.source)!, order: graph.nodes.size + edge.order });
@@ -49,7 +49,7 @@ export const placeLanes = (graph: Graph, ranked: RankedGraph, x: Map<string, num
   const items = pending.map((item): LaneItem => {
     const isNode = item.kind === 'node';
     const w = isNode ? graph.nodes.get(item.id)!.w : 0;
-    const ends = isNode ? [item.to, ...item.ins.map((e) => e.source)] : [item.edge.source, item.edge.target];
+    const ends = isNode ? [...item.outs.map((e) => e.target), ...item.ins.map((e) => e.source)] : [item.edge.source, item.edge.target];
     const candidates = (['right', 'left'] as LaneSide[]).map((side) => {
       const sign: 1 | -1 = side === 'right' ? 1 : -1;
       let extent = sign > 0 ? -Infinity : Infinity;

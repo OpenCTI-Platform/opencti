@@ -76,8 +76,13 @@ const findBackEdges = (graph: Graph): Set<string> => {
 // placeholders odd rows. Edges spanning several rows get one dummy per crossed row.
 export const rankGraph = (graph: Graph): RankedGraph => {
   const backEdges = findBackEdges(graph);
+  // A transition goes into a side lane only when every outgoing edge closes a cycle. One that
+  // also leads forward stays in the flow; its backward edges get edge lanes.
   const backwardTransitions = new Set(graph.list
-    .filter((n) => n.type === WorkflowNodeType.transition && graph.outE.get(n.id)!.some((e) => backEdges.has(e.id)))
+    .filter((n) => {
+      const out = graph.outE.get(n.id)!;
+      return n.type === WorkflowNodeType.transition && out.length > 0 && out.every((e) => backEdges.has(e.id));
+    })
     .map((n) => n.id));
   const forward = graph.list.filter((n) => !backwardTransitions.has(n.id));
   const forwardEdges = graph.edges.filter((e) => !backEdges.has(e.id)
