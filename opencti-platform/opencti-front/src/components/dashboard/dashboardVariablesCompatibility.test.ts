@@ -7,7 +7,7 @@ import type { FilterDefinition } from '../../utils/hooks/useAuth';
 // Identity behaviour: a type is a subtype of itself only (used by the getVariableOptions tests below).
 const isSubTypeOf = (type: string, parent: string) => type === parent;
 
-// compatibility-cases.json is shared with the back end twin. Each case has:
+// compatibility-cases.json is the case format meant to be reused by the back end twin (not written yet). Each case has:
 //   name, variable (the DashboardVariable fields), filter (the filter definition, null for none), expected,
 //   and an OPTIONAL `hierarchy`: an object mapping a parent type to the list of ALL its descendants (transitively),
 //   e.g. { "Stix-Domain-Object": ["Identity", "Sector", ...], "Identity": ["Sector", ...] }.
