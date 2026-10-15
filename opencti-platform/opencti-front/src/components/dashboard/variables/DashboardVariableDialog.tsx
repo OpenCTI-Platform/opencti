@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, Suspense, useMemo, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import Button from '@common/button/Button';
@@ -8,6 +8,7 @@ import SelectFieldFds, { SelectItem } from '../../fields/SelectFieldFds';
 import ComboboxField from '../../ComboboxField';
 import useSchema from '../../../utils/hooks/useSchema';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
+import { layerInputVars } from '../../../utils/fdsLayer';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
@@ -128,6 +129,9 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
       <DialogContent
         size="md"
         data-testid="dashboard-variable-dialog"
+        // The content is a layer-2 surface, like a drawer, but its `layer-2` class does not reach the input backgrounds:
+        // re-declared on the same node, the fields get the layer-2 fill instead of the surface colour. See utils/fdsLayer.ts.
+        style={layerInputVars as CSSProperties}
         // The dialog carries no description: its fields are labelled one by one.
         aria-describedby={undefined}
         // Radix focuses the first focusable element on open, which is the close button: the name is what is typed first.
