@@ -685,38 +685,46 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
   }
 
-  // For integer fields with 'eq' operator, translate to range (gte + lte) for exact match
-  let valueClauses;
-  if (definition.field_type === 'integer' && op === FilterOperator.Eq) {
-    const parsedValues = values.map((v: any) => {
-      const num = Number(v);
-      return Number.isFinite(num) ? num : v;
-    });
-    valueClauses = [
-      { key: subfilterKey, values: parsedValues, operator: FilterOperator.Gte },
-      { key: subfilterKey, values: parsedValues, operator: FilterOperator.Lte },
-    ];
-  } else {
-    // Parse numeric values for integer type
-    const parsedValues = definition.field_type === 'integer'
-      ? values.map((v: any) => {
-          const num = Number(v);
-          return Number.isFinite(num) ? num : v;
-        })
-      : values;
-    valueClauses = [{ key: subfilterKey, values: parsedValues, operator: op }];
-  }
-
-  const newFilter = {
+  // Parse numeric values for integer type
+  const parsedValues = definition.field_type === 'integer'
+    ? values.map((v: any) => {
+        const num = Number(v);
+        return Number.isFinite(num) ? num : v;
+      })
+    : values;
+  // Several values are combined with the filter mode, as for a standard attribute. A negative operator is applied
+  // as the negation of the positive one, so its values are combined with the opposite mode (≠ a OR ≠ b = not (a AND b)).
+  // The two values of within are the bounds of a single range, not alternatives: the mode does not apply.
+  const mode = filter.mode ?? FilterMode.Or;
+  const oppositeMode = mode === FilterMode.Or ? FilterMode.And : FilterMode.Or;
+  const isModeApplied = (valueClauses: { values: any[] }[]) => op !== FilterOperator.Within && valueClauses.some((clause) => clause.values.length > 1);
+  const buildNestedFilter = (valueClauses: { key: string; values: any[]; operator: string }[]) => ({
     key: ['custom_field_values'],
     values: [],
     nested: [
       { key: 'field_name', values: [filterKey], operator: FilterOperator.Eq },
       ...valueClauses,
     ],
+    ...(isModeApplied(valueClauses) ? { mode: positiveOperator ? oppositeMode : mode } : {}),
     ...(positiveOperator ? { negateNested: true } : {}),
-  };
+  });
 
+  // An integer is matched exactly with a range (gte + lte) on a single value: each value gets its own filter,
+  // the operands of a range clause being alternatives (two values would match the whole interval between them).
+  if (definition.field_type === 'integer' && op === FilterOperator.Eq) {
+    const buildIntegerEqualityFilter = (integerValues: any[]) => buildNestedFilter([
+      { key: subfilterKey, values: integerValues, operator: FilterOperator.Gte },
+      { key: subfilterKey, values: integerValues, operator: FilterOperator.Lte },
+    ]);
+    if (parsedValues.length <= 1) {
+      return { newFilter: buildIntegerEqualityFilter(parsedValues), newFilterGroup: undefined };
+    }
+    // Each value filter is already negated for a negative operator: they are combined with the filter mode
+    const newFilterGroup = { mode, filters: parsedValues.map((value: any) => buildIntegerEqualityFilter([value])), filterGroups: [] };
+    return { newFilter: undefined, newFilterGroup };
+  }
+
+  const newFilter = buildNestedFilter([{ key: subfilterKey, values: parsedValues, operator: op }]);
   return { newFilter, newFilterGroup: undefined };
 };
 

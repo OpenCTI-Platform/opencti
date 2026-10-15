@@ -35,7 +35,8 @@ const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
   vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(definitions);
 };
 
-const adapt = (filter: Filter) => adaptFilterToCustomFieldFilterKey(CONTEXT, USER, filter);
+// The adapter returns either a filter or a filter group (several integer values): each test reads the one it expects
+const adapt = async (filter: Filter) => (await adaptFilterToCustomFieldFilterKey(CONTEXT, USER, filter)) as { newFilter: any; newFilterGroup: any };
 
 describe('isCustomFieldFilterKey', () => {
   it('returns true for keys starting with the custom field prefix', () => {
@@ -265,6 +266,57 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
         { key: 'int_value', values: [42], operator: FilterOperator.Gte },
         { key: 'int_value', values: [42], operator: FilterOperator.Lte },
       ]);
+    });
+  });
+
+  describe('several values, combined with the filter mode as for a standard attribute', () => {
+    const exactFilter = (value: number, negated: boolean) => ({
+      key: ['custom_field_values'],
+      values: [],
+      nested: [
+        { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
+        { key: 'int_value', values: [value], operator: FilterOperator.Gte },
+        { key: 'int_value', values: [value], operator: FilterOperator.Lte },
+      ],
+      ...(negated ? { negateNested: true } : {}),
+    });
+
+    it.each([
+      [FilterOperator.Eq, 'or', false],
+      [FilterOperator.Eq, 'and', false],
+      [FilterOperator.NotEq, 'or', true],
+      [FilterOperator.NotEq, 'and', true],
+    ])('matches each integer value exactly with %s in %s mode, not the interval between them', async (operator, mode, negated) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
+      const { newFilter, newFilterGroup } = await adapt(makeFilter({ values: ['10', '20'], operator, mode } as Partial<Filter>));
+      expect(newFilter).toBeUndefined();
+      expect(newFilterGroup).toEqual({ mode, filters: [exactFilter(10, negated), exactFilter(20, negated)], filterGroups: [] });
+    });
+
+    it.each([
+      [FilterOperator.Eq, 'or', 'or'],
+      [FilterOperator.Eq, 'and', 'and'],
+      [FilterOperator.NotEq, 'or', 'and'],
+      [FilterOperator.NotEq, 'and', 'or'],
+    ])('combines the values of %s in %s mode with the %s mode in the nested filter', async (operator, mode, nestedMode) => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['a', 'b'], operator, mode } as Partial<Filter>));
+      expect(newFilter.mode).toBe(nestedMode);
+    });
+
+    it('does not apply the mode to the two bounds of within', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'date' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['2026-01-01', '2026-12-31'], operator: FilterOperator.Within, mode: 'and' } as Partial<Filter>));
+      expect(newFilter).not.toHaveProperty('mode');
+      expect(newFilter.nested).toEqual(expect.arrayContaining([
+        { key: 'date_value', values: ['2026-01-01', '2026-12-31'], operator: FilterOperator.Within },
+      ]));
+    });
+
+    it('keeps the default mode with a single value', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['a'], operator: FilterOperator.NotEq, mode: 'and' } as Partial<Filter>));
+      expect(newFilter).not.toHaveProperty('mode');
     });
   });
 
