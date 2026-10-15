@@ -37,7 +37,6 @@ const GeoMapFallback = ({
   const colors = dark ? DARK : LIGHT;
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoadFailed, setIsLoadFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -108,7 +107,7 @@ const GeoMapFallback = ({
       observer.disconnect();
       map.remove();
     };
-  }, [dark, center, countries, markers, zoom, attempt]);
+  }, [dark, center, countries, markers, zoom, isLoadFailed]);
 
   if (isLoadFailed) {
     return (
@@ -128,10 +127,7 @@ const GeoMapFallback = ({
         <Button
           variant="secondary"
           size="small"
-          onClick={() => {
-            setIsLoadFailed(false);
-            setAttempt((value) => value + 1);
-          }}
+          onClick={() => setIsLoadFailed(false)}
         >
           {t_i18n('Retry')}
         </Button>
