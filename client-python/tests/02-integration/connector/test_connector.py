@@ -55,8 +55,28 @@ def test_register_simple_connector(simple_connector, api_connector, api_work):
     assert test_connector == "", "Connector is still registered"
 
 
+def read_connector_errors(api_client, connector_id):
+    result = api_client.query(
+        """
+            query GetConnectorErrors($id: String!) {
+                connector(id: $id) {
+                    connector_info {
+                        errors {
+                            code
+                            message
+                            criticity
+                        }
+                    }
+                }
+            }
+        """,
+        {"id": connector_id},
+    )
+    return result["data"]["connector"]["connector_info"]["errors"]
+
+
 @pytest.mark.connectors
-def test_ping_sends_connector_info_errors(simple_connector, api_connector):
+def test_ping_sends_connector_info_errors(simple_connector, api_client, api_connector):
     connector_id = simple_connector.to_input()["input"]["id"]
     connector_info = ConnectorInfo()
     connector_info.add_error(
@@ -66,9 +86,9 @@ def test_ping_sends_connector_info_errors(simple_connector, api_connector):
         "RATE_LIMITED", "Too many requests", ConnectorInfoErrorCriticity.LOW
     )
 
-    result = api_connector.ping(connector_id, {}, connector_info.all_details)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
 
-    assert result["connector_info"]["errors"] == [
+    assert read_connector_errors(api_client, connector_id) == [
         {
             "code": "API_UNREACHABLE",
             "message": "Source API returned 503",
@@ -79,7 +99,9 @@ def test_ping_sends_connector_info_errors(simple_connector, api_connector):
 
 
 @pytest.mark.connectors
-def test_ping_without_errors_clears_previous_ones(simple_connector, api_connector):
+def test_ping_without_errors_clears_previous_ones(
+    simple_connector, api_client, api_connector
+):
     connector_id = simple_connector.to_input()["input"]["id"]
     connector_info = ConnectorInfo()
     connector_info.add_error(
@@ -88,9 +110,9 @@ def test_ping_without_errors_clears_previous_ones(simple_connector, api_connecto
     api_connector.ping(connector_id, {}, connector_info.all_details)
 
     connector_info.clear_errors()
-    result = api_connector.ping(connector_id, {}, connector_info.all_details)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
 
-    assert result["connector_info"]["errors"] == []
+    assert read_connector_errors(api_client, connector_id) == []
 
 
 @fixture
