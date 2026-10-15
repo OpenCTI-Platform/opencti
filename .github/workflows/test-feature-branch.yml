@@ -38,7 +38,7 @@ jobs:
   deploy:
     name: deploy
     needs: wf-build-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
 
