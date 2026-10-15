@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConnectorContractConfiguration, ConnectorPriorityGroup } from '../../generated/graphql';
+import type { ConnectorContractConfiguration, ConnectorInfoErrorCriticity, ConnectorPriorityGroup } from '../../generated/graphql';
 import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
 import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
@@ -11,7 +11,7 @@ export const CONNECTOR_LIVELINESS_GRACE_PERIOD_MS = 5 * 60 * 1000;
 export interface ConnectorInfoError {
   code: string;
   message: string;
-  criticity: number;
+  criticity: ConnectorInfoErrorCriticity;
 }
 
 export interface ConnectorInfo {
@@ -21,7 +21,7 @@ export interface ConnectorInfo {
   queue_messages_size: number;
   next_run_datetime?: Date | string | null;
   last_run_datetime?: Date | string | null;
-  errors?: ConnectorInfoError[];
+  errors?: ConnectorInfoError[] | null;
 }
 
 type ConnectorManagerContract = CatalogContractEntityFields;

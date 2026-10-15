@@ -1148,11 +1148,6 @@ const Connector = createRefetchContainer(
           queue_messages_size
           next_run_datetime
           last_run_datetime
-          errors {
-            code
-            message
-            criticity
-          }
         }
         connector_queue_details {
           messages_number

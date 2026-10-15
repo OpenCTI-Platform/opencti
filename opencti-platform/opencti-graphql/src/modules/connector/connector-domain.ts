@@ -40,6 +40,7 @@ import type {
   BasicStoreEntityConnectorManager,
   CachedConnector,
   ConnectorInfo,
+  ConnectorInfoError,
   StoreEntityConnector,
   StoreEntityConnectorManager,
 } from './connector-types';
@@ -621,6 +622,33 @@ export const computeManagedConnectorUptime = (context: AuthContext, user: AuthUs
 // endregion
 
 // region connectors
+export const CONNECTOR_ERRORS_MAX_COUNT = 20;
+export const CONNECTOR_ERROR_CODE_MAX_LENGTH = 256;
+export const CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024;
+
+// Truncate on code points so a cut never leaves a lone surrogate that the engine would reject.
+const truncate = (value: string, maxLength: number) => Array.from(value.trim()).slice(0, maxLength).join('');
+
+const CRITICITY_RANK: Record<ConnectorInfoErrorCriticity, number> = {
+  [ConnectorInfoErrorCriticity.Low]: 0,
+  [ConnectorInfoErrorCriticity.Medium]: 1,
+  [ConnectorInfoErrorCriticity.High]: 2,
+  [ConnectorInfoErrorCriticity.Critical]: 3,
+};
+
+// Errors are only reported by the connector: invalid entries are dropped, never thrown, so ping keeps working.
+export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined): ConnectorInfoError[] => {
+  return (errors ?? [])
+    .map(({ code, message, criticity }) => ({
+      code: truncate(code ?? '', CONNECTOR_ERROR_CODE_MAX_LENGTH),
+      message: truncate(message ?? '', CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
+      criticity,
+    }))
+    .filter(({ code, criticity }) => code.length > 0 && criticity in CRITICITY_RANK)
+    .sort((a, b) => CRITICITY_RANK[b.criticity] - CRITICITY_RANK[a.criticity])
+    .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
+};
+
 export const updateConnectorWithConnectorInfo = async (
   context: AuthContext,
   user: AuthUser,
@@ -645,7 +673,7 @@ export const updateConnectorWithConnectorInfo = async (
       queue_messages_size: connectorInfo.queue_messages_size,
       next_run_datetime: connectorInfo.next_run_datetime,
       last_run_datetime: connectorInfo.last_run_datetime,
-      errors: (connectorInfo.errors ?? []).map(({ code, message, criticity }) => ({ code, message, criticity })),
+      errors: sanitizeConnectorInfoErrors(connectorInfo.errors),
     };
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
