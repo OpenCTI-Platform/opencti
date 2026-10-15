@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
-import type { RuntimeData } from './ingestionHealthMonitoring-redis';
+import type { RuntimeData } from './ingestionHealthRuntimeData';
 
 // region registry
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
@@ -32,13 +32,32 @@ const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
 // endregion
 
 // region evaluation (pure, no I/O)
-// What is known about the ingestion at evaluation time, besides its configuration
+// What the evaluation looks at, besides the configuration of the ingestion.
+// A new check needing a new fact adds a field here, not a parameter to every function.
 export interface HealthContext {
-  // Data reported by the sources and stored in Redis
+  // The moment of the evaluation: what is stale is judged against it
+  evaluatedAt: string;
+  // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
   runtimeData?: RuntimeData;
 }
 
-export interface IngestionHealthInput extends HealthContext {
+export interface HealthChecksContext extends HealthContext {
+  isExistingUser: (userId: string) => boolean;
+}
+
+// A connector pings regularly: a heartbeat older than this is a missing one. Same window as the connector liveness.
+export const HEARTBEAT_MAX_AGE_MS = 5 * 60 * 1000;
+
+// A heartbeat in the future (clock skew between nodes) is alive
+export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: string): boolean => {
+  if (!heartbeat) {
+    return false;
+  }
+  return new Date(evaluatedAt).getTime() - new Date(heartbeat).getTime() < HEARTBEAT_MAX_AGE_MS;
+};
+
+// The configuration of the ingestion
+export interface IngestionHealthInput {
   userId?: string | null;
   // Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
   isUserRequired: boolean;
@@ -46,13 +65,14 @@ export interface IngestionHealthInput extends HealthContext {
   isHeartbeatRequired?: boolean;
 }
 
-export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExistingUser: (userId: string) => boolean): StoredHealthCheck[] => {
+export const computeIngestionHealthChecks = (input: IngestionHealthInput, context: HealthChecksContext): StoredHealthCheck[] => {
+  const { isExistingUser, evaluatedAt, runtimeData } = context;
   const checks: StoredHealthCheck[] = [];
   const isUserMissing = input.userId ? !isExistingUser(input.userId) : input.isUserRequired;
   if (isUserMissing) {
     checks.push({ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} });
   }
-  if (input.isHeartbeatRequired && !input.runtimeData?.heartbeat) {
+  if (input.isHeartbeatRequired && !isHeartbeatAlive(runtimeData?.heartbeat, evaluatedAt)) {
     checks.push({ health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} });
   }
   return checks;
@@ -60,7 +80,7 @@ export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExis
 
 // Priority: critical > degraded > healthy. A stopped ingestion is not monitored, so it never gets here.
 // Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[], { runtimeData = {} }: HealthContext = {}): IngestionHealthStatus | null => {
+export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: HealthContext): IngestionHealthStatus | null => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
     .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
@@ -76,7 +96,7 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { runtimeData =
     return IngestionHealthStatus.Degraded;
   }
   // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown
-  if (checks.length === 0 && runtimeData.heartbeat) {
+  if (checks.length === 0 && isHeartbeatAlive(runtimeData.heartbeat, evaluatedAt)) {
     return IngestionHealthStatus.Healthy;
   }
   return null;
@@ -93,9 +113,9 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 export const computeIngestionHealthPatch = (
   current: IngestionHealthFields,
   checks: StoredHealthCheck[],
-  evaluatedAt: string,
-  context: HealthContext = {},
+  context: HealthContext,
 ): IngestionHealthFields | null => {
+  const { evaluatedAt } = context;
   const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks, context);
   const nextChecks = normalizeHealthChecks(checks);

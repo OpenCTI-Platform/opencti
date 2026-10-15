@@ -6,6 +6,7 @@ import {
   computeIngestionHealthPatch,
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_USER_MISSING,
+  HEARTBEAT_MAX_AGE_MS,
   HealthTransition,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
@@ -14,6 +15,7 @@ import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
+const CONTEXT = { evaluatedAt: EVALUATED_AT };
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
 // Not in the registry: never changes the status
@@ -21,12 +23,12 @@ const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', healt
 
 describe('computeIngestionHealthPatch', () => {
   it('should write nothing with no check since on the first evaluation', () => {
-    const patch = computeIngestionHealthPatch({}, [], EVALUATED_AT);
+    const patch = computeIngestionHealthPatch({}, [], CONTEXT);
     expect(patch).toEqual(null);
   });
 
   it('should write degraded with the check and set since when the user is missing on the first evaluation', () => {
-    const patch = computeIngestionHealthPatch({}, [USER_MISSING], EVALUATED_AT);
+    const patch = computeIngestionHealthPatch({}, [USER_MISSING], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {
         status: IngestionHealthStatus.Degraded,
@@ -38,29 +40,29 @@ describe('computeIngestionHealthPatch', () => {
 
   it('should return null when neither the status nor the checks changed', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT)).toBeNull();
+    expect(computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT)).toBeNull();
   });
 
   it('should remove ingestion_health when a status was stored and none can be computed anymore', () => {
     // The user was fixed: degraded -> no status (healthy is not computed yet), absence reads as unknown
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT)).toEqual({ ingestion_health: null });
+    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({ ingestion_health: null });
   });
 
   it('should write nothing when ingestion_health is already absent and no status can be computed', () => {
-    expect(computeIngestionHealthPatch({ ingestion_health: null }, [], EVALUATED_AT)).toBeNull();
+    expect(computeIngestionHealthPatch({ ingestion_health: null }, [], CONTEXT)).toBeNull();
   });
 
   it('should treat a stored check without metadata as a check with empty metadata', () => {
     const storedWithoutMetadata: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING };
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [storedWithoutMetadata] } };
-    expect(computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT)).toBeNull();
+    expect(computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT)).toBeNull();
   });
 
   it('should write the checks but keep since when only the metadata changed', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Degraded, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
     const changedMetadata = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: { log: 'new log' } };
-    const patch = computeIngestionHealthPatch(current, [changedMetadata], EVALUATED_AT);
+    const patch = computeIngestionHealthPatch(current, [changedMetadata], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {
         status: IngestionHealthStatus.Degraded,
@@ -73,7 +75,7 @@ describe('computeIngestionHealthPatch', () => {
   it('should move since when the status changes', () => {
     // The user went missing: healthy -> degraded
     const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    const patch = computeIngestionHealthPatch(current, [USER_MISSING], EVALUATED_AT);
+    const patch = computeIngestionHealthPatch(current, [USER_MISSING], CONTEXT);
     expect(patch).toEqual({
       ingestion_health: {
         status: IngestionHealthStatus.Degraded,
@@ -85,39 +87,44 @@ describe('computeIngestionHealthPatch', () => {
 });
 
 describe('computeIngestionHealthPatch with runtime data', () => {
-  const ALIVE = { runtimeData: { heartbeat: EVALUATED_AT } };
+  const ALIVE = { ...CONTEXT, runtimeData: { heartbeat: EVALUATED_AT } };
 
   it('should be healthy with no check and a heartbeat', () => {
-    expect(computeIngestionHealthPatch({}, [], EVALUATED_AT, ALIVE)).toEqual({
+    expect(computeIngestionHealthPatch({}, [], ALIVE)).toEqual({
       ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: EVALUATED_AT, health_checks: [] },
     });
   });
 
   it('should stay unknown with no check and no heartbeat', () => {
-    expect(computeIngestionHealthPatch({}, [], EVALUATED_AT, {})).toBeNull();
+    expect(computeIngestionHealthPatch({}, [], CONTEXT)).toBeNull();
   });
 
   it('should not be healthy when a check fails, whatever the heartbeat', () => {
-    expect(computeIngestionHealthPatch({}, [USER_MISSING], EVALUATED_AT, ALIVE)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    expect(computeIngestionHealthPatch({}, [USER_MISSING], ALIVE)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
   });
 
   it('should not be healthy with a check unknown to this platform version', () => {
-    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], EVALUATED_AT, ALIVE)).toBeNull();
+    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], ALIVE)).toBeNull();
   });
 
   it('should go back to unknown when the heartbeat expires', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT, {})).toEqual({ ingestion_health: null });
+    expect(computeIngestionHealthPatch(current, [], CONTEXT)).toEqual({ ingestion_health: null });
+  });
+
+  it('should not be healthy on a stale heartbeat', () => {
+    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS).toISOString();
+    expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { heartbeat } })).toBeNull();
   });
 
   it('should keep since while the ingestion stays healthy', () => {
     const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT, ALIVE)).toBeNull();
+    expect(computeIngestionHealthPatch(current, [], ALIVE)).toBeNull();
   });
 
   it('should be critical with a missing heartbeat check, even when the user is also missing', () => {
     const checks = [USER_MISSING, HEARTBEAT_MISSING];
-    expect(computeIngestionHealthPatch({}, checks, EVALUATED_AT, {})?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
   });
 });
 
@@ -126,20 +133,35 @@ describe('heartbeat check', () => {
   const input = { userId: 'user', isUserRequired: true, isHeartbeatRequired: true };
 
   it('should flag a missing heartbeat when the source reports one', () => {
-    expect(computeIngestionHealthChecks(input, isExistingUser)).toEqual([HEARTBEAT_MISSING]);
-    expect(computeIngestionHealthChecks({ ...input, runtimeData: {} }, isExistingUser)).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: {}, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat that is there', () => {
-    expect(computeIngestionHealthChecks({ ...input, runtimeData: { heartbeat: EVALUATED_AT } }, isExistingUser)).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat: EVALUATED_AT }, isExistingUser })).toEqual([]);
+  });
+
+  it('should not flag a heartbeat younger than the max age', () => {
+    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS + 1000).toISOString();
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
+  });
+
+  it('should flag a heartbeat older than the max age as missing', () => {
+    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS).toISOString();
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+  });
+
+  it('should not flag a heartbeat in the future, clock skew between nodes', () => {
+    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() + 10_000).toISOString();
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should not flag sources without heartbeat, such as feeds and syncs', () => {
-    expect(computeIngestionHealthChecks({ ...input, isHeartbeatRequired: false }, isExistingUser)).toEqual([]);
+    expect(computeIngestionHealthChecks({ ...input, isHeartbeatRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
   });
 
   it('should give a critical status with the check message', () => {
-    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, isExistingUser), EVALUATED_AT, {});
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, { ...CONTEXT, isExistingUser }), CONTEXT);
     expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
     expect(toGraphqlIngestionHealth(patch?.ingestion_health)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
@@ -150,7 +172,6 @@ describe('heartbeat check', () => {
   });
 });
 
-
 describe('computeIngestionHealthChecks', () => {
   const EXISTING_USER_ID = 'existing-user-id';
   const DELETED_USER_ID = 'deleted-user-id';
@@ -158,35 +179,35 @@ describe('computeIngestionHealthChecks', () => {
 
   describe('connector (user required)', () => {
     it.each([undefined, null, ''])('should flag USER_MISSING when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ userId, isUserRequired: true }, isExistingUser)).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ userId, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, isExistingUser)).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: true }, isExistingUser)).toEqual([]);
+      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([]);
     });
   });
 
   describe('feed or sync (user optional: runs as the system user without one)', () => {
     it.each([undefined, null, ''])('should return no check when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ userId, isUserRequired: false }, isExistingUser)).toEqual([]);
+      expect(computeIngestionHealthChecks({ userId, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: false }, isExistingUser)).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: false }, isExistingUser)).toEqual([]);
+      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
     });
   });
 
   it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
-    const checks = computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, isExistingUser);
-    expect(computeIngestionHealthPatch({}, checks, EVALUATED_AT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+    const checks = computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser });
+    expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
   });
 });
 
