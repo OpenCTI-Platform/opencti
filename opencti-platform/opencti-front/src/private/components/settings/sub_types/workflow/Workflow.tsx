@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
@@ -20,6 +20,7 @@ import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestor
 import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
+import { getHoverHighlight } from './hoverHighlight';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
@@ -125,6 +126,8 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
+const DIMMED_OPACITY = 0.3;
+const HOVER_TRANSITION = 'opacity 150ms';
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -391,11 +394,27 @@ const Workflow = ({
 
   const onConnect = useStatusConnection();
 
+  // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims.
+  // Only the props given to ReactFlow change; writing to `nodes`/`edges` state would refit the
+  // view and trigger the autosave on every hover.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const onNodeMouseEnter: NodeMouseHandler = useCallback((_, node) => setHoveredId(node.id), []);
+  const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
+  const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
+  const displayedNodes = useMemo(() => nodes.map((node) => ({
+    ...node,
+    style: { ...node.style, opacity: highlight && !highlight.nodeIds.has(node.id) ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
+  })), [nodes, highlight]);
+  const displayedEdges = useMemo(() => edges.map((edge) => ({
+    ...edge,
+    style: { ...edge.style, opacity: highlight && !highlight.edgeIds.has(edge.id) ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
+  })), [edges, highlight]);
+
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={displayedNodes}
+        edges={displayedEdges}
         onConnect={onConnect}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -403,6 +422,8 @@ const Workflow = ({
         edgeTypes={edgeTypes}
         onNodeClick={onNodeClick}
         onEdgeClick={onEdgeClick}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
         fitView
         defaultViewport={defaultViewport}
         minZoom={0.2}

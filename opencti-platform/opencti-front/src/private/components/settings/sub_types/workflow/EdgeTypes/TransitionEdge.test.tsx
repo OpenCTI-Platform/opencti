@@ -14,7 +14,7 @@ vi.mock('@mui/styles', () => ({
   }),
 }));
 
-const makeProps = (route?: XYPosition[]) => ({
+const makeProps = (route?: XYPosition[], style?: React.CSSProperties) => ({
   id: 'edge-1',
   source: 'A',
   target: 'B',
@@ -25,6 +25,7 @@ const makeProps = (route?: XYPosition[]) => ({
   sourcePosition: Position.Bottom,
   targetPosition: Position.Top,
   data: route ? { route } : undefined,
+  style,
 }) as EdgeProps<{ route?: XYPosition[] }>;
 
 const visiblePath = (container: HTMLElement) => container.querySelector('path#edge-1')!.getAttribute('d');
@@ -39,5 +40,10 @@ describe('TransitionEdge', () => {
   it('falls back to a smoothstep path before the first layout', () => {
     const { container } = render(<svg><TransitionEdge {...makeProps()} /></svg>);
     expect(visiblePath(container)).toMatch(/^M ?0[ ,]0/);
+  });
+
+  it('fades the whole edge with the opacity it is given', () => {
+    const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { opacity: 0.2 })} /></svg>);
+    expect(container.querySelector<SVGGElement>('svg > g')!.style.opacity).toBe('0.2');
   });
 });

@@ -14,6 +14,7 @@ const TransitionEdge = ({
   targetPosition,
   markerEnd,
   data,
+  style,
 }: EdgeProps<{ route?: XYPosition[] }>) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
@@ -33,7 +34,12 @@ const TransitionEdge = ({
       });
 
   return (
-    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+    <g
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      // Workflow dims edges outside a hovered node's neighbourhood through style.opacity.
+      style={{ opacity: style?.opacity, transition: style?.transition }}
+    >
       <path
         id={id}
         style={{
