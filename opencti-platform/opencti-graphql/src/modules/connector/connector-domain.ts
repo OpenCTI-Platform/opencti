@@ -20,6 +20,7 @@ import {
   redisSetConnectorLogs,
   redisSetManagedConnectorAutoUpgradeStatus,
 } from './connector-redis';
+import { redisSetRuntimeData } from '../ingestionHealth/ingestionHealthMonitoring-redis';
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
@@ -505,6 +506,15 @@ export const updateConnectorWithConnectorInfo = async (
   return element;
 };
 
+// Same heartbeat, also exposed as runtime data for the ingestion health manager.
+// Best effort: the heartbeat of connector-redis stays the source of truth until the migration to the runtime data is decided.
+const recordRuntimeHeartbeat = async (connectorId: string, lastSeenAt: string) => {
+  try {
+    await redisSetRuntimeData(connectorId, 'heartbeat', lastSeenAt);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Unable to record connector runtime heartbeat', { cause: err, connectorId });
+  }
+};
 export const pingConnector = async (
   context: AuthContext,
   user: AuthUser,
@@ -525,6 +535,7 @@ export const pingConnector = async (
   // Recorded before updating the state: a pending state reset is consumed by the update, failing after it would let
   // the connector, which never received the reset state, write back its stale one on its next ping
   await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
+  await recordRuntimeHeartbeat(connectorEntity.internal_id, lastSeenAt);
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   return completeConnector(updatedConnector, lastSeenAt);
 };
@@ -550,6 +561,7 @@ const recordRegistrationHeartbeat = async (connectorId: string, lastSeenAt: stri
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to record connector heartbeat on registration', { cause: err, connectorId });
   }
+  await recordRuntimeHeartbeat(connectorId, lastSeenAt);
 };
 interface RegisterOptions {
   built_in?: boolean;
