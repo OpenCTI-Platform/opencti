@@ -4,6 +4,7 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
+  HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_USER_MISSING,
   HealthTransition,
   toGraphqlIngestionHealth,
@@ -14,6 +15,7 @@ import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
+const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
 // Not in the registry: never changes the status
 const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
 
@@ -81,6 +83,73 @@ describe('computeIngestionHealthPatch', () => {
     });
   });
 });
+
+describe('computeIngestionHealthPatch with runtime data', () => {
+  const ALIVE = { runtimeData: { heartbeat: EVALUATED_AT } };
+
+  it('should be healthy with no check and a heartbeat', () => {
+    expect(computeIngestionHealthPatch({}, [], EVALUATED_AT, ALIVE)).toEqual({
+      ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: EVALUATED_AT, health_checks: [] },
+    });
+  });
+
+  it('should stay unknown with no check and no heartbeat', () => {
+    expect(computeIngestionHealthPatch({}, [], EVALUATED_AT, {})).toBeNull();
+  });
+
+  it('should not be healthy when a check fails, whatever the heartbeat', () => {
+    expect(computeIngestionHealthPatch({}, [USER_MISSING], EVALUATED_AT, ALIVE)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+
+  it('should not be healthy with a check unknown to this platform version', () => {
+    expect(computeIngestionHealthPatch({}, [OTHER_CHECK], EVALUATED_AT, ALIVE)).toBeNull();
+  });
+
+  it('should go back to unknown when the heartbeat expires', () => {
+    const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
+    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT, {})).toEqual({ ingestion_health: null });
+  });
+
+  it('should keep since while the ingestion stays healthy', () => {
+    const current = { ingestion_health: { status: IngestionHealthStatus.Healthy, status_since: PREVIOUS_SINCE, health_checks: [] } };
+    expect(computeIngestionHealthPatch(current, [], EVALUATED_AT, ALIVE)).toBeNull();
+  });
+
+  it('should be critical with a missing heartbeat check, even when the user is also missing', () => {
+    const checks = [USER_MISSING, HEARTBEAT_MISSING];
+    expect(computeIngestionHealthPatch({}, checks, EVALUATED_AT, {})?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+  });
+});
+
+describe('heartbeat check', () => {
+  const isExistingUser = () => true;
+  const input = { userId: 'user', isUserRequired: true, isHeartbeatRequired: true };
+
+  it('should flag a missing heartbeat when the source reports one', () => {
+    expect(computeIngestionHealthChecks(input, isExistingUser)).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks({ ...input, runtimeData: {} }, isExistingUser)).toEqual([HEARTBEAT_MISSING]);
+  });
+
+  it('should not flag a heartbeat that is there', () => {
+    expect(computeIngestionHealthChecks({ ...input, runtimeData: { heartbeat: EVALUATED_AT } }, isExistingUser)).toEqual([]);
+  });
+
+  it('should not flag sources without heartbeat, such as feeds and syncs', () => {
+    expect(computeIngestionHealthChecks({ ...input, isHeartbeatRequired: false }, isExistingUser)).toEqual([]);
+  });
+
+  it('should give a critical status with the check message', () => {
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, isExistingUser), EVALUATED_AT, {});
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
+    expect(toGraphqlIngestionHealth(patch?.ingestion_health)?.healthChecks).toEqual([{
+      health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
+      health_check_message: 'No heartbeat received',
+      health_check_kind: IngestionHealthCheckKind.Runtime,
+      health_check_severity: IngestionHealthCheckSeverity.Blocking,
+    }]);
+  });
+});
+
 
 describe('computeIngestionHealthChecks', () => {
   const EXISTING_USER_ID = 'existing-user-id';

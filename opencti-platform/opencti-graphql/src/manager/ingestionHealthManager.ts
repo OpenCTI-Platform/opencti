@@ -27,6 +27,8 @@ import {
 } from '../modules/ingestionHealth/ingestionHealth-checks';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
+import { redisGetRuntimeData } from '../modules/ingestionHealth/ingestionHealthMonitoring-redis';
+import { isConnectorStopped } from '../modules/connector/connector-domain';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
@@ -41,6 +43,9 @@ interface IngestionSource<T extends IngestionElement> {
   // Connectors authenticate with their own user; feeds and syncs without one run as the system user
   isUserRequired: boolean;
   isEvaluated?: (element: T) => boolean;
+  // Sources reporting a heartbeat: its absence is a failure, unless the element is stopped on purpose
+  isHeartbeatRequired?: boolean;
+  isStopped?: (element: T) => boolean;
 }
 
 const connectorSource: IngestionSource<CachedConnector> = {
@@ -51,6 +56,8 @@ const connectorSource: IngestionSource<CachedConnector> = {
   isUserRequired: true,
   // Built-ins (feed twins) are not deployed: no process runs them
   isEvaluated: (connector) => !connector.built_in,
+  isHeartbeatRequired: true,
+  isStopped: isConnectorStopped,
 };
 
 const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement & { user_id?: string | null }> => ({
@@ -77,8 +84,18 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   element: T,
   isExistingUser: (userId: string) => boolean,
 ) => {
-  const checks = computeIngestionHealthChecks({ userId: source.getUserId(element), isUserRequired: source.isUserRequired }, isExistingUser);
-  const patch = computeIngestionHealthPatch(element, checks, now());
+  // Stopped on purpose: not monitored, nothing is read nor checked.
+  // No status can be computed then, so a health stored before the stop is removed, without activity event.
+  const isStopped = source.isStopped?.(element) ?? false;
+  // Runtime data reported by the sources, read per ingestion: a Redis failure only skips this ingestion until the next period
+  const runtimeData = isStopped ? {} : await redisGetRuntimeData(element.internal_id);
+  const checks = isStopped ? [] : computeIngestionHealthChecks({
+    userId: source.getUserId(element),
+    isUserRequired: source.isUserRequired,
+    isHeartbeatRequired: source.isHeartbeatRequired,
+    runtimeData,
+  }, isExistingUser);
+  const patch = computeIngestionHealthPatch(element, checks, now(), { runtimeData });
   if (!patch) {
     return;
   }
@@ -91,7 +108,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   // Published an health activity event after the write
   // a failed write is retried at the next period and reports the transition then
   const nextHealth = patch.ingestion_health;
-  const transition = computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
+  const transition = isStopped ? null : computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
