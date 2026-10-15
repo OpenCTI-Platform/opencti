@@ -10,7 +10,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
 import type { BasicStoreEntityDocument } from './document-types';
 import type { BasicStoreCommon } from '../../../types/store';
-import { type File, FilterMode, FilterOperator, OrderingMode, State } from '../../../generated/graphql';
+import { type File, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
 import { isBypassUser, SYSTEM_USER } from '../../../utils/access';
@@ -25,7 +25,6 @@ import { EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH,
 export { SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EMBEDDED_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH };
 
 export const DELETABLE_FILE_STATUSES = ['complete', 'timeout'];
-export const UPLOAD_STATUS_VALUES = Object.values(State);
 export const getIndexFromDate = async (context: AuthContext) => {
   const searchOptions = {
     first: 1,
