@@ -18,13 +18,12 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { getSessionMiddleware } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
-import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
+import { createGraphqlContext } from './httpGraphqlContext';
 import {
   applyKeepAliveTimeout,
   buildGraphqlUploadOptions,
@@ -36,7 +35,6 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
-import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -192,18 +190,7 @@ const createHttpServer = async () => {
     expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
-      context: async ({ req, res }) => {
-        const executeContext = await createAuthenticatedContext(req, res, 'api');
-        // When context is related to a work, we need to check work status
-        if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-          if (!workStillAlive) {
-            throw WorkNotALiveError();
-          }
-        }
-        await checkDraftInContext(executeContext);
-        return executeContext;
-      },
+      context: ({ req, res }) => createGraphqlContext(req, res),
     }),
   );
   const { sseMiddleware } = await createApp(app, schema);

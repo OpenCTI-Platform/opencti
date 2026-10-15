@@ -10,6 +10,9 @@ const typeDefs = `
   type Query {
     restricted: String @auth(for: ["SETTINGS_SETACCESSES"])
     open: String @auth(for: [])
+    knowledgeUpdate: String @auth(for: ["KNOWLEDGE_KNUPDATE"])
+    knowledgeDelete: String @auth(for: ["KNOWLEDGE_KNUPDATE_KNDELETE"])
+    labelsManage: String @auth(for: ["SETTINGS_SETLABELS"])
   }
 `;
 
@@ -17,6 +20,9 @@ const resolvers = {
   Query: {
     restricted: () => 'restricted-value',
     open: () => 'open-value',
+    knowledgeUpdate: () => 'update-value',
+    knowledgeDelete: () => 'delete-value',
+    labelsManage: () => 'labels-value',
   },
 };
 
@@ -88,5 +94,35 @@ describe('authDirective capability check', () => {
     const result = await runRestrictedQuery(user);
     expect(result.data?.restricted).toBeNull();
     expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
+  });
+});
+
+describe('authDirective - verified form submission', () => {
+  const formOnlyUser = buildUser({ capabilities: [{ name: 'KNOWLEDGE_KNFORMINTAKE' }] });
+  const run = (field: string, formSubmission?: boolean) => graphql({
+    schema: buildSchema(),
+    source: `{ ${field} }`,
+    contextValue: { user: formOnlyUser, otp_mandatory: false, user_otp_validated: true, form_submission: formSubmission },
+  });
+
+  it('denies Create / Update knowledge to a form-only user outside a verified form submission', async () => {
+    const result = await run('knowledgeUpdate');
+    expect(result.data?.knowledgeUpdate).toBeNull();
+    expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
+  });
+
+  it('grants Create / Update knowledge to a form-only user during a verified form submission', async () => {
+    const result = await run('knowledgeUpdate', true);
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.knowledgeUpdate).toBe('update-value');
+  });
+
+  it('gives nothing else than Create / Update knowledge during a verified form submission', async () => {
+    const deleted = await run('knowledgeDelete', true);
+    expect(deleted.data?.knowledgeDelete).toBeNull();
+    expect(deleted.errors?.[0]?.message).toBe('You are not allowed to do this.');
+    const labels = await run('labelsManage', true);
+    expect(labels.data?.labelsManage).toBeNull();
+    expect(labels.errors?.[0]?.message).toBe('You are not allowed to do this.');
   });
 });

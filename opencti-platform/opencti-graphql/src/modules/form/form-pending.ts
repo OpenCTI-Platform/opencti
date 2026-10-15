@@ -629,6 +629,11 @@ export const getPendingMainEntityAuthor = (values: Record<string, any>): string 
   return isFilledString(existing) ? existing : undefined;
 };
 
+// Objects created in the form that carry a kill chain phase: the import upserts the phase, which has its own right.
+export const countPendingKillChainPhases = (values: Record<string, any>): number => {
+  return getPendingRoots(values).filter((root) => toArray(root.refs?.[INPUT_KILLCHAIN]).length > 0).length;
+};
+
 /**
  * Reads the given uploads (all by default, once each) into memory as base64, one after the other. The result is indexed
  * like the uploads, the ones that are not asked for stay empty. The decoded size is capped as put in the bundle: an upload

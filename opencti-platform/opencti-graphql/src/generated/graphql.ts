@@ -2492,6 +2492,7 @@ export enum Capabilities {
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKndissemination = 'KNOWLEDGE_KNDISSEMINATION',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
+  KnowledgeKnformintake = 'KNOWLEDGE_KNFORMINTAKE',
   KnowledgeKngetexport = 'KNOWLEDGE_KNGETEXPORT',
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
