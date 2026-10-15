@@ -6,10 +6,11 @@ import {
   computeIngestionHealthPatch,
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_USER_MISSING,
-  HEARTBEAT_MAX_AGE_MS,
   HealthTransition,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
+import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
+import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
 import type { StoredHealthCheck } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 
@@ -113,7 +114,7 @@ describe('computeIngestionHealthPatch with runtime data', () => {
   });
 
   it('should not be healthy on a stale heartbeat', () => {
-    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS).toISOString();
+    const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
     expect(computeIngestionHealthPatch({}, [], { ...CONTEXT, runtimeData: { heartbeat } })).toBeNull();
   });
 
@@ -142,17 +143,17 @@ describe('heartbeat check', () => {
   });
 
   it('should not flag a heartbeat younger than the max age', () => {
-    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS + 1000).toISOString();
+    const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS - 1000, 'ms').toISOString();
     expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should flag a heartbeat older than the max age as missing', () => {
-    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() - HEARTBEAT_MAX_AGE_MS).toISOString();
+    const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
     expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat in the future, clock skew between nodes', () => {
-    const heartbeat = new Date(new Date(EVALUATED_AT).getTime() + 10_000).toISOString();
+    const heartbeat = utcDate(EVALUATED_AT).add(10_000, 'ms').toISOString();
     expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
   });
 
