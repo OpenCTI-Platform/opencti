@@ -2,6 +2,8 @@ import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
 import type { RuntimeData } from './ingestionHealthRuntimeData';
+import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-types';
+import { durationInMs } from '../../utils/format';
 
 // region registry
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
@@ -45,15 +47,13 @@ export interface HealthChecksContext extends HealthContext {
   isExistingUser: (userId: string) => boolean;
 }
 
-// A connector pings regularly: a heartbeat older than this is a missing one. Same window as the connector liveness.
-export const HEARTBEAT_MAX_AGE_MS = 5 * 60 * 1000;
-
+// Same window as the connector liveness (isConnectorActive).
 // A heartbeat in the future (clock skew between nodes) is alive
 export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: string): boolean => {
   if (!heartbeat) {
     return false;
   }
-  return new Date(evaluatedAt).getTime() - new Date(heartbeat).getTime() < HEARTBEAT_MAX_AGE_MS;
+  return durationInMs(heartbeat, evaluatedAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
 };
 
 // The configuration of the ingestion

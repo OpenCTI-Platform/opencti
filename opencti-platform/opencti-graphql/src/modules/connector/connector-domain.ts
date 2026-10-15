@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC,
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { now } from '../../utils/format';
+import { now, sinceNowInMs } from '../../utils/format';
 import { isEmptyField } from '../../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
@@ -41,6 +41,7 @@ import type {
   StoreEntityConnector,
   StoreEntityConnectorManager,
 } from './connector-types';
+import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from './connector-types';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -67,7 +68,6 @@ import { getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
 import { BACKGROUND_TASK_QUEUES, connectorConfig, getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector } from './connector-rabbitmq';
-import { sinceNowInMinutes } from '../../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../../schema/general';
 import { isNotEmptyField } from '../../database/utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../notifier/notifier-statics';
@@ -137,7 +137,7 @@ export const isConnectorActive = (connector: any, lastSeenAt?: string | null) =>
   if (isConnectorStopped(connector)) {
     return false;
   }
-  return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
+  return isNotEmptyField(lastSeenAt) && sinceNowInMs(lastSeenAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
 };
 
 // Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors

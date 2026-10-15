@@ -5,6 +5,9 @@ import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
 import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
+// A running connector pings regularly: a heartbeat older than this means it is down
+export const CONNECTOR_LIVELINESS_GRACE_PERIOD_MS = 5 * 60 * 1000;
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;
