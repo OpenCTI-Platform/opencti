@@ -551,7 +551,7 @@ export const DATA_SANITY_MANAGER_USER: AuthUser = {
 };
 
 export const INGESTION_HEALTH_MANAGER_USER: AuthUser = {
-  entity_type: 'User',
+  entity_type: ENTITY_TYPE_USER,
   id: INGESTION_HEALTH_MANAGER_USER_UUID,
   internal_id: INGESTION_HEALTH_MANAGER_USER_UUID,
   individual_id: undefined,
