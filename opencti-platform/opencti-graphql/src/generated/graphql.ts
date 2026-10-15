@@ -1848,6 +1848,7 @@ export type BackgroundTaskContextInput = {
 
 export type BackgroundTaskContextOptionsInput = {
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
+  investigationId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum BackgroundTaskContextType {
@@ -9521,11 +9522,13 @@ export type ExternalReferenceEditMutations = {
 
 export type ExternalReferenceEditMutationsAskEnrichmentArgs = {
   connectorId: Scalars['ID']['input'];
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type ExternalReferenceEditMutationsAskEnrichmentsArgs = {
   connectorIds: Array<Scalars['ID']['input']>;
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -32137,11 +32140,13 @@ export type StixCoreObjectEditMutationsAskAnalysisArgs = {
 
 export type StixCoreObjectEditMutationsAskEnrichmentArgs = {
   connectorId: Scalars['ID']['input'];
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
 export type StixCoreObjectEditMutationsAskEnrichmentsArgs = {
   connectorIds: Array<Scalars['ID']['input']>;
+  investigationId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -39531,6 +39536,7 @@ export type Workspace = BasicObject & InternalObject & {
   currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
+  enrichmentWorks?: Maybe<WorkConnection>;
   entity_type: Scalars['String']['output'];
   graph_data?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -39553,6 +39559,16 @@ export type Workspace = BasicObject & InternalObject & {
   type?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   variables: Array<DashboardVariable>;
+};
+
+
+export type WorkspaceEnrichmentWorksArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<WorksOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -55075,6 +55091,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  enrichmentWorks?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<WorkspaceEnrichmentWorksArgs>>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

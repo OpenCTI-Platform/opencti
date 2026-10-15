@@ -2088,25 +2088,36 @@ class StixCoreObject:
         :type element_id: str
         :param connector_id: the connector id
         :type connector_id: str
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_id = kwargs.get("connector_id", None)
-        query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
-                stixCoreObjectEdit(id: $id) {
-                    askEnrichment(connectorId: $connectorId) {
-                      id
+        investigation_id = kwargs.get("investigation_id", None)
+        variables = {"id": element_id, "connectorId": connector_id}
+        # Only send the argument when set, to stay compatible with platforms without it
+        if investigation_id is not None:
+            query = """
+                mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!, $investigationId: ID) {
+                    stixCoreObjectEdit(id: $id) {
+                        askEnrichment(connectorId: $connectorId, investigationId: $investigationId) {
+                          id
+                        }
                     }
                 }
-            }
-        """
-        self.opencti.query(
-            query,
-            {
-                "id": element_id,
-                "connectorId": connector_id,
-            },
-        )
+            """
+            variables["investigationId"] = investigation_id
+        else:
+            query = """
+                mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
+                    stixCoreObjectEdit(id: $id) {
+                        askEnrichment(connectorId: $connectorId) {
+                          id
+                        }
+                    }
+                }
+            """
+        self.opencti.query(query, variables)
 
     def ask_enrichments(self, **kwargs):
         """Ask enrichment with multiple connectors.
@@ -2115,25 +2126,36 @@ class StixCoreObject:
         :type element_id: str
         :param connector_ids: list of connector ids
         :type connector_ids: list
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_ids = kwargs.get("connector_ids", None)
-        query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
-                stixCoreObjectEdit(id: $id) {
-                    askEnrichments(connectorIds: $connectorIds) {
-                      id
+        investigation_id = kwargs.get("investigation_id", None)
+        variables = {"id": element_id, "connectorIds": connector_ids}
+        # Only send the argument when set, to stay compatible with platforms without it
+        if investigation_id is not None:
+            query = """
+                mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!, $investigationId: ID) {
+                    stixCoreObjectEdit(id: $id) {
+                        askEnrichments(connectorIds: $connectorIds, investigationId: $investigationId) {
+                          id
+                        }
                     }
                 }
-            }
-        """
-        self.opencti.query(
-            query,
-            {
-                "id": element_id,
-                "connectorIds": connector_ids,
-            },
-        )
+            """
+            variables["investigationId"] = investigation_id
+        else:
+            query = """
+                mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
+                    stixCoreObjectEdit(id: $id) {
+                        askEnrichments(connectorIds: $connectorIds) {
+                          id
+                        }
+                    }
+                }
+            """
+        self.opencti.query(query, variables)
 
     def organization_share(self, entity_id, organization_ids, sharing_direct_container):
         """Share element to multiple organizations.
