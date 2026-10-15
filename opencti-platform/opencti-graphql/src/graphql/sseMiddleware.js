@@ -75,6 +75,7 @@ const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
+const RESOLUTION_BATCH_SIZE = Math.max(conf.get('app:live_stream:resolution_batch_size') ?? 500, 1);
 
 const sendErrorStatus = (_req, res, httpStatus) => {
   try {
@@ -272,38 +273,84 @@ export const authenticateForPublic = async (req, res, next) => {
   }
 };
 
-export const resolveMissingReferences = async (context, user, missingRefs, cache) => {
-  const allResolvedElements = [];
-  const resolvedIds = new Set();
-  let refsToResolve = missingRefs.filter((m) => !cache.has(m));
-  while (refsToResolve.length > 0) {
-    const missingElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
-    if (missingElements.length === 0) {
-      break;
-    }
-    const newRefsToResolve = new Set();
-    const elementsWithStix = [];
-    for (let index = 0; index < missingElements.length; index += 1) {
-      await doYield();
-      const missingElement = missingElements[index];
-      const stix = convertStoreToStix_2_1(missingElement);
-      const instanceIds = [missingElement.internal_id, missingElement.standard_id, ...(missingElement.x_opencti_stix_ids ?? [])];
-      elementsWithStix.push({ message: generateCreateMessage(missingElement), stix, instanceIds });
-      const newResolvedIds = extractIdsFromStoreObject(missingElement);
-      newResolvedIds.forEach((id) => resolvedIds.add(id));
-      const extractedRefs = stixRefsExtractor(stix);
-      // We also use a Set to ensure we don't fetch duplicate refs in the same batch
-      extractedRefs.forEach((refId) => {
-        if (!cache.has(refId) && !resolvedIds.has(refId)) {
-          newRefsToResolve.add(refId);
-        }
-      });
-    }
-    allResolvedElements.unshift(elementsWithStix);
-    refsToResolve = Array.from(newRefsToResolve);
+// Load one bounded chunk of missing elements and convert them to STIX.
+// Store objects are released when this returns: only what is needed to publish them is kept.
+const loadMissingElements = async (state, ids) => {
+  const { context, user, cache, resolvedIds } = state;
+  const missingElements = await storeLoadByIdsWithRefs(context, user, ids);
+  const elementsWithStix = [];
+  const nextRefs = new Set();
+  for (let index = 0; index < missingElements.length; index += 1) {
+    await doYield();
+    const missingElement = missingElements[index];
+    const stix = convertStoreToStix_2_1(missingElement);
+    elementsWithStix.push({ message: generateCreateMessage(missingElement), stix });
+    extractIdsFromStoreObject(missingElement).forEach((id) => resolvedIds.add(id));
+    stixRefsExtractor(stix).forEach((refId) => {
+      if (!cache.has(refId) && !resolvedIds.has(refId)) {
+        nextRefs.add(refId);
+      }
+    });
   }
-  // Return flattened results in reverse order (deepest dependencies first)
-  return allResolvedElements.flat();
+  return { elementsWithStix, nextRefs: Array.from(nextRefs) };
+};
+
+// Dependencies must be sent before dependents: the refs of a loaded chunk are resolved
+// and published (depth first) before the chunk itself.
+const publishResolvedChunk = async (state, { elementsWithStix, nextRefs }) => {
+  const isComplete = await resolveRefsInChunks(state, nextRefs);
+  if (!isComplete || elementsWithStix.length === 0) {
+    return isComplete;
+  }
+  return (await state.onResolved(elementsWithStix)) !== false;
+};
+
+const resolveRefsInChunks = async (state, refs) => {
+  for (let index = 0; index < refs.length; index += RESOLUTION_BATCH_SIZE) {
+    // Filtered per chunk, as the dependencies of a previous chunk may already have resolved some of these refs
+    const ids = refs.slice(index, index + RESOLUTION_BATCH_SIZE).filter((id) => !state.cache.has(id) && !state.resolvedIds.has(id));
+    if (ids.length > 0) {
+      const chunk = await loadMissingElements(state, ids);
+      const isComplete = await publishResolvedChunk(state, chunk);
+      if (!isComplete) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+/**
+ * Resolve the closure of missing references and hand it to onResolved, chunk by chunk.
+ *
+ * The closure of a large container can hold tens of thousands of elements, so it is never loaded at once:
+ * each load is bounded by app:live_stream:resolution_batch_size, and each chunk is handed to onResolved
+ * as soon as its own dependencies have been, so dependencies always come before dependents.
+ *
+ * requiredRefs (from and to of a relationship) are loaded first and alone: if one of them is not
+ * accessible, the resolution is invalid and nothing is handed to onResolved.
+ *
+ * onResolved receives an array of { message, stix } and returns false to stop the resolution.
+ * Returns false if a required ref is not accessible or if onResolved stopped the resolution.
+ */
+export const resolveMissingReferences = async (context, user, missingRefs, cache, onResolved, opts = {}) => {
+  const { requiredRefs = [] } = opts;
+  const state = { context, user, cache, onResolved, resolvedIds: new Set() };
+  if (requiredRefs.some((id) => isEmptyField(id))) {
+    return false;
+  }
+  const requiredToLoad = [...new Set(requiredRefs.filter((id) => !cache.has(id)))];
+  if (requiredToLoad.length > 0) {
+    const requiredChunk = await loadMissingElements(state, requiredToLoad);
+    if (requiredToLoad.some((id) => !state.resolvedIds.has(id))) {
+      return false;
+    }
+    const isComplete = await publishResolvedChunk(state, requiredChunk);
+    if (!isComplete) {
+      return false;
+    }
+  }
+  return resolveRefsInChunks(state, missingRefs);
 };
 
 // before sending the event, sendEventWithFilteredObjectRefs removes from object_refs list all the ids of the entities the user cannot access
@@ -453,22 +500,28 @@ const createSseMiddleware = () => {
         }
       },
     };
+    let heartbeatInProgress = false;
     const heartTimer = async () => {
+      // Each pending send holds drain and close listeners on the response:
+      // never start a tick while the previous one is still waiting for the consumer.
+      if (heartbeatInProgress) {
+        return;
+      }
+      heartbeatInProgress = true;
       try {
-        if (lastEventId) {
-          // heartbeat must be sent to maintain the connection
-          // Only when the last event is accessible and nothing is currently in the socket.
-          if (res.writableLength === 0) {
-            const [idTime] = lastEventId.split('-');
-            const idDate = utcDate(parseInt(idTime, 10)).toISOString();
-            await channel.sendEvent(lastEventId, 'heartbeat', idDate);
-          }
-          // heartbeat must send statistics with derived metrics
+        // heartbeat must be sent to maintain the connection, followed by statistics with derived metrics.
+        // Only when the last event is accessible and nothing is currently in the socket.
+        if (lastEventId && res.writableLength === 0) {
+          const [idTime] = lastEventId.split('-');
+          const idDate = utcDate(parseInt(idTime, 10)).toISOString();
+          await channel.sendEvent(lastEventId, 'heartbeat', idDate);
           const consumerInformation = await getStreamConsumerInformation(channel.id, lastEventId);
           await channel.sendEvent(lastEventId, 'consumer_metrics', consumerInformation);
         }
       } catch {
         // ignore
+      } finally {
+        heartbeatInProgress = false;
       }
     };
     const heartbeatInterval = setInterval(heartTimer, HEARTBEAT_PERIOD);
@@ -532,29 +585,24 @@ const createSseMiddleware = () => {
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData);
-    const missingInstances = await resolveMissingReferences(context, req.user, refs, cache);
-    if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
-      const resolvedMissingIds = new Set(missingInstances.map((m) => m.instanceIds).flat());
-      // Check for a relation that the from and the to is correctly accessible.
-      const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
-      const toId = stixData.target_ref ?? stixData.where_sighted_refs[0];
-      const hasFrom = resolvedMissingIds.has(fromId) || cache.has(fromId);
-      const hasTo = resolvedMissingIds.has(toId) || cache.has(toId);
-      if (!hasFrom || !hasTo) {
-        return false;
+    // A relationship is only published if its from and its to are accessible
+    const isRelation = stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING;
+    const requiredRefs = isRelation ? [stixData.source_ref ?? stixData.sighting_of_ref, stixData.target_ref ?? stixData.where_sighted_refs[0]] : [];
+    const publishMissingInstances = async (missingInstances) => {
+      for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
+        const { message, stix: missingData } = missingInstances[missingIndex];
+        if (!cache.has(missingData.id) && channel.connected()) {
+          const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+          const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
+          await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+          await trackMissingResolution(channel.id, 1, eventId);
+          cache.set(missingData.id, 'hit');
+        }
       }
-    }
-    for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
-      const { message, stix: missingData } = missingInstances[missingIndex];
-      if (!cache.has(missingData.id) && channel.connected()) {
-        const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-        const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
-        await channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-        await trackMissingResolution(channel.id, 1, eventId);
-        cache.set(missingData.id, 'hit');
-      }
-    }
-    return true;
+      // Stop the resolution if the channel is disconnected
+      return channel.connected();
+    };
+    return resolveMissingReferences(context, req.user, refs, cache, publishMissingInstances, { requiredRefs });
   };
   const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, eventId, stix) => {
     // Resolving REFS
