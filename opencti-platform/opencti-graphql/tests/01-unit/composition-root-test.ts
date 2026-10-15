@@ -1,3 +1,5 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { printSchema } from 'graphql';
 // Most of the src/back.ts import graph (src/boot needs the builder's migrations glob):
@@ -35,5 +37,19 @@ describe('Composition root', () => {
   it('should register only once', () => {
     registerModules();
     expect(registeredManagerIds().filter((id) => id === 'DATA_SANITY_MANAGER')).toHaveLength(1);
+  });
+
+  it('should refuse to register other descriptors once registered', () => {
+    expect(() => registerModules(MODULE_DESCRIPTORS.slice(1))).toThrow('Modules are already registered with other descriptors');
+    expect(() => registerModules([...MODULE_DESCRIPTORS].reverse())).toThrow('Modules are already registered with other descriptors');
+  });
+
+  it('should list every module descriptor', async () => {
+    const modulesPath = join(__dirname, '../../src/modules');
+    const descriptorFiles = readdirSync(modulesPath, { recursive: true, encoding: 'utf8' }).filter((file) => file.endsWith('-module.ts'));
+    // Already evaluated through the composition root, except the unlisted ones: importing a descriptor has no side effect
+    const descriptors = await Promise.all(descriptorFiles.map(async (file) => (await import(join(modulesPath, file))).default));
+    expect(descriptorFiles.filter((_, index) => !MODULE_DESCRIPTORS.includes(descriptors[index]))).toEqual([]);
+    expect(descriptorFiles).toHaveLength(MODULE_DESCRIPTORS.length);
   });
 });

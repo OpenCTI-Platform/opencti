@@ -20,6 +20,7 @@ import { registerInternalObjectRelationsRefs } from './modules/relationsRef/inte
 import { registerStixMetaObjectRelationsRefs } from './modules/relationsRef/stixMetaObject-registrationRef';
 import { registerStixCyberObservableRelationsRefs } from './modules/relationsRef/stixCyberObservable-registrationRef';
 import type { ModuleDescriptor } from './modules/module-descriptor';
+import { UnsupportedError } from './config/errors';
 import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
 import { schemaAttributesDefinition } from './schema/schema-attributes';
@@ -197,7 +198,11 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   configPresetModule,
 ];
 
-let modulesRegistered = false;
+let registeredDescriptors: ModuleDescriptor[] | undefined;
+
+const isSameDescriptors = (descriptors: ModuleDescriptor[], otherDescriptors: ModuleDescriptor[]) => {
+  return descriptors.length === otherDescriptors.length && descriptors.every((descriptor, index) => descriptor === otherDescriptors[index]);
+};
 
 // Attributes, then refs, of the abstract types, which every module definition inherits from.
 const registerAbstractDataModel = () => {
@@ -227,11 +232,18 @@ const registerAbstractDataModel = () => {
 // data model (overview layouts, attributes, then definitions), graphql schemas, managers, then init.
 // usageProtection catches a read of types, attributes or refs made earlier, not of converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
+// Runs once: calling it again is a no-op with the same descriptors, and an error with other ones.
 export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIPTORS) => {
-  if (modulesRegistered) {
+  if (registeredDescriptors) {
+    if (!isSameDescriptors(registeredDescriptors, descriptors)) {
+      throw UnsupportedError('Modules are already registered with other descriptors', {
+        registered: registeredDescriptors.map(({ id }) => id),
+        requested: descriptors.map(({ id }) => id),
+      });
+    }
     return;
   }
-  modulesRegistered = true;
+  registeredDescriptors = [...descriptors];
   registerAbstractDataModel();
   descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
