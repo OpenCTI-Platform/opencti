@@ -69,13 +69,11 @@ const resolve = async (missingRefs: string[], opts: { requiredRefs?: string[]; c
   return { isComplete, publishedChunks, published: publishedChunks.flat(), onResolved };
 };
 
-// Every ref of a published element that is itself published must have been published in a previous chunk,
-// or in the same one: as before chunking within a level, elements loaded together are not ordered between them.
-const expectDependenciesFirst = (graph: Record<string, any>, publishedChunks: string[][]) => {
-  const chunkOf = (id: string) => publishedChunks.findIndex((chunk) => chunk.includes(id));
-  publishedChunks.flat().forEach((id) => {
-    graph[id].refs.filter((ref: string) => chunkOf(ref) !== -1).forEach((ref: string) => {
-      expect(chunkOf(ref), `${ref} must be published before ${id}`).toBeLessThanOrEqual(chunkOf(id));
+// Every ref of a published element that is itself published must have been published before it
+const expectDependenciesFirst = (graph: Record<string, any>, published: string[]) => {
+  published.forEach((id, position) => {
+    graph[id].refs.filter((ref: string) => published.includes(ref)).forEach((ref: string) => {
+      expect(published.indexOf(ref), `${ref} must be published before ${id}`).toBeLessThan(position);
     });
   });
 };
@@ -93,8 +91,9 @@ describe('resolveMissingReferences', () => {
     expect(isComplete).toBe(true);
     expect(loadedChunks()).toEqual([['container'], ['o1', 'o2'], ['o3', 'o4'], ['o5']]);
     loadedChunks().forEach((chunk) => expect(chunk.length).toBeLessThanOrEqual(BATCH_SIZE));
-    // Each chunk is published as soon as it is resolved, the container only after all its objects
-    expect(publishedChunks).toEqual([['o1', 'o2'], ['o3', 'o4'], ['o5'], ['container']]);
+    // Elements are published in chunks as soon as they are ready, the container only after all its objects
+    expect(publishedChunks).toEqual([['o1', 'o2'], ['o3', 'o4'], ['o5', 'container']]);
+    publishedChunks.forEach((chunk) => expect(chunk.length).toBeLessThanOrEqual(BATCH_SIZE));
     expect(published).toHaveLength(6);
   });
 
@@ -118,23 +117,41 @@ describe('resolveMissingReferences', () => {
       marking: [],
     });
     mockStore(graph);
-    const { isComplete, published, publishedChunks } = await resolve(['container']);
+    const { isComplete, published } = await resolve(['container']);
     expect(isComplete).toBe(true);
     expect([...published].sort()).toEqual(Object.keys(graph).sort());
-    expectDependenciesFirst(graph, publishedChunks);
+    expectDependenciesFirst(graph, published);
     // Each element is loaded only once, even when referenced from several chunks
     const loaded = loadedChunks().flat();
     expect(loaded).toHaveLength(new Set(loaded).size);
     loadedChunks().forEach((chunk) => expect(chunk.length).toBeLessThanOrEqual(BATCH_SIZE));
   });
 
-  it('should not reload an element already resolved by the dependencies of a previous chunk', async () => {
-    // r1 and r3 are in the first chunk, r3 needs r2, which is also part of the second chunk
+  it('should not reload an element already resolved as the dependency of a previous one', async () => {
+    // r1 and r3 are loaded together, r3 needs r2, which comes after them in the frontier
     const graph = buildGraph({ r1: [], r3: ['r2'], r2: [] });
     mockStore(graph);
     const { published } = await resolve(['r1', 'r3', 'r2']);
     expect(loadedChunks()).toEqual([['r1', 'r3'], ['r2']]);
-    expect(published).toEqual(['r2', 'r1', 'r3']);
+    expect(published).toEqual(['r1', 'r2', 'r3']);
+  });
+
+  it('should publish a dependency loaded in the same chunk before its dependent', async () => {
+    // rel is loaded together with source, which comes after it in the container
+    const graph = buildGraph({ container: ['rel', 'source', 'target'], rel: ['source', 'target'], source: [], target: [] });
+    mockStore(graph);
+    const { published } = await resolve(['container']);
+    expect(loadedChunks()).toEqual([['container'], ['rel', 'source'], ['target']]);
+    expect(published).toEqual(['source', 'target', 'rel', 'container']);
+  });
+
+  it('should publish a dependency loaded by an ancestor chunk before its dependent', async () => {
+    // a and b are loaded together, b is only needed deeper, by d
+    const graph = buildGraph({ a: ['d'], b: [], d: ['b'] });
+    mockStore(graph);
+    const { published } = await resolve(['a', 'b']);
+    expect(loadedChunks()).toEqual([['a', 'b'], ['d']]);
+    expect(published).toEqual(['b', 'd', 'a']);
   });
 
   it('should resolve elements referenced through any of their ids only once', async () => {
@@ -200,9 +217,9 @@ describe('resolveMissingReferences', () => {
       mockStore(graph);
       const { isComplete, published, publishedChunks } = await resolve(['from', 'to', 'creator', 'marking'], { requiredRefs: ['from', 'to'] });
       expect(isComplete).toBe(true);
-      expect(loadedChunks()[0]).toEqual(['from', 'to']);
-      expect(publishedChunks).toEqual([['marking'], ['from', 'to'], ['creator']]);
-      expect([...published].sort()).toEqual(['creator', 'from', 'marking', 'to']);
+      expect(loadedChunks()).toEqual([['from', 'to'], ['marking'], ['creator']]);
+      expect(publishedChunks).toEqual([['marking', 'from'], ['to', 'creator']]);
+      expectDependenciesFirst(graph, published);
     });
 
     it('should accept required refs already in the cache without loading them', async () => {

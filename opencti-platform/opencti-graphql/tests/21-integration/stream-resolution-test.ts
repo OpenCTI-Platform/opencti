@@ -119,19 +119,21 @@ describe('Should stream parent resolutions correctly working', () => {
     });
     expect(isComplete).toBe(true);
     expect(missingInstances.length).toBe(4);
+    const indexOf = (name: string) => missingInstances.findIndex((instance) => instance.stix.name === name);
     // REPORT01
-    expect(missingInstances[0].stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
-    expect(missingInstances[0].stix.name).toBe('Report-01-Resolution');
+    const report01 = missingInstances[indexOf('Report-01-Resolution')];
+    expect(report01.stix.id).toBe('report--b8c1e232-cfa4-5fe9-b7cc-b631b46d4424');
     // INDIVIDUAL (auto created)
-    expect(missingInstances[1].stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
-    expect(missingInstances[1].stix.name).toBe('admin');
-    expect(missingInstances[1].message).toBe('creates a Individual `admin`');
+    const individual = missingInstances[indexOf('admin')];
+    expect(individual.stix.id).toBe('identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91');
+    expect(individual.message).toBe('creates a Individual `admin`');
     // CASE02
-    expect(missingInstances[2].stix.name).toBe('Case-02-Resolution');
-    expect(missingInstances[2].message).toBe('creates a Case-Incident `Case-02-Resolution`');
+    expect(missingInstances[indexOf('Case-02-Resolution')].message).toBe('creates a Case-Incident `Case-02-Resolution`');
     // CASE01
-    expect(missingInstances[3].stix.name).toBe('Case-01-Resolution');
-    expect(missingInstances[3].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    expect(missingInstances[indexOf('Case-01-Resolution')].message).toBe('creates a Case-Incident `Case-01-Resolution`');
+    // Dependencies first: CASE01 needs CASE02, which needs REPORT01 (the cycle is closed by the report itself)
+    expect(indexOf('Report-01-Resolution')).toBeLessThan(indexOf('Case-02-Resolution'));
+    expect(indexOf('Case-02-Resolution')).toBeLessThan(indexOf('Case-01-Resolution'));
     // CLEANUP
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
