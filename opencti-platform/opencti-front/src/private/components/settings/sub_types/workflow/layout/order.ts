@@ -12,16 +12,31 @@ export const orderLayers = (graph: Graph, ranked: RankedGraph): Ordering => {
   const seed = new Map<string, number>();
   const treeKids = new Map<string, string[]>();
   let counter = 0;
-  const dfs = (id: string) => {
+  const visit = (id: string) => {
     seen.add(id);
     seed.set(id, counter);
     counter += 1;
-    down.get(id)!.forEach((child) => {
-      if (seen.has(child)) return;
-      if (!treeKids.has(id)) treeKids.set(id, []);
-      treeKids.get(id)!.push(child);
-      dfs(child);
-    });
+  };
+  // Iterative preorder so a long chain of statuses cannot overflow the call stack.
+  const dfs = (start: string) => {
+    visit(start);
+    const stack = [{ id: start, next: 0 }];
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const children = down.get(frame.id)!;
+      if (frame.next < children.length) {
+        const child = children[frame.next];
+        frame.next += 1;
+        if (!seen.has(child)) {
+          if (!treeKids.has(frame.id)) treeKids.set(frame.id, []);
+          treeKids.get(frame.id)!.push(child);
+          visit(child);
+          stack.push({ id: child, next: 0 });
+        }
+      } else {
+        stack.pop();
+      }
+    }
   };
   const modelOrder = (id: string) => graph.nodes.get(id)?.order ?? Infinity;
   [...layered.values()]

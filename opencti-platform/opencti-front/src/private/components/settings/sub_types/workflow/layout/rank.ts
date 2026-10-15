@@ -39,17 +39,28 @@ export const buildGraph = (inputNodes: LayoutInputNode[], inputEdges: LayoutInpu
 const findBackEdges = (graph: Graph): Set<string> => {
   const state = new Map<string, 'open' | 'done'>();
   const backEdges = new Set<string>();
-  const dfs = (id: string) => {
-    state.set(id, 'open');
-    graph.outE.get(id)!.forEach((e) => {
-      const s = state.get(e.target);
-      if (s === 'open') {
-        backEdges.add(e.id);
-      } else if (!s) {
-        dfs(e.target);
+  // Iterative so a long chain of statuses cannot overflow the call stack.
+  const dfs = (start: string) => {
+    const stack = [{ id: start, next: 0 }];
+    state.set(start, 'open');
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const out = graph.outE.get(frame.id)!;
+      if (frame.next < out.length) {
+        const e = out[frame.next];
+        frame.next += 1;
+        const s = state.get(e.target);
+        if (s === 'open') {
+          backEdges.add(e.id);
+        } else if (!s) {
+          state.set(e.target, 'open');
+          stack.push({ id: e.target, next: 0 });
+        }
+      } else {
+        state.set(frame.id, 'done');
+        stack.pop();
       }
-    });
-    state.set(id, 'done');
+    }
   };
   const visit = (n: GraphNode) => {
     if (!state.has(n.id)) dfs(n.id);

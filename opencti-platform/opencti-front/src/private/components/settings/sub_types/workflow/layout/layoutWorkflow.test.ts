@@ -96,6 +96,13 @@ describe('layoutWorkflow – hints and edge cases', () => {
     expect(result.positions.get('A')).toEqual({ x: -80, y: -25 });
   });
 
+  it('lays out a 1500-status chain without overflowing the stack', () => {
+    const statuses = Array.from({ length: 1500 }, (_, i) => `S${i}`);
+    const transitions = statuses.slice(1).map((s, i): WorkflowFixture['transitions'][number] => [[statuses[i]], 'next', s]);
+    const { result } = run({ name: 'chain', statuses, transitions });
+    expect(result.nodeHints.get('S1499')!.rank).toBe(2 * 1499);
+  });
+
   it('ignores an edge that points to a missing node', () => {
     const result = layoutWorkflow([{ id: 'A', type: 'status' }], [{ id: 'ghost', source: 'A', target: 'gone' }], OPTIONS);
     expect(result.routes.has('ghost')).toBe(false);
