@@ -39,7 +39,7 @@ const GLYPH = { fontSize: 16 };
 
 interface FilterValueVariableSwitchProps {
   filter?: Filter;
-  /** Variables compatible with the filter, at least one. */
+  /** Variables compatible with the filter. Empty only when the filter holds the token of a deleted or incompatible variable. */
   variables: DashboardVariable[];
   /** The input of a fixed value, rendered unchanged in the fixed mode. */
   children: ReactNode;

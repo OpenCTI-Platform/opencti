@@ -206,12 +206,33 @@ describe('FilterValueInput with dashboard variables (date and free inputs)', () 
       expect(dateFiltersValueForDisplay).not.toHaveBeenCalledWith(expect.stringContaining('$var:'), expect.anything());
     });
 
-    it('in a dashboard, never hands a token of a deleted variable to the fixed input', () => {
+    it('keeps the switch on "Deleted variable" for a token of a deleted variable, even with no compatible variable', () => {
       const { container } = renderInput({ ...filter, values: [token(DELETED_VARIABLE_ID)] }, { variables: [labelVariable] });
-      expect(fixedRadio()).toBeNull();
+      expect(variableRadio()).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('combobox', { name: 'Variable' })).toHaveTextContent('Deleted variable');
+      // The fixed input, never given the token, is not even rendered.
       expect(container.innerHTML).not.toContain('$var:');
       expect(container.textContent).not.toContain('Invalid Date');
       expect(dateFiltersValueForDisplay).not.toHaveBeenCalledWith(expect.stringContaining('$var:'), expect.anything());
+    });
+
+    it('keeps the switch on the name of a variable that is no longer compatible, even with no compatible variable', () => {
+      renderInput({ ...filter, values: [token(incompatible.id)] }, { variables: [incompatible] });
+      expect(variableRadio()).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('combobox', { name: 'Variable' })).toHaveTextContent(incompatible.name);
+    });
+
+    it('drops the token of a deleted variable when switched to a fixed value, with no compatible variable', async () => {
+      const { user } = renderInput({ ...filter, values: [token(DELETED_VARIABLE_ID)] }, { variables: [labelVariable] });
+      await user.click(fixedRadio() as HTMLElement);
+      expect(helpers.handleAddSingleValueFilter).toHaveBeenLastCalledWith('filter-1');
+      expect(screen.queryByRole('combobox', { name: 'Variable' })).toBeNull();
+    });
+
+    it('renders the bare fixed input as before for a filter with no token and no compatible variable', () => {
+      const outsideDashboard = renderedHtml(filter, { withProvider: false });
+      expect(renderedHtml(filter, { variables: [labelVariable] })).toEqual(outsideDashboard);
+      expect(renderedHtml({ ...filter, values: [] }, { variables: [labelVariable] })).toEqual(renderedHtml({ ...filter, values: [] }, { withProvider: false }));
     });
   });
 

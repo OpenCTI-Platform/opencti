@@ -19,6 +19,7 @@ import FilterFiltersInput from '../FilterFiltersInput';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterEntityAutocomplete from './FilterEntityAutocomplete';
 import FilterValueVariableSwitch, { useFilterValueVariables, withoutVariableTokens } from './FilterValueVariableSwitch';
+import { parseVariableToken } from '../../dashboard/dashboardVariablesResolution';
 
 export interface FilterValueInputProps {
   filter?: Filter;
@@ -65,8 +66,11 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
     : inputValues;
 
   // A single value input with no option list (date, number, free text) can take a compatible variable.
+  // A filter already holding a token keeps the switch even with no compatible variable: the token of a deleted (or no
+  // longer compatible) variable is then shown as such, and switching to a fixed value drops it.
+  const holdsVariableToken = filterValues.some((value) => parseVariableToken(value) !== null);
   const withVariableSwitch = (fixedInput: ReactNode) => {
-    if (!filterValueVariables || filterValueVariables.compatibleVariables.length === 0) return fixedInput;
+    if (!filterValueVariables || (filterValueVariables.compatibleVariables.length === 0 && !holdsVariableToken)) return fixedInput;
     return (
       <FilterValueVariableSwitch filter={filter} variables={filterValueVariables.compatibleVariables}>
         {fixedInput}
