@@ -6,10 +6,11 @@ import type { DashboardVariable } from './dashboard-types';
 describe('Dashboard variables resolution - shared cases', () => {
   it.each(cases.map((c) => [c.name, c] as const))('%s', (_, testCase) => {
     const input = structuredClone(testCase.input);
-    // The date cases use January timestamps in UTC: one calendar day later is the same instant whether it is counted in
-    // UTC (back) or in the local time zone (front), since no common time zone changes its daylight saving time then.
     const dateVariableIds = new Set<string>('dateVariableIds' in testCase ? testCase.dateVariableIds : []);
-    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds });
+    // A case without time zone is computed in UTC, the default of the back: it is given explicitly here, so that the
+    // expectations never depend on the time zone of the machine running the tests (the default of the front).
+    const timeZone = 'timeZone' in testCase ? testCase.timeZone : 'UTC';
+    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds, timeZone });
     expect(result).toEqual(testCase.expected);
     expect(input).toEqual(testCase.input);
   });

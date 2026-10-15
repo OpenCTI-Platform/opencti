@@ -14,20 +14,71 @@ type SubFilterLike = { key: unknown; values: unknown[]; operator?: unknown };
 export interface DashboardVariablesResolutionOptions {
   // Ids of the variables of type date: their value is shifted like a fixed date for the lte and gt operators.
   dateVariableIds?: ReadonlySet<string>;
+  // IANA time zone in which the day shift of a date variable is counted, 'UTC' by default.
+  // Today no caller provides the time zone of the publisher; the publication form will send it.
+  timeZone?: string;
 }
 
 // The front stores a fixed date D as D + 1 day 00:00 for these operators, so that "<= D" includes the whole day D
 // and "> D" excludes it. A date variable gets the same shift when it is substituted.
 const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
 
-// One calendar day later, in UTC: the back has no user time zone. The front shifts in the local time zone of the
-// user (date-fns `addDays`), so both can differ by one hour around a daylight saving change; this only matters at
-// publication, the only place where the back resolves variables for queries. A value that is not a date is left as is.
-const shiftDateValue = (value: string) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  date.setUTCDate(date.getUTCDate() + 1);
-  return date.toISOString();
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+const buildWallClockFormatter = (timeZone: string) => {
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: 'h23',
+  };
+  try {
+    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone });
+  } catch {
+    // An invalid or unknown time zone falls back to UTC.
+    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone: 'UTC' });
+  }
+};
+
+// Wall clock time of an instant in the time zone of the formatter, as the timestamp showing the same wall clock in UTC.
+const toWallClock = (time: number, formatter: Intl.DateTimeFormat) => {
+  const parts: Record<string, number> = {};
+  formatter.formatToParts(new Date(time)).forEach(({ type, value }) => {
+    parts[type] = Number(value);
+  });
+  const wallClock = new Date(0);
+  // setUTCFullYear, unlike Date.UTC, does not map the years 0 to 99 to 1900 to 1999.
+  wallClock.setUTCFullYear(parts.year, parts.month - 1, parts.day);
+  wallClock.setUTCHours(parts.hour % 24, parts.minute, parts.second, new Date(time).getUTCMilliseconds());
+  return wallClock.getTime();
+};
+
+/**
+ * One calendar day after `isoString` in `timeZone`, at the same wall clock time: local midnight stays local midnight,
+ * so the result is 23 or 25 hours later across a daylight saving change. Mirrored in the front, where it matches the
+ * date-fns `addDays` of the fixed date input when counted in the time zone of the browser.
+ * A wall clock time skipped by a daylight saving change (gap) gives the instant after the gap, moved forward by the
+ * length of the gap; a wall clock time repeated by a change (overlap) gives its first occurrence. Both follow JavaScript
+ * dates, hence date-fns. A value that is not a date is returned unchanged; an invalid time zone falls back to UTC.
+ */
+const addCalendarDayInTimeZone = (isoString: string, timeZone: string): string => {
+  const time = new Date(isoString).getTime();
+  if (Number.isNaN(time)) return isoString;
+  const formatter = buildWallClockFormatter(timeZone);
+  const offsetAt = (instant: number) => toWallClock(instant, formatter) - instant;
+  const targetWallClock = toWallClock(time, formatter) + ONE_DAY_MS;
+  // Offsets of the zone on both sides of a daylight saving change that may happen around the target.
+  const offsetBefore = offsetAt(targetWallClock - ONE_DAY_MS);
+  const offsetAfter = offsetAt(targetWallClock + ONE_DAY_MS);
+  const beforeCandidate = targetWallClock - offsetBefore;
+  const afterCandidate = targetWallClock - offsetAfter;
+  // The offset before the change is kept when it is valid at the target (no change, or the first occurrence of an
+  // overlap) and in a gap, where no offset is valid; the offset after the change only when the change precedes the target.
+  const isAfterChange = offsetAt(beforeCandidate) !== offsetBefore && offsetAt(afterCandidate) === offsetAfter;
+  return new Date(isAfterChange ? afterCandidate : beforeCandidate).toISOString();
 };
 
 const isFilterGroupLike = (value: unknown): value is FilterGroupLike => {
@@ -50,8 +101,8 @@ export const containsDashboardVariableToken = (serialized: string) => TOKEN_ANYW
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
- * The value of a date variable (`options.dateVariableIds`) in a filter of operator lte or gt is shifted by one day,
- * exactly as the front shifts a fixed date when it is picked.
+ * The value of a date variable (`options.dateVariableIds`) in a filter of operator lte or gt is shifted by one calendar
+ * day in `options.timeZone` (UTC by default), exactly as the front shifts a fixed date when it is picked.
  * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
  * the caller must then refuse to run the query (fail closed), never drop the filter.
  * The input is never mutated.
@@ -73,7 +124,7 @@ export const resolveVariablesInFilterGroup = <T>(
         return value;
       }
       const isDayShifted = options.dateVariableIds?.has(variableId) && DAY_SHIFTED_DATE_OPERATORS.includes(operator as string);
-      return isDayShifted ? shiftDateValue(current) : current;
+      return isDayShifted ? addCalendarDayInTimeZone(current, options.timeZone ?? 'UTC') : current;
     }
     if (isFilterGroupLike(value)) return resolveGroup(value);
     if (isSubFilterLike(value)) return resolveFilter(value);

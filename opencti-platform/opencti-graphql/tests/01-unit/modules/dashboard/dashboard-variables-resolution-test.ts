@@ -18,10 +18,10 @@ const VAR_B = '22222222-2222-4222-8222-222222222222';
 describe('Dashboard variables resolution - shared cases', () => {
   it.each(cases.map((c) => [c.name, c] as const))('%s', (_, testCase) => {
     const input = structuredClone(testCase.input);
-    // The date cases use January timestamps in UTC: one calendar day later is the same instant whether it is counted in
-    // UTC (back) or in the local time zone (front), since no common time zone changes its daylight saving time then.
     const dateVariableIds = new Set<string>('dateVariableIds' in testCase ? testCase.dateVariableIds : []);
-    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds });
+    // A case without time zone is computed in UTC, the default of the back, given explicitly like in the front tests.
+    const timeZone = 'timeZone' in testCase ? testCase.timeZone : 'UTC';
+    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds, timeZone });
     expect(result).toEqual(testCase.expected);
     // the input is never mutated
     expect(input).toEqual(testCase.input);
@@ -119,6 +119,20 @@ describe('Dashboard variables resolution - publication', () => {
     // Without the date variable ids, nothing is shifted.
     const [unshifted] = resolveDashboardVariablesInWidgets(widgets, values).widgets['widget-1'].dataSelection ?? [];
     expect((unshifted.filters as { filters: { values: string[] }[] }).filters[0].values).toEqual(['2024-01-15T00:00:00.000Z']);
+  });
+
+  it('should shift a date variable by one calendar day in the time zone given', () => {
+    const lteFilter = { mode: 'and', filters: [{ key: ['created_at'], values: [`$var:${VAR_A}`], operator: 'lte' }], filterGroups: [] };
+    const widgets = { 'widget-1': { dataSelection: [{ filters: lteFilter }] } };
+    // Local midnight of 2026-03-29 in Paris, the day of the spring forward: the next local midnight is 23 hours later.
+    const values = new Map([[VAR_A, '2026-03-28T23:00:00.000Z']]);
+    const shiftedIn = (timeZone?: string) => {
+      const [selection] = resolveDashboardVariablesInWidgets(widgets, values, { dateVariableIds: new Set([VAR_A]), timeZone }).widgets['widget-1'].dataSelection ?? [];
+      return (selection.filters as { filters: { values: string[] }[] }).filters[0].values;
+    };
+    expect(shiftedIn('Europe/Paris')).toEqual(['2026-03-29T22:00:00.000Z']);
+    // UTC by default.
+    expect(shiftedIn()).toEqual(['2026-03-29T23:00:00.000Z']);
   });
 
   it('should report every variable left without value', () => {

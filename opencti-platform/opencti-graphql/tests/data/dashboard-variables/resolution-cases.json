@@ -105,5 +105,69 @@
     "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
     "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
     "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": ["44444444-4444-4444-8444-444444444444"] }
+  },
+  {
+    "name": "date variable with lte is shifted by one calendar day in its time zone across a spring forward (Paris, 23 hours)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-03-28T23:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Europe/Paris",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-03-29T22:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with gt is shifted by one calendar day in its time zone across a fall back (Paris, 25 hours)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-10-24T22:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Europe/Paris",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "gt", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-10-25T23:00:00.000Z"], "operator": "gt", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with lte is shifted by one calendar day in its time zone without daylight saving change (Paris, 24 hours)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-01-14T23:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Europe/Paris",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-01-15T23:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with lte is shifted by one calendar day in its time zone across a spring forward (New York, 23 hours)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-03-08T05:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "America/New_York",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-03-09T04:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with lte is shifted by 24 hours in UTC, whatever the daylight saving changes elsewhere",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-03-28T23:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "UTC",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-03-29T23:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable shifted to a wall clock time skipped by a spring forward lands after the gap (Paris, 02:30 becomes 03:30)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-03-28T01:30:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Europe/Paris",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-03-29T01:30:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable shifted to a wall clock time repeated by a fall back takes its first occurrence (Paris, 02:30 summer time)",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-10-24T00:30:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Europe/Paris",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "gt", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-10-25T00:30:00.000Z"], "operator": "gt", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with an unknown time zone is shifted by one calendar day in UTC",
+    "values": { "44444444-4444-4444-8444-444444444444": "2026-03-28T23:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "timeZone": "Nowhere/Unknown",
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2026-03-29T23:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
   }
 ]
