@@ -139,4 +139,23 @@ describe('Should stream parent resolutions correctly working', () => {
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
   });
+
+  it('should load containers for the stream without hydrating their members', async () => {
+    const reportId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    const full = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId) as any;
+    const base = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId, { objectsBaseData: true }) as any;
+    expect(full.objects.length).toBeGreaterThan(0);
+    expect(base.objects.length).toBe(full.objects.length);
+    // Members only keep their base data, authors and markings stay complete
+    const fullDataIds = new Set([full.createdBy?.internal_id, ...(full.objectMarking ?? []).map((m: any) => m.internal_id)]);
+    const onlyMembers = base.objects.filter((o: any) => !fullDataIds.has(o.internal_id));
+    expect(onlyMembers.length).toBeGreaterThan(0);
+    onlyMembers.forEach((member: any) => {
+      expect(member.standard_id).toBeDefined();
+      expect(member.created_at).toBeUndefined();
+    });
+    expect(base.objectMarking).toEqual(full.objectMarking);
+    // STIX conversion is unchanged
+    expect(convertStoreToStix_2_1(base as StoreObject)).toEqual(convertStoreToStix_2_1(full as StoreObject));
+  });
 });
