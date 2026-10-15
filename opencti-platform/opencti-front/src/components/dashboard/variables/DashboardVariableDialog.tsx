@@ -2,7 +2,25 @@ import { type CSSProperties, Suspense, useMemo, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import Button from '@common/button/Button';
-import { Alert, Dialog, DialogBody, DialogContent, DialogFooter, DialogTitle, Input, Radio, RadioGroup, Text } from '@filigran/design-system';
+import {
+  Alert,
+  Combobox,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField as FdsComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+  Input,
+  Radio,
+  RadioGroup,
+  Text,
+} from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 import SelectFieldFds, { SelectItem } from '../../fields/SelectFieldFds';
 import ComboboxField from '../../ComboboxField';
@@ -13,6 +31,7 @@ import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariabl
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
 import DashboardVariableValueInput from './DashboardVariableValueInput';
+import useKillChainNames from './useKillChainNames';
 
 // The types that will support a restriction of their values (PR 2b): the others have no restriction step.
 const RESTRICTABLE_TYPES: readonly DashboardVariableType[] = [
@@ -60,6 +79,42 @@ const VocabularyCategoryField = ({ disabled, onChange }: ParameterFieldProps) =>
         <SelectItem key={value} value={value}>{label}</SelectItem>
       ))}
     </Field>
+  );
+};
+
+interface KillChainNameFieldProps {
+  value: string;
+  disabled: boolean;
+  onChange: (killChainName: string) => void;
+  onBlur: () => void;
+}
+
+// One of the kill chains of the platform: a name typed by hand, unknown or differently written, would match no phase.
+const KillChainNameField = ({ value, disabled, onChange, onBlur }: KillChainNameFieldProps) => {
+  const { t_i18n } = useFormatter();
+  const names = useKillChainNames();
+  // The kill chain of an edited variable is shown even when it is not (or no longer) among them.
+  const options = value && names && !names.includes(value) ? [value, ...names] : names ?? [];
+  const label = t_i18n('Kill chain');
+  return (
+    <Combobox<string>
+      options={options}
+      value={value || null}
+      getOptionLabel={(name) => name}
+      onValueChange={(next) => onChange(typeof next === 'string' ? next : '')}
+      loading={names === null}
+      required
+      disabled={disabled}
+    >
+      <ComboboxLabel required>{label}</ComboboxLabel>
+      <FdsComboboxField>
+        <ComboboxInput name="killChainName" onBlur={onBlur} />
+        <ComboboxControls>
+          <ComboboxTrigger />
+        </ComboboxControls>
+      </FdsComboboxField>
+      <ComboboxContent emptyMessage={t_i18n('No available options')} loadingMessage={t_i18n('Loading')} listAriaLabel={label} />
+    </Combobox>
   );
 };
 
@@ -196,13 +251,11 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                       </Suspense>
                     )}
                     {parameter === 'killChainName' && (
-                      <Input
-                        label={t_i18n('Kill chain')}
-                        required
-                        disabled={isEditing}
+                      <KillChainNameField
                         value={values.killChainName}
-                        onChange={(event) => {
-                          setFieldValue('killChainName', event.target.value);
+                        disabled={isEditing}
+                        onChange={(killChainName) => {
+                          setFieldValue('killChainName', killChainName);
                           forgetDefaultValue();
                         }}
                         onBlur={() => setFieldTouched('killChainName', true)}

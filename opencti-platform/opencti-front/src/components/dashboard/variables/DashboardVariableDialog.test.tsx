@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import type { DashboardVariable } from '../dashboard-types';
 
@@ -67,6 +67,8 @@ const renderDialog = (props: { variable?: DashboardVariable; existingVariables?:
 );
 
 const nameInput = () => screen.getByRole('textbox', { name: /Name/ });
+// Anchored: the Type field may be named after its value, `Kill chain phase`.
+const KILL_CHAIN_FIELD = /^Kill chain\s*\*?$/;
 const submit = () => screen.getByTestId('variable-dialog-submit');
 
 describe('DashboardVariableDialog', () => {
@@ -310,6 +312,65 @@ describe('DashboardVariableDialog', () => {
     expect(submit()).toBeDisabled();
   });
 
+  describe('kill chain', () => {
+    const killChainNames = (names: string[]) => ({
+      data: { runtimeAttributes: { edges: names.map((name) => ({ node: { id: name, value: name } })) } },
+    });
+
+    const chooseKillChainPhaseType = async (user: ReturnType<typeof renderDialog>['user']) => {
+      await user.type(nameInput(), 'Phase');
+      await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+      await user.click(screen.getByRole('option', { name: 'Kill chain phase' }));
+      return screen.findByRole('combobox', { name: KILL_CHAIN_FIELD });
+    };
+
+    it('offers the kill chains of the platform, and forgets the default value when another one is chosen', async () => {
+      const { user, relayEnv } = renderDialog();
+      const killChain = await chooseKillChainPhaseType(user);
+      const operation = relayEnv.mock.getMostRecentOperation();
+      expect(operation.request.node.operation.name).toBe('useKillChainNamesQuery');
+      expect(operation.request.variables).toEqual({ first: 500 });
+      act(() => {
+        relayEnv.mock.resolve(operation, killChainNames(['lockheed-martin', 'mitre-attack']));
+      });
+      expect(screen.getByTestId('value-input')).toBeDisabled();
+
+      await user.click(killChain);
+      expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['lockheed-martin', 'mitre-attack']);
+      await user.click(screen.getByRole('option', { name: 'mitre-attack' }));
+      await waitFor(() => expect(screen.getByTestId('value-input')).toBeEnabled());
+      await user.type(screen.getByTestId('value-input'), 'phase-1');
+      await waitFor(() => expect(submit()).toBeEnabled());
+
+      // Typed: the text of the current kill chain could otherwise narrow the list down to it.
+      await user.clear(killChain);
+      await user.type(killChain, 'lockheed');
+      await user.click(screen.getByRole('option', { name: 'lockheed-martin' }));
+      await waitFor(() => expect(screen.getByTestId('value-input')).toHaveValue(''));
+      expect(submit()).toBeDisabled();
+      await user.type(screen.getByTestId('value-input'), 'phase-2');
+      await user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+      expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'killChainPhase',
+        killChainName: 'lockheed-martin',
+        defaultValue: 'phase-2',
+      }));
+    });
+
+    it('says there is no option when the platform has no kill chain', async () => {
+      const { user, relayEnv } = renderDialog();
+      const killChain = await chooseKillChainPhaseType(user);
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation(killChainNames([]));
+      });
+      await user.click(killChain);
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
+      expect(screen.getByText('No available options')).toBeInTheDocument();
+      expect(screen.getByTestId('value-input')).toBeDisabled();
+    });
+  });
+
   it('refuses a duplicated name and does not upsert', async () => {
     const { user } = renderDialog({ existingVariables: [sector] });
     await user.type(nameInput(), 'sector');
@@ -373,7 +434,7 @@ describe('DashboardVariableDialog', () => {
       const all = [vocabulary, killChain, entity];
       const parameterField = () => ({
         vocabulary: screen.queryByRole('combobox', { name: /Vocabulary category/ }),
-        killChain: screen.queryByRole('textbox', { name: /Kill chain/ }),
+        killChain: screen.queryByRole('combobox', { name: KILL_CHAIN_FIELD }),
         entity: screen.queryByRole('combobox', { name: /Entity types/ }),
       });
 

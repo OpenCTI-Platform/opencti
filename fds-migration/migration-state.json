@@ -519,9 +519,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete.",
+      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete (a kill chain phase by its own query, scoped to the kill chain); and, in the variable dialog, the kill chain of a kill chain phase variable, picked among the kill chains of the platform.",
       "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SearchValueInput.tsx"
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SearchValueInput.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
       ]
     },
     {
