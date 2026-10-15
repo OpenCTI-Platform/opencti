@@ -121,7 +121,7 @@ describe('FilterOperatorSelect', () => {
     expect(helpers.handleChangeOperatorFilters).toHaveBeenCalledWith('filter-1', 'gt');
   });
 
-  // The day shift is not applied to a variable value: the token is kept as-is, never parsed as a date.
+  // No stored day shift for a variable: the token is kept as-is, never parsed as a date (shifted when substituted).
   it('keeps a variable token as-is when switching a date filter from lte to lt in a dashboard', async () => {
     const variableToken = '$var:11111111-1111-4111-8111-111111111111';
     const filter: Filter = { id: 'filter-1', key: 'created_at', values: [variableToken], operator: 'lte', mode: 'or' };

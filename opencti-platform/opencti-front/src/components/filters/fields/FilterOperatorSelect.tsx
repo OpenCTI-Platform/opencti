@@ -68,7 +68,9 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   const { helpers, entityTypes } = useFilterEditorContext();
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const finalFilterDefinition = useFilterDefinition(filterKey, entityTypes, subKey);
-  // In a dashboard, a date filter may hold a variable token: the day shift is NOT applied to a variable value.
+  // In a dashboard, a date filter may hold a variable token: there is no stored date to shift on an operator change.
+  // The day shift of lte / gt is applied when the token is substituted, from the operator of the filter at that time
+  // (resolveVariablesInFilterGroup), so changing the operator of a token needs no stored shift.
   const variables = useOptionalDashboardVariableDefinitions();
 
   const isStixFiltering = entityTypes?.includes('Stix-Filtering');

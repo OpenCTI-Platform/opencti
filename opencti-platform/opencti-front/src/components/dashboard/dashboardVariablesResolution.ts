@@ -1,3 +1,4 @@
+import { addDays } from 'date-fns';
 import type { DashboardVariable } from './dashboard-types';
 
 // Mirror of opencti-graphql/src/modules/dashboard/dashboard-variables-resolution.ts.
@@ -7,7 +8,23 @@ const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4
 const TOKEN_REGEXP = new RegExp(`^\\$var:(${UUID_PATTERN})$`);
 
 type FilterGroupLike = { filters: unknown[]; filterGroups?: unknown[] };
-type SubFilterLike = { key: unknown; values: unknown[] };
+type SubFilterLike = { key: unknown; values: unknown[]; operator?: unknown };
+
+export interface VariablesResolutionOptions {
+  // Ids of the variables of type date: their value is shifted like a fixed date for the lte and gt operators.
+  dateVariableIds?: ReadonlySet<string>;
+}
+
+// A fixed date D is stored as D + 1 day 00:00 for these operators (FilterValueInput, FilterOperatorSelect), so that
+// "<= D" includes the whole day D and "> D" excludes it. A date variable gets the same shift when it is substituted.
+const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
+
+// One calendar day later, in the local time zone like the fixed date input (date-fns `addDays`). A value that is not a
+// date is left as is.
+const shiftDateValue = (value: string) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : addDays(date, 1).toISOString();
+};
 
 const isFilterGroupLike = (value: unknown): value is FilterGroupLike => {
   return typeof value === 'object' && value !== null && Array.isArray((value as FilterGroupLike).filters);
@@ -27,15 +44,19 @@ export const toVariableToken = (variableId: string) => `$var:${variableId}`;
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
+ * The value of a date variable (`options.dateVariableIds`) in a filter of operator lte or gt is shifted by one day,
+ * exactly as a fixed date is when it is picked: switching a filter between a fixed date and a variable keeps its result.
  * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
  * the widget must then not run its query (fail closed), never run it without the filter.
  */
 export const resolveVariablesInFilterGroup = <T>(
   filterGroup: T,
   values: ReadonlyMap<string, string>,
+  options: VariablesResolutionOptions = {},
 ): { filters: T; unresolved: string[] } => {
   const unresolved: string[] = [];
-  const resolveValue = (value: unknown): unknown => {
+  // `operator` is the one of the filter holding the value; a sub filter (regardingOf) has none of its own.
+  const resolveValue = (value: unknown, operator?: unknown): unknown => {
     const variableId = parseVariableToken(value);
     if (variableId !== null) {
       const current = values.get(variableId);
@@ -44,16 +65,21 @@ export const resolveVariablesInFilterGroup = <T>(
         if (!unresolved.includes(variableId)) unresolved.push(variableId);
         return value;
       }
-      return current;
+      const isDayShifted = options.dateVariableIds?.has(variableId) && DAY_SHIFTED_DATE_OPERATORS.includes(operator as string);
+      return isDayShifted ? shiftDateValue(current) : current;
     }
     if (isFilterGroupLike(value)) return resolveGroup(value);
-    if (isSubFilterLike(value)) return { ...value, values: value.values.map(resolveValue) };
+    if (isSubFilterLike(value)) return resolveFilter(value);
     return value;
   };
+  const resolveFilter = (filter: SubFilterLike): SubFilterLike => ({
+    ...filter,
+    values: filter.values.map((value) => resolveValue(value, filter.operator)),
+  });
   const resolveGroup = (group: FilterGroupLike): FilterGroupLike => {
     const result: FilterGroupLike = {
       ...group,
-      filters: group.filters.map((filter) => (isSubFilterLike(filter) ? { ...filter, values: filter.values.map(resolveValue) } : filter)),
+      filters: group.filters.map((filter) => (isSubFilterLike(filter) ? resolveFilter(filter) : filter)),
     };
     if (Array.isArray(group.filterGroups)) {
       result.filterGroups = group.filterGroups.map((subGroup) => (isFilterGroupLike(subGroup) ? resolveGroup(subGroup) : subGroup));

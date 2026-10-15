@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import cases from '../../../data/dashboard-variables/resolution-cases.json';
 import {
+  buildDashboardDateVariableIds,
   buildDashboardVariableDefaultValues,
   computeDashboardVariablesUsage,
   containsDashboardVariableToken,
@@ -17,7 +18,10 @@ const VAR_B = '22222222-2222-4222-8222-222222222222';
 describe('Dashboard variables resolution - shared cases', () => {
   it.each(cases.map((c) => [c.name, c] as const))('%s', (_, testCase) => {
     const input = structuredClone(testCase.input);
-    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)));
+    // The date cases use January timestamps in UTC: one calendar day later is the same instant whether it is counted in
+    // UTC (back) or in the local time zone (front), since no common time zone changes its daylight saving time then.
+    const dateVariableIds = new Set<string>('dateVariableIds' in testCase ? testCase.dateVariableIds : []);
+    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds });
     expect(result).toEqual(testCase.expected);
     // the input is never mutated
     expect(input).toEqual(testCase.input);
@@ -87,6 +91,34 @@ describe('Dashboard variables resolution - publication', () => {
     expect(resolved['widget-2']).toEqual(widgets['widget-2']);
     expect(resolved['widget-3']).toEqual(widgets['widget-3']);
     expect(JSON.stringify(widgets)).toContain('$var:');
+  });
+
+  it('should list the date variables, ignoring malformed ones', () => {
+    const ids = buildDashboardDateVariableIds([
+      { id: VAR_A, type: 'date' },
+      { id: VAR_B, type: 'text' },
+      { id: 42, type: 'date' },
+      null,
+    ]);
+    expect(ids).toEqual(new Set([VAR_A]));
+    expect(buildDashboardDateVariableIds(undefined).size).toEqual(0);
+    expect(buildDashboardDateVariableIds({ not: 'an array' }).size).toEqual(0);
+  });
+
+  it('should shift a date variable by one UTC day for lte and gt only', () => {
+    const dateFilter = (operator: string) => ({ mode: 'and', filters: [{ key: ['created_at'], values: [`$var:${VAR_A}`], operator }], filterGroups: [] });
+    const widgets = {
+      'widget-1': { dataSelection: [{ filters: dateFilter('lte'), dynamicFrom: dateFilter('gt'), dynamicTo: dateFilter('gte') }] },
+    };
+    const values = new Map([[VAR_A, '2024-01-15T00:00:00.000Z']]);
+    const { widgets: resolved, unresolved } = resolveDashboardVariablesInWidgets(widgets, values, { dateVariableIds: new Set([VAR_A]) });
+    expect(unresolved).toEqual([]);
+    const [selection] = resolved['widget-1'].dataSelection ?? [];
+    expect([selection.filters, selection.dynamicFrom, selection.dynamicTo].map((group) => (group as { filters: { values: string[] }[] }).filters[0].values))
+      .toEqual([['2024-01-16T00:00:00.000Z'], ['2024-01-16T00:00:00.000Z'], ['2024-01-15T00:00:00.000Z']]);
+    // Without the date variable ids, nothing is shifted.
+    const [unshifted] = resolveDashboardVariablesInWidgets(widgets, values).widgets['widget-1'].dataSelection ?? [];
+    expect((unshifted.filters as { filters: { values: string[] }[] }).filters[0].values).toEqual(['2024-01-15T00:00:00.000Z']);
   });
 
   it('should report every variable left without value', () => {

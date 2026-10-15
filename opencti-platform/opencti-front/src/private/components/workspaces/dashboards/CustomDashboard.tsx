@@ -192,6 +192,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // The home dashboard (noToolbar) and a user without the bar only ever see the manifest defaults:
   // no per user value is read or written.
   const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar || !showVariablesBar });
+  // Summarized by its signature: the widgets re-resolve their filters whenever this set changes.
+  const dateVariableIdsSignature = JSON.stringify(variables.filter((variable) => variable.type === 'date').map((variable) => variable.id));
+  const dateVariableIds = useMemo(() => new Set<string>(JSON.parse(dateVariableIdsSignature)), [dateVariableIdsSignature]);
   const { setAsDefaults } = useDashboardVariableMutations(workspace.id);
   const usedInWidgetIdsByVariable = useMemo(
     () => new Map(workspace.variables.map((variable) => [variable.id, [...variable.usedInWidgetIds]])),
@@ -323,7 +326,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               </Security>
             )
             }
-            <DashboardVariableValuesProvider values={variableControls.values}>
+            <DashboardVariableValuesProvider values={variableControls.values} dateVariableIds={dateVariableIds}>
               <DashboardContent
                 helpers={helpers}
                 isEditable={userCanEdit}

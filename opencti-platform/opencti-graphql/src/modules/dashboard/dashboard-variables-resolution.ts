@@ -9,7 +9,26 @@ const TOKEN_REGEXP = new RegExp(`^\\$var:(${UUID_PATTERN})$`);
 const TOKEN_ANYWHERE_REGEXP = new RegExp(`\\$var:${UUID_PATTERN}`);
 
 type FilterGroupLike = { filters: unknown[]; filterGroups?: unknown[] };
-type SubFilterLike = { key: unknown; values: unknown[] };
+type SubFilterLike = { key: unknown; values: unknown[]; operator?: unknown };
+
+export interface DashboardVariablesResolutionOptions {
+  // Ids of the variables of type date: their value is shifted like a fixed date for the lte and gt operators.
+  dateVariableIds?: ReadonlySet<string>;
+}
+
+// The front stores a fixed date D as D + 1 day 00:00 for these operators, so that "<= D" includes the whole day D
+// and "> D" excludes it. A date variable gets the same shift when it is substituted.
+const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
+
+// One calendar day later, in UTC: the back has no user time zone. The front shifts in the local time zone of the
+// user (date-fns `addDays`), so both can differ by one hour around a daylight saving change; this only matters at
+// publication, the only place where the back resolves variables for queries. A value that is not a date is left as is.
+const shiftDateValue = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString();
+};
 
 const isFilterGroupLike = (value: unknown): value is FilterGroupLike => {
   return typeof value === 'object' && value !== null && Array.isArray((value as FilterGroupLike).filters);
@@ -31,6 +50,8 @@ export const containsDashboardVariableToken = (serialized: string) => TOKEN_ANYW
 
 /**
  * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
+ * The value of a date variable (`options.dateVariableIds`) in a filter of operator lte or gt is shifted by one day,
+ * exactly as the front shifts a fixed date when it is picked.
  * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
  * the caller must then refuse to run the query (fail closed), never drop the filter.
  * The input is never mutated.
@@ -38,9 +59,11 @@ export const containsDashboardVariableToken = (serialized: string) => TOKEN_ANYW
 export const resolveVariablesInFilterGroup = <T>(
   filterGroup: T,
   values: ReadonlyMap<string, string>,
+  options: DashboardVariablesResolutionOptions = {},
 ): { filters: T; unresolved: string[] } => {
   const unresolved: string[] = [];
-  const resolveValue = (value: unknown): unknown => {
+  // `operator` is the one of the filter holding the value; a sub filter (regardingOf) has none of its own.
+  const resolveValue = (value: unknown, operator?: unknown): unknown => {
     const variableId = parseDashboardVariableToken(value);
     if (variableId !== null) {
       const current = values.get(variableId);
@@ -49,16 +72,21 @@ export const resolveVariablesInFilterGroup = <T>(
         if (!unresolved.includes(variableId)) unresolved.push(variableId);
         return value;
       }
-      return current;
+      const isDayShifted = options.dateVariableIds?.has(variableId) && DAY_SHIFTED_DATE_OPERATORS.includes(operator as string);
+      return isDayShifted ? shiftDateValue(current) : current;
     }
     if (isFilterGroupLike(value)) return resolveGroup(value);
-    if (isSubFilterLike(value)) return { ...value, values: value.values.map(resolveValue) };
+    if (isSubFilterLike(value)) return resolveFilter(value);
     return value;
   };
+  const resolveFilter = (filter: SubFilterLike): SubFilterLike => ({
+    ...filter,
+    values: filter.values.map((value) => resolveValue(value, filter.operator)),
+  });
   const resolveGroup = (group: FilterGroupLike): FilterGroupLike => {
     const result: FilterGroupLike = {
       ...group,
-      filters: group.filters.map((filter) => (isSubFilterLike(filter) ? { ...filter, values: filter.values.map(resolveValue) } : filter)),
+      filters: group.filters.map((filter) => (isSubFilterLike(filter) ? resolveFilter(filter) : filter)),
     };
     if (Array.isArray(group.filterGroups)) {
       result.filterGroups = group.filterGroups.map((subGroup) => (isFilterGroupLike(subGroup) ? resolveGroup(subGroup) : subGroup));
@@ -111,6 +139,19 @@ export const buildDashboardVariableDefaultValues = (variables: unknown) => {
   return values;
 };
 
+/**
+ * Ids of the variables of type date of a manifest, whose value is shifted for the lte and gt operators.
+ * The manifest may come from an import: anything malformed is ignored.
+ */
+export const buildDashboardDateVariableIds = (variables: unknown) => {
+  const ids = new Set<string>();
+  if (!Array.isArray(variables)) return ids;
+  variables.forEach((variable: { id?: unknown; type?: unknown } | null) => {
+    if (typeof variable?.id === 'string' && variable.type === 'date') ids.add(variable.id);
+  });
+  return ids;
+};
+
 const RESOLVED_SELECTION_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const;
 
 /**
@@ -119,6 +160,7 @@ const RESOLVED_SELECTION_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const
 export const resolveDashboardVariablesInWidgets = <W extends ManifestWidgetLike>(
   widgets: Record<string, W> | undefined,
   values: ReadonlyMap<string, string>,
+  options: DashboardVariablesResolutionOptions = {},
 ) => {
   const unresolved = new Set<string>();
   const resolvedWidgets = Object.fromEntries(Object.entries(widgets ?? {}).map(([widgetId, widget]) => {
@@ -126,7 +168,7 @@ export const resolveDashboardVariablesInWidgets = <W extends ManifestWidgetLike>
     const dataSelection = widget.dataSelection.map((selection) => {
       const resolvedSelection = { ...selection };
       RESOLVED_SELECTION_KEYS.filter((key) => key in selection).forEach((key) => {
-        const resolution = resolveVariablesInFilterGroup(selection[key], values);
+        const resolution = resolveVariablesInFilterGroup(selection[key], values, options);
         resolvedSelection[key] = resolution.filters;
         resolution.unresolved.forEach((id) => unresolved.add(id));
       });

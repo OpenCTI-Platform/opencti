@@ -6,7 +6,10 @@ import type { DashboardVariable } from './dashboard-types';
 describe('Dashboard variables resolution - shared cases', () => {
   it.each(cases.map((c) => [c.name, c] as const))('%s', (_, testCase) => {
     const input = structuredClone(testCase.input);
-    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)));
+    // The date cases use January timestamps in UTC: one calendar day later is the same instant whether it is counted in
+    // UTC (back) or in the local time zone (front), since no common time zone changes its daylight saving time then.
+    const dateVariableIds = new Set<string>('dateVariableIds' in testCase ? testCase.dateVariableIds : []);
+    const result = resolveVariablesInFilterGroup(input, new Map(Object.entries(testCase.values)), { dateVariableIds });
     expect(result).toEqual(testCase.expected);
     expect(input).toEqual(testCase.input);
   });

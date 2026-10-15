@@ -78,7 +78,8 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
     );
   };
 
-  // Fixed dates only: a variable token is written as-is by FilterValueVariableSwitch, the day shift below is NOT applied to it.
+  // Fixed dates: the day shift below is stored with the value. A variable token is stored as-is by FilterValueVariableSwitch:
+  // the date of the variable gets the same shift when the token is substituted (resolveVariablesInFilterGroup).
   const handleDateChange = (_: string, value: string) => {
     // convert the date to handle comparison with a timestamp
     const date = new Date(value);

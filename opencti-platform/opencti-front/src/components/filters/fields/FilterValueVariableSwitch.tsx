@@ -88,8 +88,8 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
   };
 
   const handleVariableChange = (id: string) => {
-    // Stored as-is: the day shift of the fixed date input (lte / gt) is NOT applied to a variable,
-    // the resolution substitutes the variable's stored ISO string at query time.
+    // Stored as-is, whatever the operator: the day shift of the fixed date input (lte / gt) is applied to the date
+    // of the variable when the token is substituted at query time (resolveVariablesInFilterGroup).
     helpers?.handleAddSingleValueFilter(filter?.id ?? '', toVariableToken(id));
   };
 

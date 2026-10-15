@@ -163,7 +163,7 @@ describe('FilterValueInput with dashboard variables (date and free inputs)', () 
       // Only the compatible variables are offered.
       expect(screen.queryByRole('option', { name: incompatible.name })).toBeNull();
       await user.click(await screen.findByRole('option', { name: compatible.name }));
-      // Stored as-is: no day shift on a variable, whatever the operator. (Outside a popover, the free input
+      // Stored as-is whatever the operator: a date variable is shifted when substituted. (Outside a popover, the free input
       // also commits its unchanged value when the switch takes the focus.)
       expect(helpers.handleAddSingleValueFilter).toHaveBeenLastCalledWith('filter-1', token(compatible.id));
     });

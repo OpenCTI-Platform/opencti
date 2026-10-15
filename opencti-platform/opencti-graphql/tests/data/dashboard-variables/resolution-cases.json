@@ -70,5 +70,40 @@
     "values": { "11111111-1111-4111-8111-111111111111": "$var:22222222-2222-4222-8222-222222222222", "22222222-2222-4222-8222-222222222222": "value-b" },
     "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "not_eq", "mode": "or" }], "filterGroups": [] },
     "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "not_eq", "mode": "or" }], "filterGroups": [] }, "unresolved": ["11111111-1111-4111-8111-111111111111"] }
+    },
+  {
+    "name": "date variable with lte is shifted by one day, like a fixed date",
+    "values": { "44444444-4444-4444-8444-444444444444": "2024-01-15T00:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2024-01-16T00:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with gt is shifted by one day, like a fixed date, in a nested group too",
+    "values": { "44444444-4444-4444-8444-444444444444": "2024-01-31T00:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "gt", "mode": "or" }], "filterGroups": [{ "mode": "or", "filters": [{ "key": "modified", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "gt", "mode": "or" }], "filterGroups": [] }] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2024-02-01T00:00:00.000Z"], "operator": "gt", "mode": "or" }], "filterGroups": [{ "mode": "or", "filters": [{ "key": "modified", "values": ["2024-02-01T00:00:00.000Z"], "operator": "gt", "mode": "or" }], "filterGroups": [] }] }, "unresolved": [] }
+  },
+  {
+    "name": "date variable with gte, lt or within is not shifted",
+    "values": { "44444444-4444-4444-8444-444444444444": "2024-01-15T00:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "gte", "mode": "or" }, { "key": "modified", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lt", "mode": "or" }, { "key": "published", "values": ["$var:44444444-4444-4444-8444-444444444444", "now"], "operator": "within", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["2024-01-15T00:00:00.000Z"], "operator": "gte", "mode": "or" }, { "key": "modified", "values": ["2024-01-15T00:00:00.000Z"], "operator": "lt", "mode": "or" }, { "key": "published", "values": ["2024-01-15T00:00:00.000Z", "now"], "operator": "within", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "variable that is not a date is not shifted with lte, even with a date looking value",
+    "values": { "11111111-1111-4111-8111-111111111111": "2024-01-15T00:00:00.000Z" },
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "input": { "mode": "and", "filters": [{ "key": "name", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "name", "values": ["2024-01-15T00:00:00.000Z"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "unresolved date variable with lte keeps its token in place",
+    "values": {},
+    "dateVariableIds": ["44444444-4444-4444-8444-444444444444"],
+    "input": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "created_at", "values": ["$var:44444444-4444-4444-8444-444444444444"], "operator": "lte", "mode": "or" }], "filterGroups": [] }, "unresolved": ["44444444-4444-4444-8444-444444444444"] }
   }
 ]
