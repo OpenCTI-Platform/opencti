@@ -14,6 +14,8 @@ import createApp, {
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { loadFile } from '../../../src/database/file-storage';
+import { downloadFile, getFileContent } from '../../../src/database/raw-file-storage';
 
 vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
   createAuthenticatedContext: vi.fn(),
@@ -29,6 +31,21 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       info: vi.fn(),
       error: vi.fn(),
     } };
+});
+
+vi.mock('../../../src/database/file-storage', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, loadFile: vi.fn() };
+});
+
+vi.mock('../../../src/database/raw-file-storage', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, downloadFile: vi.fn(), getFileContent: vi.fn() };
+});
+
+vi.mock('../../../src/listener/UserActionListener', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, publishUserAction: vi.fn() };
 });
 
 const baseUrl = getBaseUrl();
@@ -477,5 +494,117 @@ describe('storage routes: draft authorization', () => {
 
     expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
     expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+describe('httpPlatform: storage routes file resolution', () => {
+  const user = { id: 'user-id' };
+
+  const buildResponse = () => {
+    const res: any = {};
+    res.set = vi.fn().mockReturnValue(res);
+    res.status = vi.fn().mockReturnValue(res);
+    res.send = vi.fn().mockReturnValue(res);
+    res.sendStatus = vi.fn().mockReturnValue(res);
+    res.cookie = vi.fn().mockReturnValue(res);
+    res.attachment = vi.fn().mockReturnValue(res);
+    return res;
+  };
+
+  const storageHandlers: Record<string, (req: any, res: any) => Promise<void>> = {
+    get: handleStorageGet,
+    view: handleStorageView,
+    html: handleStorageHtml,
+  };
+
+  // Simulates the documents index: only the stored file ids can be loaded.
+  const mockStoredFiles = (storedIds: string[], mimetype = 'application/pdf') => {
+    vi.mocked(loadFile).mockImplementation(async (_context, _user, fileS3Path, opts = {}) => {
+      if (storedIds.includes(fileS3Path)) {
+        return { id: fileS3Path, name: fileS3Path.split('/').pop(), metaData: { mimetype } } as any;
+      }
+      if (opts.dontThrow) {
+        return undefined;
+      }
+      throw new Error('File not found or restricted');
+    });
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user } as any);
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+    vi.mocked(downloadFile).mockResolvedValue({ pipe: vi.fn() } as any);
+  });
+
+  // req.params.file is what Express 5 gives after its own (single) decoding of the url.
+  it.each([
+    {
+      case: 'title with double quotes (#19008)',
+      storedId: 'export/Case-Incident/case-id/2026-10-15_Test %22quoted%22 case.pdf',
+      params: ['export/Case-Incident/case-id/2026-10-15_Test %22quoted%22 case.pdf'],
+    },
+    {
+      case: 'literal percent sequences in a stored id',
+      storedId: 'import/Report/report-id/100%25 done %2F half.pdf',
+      params: ['import/Report/report-id/100%25 done %2F half.pdf'],
+    },
+    {
+      case: 'unicode and spaces in a single encoded url',
+      storedId: 'import/Report/report-id/Capture écran 2026.pdf',
+      params: ['import/Report/report-id/Capture écran 2026.pdf'],
+    },
+    {
+      case: 'path sent segment by segment',
+      storedId: 'import/Report/report-id/Test %22quoted%22.pdf',
+      params: ['import', 'Report', 'report-id', 'Test %22quoted%22.pdf'],
+    },
+    {
+      case: 'double encoded embedded image name (#7281)',
+      storedId: 'embedded/Note/note-id/Capture écran 2026-05-20.png',
+      params: ['embedded', 'Note', 'note-id', 'Capture%20%C3%A9cran%202026-05-20.png'],
+    },
+    {
+      case: 'invalid percent encoding',
+      storedId: 'embedded/Note/note-id/broken%2Gencoding.png',
+      params: ['embedded', 'Note', 'note-id', 'broken%2Gencoding.png'],
+    },
+  ])('should serve the stored file for $case', async ({ storedId, params }) => {
+    mockStoredFiles([storedId]);
+    for (const route of ['get', 'view']) {
+      vi.mocked(downloadFile).mockClear();
+      const handler = storageHandlers[route];
+      const res = buildResponse();
+
+      await handler({ params: { file: params } }, res);
+
+      expect(res.status, `${route} route`).not.toHaveBeenCalledWith(503);
+      expect(downloadFile, `${route} route`).toHaveBeenCalledExactlyOnceWith(storedId);
+    }
+  });
+
+  it('should render the stored markdown file with literal percent sequences in html view', async () => {
+    const storedId = 'import/Report/report-id/Notes %22draft%22.md';
+    mockStoredFiles([storedId], 'text/markdown');
+    vi.mocked(getFileContent).mockResolvedValue('# title');
+    const handler = storageHandlers.html;
+    const res = buildResponse();
+
+    await handler({ params: { file: [storedId] } }, res);
+
+    expect(getFileContent).toHaveBeenCalledWith(storedId);
+    expect(res.send).toHaveBeenCalledWith(expect.stringContaining('<h1>title</h1>'));
+  });
+
+  it('should return 503 when no stored file matches', async () => {
+    mockStoredFiles([]);
+    const handler = storageHandlers.get;
+    const res = buildResponse();
+
+    await handler({ params: { file: ['export/Case-Incident/case-id/missing %22file%22.pdf'] } }, res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'File not found or restricted' });
+    expect(downloadFile).not.toHaveBeenCalled();
   });
 });

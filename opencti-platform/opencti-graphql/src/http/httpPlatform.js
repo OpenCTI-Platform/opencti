@@ -130,6 +130,20 @@ export const decodeStoragePath = (fileParts = []) => fileParts
   })
   .join('/');
 
+// Express already decoded the url once: that path is the file id and may contain literal "%xx"
+// (e.g. a title with quotes). A second decode is only a fallback for links encoded twice.
+const loadStorageFile = async (context, user, fileParts = []) => {
+  const filePath = fileParts.join('/');
+  const decodedFilePath = decodeStoragePath(fileParts);
+  if (decodedFilePath !== filePath) {
+    const file = await loadFile(context, user, filePath, { dontThrow: true });
+    if (file) {
+      return file;
+    }
+  }
+  return loadFile(context, user, decodedFilePath);
+};
+
 // -- File download
 export const handleStorageGet = async (req, res) => {
   try {
@@ -141,12 +155,11 @@ export const handleStorageGet = async (req, res) => {
     // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
     // so validate the draft context explicitly before it is used to resolve the file.
     await checkDraftInContext(context);
-    const file = decodeStoragePath(req.params.file);
-    const data = await loadFile(context, context.user, file);
+    const data = await loadStorageFile(context, context.user, req.params.file);
     // If file is attach to a specific instance, we need to contr
     await publishFileDownload(context, context.user, data);
     const stream = await downloadFile(data.id);
-    res.attachment(file);
+    res.attachment(data.id);
     stream.pipe(res);
   } catch (e) {
     setCookieError(res, e.message);
@@ -166,8 +179,7 @@ export const handleStorageView = async (req, res) => {
     // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
     // so validate the draft context explicitly before it is used to resolve the file.
     await checkDraftInContext(context);
-    const file = decodeStoragePath(req.params.file);
-    const data = await loadFile(context, context.user, file);
+    const data = await loadStorageFile(context, context.user, req.params.file);
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
@@ -243,11 +255,10 @@ export const handleStorageHtml = async (req, res) => {
     // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
     // so validate the draft context explicitly before it is used to resolve the file.
     await checkDraftInContext(context);
-    const file = decodeStoragePath(req.params.file);
-    const data = await loadFile(context, context.user, file);
+    const data = await loadStorageFile(context, context.user, req.params.file);
     const { mimetype } = data.metaData;
     if (mimetype === 'text/markdown') {
-      const markDownData = await getFileContent(file);
+      const markDownData = await getFileContent(data.id);
       const html = marked(markDownData);
       await publishFileRead(context, context.user, data);
       res.set('Content-Security-Policy', 'sandbox');
@@ -274,12 +285,11 @@ export const handleStorageEncrypted = async (req, res) => {
     // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
     // so validate the draft context explicitly before it is used to resolve the file.
     await checkDraftInContext(context);
-    const file = decodeStoragePath(req.params.file);
-    const data = await loadFile(context, context.user, file);
+    const data = await loadStorageFile(context, context.user, req.params.file);
     const { metaData: { filename } } = data;
     await publishFileDownload(context, context.user, data);
     const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-    archive.append(await downloadFile(file), { name: filename });
+    archive.append(await downloadFile(data.id), { name: filename });
     await archive.finalize();
     res.attachment(`${filename}.zip`);
     archive.pipe(res);
