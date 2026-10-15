@@ -131,6 +131,7 @@
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
+    "artifact_zip_max_extracted_size": 104857600,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",

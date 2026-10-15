@@ -1,7 +1,17 @@
+import { Readable } from 'node:stream';
+import { buffer as streamToBuffer } from 'node:stream/consumers';
 import { describe, expect, it, vi } from 'vitest';
+import { ZipArchive } from 'archiver';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyValueForIndicator, stixCyberObservableEditField } from '../../../src/domain/stixCyberObservable';
+import {
+  addStixCyberObservable,
+  ARTIFACT_ZIP_MAX_EXTRACTED_SIZE,
+  extractInfectedZipFile,
+  generateIndicatorFromObservable,
+  generateKeyValueForIndicator,
+  stixCyberObservableEditField,
+} from '../../../src/domain/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { RESOURCE_NOT_FOUND_ERROR } from '../../../src/config/errors';
@@ -142,6 +152,7 @@ describe('SCO utils', () => {
         .rejects.toThrowError('Observable type Report is not supported.');
     });
   });
+
   describe('stixCyberObservableEditField', () => {
     it('should reject the edit when the observable cannot be found', async () => {
       // storeLoadById is typed Promise<T> but resolves undefined when the element is not found
@@ -152,6 +163,45 @@ describe('SCO utils', () => {
           message: 'Cannot edit the field, Stix-Cyber-Observable cannot be found.',
           extensions: { code: RESOURCE_NOT_FOUND_ERROR, data: { stixCyberObservableId: 'unknown-id' } },
         });
+    });
+  });
+
+  describe('extractInfectedZipFile', () => {
+    const buildZip = async (name: string, content: Buffer) => {
+      const archive = new ZipArchive();
+      archive.append(content, { name });
+      const result = streamToBuffer(archive);
+      await archive.finalize();
+      return result;
+    };
+    const toUpload = (zip: Buffer) => ({ createReadStream: () => Readable.from(zip) });
+    // Overwrite the uncompressed size stored in the zip central directory
+    const setCentralDirectorySize = (zip: Buffer, size: number) => {
+      const offset = zip.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+      zip.writeUInt32LE(size, offset + 24);
+      return zip;
+    };
+    const tooLargeContent = () => Buffer.alloc(ARTIFACT_ZIP_MAX_EXTRACTED_SIZE + 1);
+
+    it('should extract zip content', async () => {
+      const content = Buffer.from('%PDF-1.4\n%%EOF\n');
+      const zip = await buildZip('sample.pdf', content);
+      const extracted = await extractInfectedZipFile(toUpload(zip));
+      expect(extracted.filename).toEqual('sample.pdf');
+      expect(extracted.mimetype).toEqual('application/pdf');
+      expect(await streamToBuffer(extracted.createReadStream())).toEqual(content);
+    });
+
+    it('should not extract zip content larger than max size', async () => {
+      const zip = await buildZip('sample.bin', tooLargeContent());
+      await expect(() => extractInfectedZipFile(toUpload(zip)))
+        .rejects.toThrowError('Artifact archive content is too large to be extracted');
+    });
+
+    it('should not extract zip content larger than max size even if declared size is smaller', async () => {
+      const zip = setCentralDirectorySize(await buildZip('sample.bin', tooLargeContent()), 10);
+      await expect(() => extractInfectedZipFile(toUpload(zip)))
+        .rejects.toThrowError('Artifact archive content is too large to be extracted');
     });
   });
 });
