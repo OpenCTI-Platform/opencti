@@ -27,7 +27,7 @@ import {
 } from '../modules/ingestionHealth/ingestionHealth-checks';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
-import { redisGetRuntimeData } from '../modules/ingestionHealth/ingestionHealthMonitoring-redis';
+import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';
 import { isConnectorStopped } from '../modules/connector/connector-domain';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
@@ -83,19 +83,18 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   source: IngestionSource<T>,
   element: T,
   isExistingUser: (userId: string) => boolean,
+  runtimeData: RuntimeData,
 ) => {
   // Stopped on purpose: not monitored, nothing is read nor checked.
   // No status can be computed then, so a health stored before the stop is removed, without activity event.
   const isStopped = source.isStopped?.(element) ?? false;
-  // Runtime data reported by the sources, read per ingestion: a Redis failure only skips this ingestion until the next period
-  const runtimeData = isStopped ? {} : await redisGetRuntimeData(element.internal_id);
+  const healthContext = { evaluatedAt: now(), runtimeData: isStopped ? {} : runtimeData };
   const checks = isStopped ? [] : computeIngestionHealthChecks({
     userId: source.getUserId(element),
     isUserRequired: source.isUserRequired,
     isHeartbeatRequired: source.isHeartbeatRequired,
-    runtimeData,
-  }, isExistingUser);
-  const patch = computeIngestionHealthPatch(element, checks, now(), { runtimeData });
+  }, { ...healthContext, isExistingUser });
+  const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
     return;
   }
@@ -131,12 +130,22 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
     const evaluatedElements = source.isEvaluated ? elements.filter(source.isEvaluated) : elements;
+    // Runtime data reported by the sources, one batch per source. Stopped elements are not monitored: nothing is read for them.
+    // Without it a missing heartbeat could not be told from an unreachable storage: the source is skipped until the next period
+    let runtimeDataByIngestion: Map<string, RuntimeData>;
+    try {
+      const monitoredIds = evaluatedElements.filter((element) => !source.isStopped?.(element)).map((element) => element.internal_id);
+      runtimeDataByIngestion = await getRuntimeDataMany(monitoredIds);
+    } catch (e) {
+      logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });
+      continue;
+    }
     for (let i = 0; i < evaluatedElements.length; i += 1) {
       // Outside the try: losing the lock must stop the scan, not be logged as an element failure
       lock.signal.throwIfAborted();
       const element = evaluatedElements[i];
       try {
-        await evaluateIngestionHealth(context, source, element, isExistingUser);
+        await evaluateIngestionHealth(context, source, element, isExistingUser, runtimeDataByIngestion.get(element.internal_id) ?? {});
       } catch (e) {
         // One broken ingestion must not stop the evaluation of the others, retried at the next period
         logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });

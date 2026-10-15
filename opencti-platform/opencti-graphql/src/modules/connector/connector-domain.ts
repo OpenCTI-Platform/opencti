@@ -20,7 +20,6 @@ import {
   redisSetConnectorLogs,
   redisSetManagedConnectorAutoUpgradeStatus,
 } from './connector-redis';
-import { redisSetRuntimeData } from '../ingestionHealth/ingestionHealthMonitoring-redis';
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
@@ -152,9 +151,10 @@ export const loadConnectorHeartbeat = async (connectorId: string) => {
   }
 };
 
-const loadConnectorsHeartbeats = async () => {
+// Built-in connectors do not send heartbeats: nothing is read for them
+const loadConnectorsHeartbeats = async (connectorsToRead: { internal_id: string; built_in?: boolean }[]) => {
   try {
-    return await redisGetConnectorsHeartbeats();
+    return await redisGetConnectorsHeartbeats(connectorsToRead.filter((conn) => !conn.built_in).map((conn) => conn.internal_id));
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
     return new Map<string, string>();
@@ -167,7 +167,7 @@ export const refreshConnectorsLiveness = async <T extends { internal_id: string;
   if (cachedConnectors.length === 0) {
     return [];
   }
-  const heartbeats = await loadConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats(cachedConnectors);
   return cachedConnectors.map((conn) => {
     // Built-in connectors do not send heartbeats
     const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
@@ -197,8 +197,9 @@ export const connectors = async (context: AuthContext, user: AuthUser) => {
     findConnectors(context, user),
     builtInConnectorsRuntime(context, user),
   ]);
-  const heartbeats = await loadConnectorsHeartbeats();
-  return [...storedConnectors, ...builtInConnectors].map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  const allConnectors = [...storedConnectors, ...builtInConnectors];
+  const heartbeats = await loadConnectorsHeartbeats(allConnectors);
+  return allConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 // The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
@@ -232,7 +233,7 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
-  const heartbeats = await loadConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats(managedConnectors);
   return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
@@ -510,15 +511,6 @@ export const updateConnectorWithConnectorInfo = async (
   return element;
 };
 
-// Same heartbeat, also exposed as runtime data for the ingestion health manager.
-// Best effort: the heartbeat of connector-redis stays the source of truth until the migration to the runtime data is decided.
-const recordRuntimeHeartbeat = async (connectorId: string, lastSeenAt: string) => {
-  try {
-    await redisSetRuntimeData(connectorId, 'heartbeat', lastSeenAt);
-  } catch (err) {
-    logApp.warn('[OPENCTI-MODULE] Unable to record connector runtime heartbeat', { cause: err, connectorId });
-  }
-};
 export const pingConnector = async (
   context: AuthContext,
   user: AuthUser,
@@ -539,7 +531,6 @@ export const pingConnector = async (
   // Recorded before updating the state: a pending state reset is consumed by the update, failing after it would let
   // the connector, which never received the reset state, write back its stale one on its next ping
   await redisSetConnectorHeartbeat(connectorEntity.internal_id, lastSeenAt);
-  await recordRuntimeHeartbeat(connectorEntity.internal_id, lastSeenAt);
   const updatedConnector = await updateConnectorWithConnectorInfo(context, user, connectorEntity, state, connectorInfo);
   return completeConnector(updatedConnector, lastSeenAt);
 };
@@ -565,7 +556,6 @@ const recordRegistrationHeartbeat = async (connectorId: string, lastSeenAt: stri
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to record connector heartbeat on registration', { cause: err, connectorId });
   }
-  await recordRuntimeHeartbeat(connectorId, lastSeenAt);
 };
 interface RegisterOptions {
   built_in?: boolean;

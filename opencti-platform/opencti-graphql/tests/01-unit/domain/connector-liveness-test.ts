@@ -21,7 +21,6 @@ import {
   redisSetConnectorHeartbeat,
 } from '../../../src/modules/connector/connector-redis';
 import { ConnectorType } from '../../../src/generated/graphql';
-import { redisSetRuntimeData } from '../../../src/modules/ingestionHealth/ingestionHealthMonitoring-redis';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 // ---------------------------------------------------------------------------
@@ -143,7 +142,6 @@ describe('pingConnector liveness', () => {
     const [, recordedLastSeenAt] = vi.mocked(redisSetConnectorHeartbeat).mock.calls[0];
     expect(result.last_seen_at).toBe(recordedLastSeenAt);
     expect(result.active).toBe(true);
-    expect(redisSetRuntimeData).toHaveBeenCalledWith('connector-1', 'heartbeat', recordedLastSeenAt);
   });
 });
 
@@ -294,17 +292,6 @@ describe('heartbeat storage failures', () => {
     vi.mocked(redisSetConnectorHeartbeat).mockRejectedValueOnce(redisError);
 
     await expect(pingConnector(testContext, testUser, 'connector-1', 'state', undefined as never)).rejects.toThrow(redisError);
-  });
-
-  it('should not fail the ping when only the runtime heartbeat fails', async () => {
-    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector, connector_state: 'state' } as never);
-    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...baseConnector, connector_state: 'state' } } as never);
-    vi.mocked(redisSetRuntimeData).mockRejectedValueOnce(redisError);
-
-    const result = await pingConnector(testContext, testUser, 'connector-1', 'state', undefined as never);
-
-    expect(redisSetConnectorHeartbeat).toHaveBeenCalled();
-    expect(result.active).toBe(true);
   });
 
   it('should keep a pending state reset when the heartbeat fails, so that the retry delivers it', async () => {
