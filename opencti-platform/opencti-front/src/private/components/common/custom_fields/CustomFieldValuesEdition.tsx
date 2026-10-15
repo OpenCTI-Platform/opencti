@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { CustomFieldInput, CustomFieldsLoader } from './CustomFieldsInput';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 // Unmasked in entity overview fragments so their existing mutations/subscriptions refresh values.
 export const customFieldValuesEditionFragment = graphql`
@@ -130,6 +131,7 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
               definition={definition}
               mandatory={getCustomFieldSetting(definition, entityType)?.mandatory ?? false}
               value={getCustomFieldCurrentValue(definition, currentValues)}
+              style={fieldSpacingContainerStyle}
               error={errors[definition.id]}
               onChange={enableReferences ? (value) => stageValue(definition, value) : () => clearError(definition)}
               onSubmit={enableReferences ? undefined : (value) => handleSubmit(definition, value)}
