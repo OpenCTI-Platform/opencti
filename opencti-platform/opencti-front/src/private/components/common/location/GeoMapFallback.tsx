@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Position } from 'geojson';
+import Button from '@common/button/Button';
+import { useFormatter } from '../../../../components/i18n';
 import { isValidCoordinates } from '../../../../utils/position.utils';
-import { loadCountries, type CountriesCollection } from './countries';
+import { loadCountries } from './countries';
 import type { Coordinates, MapProps } from './GeoMap';
+import { simplifyCountries } from './simplifyCountries';
 
 const DARK = { bg: '#1c2f4a', water: '#0b1422', boundary: '#0fbcff', fillOpacity: 0.1 };
 const LIGHT = { bg: '#dce0fe', water: '#ffffff', boundary: '#001bda', fillOpacity: 0.5 };
@@ -13,38 +15,6 @@ const DEFAULT_CENTER: Coordinates = { latitude: 48.8566969, longitude: 2.3514616
 const WORLD_BOUNDS: L.LatLngBoundsExpression = [[-85.051129, -180], [85.051129, 180]];
 const MARKER_SIZE = 25;
 const MIN_HEIGHT = 300;
-const SIMPLIFY_ZOOM = 6;
-const SIMPLIFY_TOLERANCE_PX = 1;
-
-const simplifiedCache = new WeakMap<CountriesCollection, CountriesCollection>();
-
-const simplifyRing = (ring: Position[]): Position[] => {
-  const projected = ring.map(([lon, lat]) => L.CRS.EPSG3857.latLngToPoint(L.latLng(lat, lon), SIMPLIFY_ZOOM));
-  return L.LineUtil.simplify(projected, SIMPLIFY_TOLERANCE_PX).map((point) => {
-    const { lat, lng } = L.CRS.EPSG3857.pointToLatLng(point, SIMPLIFY_ZOOM);
-    return [lng, lat];
-  });
-};
-
-const simplifyCountries = (collection: CountriesCollection): CountriesCollection => {
-  const cached = simplifiedCache.get(collection);
-  if (cached) return cached;
-  const simplified: CountriesCollection = {
-    ...collection,
-    features: collection.features.map((feature) => {
-      const { geometry } = feature;
-      if (geometry.type === 'Polygon') {
-        return { ...feature, geometry: { ...geometry, coordinates: geometry.coordinates.map(simplifyRing) } };
-      }
-      if (geometry.type === 'MultiPolygon') {
-        return { ...feature, geometry: { ...geometry, coordinates: geometry.coordinates.map((polygon) => polygon.map(simplifyRing)) } };
-      }
-      return feature;
-    }),
-  };
-  simplifiedCache.set(collection, simplified);
-  return simplified;
-};
 
 const boundaryWidth = (leafletZoom: number) => {
   const z = leafletZoom - 1;
@@ -62,9 +32,12 @@ const GeoMapFallback = ({
   markers,
 }: GeoMapFallbackProps) => {
   const theme = useTheme();
+  const { t_i18n } = useFormatter();
   const dark = theme.palette.mode === 'dark';
   const colors = dark ? DARK : LIGHT;
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isLoadFailed, setIsLoadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -115,7 +88,9 @@ const GeoMapFallback = ({
           }).addTo(map);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!released) setIsLoadFailed(true);
+      });
 
     for (const { position, iconUrl } of markers ?? []) {
       L.marker([position.latitude, position.longitude], {
@@ -133,10 +108,40 @@ const GeoMapFallback = ({
       observer.disconnect();
       map.remove();
     };
-  }, [dark, center, countries, markers, zoom]);
+  }, [dark, center, countries, markers, zoom, attempt]);
+
+  if (isLoadFailed) {
+    return (
+      <div
+        key="load-failed"
+        style={{
+          minHeight: MIN_HEIGHT,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+        }}
+      >
+        <p>{t_i18n('Failed to load the map')}</p>
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={() => {
+            setIsLoadFailed(false);
+            setAttempt((value) => value + 1);
+          }}
+        >
+          {t_i18n('Retry')}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div
+      key="map"
       ref={containerRef}
       aria-label="Map"
       style={{ width: '100%', height: '100%', minHeight: MIN_HEIGHT, borderRadius: 6, background: colors.water }}
