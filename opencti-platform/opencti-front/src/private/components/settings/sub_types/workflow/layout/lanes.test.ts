@@ -52,6 +52,17 @@ describe('placeLanes', () => {
     expect(checked).toBeGreaterThan(0);
   });
 
+  it('keeps a lane node on a finite row when none of its sources is placed', () => {
+    const { nodes, edges } = buildElements(SAMPLES.review);
+    const graph = buildGraph(nodes, edges);
+    const ranked = rankGraph(graph);
+    const x = placeX(ranked, orderLayers(graph, ranked), 50);
+    const reject = transitionId(['IN_REVIEW'], 'reject', 'NEW');
+    graph.inE.set(reject, []); // simulate a backward transition whose sources were all removed
+    const { place } = placeLanes(graph, ranked, x, 50, 100);
+    expect(Number.isFinite(place.get(reject)!.cy)).toBe(true);
+  });
+
   it('never overlaps two nodes (300 random workflows)', () => {
     for (let seed = 1; seed <= 300; seed += 1) {
       const boxes = [...lanes(randomWorkflow(seed)).place.entries()].map(([id, p]) => ({ id, x: p.cx - p.w / 2, y: p.rank * 100 - p.h / 2, w: p.w, h: p.h }));

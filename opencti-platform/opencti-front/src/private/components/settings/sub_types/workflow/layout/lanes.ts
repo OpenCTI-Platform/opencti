@@ -35,7 +35,11 @@ export const placeLanes = (graph: Graph, ranked: RankedGraph, x: Map<string, num
     const selfLoop = ins.length > 0 && ins.every((e) => e.source === to);
     // Sit one row above the source it leaves from, like a forward transition, and below every
     // target; a self-loop sits beside its status.
-    const row = selfLoop ? rank.get(to)! : Math.max(Math.min(...sourceRanks) - 1, Math.max(...targetRanks) + 1);
+    // Without a placed source (not reachable from the editor), sit just below the targets: an
+    // empty Math.min would make the lane span infinite.
+    const belowTargets = Math.max(...targetRanks) + 1;
+    let row = sourceRanks.length ? Math.max(Math.min(...sourceRanks) - 1, belowTargets) : belowTargets;
+    if (selfLoop) row = rank.get(to)!;
     const all = [...targetRanks, row, ...sourceRanks];
     pending.push({ kind: 'node', id, ins, outs, to, row, selfLoop, r0: Math.min(...all), r1: Math.max(...all), order: graph.nodes.get(id)!.order });
   });
