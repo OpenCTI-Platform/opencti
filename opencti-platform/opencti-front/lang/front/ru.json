@@ -4910,6 +4910,7 @@
   "The HTML file was saved, but the PDF export failed": "HTML-файл был сохранен, но экспорт в PDF не удался",
   "The importation of the file has been started": "Импорт файла начат",
   "The investigation has been duplicated. You can manage it": "Расследование было продублировано. Вы можете управлять им",
+  "The kill chain names could not be loaded, type the name of the kill chain": "Не удалось загрузить названия kill chain, введите название kill chain",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "Лицензия, установленная в конфигурации, недействительна, пожалуйста, измените ее или удалите, чтобы разрешить прямую настройку в этом окне",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "Основной объект и связанные с ним ... отношения/ссылки будут удалены навсегда.",
   "The main object and the {count} relationships/references linked to it will be restored.": "Основной объект и связанные с ним ... отношения/ссылки будут восстановлены.",

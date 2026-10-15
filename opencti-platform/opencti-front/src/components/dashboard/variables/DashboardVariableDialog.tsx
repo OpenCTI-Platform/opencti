@@ -90,19 +90,34 @@ interface KillChainNameFieldProps {
 }
 
 // One of the kill chains of the platform: a name typed by hand, unknown or differently written, would match no phase.
+// When the platform cannot list them, a free text field takes over so that the variable can still be created.
 const KillChainNameField = ({ value, disabled, onChange, onBlur }: KillChainNameFieldProps) => {
   const { t_i18n } = useFormatter();
-  const names = useKillChainNames();
-  // The kill chain of an edited variable is shown even when it is not (or no longer) among them.
-  const options = value && names && !names.includes(value) ? [value, ...names] : names ?? [];
+  const { names, status } = useKillChainNames();
   const label = t_i18n('Kill chain');
+  if (status === 'error') {
+    return (
+      <Input
+        label={label}
+        name="killChainName"
+        required
+        disabled={disabled}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        onBlur={onBlur}
+        helperText={t_i18n('The kill chain names could not be loaded, type the name of the kill chain')}
+      />
+    );
+  }
+  // The kill chain of an edited variable is shown even when it is not (or no longer) among them.
+  const options = value && status === 'ready' && !names.includes(value) ? [value, ...names] : names;
   return (
     <Combobox<string>
       options={options}
       value={value || null}
       getOptionLabel={(name) => name}
       onValueChange={(next) => onChange(typeof next === 'string' ? next : '')}
-      loading={names === null}
+      loading={status === 'loading'}
       required
       disabled={disabled}
     >

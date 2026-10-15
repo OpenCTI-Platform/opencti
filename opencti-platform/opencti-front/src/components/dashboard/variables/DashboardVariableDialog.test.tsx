@@ -369,6 +369,73 @@ describe('DashboardVariableDialog', () => {
       expect(screen.getByText('No available options')).toBeInTheDocument();
       expect(screen.getByTestId('value-input')).toBeDisabled();
     });
+
+    describe('when the kill chains cannot be listed', () => {
+      const HELPER = 'The kill chain names could not be loaded, type the name of the kill chain';
+      const killChainText = () => screen.findByRole('textbox', { name: KILL_CHAIN_FIELD });
+      const failLookup = (relayEnv: ReturnType<typeof renderDialog>['relayEnv']) => act(() => {
+        relayEnv.mock.rejectMostRecentOperation(new Error('FORBIDDEN_ACCESS'));
+      });
+
+      it('replaces the select with a free text field and an explanation once the lookup has failed', async () => {
+        const { user, relayEnv } = renderDialog();
+        await chooseKillChainPhaseType(user);
+        expect(screen.queryByText(HELPER)).not.toBeInTheDocument();
+        failLookup(relayEnv);
+        expect(await killChainText()).toBeEnabled();
+        expect(screen.getByText(HELPER)).toBeInTheDocument();
+        expect(screen.queryByRole('combobox', { name: KILL_CHAIN_FIELD })).not.toBeInTheDocument();
+        expect(screen.getByTestId('value-input')).toBeDisabled();
+      });
+
+      it('creates the variable with the typed kill chain name, and forgets the default value when it changes', async () => {
+        const { user, relayEnv } = renderDialog();
+        await chooseKillChainPhaseType(user);
+        failLookup(relayEnv);
+        const killChain = await killChainText();
+        await user.type(killChain, 'mitre-attack');
+        await waitFor(() => expect(screen.getByTestId('value-input')).toBeEnabled());
+        await user.type(screen.getByTestId('value-input'), 'phase-1');
+        await waitFor(() => expect(submit()).toBeEnabled());
+
+        await user.type(killChain, '-ics');
+        await waitFor(() => expect(screen.getByTestId('value-input')).toHaveValue(''));
+        expect(submit()).toBeDisabled();
+        await user.type(screen.getByTestId('value-input'), 'phase-2');
+        await user.click(submit());
+        await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+        expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+          type: 'killChainPhase',
+          killChainName: 'mitre-attack-ics',
+          defaultValue: 'phase-2',
+        }));
+      });
+
+      it('requires a kill chain name', async () => {
+        const { user, relayEnv } = renderDialog();
+        await chooseKillChainPhaseType(user);
+        failLookup(relayEnv);
+        await killChainText();
+        expect(screen.getByTestId('value-input')).toBeDisabled();
+        expect(submit()).toBeDisabled();
+      });
+
+      it('locks the kill chain of an edited variable', async () => {
+        const killChain: DashboardVariable = {
+          id: '55555555-5555-4555-8555-555555555555',
+          name: 'Phase',
+          type: 'killChainPhase',
+          killChainName: 'mitre-attack',
+          restriction: { mode: 'none' },
+          defaultValue: 'phase-1',
+        };
+        const { relayEnv } = renderDialog({ variable: killChain, existingVariables: [killChain] });
+        failLookup(relayEnv);
+        const killChainField = await killChainText();
+        expect(killChainField).toBeDisabled();
+        expect(killChainField).toHaveValue('mitre-attack');
+      });
+    });
   });
 
   it('refuses a duplicated name and does not upsert', async () => {

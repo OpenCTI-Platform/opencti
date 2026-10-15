@@ -4910,6 +4910,7 @@
   "The HTML file was saved, but the PDF export failed": "El archivo HTML se ha guardado, pero la exportación a PDF ha fallado",
   "The importation of the file has been started": "La importación del fichero se ha iniciado",
   "The investigation has been duplicated. You can manage it": "La investigación ha sido duplicada. Puede gestionarla",
+  "The kill chain names could not be loaded, type the name of the kill chain": "No se pudieron cargar los nombres de las kill chains, escriba el nombre de la kill chain",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "La licencia que configuró en configuración no es válida, por favor cámbiela o elimínela para permitir la configuración directa en esta pantalla",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "El objeto principal además de sus {count} relaciones/referencias serán eliminados definitivamente.",
   "The main object and the {count} relationships/references linked to it will be restored.": "Se restaurará el objeto principal además de sus {count} relaciones/referencias.",
