@@ -25,35 +25,8 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const hasIncomingEdge = edges.some((edge) => edge.target === id);
   const hasOutgoingEdge = edges.some((edge) => edge.source === id);
 
-  // Detect if this is a backward transition (going back to an ancestor status)
-  const isBackwardTransition = useMemo(() => {
-    const outgoingEdge = edges.find((edge) => edge.source === id);
-    const incomingEdge = edges.find((edge) => edge.target === id);
-
-    if (!outgoingEdge || !incomingEdge) return false;
-
-    const sourceStatusId = incomingEdge.source;
-    const targetStatusId = outgoingEdge.target;
-
-    // Check if target is an ancestor of source by traversing parent relationships
-    const isAncestor = (ancestorId: string, descendantId: string): boolean => {
-      let currentId = descendantId;
-      const visited = new Set<string>();
-
-      while (currentId && !visited.has(currentId)) {
-        if (currentId === ancestorId) return true;
-        visited.add(currentId);
-
-        // Find parent by looking for incoming edges
-        const parentEdge = edges.find((e) => e.target === currentId && e.source !== id);
-        if (!parentEdge) break;
-        currentId = parentEdge.source;
-      }
-      return false;
-    };
-
-    return isAncestor(targetStatusId, sourceStatusId);
-  }, [edges, id]);
+  // useWorkflowLayout decides which transitions go back up the graph.
+  const isBackwardTransition = data.layout?.backward ?? false;
 
   const conditionAndActions = useMemo(() => {
     const filterCount = data.conditions?.filters?.filters?.length ?? 0;

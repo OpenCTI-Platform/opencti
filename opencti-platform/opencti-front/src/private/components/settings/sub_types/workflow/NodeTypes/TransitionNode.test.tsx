@@ -80,3 +80,24 @@ describe('TransitionNode – comment label', () => {
     expect(screen.getByText(/comment required/i)).toBeDefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Direction hint from the layout
+// ---------------------------------------------------------------------------
+describe('TransitionNode – direction', () => {
+  it('puts the target handle at the bottom when the layout marks it backward', () => {
+    testRender(<TransitionNode {...makeProps({ layout: { backward: true, lane: 'right', rank: 3 } })} />);
+    expect(screen.getByTestId('handle-target').style.bottom).toBe('-2px');
+  });
+
+  it('keeps the target handle on top without a layout hint, whatever the edges say', () => {
+    // An ancestor walk would call this backward (B -> t -> A, A -> B); the hint is the only source now.
+    mockGetEdges.mockReturnValue([
+      { id: 'a', source: 'A', target: 'B' },
+      { id: 'b', source: 'B', target: 'transition-1' },
+      { id: 'c', source: 'transition-1', target: 'A' },
+    ] as Edge[]);
+    testRender(<TransitionNode {...makeProps()} />);
+    expect(screen.getByTestId('handle-target').style.top).toBe('-2px');
+  });
+});

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { EdgeProps, getSmoothStepPath } from 'reactflow';
+import { EdgeProps, getSmoothStepPath, type XYPosition } from 'reactflow';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
+import { getRoutePath } from '../layout/route';
 
 const TransitionEdge = ({
   id,
@@ -12,19 +13,24 @@ const TransitionEdge = ({
   sourcePosition,
   targetPosition,
   markerEnd,
-}: EdgeProps) => {
+  data,
+}: EdgeProps<{ route?: XYPosition[] }>) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
-  const [edgePath, edgeCenterX, edgeCenterY] = getSmoothStepPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-    borderRadius: 10,
-    offset: 10,
-  });
+  // useWorkflowLayout routes every edge; smoothstep covers the frame before the first layout.
+  const route = data?.route;
+  const [edgePath, edgeCenterX, edgeCenterY] = route && route.length >= 2
+    ? getRoutePath(route)
+    : getSmoothStepPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      borderRadius: 10,
+      offset: 10,
+    });
 
   return (
     <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
