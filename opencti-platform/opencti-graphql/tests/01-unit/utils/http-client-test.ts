@@ -1,7 +1,10 @@
+import { generateKeyPairSync } from 'node:crypto';
 import http from 'node:http';
+import https from 'node:https';
 import type { AddressInfo } from 'node:net';
 import { Readable } from 'node:stream';
 import { gzipSync } from 'node:zlib';
+import forge from 'node-forge';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getHttpClient, getResponseError, HttpClientError } from '../../../src/utils/http-client';
 
@@ -17,6 +20,7 @@ const servers: http.Server[] = [];
 let baseURL: string;
 let otherHostBaseURL: string;
 let closedPortURL: string;
+let selfSignedBaseURL: string;
 
 const routes: Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> = {
   '/json': (_req, res) => res.writeHead(200, { 'Content-Type': 'application/json', 'X-Custom': 'value' }).end('{"hello":"world"}'),
@@ -29,30 +33,53 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
   '/redirect': (_req, res) => res.writeHead(302, { Location: '/json' }).end(),
   '/redirect-loop': (_req, res) => res.writeHead(302, { Location: '/redirect-loop' }).end(),
   '/redirect-other-host': (_req, res) => res.writeHead(307, { Location: `${otherHostBaseURL}/echo` }).end(),
+  '/redirect-echo': (_req, res) => res.writeHead(302, { Location: '/echo' }).end(),
+  '/redirect-with-credentials': (_req, res) => res.writeHead(302, { Location: `${baseURL.replace('://', '://intruder:secret@')}/echo` }).end(),
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
-const startServer = async () => {
-  const server = http.createServer((req, res) => {
-    let body = '';
-    req.on('data', (chunk) => {
-      body += chunk;
-    });
-    req.on('end', () => {
-      received.push({ method: req.method, url: req.url, headers: req.headers, body });
-      const route = routes[new URL(req.url ?? '/', 'http://localhost').pathname];
-      if (route) {
-        route(req, res);
-      } else {
-        res.writeHead(404).end();
-      }
-    });
+const handleRequest = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  let body = '';
+  req.on('data', (chunk) => {
+    body += chunk;
   });
+  req.on('end', () => {
+    received.push({ method: req.method, url: req.url, headers: req.headers, body });
+    const route = routes[new URL(req.url ?? '/', 'http://localhost').pathname];
+    if (route) {
+      route(req, res);
+    } else {
+      res.writeHead(404).end();
+    }
+  });
+};
+
+const buildSelfSignedCertificate = () => {
+  const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+    privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
+  });
+  const certificate = forge.pki.createCertificate();
+  certificate.publicKey = forge.pki.publicKeyFromPem(publicKey);
+  certificate.serialNumber = '01';
+  certificate.validity.notBefore = new Date(Date.now() - 60_000);
+  certificate.validity.notAfter = new Date(Date.now() + 3_600_000);
+  const attributes = [{ name: 'commonName', value: '127.0.0.1' }];
+  certificate.setSubject(attributes);
+  certificate.setIssuer(attributes);
+  certificate.setExtensions([{ name: 'subjectAltName', altNames: [{ type: 7, ip: '127.0.0.1' }] }]);
+  certificate.sign(forge.pki.privateKeyFromPem(privateKey), forge.md.sha256.create());
+  return { key: privateKey, cert: forge.pki.certificateToPem(certificate) };
+};
+
+const startServer = async (tls?: { key: string; cert: string }) => {
+  const server = tls ? https.createServer(tls, handleRequest) : http.createServer(handleRequest);
   await new Promise<void>((resolve) => {
     server.listen(0, '127.0.0.1', resolve);
   });
   servers.push(server);
-  return `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  return `${tls ? 'https' : 'http'}://127.0.0.1:${(server.address() as AddressInfo).port}`;
 };
 
 const closeServer = (server: http.Server) => new Promise((resolve) => {
@@ -64,6 +91,7 @@ beforeAll(async () => {
   otherHostBaseURL = await startServer();
   closedPortURL = await startServer();
   await closeServer(servers.pop() as http.Server);
+  selfSignedBaseURL = await startServer(buildSelfSignedCertificate());
 });
 
 afterAll(async () => {
@@ -235,5 +263,81 @@ describe('getHttpClient', () => {
     expect(response.headers['content-encoding']).toBeUndefined();
     expect(response.headers['content-length']).toBeUndefined();
     expect(response.headers['content-type']).toBe('text/plain');
+  });
+
+  it('should send the credentials of the url as basic authentication', async () => {
+    const response = await getHttpClient({ responseType: 'json' }).get(`${baseURL.replace('://', '://user:p%40ss@')}/echo`);
+
+    expect(response.data.headers.authorization).toBe(`Basic ${Buffer.from('user:p@ss').toString('base64')}`);
+  });
+
+  it('should prefer the explicit authentication over the url credentials and the authorization header', async () => {
+    const client = getHttpClient({ responseType: 'json', headers: { Authorization: 'Bearer token' }, auth: { username: 'explicit', password: 'secret' } });
+
+    const response = await client.get(`${baseURL.replace('://', '://user:pass@')}/echo`);
+
+    expect(response.data.headers.authorization).toBe(`Basic ${Buffer.from('explicit:secret').toString('base64')}`);
+  });
+
+  it('should keep basic authentication on a same-origin redirect only', async () => {
+    const client = getHttpClient({ baseURL, responseType: 'json', auth: { username: 'user', password: 'secret' } });
+
+    const sameOrigin = await client.get('/redirect-echo');
+    const otherHost = await client.get('/redirect-other-host');
+
+    expect(sameOrigin.data.headers.authorization).toBe(`Basic ${Buffer.from('user:secret').toString('base64')}`);
+    expect(otherHost.data.headers.authorization).toBeUndefined();
+  });
+
+  it('should ignore the credentials of a redirect location', async () => {
+    const response = await getHttpClient({ baseURL, responseType: 'json' }).get('/redirect-with-credentials');
+
+    expect(response.data.url).toBe('/echo');
+    expect(response.data.headers.authorization).toBeUndefined();
+  });
+
+  it('should form-encode an object payload sent as application/x-www-form-urlencoded', async () => {
+    const data = { message: 'hello world', count: 2, ok: true, skip: null, nested: { key: 'v', deep: { x: 'y' } }, list: ['a', 'b'], objs: [{ k: 1 }, { k: 2 }], 'tags[]': ['t1'] };
+
+    const response = await getHttpClient({ baseURL, responseType: 'json' }).call({
+      url: '/echo',
+      method: 'POST',
+      data,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+
+    expect(response.data.headers['content-type']).toBe('application/x-www-form-urlencoded');
+    expect(response.data.body).toBe('message=hello+world&count=2&ok=true&nested%5Bkey%5D=v&nested%5Bdeep%5D%5Bx%5D=y&list%5B%5D=a&list%5B%5D=b&objs%5B0%5D%5Bk%5D=1&objs%5B1%5D%5Bk%5D=2&tags%5B%5D=t1');
+  });
+
+  it('should send an object payload sent as multipart/form-data as form fields', async () => {
+    const response = await getHttpClient({ baseURL, responseType: 'json' }).call({
+      url: '/echo',
+      method: 'POST',
+      data: { message: 'hello world', nested: { key: 'v' } },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    expect(response.data.headers['content-type']).toMatch(/^multipart\/form-data; boundary=/);
+    expect(response.data.body).toContain('name="message"\r\n\r\nhello world\r\n');
+    expect(response.data.body).toContain('name="nested[key]"\r\n\r\nv\r\n');
+  });
+
+  it('should reject an untrusted certificate unless certificate verification is disabled', async () => {
+    const verified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: true }).get('/not-json').catch((e) => e);
+    const unverified = await getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text' }).get('/not-json');
+
+    expect(verified).toBeInstanceOf(HttpClientError);
+    expect(verified.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+    expect(unverified.data).toBe('plain text');
+  });
+
+  it('should always verify the certificate on call', async () => {
+    const client = getHttpClient({ baseURL: selfSignedBaseURL, responseType: 'text', rejectUnauthorized: false });
+
+    const error = await client.call({ url: '/not-json', method: 'POST', data: {} }).catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
   });
 });
