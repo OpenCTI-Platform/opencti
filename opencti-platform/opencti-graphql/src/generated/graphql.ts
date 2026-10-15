@@ -1807,6 +1807,7 @@ export enum BackgroundTaskActionType {
   Promote = 'PROMOTE',
   Remove = 'REMOVE',
   RemoveAuthMembers = 'REMOVE_AUTH_MEMBERS',
+  RemoveCustomFieldValues = 'REMOVE_CUSTOM_FIELD_VALUES',
   RemoveFromDraft = 'REMOVE_FROM_DRAFT',
   RemoveGroups = 'REMOVE_GROUPS',
   RemoveOrganizations = 'REMOVE_ORGANIZATIONS',

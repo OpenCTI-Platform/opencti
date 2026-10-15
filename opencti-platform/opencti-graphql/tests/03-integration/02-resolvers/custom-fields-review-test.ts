@@ -97,6 +97,12 @@ const SIGHTING_DELETE = gql`
   }
 `;
 
+const BACKGROUND_TASKS = gql`
+  query CustomFieldsReviewBackgroundTasks {
+    backgroundTasks(first: 100, orderBy: created_at, orderMode: desc) { edges { node { id actions { type context { values } } } } }
+  }
+`;
+
 const NOTE = 'x_opencti_cf_review_note';
 const TAGS = 'x_opencti_cf_review_tags';
 const REQUIRED = 'x_opencti_cf_review_required';
@@ -290,5 +296,19 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       const values = await readCaseValues(caseId);
       expect(values).toMatchObject([{ field_name: TAGS, select_values: ['a'] }]);
     });
+  });
+});
+
+describe('Custom fields review: deleted definition cleanup task', () => {
+  it('should list the cleanup task of a deleted custom field definition', async () => {
+    const definitionId = await addDefinition({ name: 'x_opencti_cf_review_deleted', label: 'Review deleted', field_type: 'string' }, [
+      { entityType: 'Case-Incident', mandatory: false },
+    ]);
+    const deleted = await queryAsAdmin({ query: CUSTOM_FIELD_DELETE, variables: { id: definitionId } });
+    expect(deleted.errors).toBeUndefined();
+    const tasks = await queryAsAdmin({ query: BACKGROUND_TASKS, variables: {} });
+    expect(tasks.errors).toBeUndefined();
+    const actions = (tasks.data?.backgroundTasks.edges ?? []).flatMap(({ node }: any) => node.actions);
+    expect(actions).toContainEqual({ type: 'REMOVE_CUSTOM_FIELD_VALUES', context: { values: [definitionId] } });
   });
 });
