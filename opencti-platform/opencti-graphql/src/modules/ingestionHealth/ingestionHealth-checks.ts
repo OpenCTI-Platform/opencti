@@ -4,16 +4,46 @@ import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } 
 import type { RuntimeData } from './ingestionHealthRuntimeData';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-types';
 import { durationInMs } from '../../utils/format';
+import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 
 // region registry
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 
+// The ingestor evaluated: a connector, a feed or a sync
+export interface HealthCheckIngestor {
+  internal_id: string;
+  entity_type: string;
+  built_in?: boolean;
+  // The user of a connector
+  connector_user_id?: string | null;
+  // The user of a feed or a sync
+  user_id?: string | null;
+}
+
+const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
+  return ingestor.entity_type === ENTITY_TYPE_CONNECTOR ? ingestor.connector_user_id : ingestor.user_id;
+};
+
+// Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
+const isUserRequired = (ingestor: HealthCheckIngestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR;
+
+// What decides whether a check applies, computed once at the beginning of each period of the ingestion health manager
+export interface HealthCheckEnablingContext {
+  // Connectors pinging continuously
+  pingingConnectorsIds: Set<string>;
+}
+
 interface HealthCheckDefinition {
   kind: IngestionHealthCheckKind;
   severity: IngestionHealthCheckSeverity;
   message: (metadata: Record<string, unknown>) => string;
+  // Whether the ingestor is evaluated for this check
+  isEnabled: (ingestor: HealthCheckIngestor, context: HealthCheckEnablingContext) => boolean;
 }
+
+// Built-in connectors (feed twins) are not deployed: no process runs them
+const isDeployed = (ingestor: HealthCheckIngestor) => !ingestor.built_in;
 
 // Kind, severity and message describe the type of check, not one occurrence: they are never stored,
 // so changing them never requires rewriting Elasticsearch.
@@ -23,13 +53,21 @@ const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     kind: IngestionHealthCheckKind.Configuration,
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'User is missing',
+    // A required user, or an optional one that was set: it must exist
+    isEnabled: (ingestor) => isDeployed(ingestor) && isUserRequired(ingestor),
   },
   // A running process pings regularly: no heartbeat means it is down
   [HEALTH_CHECK_HEARTBEAT_MISSING]: {
     kind: IngestionHealthCheckKind.Runtime,
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'No heartbeat received',
+    // Only the connectors pinging continuously: the others would be missing their heartbeat between two runs
+    isEnabled: (ingestor, { pingingConnectorsIds }) => isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
   },
+};
+
+const isCheckEnabled = (code: string, ingestor: HealthCheckIngestor, context: HealthCheckEnablingContext) => {
+  return HEALTH_CHECK_REGISTRY[code].isEnabled(ingestor, context);
 };
 // endregion
 
@@ -43,7 +81,7 @@ export interface HealthContext {
   runtimeData?: RuntimeData;
 }
 
-export interface HealthChecksContext extends HealthContext {
+export interface HealthChecksContext extends HealthContext, HealthCheckEnablingContext {
   isExistingUser: (userId: string) => boolean;
 }
 
@@ -56,23 +94,14 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
   return durationInMs(heartbeat, evaluatedAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
 };
 
-// The configuration of the ingestion
-export interface IngestionHealthInput {
-  userId?: string | null;
-  // Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
-  isUserRequired: boolean;
-  // Connectors ping while they run, feeds and syncs have no heartbeat
-  isHeartbeatRequired?: boolean;
-}
-
-export const computeIngestionHealthChecks = (input: IngestionHealthInput, context: HealthChecksContext): StoredHealthCheck[] => {
+export const computeIngestionHealthChecks = (ingestor: HealthCheckIngestor, context: HealthChecksContext): StoredHealthCheck[] => {
   const { isExistingUser, evaluatedAt, runtimeData } = context;
   const checks: StoredHealthCheck[] = [];
-  const isUserMissing = input.userId ? !isExistingUser(input.userId) : input.isUserRequired;
-  if (isUserMissing) {
+  const userId = getIngestorUserId(ingestor);
+  if (isCheckEnabled(HEALTH_CHECK_USER_MISSING, ingestor, context) && (!userId || !isExistingUser(userId))) {
     checks.push({ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} });
   }
-  if (input.isHeartbeatRequired && !isHeartbeatAlive(runtimeData?.heartbeat, evaluatedAt)) {
+  if (isCheckEnabled(HEALTH_CHECK_HEARTBEAT_MISSING, ingestor, context) && !isHeartbeatAlive(runtimeData?.heartbeat, evaluatedAt)) {
     checks.push({ health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} });
   }
   return checks;

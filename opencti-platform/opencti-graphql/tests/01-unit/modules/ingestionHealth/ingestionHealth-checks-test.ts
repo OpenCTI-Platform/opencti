@@ -21,6 +21,10 @@ const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_M
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
 // Not in the registry: never changes the status
 const OTHER_CHECK: StoredHealthCheck = { health_check_code: 'OTHER_CHECK', health_check_metadata: {} };
+const CONNECTOR = { internal_id: 'connector-id', entity_type: 'Connector' };
+const FEED = { internal_id: 'feed-id', entity_type: 'IngestionRss' };
+const PINGING = { pingingConnectorsIds: new Set([CONNECTOR.internal_id]) };
+const NOT_PINGING = { pingingConnectorsIds: new Set<string>() };
 
 describe('computeIngestionHealthPatch', () => {
   it('should write nothing with no check since on the first evaluation', () => {
@@ -131,38 +135,46 @@ describe('computeIngestionHealthPatch with runtime data', () => {
 
 describe('heartbeat check', () => {
   const isExistingUser = () => true;
-  const input = { userId: 'user', isUserRequired: true, isHeartbeatRequired: true };
+  const input = { ...CONNECTOR, connector_user_id: 'user' };
 
   it('should flag a missing heartbeat when the source reports one', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: {}, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: {}, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat that is there', () => {
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat: EVALUATED_AT }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat: EVALUATED_AT }, isExistingUser })).toEqual([]);
   });
 
   it('should not flag a heartbeat younger than the max age', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS - 1000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should flag a heartbeat older than the max age as missing', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat in the future, clock skew between nodes', () => {
     const heartbeat = utcDate(EVALUATED_AT).add(10_000, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([]);
   });
 
   it('should not flag sources without heartbeat, such as feeds and syncs', () => {
-    expect(computeIngestionHealthChecks({ ...input, isHeartbeatRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
+    expect(computeIngestionHealthChecks({ ...FEED, user_id: 'user' }, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([]);
+  });
+
+  it('should not flag connectors not pinging continuously, such as run and terminate ones', () => {
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...NOT_PINGING, isExistingUser })).toEqual([]);
+  });
+
+  it('should not flag built-in connectors', () => {
+    expect(computeIngestionHealthChecks({ ...input, built_in: true }, { ...CONTEXT, ...PINGING, isExistingUser })).toEqual([]);
   });
 
   it('should give a critical status with the check message', () => {
-    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, { ...CONTEXT, isExistingUser }), CONTEXT);
+    const patch = computeIngestionHealthPatch({}, computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, isExistingUser }), CONTEXT);
     expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Critical);
     expect(toGraphqlIngestionHealth(patch?.ingestion_health)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
@@ -177,37 +189,42 @@ describe('computeIngestionHealthChecks', () => {
   const EXISTING_USER_ID = 'existing-user-id';
   const DELETED_USER_ID = 'deleted-user-id';
   const isExistingUser = (userId: string) => userId === EXISTING_USER_ID;
+  const checksContext = { ...CONTEXT, ...NOT_PINGING, isExistingUser };
 
   describe('connector (user required)', () => {
     it.each([undefined, null, ''])('should flag USER_MISSING when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ userId, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: userId }, checksContext)).toEqual([USER_MISSING]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: DELETED_USER_ID }, checksContext)).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser })).toEqual([]);
+      expect(computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: EXISTING_USER_ID }, checksContext)).toEqual([]);
     });
   });
 
   describe('feed or sync (user optional: runs as the system user without one)', () => {
     it.each([undefined, null, ''])('should return no check when the user is %s', (userId) => {
-      expect(computeIngestionHealthChecks({ userId, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
+      expect(computeIngestionHealthChecks({ ...FEED, user_id: userId }, checksContext)).toEqual([]);
     });
 
     it('should flag USER_MISSING when the user was deleted', () => {
-      expect(computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([USER_MISSING]);
+      expect(computeIngestionHealthChecks({ ...FEED, user_id: DELETED_USER_ID }, checksContext)).toEqual([USER_MISSING]);
     });
 
     it('should return no check when the user exists', () => {
-      expect(computeIngestionHealthChecks({ userId: EXISTING_USER_ID, isUserRequired: false }, { ...CONTEXT, isExistingUser })).toEqual([]);
+      expect(computeIngestionHealthChecks({ ...FEED, user_id: EXISTING_USER_ID }, checksContext)).toEqual([]);
     });
   });
 
+  it('should not flag USER_MISSING on built-in connectors', () => {
+    expect(computeIngestionHealthChecks({ ...CONNECTOR, built_in: true, connector_user_id: DELETED_USER_ID }, checksContext)).toEqual([]);
+  });
+
   it('should make the status degraded through computeIngestionHealthPatch when the user is missing', () => {
-    const checks = computeIngestionHealthChecks({ userId: DELETED_USER_ID, isUserRequired: true }, { ...CONTEXT, isExistingUser });
+    const checks = computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: DELETED_USER_ID }, checksContext);
     expect(computeIngestionHealthPatch({}, checks, CONTEXT)?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
   });
 });

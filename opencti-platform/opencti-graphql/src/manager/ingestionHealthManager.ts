@@ -23,12 +23,13 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
+  type HealthChecksContext,
   HealthTransition,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';
-import { isConnectorStopped } from '../modules/connector/connector-domain';
+import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
@@ -36,15 +37,12 @@ const SCHEDULE_TIME = conf.get('ingestion_health_manager:interval') || 60000; //
 
 type IngestionElement = BasicStoreEntity & IngestionHealthFields;
 
+// Computed once at the beginning of each period, shared by the evaluation of every ingestion
+type PeriodContext = Pick<HealthChecksContext, 'isExistingUser' | 'pingingConnectorsIds'>;
+
 interface IngestionSource<T extends IngestionElement> {
   entityType: string;
   load: (context: AuthContext) => Promise<T[]>;
-  getUserId: (element: T) => string | null | undefined;
-  // Connectors authenticate with their own user; feeds and syncs without one run as the system user
-  isUserRequired: boolean;
-  isEvaluated?: (element: T) => boolean;
-  // Sources reporting a heartbeat: its absence is a failure, unless the element is stopped on purpose
-  isHeartbeatRequired?: boolean;
   isStopped?: (element: T) => boolean;
 }
 
@@ -52,11 +50,6 @@ const connectorSource: IngestionSource<CachedConnector> = {
   entityType: ENTITY_TYPE_CONNECTOR,
   // Cached on every node, and refreshed cache after each health write
   load: (context) => getEntitiesListFromCache<CachedConnector>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_CONNECTOR),
-  getUserId: (connector) => connector.connector_user_id,
-  isUserRequired: true,
-  // Built-ins (feed twins) are not deployed: no process runs them
-  isEvaluated: (connector) => !connector.built_in,
-  isHeartbeatRequired: true,
   isStopped: isConnectorStopped,
 };
 
@@ -64,8 +57,6 @@ const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement 
   entityType,
   // Feeds and syncs are not cached
   load: (context) => fullEntitiesList(context, INGESTION_HEALTH_MANAGER_USER, [entityType]),
-  getUserId: (element) => element.user_id,
-  isUserRequired: false,
 });
 
 const INGESTION_SOURCES = [
@@ -82,18 +73,14 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
   element: T,
-  isExistingUser: (userId: string) => boolean,
+  periodContext: PeriodContext,
   runtimeData: RuntimeData,
 ) => {
   // Stopped on purpose: not monitored, nothing is read nor checked.
   // No status can be computed then, so a health stored before the stop is removed, without activity event.
   const isStopped = source.isStopped?.(element) ?? false;
   const healthContext = { evaluatedAt: now(), runtimeData: isStopped ? {} : runtimeData };
-  const checks = isStopped ? [] : computeIngestionHealthChecks({
-    userId: source.getUserId(element),
-    isUserRequired: source.isUserRequired,
-    isHeartbeatRequired: source.isHeartbeatRequired,
-  }, { ...healthContext, isExistingUser });
+  const checks = isStopped ? [] : computeIngestionHealthChecks(element, { ...healthContext, ...periodContext });
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
     return;
@@ -123,29 +110,35 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
 
 export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const context = executionContext('ingestion_health_manager');
+
+  // build required info data
   const users = await getEntitiesMapFromCache<AuthUser>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_USER);
   const isExistingUser = (userId: string) => users.has(userId) || userId in INTERNAL_USERS;
+  const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
+  const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
+
+  // check the ingestions sources
+  const periodContext: PeriodContext = { isExistingUser, pingingConnectorsIds };
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
-    const evaluatedElements = source.isEvaluated ? elements.filter(source.isEvaluated) : elements;
     // Runtime data reported by the sources, one batch per source. Stopped elements are not monitored: nothing is read for them.
     // Without it a missing heartbeat could not be told from an unreachable storage: the source is skipped until the next period
     let runtimeDataByIngestion: Map<string, RuntimeData>;
     try {
-      const monitoredIds = evaluatedElements.filter((element) => !source.isStopped?.(element)).map((element) => element.internal_id);
+      const monitoredIds = elements.filter((element) => !source.isStopped?.(element)).map((element) => element.internal_id);
       runtimeDataByIngestion = await getRuntimeDataMany(monitoredIds);
     } catch (e) {
       logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });
       continue;
     }
-    for (let i = 0; i < evaluatedElements.length; i += 1) {
+    for (let i = 0; i < elements.length; i += 1) {
       // Outside the try: losing the lock must stop the scan, not be logged as an element failure
       lock.signal.throwIfAborted();
-      const element = evaluatedElements[i];
+      const element = elements[i];
       try {
-        await evaluateIngestionHealth(context, source, element, isExistingUser, runtimeDataByIngestion.get(element.internal_id) ?? {});
+        await evaluateIngestionHealth(context, source, element, periodContext, runtimeDataByIngestion.get(element.internal_id) ?? {});
       } catch (e) {
         // One broken ingestion must not stop the evaluation of the others, retried at the next period
         logApp.warn('[OPENCTI-MODULE] Ingestion health evaluation error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: element.internal_id, type: source.entityType });
