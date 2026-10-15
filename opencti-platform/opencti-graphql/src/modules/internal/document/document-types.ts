@@ -9,6 +9,10 @@ export const IMPORT_STORAGE_PATH = 'import';
 export const EMBEDDED_STORAGE_PATH = 'embedded';
 export const EXPORT_STORAGE_PATH = 'export';
 export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
+// Configuration preset bundles (platform configuration), readable only with BYPASS (see loadFile).
+// A root of its own, like support packages, so that no other write path (connector exports under export/...) can reach it.
+// Not in ALL_ROOT_FOLDERS / ALL_MERGEABLE_FOLDERS: those list the folders of files attached to entities, these bundles belong to none.
+export const CONFIG_PRESET_STORAGE_PATH = 'config_preset';
 
 export type EntityFileReference = {
   id: string;
