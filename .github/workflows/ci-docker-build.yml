@@ -40,7 +40,7 @@ on:
 jobs:
   build-opencti-platform:
     name: Build OpenCTI Platform image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
@@ -119,7 +119,7 @@ jobs:
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}

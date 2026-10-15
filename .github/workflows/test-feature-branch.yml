@@ -38,9 +38,14 @@ jobs:
   deploy:
     name: deploy
     needs: wf-build-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 #v7.0.0
+        with:
+          python-version: '3.12'
 
       - name: Install AWX cli
         run: pip install awxkit
