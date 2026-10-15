@@ -62,6 +62,7 @@ export interface StixCoreObjectFileExportFormInputs {
   fileToExport: FileOption | null;
   template: TemplateOption | null;
   exportAsFintel: boolean;
+  removeEmptySections: boolean;
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
@@ -203,6 +204,7 @@ const StixCoreObjectFileExportForm = ({
     format: defaultFormat,
     type: null,
     exportAsFintel: (templates?.length ?? 0) > 0 && !hasPresetFileToExport,
+    removeEmptySections: false,
     template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
@@ -238,6 +240,7 @@ const StixCoreObjectFileExportForm = ({
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => {
         const isFintelPdf = values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.exportAsFintel;
+        const isTemplateGeneratedExport = values.connector?.value === BUILT_IN_FROM_TEMPLATE.value || isFintelPdf;
 
         useEffect(() => {
           if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
@@ -506,7 +509,7 @@ const StixCoreObjectFileExportForm = ({
                           containerstyle={fieldSpacingContainerStyle}
                         />
                       )}
-                      {(values.connector.value === BUILT_IN_FROM_TEMPLATE.value || isFintelPdf) && (
+                      {isTemplateGeneratedExport && (
                         <Field
                           component={ComboboxField}
                           name="template"
@@ -616,6 +619,15 @@ const StixCoreObjectFileExportForm = ({
                             />
                           )}
                         </>
+                      )}
+                      {isTemplateGeneratedExport && (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="removeEmptySections"
+                          label={t_i18n('Remove empty sections')}
+                          containerstyle={{ marginTop: 10 }}
+                        />
                       )}
                     </>
                   )}
