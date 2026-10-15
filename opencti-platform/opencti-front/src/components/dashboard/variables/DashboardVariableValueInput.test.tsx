@@ -358,6 +358,22 @@ describe('DashboardVariableValueInput', () => {
         expect(onChange).toHaveBeenCalledWith('rare-2');
       });
 
+      it('does not search the label of a picked phase, only a typed text', async () => {
+        const { user, relayEnv } = renderInput({ type: 'killChainPhase', killChainName: 'rare-chain', restriction: none });
+        await user.click(screen.getByRole('combobox'));
+        act(() => {
+          relayEnv.mock.resolveMostRecentOperation((operation) => answerPhasesQuery(operation.request.variables));
+        });
+        // A resolved search is no longer pending: any search listed below was issued after this point.
+        const pendingSearches = () => relayEnv.mock.getAllOperations().map((operation) => operation.request.variables.search);
+        expect(pendingSearches()).toEqual([]);
+        await user.click(screen.getByRole('option', { name: '[rare-chain] delivery' }));
+        expect(pendingSearches()).not.toContain('[rare-chain] delivery');
+        await user.clear(screen.getByRole('combobox'));
+        await user.type(screen.getByRole('combobox'), 'del');
+        expect(relayEnv.mock.getMostRecentOperation().request.variables).toEqual({ search: 'del', first: 100, filters: killChainFilters });
+      });
+
       it('searches the typed text among the phases of the kill chain', async () => {
         const { user, relayEnv } = renderInput({ type: 'killChainPhase', killChainName: 'rare-chain', restriction: none });
         await user.click(screen.getByRole('combobox'));

@@ -1,5 +1,15 @@
 import { SyntheticEvent, useState } from 'react';
-import { Combobox, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import {
+  Combobox,
+  type ComboboxChangeCause,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../../i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
@@ -37,10 +47,13 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
 
-  // The kill chain phases are searched with the typed text, and from an empty text when the field is focused.
-  const search = (event: SyntheticEvent, text: string) => {
-    if (isKillChainPhase) killChainPhases.search(text);
-    else if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
+  // The kill chain phases are searched with the typed text only, and from an empty text when the field is focused.
+  // Picking or clearing also writes the text (the label of the pick): the list then goes back to the whole kill chain.
+  const search = (event: SyntheticEvent, text: string, cause: ComboboxChangeCause = 'type') => {
+    if (isKillChainPhase) {
+      if (cause === 'type') killChainPhases.search(text);
+      else killChainPhases.reset();
+    } else if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
   };
 
   return (
@@ -52,7 +65,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
       getOptionLabel={(option) => option.label ?? ''}
       isOptionEqualToValue={(a, b) => a.value === b.value}
       groupBy={variable.type === 'entity' ? (option) => t_i18n(option.group ?? '') : undefined}
-      onInputChange={(text, meta) => meta.event && search(meta.event as SyntheticEvent, text)}
+      onInputChange={(text, meta) => meta.event && search(meta.event as SyntheticEvent, text, meta.cause)}
       onValueChange={(next) => {
         const nextValue = (next as FilterOptionValue | null)?.value;
         if (nextValue) onChange(nextValue);

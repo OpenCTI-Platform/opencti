@@ -76,7 +76,7 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
   const isCompatible = variables.some(({ id }) => id === variableId);
 
   const handleSourceChange = (value: string) => {
-    // A click on the current source would unselect it: there is always one.
+    // The group only ever emits one of the two sources: this narrows the string to a source.
     if (value !== 'fixed' && value !== 'variable') return;
     const nextSource: ValueSource = value;
     setSource(nextSource);

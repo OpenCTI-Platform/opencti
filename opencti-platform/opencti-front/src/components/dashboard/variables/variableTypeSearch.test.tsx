@@ -38,7 +38,6 @@ vi.mock('../../../utils/hooks/useAuth', () => ({
           ['objectLabel', { filterKey: 'objectLabel', type: 'id', elementsForFilterValuesSearch: ['Label'] }],
           ['objectMarking', { filterKey: 'objectMarking', type: 'id', elementsForFilterValuesSearch: ['Marking-Definition'] }],
           ['workflow_id', { filterKey: 'workflow_id', type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
-          ['killChainPhases', { filterKey: 'killChainPhases', type: 'id', elementsForFilterValuesSearch: ['Kill-Chain-Phase'] }],
         ])],
       ]),
     },
