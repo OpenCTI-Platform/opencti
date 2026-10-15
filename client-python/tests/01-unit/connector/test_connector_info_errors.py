@@ -22,10 +22,10 @@ RATE_ERROR = {
 }
 
 
-def test_errors_default_to_empty_list():
+def test_errors_default_to_empty_list_and_are_not_sent():
     info = ConnectorInfo()
     assert info.errors == []
-    assert info.all_details["errors"] == []
+    assert "errors" not in info.all_details
 
 
 def test_errors_from_constructor_are_copied():
@@ -96,11 +96,11 @@ def test_sent_errors_keep_most_critical_up_to_the_limit():
     assert sent_errors[-1]["code"] == f"LOW_{CONNECTOR_ERRORS_MAX_COUNT - 2}"
 
 
-def test_non_iterable_errors_are_sent_as_empty_list():
+def test_non_iterable_errors_are_not_sent():
     info = ConnectorInfo()
     info.errors = [API_ERROR]
     info._errors = 42
-    assert info.all_details["errors"] == []
+    assert "errors" not in info.all_details
 
 
 def test_errors_setter_replaces_and_accepts_none():
@@ -115,7 +115,7 @@ def test_clear_errors():
     info = ConnectorInfo(errors=[API_ERROR, RATE_ERROR])
     info.clear_errors()
     assert info.errors == []
-    assert info.all_details["errors"] == []
+    assert "errors" not in info.all_details
 
 
 def test_all_details_errors_is_a_snapshot():
