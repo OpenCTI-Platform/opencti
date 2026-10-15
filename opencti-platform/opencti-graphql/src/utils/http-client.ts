@@ -1,86 +1,334 @@
-import http from 'node:http';
-import https from 'node:https';
-import axios, { AxiosHeaders, type AxiosRequestConfig, type HeadersDefaults, type RawAxiosRequestHeaders } from 'axios';
-import { Agent as HttpAgent } from 'http';
-import { Agent as HttpsAgent } from 'https';
+import { Readable } from 'node:stream';
+import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
+import { Agent, type Dispatcher, fetch, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
 
-export class OpenCTIHeaders extends AxiosHeaders {}
+export class OpenCTIHeaders {
+  [name: string]: string;
+}
 
 export interface Certificates {
   cert: string;
   key: string;
   ca: string;
 }
+
+export type HttpResponseType = 'json' | 'arraybuffer' | 'text' | 'stream';
+
 export interface GetHttpClient {
   baseURL?: string;
   rejectUnauthorized?: boolean;
   timeout?: number;
-  responseType: 'json' | 'arraybuffer' | 'text' | 'stream';
-  headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
+  responseType: HttpResponseType;
+  headers?: Record<string, string>;
   certificates?: Certificates;
   auth?: {
     username: string;
     password: string;
   };
-  beforeRedirect?: (options: Record<string, any>, responseDetails: Record<string, any>, requestDetails: Record<string, any>) => void;
+  beforeRedirect?: (redirectUrl: string) => void;
 }
 
-// Extract the HTTP response from an axios-like error if present.
-// Returns null when the error is not an HTTP response error.
-// Usage: const httpErr = getResponseError(e); if (httpErr) { httpErr.status ... }
+export interface HttpRequestOptions {
+  params?: object;
+  headers?: Record<string, string>;
+  timeout?: number;
+  signal?: AbortSignal;
+  maxRedirects?: number;
+}
+
+export interface HttpRequestConfig extends HttpRequestOptions {
+  url: string;
+  method?: string;
+  data?: unknown;
+}
+
+export interface HttpResponse<T = any> {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  data: T;
+}
+
+export class HttpClientError extends Error {
+  readonly code?: string;
+
+  readonly status?: number;
+
+  readonly response?: HttpResponse;
+
+  constructor(message: string, code?: string, response?: HttpResponse, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'HttpClientError';
+    this.code = code;
+    this.response = response;
+    this.status = response?.status;
+  }
+}
+
 export interface HttpResponseError {
   status: number;
   data: any;
-  headers: Record<string, any>;
+  headers: Record<string, string>;
   message: string;
 }
 export const getResponseError = (error: unknown): HttpResponseError | null => {
-  if (axios.isAxiosError(error) && error.response) {
+  if (error instanceof HttpClientError && error.response) {
     return {
       status: error.response.status,
       data: error.response.data,
-      headers: error.response.headers as Record<string, any>,
+      headers: error.response.headers,
       message: error.message,
     };
   }
   return null;
 };
 
-const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHttpAgent: HttpAgent, defaultHttpsAgent: HttpsAgent) => {
-  // If uri is already absolute (e.g. after a redirect), don't prepend baseURL
-  // Using this regex avoids mis-detecting a `http://` fragment in the query string as a URI scheme
-  const agentUri = (baseURL && !/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(uri)) ? `${baseURL}${uri}` : uri;
-  return {
-    httpAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpAgent,
-    httpsAgent: getPlatformHttpProxyAgent(agentUri) ?? defaultHttpsAgent,
-    proxy: false, // Disable direct proxy protocol in http adapter
-  };
+const DEFAULT_ACCEPT = 'application/json, text/plain, */*';
+const DEFAULT_MAX_REDIRECTS = 21;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+const METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE = new Set(['POST', 'PUT', 'PATCH']);
+const METHODS_WITHOUT_BODY = new Set(['GET', 'HEAD']);
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
+const FETCH_DECODED_CONTENT_CODINGS = new Set(['gzip', 'x-gzip', 'deflate', 'br', 'zstd']);
+
+const isAbsoluteUrl = (url: string) => /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
+
+const combineUrl = (url: string, baseURL?: string) => {
+  if (!baseURL || isAbsoluteUrl(url)) {
+    return url;
+  }
+  return url ? `${baseURL.replace(/\/?\/$/, '')}/${url.replace(/^\/+/, '')}` : baseURL;
 };
-export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
-  // Build a default https agent to force query options if no proxy is setup
-  const cert = isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined;
-  const key = isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined;
-  const ca = isNotEmptyField(certificates?.ca) ? fromBase64(certificates?.ca) : undefined;
-  const defaultHttpAgent = new http.Agent();
-  const defaultHttpsAgent = new https.Agent({ rejectUnauthorized: rejectUnauthorized === true, cert, key, ca });
-  // Create the default caller
-  const caller = axios.create({
-    baseURL,
-    timeout,
-    responseType,
-    headers,
-    auth,
-    withCredentials: true,
-    beforeRedirect,
+
+const encodeParam = (value: string) => encodeURIComponent(value)
+  .replace(/%3A/gi, ':')
+  .replace(/%24/g, '$')
+  .replace(/%2C/gi, ',')
+  .replace(/%20/g, '+');
+
+const serializeParamValue = (value: unknown) => {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
+
+const buildUrl = (url: string, baseURL: string | undefined, params: object | undefined) => {
+  const fullUrl = combineUrl(url, baseURL);
+  const serializedParams = Object.entries(params ?? {}).flatMap(([key, value]) => {
+    if (value === undefined || value === null) {
+      return [];
+    }
+    if (Array.isArray(value)) {
+      return value.filter((v) => v !== undefined && v !== null)
+        .map((v) => `${encodeParam(`${key}[]`)}=${encodeParam(serializeParamValue(v))}`);
+    }
+    return [`${encodeParam(key)}=${encodeParam(serializeParamValue(value))}`];
+  }).join('&');
+  if (!serializedParams) {
+    return fullUrl;
+  }
+  const hashIndex = fullUrl.indexOf('#');
+  const urlWithoutHash = hashIndex === -1 ? fullUrl : fullUrl.slice(0, hashIndex);
+  return `${urlWithoutHash}${urlWithoutHash.includes('?') ? '&' : '?'}${serializedParams}`;
+};
+
+const buildHeaders = (
+  clientHeaders: Record<string, string> | undefined,
+  requestHeaders: Record<string, string> | undefined,
+  auth: GetHttpClient['auth'],
+) => {
+  const headers = new Headers({ Accept: DEFAULT_ACCEPT });
+  [clientHeaders, requestHeaders].forEach((source) => {
+    Object.entries(source ?? {}).forEach(([name, value]) => {
+      if (value !== undefined && value !== null) {
+        headers.set(name, String(value));
+      }
+    });
   });
-  // Override methods to setup correct http agents
+  if (auth) {
+    const credentials = Buffer.from(`${auth.username ?? ''}:${auth.password ?? ''}`, 'utf-8').toString('base64');
+    headers.set('Authorization', `Basic ${credentials}`);
+  }
+  return headers;
+};
+
+const buildBody = (method: string, data: unknown, headers: Headers): string | Uint8Array | undefined => {
+  if (data === undefined || data === null || METHODS_WITHOUT_BODY.has(method)) {
+    return undefined;
+  }
+  if (data instanceof URLSearchParams) {
+    if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8');
+    }
+    return data.toString();
+  }
+  if (typeof data === 'string' || data instanceof Uint8Array) {
+    if (!headers.has('Content-Type') && METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE.has(method)) {
+      headers.set('Content-Type', 'application/x-www-form-urlencoded');
+    }
+    return data;
+  }
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  return JSON.stringify(data);
+};
+
+const isSubdomain = (subdomain: string, domain: string) => {
+  const dot = subdomain.length - domain.length - 1;
+  return dot > 0 && subdomain[dot] === '.' && subdomain.endsWith(domain);
+};
+
+const isUnsafeRedirect = (from: URL, to: URL) => (from.protocol !== to.protocol && to.protocol !== 'https:')
+  || (from.host !== to.host && !isSubdomain(to.host, from.host));
+
+const isBodyDecodedByFetch = (method: string, response: Response) => {
+  const contentEncoding = response.headers.get('content-encoding');
+  if (!contentEncoding || method === 'HEAD' || NULL_BODY_STATUSES.has(response.status)) {
+    return false;
+  }
+  return contentEncoding.toLowerCase().split(',').every((coding) => FETCH_DECODED_CONTENT_CODINGS.has(coding.trim()));
+};
+
+const toHeaderRecord = (method: string, response: Response) => {
+  const record: Record<string, string> = {};
+  response.headers.forEach((value, name) => {
+    record[name] = value;
+  });
+  if (isBodyDecodedByFetch(method, response)) {
+    delete record['content-encoding'];
+    delete record['content-length'];
+  }
+  return record;
+};
+
+const readData = async (response: Response, responseType: HttpResponseType) => {
+  if (responseType === 'stream') {
+    return response.body ? Readable.fromWeb(response.body as NodeReadableStream) : Readable.from([]);
+  }
+  if (responseType === 'arraybuffer') {
+    return Buffer.from(await response.arrayBuffer());
+  }
+  const text = await response.text();
+  if (responseType === 'text' || !text) {
+    return text;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+const buildAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined) => new Agent({
+  headersTimeout: 0,
+  bodyTimeout: 0,
+  connect: {
+    rejectUnauthorized,
+    cert: isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined,
+    key: isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined,
+    ca: isNotEmptyField(certificates?.ca) ? fromBase64(certificates?.ca) : undefined,
+  },
+});
+
+const sharedAgents = new Map<boolean, Agent>();
+const getAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined) => {
+  if (certificates) {
+    return buildAgent(rejectUnauthorized, certificates);
+  }
+  const existing = sharedAgents.get(rejectUnauthorized);
+  if (existing) {
+    return existing;
+  }
+  const agent = buildAgent(rejectUnauthorized, undefined);
+  sharedAgents.set(rejectUnauthorized, agent);
+  return agent;
+};
+
+const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortSignal | undefined, signal: AbortSignal | undefined) => {
+  if (timeoutSignal?.aborted) {
+    return new HttpClientError(`timeout of ${timeout}ms exceeded`, 'ECONNABORTED', undefined, { cause: error });
+  }
+  if (signal?.aborted) {
+    return new HttpClientError('canceled', 'ERR_CANCELED', undefined, { cause: error });
+  }
+  const cause = (error as { cause?: { code?: string; message?: string } })?.cause;
+  const message = cause?.message ?? (error as Error)?.message ?? 'Network error';
+  return new HttpClientError(message, cause?.code ?? 'ERR_NETWORK', undefined, { cause: error });
+};
+
+export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
+  const agent = getAgent(rejectUnauthorized === true, certificates);
+  const request = async (config: HttpRequestConfig): Promise<HttpResponse> => {
+    const method = (config.method ?? 'GET').toUpperCase();
+    const requestTimeout = config.timeout ?? timeout ?? 0;
+    const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+    const requestHeaders = buildHeaders(headers, config.headers, auth);
+    const timeoutSignal = requestTimeout > 0 ? AbortSignal.timeout(requestTimeout) : undefined;
+    const signals = [timeoutSignal, config.signal].filter((s): s is AbortSignal => s !== undefined);
+    const signal = signals.length > 0 ? AbortSignal.any(signals) : undefined;
+    const transport = async <T>(operation: () => Promise<T>) => {
+      try {
+        return await operation();
+      } catch (error) {
+        throw toTransportError(error, requestTimeout, timeoutSignal, config.signal);
+      }
+    };
+    let currentUrl = buildUrl(config.url, baseURL, config.params);
+    let currentMethod = method;
+    let body = buildBody(method, config.data, requestHeaders);
+    let response: Response;
+    for (let redirectCount = 0; ; redirectCount += 1) {
+      const dispatcher: Dispatcher = getPlatformHttpProxyAgent(currentUrl, true) ?? agent;
+      const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
+      response = await transport(() => fetch(currentUrl, requestInit));
+      const location = response.headers.get('location');
+      if (maxRedirects === 0 || !location || !REDIRECT_STATUSES.has(response.status)) {
+        break;
+      }
+      if (redirectCount >= maxRedirects) {
+        throw new HttpClientError('Maximum number of redirects exceeded', 'ERR_FR_TOO_MANY_REDIRECTS');
+      }
+      const redirectResponse = response;
+      await transport(async () => redirectResponse.body?.cancel());
+      const fromUrl = new URL(currentUrl);
+      const toUrl = new URL(location, fromUrl);
+      beforeRedirect?.(toUrl.href);
+      if ((response.status === 303 && !METHODS_WITHOUT_BODY.has(currentMethod)) || ((response.status === 301 || response.status === 302) && currentMethod === 'POST')) {
+        currentMethod = 'GET';
+        body = undefined;
+        [...requestHeaders.keys()].filter((name) => name.startsWith('content-')).forEach((name) => requestHeaders.delete(name));
+      }
+      if (isUnsafeRedirect(fromUrl, toUrl)) {
+        ['authorization', 'proxy-authorization', 'cookie'].forEach((name) => requestHeaders.delete(name));
+      }
+      currentUrl = toUrl.href;
+    }
+    const finalResponse = response;
+    const ok = finalResponse.status >= 200 && finalResponse.status < 300;
+    const httpResponse: HttpResponse = {
+      status: finalResponse.status,
+      statusText: finalResponse.statusText,
+      headers: toHeaderRecord(currentMethod, finalResponse),
+      data: await transport(() => readData(finalResponse, ok ? responseType : 'json')),
+    };
+    if (!ok) {
+      const code = finalResponse.status >= 500 ? 'ERR_BAD_RESPONSE' : (finalResponse.status >= 400 ? 'ERR_BAD_REQUEST' : undefined);
+      throw new HttpClientError(`Request failed with status code ${finalResponse.status}`, code, httpResponse);
+    }
+    return httpResponse;
+  };
   return {
-    call: (config: AxiosRequestConfig) => caller(config),
-    get: async (url: string, opts: any = {}) => caller.get(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
-    post: async (url: string, data: object, opts: any = {}) => caller.post(url, data, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
-    delete: async (url: string, opts: any = {}) => caller.delete(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
-    head: async (url: string, opts: any = {}) => caller.head(url, { ...opts, ...buildHttpAgentOpts(url, baseURL, defaultHttpAgent, defaultHttpsAgent) }),
+    call: (config: HttpRequestConfig) => request(config),
+    get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }),
+    post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }),
+    delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }),
+    head: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'HEAD' }),
   };
 };

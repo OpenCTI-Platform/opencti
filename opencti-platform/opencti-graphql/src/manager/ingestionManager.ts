@@ -6,12 +6,11 @@ import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient, HttpClientError, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, isDateInRange, now, sanitizeForMomentParsing, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
@@ -292,7 +291,7 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
           })
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
-            if (e instanceof AxiosError) {
+            if (e instanceof HttpClientError) {
               if (e?.response?.headers) {
                 if (e.response.headers['cf-mitigated']) {
                   logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);
