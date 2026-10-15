@@ -352,6 +352,27 @@ export const filterUpdateInstanceIdsFromUpdatePatch = (
   return instances;
 };
 
+const keepNewArrayElements = (operations: jsonpatch.Operation[], replacedDocument: unknown) => operations.map((operation) => {
+  if (operation.op !== 'replace' || !Array.isArray(operation.value)) {
+    return operation;
+  }
+  const replacedValue = jsonpatch.getValueByPointer(replacedDocument, operation.path);
+  if (!Array.isArray(replacedValue)) {
+    return operation;
+  }
+  return { ...operation, value: operation.value.filter((element) => !replacedValue.includes(element)) };
+});
+
+export const filterUpdateInstanceIdsFromUpdateEvent = (
+  listenedInstanceIdsMap: Map<string, StixObject>,
+  updatePatch: { patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] },
+  previous: StixCoreObject | StixRelationshipObject,
+  current: StixCoreObject | StixRelationshipObject,
+) => filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, {
+  patch: keepNewArrayElements(updatePatch.patch, previous),
+  reverse_patch: keepNewArrayElements(updatePatch.reverse_patch, current),
+});
+
 const eventTypeTranslater = (
   isPreviousMatch: boolean,
   isCurrentlyMatch: boolean,
@@ -389,7 +410,7 @@ const eventTypeTranslaterForSideEvents = async (
     }
     // - the visibility has not changed: eventually display an update of refs (-> go to case 1.b.)
     // 1.b. update of a ref without rights modification
-    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
+    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdateEvent(listenedInstanceIdsMap, updatePatch, previousInstance, instance);
     if (listenedInstancesInPatchIds.length > 0) { // update of a ref that is in the listened instances
       return EVENT_TYPE_UPDATE;
     }
@@ -460,10 +481,10 @@ const generateNotificationMessageForFilteredSideEvents = async (
   }
   // -- 02. translatedType = update (i.e. event type = update that modify a listened ref and doesn't modify the rights)
   if (translatedType === EVENT_TYPE_UPDATE) {
-    if (!updatePatch) {
-      throw FunctionalError('An event of type update should have an update patch');
+    if (!updatePatch || !previousData) {
+      throw FunctionalError('An event of type update should have an update patch and a previous document');
     }
-    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
+    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdateEvent(listenedInstanceIdsMap, updatePatch, previousData, data);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
       return generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
     }
