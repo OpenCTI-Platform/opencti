@@ -59,6 +59,30 @@ describe('computeJsonPatch', () => {
     expect(computeJsonPatch(from, to)).toEqual([{ op: 'add', path: '/external_references/1', value: { source_name: 'n' } }]);
   });
 
+  it('should diff objects sharing an id field by field', () => {
+    const objects = Array.from({ length: 2000 }, (_, index) => ({ id: `indicator--${index}`, object_marking_refs: ['marking-definition--a'] }));
+    const from = { objects };
+    const to = { objects: objects.map((object) => ({ ...object, object_marking_refs: [...object.object_marking_refs, 'marking-definition--b'] })) };
+    const operations = computeJsonPatch(from, to);
+    expect(operations).toHaveLength(2000);
+    expect(operations[0]).toEqual({ op: 'add', path: '/objects/0/object_marking_refs/1', value: 'marking-definition--b' });
+    expect(applyPatch(from, operations)).toEqual(to);
+  });
+
+  it('should remove an object by id and diff the others in place', () => {
+    const from = { objects: [{ id: 'a', name: 'a' }, { id: 'b', name: 'b' }, { id: 'c', name: 'c' }] };
+    const to = { objects: [{ id: 'a', name: 'a' }, { id: 'c', name: 'c2' }] };
+    expect(computeJsonPatch(from, to)).toEqual([
+      { op: 'remove', path: '/objects/1' },
+      { op: 'replace', path: '/objects/1/name', value: 'c2' },
+    ]);
+  });
+
+  it('should not confuse an object with a string holding its JSON', () => {
+    expect(computeJsonPatch({ values: [{ a: 1 }, 'k'] }, { values: ['{"a":1}', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '{"a":1}' }]);
+    expect(computeJsonPatch({ values: [{ id: 'x' }, 'k'] }, { values: ['#x', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '#x' }]);
+  });
+
   it('should add, remove and replace object properties', () => {
     const from = { name: 'before', description: 'removed', 'a/b~c': 1 };
     const to = { name: 'after', 'a/b~c': 2, labels: ['new'] };
@@ -131,7 +155,7 @@ describe('computeJsonPatch', () => {
       if (kind === 1) return String.fromCharCode(97 + random(4));
       if (kind === 2) return random(2) === 0 ? null : random(2) === 0;
       if (kind === 3) return Array.from({ length: random(5) }, () => randomValue(depth + 1));
-      return Object.fromEntries(Array.from({ length: random(4) }, () => [String.fromCharCode(107 + random(4)), randomValue(depth + 1)]));
+      return Object.fromEntries(Array.from({ length: random(4) }, () => [['id', 'k', 'l', 'm'][random(4)], randomValue(depth + 1)]));
     };
     for (let iteration = 0; iteration < 2000; iteration += 1) {
       const from = randomValue(0);

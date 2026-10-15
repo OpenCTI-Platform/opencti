@@ -65,10 +65,30 @@ const findCommonRuns = (from: unknown[], to: unknown[], maxDistance: number): Co
   return undefined;
 };
 
-const elementKey = (value: unknown) => (typeof value === 'object' && value !== null ? JSON.stringify(value) : value);
+const isIdentifiedObject = (value: unknown): value is JsonObject & { id: string } => isJsonObject(value) && typeof value.id === 'string';
+
+const elementIdentity = (value: unknown) => (isIdentifiedObject(value) ? `#${value.id}` : JSON.stringify(value));
+
+const isAlignedInPlace = (from: unknown, to: unknown) => {
+  if (from === to) {
+    return true;
+  }
+  if (isIdentifiedObject(from) || isIdentifiedObject(to)) {
+    return isIdentifiedObject(from) && isIdentifiedObject(to) && from.id === to.id;
+  }
+  return isJsonObject(from) && isJsonObject(to);
+};
 
 const diffArray = (from: unknown[], to: unknown[], path: string, operations: Operation[]) => {
-  const runs = findCommonRuns(from.map(elementKey), to.map(elementKey), Math.min(to.length, MAX_ARRAY_EDIT_DISTANCE));
+  if (from.length === to.length && from.every((element, index) => isAlignedInPlace(element, to[index]))) {
+    for (let index = 0; index < from.length; index += 1) {
+      if (from[index] !== to[index]) {
+        diffValue(from[index], to[index], `${path}/${index}`, operations);
+      }
+    }
+    return;
+  }
+  const runs = findCommonRuns(from.map(elementIdentity), to.map(elementIdentity), Math.min(to.length, MAX_ARRAY_EDIT_DISTANCE));
   if (!runs) {
     operations.push({ op: 'replace', path, value: cloneValue(to) });
     return;
@@ -88,6 +108,11 @@ const diffArray = (from: unknown[], to: unknown[], path: string, operations: Ope
     for (let index = paired; index < added; index += 1) {
       operations.push({ op: 'add', path: `${path}/${toIndex + index}`, value: cloneValue(to[toIndex + index]) });
     }
+    for (let index = 0; index < run.length; index += 1) {
+      if (isIdentifiedObject(from[run.from + index])) {
+        diffValue(from[run.from + index], to[run.to + index], `${path}/${run.to + index}`, operations);
+      }
+    }
     fromIndex = run.from + run.length;
     toIndex = run.to + run.length;
   }
@@ -95,7 +120,7 @@ const diffArray = (from: unknown[], to: unknown[], path: string, operations: Ope
 
 const diffObject = (from: JsonObject, to: JsonObject, path: string, operations: Operation[]) => {
   for (const key of Object.keys(from)) {
-    if (from[key] === undefined) {
+    if (from[key] === undefined || from[key] === to[key]) {
       continue;
     }
     const keyPath = `${path}/${escapePathComponent(key)}`;
