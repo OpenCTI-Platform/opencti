@@ -10,6 +10,11 @@ on:
       run-id:
         required: true
         type: string
+      elasticsearch_versions:
+        description: "Elasticsearch majors the integration and rules tests run against, as a JSON array"
+        type: string
+        required: false
+        default: '["8"]'
     secrets:
       CODECOV_TOKEN:
         description: "Token used to upload coverage reports to Codecov"
@@ -17,8 +22,13 @@ on:
 
 jobs:
   run-opencti-integration-test:
-    name: Integration tests
+    name: Integration tests (Elasticsearch ${{ matrix.elasticsearch }})
     runs-on: ubuntu-26.04
+    strategy:
+      # A failure on one Elasticsearch major must not cancel the run on the other
+      fail-fast: false
+      matrix:
+        elasticsearch: ${{ fromJSON(inputs.elasticsearch_versions) }}
 
     steps:
     - name: OpenCTI checkout
@@ -63,6 +73,9 @@ jobs:
           docker images
 
     - name: Set up Docker Compose for backends and sync instances
+      env:
+        # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
+        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5' || '' }}
       run: |
          set -ex
          cd scripts/ci
@@ -106,6 +119,8 @@ jobs:
         docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
+      # Once per run, so coverage stays comparable whatever the matrix
+      if: matrix.elasticsearch == '8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -125,7 +140,7 @@ jobs:
       if: always()
       continue-on-error: true
       with:
-        name: backend-test-results-integration
+        name: backend-test-results-integration-es${{ matrix.elasticsearch }}
         path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
         retention-days: 10
 
@@ -171,8 +186,13 @@ jobs:
       run: cat runner_resource_stat.log
 
   run-opencti-rules-test:
-    name: Rules and Taxii tests
+    name: Rules and Taxii tests (Elasticsearch ${{ matrix.elasticsearch }})
     runs-on: ubuntu-26.04
+    strategy:
+      # A failure on one Elasticsearch major must not cancel the run on the other
+      fail-fast: false
+      matrix:
+        elasticsearch: ${{ fromJSON(inputs.elasticsearch_versions) }}
 
     steps:
     - name: OpenCTI checkout
@@ -209,6 +229,9 @@ jobs:
           docker images
 
     - name: Set up Docker Compose for backends and sync instances
+      env:
+        # Empty for Elasticsearch 8: docker-compose.yml then keeps its default image
+        ELASTICSEARCH_IMAGE: ${{ matrix.elasticsearch == '9' && 'elasticsearch:9.5.5' || '' }}
       run: |
          set -eux
          cd scripts/ci
@@ -241,6 +264,8 @@ jobs:
         docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
+      # Once per run, so coverage stays comparable whatever the matrix
+      if: matrix.elasticsearch == '8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
