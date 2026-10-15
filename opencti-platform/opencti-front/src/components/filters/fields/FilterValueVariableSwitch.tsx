@@ -48,6 +48,8 @@ interface FilterValueVariableSwitchProps {
 /**
  * Lets a single value filter with no option list take either a fixed value (its usual input) or a
  * dashboard variable. Choosing a variable writes its token as the single value of the filter.
+ * Switching source empties the filter, both ways: the value of the other source, no longer shown, must not
+ * keep filtering the widget.
  */
 const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProps> = ({
   filter,
@@ -56,8 +58,17 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
 }) => {
   const { t_i18n } = useFormatter();
   const { helpers } = useFilterEditorContext();
-  const currentToken = (filter?.values ?? []).find((value) => parseVariableToken(value) !== null);
-  const [source, setSource] = useState<ValueSource>(currentToken ? 'variable' : 'fixed');
+  const values = filter?.values ?? [];
+  const currentToken = values.find((value) => parseVariableToken(value) !== null);
+  // What the filter holds. The source shown follows it when it changes, from this switch or from outside;
+  // an empty filter keeps the source chosen last, so "Variable" stays shown until one is picked.
+  const content: ValueSource | 'empty' = currentToken ? 'variable' : (values.length > 0 ? 'fixed' : 'empty');
+  const [source, setSource] = useState<ValueSource>(content === 'variable' ? 'variable' : 'fixed');
+  const [sourceContent, setSourceContent] = useState(content);
+  if (content !== sourceContent) {
+    setSourceContent(content);
+    if (content !== 'empty') setSource(content);
+  }
   const variableId = currentToken ? parseVariableToken(currentToken) : null;
   // "Deleted" is decided on all the variables of the dashboard: one that exists but no longer fits the filter is not deleted.
   const definitions = useOptionalDashboardVariableDefinitions();
@@ -65,10 +76,13 @@ const FilterValueVariableSwitch: FunctionComponent<FilterValueVariableSwitchProp
   const isCompatible = variables.some(({ id }) => id === variableId);
 
   const handleSourceChange = (value: string) => {
-    const nextSource = value as ValueSource;
+    // A click on the current source would unselect it: there is always one.
+    if (value !== 'fixed' && value !== 'variable') return;
+    const nextSource: ValueSource = value;
     setSource(nextSource);
-    // A token is never kept as a fixed value: the fixed input starts empty.
-    if (nextSource === 'fixed' && currentToken) {
+    // A token is never kept as a fixed value (the fixed input starts empty), nor a fixed value once a variable is
+    // asked for (the variable select starts empty): either way the filter is emptied.
+    if ((nextSource === 'fixed' && content === 'variable') || (nextSource === 'variable' && content === 'fixed')) {
       helpers?.handleAddSingleValueFilter(filter?.id ?? '');
     }
   };
