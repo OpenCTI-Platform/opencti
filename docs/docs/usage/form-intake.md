@@ -19,13 +19,24 @@ More details on our [Role-Based access control here](../administration/users.md)
 |Action |Details |Required Capability| Control of capabilities in Draft mode (EE) |
 |:------|:-------|:---------------------|---------------|
 |Manage form intakes|Create, edit, delete, activate/deactivate, export, import|Manage ingestion|Capability not existing|
-|Submit form intakes|Fill and submit forms|Create / Update knowledge| Create / Update knowledge (creation forced to draft)|
-|View form intakes list| |Manage ingestion or Create / Update knowledge|Create / Update knowledge (creation forced to draft)|
+|Submit form intakes|Fill and submit forms|Create / Update knowledge or Create knowledge via Form Intake| Create / Update knowledge or Create knowledge via Form Intake (creation forced to draft)|
+|View form intakes list| |Manage ingestion, Create / Update knowledge or Create knowledge via Form Intake|Create / Update knowledge or Create knowledge via Form Intake (creation forced to draft)|
 
 
 When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to skip draft mode per submission.
 The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
+
+
+### Create knowledge via Form Intake
+
+The capability **Create knowledge via Form Intake** lets a user submit form intakes without the general Create / Update knowledge capability.
+Like the other capabilities that can be controlled in draft, it is granted per scope (main, draft). With the capability only in draft, the submission is always made in a draft.
+Roles that had Create / Update knowledge received it automatically at upgrade, in each scope where they had Create / Update knowledge.
+
+- While a submission is imported, only Create / Update knowledge is granted to the user. Every other right still applies (markings, confidence, organization, draft).
+- Creating a new label through a form requires the **Manage labels** capability.
+- The import dialog of the top bar and the form intake buttons of the entity lists are available to these users. The other import modes (file upload, step-by-step) still need the **Import knowledge** capability.
 
 
 # Defining a Form Intake
@@ -207,7 +218,7 @@ Forms can be submitted from three locations:
 - Import dialog — Select "Import using a Form" in the import file dialog (displays full-width).
 - Ingestion/form intake: when you click directly on the form intake you created, the form is prompted to you.
 
-Note: The form intake button is hidden if the user does not have Create/update capabilities.
+Note: The form intake button is hidden if the user has neither the Create/update nor the Create knowledge via Form Intake capability.
 
 ## Creating objects on the fly
 
