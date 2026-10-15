@@ -3,7 +3,7 @@ import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Kind, parse, type ObjectTypeDefinitionNode, type StringValueNode } from 'graphql';
 import { isFeatureEnabled } from '../../../src/config/conf';
-import { patchAttribute } from '../../../src/database/middleware';
+import { loadEntity, patchAttribute } from '../../../src/database/middleware';
 import { getEntityFromCache } from '../../../src/database/cache';
 import {
   LOCAL_AUTH_LOCKOUT_DEFAULTS,
@@ -24,6 +24,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
 });
 
 vi.mock('../../../src/database/middleware', () => ({
+  loadEntity: vi.fn(async () => ({})),
   patchAttribute: vi.fn(async () => ({ element: { id: 'settings-id' } })),
 }));
 
@@ -54,13 +55,16 @@ const LOCKOUT_INPUT = {
   local_auth_lockout_max_duration: 120,
 };
 
-const mockStoredSettings = (settings: Partial<BasicStoreSettings>) => vi.mocked(getEntityFromCache).mockResolvedValue(settings as BasicStoreSettings);
+// The lockout policy is validated against the settings stored in the database
+const mockStoredSettings = (settings: Partial<BasicStoreSettings>) => vi.mocked(loadEntity).mockResolvedValue(settings as BasicStoreSettings);
+const mockCachedSettings = (settings: Partial<BasicStoreSettings>) => vi.mocked(getEntityFromCache).mockResolvedValue(settings as BasicStoreSettings);
 const patchSentToDatabase = () => vi.mocked(patchAttribute).mock.calls[0][4];
 
 describe('updateLocalAuth - lockout policy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockStoredSettings({});
+    mockCachedSettings({});
   });
 
   it('should patch the lockout policy when the feature flag is enabled', async () => {
@@ -77,6 +81,15 @@ describe('updateLocalAuth - lockout policy', () => {
 
   it('should validate the input against the stored policy', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockStoredSettings({ local_auth_lockout_max_duration: 30 });
+    await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_duration: 31 }))
+      .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should validate the input against the database rather than a stale cache', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockCachedSettings({ local_auth_lockout_max_duration: 180 });
     mockStoredSettings({ local_auth_lockout_max_duration: 30 });
     await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_duration: 31 }))
       .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
