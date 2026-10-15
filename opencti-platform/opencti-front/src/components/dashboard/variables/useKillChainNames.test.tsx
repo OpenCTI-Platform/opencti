@@ -38,7 +38,7 @@ describe('useKillChainNames', () => {
       expect.anything(),
       expect.anything(),
       { first: 500 },
-      { fetchPolicy: 'store-and-network' },
+      { fetchPolicy: 'network-only' },
     );
   });
 });

@@ -30,18 +30,18 @@ export interface KillChainNames {
  * or `error` (then no name: the lookup needs the knowledge access, and the search index may be unavailable).
  * They come out of the search index normalized (lower case, without accents): the phases of a kill chain are matched
  * the same way on the server (useKillChainPhaseSearch), so a chosen name always finds its phases.
- * `store-and-network`: the names already in the store are shown at once, and the network refreshes them on every mount,
- * so a kill chain created since the first load is listed without reloading the page.
+ * `network-only`: the names are fetched again on every mount of the dialog, so a kill chain created since the first
+ * load is listed without reloading the page (the list is a small aggregation, `fetchQuery` has no `store-and-network`).
  */
 const useKillChainNames = (): KillChainNames => {
   const environment = useRelayEnvironment();
   const [state, setState] = useState<KillChainNames>({ names: [], status: 'loading' });
 
   useEffect(() => {
-    const subscription = fetchQuery<useKillChainNamesQuery>(environment, killChainNamesQuery, { first: KILL_CHAIN_NAMES_LIMIT }, { fetchPolicy: 'store-and-network' })
+    const subscription = fetchQuery<useKillChainNamesQuery>(environment, killChainNamesQuery, { first: KILL_CHAIN_NAMES_LIMIT }, { fetchPolicy: 'network-only' })
       .subscribe({
         next: (data) => setState({ names: (data.runtimeAttributes?.edges ?? []).map(({ node }) => node.value), status: 'ready' }),
-        // The names of the store, when there were any, stay usable if only the refresh fails.
+        // Names already received stay usable if a later emission fails.
         error: () => setState((previous) => (previous.status === 'ready' ? previous : { names: [], status: 'error' })),
       });
     return () => subscription.unsubscribe();
