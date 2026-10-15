@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
-import { Agent, type Dispatcher, fetch, Headers, type Response } from 'undici';
+import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
 
@@ -138,11 +138,7 @@ const buildUrl = (url: string, baseURL: string | undefined, params: object | und
   return `${urlWithoutHash}${urlWithoutHash.includes('?') ? '&' : '?'}${serializedParams}`;
 };
 
-const buildHeaders = (
-  clientHeaders: Record<string, string> | undefined,
-  requestHeaders: Record<string, string> | undefined,
-  auth: GetHttpClient['auth'],
-) => {
+const buildHeaders = (clientHeaders: Record<string, string> | undefined, requestHeaders: Record<string, string> | undefined) => {
   const headers = new Headers({ Accept: DEFAULT_ACCEPT });
   [clientHeaders, requestHeaders].forEach((source) => {
     Object.entries(source ?? {}).forEach(([name, value]) => {
@@ -151,14 +147,69 @@ const buildHeaders = (
       }
     });
   });
-  if (auth) {
-    const credentials = Buffer.from(`${auth.username ?? ''}:${auth.password ?? ''}`, 'utf-8').toString('base64');
-    headers.set('Authorization', `Basic ${credentials}`);
-  }
   return headers;
 };
 
-const buildBody = (method: string, data: unknown, headers: Headers): string | Uint8Array | undefined => {
+type BasicCredentials = NonNullable<GetHttpClient['auth']>;
+
+const toBasicAuthorization = ({ username, password }: BasicCredentials) => {
+  return `Basic ${Buffer.from(`${username || ''}:${password || ''}`, 'utf-8').toString('base64')}`;
+};
+
+const decodeUrlComponent = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
+
+const extractUrlCredentials = (url: URL): BasicCredentials | undefined => {
+  if (!url.username && !url.password) {
+    return undefined;
+  }
+  const credentials = { username: decodeUrlComponent(url.username), password: decodeUrlComponent(url.password) };
+  url.username = '';
+  url.password = '';
+  return credentials;
+};
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
+
+const isFormVisitable = (value: unknown) => Array.isArray(value) || isPlainObject(value);
+
+const removeBrackets = (key: string) => (key.endsWith('[]') ? key.slice(0, -2) : key);
+
+const renderFormKey = (path: string[]) => path.map((token, index) => (index ? `[${removeBrackets(token)}]` : removeBrackets(token))).join('');
+
+const toFormValue = (value: unknown) => (value instanceof Date ? value.toISOString() : String(value));
+
+const appendFormEntries = (data: object, append: (key: string, value: string) => void) => {
+  const visit = (value: unknown, path: string[]) => {
+    if (value === undefined || value === null) {
+      return;
+    }
+    if (path.length === 1 && Array.isArray(value) && (path[0].endsWith('[]') || !value.some(isFormVisitable))) {
+      const key = `${removeBrackets(path[0])}[]`;
+      value.filter((element) => element !== undefined && element !== null).forEach((element) => append(key, toFormValue(element)));
+      return;
+    }
+    if (isFormVisitable(value)) {
+      Object.entries(value as object).forEach(([key, element]) => visit(element, [...path, key.trim()]));
+      return;
+    }
+    append(renderFormKey(path), toFormValue(value));
+  };
+  Object.entries(data).forEach(([key, value]) => visit(value, [key.trim()]));
+};
+
+const buildBody = (method: string, data: unknown, headers: Headers): string | Uint8Array | FormData | undefined => {
   if (data === undefined || data === null || METHODS_WITHOUT_BODY.has(method)) {
     return undefined;
   }
@@ -174,7 +225,19 @@ const buildBody = (method: string, data: unknown, headers: Headers): string | Ui
     }
     return data;
   }
-  if (!headers.has('Content-Type')) {
+  const contentType = headers.get('Content-Type') ?? '';
+  if (typeof data === 'object' && contentType.includes('application/x-www-form-urlencoded')) {
+    const form = new URLSearchParams();
+    appendFormEntries(data, (key, value) => form.append(key, value));
+    return form.toString();
+  }
+  if (typeof data === 'object' && contentType.includes('multipart/form-data')) {
+    const form = new FormData();
+    appendFormEntries(data, (key, value) => form.append(key, value));
+    headers.delete('Content-Type');
+    return form;
+  }
+  if (!contentType) {
     headers.set('Content-Type', 'application/json');
   }
   return JSON.stringify(data);
@@ -264,12 +327,13 @@ const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortS
 };
 
 export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
-  const agent = getAgent(rejectUnauthorized === true, certificates);
-  const request = async (config: HttpRequestConfig): Promise<HttpResponse> => {
+  const clientAgent = getAgent(rejectUnauthorized === true, certificates);
+  const defaultAgent = getAgent(true, undefined);
+  const request = async (config: HttpRequestConfig, useClientTransport: boolean): Promise<HttpResponse> => {
     const method = (config.method ?? 'GET').toUpperCase();
     const requestTimeout = config.timeout ?? timeout ?? 0;
     const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
-    const requestHeaders = buildHeaders(headers, config.headers, auth);
+    const requestHeaders = buildHeaders(headers, config.headers);
     const timeoutSignal = requestTimeout > 0 ? AbortSignal.timeout(requestTimeout) : undefined;
     const signals = [timeoutSignal, config.signal].filter((s): s is AbortSignal => s !== undefined);
     const signal = signals.length > 0 ? AbortSignal.any(signals) : undefined;
@@ -280,25 +344,33 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
         throw toTransportError(error, requestTimeout, timeoutSignal, config.signal);
       }
     };
-    let currentUrl = buildUrl(config.url, baseURL, config.params);
+    let currentUrl = await transport(async () => new URL(buildUrl(config.url, baseURL, config.params)));
+    const requestOrigin = currentUrl.origin;
+    const urlCredentials = extractUrlCredentials(currentUrl);
+    const basicCredentials = auth ?? urlCredentials;
+    if (basicCredentials) {
+      requestHeaders.set('Authorization', toBasicAuthorization(basicCredentials));
+    }
     let currentMethod = method;
     let body = buildBody(method, config.data, requestHeaders);
     let response: Response;
     for (let redirectCount = 0; ; redirectCount += 1) {
-      const dispatcher: Dispatcher = getPlatformHttpProxyAgent(currentUrl, true) ?? agent;
+      const dispatcher: Dispatcher = useClientTransport ? (getPlatformHttpProxyAgent(currentUrl.href, true) ?? clientAgent) : defaultAgent;
       const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
-      response = await transport(() => fetch(currentUrl, requestInit));
+      const requestUrl = currentUrl.href;
+      response = await transport(() => fetch(requestUrl, requestInit));
       const location = response.headers.get('location');
       if (maxRedirects === 0 || !location || !REDIRECT_STATUSES.has(response.status)) {
         break;
       }
+      const redirectResponse = response;
+      await transport(async () => redirectResponse.body?.cancel());
       if (redirectCount >= maxRedirects) {
         throw new HttpClientError('Maximum number of redirects exceeded', 'ERR_FR_TOO_MANY_REDIRECTS');
       }
-      const redirectResponse = response;
-      await transport(async () => redirectResponse.body?.cancel());
-      const fromUrl = new URL(currentUrl);
-      const toUrl = new URL(location, fromUrl);
+      const fromUrl = currentUrl;
+      const toUrl = await transport(async () => new URL(location, fromUrl));
+      extractUrlCredentials(toUrl);
       beforeRedirect?.(toUrl.href);
       if ((response.status === 303 && !METHODS_WITHOUT_BODY.has(currentMethod)) || ((response.status === 301 || response.status === 302) && currentMethod === 'POST')) {
         currentMethod = 'GET';
@@ -308,7 +380,14 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
       if (isUnsafeRedirect(fromUrl, toUrl)) {
         ['authorization', 'proxy-authorization', 'cookie'].forEach((name) => requestHeaders.delete(name));
       }
-      currentUrl = toUrl.href;
+      if (basicCredentials) {
+        if (toUrl.origin === requestOrigin) {
+          requestHeaders.set('Authorization', toBasicAuthorization(basicCredentials));
+        } else {
+          requestHeaders.delete('Authorization');
+        }
+      }
+      currentUrl = toUrl;
     }
     const finalResponse = response;
     const ok = finalResponse.status >= 200 && finalResponse.status < 300;
@@ -325,10 +404,10 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     return httpResponse;
   };
   return {
-    call: (config: HttpRequestConfig) => request(config),
-    get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }),
-    post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }),
-    delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }),
-    head: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'HEAD' }),
+    call: (config: HttpRequestConfig) => request(config, false),
+    get: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'GET' }, true),
+    post: async (url: string, data: unknown, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'POST', data }, true),
+    delete: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'DELETE' }, true),
+    head: async (url: string, opts: HttpRequestOptions = {}) => request({ ...opts, url, method: 'HEAD' }, true),
   };
 };
