@@ -32,6 +32,7 @@ import {
   StatusOrdering,
   StatusScope,
   type StatusTemplate,
+  WorkflowRequestAccessOutcome,
 } from '../../../src/generated/graphql';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 import { logApp } from '../../../src/config/conf';
@@ -615,8 +616,8 @@ describe('Request access domain  - workflow-driven creation', async () => {
 
       expect(requestAccessWorkflow?.definitionData.initialState).toBe(templateIds.pending);
       expect(requestAccessWorkflow?.entitySetting.id).toBe(rfiEntitySettings.id);
-      expect(findOutcomeState(requestAccessWorkflow!.definitionData, 'APPROVED')).toBe(templateIds.approved);
-      expect(findOutcomeState(requestAccessWorkflow!.definitionData, 'DECLINED')).toBe(templateIds.declined);
+      expect(findOutcomeState(requestAccessWorkflow!.definitionData, WorkflowRequestAccessOutcome.Approved)).toBe(templateIds.approved);
+      expect(findOutcomeState(requestAccessWorkflow!.definitionData, WorkflowRequestAccessOutcome.Declined)).toBe(templateIds.declined);
     });
 
     it('is not used while ENTITIES_WORKFLOW is off', async () => {

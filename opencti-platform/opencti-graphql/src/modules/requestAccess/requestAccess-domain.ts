@@ -11,6 +11,7 @@ import {
   StatusOrdering,
   StatusScope,
   VocabularyCategory,
+  WorkflowRequestAccessOutcome,
 } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import {
@@ -568,7 +569,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
   const workflowState = await loadRequestAccessWorkflowState(context, id);
   if (workflowState) {
-    return decideRequestAccessOnWorkflow(context, user, id, 'APPROVED', workflowState);
+    return decideRequestAccessOnWorkflow(context, user, id, WorkflowRequestAccessOutcome.Approved, workflowState);
   }
   const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
@@ -630,7 +631,7 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
   logApp.debug(`[OPENCTI-MODULE][Request Access] Reject for RFI ${id}`);
   const workflowState = await loadRequestAccessWorkflowState(context, id);
   if (workflowState) {
-    return decideRequestAccessOnWorkflow(context, user, id, 'DECLINED', workflowState);
+    return decideRequestAccessOnWorkflow(context, user, id, WorkflowRequestAccessOutcome.Declined, workflowState);
   }
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.DECLINED);

@@ -1,15 +1,7 @@
 import { FunctionalError } from '../../../config/errors';
-import { StatusScope } from '../../../generated/graphql';
+import { StatusScope, WorkflowMigrationDiagnosticType, WorkflowRequestAccessOutcome } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { WorkflowSerializedState, WorkflowSerializedTransition } from '../types/workflow-types';
-
-export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER'
-  | 'DUPLICATE_ORDER'
-  | 'DUPLICATE_TEMPLATE'
-  | 'NAME_CONFLICT'
-  | 'MISSING_TEMPLATE'
-  | 'EXISTING_WORKFLOW'
-  | 'REQUEST_ACCESS_OUTCOME_INVALID';
 
 export interface WorkflowMigrationDiagnostic {
   type: WorkflowMigrationDiagnosticType;
@@ -128,7 +120,7 @@ const convertScopeGroup = (
     const kept = keptByTemplateId.get(status.template_id);
     if (kept) {
       diagnostics.push({
-        type: 'DUPLICATE_TEMPLATE',
+        type: WorkflowMigrationDiagnosticType.DuplicateTemplate,
         message: `Status ${status.id} uses template ${status.template_id}, like status ${kept.id}; both become one state, ranked by the order of ${kept.id}. Entities on either status stay in that state.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
@@ -142,7 +134,7 @@ const convertScopeGroup = (
   ordered.forEach((status) => {
     if (!hasOrder(status)) {
       diagnostics.push({
-        type: 'MISSING_ORDER',
+        type: WorkflowMigrationDiagnosticType.MissingOrder,
         message: `Status ${status.id} (template ${status.template_id}) has no order value; it is placed after the ordered statuses, by status id.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
@@ -150,7 +142,7 @@ const convertScopeGroup = (
     }
     if (!templatesById.has(status.template_id)) {
       diagnostics.push({
-        type: 'MISSING_TEMPLATE',
+        type: WorkflowMigrationDiagnosticType.MissingTemplate,
         message: `Status ${status.id} references template ${status.template_id}, which no longer exists; falling back to the template id as its display name.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
@@ -171,7 +163,7 @@ const convertScopeGroup = (
     if (tied.length > 1) {
       const names = tied.map((tiedStatus) => `"${resolveDisplayName(tiedStatus.template_id, templatesById)}"`).join(', ');
       diagnostics.push({
-        type: 'DUPLICATE_ORDER',
+        type: WorkflowMigrationDiagnosticType.DuplicateOrder,
         message: `Multiple statuses share order ${status.order} (${names}); the tie is broken by status id.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
@@ -191,7 +183,7 @@ const convertScopeGroup = (
     const name = resolveDisplayName(status.template_id, templatesById);
     if ((nameCounts.get(name) ?? 0) > 1) {
       diagnostics.push({
-        type: 'NAME_CONFLICT',
+        type: WorkflowMigrationDiagnosticType.NameConflict,
         message: `Multiple statuses resolve to the same display name "${name}" (status ${status.id}, template ${status.template_id}).`,
         legacyStatusId: status.id,
         templateId: status.template_id,
@@ -298,21 +290,21 @@ export const convertRequestAccessGroup = (
   // are outcomes, which have no transition between them. A tie that involves another status stays reported.
   const tiedTemplateIdsByOrder = new Map<number, string[]>();
   result.diagnostics.forEach((diagnostic) => {
-    if (diagnostic.type === 'DUPLICATE_ORDER' && diagnostic.order !== undefined && diagnostic.templateId) {
+    if (diagnostic.type === WorkflowMigrationDiagnosticType.DuplicateOrder && diagnostic.order !== undefined && diagnostic.templateId) {
       tiedTemplateIdsByOrder.set(diagnostic.order, [...(tiedTemplateIdsByOrder.get(diagnostic.order) ?? []), diagnostic.templateId]);
     }
   });
   const diagnostics = result.diagnostics.filter((diagnostic) => !(
-    diagnostic.type === 'DUPLICATE_ORDER'
+    diagnostic.type === WorkflowMigrationDiagnosticType.DuplicateOrder
     && diagnostic.order !== undefined
     && (tiedTemplateIdsByOrder.get(diagnostic.order) ?? []).every((templateId) => outcomeIds.has(templateId))
   ));
   const states: WorkflowMigrationState[] = definition.states.map((state) => {
     if (state.statusId === approvedTemplateId) {
-      return { ...state, requestAccessOutcome: 'APPROVED', onEnter: [...(state.onEnter ?? []), { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] };
+      return { ...state, requestAccessOutcome: WorkflowRequestAccessOutcome.Approved, onEnter: [...(state.onEnter ?? []), { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] };
     }
     if (state.statusId === declinedTemplateId) {
-      return { ...state, requestAccessOutcome: 'DECLINED' };
+      return { ...state, requestAccessOutcome: WorkflowRequestAccessOutcome.Declined };
     }
     return state;
   });
@@ -343,7 +335,7 @@ export const tryConvertRequestAccessGroup = (
   if (problem || !approvedTemplateId || !declinedTemplateId) {
     return {
       definition: result.definition,
-      diagnostics: [...result.diagnostics, { type: 'REQUEST_ACCESS_OUTCOME_INVALID', message: `Cannot migrate request access: ${problem}` }],
+      diagnostics: [...result.diagnostics, { type: WorkflowMigrationDiagnosticType.RequestAccessOutcomeInvalid, message: `Cannot migrate request access: ${problem}` }],
     };
   }
   return convertRequestAccessGroup(result, approvedTemplateId, declinedTemplateId);
@@ -405,7 +397,11 @@ export const buildWorkflowMigrationPreviewResult = (
 // cannot be converted. Ordering and duplicate
 // diagnostics (MISSING_ORDER / DUPLICATE_ORDER / DUPLICATE_TEMPLATE) are only warnings, the
 // converter resolves them deterministically. EXISTING_WORKFLOW is gated by `overwrite` instead.
-const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = ['NAME_CONFLICT', 'MISSING_TEMPLATE', 'REQUEST_ACCESS_OUTCOME_INVALID'];
+const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = [
+  WorkflowMigrationDiagnosticType.NameConflict,
+  WorkflowMigrationDiagnosticType.MissingTemplate,
+  WorkflowMigrationDiagnosticType.RequestAccessOutcomeInvalid,
+];
 
 export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiagnostic[]): WorkflowMigrationDiagnostic[] => {
   return diagnostics.filter((diagnostic) => PUBLISH_BLOCKING_DIAGNOSTIC_TYPES.includes(diagnostic.type));

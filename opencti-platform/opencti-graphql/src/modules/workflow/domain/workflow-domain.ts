@@ -15,7 +15,17 @@ import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, VocabularyCategory } from '../../../generated/graphql';
+import {
+  type EditInput,
+  FilterMode,
+  FilterOperator,
+  StatusScope,
+  OrderingMode,
+  VocabularyCategory,
+  WorkflowExecutionStatus,
+  WorkflowMigrationDiagnosticType,
+  WorkflowRequestAccessOutcome,
+} from '../../../generated/graphql';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount, addWorkflowRequestAccessMigrationCount, addWorkflowRequestAccessPublishCount } from '../../../manager/telemetryManager';
@@ -140,6 +150,7 @@ interface WorkflowDefinitionEntity extends BasicStoreEntity {
 
 export interface WorkflowDefinitionResponse extends WorkflowSchema {
   published: boolean;
+  hasPublishedVersion: boolean;
 }
 
 export interface EntitySettingWithWorkflowResponse {
@@ -792,7 +803,7 @@ export const getWorkflowMigrationPreview = async (
     // Reported even when no status of the scope is left to migrate, so the preview never hides the workflow.
     const scopeResult = byScope[scope] ?? { definition: { initialState: '', states: [], transitions: [] }, diagnostics: [] };
     scopeResult.diagnostics.push({
-      type: 'EXISTING_WORKFLOW',
+      type: WorkflowMigrationDiagnosticType.ExistingWorkflow,
       message: isPublished
         ? `Entity type already has a published ${workflowLabel}; its statuses are managed by that workflow, and migration cannot replace it.`
         : `Entity type already has a ${workflowLabel} with no published version; migrating replaces its draft only with overwrite: true.`,
@@ -866,7 +877,7 @@ export const migrateWorkflowFromStatuses = async (
     const { definition, diagnostics } = scope === StatusScope.RequestAccess
       ? convertRequestAccessScope(entitySetting, statuses, picked)
       : picked;
-    const invalidOutcomes = diagnostics.filter((diagnostic) => diagnostic.type === 'REQUEST_ACCESS_OUTCOME_INVALID');
+    const invalidOutcomes = diagnostics.filter((diagnostic) => diagnostic.type === WorkflowMigrationDiagnosticType.RequestAccessOutcomeInvalid);
     if (invalidOutcomes.length > 0) {
       throw FunctionalError(invalidOutcomes.map((diagnostic) => diagnostic.message).join('; '), {
         entityType,
@@ -877,7 +888,7 @@ export const migrateWorkflowFromStatuses = async (
     // Validation only checks state ids that are not declared in `states`, and a migrated definition
     // declares them all: a state whose template is gone would pass a later plain publish. Refuse it
     // here, even for a draft.
-    const missingTemplates = diagnostics.filter((diagnostic) => diagnostic.type === 'MISSING_TEMPLATE');
+    const missingTemplates = diagnostics.filter((diagnostic) => diagnostic.type === WorkflowMigrationDiagnosticType.MissingTemplate);
     if (missingTemplates.length > 0) {
       throw FunctionalError('Cannot migrate: some statuses reference a status template that no longer exists', {
         entityType,
@@ -1339,7 +1350,7 @@ const findRequestAccessOutcomeViolations = async (
     }
     return false;
   };
-  const labelOf = (outcome: RequestAccessOutcome) => (outcome === 'APPROVED' ? 'Approved' : 'Declined');
+  const labelOf = (outcome: RequestAccessOutcome) => (outcome === WorkflowRequestAccessOutcome.Approved ? 'Approved' : 'Declined');
 
   const errors: WorkflowValidationError[] = [];
   for (const state of previousOutcomeStates) {
@@ -1389,8 +1400,8 @@ const syncRequestAccessLegacyStatusIds = async (
   if (outcomeStates.length === 0) return;
   const statuses = await findStatusesByTemplateIds(context, user, entityType, outcomeStates.map((state) => state.statusId), StatusScope.RequestAccess);
   const statusIdByTemplateId = new Map(statuses.map((status) => [status.template_id, status.id]));
-  const approvedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'APPROVED')?.statusId as string);
-  const declinedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'DECLINED')?.statusId as string);
+  const approvedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === WorkflowRequestAccessOutcome.Approved)?.statusId as string);
+  const declinedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === WorkflowRequestAccessOutcome.Declined)?.statusId as string);
 
   // Read the setting at write time: the one loaded when publishing started may predate a concurrent
   // edit of the request access configuration, which the whole-object write below would overwrite.
@@ -2457,7 +2468,7 @@ export const triggerWorkflowEvent = async (
     const instanceId = instanceEntity.internal_id || instanceEntity.id;
 
     // 6a. Async transition: persist pendingTransition, do NOT advance state
-    if (result.executionStatus === 'pending' && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
+    if (result.executionStatus === WorkflowExecutionStatus.Pending && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
       // The action already generated stable slot IDs (identical to workflow_action_id on the BackgroundTask)
       const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => ({
         id: rawSlot.id,
@@ -2538,7 +2549,7 @@ export const triggerWorkflowEvent = async (
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
       return {
         success: true,
-        executionStatus: 'pending',
+        executionStatus: WorkflowExecutionStatus.Pending,
         instance: workflowInstance,
         entity,
       };
@@ -2596,7 +2607,7 @@ export const triggerWorkflowEvent = async (
       await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
     }
 
-    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
+    return { success: true, newState, executionStatus: WorkflowExecutionStatus.Completed, instance: workflowInstance, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {
@@ -2748,7 +2759,7 @@ const executeWorkflowBypass = async (
   }
   // Already in the target status: nothing to run nor to record, so a playbook or a mass update cannot replay the actions
   if (currentState === targetStatus.template_id) {
-    return { success: true, executionStatus: 'completed', newState: currentState, unchanged: true, entity };
+    return { success: true, executionStatus: WorkflowExecutionStatus.Completed, newState: currentState, unchanged: true, entity };
   }
   if (applyTransitionActions) {
     const missingInput = getMissingOrganizationInput(getWorkflowBypassRequirements(definitionData, currentState, targetStatus.template_id), runtimeParams);
@@ -2813,7 +2824,7 @@ const executeWorkflowBypass = async (
         { key: 'pendingError', value: [null] },
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
-      return { success: true, executionStatus: 'pending', entity };
+      return { success: true, executionStatus: WorkflowExecutionStatus.Pending, entity };
     }
     let history;
     try {
@@ -2840,7 +2851,7 @@ const executeWorkflowBypass = async (
     } else if (requestAccessStatus) {
       await mirrorRequestAccessStatus(executionContext, executionUser, entity.internal_id || entity.id, requestAccessStatus);
     }
-    return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
+    return { success: true, newState: targetStatus.template_id, executionStatus: WorkflowExecutionStatus.Completed, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -2848,7 +2859,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [reason] },
       { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
     ]);
-    return { success: false, executionStatus: 'error', reason, entity };
+    return { success: false, executionStatus: WorkflowExecutionStatus.Error, reason, entity };
   }
 };
 
@@ -2872,7 +2883,7 @@ export const setWorkflowStatus = async (
   } finally {
     await lock.unlock();
   }
-  if (result.success && result.executionStatus === 'completed' && !result.unchanged && comment?.trim()) {
+  if (result.success && result.executionStatus === WorkflowExecutionStatus.Completed && !result.unchanged && comment?.trim()) {
     await notifyWorkflowTransitionComment(bypassDraftContext(context), result.entity, 'event_bypass', comment.trim(), user.id);
   }
   return result.success ? { ...result, instance: await getWorkflowInstance(context, user, entityId) } : result;

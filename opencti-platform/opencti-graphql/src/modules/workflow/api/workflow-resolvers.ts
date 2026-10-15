@@ -1,4 +1,5 @@
 import { GraphQLError } from 'graphql';
+import type { ModuleResolvers } from '../../module-descriptor';
 import type { AuthContext } from '../../../types/user';
 import { type QueryWorkflowMassTransitionsArgs, StatusScope } from '../../../generated/graphql';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
@@ -31,11 +32,11 @@ const workflowResolvers = {
   Query: {
     workflowDefinition: async (
       _: any,
-      { entityType, allowDraft = false, scope }: { entityType: string; allowDraft?: boolean; scope?: StatusScope | null },
+      { entityType, allowDraft, scope }: { entityType: string; allowDraft?: boolean | null; scope?: StatusScope | null },
       context: AuthContext,
     ) => {
       const statusScope = scope ?? StatusScope.Global;
-      const definition = await getWorkflowDefinition(context, context.user!, entityType, allowDraft, statusScope);
+      const definition = await getWorkflowDefinition(context, context.user!, entityType, allowDraft ?? false, statusScope);
       return definition ? attachWorkflowStatusIds(context, context.user!, entityType, definition, statusScope) : definition;
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
@@ -124,14 +125,18 @@ const workflowResolvers = {
       }
       return setWorkflowStatus(context, context.user!, entityId, targetStatusId, applyTransitionActions, normalizedComment, runtimeParams ?? {});
     },
-    reportWorkflowAsyncActionResult: async (_: any, args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string }, context: AuthContext) => {
+    reportWorkflowAsyncActionResult: async (
+      _: any,
+      args: { workflowInstanceId: string; workflowActionId: string; status: string; error?: string | null },
+      context: AuthContext,
+    ) => {
       await reportWorkflowAsyncActionResult(
         context,
         context.user!,
         args.workflowInstanceId,
         args.workflowActionId,
         args.status as 'success' | 'failed',
-        args.error,
+        args.error ?? undefined,
       );
       return true;
     },
@@ -202,6 +207,7 @@ const workflowResolvers = {
       return getWorkflowInstance(context, context.user!, draftId);
     },
   },
+  // Interface fields, inherited by every implementing type (inheritResolversFromInterfaces)
   StixDomainObject: {
     workflowInstance: (entity: any, _: any, context: AuthContext) => {
       const entityId = entity.id || entity.internal_id;
@@ -230,6 +236,6 @@ const workflowResolvers = {
     errors: (result: any) => result.errors ?? [],
     published: (result: any) => result.published ?? false,
   },
-};
+} satisfies ModuleResolvers;
 
 export default workflowResolvers;

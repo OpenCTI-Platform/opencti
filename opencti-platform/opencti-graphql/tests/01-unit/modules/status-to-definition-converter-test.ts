@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { StatusScope } from '../../../src/generated/graphql';
+import { StatusScope, WorkflowMigrationDiagnosticType } from '../../../src/generated/graphql';
 import {
   buildWorkflowMigrationPreviewResult,
   convertRequestAccessGroup,
@@ -477,13 +477,13 @@ describe('pickMigrationScope', () => {
 describe('getPublishBlockingDiagnostics', () => {
   it('blocks on MISSING_TEMPLATE, NAME_CONFLICT and REQUEST_ACCESS_OUTCOME_INVALID only', () => {
     const diagnostics = [
-      { type: 'MISSING_ORDER' as const, message: 'a' },
-      { type: 'DUPLICATE_ORDER' as const, message: 'b' },
-      { type: 'NAME_CONFLICT' as const, message: 'c' },
-      { type: 'MISSING_TEMPLATE' as const, message: 'd' },
-      { type: 'DUPLICATE_TEMPLATE' as const, message: 'e' },
-      { type: 'EXISTING_WORKFLOW' as const, message: 'f' },
-      { type: 'REQUEST_ACCESS_OUTCOME_INVALID' as const, message: 'g' },
+      { type: WorkflowMigrationDiagnosticType.MissingOrder, message: 'a' },
+      { type: WorkflowMigrationDiagnosticType.DuplicateOrder, message: 'b' },
+      { type: WorkflowMigrationDiagnosticType.NameConflict, message: 'c' },
+      { type: WorkflowMigrationDiagnosticType.MissingTemplate, message: 'd' },
+      { type: WorkflowMigrationDiagnosticType.DuplicateTemplate, message: 'e' },
+      { type: WorkflowMigrationDiagnosticType.ExistingWorkflow, message: 'f' },
+      { type: WorkflowMigrationDiagnosticType.RequestAccessOutcomeInvalid, message: 'g' },
     ];
     expect(getPublishBlockingDiagnostics(diagnostics).map((d) => d.type)).toEqual(['NAME_CONFLICT', 'MISSING_TEMPLATE', 'REQUEST_ACCESS_OUTCOME_INVALID']);
   });

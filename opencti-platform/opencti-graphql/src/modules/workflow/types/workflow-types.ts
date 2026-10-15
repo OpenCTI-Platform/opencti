@@ -1,4 +1,4 @@
-import type { FilterGroup } from '../../../generated/graphql';
+import type { FilterGroup, WorkflowExecutionStatus, WorkflowRequestAccessOutcome } from '../../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import type { BasicStoreIdentifier, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 
@@ -59,7 +59,7 @@ export interface WorkflowPendingTransition {
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
   /** Request-access definitions only: the decision recorded once the target outcome state is entered. */
-  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  requestAccessOutcome?: WorkflowRequestAccessOutcome;
   /** Request-access bypass out of an outcome state: the request is reset to NEW once the target state is entered. */
   requestAccessStatus?: 'NEW';
   draftEntityIds?: string[];
@@ -185,7 +185,7 @@ export interface TriggerResult {
   instance?: any;
   entity?: any;
   /** Present when the transition spawned async background tasks. */
-  executionStatus?: 'pending' | 'completed' | 'error';
+  executionStatus?: WorkflowExecutionStatus;
   asyncActionSlots?: AsyncActionSlot[];
   /** Set when an onEnter action of the target state suspended the transition: how many onEnter actions already ran. */
   completedOnEnterActions?: number;
@@ -229,7 +229,7 @@ export interface WorkflowSerializedState {
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
   /** Request-access definitions only: marks the state reached when the request is approved or declined. */
-  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  requestAccessOutcome?: WorkflowRequestAccessOutcome;
 }
 
 export interface WorkflowSerializedTransition {

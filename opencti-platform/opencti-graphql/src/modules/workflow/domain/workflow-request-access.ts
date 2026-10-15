@@ -1,4 +1,5 @@
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
+import { WorkflowRequestAccessOutcome } from '../../../generated/graphql';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { updateAttribute } from '../../../database/middleware';
@@ -22,7 +23,8 @@ import {
   type WorkflowDefinitionResponse,
 } from './workflow-domain';
 
-export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
+// The generated graphql enum: the outcome reaches the resolvers as is
+export type RequestAccessOutcome = WorkflowRequestAccessOutcome;
 
 const DECISION_WRITE_ATTEMPTS = 3;
 
@@ -120,7 +122,7 @@ export const applyRequestAccessOutcome = async (
   if (!requestAccessAction) {
     return false;
   }
-  if (outcome === 'APPROVED') {
+  if (outcome === WorkflowRequestAccessOutcome.Approved) {
     addRequestAccessApprovedCount();
   } else {
     addRequestAccessDeclinedCount();
@@ -140,7 +142,7 @@ export const applyRequestAccessOutcome = async (
       event_type: 'mutation',
       event_scope: 'update',
       event_access: 'administration',
-      message: `${outcome === 'APPROVED' ? 'approved' : 'declined'} demand of request access for entity ${mainRepresentative}`,
+      message: `${outcome === WorkflowRequestAccessOutcome.Approved ? 'approved' : 'declined'} demand of request access for entity ${mainRepresentative}`,
       context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction },
     });
   } catch (error) {
@@ -170,7 +172,7 @@ export const recordRequestAccessDecision = async (
   if (await applyRequestAccessOutcome(context, user, rfi, outcome)) return;
   try {
     await updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'pendingError', value: [`The ${outcome === 'APPROVED' ? 'approval' : 'decline'} could not be recorded on the request: its status still reads NEW and the applicant was not notified`] },
+      { key: 'pendingError', value: [`The ${outcome === WorkflowRequestAccessOutcome.Approved ? 'approval' : 'decline'} could not be recorded on the request: its status still reads NEW and the applicant was not notified`] },
     ]);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE][Request access] Failed to flag the unrecorded request decision', { cause: error, instanceId });

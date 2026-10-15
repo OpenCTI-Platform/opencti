@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ValidationError } from '../../config/errors';
 import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
-import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
+import { FilterMode, FilterOperator, StatusScope, WorkflowRequestAccessOutcome } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import { isStixDomainObject } from '../../schema/stixDomainObject';
@@ -64,7 +64,7 @@ export const workflowSerializedStateSchema = z.object({
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
   /** Request-access definitions only: marks the state reached when the request is approved or declined. */
-  requestAccessOutcome: z.enum(['APPROVED', 'DECLINED']).optional(),
+  requestAccessOutcome: z.enum(WorkflowRequestAccessOutcome).optional(),
 });
 
 export const workflowSerializedTransitionSchema = z.object({
@@ -512,7 +512,7 @@ export const validateWorkflowDefinitionData = async (
     // The share must only run when entering Approved, the one state reached through a gated decision.
     states.forEach((state) => {
       const stateId = state.statusId ?? state.name;
-      const misplacedOnEnter = state.requestAccessOutcome !== 'APPROVED' && (state.onEnter ?? []).some(isShareRequestedEntitiesAction);
+      const misplacedOnEnter = state.requestAccessOutcome !== WorkflowRequestAccessOutcome.Approved && (state.onEnter ?? []).some(isShareRequestedEntitiesAction);
       if (misplacedOnEnter || (state.onExit ?? []).some(isShareRequestedEntitiesAction)) {
         errors.push({
           type: 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED',
@@ -528,7 +528,7 @@ export const validateWorkflowDefinitionData = async (
         });
       }
     });
-    const outcomeKinds = [['APPROVED', 'Approved'], ['DECLINED', 'Declined']] as const;
+    const outcomeKinds = [[WorkflowRequestAccessOutcome.Approved, 'Approved'], [WorkflowRequestAccessOutcome.Declined, 'Declined']] as const;
     for (const [outcome, label] of outcomeKinds) {
       const markedStates = outcomeStates.filter((state) => state.requestAccessOutcome === outcome);
       if (markedStates.length !== 1) {
@@ -554,7 +554,7 @@ export const validateWorkflowDefinitionData = async (
             message: `${label} state '${stateId}' must not have outgoing transitions`,
           });
         }
-        if (outcome === 'APPROVED' && !(state.onEnter ?? []).some(isShareRequestedEntitiesAction)) {
+        if (outcome === WorkflowRequestAccessOutcome.Approved && !(state.onEnter ?? []).some(isShareRequestedEntitiesAction)) {
           errors.push({
             type: 'MISSING_REQUEST_ACCESS_SHARE_ACTION',
             message: `Approved state '${stateId}' must have a shareRequestedEntities action on enter`,
@@ -563,7 +563,7 @@ export const validateWorkflowDefinitionData = async (
         // A container share waits for its background task: an action after it would only run once the task finished,
         // and nothing undoes it if the task then fails.
         const onEnter = state.onEnter ?? [];
-        if (outcome === 'APPROVED' && onEnter.some(isShareRequestedEntitiesAction) && !isShareRequestedEntitiesAction(onEnter[onEnter.length - 1])) {
+        if (outcome === WorkflowRequestAccessOutcome.Approved && onEnter.some(isShareRequestedEntitiesAction) && !isShareRequestedEntitiesAction(onEnter[onEnter.length - 1])) {
           errors.push({
             type: 'REQUEST_ACCESS_SHARE_ACTION_NOT_LAST',
             message: `Action 'shareRequestedEntities' on state '${stateId}' must be the last action on enter of the Approved state`,

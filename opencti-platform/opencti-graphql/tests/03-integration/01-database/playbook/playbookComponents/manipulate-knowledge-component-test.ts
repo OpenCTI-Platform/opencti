@@ -10,6 +10,7 @@ import type { StixDomainObject } from '../../../../../src/types/stix-2-1-common'
 import * as workflowDomain from '../../../../../src/modules/workflow/domain/workflow-domain';
 import * as conf from '../../../../../src/config/conf';
 import { AUTOMATION_MANAGER_USER } from '../../../../../src/utils/access';
+import { WorkflowExecutionStatus } from '../../../../../src/generated/graphql';
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   const THREAT_ACTOR_ID = 'threat--09bd862a-f030-55f2-920a-900c4913d9fd';
@@ -558,7 +559,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     });
 
     beforeEach(() => {
-      vi.spyOn(workflowDomain, 'setWorkflowStatus').mockResolvedValue({ success: true, executionStatus: 'completed' });
+      vi.spyOn(workflowDomain, 'setWorkflowStatus').mockResolvedValue({ success: true, executionStatus: WorkflowExecutionStatus.Completed });
     });
 
     afterEach(() => {
@@ -579,7 +580,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     });
 
     it('should keep the bundle unmodified while the transition actions are still running', async () => {
-      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true, executionStatus: 'pending' });
+      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true, executionStatus: WorkflowExecutionStatus.Pending });
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
         mainId: THREAT_ACTOR_ID,
         bundleObjects: [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })],
@@ -591,7 +592,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     });
 
     it('should keep the bundle unmodified when the entity is already in the target status', async () => {
-      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true, executionStatus: 'completed', unchanged: true });
+      vi.mocked(workflowDomain.setWorkflowStatus).mockResolvedValue({ success: true, executionStatus: WorkflowExecutionStatus.Completed, unchanged: true });
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
         mainId: THREAT_ACTOR_ID,
         bundleObjects: [testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR })],

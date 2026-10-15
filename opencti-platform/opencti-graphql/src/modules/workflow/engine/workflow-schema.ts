@@ -1,4 +1,5 @@
-import type { FilterGroup } from '../../../generated/graphql';
+import type { FilterGroup, WorkflowRequestAccessOutcome } from '../../../generated/graphql';
+import type { WorkflowSerializedTransition } from '../types/workflow-types';
 
 /**
  * Serialized configuration for a side effect action.
@@ -19,7 +20,7 @@ export interface SerializedState {
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
   /** Request-access definitions only: marks the state reached when the request is approved or declined. */
-  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  requestAccessOutcome?: WorkflowRequestAccessOutcome;
 }
 
 /**
@@ -37,6 +38,10 @@ export interface SerializedTransition {
   syncActions?: ActionConfig[];
   conditions?: { filters: FilterGroup };
 }
+
+// A graphql WorkflowSerializedTransition: a definition gives a SerializedTransition, the migration preview a
+// WorkflowSerializedTransition. Their conditions differ in shape, which the schema exposes as JSON.
+export type GraphqlSerializedTransition = SerializedTransition | WorkflowSerializedTransition;
 
 /**
  * Complete serialized schema of a workflow machine.
