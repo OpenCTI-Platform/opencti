@@ -6,7 +6,7 @@ interface GraphToolbarItemProps {
   title: string;
   color: IconButtonProps['color'];
   Icon: ReactNode;
-  onClick: IconButtonProps['onClick'];
+  onClick?: IconButtonProps['onClick'];
   disabled?: boolean;
 }
 

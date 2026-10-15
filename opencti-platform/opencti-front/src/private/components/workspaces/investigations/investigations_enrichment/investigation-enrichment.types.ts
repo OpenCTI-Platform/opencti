@@ -1,3 +1,4 @@
-import { Investigation_workspace$data } from '../__generated__/Investigation_workspace.graphql';
+import { InvestigationEnrichmentToolQuery$data } from './__generated__/InvestigationEnrichmentToolQuery.graphql';
 
-export type InvestigationEnrichmentWorks = Investigation_workspace$data['enrichmentWorks'];
+export type Investigation = NonNullable<InvestigationEnrichmentToolQuery$data['workspace']>;
+export type InvestigationEnrichmentWork = NonNullable<NonNullable<NonNullable<Investigation['enrichmentWorks']>['edges']>[0]>['node'];

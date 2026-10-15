@@ -48,7 +48,6 @@ describe('InvestigationEnrichmentLaunch', () => {
     testRender(
       <InvestigationEnrichmentLaunch
         investigationId="investigation-1"
-        enrichmentType="Intrusion-Set"
       />,
     );
 

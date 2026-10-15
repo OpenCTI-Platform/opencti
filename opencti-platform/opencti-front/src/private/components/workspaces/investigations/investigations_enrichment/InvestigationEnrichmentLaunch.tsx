@@ -9,12 +9,12 @@ import { useGraphContext } from '../../../../../components/graph/GraphContext';
 
 interface InvestigationEnrichmentLaunchProps {
   investigationId: string;
-  enrichmentType?: string;
+  onCompleted: () => void;
 }
 
 const InvestigationEnrichmentLaunch = ({
   investigationId,
-  enrichmentType,
+  onCompleted,
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
 
@@ -25,15 +25,18 @@ const InvestigationEnrichmentLaunch = ({
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
 
-  const { selectionMap, selectionSize } = useMemo(() => {
+  const { selectionMap, selectionSize, enrichmentType } = useMemo(() => {
     const selection = [...selectedNodes, ...selectedLinks];
+    const selectionSize = selection.length;
     const selectionMap = Object.fromEntries(selection.map((el) => [
       el.id,
       // We override name because for investigation, name contains also the date
       { ...el, name: el.label },
     ]));
-    const selectionSize = selection.length;
-    return { selectionMap, selectionSize };
+    // Enrichment available only if elements are all of same type.
+    const selectedEntityTypes = new Set(selection.map((el) => el.entity_type));
+    const enrichmentType = selectedEntityTypes.size === 1 ? [...selectedEntityTypes][0] : undefined;
+    return { selectionMap, selectionSize, enrichmentType };
   }, [selectedLinks, selectedNodes]);
 
   // The investigation id tags every enrichment work created by the task with this investigation
@@ -89,6 +92,7 @@ const InvestigationEnrichmentLaunch = ({
         onCompleted={() => {
           setShowValidation(false);
           setProcessing(false);
+          onCompleted();
         }}
       />
     </>
