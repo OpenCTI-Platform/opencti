@@ -24,6 +24,15 @@ describe('isVariableCompatibleWithFilter', () => {
     );
     expect(result).toBe(true);
   });
+
+  it('refuses an entity variable of a parent type of the filter domain, even though the domain is one of its subtypes', () => {
+    const result = isVariableCompatibleWithFilter(
+      { id: 'v', name: 'v', type: 'entity', entityTypes: ['Stix-Domain-Object'], restriction: { mode: 'none' }, defaultValue: 'x' },
+      { filterKey: 'createdBy', type: 'id', elementsForFilterValuesSearch: ['Identity'] } as FilterDefinition,
+      { isSubTypeOf: (type, parent) => type === parent || (type === 'Identity' && parent === 'Stix-Domain-Object') },
+    );
+    expect(result).toBe(false);
+  });
 });
 
 describe('getVariableOptions', () => {

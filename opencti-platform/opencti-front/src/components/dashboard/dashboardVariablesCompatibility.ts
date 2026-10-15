@@ -36,6 +36,10 @@ export const isVariableCompatibleWithFilter = (
       // For a vocabulary filter, the back exposes the category as the only element of elementsForFilterValuesSearch.
       return filterDefinition.type === 'vocabulary' && domain.includes(variable.vocabularyCategory);
     case 'entity':
+      // Subtype rule: one of the variable entity types must be the type of the filter domain or one of its subtypes.
+      // Every value the variable can hold is then a valid value of the filter. A variable of an abstract parent type
+      // (e.g. Stix-Domain-Object) is NOT offered on a narrower filter (e.g. createdBy, on Identity): it could hold a
+      // Malware, which that filter cannot take. Pinned by compatibility-cases.json.
       return filterDefinition.type === 'id'
         // An id filter whose domain is empty accepts any entity (e.g. `objects`, "Contains"): no type to intersect with.
         && (domain.length === 0 || variable.entityTypes.some((type) => domain.some((d) => helpers.isSubTypeOf(type, d))));
