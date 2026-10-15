@@ -3,11 +3,11 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { HttpClientError } from '../utils/http-client';
 import { isNotEmptyField } from '../database/utils';
 import { isDateInRange, now, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
@@ -132,7 +132,7 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
           })
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
-            if (e instanceof AxiosError) {
+            if (e instanceof HttpClientError) {
               if (e?.response?.headers) {
                 if (e.response.headers['cf-mitigated']) {
                   logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);

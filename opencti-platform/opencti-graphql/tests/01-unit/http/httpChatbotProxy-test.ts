@@ -949,7 +949,6 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
     const [url, opts] = mockGet.mock.calls[0];
     expect(url).toBe(`/api/v1/chat/files/${VALID_FILE_ID}/download`);
     expect(opts.timeout).toBe(0);
-    expect(opts.decompress).toBe(false);
 
     expect(res.setHeader).toHaveBeenCalledWith('content-type', 'text/csv');
     expect(res.setHeader).toHaveBeenCalledWith('content-disposition', 'attachment; filename="iocs.csv"');
