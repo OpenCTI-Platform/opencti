@@ -39,7 +39,9 @@ export const isVariableCompatibleWithFilter = (
       // Subtype rule: one of the variable entity types must be the type of the filter domain or one of its subtypes.
       // Every value the variable can hold is then a valid value of the filter. A variable of an abstract parent type
       // (e.g. Stix-Domain-Object) is NOT offered on a narrower filter (e.g. createdBy, on Identity): it could hold a
-      // Malware, which that filter cannot take. Pinned by compatibility-cases.json.
+      // Malware, which that filter cannot take. Pinned for both twins by compatibility-cases.json: its cases carry a
+      // small real type hierarchy (optional `hierarchy` field, parent type -> all its descendants, see the test header)
+      // so that a subtype rule and an overlap rule give different results.
       return filterDefinition.type === 'id'
         // An id filter whose domain is empty accepts any entity (e.g. `objects`, "Contains"): no type to intersect with.
         && (domain.length === 0 || variable.entityTypes.some((type) => domain.some((d) => helpers.isSubTypeOf(type, d))));

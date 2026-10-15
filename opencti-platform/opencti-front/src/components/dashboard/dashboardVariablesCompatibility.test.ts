@@ -4,34 +4,27 @@ import { getVariableOptions, isVariableCompatibleWithFilter } from './dashboardV
 import type { DashboardVariable } from './dashboard-types';
 import type { FilterDefinition } from '../../utils/hooks/useAuth';
 
+// Identity behaviour: a type is a subtype of itself only (used by the getVariableOptions tests below).
 const isSubTypeOf = (type: string, parent: string) => type === parent;
 
+// compatibility-cases.json is shared with the back end twin. Each case has:
+//   name, variable (the DashboardVariable fields), filter (the filter definition, null for none), expected,
+//   and an OPTIONAL `hierarchy`: an object mapping a parent type to the list of ALL its descendants (transitively),
+//   e.g. { "Stix-Domain-Object": ["Identity", "Sector", ...], "Identity": ["Sector", ...] }.
+// The isSubTypeOf of a case is: type === parent || hierarchy[parent] includes type. Without `hierarchy` it is the
+// identity above. The hierarchy makes the cases discriminate the subtype rule from an overlap rule.
+const isSubTypeOfHierarchy = (hierarchy: Record<string, string[]> = {}) => (type: string, parent: string) => (
+  type === parent || (hierarchy[parent] ?? []).includes(type)
+);
+
 describe('isVariableCompatibleWithFilter', () => {
-  it.each(cases)('$name', ({ variable, filter, expected }) => {
+  it.each(cases)('$name', ({ variable, filter, expected, hierarchy }) => {
     const result = isVariableCompatibleWithFilter(
       { id: 'v', name: 'v', restriction: { mode: 'none' }, defaultValue: 'x', ...variable } as DashboardVariable,
       (filter ?? undefined) as FilterDefinition | undefined,
-      { isSubTypeOf },
+      { isSubTypeOf: isSubTypeOfHierarchy(hierarchy) },
     );
     expect(result).toBe(expected);
-  });
-
-  it('accepts an entity variable whose type is a sub type of the filter domain', () => {
-    const result = isVariableCompatibleWithFilter(
-      { id: 'v', name: 'v', type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'none' }, defaultValue: 'x' },
-      { filterKey: 'createdBy', type: 'id', elementsForFilterValuesSearch: ['Identity'] } as FilterDefinition,
-      { isSubTypeOf: (type, parent) => type === parent || (type === 'Sector' && parent === 'Identity') },
-    );
-    expect(result).toBe(true);
-  });
-
-  it('refuses an entity variable of a parent type of the filter domain, even though the domain is one of its subtypes', () => {
-    const result = isVariableCompatibleWithFilter(
-      { id: 'v', name: 'v', type: 'entity', entityTypes: ['Stix-Domain-Object'], restriction: { mode: 'none' }, defaultValue: 'x' },
-      { filterKey: 'createdBy', type: 'id', elementsForFilterValuesSearch: ['Identity'] } as FilterDefinition,
-      { isSubTypeOf: (type, parent) => type === parent || (type === 'Identity' && parent === 'Stix-Domain-Object') },
-    );
-    expect(result).toBe(false);
   });
 });
 
