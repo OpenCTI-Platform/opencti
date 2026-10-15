@@ -53,6 +53,7 @@ import type { BasicStoreEntityCustomView } from '../modules/customView/customVie
 import type { BasicStoreEntityTaxiiCollection } from '../modules/dataSharing/taxiiCollection-types';
 import type { BasicStoreEntityStreamCollection } from '../modules/dataSharing/streamCollection-types';
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
+import type { SerializedTransition } from '../modules/workflow/engine/workflow-schema';
 import type { BasicStoreEntityVulnerability } from '../modules/vulnerability/vulnerability-types';
 import type { BasicStoreEntityUser, StoreUserSession, BasicStoreMember } from '../modules/user/user-types';
 export type Maybe<T> = T | null | undefined;
@@ -42099,9 +42100,9 @@ export type ResolversTypes = ResolversObject<{
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
   WorkflowPendingAsyncAction: ResolverTypeWrapper<WorkflowPendingAsyncAction>;
   WorkflowPendingTransition: ResolverTypeWrapper<WorkflowPendingTransition>;
-  WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
+  WorkflowSchema: ResolverTypeWrapper<Omit<WorkflowSchema, 'transitions'> & { transitions: Array<ResolversTypes['WorkflowSerializedTransition']> }>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
-  WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
+  WorkflowSerializedTransition: ResolverTypeWrapper<SerializedTransition>;
   WorkflowTransition: ResolverTypeWrapper<Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowTriggerResult: ResolverTypeWrapper<Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversTypes['BasicObject']>, instance?: Maybe<ResolversTypes['WorkflowInstance']>, status?: Maybe<ResolversTypes['Status']> }>;
   WorkflowValidationError: ResolverTypeWrapper<WorkflowValidationError>;
@@ -43135,9 +43136,9 @@ export type ResolversParentTypes = ResolversObject<{
   WorkflowLastHistoryEntry: WorkflowLastHistoryEntry;
   WorkflowPendingAsyncAction: WorkflowPendingAsyncAction;
   WorkflowPendingTransition: WorkflowPendingTransition;
-  WorkflowSchema: WorkflowSchema;
+  WorkflowSchema: Omit<WorkflowSchema, 'transitions'> & { transitions: Array<ResolversParentTypes['WorkflowSerializedTransition']> };
   WorkflowSerializedState: WorkflowSerializedState;
-  WorkflowSerializedTransition: WorkflowSerializedTransition;
+  WorkflowSerializedTransition: SerializedTransition;
   WorkflowTransition: Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowTriggerResult: Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversParentTypes['BasicObject']>, instance?: Maybe<ResolversParentTypes['WorkflowInstance']>, status?: Maybe<ResolversParentTypes['Status']> };
   WorkflowValidationError: WorkflowValidationError;

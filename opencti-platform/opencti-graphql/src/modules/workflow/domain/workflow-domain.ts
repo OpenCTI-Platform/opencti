@@ -12,7 +12,7 @@ import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode } from '../../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, WorkflowExecutionStatus } from '../../../generated/graphql';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
@@ -80,6 +80,7 @@ interface WorkflowDefinitionEntity extends BasicStoreEntity {
 
 export interface WorkflowDefinitionResponse extends WorkflowSchema {
   published: boolean;
+  hasPublishedVersion: boolean;
 }
 
 export interface EntitySettingWithWorkflowResponse {
@@ -1431,7 +1432,7 @@ export const triggerWorkflowEvent = async (
     const instanceId = instanceEntity.internal_id || instanceEntity.id;
 
     // 6a. Async transition: persist pendingTransition, do NOT advance state
-    if (result.executionStatus === 'pending' && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
+    if (result.executionStatus === WorkflowExecutionStatus.Pending && result.asyncActionSlots && result.asyncActionSlots.length > 0) {
       // The action already generated stable slot IDs (identical to workflow_action_id on the BackgroundTask)
       const rawSlots: AsyncActionSlot[] = result.asyncActionSlots.map((rawSlot: any) => ({
         id: rawSlot.id,
@@ -1483,7 +1484,7 @@ export const triggerWorkflowEvent = async (
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
       return {
         success: true,
-        executionStatus: 'pending',
+        executionStatus: WorkflowExecutionStatus.Pending,
         instance: workflowInstance,
         entity,
       };
@@ -1527,7 +1528,7 @@ export const triggerWorkflowEvent = async (
       await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
     }
 
-    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
+    return { success: true, newState, executionStatus: WorkflowExecutionStatus.Completed, instance: workflowInstance, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {
@@ -1688,7 +1689,7 @@ const executeWorkflowBypass = async (
         { key: 'pendingError', value: [null] },
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
-      return { success: true, executionStatus: 'pending', entity };
+      return { success: true, executionStatus: WorkflowExecutionStatus.Pending, entity };
     }
     let history;
     try {
@@ -1705,7 +1706,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingTransition', value: [null] },
     ]);
     await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope);
-    return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
+    return { success: true, newState: targetStatus.template_id, executionStatus: WorkflowExecutionStatus.Completed, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -1713,7 +1714,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [reason] },
       { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
     ]);
-    return { success: false, executionStatus: 'error', reason, entity };
+    return { success: false, executionStatus: WorkflowExecutionStatus.Error, reason, entity };
   }
 };
 
@@ -1736,7 +1737,7 @@ export const setWorkflowStatus = async (
   } finally {
     await lock.unlock();
   }
-  if (result.success && result.executionStatus === 'completed' && comment?.trim()) {
+  if (result.success && result.executionStatus === WorkflowExecutionStatus.Completed && comment?.trim()) {
     await notifyWorkflowTransitionComment(bypassDraftContext(context), result.entity, 'event_bypass', comment.trim(), user.id);
   }
   return result.success ? { ...result, instance: await getWorkflowInstance(context, user, entityId) } : result;

@@ -1,3 +1,4 @@
+import { WorkflowExecutionStatus } from '../../../generated/graphql';
 import type { Context, Event, MachineDefinition, State, TriggerResult } from '../types/workflow-types';
 
 /**
@@ -114,7 +115,7 @@ export class StateMachine<TContext extends Context = Context> {
       }
       return {
         success: true,
-        executionStatus: 'pending',
+        executionStatus: WorkflowExecutionStatus.Pending,
         asyncActionSlots: this.context.pendingAsyncSlots,
       };
     }
@@ -129,7 +130,7 @@ export class StateMachine<TContext extends Context = Context> {
     // A terminal transition has no new status: retain the last real status for persistence.
     if (transition.to == null) {
       this.completed = true;
-      return { success: true, executionStatus: 'completed', workflowCompleted: true };
+      return { success: true, executionStatus: WorkflowExecutionStatus.Completed, workflowCompleted: true };
     }
 
     // Update state
@@ -143,6 +144,6 @@ export class StateMachine<TContext extends Context = Context> {
       }
     }
 
-    return { success: true, executionStatus: 'completed' };
+    return { success: true, executionStatus: WorkflowExecutionStatus.Completed };
   }
 }

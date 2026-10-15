@@ -4,9 +4,13 @@ import type { ManagerDefinition } from '../manager/managerModule';
 import type { Resolvers } from '../generated/graphql';
 import type { OverviewLayoutCustomization } from './entitySetting/entitySetting-types';
 
+// Resolvers are merged across modules (mergeResolvers): a module extending an interface defined elsewhere
+// provides some of its fields only, without the __resolveType the interface's own resolvers provide.
+export type ModuleResolvers = { [Type in keyof Resolvers]?: Partial<Resolvers[Type]> };
+
 export interface GraphqlSchemaDefinition {
   schema: DocumentNode;
-  resolver: Resolvers;
+  resolver: ModuleResolvers;
 }
 
 export interface OverviewLayoutDefinition {

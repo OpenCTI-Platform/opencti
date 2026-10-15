@@ -1,4 +1,4 @@
-import type { FilterGroup } from '../../../generated/graphql';
+import type { FilterGroup, WorkflowExecutionStatus } from '../../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import type { BasicStoreIdentifier, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 
@@ -131,7 +131,7 @@ export interface TriggerResult {
   instance?: any;
   entity?: any;
   /** Present when the transition spawned async background tasks. */
-  executionStatus?: 'pending' | 'completed' | 'error';
+  executionStatus?: WorkflowExecutionStatus;
   asyncActionSlots?: AsyncActionSlot[];
 }
 
