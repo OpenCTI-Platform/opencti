@@ -22,15 +22,15 @@ const TransitionEdge = ({
   const [edgePath, edgeCenterX, edgeCenterY] = route && route.length >= 2
     ? getRoutePath(route)
     : getSmoothStepPath({
-      sourceX,
-      sourceY,
-      sourcePosition,
-      targetX,
-      targetY,
-      targetPosition,
-      borderRadius: 10,
-      offset: 10,
-    });
+        sourceX,
+        sourceY,
+        sourcePosition,
+        targetX,
+        targetY,
+        targetPosition,
+        borderRadius: 10,
+        offset: 10,
+      });
 
   return (
     <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
