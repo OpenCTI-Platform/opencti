@@ -7,6 +7,7 @@ import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
+import { connectorIdFromIngestId } from '../../../src/domain/connector';
 import { Readable } from 'stream';
 import { logApp } from '../../../src/config/conf';
 
@@ -43,7 +44,7 @@ const mockUser: any = {
   origin: { user_id: 'user-1' },
   roles: [],
   groups: [],
-  capabilities: [],
+  capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }],
   organizations: [],
   allowed_marking: [],
 };
@@ -354,7 +355,7 @@ describe('formSubmit', () => {
       }),
     };
 
-    const userNoBypass = { ...mockUser, capabilities: [] };
+    const userNoBypass = { ...mockUser, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
     mockStoreLoadById.mockResolvedValue(mockForm);
 
     await formSubmit(mockContext, userNoBypass, input, true);
@@ -497,6 +498,8 @@ describe('formSubmit - deferred creation', () => {
     name: 'Lookup Form',
     form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
   };
+  // Creating a label is a right of its own, the pending labels of these tests need it
+  const labelManager = { ...mockUser, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'SETTINGS_SETLABELS' }] };
   const pushedBundle = () => {
     const message = vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3] as any;
     return JSON.parse(Buffer.from(message.content, 'base64').toString('utf-8'));
@@ -534,7 +537,7 @@ describe('formSubmit - deferred creation', () => {
       ],
     };
 
-    const result = await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values), files: [upload('hello')] } as any, false);
+    const result = await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values), files: [upload('hello')] } as any, false);
 
     expect(result.success).toBe(true);
     const malware = pushedBundle().objects.find((o: any) => o.name === 'Pending Malware');
@@ -565,7 +568,7 @@ describe('formSubmit - deferred creation', () => {
       ],
     };
 
-    await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values) }, false);
+    await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values) }, false);
 
     const malware = pushedBundle().objects.find((o: any) => o.name === 'Direct Malware');
     expect(malware.labels).toEqual(['existing-label', 'new-label']);
@@ -636,7 +639,7 @@ describe('formSubmit - deferred creation', () => {
     });
     const values = { mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'Draft Malware' }, refs: { objectLabel: [{ pending: 'l1' }] } }], pendingObjects: [{ id: 'l1', entityType: 'Label', input: { value: 'draft-label' } }] };
 
-    const result = await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values) }, true);
+    const result = await formSubmit(mockContext, labelManager, { formId: 'form-1', values: JSON.stringify(values) }, true);
 
     expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledTimes(1);
     expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-1', applicant_id: 'user-1' });
@@ -705,5 +708,157 @@ describe('formSubmit - deferred creation', () => {
 
     expect(workDomain.createWork).not.toHaveBeenCalled();
     expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+  });
+});
+
+describe('formSubmit - access to the destination', () => {
+  const values = JSON.stringify({ name: 'Test Individual' });
+  const submit = (user: any, isDraft: boolean) => formSubmit(mockContext, user, { formId: 'form-1', values }, isDraft);
+  const caps = (...names: string[]) => names.map((name) => ({ name }));
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockStoreLoadById.mockResolvedValue(mockForm);
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' } as any);
+    vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' } as any);
+  });
+
+  it('should let a user with only the form capability submit to the main destination', async () => {
+    const result = await submit({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, false);
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject a user without Create / Update knowledge nor the form capability', async () => {
+    await expect(submit({ ...mockUser, capabilities: caps('KNOWLEDGE_KNASKIMPORT') }, false)).rejects.toThrow('You are not allowed to submit forms in this destination.');
+    expect(workDomain.createWork).not.toHaveBeenCalled();
+  });
+
+  it('should require the kill chain phase right when an object created in the form carries a phase', async () => {
+    // the import upserts the phases of the objects it creates: refused up front instead of losing the objects
+    mockStoreLoadById.mockResolvedValue({
+      ...mockForm,
+      form_schema: JSON.stringify({ fields: [], mainEntityType: 'Malware', mainEntityLookup: true }),
+    });
+    const withPhase = JSON.stringify({ mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'M' }, refs: { killChainPhases: [{ existing: 'phase-1' }] } }] });
+    const submitWithPhase = (user: any) => formSubmit(mockContext, user, { formId: 'form-1', values: withPhase }, false);
+    await expect(submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }))
+      .rejects.toThrow('You are not allowed to attach kill chain phases to the objects created in a form.');
+    expect(workDomain.createWork).not.toHaveBeenCalled();
+    vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ type: 'string' } as any);
+    vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockReturnValue(null);
+    vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'phase-1', standard_id: 'kill-chain-phase--1', entity_type: 'Kill-Chain-Phase', kill_chain_name: 'mitre', phase_name: 'execution' } as any);
+    const allowed = await submitWithPhase({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'SETTINGS_SETKILLCHAINPHASES') });
+    expect(allowed.success).toBe(true);
+  });
+
+  it('should reject a main submission when the capability is only granted in draft', async () => {
+    const draftOnly = { ...mockUser, capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNFORMINTAKE') };
+    await expect(submit(draftOnly, false)).rejects.toThrow('You are not allowed to submit forms in this destination.');
+    const result = await submit(draftOnly, true);
+    expect(result.success).toBe(true);
+  });
+
+  it('should require the label right to create labels, whatever the form capability', async () => {
+    const withLabel = JSON.stringify({
+      name: 'With label',
+      pendingObjects: [{ id: 'l1', entityType: 'Label', input: { value: 'new-label' } }],
+    });
+    const formOnly = { ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') };
+    await expect(formSubmit(mockContext, formOnly, { formId: 'form-1', values: withLabel }, false)).rejects.toThrow('You are not allowed to create labels.');
+    const withRight = { ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE', 'SETTINGS_SETLABELS') };
+    await expect(formSubmit(mockContext, withRight, { formId: 'form-1', values: withLabel }, false)).resolves.toMatchObject({ success: true });
+  });
+
+  it('should bind the work to the applicant, the form and the draft of the submission', async () => {
+    await submit({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, true);
+    const connectorId = connectorIdFromIngestId('form-1');
+    expect(workDomain.createWork).toHaveBeenCalledWith(
+      mockContext,
+      SYSTEM_USER,
+      { internal_id: connectorId, connector_type: 'EXTERNAL_IMPORT' },
+      expect.stringMatching(/^Form submission @ /),
+      connectorId,
+      { receivedTime: expect.any(String), formSubmission: { applicant_id: 'user-1', form_id: 'form-1', draft_id: 'draft-1' } },
+    );
+  });
+
+  it('should bind a main submission to no draft', async () => {
+    await submit({ ...mockUser, capabilities: caps('KNOWLEDGE_KNFORMINTAKE') }, false);
+    expect(vi.mocked(workDomain.createWork).mock.calls[0][5]).toMatchObject({ formSubmission: { applicant_id: 'user-1', form_id: 'form-1', draft_id: null } });
+  });
+
+  it('should keep letting a user with only Import knowledge in the draft scope submit into a draft', async () => {
+    const importInDraft = { ...mockUser, capabilities: [], capabilitiesInDraft: caps('KNOWLEDGE_KNASKIMPORT') };
+    await expect(submit(importInDraft, true)).resolves.toMatchObject({ success: true });
+    await expect(submit(importInDraft, false)).rejects.toThrow('You are not allowed to submit forms in this destination.');
+  });
+
+  it('should let a BYPASS user submit without the form capability', async () => {
+    const result = await submit({ ...mockUser, capabilities: caps(BYPASS) }, false);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('formSubmit - failure after the draft is created', () => {
+  const values = JSON.stringify({ name: 'Test Individual' });
+  const submit = (isDraft: boolean) => formSubmit(mockContext, mockUser, { formId: 'form-1', values }, isDraft);
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockStoreLoadById.mockResolvedValue(mockForm);
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' } as any);
+    vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' } as any);
+  });
+
+  it('should delete the draft of the submission when the work cannot be created', async () => {
+    vi.mocked(workDomain.createWork).mockRejectedValue(new Error('work failure'));
+    await expect(submit(true)).rejects.toThrow('Failed to process form submission');
+    expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+    expect(workDomain.updateProcessedTime).not.toHaveBeenCalled();
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledOnce();
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledWith(expect.objectContaining({ draft_context: undefined }), SYSTEM_USER, 'draft-1');
+  });
+
+  it('should close the work in error and delete the draft when the bundle cannot be pushed', async () => {
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(new Error('queue failure'));
+    await expect(submit(true)).rejects.toThrow('Failed to process form submission');
+    expect(workDomain.updateProcessedTime).toHaveBeenCalledWith(mockContext, SYSTEM_USER, 'work-1', expect.any(String), true);
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledWith(expect.anything(), SYSTEM_USER, 'draft-1');
+  });
+
+  it('should rethrow the original error as the cause', async () => {
+    const failure = new Error('queue failure');
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(failure);
+    const error: any = await submit(true).catch((e) => e);
+    expect(error.cause ?? error.data?.cause ?? error.extensions?.data?.cause).toBe(failure);
+  });
+
+  it('should delete the draft when it cannot be completed, before any work exists', async () => {
+    const { patchAttribute } = await import('../../../src/database/middleware');
+    vi.mocked(patchAttribute).mockRejectedValue(new Error('patch failure'));
+    await expect(submit(true)).rejects.toThrow('Failed to process form submission');
+    expect(workDomain.createWork).not.toHaveBeenCalled();
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledWith(expect.anything(), SYSTEM_USER, 'draft-1');
+  });
+
+  it('should only close the work when the submission has no draft', async () => {
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(new Error('queue failure'));
+    await expect(submit(false)).rejects.toThrow('Failed to process form submission');
+    expect(workDomain.updateProcessedTime).toHaveBeenCalledOnce();
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('should still report the submission error when the cleanup fails too', async () => {
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValue(new Error('queue failure'));
+    vi.mocked(workDomain.updateProcessedTime).mockRejectedValue(new Error('work cleanup failure'));
+    vi.mocked(draftWorkspaceDomain.deleteDraftWorkspace).mockRejectedValue(new Error('draft cleanup failure'));
+    await expect(submit(true)).rejects.toThrow('Failed to process form submission');
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).toHaveBeenCalledOnce();
+  });
+
+  it('should keep the draft and the work of a submission that was sent', async () => {
+    await expect(submit(true)).resolves.toMatchObject({ success: true, entityId: 'draft-1' });
+    expect(draftWorkspaceDomain.deleteDraftWorkspace).not.toHaveBeenCalled();
+    expect(workDomain.updateProcessedTime).not.toHaveBeenCalled();
   });
 });

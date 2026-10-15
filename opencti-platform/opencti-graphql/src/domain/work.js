@@ -231,6 +231,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     background_task_id,
     fileMarkings = [],
     draftContext,
+    formSubmission,
   } = args;
   const isMultiPartWork = args.isMultiPartWork === true;
   // Create the work and an initial job
@@ -267,7 +268,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   const createdWork = await loadWorkById(context, user, workId);
   // If work was created, initialize work on redis
   if (createdWork) {
-    await redisInitializeWork(createdWork.id, isMultiPartWork);
+    await redisInitializeWork(createdWork.id, isMultiPartWork, formSubmission);
   }
   logApp.info('Work initiated', {
     workId,

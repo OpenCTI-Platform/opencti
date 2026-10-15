@@ -3,6 +3,7 @@ import { Readable } from 'stream';
 import '../../../../src/modules/index'; // registers the entity types and their attributes
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import {
+  countPendingKillChainPhases,
   getPendingRoots,
   getPendingUploadIndexes,
   materializePendingRoots,
@@ -697,5 +698,18 @@ describe('withPendingExternalReferenceFiles', () => {
     withPendingExternalReferenceFiles(stix, entity);
     expect(stix.external_references[0]).toEqual({ source_name: 'existing' });
     expect(stix.external_references[1]).toEqual({ source_name: 'pending', x_opencti_files: [{ name: 'a.pdf', data: 'cGRm', mime_type: 'application/pdf' }] });
+  });
+});
+
+describe('countPendingKillChainPhases', () => {
+  it('should count the objects that carry a kill chain phase, in the main and additional lookups', () => {
+    const withPhase = (extra: Record<string, any> = {}) => ({ entityType: 'Malware', input: { name: 'M' }, refs: { killChainPhases: [{ existing: 'p1' }] }, ...extra });
+    const values = {
+      mainEntityLookupPending: [withPhase(), { entityType: 'Malware', input: { name: 'No phase' } }],
+      additional_threat_lookup_pending: [withPhase()],
+    };
+    expect(countPendingKillChainPhases(values)).toBe(2);
+    expect(countPendingKillChainPhases({})).toBe(0);
+    expect(countPendingKillChainPhases({ mainEntityLookupPending: [withPhase({ refs: { killChainPhases: [] } })] })).toBe(0);
   });
 });

@@ -470,6 +470,15 @@ export const resolvePendingFieldRefs = (values: Record<string, any>, uploads: Pe
   return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walk(value)]));
 };
 
+// Objects created in the form that carry a kill chain phase: the import upserts the phase, which has its own right.
+export const countPendingKillChainPhases = (values: Record<string, any>): number => {
+  return getPendingRoots(values).filter((root) => toArray(root.refs?.[INPUT_KILLCHAIN]).length > 0).length;
+};
+
+export const countPendingLabels = (values: Record<string, any>): number => {
+  return toArray<PendingObject>(values.pendingObjects).filter((object) => object.entityType === ENTITY_TYPE_LABEL).length;
+};
+
 /**
  * Reads the given uploads (all by default) into memory as base64, one after the other. The result is indexed
  * like the uploads, the ones that are not asked for stay empty. The decoded size of the whole is capped.
