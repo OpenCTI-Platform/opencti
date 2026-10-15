@@ -105,10 +105,17 @@ type S3Connection {
   secret_key: String!
 }
 
+enum ConnectorInfoErrorCriticity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 input ConnectorInfoErrorInput {
   code: String!
   message: String!
-  criticity: Int!
+  criticity: ConnectorInfoErrorCriticity!
 }
 
 input ConnectorInfoInput {
@@ -124,7 +131,7 @@ input ConnectorInfoInput {
 type ConnectorInfoError {
   code: String!
   message: String!
-  criticity: Int!
+  criticity: ConnectorInfoErrorCriticity!
 }
 
 type ConnectorInfo {
