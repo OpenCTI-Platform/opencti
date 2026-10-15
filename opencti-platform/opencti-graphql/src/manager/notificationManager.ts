@@ -352,17 +352,28 @@ export const filterUpdateInstanceIdsFromUpdatePatch = (
   return instances;
 };
 
-const keepNewArrayElements = (operations: jsonpatch.Operation[], replacedDocument: unknown) => operations.map((operation) => {
-  if (operation.op !== 'replace' || !Array.isArray(operation.value)) {
-    return operation;
+const isArrayReplacement = (operation: jsonpatch.Operation): operation is jsonpatch.ReplaceOperation<unknown[]> => {
+  return operation.op === 'replace' && Array.isArray(operation.value);
+};
+
+const keepNewArrayElements = (operations: jsonpatch.Operation[], replacedDocument: unknown) => {
+  if (!operations.some(isArrayReplacement)) {
+    return operations;
   }
-  const replacedValue = jsonpatch.getValueByPointer(replacedDocument, operation.path);
-  if (!Array.isArray(replacedValue)) {
-    return operation;
-  }
-  const replacedElements = new Set(replacedValue);
-  return { ...operation, value: operation.value.filter((element) => !replacedElements.has(element)) };
-});
+  let document = structuredClone(replacedDocument);
+  return operations.map((operation) => {
+    let keptOperation = operation;
+    if (isArrayReplacement(operation)) {
+      const replacedValue = jsonpatch.getValueByPointer(document, operation.path);
+      if (Array.isArray(replacedValue)) {
+        const replacedElements = new Set(replacedValue);
+        keptOperation = { ...operation, value: operation.value.filter((element) => !replacedElements.has(element)) };
+      }
+    }
+    document = jsonpatch.applyOperation(document, jsonpatch.deepClone(operation)).newDocument;
+    return keptOperation;
+  });
+};
 
 export const filterUpdateInstanceIdsFromUpdateEvent = (
   listenedInstanceIdsMap: Map<string, StixObject>,

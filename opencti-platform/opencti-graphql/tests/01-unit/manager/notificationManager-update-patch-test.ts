@@ -30,6 +30,21 @@ describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
     expect(result).toEqual([{ instance: attackPattern, action: 'added in' }]);
   });
 
+  it('should resolve a nested array replacement after an index shifting operation', () => {
+    const kept = { id: 'group--kept', type: 'group' } as unknown as StixObject;
+    const removed = { id: 'group--removed', type: 'group' } as unknown as StixObject;
+    const groupsMap = new Map<string, StixObject>([[kept.id, kept], [removed.id, removed]]);
+    const previous = { id: 'report--r', type: 'report', authorized_members: [{ id: 'A', groups_restriction_ids: [kept.id, removed.id, 'group--other'] }] } as unknown as StixCoreObject;
+    const current = { id: 'report--r', type: 'report', authorized_members: [{ id: 'B' }, { id: 'A', groups_restriction_ids: [kept.id] }] } as unknown as StixCoreObject;
+    const updatePatch = { patch: computeJsonPatch(previous, current), reverse_patch: computeJsonPatch(current, previous) };
+    expect(updatePatch.patch).toEqual([
+      { op: 'add', path: '/authorized_members/0', value: { id: 'B' } },
+      { op: 'replace', path: '/authorized_members/1/groups_restriction_ids', value: [kept.id] },
+    ]);
+    const result = filterUpdateInstanceIdsFromUpdateEvent(groupsMap, updatePatch, previous, current);
+    expect(result).toEqual([{ instance: removed, action: 'removed from' }]);
+  });
+
   it('should report references added and removed by element operations', () => {
     const previous = report([malware.id, 'identity--c']);
     const current = report(['identity--c', attackPattern.id]);
