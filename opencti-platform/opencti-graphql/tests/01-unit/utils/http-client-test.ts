@@ -390,4 +390,32 @@ describe('getHttpClient', () => {
     expect(jsonString.data.body).toBe('{"a":1}');
     expect(nullPayload.data.body).toBe('null');
   });
+
+  it('should report a streamed body that stops arriving as a timeout', async () => {
+    const response = await getHttpClient({ baseURL, responseType: 'stream', timeout: 100 }).get('/stall');
+
+    const error = await (async () => {
+      for await (const chunk of response.data) {
+        expect(chunk.toString()).toBe('a');
+      }
+    })().catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.code).toBe('ECONNABORTED');
+  });
+
+  it('should report a streamed body canceled by the caller as canceled', async () => {
+    const controller = new AbortController();
+    const response = await getHttpClient({ baseURL, responseType: 'stream' }).get('/stall', { signal: controller.signal });
+
+    const error = await (async () => {
+      for await (const chunk of response.data) {
+        expect(chunk.toString()).toBe('a');
+        controller.abort();
+      }
+    })().catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.code).toBe('ERR_CANCELED');
+  });
 });

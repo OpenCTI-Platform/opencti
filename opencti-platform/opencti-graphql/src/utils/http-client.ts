@@ -1,4 +1,4 @@
-import { pipeline, Readable, Transform } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
@@ -287,7 +287,13 @@ const toHeaderRecord = (method: string, response: Response) => {
   return record;
 };
 
-const watchBody = (response: Response, onProgress: () => void, onEnd: () => void) => {
+interface BodyWatcher {
+  onProgress: () => void;
+  onEnd: () => void;
+  toError: (error: unknown) => Error;
+}
+
+const watchBody = (response: Response, { onProgress, onEnd, toError }: BodyWatcher) => {
   const source = response.body ? Readable.fromWeb(response.body as NodeReadableStream) : Readable.from([]);
   const watched = new Transform({
     transform(chunk, _encoding, callback) {
@@ -295,12 +301,17 @@ const watchBody = (response: Response, onProgress: () => void, onEnd: () => void
       callback(null, chunk);
     },
   });
-  pipeline(source, watched, onEnd);
+  source.on('error', (error) => watched.destroy(toError(error)));
+  watched.on('close', () => {
+    source.destroy();
+    onEnd();
+  });
+  source.pipe(watched);
   return watched;
 };
 
-const readData = async (response: Response, responseType: HttpResponseType, onProgress: () => void, onEnd: () => void) => {
-  const body = watchBody(response, onProgress, onEnd);
+const readData = async (response: Response, responseType: HttpResponseType, watcher: BodyWatcher) => {
+  const body = watchBody(response, watcher);
   if (responseType === 'stream') {
     return body;
   }
@@ -359,7 +370,24 @@ const createTimeoutWatchdog = (timeout: number) => {
   return { signal: controller.signal, arm, disarm };
 };
 
+const proxyDispatchers = new Map<string, Dispatcher>();
+const getProxyDispatcher = (url: URL): Dispatcher | undefined => {
+  const proxyDispatcher = getPlatformHttpProxyAgent(url.href, true);
+  if (!proxyDispatcher) {
+    return undefined;
+  }
+  const existing = proxyDispatchers.get(url.protocol);
+  if (existing) {
+    return existing;
+  }
+  proxyDispatchers.set(url.protocol, proxyDispatcher);
+  return proxyDispatcher;
+};
+
 const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortSignal | undefined, signal: AbortSignal | undefined) => {
+  if (error instanceof HttpClientError) {
+    return error;
+  }
   if (timeoutSignal?.aborted) {
     return new HttpClientError(`timeout of ${timeout}ms exceeded`, 'ECONNABORTED', undefined, { cause: error });
   }
@@ -401,7 +429,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     let response: Response;
     try {
       for (let redirectCount = 0; ; redirectCount += 1) {
-        const dispatcher: Dispatcher = useClientTransport ? (getPlatformHttpProxyAgent(currentUrl.href, true) ?? clientAgent) : defaultAgent;
+        const dispatcher: Dispatcher = useClientTransport ? (getProxyDispatcher(currentUrl) ?? clientAgent) : defaultAgent;
         const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
         const requestUrl = currentUrl.href;
         watchdog?.arm();
@@ -448,7 +476,11 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
       headers: toHeaderRecord(currentMethod, finalResponse),
       data: await transport(() => {
         watchdog?.arm();
-        return readData(finalResponse, ok ? responseType : 'json', () => watchdog?.arm(), () => watchdog?.disarm());
+        return readData(finalResponse, ok ? responseType : 'json', {
+          onProgress: () => watchdog?.arm(),
+          onEnd: () => watchdog?.disarm(),
+          toError: (error) => toTransportError(error, requestTimeout, watchdog?.signal, config.signal),
+        });
       }),
     };
     if (!ok) {
