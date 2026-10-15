@@ -23,7 +23,6 @@ import type { ModuleDescriptor } from './modules/module-descriptor';
 import { UnsupportedError } from './config/errors';
 import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
-import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import { registerSettingsAttribute } from './modules/settings/settings-attributes';
@@ -232,8 +231,7 @@ const registerAbstractDataModel = () => {
 };
 
 // The abstract data model comes first. Then each phase runs for every module before the next phase starts:
-// data model (overview layouts, attributes, definitions, then settings attributes), graphql schemas,
-// managers, then init.
+// data model (overview layouts, definitions, then settings attributes), graphql schemas, managers, then init.
 // usageProtection catches a read of types, attributes or refs made earlier, not of converters or validators.
 // Must run before anything reads the schema (selectEntityType, createSchema, startAllManagers).
 // Runs once: calling it again is a no-op with the same descriptors, and an error with other ones.
@@ -249,9 +247,8 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
   }
   registeredDescriptors = [...descriptors];
   registerAbstractDataModel();
-  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [], settingsAttributes = [] }) => {
+  descriptors.forEach(({ overviewLayouts = [], dataModel = [], settingsAttributes = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
-    attributes.forEach((definition) => schemaAttributesDefinition.registerAttributes(definition.entityType, definition.attributes));
     dataModel.forEach((definition) => registerDefinition(definition));
     settingsAttributes.forEach((attribute) => registerSettingsAttribute(attribute));
   });

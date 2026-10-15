@@ -10,11 +10,6 @@ export interface GraphqlSchemaDefinition {
   resolver: Resolvers;
 }
 
-export interface AttributesDefinition {
-  entityType: string;
-  attributes: AttributeDefinition[];
-}
-
 export interface OverviewLayoutDefinition {
   entityType: string;
   layout: OverviewLayoutCustomization[];
@@ -27,8 +22,6 @@ export interface ModuleDescriptor {
   id: string;
   // Default overview layouts of entity types not defined through dataModel (yet)
   overviewLayouts?: OverviewLayoutDefinition[];
-  // Attributes of entity types not defined through dataModel (yet)
-  attributes?: AttributesDefinition[];
   dataModel?: ModuleDefinition<any, any>[];
   // Attributes the module adds to the platform settings, read and written through settings-attributes only
   settingsAttributes?: AttributeDefinition[];
