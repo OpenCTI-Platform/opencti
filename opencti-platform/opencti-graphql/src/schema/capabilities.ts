@@ -1,5 +1,5 @@
 import { AUTOMATION, BYPASS, KNOWLEDGE, TAXIIAPI } from '../utils/access';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from './general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FORM_INTAKE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from './general';
 
 // The capabilities defined by the platform, created at initialization by createCapabilities (database/data-initialization).
 // Constants only: this file must stay importable without loading the platform bootstrap.
@@ -20,6 +20,8 @@ export const TAXII_CAPABILITIES: CapabilityDefinition = {
     { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
   ],
 };
+// Sibling of KNUPDATE on purpose: capabilities are matched by name inclusion, a child of KNUPDATE would imply it.
+export const FORM_INTAKE_CAPABILITY: CapabilityDefinition = { name: KNOWLEDGE_FORM_INTAKE, description: 'Create knowledge via Form Intake', attribute_order: 350 };
 export const SHARE_FILTERS_CAPABILITY: CapabilityDefinition = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
 const KNOWLEDGE_CAPABILITIES: CapabilityDefinition = {
   name: KNOWLEDGE,
@@ -41,6 +43,7 @@ const KNOWLEDGE_CAPABILITIES: CapabilityDefinition = {
         { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
       ],
     },
+    FORM_INTAKE_CAPABILITY,
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
     {
