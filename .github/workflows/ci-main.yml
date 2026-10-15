@@ -12,6 +12,9 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+  # Nightly run on the default branch, the one that tests every supported Elasticsearch major
+  schedule:
+    - cron: '0 2 * * *'
 
 jobs:
   wf-build-platform-image:
@@ -52,6 +55,9 @@ jobs:
       checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       client_python_local: true
       run-id: ${{ github.run_id }}
+      # Every pull request and push runs Elasticsearch 8 only. The nightly run and a manual run
+      # (workflow_dispatch, to check a branch before merging) add Elasticsearch 9.
+      elasticsearch_versions: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["8","9"]' || '["8"]' }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 

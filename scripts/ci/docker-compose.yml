@@ -11,7 +11,8 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.23
+    # Overridden by the backend tests matrix to run against another Elasticsearch major
+    image: ${ELASTICSEARCH_IMAGE:-elasticsearch:8.19.23}
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
