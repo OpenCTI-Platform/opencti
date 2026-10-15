@@ -8,6 +8,7 @@ export interface WorkflowFixture {
   name: string;
   statuses: string[];
   transitions: [string[], string, string | null][]; // [from, event, to]
+  widths?: Record<string, number>; // status widths; 160 when missing
 }
 
 export const SAMPLES: Record<'review' | 'incident' | 'rfi' | 'case', WorkflowFixture> = {
@@ -77,7 +78,7 @@ export const SAMPLES: Record<'review' | 'incident' | 'rfi' | 'case', WorkflowFix
 export const transitionId = (from: string[], event: string, to: string | null) => `transition-${from.join(',')}-${event}-${to ?? '_unlinked'}`;
 
 export const buildElements = (fixture: WorkflowFixture): { nodes: LayoutInputNode[]; edges: LayoutInputEdge[] } => {
-  const nodes: LayoutInputNode[] = fixture.statuses.map((id) => ({ id, type: 'status', width: 160, height: 50 }));
+  const nodes: LayoutInputNode[] = fixture.statuses.map((id) => ({ id, type: 'status', width: fixture.widths?.[id] ?? 160, height: 50 }));
   const edges: LayoutInputEdge[] = [];
   fixture.transitions.forEach(([from, event, to]) => {
     const id = transitionId(from, event, to);
@@ -96,8 +97,8 @@ export const buildElements = (fixture: WorkflowFixture): { nodes: LayoutInputNod
   return { nodes, edges };
 };
 
-// Seeded random workflow: a spanning chain, skip-ahead and backward transitions, and one
-// multi-source transition.
+// Seeded random workflow: a spanning chain, skip-ahead, backward and self-loop transitions,
+// one multi-source transition, and status widths from 120 to 240px (long status names).
 export const randomWorkflow = (seed: number, size?: number): WorkflowFixture => {
   let s = seed >>> 0 || 1;
   const rnd = () => {
@@ -119,10 +120,12 @@ export const randomWorkflow = (seed: number, size?: number): WorkflowFixture => 
   for (let k = 0; k < Math.floor(n * 0.6); k += 1) {
     const a = Math.floor(rnd() * n);
     const b = Math.floor(rnd() * n);
-    if (a !== b) add([statuses[a]], a < b ? `skip_${k}` : `back_${k}`, statuses[b]);
+    if (a === b) add([statuses[a]], `loop_${k}`, statuses[a]);
+    else add([statuses[a]], a < b ? `skip_${k}` : `back_${k}`, statuses[b]);
   }
   if (n > 4) add([statuses[1], statuses[2], statuses[3]], 'cancel', statuses[n - 1]);
-  return { name: `random-${seed}`, statuses, transitions };
+  const widths = Object.fromEntries(statuses.map((id) => [id, 120 + Math.floor(rnd() * 121)]));
+  return { name: `random-${seed}`, statuses, transitions, widths };
 };
 
 export interface Box {

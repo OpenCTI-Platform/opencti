@@ -9,7 +9,7 @@ const OPTIONS = { spacing: [50, 50] as [number, number] };
 const run = (fixture: WorkflowFixture) => {
   const { nodes, edges } = buildElements(fixture);
   const result = layoutWorkflow(nodes, edges, OPTIONS);
-  const boxes: Box[] = nodes.map((n) => ({ id: n.id, ...result.positions.get(n.id)!, w: 160, h: 50 }));
+  const boxes: Box[] = nodes.map((n) => ({ id: n.id, ...result.positions.get(n.id)!, w: n.width ?? 160, h: n.height ?? 50 }));
   return { nodes, edges, result, boxes };
 };
 
@@ -59,10 +59,10 @@ describe('layoutWorkflow – invariants (4 samples + 300 random workflows)', () 
     expect([...a.routes]).toEqual([...b.routes]);
   });
 
-  it('keeps the total bend count under the prototype baseline', () => {
-    // Prototype measured 10235 bends on these 300 seeds; fail on a clear regression.
+  it('keeps the total bend count under the measured baseline', () => {
+    // Measured 11430 bends on these 300 seeds (self-loops and widths 120-240px included); fail on a clear regression.
     const bends = fixtures.slice(4).reduce((sum, fixture) => sum + countBends(run(fixture).result.routes), 0);
-    expect(bends).toBeLessThanOrEqual(10500);
+    expect(bends).toBeLessThanOrEqual(11800);
   });
 });
 
