@@ -1052,6 +1052,13 @@ class PingAlive(threading.Thread):
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
                 connector_info = self.connector_info.all_details
+
+                if self.connector_info.last_run_result is not None:
+                    self.connector_logger.error(
+                        "[PING] ERROR during last run",
+                        {"last_run_result": self.connector_info.last_run_result},
+                    )
+
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
@@ -1806,6 +1813,66 @@ class ListenStream(threading.Thread):
             self.callback.stop()
 
 
+CONNECTOR_ERRORS_MAX_COUNT = 20
+CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
+CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
+
+
+class ConnectorInfoErrorCriticity(Enum):
+    """Criticity of an error reported to the platform on ping, lowest first."""
+
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+CRITICITY_RANK = {
+    criticity: rank for rank, criticity in enumerate(ConnectorInfoErrorCriticity)
+}
+
+
+def _parse_criticity(value) -> ConnectorInfoErrorCriticity:
+    if isinstance(value, ConnectorInfoErrorCriticity):
+        return value
+    return ConnectorInfoErrorCriticity(str(value).strip().upper())
+
+
+def _sanitize_connector_error(error) -> Optional[Dict]:
+    try:
+        code = error.get("code")
+        if code is None:
+            return None
+        code = str(code).strip()[:CONNECTOR_ERROR_CODE_MAX_LENGTH]
+        if not code:
+            return None
+        message = error.get("message")
+        message = ("" if message is None else str(message).strip())[
+            :CONNECTOR_ERROR_MESSAGE_MAX_LENGTH
+        ]
+        criticity = _parse_criticity(error.get("criticity"))
+        return {"code": code, "message": message, "criticity": criticity}
+    # A malformed error must never make the ping mutation fail.
+    except Exception:  # pylint: disable=broad-except
+        return None
+
+
+def _sanitize_connector_errors(errors) -> List[Dict]:
+    try:
+        sanitized = [
+            sanitized_error
+            for sanitized_error in map(_sanitize_connector_error, errors)
+            if sanitized_error is not None
+        ]
+    except Exception:  # pylint: disable=broad-except
+        return []
+    sanitized.sort(key=lambda error: CRITICITY_RANK[error["criticity"]], reverse=True)
+    return [
+        {**error, "criticity": error["criticity"].value}
+        for error in sanitized[:CONNECTOR_ERRORS_MAX_COUNT]
+    ]
+
+
 class ConnectorInfo:
     """Container for connector runtime information and status.
 
@@ -1824,6 +1891,10 @@ class ConnectorInfo:
     :type next_run_datetime: datetime or None
     :param last_run_datetime: Datetime of the last connector run
     :type last_run_datetime: datetime or None
+    :param errors: List of errors reported to the platform, each a dict with
+        ``code`` (str), ``message`` (str) and ``criticity``
+        (:class:`ConnectorInfoErrorCriticity` or its name)
+    :type errors: list or None
 
     Example:
         >>> info = ConnectorInfo(run_and_terminate=False, queue_threshold=500.0)
@@ -1840,6 +1911,7 @@ class ConnectorInfo:
         queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
+        errors: Optional[List[Dict]] = None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -1855,6 +1927,8 @@ class ConnectorInfo:
         :type next_run_datetime: datetime or None
         :param last_run_datetime: Last run time
         :type last_run_datetime: datetime or None
+        :param errors: Errors to report (dicts with code, message, criticity)
+        :type errors: list or None
         """
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
@@ -1862,6 +1936,11 @@ class ConnectorInfo:
         self._queue_messages_size = queue_messages_size
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
+        self._errors: List[Dict] = list(errors) if errors else []
+
+        self._last_run_result: str | None = (
+            None  # Return from the last connector run, None means everything OK
+        )
 
     @property
     def all_details(self):
@@ -1870,7 +1949,7 @@ class ConnectorInfo:
         :return: Dictionary containing all connector status information
         :rtype: dict
         """
-        return {
+        details = {
             "run_and_terminate": self._run_and_terminate,
             "buffering": self._buffering,
             "queue_threshold": self._queue_threshold,
@@ -1878,6 +1957,11 @@ class ConnectorInfo:
             "next_run_datetime": self._next_run_datetime,
             "last_run_datetime": self._last_run_datetime,
         }
+        errors = _sanitize_connector_errors(self._errors)
+        # Platforms without errors support reject the key, and the platform treats it missing as no error.
+        if errors:
+            details["errors"] = errors
+        return details
 
     @property
     def run_and_terminate(self) -> bool:
@@ -1970,6 +2054,26 @@ class ConnectorInfo:
         self._next_run_datetime = value
 
     @property
+    def last_run_result(self) -> str | None:
+        """Get the result of the last run.
+
+        :return: The result of the last run, or None if everything was OK
+        :rtype: str or None
+        """
+        return self._last_run_result
+
+    @last_run_result.setter
+    def last_run_result(self, value: str | None) -> None:
+        """Get or set the result of the last run.
+
+        :param value: The result of the last run
+        :type value: str or None
+        :return: The result of the last run
+        :rtype: str or None
+        """
+        self._last_run_result = value
+
+    @property
     def last_run_datetime(self) -> datetime:
         """Get the last run datetime.
 
@@ -1986,6 +2090,49 @@ class ConnectorInfo:
         :type value: datetime
         """
         self._last_run_datetime = value
+
+    @property
+    def errors(self) -> List[Dict]:
+        """Get the errors reported to the platform.
+
+        :return: List of dicts with ``code``, ``message`` and ``criticity``
+        :rtype: list
+        """
+        return self._errors
+
+    @errors.setter
+    def errors(self, value: Optional[List[Dict]]) -> None:
+        """Replace the errors reported to the platform.
+
+        :param value: List of dicts with ``code``, ``message`` and ``criticity``
+        :type value: list or None
+        """
+        self._errors = list(value) if value else []
+
+    def add_error(
+        self,
+        code: str,
+        message: str,
+        criticity: Union[ConnectorInfoErrorCriticity, str],
+    ) -> None:
+        """Add an error to report on the next ping.
+
+        Errors are sanitized when sent: entries without a code or with an
+        unknown criticity are dropped, code and message are truncated, and
+        only the most critical ones are kept.
+
+        :param code: Error code
+        :type code: str
+        :param message: Human readable error message
+        :type message: str
+        :param criticity: Criticity level, as the enum or its name (case-insensitive)
+        :type criticity: ConnectorInfoErrorCriticity or str
+        """
+        self._errors.append({"code": code, "message": message, "criticity": criticity})
+
+    def clear_errors(self) -> None:
+        """Remove all reported errors."""
+        self._errors = []
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -3077,7 +3224,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-        self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], None | str], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -3154,7 +3301,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-        self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self,
+        message_callback: Callable[[], None | str],
+        duration_period: Union[int, float],
     ) -> None:
         """Schedule the execution of a connector process.
 
@@ -3186,7 +3335,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                message_callback()
+                result = message_callback()
+                self.connector_info.last_run_result = result
+
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
                 # Lets you know what is the last run of the connector datetime

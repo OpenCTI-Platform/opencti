@@ -135,14 +135,27 @@ class OpenCTIApiConnector:
                 }
             }
            """
-        result = self.api.query(
-            query,
-            {
-                "id": connector_id,
-                "state": json.dumps(connector_state),
-                "connectorInfo": connector_info,
-            },
-        )
+        variables = {
+            "id": connector_id,
+            "state": json.dumps(connector_state),
+            "connectorInfo": connector_info,
+        }
+        try:
+            result = self.api.query(query, variables)
+        except ValueError as e:
+            if not connector_info or not connector_info.get("errors"):
+                raise
+            # Platforms older than errors support reject the field: the ping itself must still go through.
+            self.api.app_logger.warning(
+                "Ping rejected with connector errors, retrying without them",
+                {"reason": str(e)},
+            )
+            connector_info_without_errors = {
+                key: value for key, value in connector_info.items() if key != "errors"
+            }
+            result = self.api.query(
+                query, {**variables, "connectorInfo": connector_info_without_errors}
+            )
         return result["data"]["pingConnector"]
 
     def register(self, connector: OpenCTIConnector) -> Dict:
