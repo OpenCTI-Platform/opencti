@@ -10,8 +10,6 @@ export interface ExistingSecurityCoverageResult {
 
 export type SecurityCoverageResultToEdit = NonNullable<SecurityCoverageResultFormDrawerFragment$data['results']>[number];
 
-export const isManualResult = (result: ExistingSecurityCoverageResult) => !result.external_uri;
-
 export const resultToFormData = (result: SecurityCoverageResultToEdit): SecurityCoverageResultFormData => ({
   name: result.name,
   description: result.description ?? '',

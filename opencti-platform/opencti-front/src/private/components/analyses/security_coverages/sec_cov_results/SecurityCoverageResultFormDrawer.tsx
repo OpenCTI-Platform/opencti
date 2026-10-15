@@ -21,7 +21,7 @@ import { CoverageInformation } from '../SecurityCoverage-types';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import SecurityCoverageResultList from './SecurityCoverageResultList';
-import { isManualResult, resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
+import { resultToFormData, SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -104,7 +104,6 @@ const SecurityCoverageResultFormDrawer = ({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
   const [resultToEdit, setResultToEdit] = useState<SecurityCoverageResultToEdit>();
-  const manualResults = (results ?? []).filter(isManualResult);
   // In update mode, the first step is the selection of the result to update.
   const offset = isUpdate ? 1 : 0;
 
@@ -247,7 +246,7 @@ const SecurityCoverageResultFormDrawer = ({
       <SecurityCoverageResultsDropdown
         onCreate={() => open(false)}
         onUpdate={() => open(true)}
-        canUpdate={manualResults.length > 0}
+        canUpdate={(results ?? []).length > 0}
       />
 
       <Drawer
@@ -264,7 +263,7 @@ const SecurityCoverageResultFormDrawer = ({
 
           {isUpdate && activeStep === 0 && (
             <SecurityCoverageResultList
-              results={manualResults}
+              results={results ?? []}
               onCancel={close}
               onSelect={(result) => {
                 setResultToEdit(result);
