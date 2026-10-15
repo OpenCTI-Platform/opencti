@@ -1,10 +1,12 @@
-import { useContext, useEffect, useRef, type ReactNode } from 'react';
+import { useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@mui/material/styles';
 import * as maplibre from 'maplibre-gl';
 import type { StyleSpecification } from 'maplibre-gl';
 import maplibreglWorker from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { Protocol } from 'pmtiles';
 import Card from '@common/card/Card';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
+import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { isValidCoordinates } from '../../../../utils/position.utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -206,11 +208,13 @@ const GeoMap = ({
   markers,
 }: MapProps) => {
   const theme = useTheme();
+  const { t_i18n } = useFormatter();
   // Read locale directly from the context (bypassing useAuth's full-session check) so
   // GeoMap keeps working on public dashboards, which render outside of UserContext.Provider.
   const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isWebGLUnavailable, setIsWebGLUnavailable] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -220,15 +224,26 @@ const GeoMap = ({
     const pmtilesUrl = `pmtiles://${window.location.origin}${APP_BASE_PATH}/maps/world.pmtiles`;
     const style = buildMapStyle(pmtilesUrl, dark, mapLang);
 
-    const map = new maplibre.Map({
-      container: containerRef.current,
-      style,
-      center: [resolvedCenter.longitude, resolvedCenter.latitude],
-      zoom: zoom - 1,
-      attributionControl: false,
-      interactive: true,
-      canvasContextAttributes: { preserveDrawingBuffer: true },
-    });
+    let map: maplibre.Map;
+    try {
+      map = new maplibre.Map({
+        container: containerRef.current,
+        style,
+        center: [resolvedCenter.longitude, resolvedCenter.latitude],
+        zoom: zoom - 1,
+        attributionControl: false,
+        interactive: true,
+        canvasContextAttributes: { preserveDrawingBuffer: true },
+      });
+    } catch (error) {
+      // MapLibre needs WebGL2: when the browser cannot provide it (disabled, GPU blocklisted, VDI...),
+      // show a placeholder instead of letting the error take down the whole page.
+      if (error instanceof maplibre.GPUInitializationError) {
+        setIsWebGLUnavailable(true);
+        return undefined;
+      }
+      throw error;
+    }
     map.scrollZoom.setWheelZoomRate(WHEEL_ZOOM_RATE);
 
     let released = false;
@@ -254,7 +269,13 @@ const GeoMap = ({
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
-        <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: 300, borderRadius: 6 }} />
+        {isWebGLUnavailable ? (
+          <div style={{ height: '100%', minHeight: 300 }}>
+            <WidgetNoData message={t_i18n('This map cannot be displayed because your browser does not support WebGL2 or has it disabled.')} />
+          </div>
+        ) : (
+          <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: 300, borderRadius: 6 }} />
+        )}
       </Card>
     </div>
   );

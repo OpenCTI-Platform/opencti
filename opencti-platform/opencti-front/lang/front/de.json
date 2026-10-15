@@ -5038,6 +5038,7 @@
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "In dieser Liste werden alle Entwürfe angezeigt, für die eine Zugriffsbeschränkung aktiviert ist, d. h. sie sind nur für bestimmte Benutzer zugänglich. Sie können diese Zugriffsbeschränkung in diesem Bildschirm aufheben.",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "In dieser Liste werden alle Entitäten angezeigt, für die eine Zugriffsbeschränkung aktiviert ist, d. h., sie sind nur für bestimmte Benutzer zugänglich. Sie können diese Zugriffsbeschränkung auf diesem Bildschirm aufheben.",
   "This malware has been used": "Diese Malware wurde verwendet",
+  "This map cannot be displayed because your browser does not support WebGL2 or has it disabled.": "Diese Karte kann nicht angezeigt werden, da Ihr Browser WebGL2 nicht unterstützt oder deaktiviert hat.",
   "This mean that the indicator is not managed by the platform.": "Dies bedeutet, dass der Indikator nicht von der Plattform verwaltet wird.",
   "this month": "diesen Monat",
   "This name is already used for an other widget": "Dieser Name wird bereits für ein anderes Widget verwendet",

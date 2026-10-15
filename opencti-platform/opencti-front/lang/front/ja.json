@@ -5038,6 +5038,7 @@
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、アクセス制限が有効になっている、つまり特定のユーザーしかアクセスできない草稿がすべて表示されます。この画面ではアクセス制限を解除できます。",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、一部のアクセス制限が有効になっている、つまり一部の特定のユーザーしかアクセスできないエンティティがすべて表示されます。この画面では、このアクセス制限を削除できます。",
   "This malware has been used": "このマルウェアが使用された",
+  "This map cannot be displayed because your browser does not support WebGL2 or has it disabled.": "お使いのブラウザーが WebGL2 をサポートしていないか、無効になっているため、このマップを表示できません。",
   "This mean that the indicator is not managed by the platform.": "これは、このインディケータがプラットフォームによって管理されていないことを意味します。",
   "this month": "今月",
   "This name is already used for an other widget": "この名前は他のウィジェットで既に使われています。",
