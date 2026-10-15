@@ -249,11 +249,11 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
       res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
-      res.set({ 'Content-Security-Policy': 'sandbox' });
+      res.set('Content-Security-Policy', 'sandbox');
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-      res.set({ Pragma: 'no-cache' });
+      res.set('Pragma', 'no-cache');
       if (data.metaData.mimetype === 'text/html') {
-        res.set({ 'Content-type': 'text/html; charset=utf-8' });
+        res.set('Content-type', 'text/html; charset=utf-8');
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
@@ -295,11 +295,11 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
       res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
-      res.set({ 'Content-Security-Policy': 'sandbox' });
+      res.set('Content-Security-Policy', 'sandbox');
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-      res.set({ Pragma: 'no-cache' });
+      res.set('Pragma', 'no-cache');
       if (data.metaData.mimetype === 'text/html') {
-        res.set({ 'Content-type': 'text/html; charset=utf-8' });
+        res.set('Content-type', 'text/html; charset=utf-8');
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
@@ -328,7 +328,7 @@ const createApp = async (app, schema) => {
         const markDownData = await getFileContent(file);
         const html = marked(markDownData);
         await publishFileRead(context, context.user, data);
-        res.set({ 'Content-Security-Policy': 'sandbox' });
+        res.set('Content-Security-Policy', 'sandbox');
         res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.send(html);
       } else {

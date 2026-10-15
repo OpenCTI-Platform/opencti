@@ -41,3 +41,6 @@ fds-migration/reports/
 .env.local
 .env.development.local
 .playwright-mcp/
+
+# Docs
+__pycache__/

@@ -71,7 +71,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
         </Typography>
         {values.conditions && (
           <Box style={disabledEEStyle}>
-            <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} />
+            <Field name={WorkflowDataType.conditions} component={WorkflowConditionFilters} entityType={entityType} />
           </Box>
         )}
       </Box>

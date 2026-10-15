@@ -223,6 +223,7 @@ export const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
     baseOperationObject.opencti_operation = 'add_related_covered_entities';
     baseOperationObject.security_coverage_result_id = operations[0].id;
+    baseOperationObject.relationships_config = operations[0].relationships_config;
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {

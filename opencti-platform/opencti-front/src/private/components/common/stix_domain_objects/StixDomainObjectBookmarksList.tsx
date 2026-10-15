@@ -4,13 +4,11 @@ import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filter
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixDomainObjectBookmarksListQuery, StixDomainObjectsOrdering } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { OrderingMode } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 
@@ -222,8 +220,7 @@ const StixDomainObjectBookmarksList = ({
   const { t_i18n } = useFormatter();
 
   const {
-    isMissingHostEntity,
-    isMissingSavedFilters,
+    renderGuards,
     isPreviewMode,
     queryRef,
   } = useDashboardViz<StixDomainObjectBookmarksListQuery>({
@@ -236,25 +233,13 @@ const StixDomainObjectBookmarksList = ({
     config,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixDomainObjectBookmarksListComponent
-          queryRef={queryRef}
-        />
-      </Suspense>
-    );
-  };
+  const renderContent = () => (
+    <WidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
+      <StixDomainObjectBookmarksListComponent
+        queryRef={queryRef!}
+      />
+    </WidgetRenderContent>
+  );
 
   return (
     <WidgetContainer

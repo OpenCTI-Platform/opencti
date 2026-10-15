@@ -13,6 +13,7 @@ import { fetchQuery } from 'src/relay/environment';
 import { DashboardConfig } from './dashboard-types';
 import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
 
 export const savedFilterQuery = graphql`
   query dashboardVizUtilsSavedFilterQuery($id: ID!) {
@@ -39,23 +40,28 @@ const fetchSavedFilterContent = async (filterId: string) => {
   }
 };
 
+const NO_VARIABLE_VALUES: ReadonlyMap<string, string> = new Map();
+
 /**
  * Resolves widget data selections by cleaning filters based on the widget perspective,
- * substituting host entity IDs for custom views, and removing unavailable filter keys.
- * Returns the resolved selections along with flags indicating missing host entity or preview mode.
+ * substituting dashboard variables and host entity IDs for custom views, and removing unavailable filter keys.
+ * Returns the resolved selections along with flags indicating missing host entity, unresolved variables or preview mode.
  */
 export const resolveDataSelection = async ({
   filterKeysSchema,
   dataSelection,
   perspective,
   host,
+  variableValues = NO_VARIABLE_VALUES,
 }: {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
   host?: WidgetHost;
+  variableValues?: ReadonlyMap<string, string>;
 }) => {
   let isMissingSavedFilters = false;
+  let hasUnresolvedVariables = false;
   let mainEntityTypes = ['Stix-Core-Object', 'DraftWorkspace'];
   if (perspective === 'relationships') {
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
@@ -81,11 +87,19 @@ export const resolveDataSelection = async ({
           }
         }
       }
+      // Resolution order is contractual: saved filters, then variables, then host entity, then cleanup.
+      // An unresolved token is kept in place and the whole widget is blocked (fail closed):
+      // the cleanup below would otherwise silently drop a filter it cannot read.
+      let resolvedFilters = filters.map((f) => {
+        const { filters: withValues, unresolved } = resolveVariablesInFilterGroup(f, variableValues);
+        if (unresolved.length > 0) hasUnresolvedVariables = true;
+        return withValues;
+      });
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID
-      let resolvedFilters = filters;
       if (host?.kind === 'custom-view') {
-        resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
-        hostEntityNeeded = hostEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
+        const withVariables = resolvedFilters;
+        resolvedFilters = withVariables.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
+        hostEntityNeeded = hostEntityNeeded || withVariables.some((f, i) => f !== resolvedFilters[i]);
       }
       return {
         ...data,
@@ -103,6 +117,7 @@ export const resolveDataSelection = async ({
     isMissingHostEntity,
     isPreviewMode,
     isMissingSavedFilters,
+    hasUnresolvedVariables,
   };
 };
 
