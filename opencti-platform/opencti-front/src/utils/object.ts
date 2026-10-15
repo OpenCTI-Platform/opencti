@@ -27,8 +27,8 @@ export function getObjectProperty<T extends object>(object: T, path = '', option
   // Continue deeper, if it's array then need to continue for each element of the array.
   return Array.isArray(property)
     ? property.map((el) => (options?.nullableSubparts && (el === null || el === undefined)
-      ? undefined
-      : getObjectProperty(el, splitPath.join('.'), options)))
+        ? undefined
+        : getObjectProperty(el, splitPath.join('.'), options)))
     : getObjectProperty(property, splitPath.join('.'), options);
 }
 

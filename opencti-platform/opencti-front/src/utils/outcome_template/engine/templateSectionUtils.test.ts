@@ -99,7 +99,9 @@ describe('templateSectionUtils', () => {
     expect(container.ownerDocument.defaultView).toBeNull();
 
     expect(isSemanticallyEmptyHtmlFragment('<img src="x" onerror="window.__xss = true">')).toEqual(false);
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
     expect((window as unknown as { __xss?: boolean }).__xss).toBeUndefined();
   });
 
