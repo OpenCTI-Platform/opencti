@@ -52,6 +52,17 @@ describe('isValidVariableValue', () => {
     expect(isValidVariableValue(of('date'), 'not a date')).toBe(false);
   });
 
+  it.each([
+    ['boolean', 'true'],
+    ['numeric', '42'],
+    ['date', '2024-01-15T12:00:00.000Z'],
+  ] as const)('refuses a %s value with surrounding spaces, which would reach the filters as is', (type, value) => {
+    expect(isValidVariableValue(of(type), value)).toBe(true);
+    expect(isValidVariableValue(of(type), ` ${value}`)).toBe(false);
+    expect(isValidVariableValue(of(type), `${value} `)).toBe(false);
+    expect(isValidVariableValue(of(type), ` ${value} `)).toBe(false);
+  });
+
   it.each(['text', 'entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase', 'vocabulary', 'entityType'] as const)(
     'accepts any non-empty string without a variable token for %s',
     (type) => {

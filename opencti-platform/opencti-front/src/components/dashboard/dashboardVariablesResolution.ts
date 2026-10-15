@@ -79,6 +79,8 @@ export const buildDefaultVariableValues = (variables: DashboardVariable[] | unde
  * Same rules as the default value of a variable (`validateDraft` in variables/dashboardVariableDraft.ts):
  * a boolean is `true` or `false`, a numeric a finite number, a date something `Date.parse` understands, any other type
  * a non-blank string; no value may reference another variable. A selection restriction also bounds the value to its pool.
+ * A boolean, numeric or date value is taken as is, never trimmed: one with surrounding spaces is refused, since it would
+ * otherwise reach the filters of the widgets with its spaces.
  * A value failing it is ignored, so the default of the variable applies.
  */
 export const isValidVariableValue = (variable: DashboardVariable, value: string): boolean => {
@@ -87,11 +89,11 @@ export const isValidVariableValue = (variable: DashboardVariable, value: string)
   if (variable.restriction.mode === 'selection' && !variable.restriction.values.includes(value)) return false;
   switch (variable.type) {
     case 'boolean':
-      return trimmed === 'true' || trimmed === 'false';
+      return value === 'true' || value === 'false';
     case 'numeric':
-      return Number.isFinite(Number(trimmed));
+      return value === trimmed && Number.isFinite(Number(value));
     case 'date':
-      return !Number.isNaN(Date.parse(trimmed));
+      return value === trimmed && !Number.isNaN(Date.parse(value));
     default:
       return true;
   }
