@@ -44,28 +44,28 @@ const MAX_ENTITIES = 1000;
 
 interface BackgroundTaskLaunchProps {
   display: boolean;
-  filters: FilterGroup;
   onClose: () => void;
   onLaunch: () => void;
   onCompleted: () => void;
-  selectAll: boolean;
   numberOfSelectedElements: number;
   selectedElements: Record<string, unknown>;
   processing: boolean;
+  taskScope: BackgroundTaskScope;
   actions: {
     type: BackgroundTaskActionType;
     context?: {
       field?: string;
-      values?: { id?: string; value?: string }[];
+      values?: ({ id?: string; value?: string } | string)[];
     };
   }[];
+  selectAll?: boolean;
+  description?: string;
+  filters?: FilterGroup;
   search?: string;
   entityTypes?: string[];
   mergingElement?: { id: string };
-  taskScope?: BackgroundTaskScope;
   containerId?: string;
   promoteToContainer?: boolean;
-  description: string;
   excludedIds?: string[];
 }
 
@@ -140,12 +140,13 @@ const BackgroundTaskLaunch = ({
     return type;
   };
 
-  const normalizeActionValue = (element?: { id?: string; value?: string }) => {
-    if (element?.id) return element.id;
-    if (element?.value) return element.value;
+  const normalizeActionValue = (element?: { id?: string; value?: string } | string) => {
+    if (typeof element === 'string') return element;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (typeof element?.toISOString === 'function') return element.toISOString();
+    if (element?.id) return element.id;
+    if (element?.value) return element.value;
     return element;
   };
 
@@ -278,15 +279,17 @@ const BackgroundTaskLaunch = ({
                           className="my-1 mr-2"
                           label={`${t_i18n('Search')}: ${search}`}
                         />
-                        {filters.filters.length > 0 && (
+                        {(filters?.filters?.length ?? 0) > 0 && (
                           <Chip label={t_i18n('AND')} />
                         )}
                       </span>
                     )}
-                    <TasksFilterValueContainer
-                      filters={filters}
-                      entityTypes={entityTypes}
-                    />
+                    {filters && (
+                      <TasksFilterValueContainer
+                        filters={filters}
+                        entityTypes={entityTypes}
+                      />
+                    )}
                   </div>
                 ) : (
                   <span>

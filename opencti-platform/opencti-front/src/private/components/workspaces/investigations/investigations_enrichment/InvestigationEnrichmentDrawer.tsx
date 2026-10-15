@@ -1,10 +1,6 @@
-import { Alert, Card, CardFooter, CardHeader, CardTitle } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
 import Drawer from '../../../common/drawer/Drawer';
-import EnrichmentConnectorSelection from '../../../data/connectors/EnrichmentConnectorSelection';
-import { CardContent } from '@mui/material';
-import { useState } from 'react';
-import Button from '../../../../../components/common/button/Button';
+import InvestigationEnrichmentLaunch from './InvestigationEnrichmentLaunch';
 
 interface InvestigationEnrichmentDrawerProps {
   open: boolean;
@@ -18,9 +14,6 @@ const InvestigationEnrichmentDrawer = ({
   enrichmentType,
 }: InvestigationEnrichmentDrawerProps) => {
   const { t_i18n } = useFormatter();
-  const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
-
-  console.log(selectedConnectors);
 
   return (
     <Drawer
@@ -28,32 +21,9 @@ const InvestigationEnrichmentDrawer = ({
       open={open}
       onClose={onClose}
     >
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {t_i18n('Start an enrichment')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!enrichmentType && (
-            <Alert
-              severity="warning"
-              title={t_i18n('No connector available for the selected entities.')}
-            />
-          )}
-          {!!enrichmentType && (
-            <EnrichmentConnectorSelection
-              onChange={setSelectedConnectors}
-              type={enrichmentType}
-            />
-          )}
-        </CardContent>
-        <CardFooter className="justify-end">
-          <Button disabled={selectedConnectors.length === 0}>
-            {t_i18n('Enrich')}
-          </Button>
-        </CardFooter>
-      </Card>
+      <InvestigationEnrichmentLaunch
+        enrichmentType={enrichmentType}
+      />
     </Drawer>
   );
 };
