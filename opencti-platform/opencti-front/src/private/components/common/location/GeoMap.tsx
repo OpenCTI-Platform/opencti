@@ -11,6 +11,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { loadCountries, type CountriesCollection } from './countries';
 
 const GeoMapFallback = lazy(() => import('./GeoMapFallback'));
+const MAP_RENDERER_STORAGE_KEY = 'opencti-map-renderer';
 
 // Configure MapLibre worker URL (must be set before creating any Map)
 maplibre.setWorkerUrl(maplibreglWorker);
@@ -213,7 +214,7 @@ const GeoMap = ({
   const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isWebGLUnavailable, setIsWebGLUnavailable] = useState(false);
+  const [isFallbackRendered, setIsFallbackRendered] = useState(() => localStorage.getItem(MAP_RENDERER_STORAGE_KEY) === 'fallback');
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -236,7 +237,7 @@ const GeoMap = ({
       });
     } catch (error) {
       if (error instanceof maplibre.GPUInitializationError) {
-        setIsWebGLUnavailable(true);
+        setIsFallbackRendered(true);
         return undefined;
       }
       throw error;
@@ -266,7 +267,7 @@ const GeoMap = ({
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
-        {isWebGLUnavailable ? (
+        {isFallbackRendered ? (
           <Suspense fallback={<div style={{ minHeight: 300 }} />}>
             <GeoMapFallback zoom={zoom} center={center} countries={countries} markers={markers} />
           </Suspense>
