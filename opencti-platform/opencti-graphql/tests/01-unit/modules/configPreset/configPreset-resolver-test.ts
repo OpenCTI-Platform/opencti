@@ -9,11 +9,15 @@ vi.mock('../../../../src/config/conf', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
   isFeatureEnabled: vi.fn(() => flags.enabled),
 }));
+vi.mock('../../../../src/modules/configPreset/configPreset-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/configPreset/configPreset-domain')>()),
+  configPresetExport: vi.fn(),
+}));
 
 import { authDirectiveBuilder } from '../../../../src/graphql/authDirective';
 import { makeFeatureFlagDirectiveTransformer } from '../../../../src/graphql/featureFlagDirective';
 import configPresetResolvers from '../../../../src/modules/configPreset/configPreset-resolver';
-import { findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/configPreset-domain';
+import { configPresetExport, findConfigPresetExportableTypes } from '../../../../src/modules/configPreset/configPreset-domain';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -26,6 +30,8 @@ const buildSchema = () => {
         directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
         directive @public on FIELD_DEFINITION
         type Query { health: Boolean @public }
+        type Mutation { health: Boolean @public }
+        type File { id: ID! name: String! }
       `,
       readFileSync(new URL('../../../../src/modules/configPreset/configPreset.graphql', import.meta.url), 'utf8'),
     ],
@@ -40,6 +46,7 @@ const settingsUser = { id: 'settings-admin', capabilities: [{ name: 'SETTINGS_SE
 
 describe('Config preset exportable types query', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     flags.enabled = true;
   });
 
@@ -102,5 +109,42 @@ describe('Config preset exportable types query', () => {
     expect(types.map(({ key, group }) => [key, group.key])).toEqual([['platform', 'platformSettings'], ['messages', 'platformSettings'], ['hiddenEntityTypes', 'dataModel']]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false }]);
     listItems.mockRestore();
+  });
+});
+
+const MUTATION = 'mutation { configPresetExport(selections: [{ type: "platform", items: ["platform"] }], bundle_name: "Prod") { id name } }';
+
+describe('Config preset export mutation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    flags.enabled = true;
+    vi.mocked(configPresetExport).mockResolvedValue({ id: 'config_preset/0b5c1e9e-4b0a-4f37-9a43-1f1c2b7c9d10/bundle.zip', name: 'bundle.zip' } as never);
+  });
+
+  it('returns the stored file to a BYPASS user when the flag is enabled', async () => {
+    const result = await graphql({ schema: buildSchema(), source: MUTATION, contextValue: { user: bypassUser } });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.configPresetExport).toEqual({ id: 'config_preset/0b5c1e9e-4b0a-4f37-9a43-1f1c2b7c9d10/bundle.zip', name: 'bundle.zip' });
+    expect(configPresetExport).toHaveBeenCalledWith(expect.anything(), bypassUser, [{ type: 'platform', items: ['platform'] }], 'Prod');
+  });
+
+  it('accepts a selection without items, meaning every item of the type', async () => {
+    const source = 'mutation { configPresetExport(selections: [{ type: "messages" }]) { id } }';
+    const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
+    expect(result.errors).toBeUndefined();
+    expect(configPresetExport).toHaveBeenCalledWith(expect.anything(), bypassUser, [{ type: 'messages' }], undefined);
+  });
+
+  it('rejects a user without BYPASS', async () => {
+    const result = await graphql({ schema: buildSchema(), source: MUTATION, contextValue: { user: settingsUser } });
+    expect(result.errors?.[0].message).toBe('You are not allowed to do this.');
+    expect(configPresetExport).not.toHaveBeenCalled();
+  });
+
+  it('rejects a BYPASS user when the flag is disabled', async () => {
+    flags.enabled = false;
+    const result = await graphql({ schema: buildSchema(), source: MUTATION, contextValue: { user: bypassUser } });
+    expect(result.errors?.[0].message).toMatch(/Feature is disabled/i);
+    expect(configPresetExport).not.toHaveBeenCalled();
   });
 });

@@ -60,6 +60,9 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
 
+// The type written in the item files: `<group id>.<category id>`
+export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
+
 export const exportConfigPresetItem = async (
   context: AuthContext,
   user: AuthUser,
@@ -68,7 +71,8 @@ export const exportConfigPresetItem = async (
 ): Promise<ConfigPresetItemFile> => {
   return {
     openCTI_version: PLATFORM_VERSION,
-    type: `${family.id}.${item.id}`,
+    type: configPresetFamilyType(family),
+    id: item.id,
     configuration: await item.exporter(context, user),
   };
 };

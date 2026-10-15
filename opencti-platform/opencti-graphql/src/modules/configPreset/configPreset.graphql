@@ -24,3 +24,15 @@ type ConfigPresetExportableType {
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
+
+input ConfigPresetSelectionInput {
+    # Key of a type returned by configPresetExportableTypes
+    type: ID!
+    # Item keys of the type; null or omitted exports every item of the type at export time, an empty list none.
+    items: [ID!]
+}
+
+extend type Mutation {
+    # Builds the bundle of the selected items and returns the stored zip; bundle_name only goes into metadata.json.
+    configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+}
