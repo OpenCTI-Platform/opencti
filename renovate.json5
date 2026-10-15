@@ -30,16 +30,14 @@
     enabled: false,
   },
   packageRules: [
-    // sticks to Node 22.x docker image, matching engines.node (>= 22.0.0)
+    // sticks to Node 22.x, matching engines.node (>= 22.0.0)
     {
-      matchDatasources: [
-        'docker',
-      ],
-      matchPackageNames: [
+      matchDepNames: [
         'node',
+        'cimg/node',
       ],
       allowedVersions: '<23',
-      description: 'Keep node docker image at version 22.x',
+      description: 'Keep Node.js docker images and setup-node at version 22.x',
     },
     {
       matchDepNames: [
@@ -47,6 +45,41 @@
       ],
       allowedVersions: '<23',
       description: 'Keep @types/node at version 22.x, matching engines.node',
+    },
+    {
+      matchDepNames: [
+        'python',
+        'cimg/python',
+      ],
+      allowedVersions: '<3.13',
+      description: 'Keep Python docker images and setup-python at version 3.12.x',
+    },
+    {
+      matchPackageNames: [
+        'elasticsearch',
+        'kibana',
+        '@elastic/elasticsearch',
+      ],
+      allowedVersions: '<9',
+      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 8.x',
+    },
+    {
+      matchPackageNames: [
+        'opensearchproject/opensearch',
+        'opensearchproject/opensearch-dashboards',
+      ],
+      allowedVersions: '<3.8',
+      description: 'Keep OpenSearch and OpenSearch Dashboards docker images at version 3.7.x',
+    },
+    {
+      matchDatasources: [
+        'docker',
+      ],
+      matchPackageNames: [
+        'redis',
+      ],
+      allowedVersions: '<8.7',
+      description: 'Keep redis docker image at version 8.6.x',
     },
     // sticks to MIT version of apexcharts
     {
