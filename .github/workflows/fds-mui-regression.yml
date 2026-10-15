@@ -19,7 +19,7 @@ on:
 jobs:
   mui-regression:
     name: MUI regression gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       # Full history: the gate diffs against the merge base with the target
       # branch, which a shallow clone cannot resolve.
