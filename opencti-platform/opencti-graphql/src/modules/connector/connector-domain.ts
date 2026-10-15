@@ -119,20 +119,24 @@ export const issueConnectorJWT = async () => {
   return keyPair.signJwt(jwt);
 };
 
+// A managed connector stopped, or being stopped, on purpose: no process is expected to run
+export const isConnectorStopped = (connector: any) => {
+  if (!(connector.is_managed || isNotEmptyField(connector.catalog_id))) {
+    return false;
+  }
+  return connector.manager_requested_status === 'stopping'
+    || connector.manager_requested_status === 'stopped'
+    || connector.manager_current_status === 'stopped';
+};
+
 // lastSeenAt is the last connector heartbeat (ping or registration), stored in Redis.
 // Never derive it from updated_at: any write on the connector entity bumps it.
 export const isConnectorActive = (connector: any, lastSeenAt?: string | null) => {
   if (connector.built_in) {
     return connector.active ?? true;
   }
-  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
-    // return false if managed connector is stopped or stopping
-    const connectorStopped = connector.manager_requested_status === 'stopping'
-      || connector.manager_requested_status === 'stopped'
-      || connector.manager_current_status === 'stopped';
-    if (connectorStopped) {
-      return false;
-    }
+  if (isConnectorStopped(connector)) {
+    return false;
   }
   return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
 };

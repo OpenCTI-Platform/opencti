@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
+import type { RuntimeData } from './ingestionHealthMonitoring-redis';
 
 // region registry
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
+export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 
 interface HealthCheckDefinition {
   kind: IngestionHealthCheckKind;
@@ -20,14 +22,28 @@ const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'User is missing',
   },
+  // A running process pings regularly: no heartbeat means it is down
+  [HEALTH_CHECK_HEARTBEAT_MISSING]: {
+    kind: IngestionHealthCheckKind.Runtime,
+    severity: IngestionHealthCheckSeverity.Blocking,
+    message: () => 'No heartbeat received',
+  },
 };
 // endregion
 
 // region evaluation (pure, no I/O)
-export interface IngestionHealthInput {
+// What is known about the ingestion at evaluation time, besides its configuration
+export interface HealthContext {
+  // Data reported by the sources and stored in Redis
+  runtimeData?: RuntimeData;
+}
+
+export interface IngestionHealthInput extends HealthContext {
   userId?: string | null;
   // Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
   isUserRequired: boolean;
+  // Connectors ping while they run, feeds and syncs have no heartbeat
+  isHeartbeatRequired?: boolean;
 }
 
 export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExistingUser: (userId: string) => boolean): StoredHealthCheck[] => {
@@ -36,29 +52,33 @@ export const computeIngestionHealthChecks = (input: IngestionHealthInput, isExis
   if (isUserMissing) {
     checks.push({ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} });
   }
+  if (input.isHeartbeatRequired && !input.runtimeData?.heartbeat) {
+    checks.push({ health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} });
+  }
   return checks;
 };
 
-// Priority: critical > degraded > healthy. stopped comes with the checks able to prove it.
+// Priority: critical > degraded > healthy. A stopped ingestion is not monitored, so it never gets here.
 // Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[]): IngestionHealthStatus | null => {
-  // TODO check the connector is stopped
+export const computeHealthStatus = (checks: StoredHealthCheck[], { runtimeData = {} }: HealthContext = {}): IngestionHealthStatus | null => {
+  // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
-    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code]);
+    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
+    .filter((definition): definition is HealthCheckDefinition => !!definition);
   // blocking AND runtime -> critical
   if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
-    && definition?.severity === IngestionHealthCheckSeverity.Blocking)) {
+    && definition.severity === IngestionHealthCheckSeverity.Blocking)) {
     return IngestionHealthStatus.Critical;
   }
   // advisory runtime OR advisory/blocking configuration -> degraded
-  if (healthChecks.some((definition) => definition?.severity === IngestionHealthCheckSeverity.Advisory
+  if (healthChecks.some((definition) => definition.severity === IngestionHealthCheckSeverity.Advisory
     || definition.kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
-  // TODO: check there is a runtime check of live in Redis
-  // if () {
-  // return IngestionHealthStatus.Healthy;
-  // }
+  // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown
+  if (checks.length === 0 && runtimeData.heartbeat) {
+    return IngestionHealthStatus.Healthy;
+  }
   return null;
 };
 
@@ -70,9 +90,14 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 // Returns the fields to write, or null when neither the status nor the checks changed.
 // The write replaces the whole ingestion_health object, so it carries the unchanged since.
 // When no status can be computed anymore, a stored ingestion_health is removed: absence reads as unknown.
-export const computeIngestionHealthPatch = (current: IngestionHealthFields, checks: StoredHealthCheck[], evaluatedAt: string): IngestionHealthFields | null => {
+export const computeIngestionHealthPatch = (
+  current: IngestionHealthFields,
+  checks: StoredHealthCheck[],
+  evaluatedAt: string,
+  context: HealthContext = {},
+): IngestionHealthFields | null => {
   const currentHealth = current.ingestion_health;
-  const status = computeHealthStatus(checks);
+  const status = computeHealthStatus(checks, context);
   const nextChecks = normalizeHealthChecks(checks);
   const isStatusChanged = currentHealth?.status !== status;
   const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
