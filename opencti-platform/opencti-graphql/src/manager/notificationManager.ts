@@ -360,7 +360,8 @@ const keepNewArrayElements = (operations: jsonpatch.Operation[], replacedDocumen
   if (!Array.isArray(replacedValue)) {
     return operation;
   }
-  return { ...operation, value: operation.value.filter((element) => !replacedValue.includes(element)) };
+  const replacedElements = new Set(replacedValue);
+  return { ...operation, value: operation.value.filter((element) => !replacedElements.has(element)) };
 });
 
 export const filterUpdateInstanceIdsFromUpdateEvent = (
