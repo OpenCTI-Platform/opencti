@@ -106,6 +106,8 @@ const BACKGROUND_TASKS = gql`
 const NOTE = 'x_opencti_cf_review_note';
 const TAGS = 'x_opencti_cf_review_tags';
 const REQUIRED = 'x_opencti_cf_review_required';
+const LEVEL = 'x_opencti_cf_review_level';
+const DUE = 'x_opencti_cf_review_due';
 
 const addDefinition = async (input: Record<string, unknown>, entityTypes: { entityType: string; mandatory: boolean }[]) => {
   const result = await queryAsAdmin({ query: CUSTOM_FIELD_ADD, variables: { input } });
@@ -142,6 +144,12 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
       { entityType: 'stix-sighting-relationship', mandatory: false },
     ]));
     definitionIds.push(await addDefinition({ name: TAGS, label: 'Review tags', field_type: 'multi_select', select_options: ['a', 'b', 'c'] }, [
+      { entityType: 'Case-Incident', mandatory: false },
+    ]));
+    definitionIds.push(await addDefinition({ name: LEVEL, label: 'Review level', field_type: 'integer' }, [
+      { entityType: 'Case-Incident', mandatory: false },
+    ]));
+    definitionIds.push(await addDefinition({ name: DUE, label: 'Review due date', field_type: 'date' }, [
       { entityType: 'Case-Incident', mandatory: false },
     ]));
     const malware = await queryAsAdmin({ query: MALWARE_ADD, variables: { input: { name: 'Custom fields review malware' } } });
@@ -234,14 +242,15 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
   describe('filters', () => {
     let caseWithNoteId: string;
     let caseWithoutNoteId: string;
+    let caseOtherId: string;
 
-    const filterCases = async (key: string, operator: string, values: string[]) => {
+    const filterCases = async (key: string, operator: string, values: string[], mode = 'or') => {
       const filters = {
         mode: 'and',
         filterGroups: [],
         filters: [
-          { key: ['ids'], values: [caseWithNoteId, caseWithoutNoteId] },
-          { key: [key], operator, values, mode: 'or' },
+          { key: ['ids'], values: [caseWithNoteId, caseWithoutNoteId, caseOtherId] },
+          { key: [key], operator, values, mode },
         ],
       };
       const result = await queryAsAdmin({ query: CASES_FILTER, variables: { filters } });
@@ -250,22 +259,60 @@ describe('Custom fields review: relationships, mandatory fields, filters and mer
     };
 
     beforeAll(async () => {
-      caseWithNoteId = await createCase('Custom fields review with note', [{ field_name: NOTE, value: ['hello'] }]);
-      caseWithoutNoteId = await createCase('Custom fields review without note', []);
-      caseIds.push(caseWithNoteId, caseWithoutNoteId);
+      caseWithNoteId = await createCase('Custom fields review with note', [
+        { field_name: NOTE, value: ['hello'] }, { field_name: TAGS, value: ['a', 'b'] }, { field_name: LEVEL, value: [10] },
+        { field_name: DUE, value: ['2026-01-10T00:00:00.000Z'] },
+      ]);
+      caseWithoutNoteId = await createCase('Custom fields review without note', [
+        { field_name: TAGS, value: ['a'] }, { field_name: LEVEL, value: [15] }, { field_name: DUE, value: ['2026-06-15T00:00:00.000Z'] },
+      ]);
+      caseOtherId = await createCase('Custom fields review other', [
+        { field_name: TAGS, value: ['c'] }, { field_name: LEVEL, value: [20] }, { field_name: DUE, value: ['2026-12-20T00:00:00.000Z'] },
+      ]);
+      caseIds.push(caseWithNoteId, caseWithoutNoteId, caseOtherId);
     });
 
     it('should return the entities without the custom field with negative operators', async () => {
-      expect(await filterCases(NOTE, 'nil', [])).toEqual([caseWithoutNoteId]);
+      const withoutNote = [caseWithoutNoteId, caseOtherId].sort();
+      expect(await filterCases(NOTE, 'nil', [])).toEqual(withoutNote);
       expect(await filterCases(NOTE, 'not_nil', [])).toEqual([caseWithNoteId]);
-      expect(await filterCases(NOTE, 'not_eq', ['hello'])).toEqual([caseWithoutNoteId]);
-      expect(await filterCases(NOTE, 'not_contains', ['hel'])).toEqual([caseWithoutNoteId]);
+      expect(await filterCases(NOTE, 'not_eq', ['hello'])).toEqual(withoutNote);
+      expect(await filterCases(NOTE, 'not_contains', ['hel'])).toEqual(withoutNote);
+    });
+
+    it('should combine several values with the filter mode, as for a standard attribute', async () => {
+      // a or b / a and b / not a or not b / neither a nor b
+      expect(await filterCases(TAGS, 'eq', ['a', 'b'], 'or')).toEqual([caseWithNoteId, caseWithoutNoteId].sort());
+      expect(await filterCases(TAGS, 'eq', ['a', 'b'], 'and')).toEqual([caseWithNoteId]);
+      expect(await filterCases(TAGS, 'not_eq', ['a', 'b'], 'or')).toEqual([caseWithoutNoteId, caseOtherId].sort());
+      expect(await filterCases(TAGS, 'not_eq', ['a', 'b'], 'and')).toEqual([caseOtherId]);
+    });
+
+    it('should match each integer value, not the interval between them', async () => {
+      expect(await filterCases(LEVEL, 'eq', ['10', '20'], 'or')).toEqual([caseWithNoteId, caseOtherId].sort());
+      expect(await filterCases(LEVEL, 'eq', ['10', '20'], 'and')).toEqual([]);
+      expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'or')).toEqual([caseWithNoteId, caseWithoutNoteId, caseOtherId].sort());
+      expect(await filterCases(LEVEL, 'not_eq', ['10', '20'], 'and')).toEqual([caseWithoutNoteId]);
+    });
+
+    it('should match the range of within whatever the filter mode', async () => {
+      const range = ['2026-05-01T00:00:00.000Z', '2026-07-01T00:00:00.000Z'];
+      expect(await filterCases(DUE, 'within', range, 'or')).toEqual([caseWithoutNoteId]);
+      expect(await filterCases(DUE, 'within', range, 'and')).toEqual([caseWithoutNoteId]);
+    });
+
+    it('should reject a custom field filter without value, as for a standard attribute', async () => {
+      const filtersWithoutValue = (key: string) => ({ mode: 'and', filterGroups: [], filters: [{ key: [key], operator: 'not_eq', values: [], mode: 'or' }] });
+      const standardAttribute = await queryAsAdmin({ query: CASES_FILTER, variables: { filters: filtersWithoutValue('description') } });
+      const customField = await queryAsAdmin({ query: CASES_FILTER, variables: { filters: filtersWithoutValue(NOTE) } });
+      expect(standardAttribute.errors?.[0].message).toEqual('Invalid filter configuration');
+      expect(customField.errors?.[0].message).toEqual(standardAttribute.errors?.[0].message);
     });
 
     it('should filter on a deleted custom field as on a custom field no entity has', async () => {
       const deletedKey = 'x_opencti_cf_review_deleted';
       expect(await filterCases(deletedKey, 'eq', ['hello'])).toEqual([]);
-      expect(await filterCases(deletedKey, 'nil', [])).toEqual([caseWithNoteId, caseWithoutNoteId].sort());
+      expect(await filterCases(deletedKey, 'nil', [])).toEqual([caseWithNoteId, caseWithoutNoteId, caseOtherId].sort());
     });
   });
 
