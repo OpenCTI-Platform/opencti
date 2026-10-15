@@ -56,6 +56,10 @@ interface BackgroundTaskLaunchProps {
     context?: {
       field?: string;
       values?: ({ id?: string; value?: string } | string)[];
+      options?: {
+        includeNeighbours?: boolean;
+        investigationId?: string;
+      };
     };
   }[];
   selectAll?: boolean;

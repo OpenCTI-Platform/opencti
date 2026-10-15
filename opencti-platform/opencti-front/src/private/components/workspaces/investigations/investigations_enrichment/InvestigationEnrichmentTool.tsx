@@ -42,6 +42,7 @@ const InvestigationEnrichmentTool = ({
 
       <InvestigationEnrichmentDrawer
         open={openEnrichment}
+        investigationId={entity.id}
         enrichmentType={enrichmentType}
         onClose={() => setOpenEnrichment(false)}
       />

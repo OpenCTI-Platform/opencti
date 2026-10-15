@@ -5,12 +5,14 @@ import InvestigationEnrichmentLaunch from './InvestigationEnrichmentLaunch';
 interface InvestigationEnrichmentDrawerProps {
   open: boolean;
   onClose: () => void;
+  investigationId: string;
   enrichmentType?: string;
 }
 
 const InvestigationEnrichmentDrawer = ({
   open,
   onClose,
+  investigationId,
   enrichmentType,
 }: InvestigationEnrichmentDrawerProps) => {
   const { t_i18n } = useFormatter();
@@ -22,6 +24,7 @@ const InvestigationEnrichmentDrawer = ({
       onClose={onClose}
     >
       <InvestigationEnrichmentLaunch
+        investigationId={investigationId}
         enrichmentType={enrichmentType}
       />
     </Drawer>

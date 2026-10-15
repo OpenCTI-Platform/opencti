@@ -8,10 +8,12 @@ import BackgroundTaskLaunch from '../../../common/background_task/BackgroundTask
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
 
 interface InvestigationEnrichmentLaunchProps {
+  investigationId: string;
   enrichmentType?: string;
 }
 
 const InvestigationEnrichmentLaunch = ({
+  investigationId,
   enrichmentType,
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
@@ -34,10 +36,12 @@ const InvestigationEnrichmentLaunch = ({
     return { selectionMap, selectionSize };
   }, [selectedLinks, selectedNodes]);
 
+  // The investigation id tags every enrichment work created by the task with this investigation
   const backgroundTaskAction = [{
     type: 'ENRICHMENT' as const,
     context: {
       values: selectedConnectors,
+      options: { investigationId },
     },
   }];
 
