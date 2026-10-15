@@ -14,7 +14,7 @@ export const formatKillChainPhaseLabel = (phaseName: string, killChainName: stri
   !killChainName || phaseName.startsWith('[') ? phaseName : `[${killChainName}] ${phaseName}`
 );
 
-// The schema keys below (objectLabel, objectMarking, workflow_id, killChainPhases) are Stix-Core-Object keys.
+// The schema keys below (objectLabel, objectMarking, workflow_id) are Stix-Core-Object keys.
 export const VARIABLE_SEARCH_CONTEXT: FilterSearchContext = { entityTypes: ['Stix-Core-Object'] };
 
 /**
@@ -22,6 +22,7 @@ export const VARIABLE_SEARCH_CONTEXT: FilterSearchContext = { entityTypes: ['Sti
  * Each key is checked in variableTypeSearch.test.tsx against the back filter keys schema and the query it runs.
  * `members_user`, `members_group`, `id` and `entity_type` have a search of their own in `useSearchEntities`:
  * every platform user / group, every entity of the search scope, every type of the schema.
+ * A kill chain phase has a search of its own, scoped to the kill chain of the variable (ValueInputs/useKillChainPhaseSearch.ts).
  */
 export const VARIABLE_TYPE_SEARCH: Partial<Record<DashboardVariableType, string>> = {
   entity: 'id',
@@ -30,6 +31,5 @@ export const VARIABLE_TYPE_SEARCH: Partial<Record<DashboardVariableType, string>
   user: 'members_user',
   group: 'members_group',
   status: 'workflow_id',
-  killChainPhase: 'killChainPhases',
   entityType: 'entity_type',
 };

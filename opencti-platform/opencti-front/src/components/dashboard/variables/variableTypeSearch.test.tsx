@@ -106,7 +106,7 @@ describe('VARIABLE_TYPE_SEARCH', () => {
     expect(stixCoreObjectFilterKeys).toEqual(expect.arrayContaining(['entity_type', 'creator_id', 'createdBy']));
   });
 
-  it.each(['label', 'marking', 'status', 'killChainPhase'] as const)('searches %s through a Stix-Core-Object filter key of the back schema', (type) => {
+  it.each(['label', 'marking', 'status'] as const)('searches %s through a Stix-Core-Object filter key of the back schema', (type) => {
     expect(stixCoreObjectFilterKeys).toContain(VARIABLE_TYPE_SEARCH[type]);
   });
 
@@ -123,11 +123,6 @@ describe('VARIABLE_TYPE_SEARCH', () => {
   it('searches statuses with the status templates query', () => {
     searchWith('status');
     expect(mockFetchQuery).toHaveBeenCalledWith('StatusTemplateFieldQuery', expect.anything());
-  });
-
-  it('searches kill chain phases with the kill chain phases query', () => {
-    searchWith('killChainPhase');
-    expect(mockFetchQuery).toHaveBeenCalledWith('killChainPhasesSearchQuery', expect.anything());
   });
 
   it.each([['user', 'User'], ['group', 'Group']] as const)('searches %s among all the platform members', (type, memberType) => {

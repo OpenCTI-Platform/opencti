@@ -318,16 +318,52 @@ describe('DashboardVariableValueInput', () => {
       expect(optionNames()).toEqual(['Alice']);
     });
 
-    it('only offers the phases of the variable kill chain', async () => {
-      mockEntities = {
-        killChainPhases: [
-          { label: '[mitre-attack] execution', value: 'phase-1', type: 'Kill-Chain-Phase' },
-          { label: '[lockheed-martin] delivery', value: 'phase-2', type: 'Kill-Chain-Phase' },
-        ],
+    describe('kill chain phase', () => {
+      // The platform of the review: many phases of one kill chain, sorted before the few phases of another one.
+      const platformPhases = [
+        ...Array.from({ length: 600 }, (_, index) => ({ id: `bulk-${index}`, kill_chain_name: 'bulk-chain', phase_name: `phase ${index}` })),
+        { id: 'rare-1', kill_chain_name: 'rare-chain', phase_name: 'reconnaissance' },
+        { id: 'rare-2', kill_chain_name: 'rare-chain', phase_name: 'delivery' },
+      ];
+      // Answers the kill chain phases query like the back does: the kill chain filter, then the first `first` phases.
+      const answerPhasesQuery = (variables: Record<string, unknown>) => {
+        const filters = variables.filters as { filters: { key: string[]; values: string[] }[] } | null;
+        const killChainName = filters?.filters.find((filter) => filter.key.includes('kill_chain_name'))?.values[0];
+        const matching = platformPhases.filter((phase) => killChainName === undefined || phase.kill_chain_name === killChainName);
+        return { data: { killChainPhases: { edges: matching.slice(0, (variables.first as number | null) ?? 500).map((node) => ({ node })) } } };
       };
-      const { user } = renderInput({ type: 'killChainPhase', killChainName: 'mitre-attack', restriction: none });
-      await user.click(screen.getByRole('combobox'));
-      expect(optionNames()).toEqual(['[mitre-attack] execution']);
+      const killChainFilters = {
+        mode: 'and',
+        filters: [{ key: ['kill_chain_name'], values: ['rare-chain'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      };
+
+      it('searches the phases of the variable kill chain on the server, not through the shared search', async () => {
+        const { user, relayEnv } = renderInput({ type: 'killChainPhase', killChainName: 'rare-chain', restriction: none });
+        await user.click(screen.getByRole('combobox'));
+        const operation = relayEnv.mock.getMostRecentOperation();
+        expect(operation.request.node.operation.name).toBe('useKillChainPhaseSearchQuery');
+        expect(operation.request.variables).toEqual({ search: '', first: 100, filters: killChainFilters });
+        expect(mockSearchEntities).not.toHaveBeenCalled();
+      });
+
+      it('lists the phases of a kill chain that the first unscoped page of phases would miss', async () => {
+        const { user, relayEnv, onChange } = renderInput({ type: 'killChainPhase', killChainName: 'rare-chain', restriction: none });
+        await user.click(screen.getByRole('combobox'));
+        act(() => {
+          relayEnv.mock.resolveMostRecentOperation((operation) => answerPhasesQuery(operation.request.variables));
+        });
+        expect(optionNames()).toEqual(['[rare-chain] reconnaissance', '[rare-chain] delivery']);
+        await user.click(screen.getByRole('option', { name: '[rare-chain] delivery' }));
+        expect(onChange).toHaveBeenCalledWith('rare-2');
+      });
+
+      it('searches the typed text among the phases of the kill chain', async () => {
+        const { user, relayEnv } = renderInput({ type: 'killChainPhase', killChainName: 'rare-chain', restriction: none });
+        await user.click(screen.getByRole('combobox'));
+        await user.keyboard('r');
+        expect(relayEnv.mock.getMostRecentOperation().request.variables).toEqual({ search: 'r', first: 100, filters: killChainFilters });
+      });
     });
 
     it('shows the label of the current value', () => {

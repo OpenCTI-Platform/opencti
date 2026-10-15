@@ -8,10 +8,12 @@ import { ME_FILTER_VALUE } from '../../../../utils/filters/filtersUtils';
 import useVariableValueLabels from '../useVariableValueLabels';
 import { VARIABLE_SEARCH_CONTEXT, VARIABLE_TYPE_SEARCH } from '../variableTypeSearch';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
+import useKillChainPhaseSearch from './useKillChainPhaseSearch';
 
 /**
  * Server side search of the value of an entity pool variable (entity, label, marking, user, group, status,
- * kill chain phase) or of an entity type, through the same search as the filters.
+ * kill chain phase) or of an entity type, through the same search as the filters. A kill chain phase is searched among the
+ * phases of the kill chain of the variable only, on the server (see useKillChainPhaseSearch).
  */
 const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
@@ -24,18 +26,21 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [entities, searchEntities] = useSearchEntities({ searchContext: VARIABLE_SEARCH_CONTEXT, searchScope, setInputValues: () => {} });
   const { labels } = useVariableValueLabels(variable, value ? [value] : []);
+  const isKillChainPhase = variable.type === 'killChainPhase';
+  const killChainPhases = useKillChainPhaseSearch(variable.killChainName);
 
-  const { killChainName } = variable;
-  const options = (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
-    // A variable holds an id: neither the "No label" option nor the dynamic @me user can be a value.
-    .filter((option) => option.value !== null && option.value !== ME_FILTER_VALUE)
-    // Kill chain phase options are labelled `[kill chain name] phase name`.
-    .filter((option) => variable.type !== 'killChainPhase' || !killChainName || option.label.startsWith(`[${killChainName}] `));
+  const options = isKillChainPhase
+    ? killChainPhases.options
+    : (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
+        // A variable holds an id: neither the "No label" option nor the dynamic @me user can be a value.
+        .filter((option) => option.value !== null && option.value !== ME_FILTER_VALUE);
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
 
-  const search = (event: SyntheticEvent) => {
-    if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
+  // The kill chain phases are searched with the typed text, and from an empty text when the field is focused.
+  const search = (event: SyntheticEvent, text: string) => {
+    if (isKillChainPhase) killChainPhases.search(text);
+    else if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
   };
 
   return (
@@ -47,7 +52,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
       getOptionLabel={(option) => option.label ?? ''}
       isOptionEqualToValue={(a, b) => a.value === b.value}
       groupBy={variable.type === 'entity' ? (option) => t_i18n(option.group ?? '') : undefined}
-      onInputChange={(_, meta) => meta.event && search(meta.event as SyntheticEvent)}
+      onInputChange={(text, meta) => meta.event && search(meta.event as SyntheticEvent, text)}
       onValueChange={(next) => {
         const nextValue = (next as FilterOptionValue | null)?.value;
         if (nextValue) onChange(nextValue);
@@ -57,7 +62,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
     >
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField>
-        <ComboboxInput onFocus={search} />
+        <ComboboxInput onFocus={(event) => search(event, '')} />
         <ComboboxControls>
           {commitOn === 'change' && <ComboboxClear />}
           <ComboboxTrigger />
