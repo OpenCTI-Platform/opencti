@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import { pipeline, Readable, Transform } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
@@ -209,23 +209,39 @@ const appendFormEntries = (data: object, append: (key: string, value: string) =>
   Object.entries(data).forEach(([key, value]) => visit(value, [key.trim()]));
 };
 
+const stringifyJsonString = (value: string) => {
+  try {
+    JSON.parse(value);
+    return value.trim();
+  } catch {
+    return JSON.stringify(value);
+  }
+};
+
 const buildBody = (method: string, data: unknown, headers: Headers): string | Uint8Array | FormData | undefined => {
-  if (data === undefined || data === null || METHODS_WITHOUT_BODY.has(method)) {
+  if (data === undefined || METHODS_WITHOUT_BODY.has(method)) {
     return undefined;
   }
+  const contentType = headers.get('Content-Type') ?? '';
+  const hasJsonContentType = contentType.includes('application/json');
+  if (data === null) {
+    return hasJsonContentType ? 'null' : undefined;
+  }
   if (data instanceof URLSearchParams) {
-    if (!headers.has('Content-Type')) {
+    if (!contentType) {
       headers.set('Content-Type', 'application/x-www-form-urlencoded;charset=utf-8');
     }
     return data.toString();
   }
+  if (typeof data === 'string' && hasJsonContentType) {
+    return stringifyJsonString(data);
+  }
   if (typeof data === 'string' || data instanceof Uint8Array) {
-    if (!headers.has('Content-Type') && METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE.has(method)) {
+    if (!contentType && METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE.has(method)) {
       headers.set('Content-Type', 'application/x-www-form-urlencoded');
     }
     return data;
   }
-  const contentType = headers.get('Content-Type') ?? '';
   if (typeof data === 'object' && contentType.includes('application/x-www-form-urlencoded')) {
     const form = new URLSearchParams();
     appendFormEntries(data, (key, value) => form.append(key, value));
@@ -271,14 +287,32 @@ const toHeaderRecord = (method: string, response: Response) => {
   return record;
 };
 
-const readData = async (response: Response, responseType: HttpResponseType) => {
+const watchBody = (response: Response, onProgress: () => void, onEnd: () => void) => {
+  const source = response.body ? Readable.fromWeb(response.body as NodeReadableStream) : Readable.from([]);
+  const watched = new Transform({
+    transform(chunk, _encoding, callback) {
+      onProgress();
+      callback(null, chunk);
+    },
+  });
+  pipeline(source, watched, onEnd);
+  return watched;
+};
+
+const readData = async (response: Response, responseType: HttpResponseType, onProgress: () => void, onEnd: () => void) => {
+  const body = watchBody(response, onProgress, onEnd);
   if (responseType === 'stream') {
-    return response.body ? Readable.fromWeb(response.body as NodeReadableStream) : Readable.from([]);
+    return body;
   }
+  const chunks: Buffer[] = [];
+  for await (const chunk of body) {
+    chunks.push(Buffer.from(chunk));
+  }
+  const buffer = Buffer.concat(chunks);
   if (responseType === 'arraybuffer') {
-    return Buffer.from(await response.arrayBuffer());
+    return buffer;
   }
-  const text = await response.text();
+  const text = new TextDecoder().decode(buffer);
   if (responseType === 'text' || !text) {
     return text;
   }
@@ -314,6 +348,17 @@ const getAgent = (rejectUnauthorized: boolean, certificates: Certificates | unde
   return agent;
 };
 
+const createTimeoutWatchdog = (timeout: number) => {
+  const controller = new AbortController();
+  let timer: NodeJS.Timeout | undefined;
+  const disarm = () => clearTimeout(timer);
+  const arm = () => {
+    disarm();
+    timer = setTimeout(() => controller.abort(), timeout).unref();
+  };
+  return { signal: controller.signal, arm, disarm };
+};
+
 const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortSignal | undefined, signal: AbortSignal | undefined) => {
   if (timeoutSignal?.aborted) {
     return new HttpClientError(`timeout of ${timeout}ms exceeded`, 'ECONNABORTED', undefined, { cause: error });
@@ -334,14 +379,14 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     const requestTimeout = config.timeout ?? timeout ?? 0;
     const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
     const requestHeaders = buildHeaders(headers, config.headers);
-    const timeoutSignal = requestTimeout > 0 ? AbortSignal.timeout(requestTimeout) : undefined;
-    const signals = [timeoutSignal, config.signal].filter((s): s is AbortSignal => s !== undefined);
+    const watchdog = requestTimeout > 0 ? createTimeoutWatchdog(requestTimeout) : undefined;
+    const signals = [watchdog?.signal, config.signal].filter((s): s is AbortSignal => s !== undefined);
     const signal = signals.length > 0 ? AbortSignal.any(signals) : undefined;
     const transport = async <T>(operation: () => Promise<T>) => {
       try {
         return await operation();
       } catch (error) {
-        throw toTransportError(error, requestTimeout, timeoutSignal, config.signal);
+        throw toTransportError(error, requestTimeout, watchdog?.signal, config.signal);
       }
     };
     let currentUrl = await transport(async () => new URL(buildUrl(config.url, baseURL, config.params)));
@@ -354,40 +399,46 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     let currentMethod = method;
     let body = buildBody(method, config.data, requestHeaders);
     let response: Response;
-    for (let redirectCount = 0; ; redirectCount += 1) {
-      const dispatcher: Dispatcher = useClientTransport ? (getPlatformHttpProxyAgent(currentUrl.href, true) ?? clientAgent) : defaultAgent;
-      const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
-      const requestUrl = currentUrl.href;
-      response = await transport(() => fetch(requestUrl, requestInit));
-      const location = response.headers.get('location');
-      if (maxRedirects === 0 || !location || !REDIRECT_STATUSES.has(response.status)) {
-        break;
-      }
-      const redirectResponse = response;
-      await transport(async () => redirectResponse.body?.cancel());
-      if (redirectCount >= maxRedirects) {
-        throw new HttpClientError('Maximum number of redirects exceeded', 'ERR_FR_TOO_MANY_REDIRECTS');
-      }
-      const fromUrl = currentUrl;
-      const toUrl = await transport(async () => new URL(location, fromUrl));
-      extractUrlCredentials(toUrl);
-      beforeRedirect?.(toUrl.href);
-      if ((response.status === 303 && !METHODS_WITHOUT_BODY.has(currentMethod)) || ((response.status === 301 || response.status === 302) && currentMethod === 'POST')) {
-        currentMethod = 'GET';
-        body = undefined;
-        [...requestHeaders.keys()].filter((name) => name.startsWith('content-')).forEach((name) => requestHeaders.delete(name));
-      }
-      if (isUnsafeRedirect(fromUrl, toUrl)) {
-        ['authorization', 'proxy-authorization', 'cookie'].forEach((name) => requestHeaders.delete(name));
-      }
-      if (basicCredentials) {
-        if (toUrl.origin === requestOrigin) {
-          requestHeaders.set('Authorization', toBasicAuthorization(basicCredentials));
-        } else {
-          requestHeaders.delete('Authorization');
+    try {
+      for (let redirectCount = 0; ; redirectCount += 1) {
+        const dispatcher: Dispatcher = useClientTransport ? (getPlatformHttpProxyAgent(currentUrl.href, true) ?? clientAgent) : defaultAgent;
+        const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
+        const requestUrl = currentUrl.href;
+        watchdog?.arm();
+        response = await transport(() => fetch(requestUrl, requestInit));
+        const location = response.headers.get('location');
+        if (maxRedirects === 0 || !location || !REDIRECT_STATUSES.has(response.status)) {
+          break;
         }
+        const redirectResponse = response;
+        await transport(async () => redirectResponse.body?.cancel());
+        if (redirectCount >= maxRedirects) {
+          throw new HttpClientError('Maximum number of redirects exceeded', 'ERR_FR_TOO_MANY_REDIRECTS');
+        }
+        const fromUrl = currentUrl;
+        const toUrl = await transport(async () => new URL(location, fromUrl));
+        extractUrlCredentials(toUrl);
+        beforeRedirect?.(toUrl.href);
+        if ((response.status === 303 && !METHODS_WITHOUT_BODY.has(currentMethod)) || ((response.status === 301 || response.status === 302) && currentMethod === 'POST')) {
+          currentMethod = 'GET';
+          body = undefined;
+          [...requestHeaders.keys()].filter((name) => name.startsWith('content-')).forEach((name) => requestHeaders.delete(name));
+        }
+        if (isUnsafeRedirect(fromUrl, toUrl)) {
+          ['authorization', 'proxy-authorization', 'cookie'].forEach((name) => requestHeaders.delete(name));
+        }
+        if (basicCredentials) {
+          if (toUrl.origin === requestOrigin) {
+            requestHeaders.set('Authorization', toBasicAuthorization(basicCredentials));
+          } else {
+            requestHeaders.delete('Authorization');
+          }
+        }
+        currentUrl = toUrl;
       }
-      currentUrl = toUrl;
+    } catch (error) {
+      watchdog?.disarm();
+      throw error;
     }
     const finalResponse = response;
     const ok = finalResponse.status >= 200 && finalResponse.status < 300;
@@ -395,7 +446,10 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
       status: finalResponse.status,
       statusText: finalResponse.statusText,
       headers: toHeaderRecord(currentMethod, finalResponse),
-      data: await transport(() => readData(finalResponse, ok ? responseType : 'json')),
+      data: await transport(() => {
+        watchdog?.arm();
+        return readData(finalResponse, ok ? responseType : 'json', () => watchdog?.arm(), () => watchdog?.disarm());
+      }),
     };
     if (!ok) {
       const code = finalResponse.status >= 500 ? 'ERR_BAD_RESPONSE' : (finalResponse.status >= 400 ? 'ERR_BAD_REQUEST' : undefined);

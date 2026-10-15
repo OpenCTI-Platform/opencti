@@ -35,6 +35,23 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
   '/redirect-other-host': (_req, res) => res.writeHead(307, { Location: `${otherHostBaseURL}/echo` }).end(),
   '/redirect-echo': (_req, res) => res.writeHead(302, { Location: '/echo' }).end(),
   '/redirect-with-credentials': (_req, res) => res.writeHead(302, { Location: `${baseURL.replace('://', '://intruder:secret@')}/echo` }).end(),
+  '/trickle': (_req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    let sent = 0;
+    const timer = setInterval(() => {
+      sent += 1;
+      res.write('a');
+      if (sent === 6) {
+        clearInterval(timer);
+        res.end();
+      }
+    }, 40);
+  },
+  '/stall': (_req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.write('a');
+    setTimeout(() => res.end('b'), 400);
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -339,5 +356,38 @@ describe('getHttpClient', () => {
 
     expect(error).toBeInstanceOf(HttpClientError);
     expect(error.code).toBe('DEPTH_ZERO_SELF_SIGNED_CERT');
+  });
+
+  it('should not time out a body that keeps arriving after the timeout duration', async () => {
+    const client = getHttpClient({ baseURL, responseType: 'text', timeout: 100 });
+
+    const response = await client.get('/trickle');
+    const streamResponse = await getHttpClient({ baseURL, responseType: 'stream', timeout: 100 }).get('/trickle');
+    const chunks: Buffer[] = [];
+    for await (const chunk of streamResponse.data) {
+      chunks.push(Buffer.from(chunk));
+    }
+
+    expect(response.data).toBe('aaaaaa');
+    expect(Buffer.concat(chunks).toString()).toBe('aaaaaa');
+  });
+
+  it('should time out a body that stops arriving', async () => {
+    const error = await getHttpClient({ baseURL, responseType: 'text', timeout: 100 }).get('/stall').catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.code).toBe('ECONNABORTED');
+  });
+
+  it('should serialize string and null payloads sent as application/json', async () => {
+    const client = getHttpClient({ baseURL, responseType: 'json', headers: { 'Content-Type': 'application/json' } });
+
+    const plainString = await client.post('/echo', 'hello');
+    const jsonString = await client.post('/echo', ' {"a":1} ');
+    const nullPayload = await client.call({ url: '/echo', method: 'POST', data: null });
+
+    expect(plainString.data.body).toBe('"hello"');
+    expect(jsonString.data.body).toBe('{"a":1}');
+    expect(nullPayload.data.body).toBe('null');
   });
 });
