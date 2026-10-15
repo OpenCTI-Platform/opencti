@@ -13,6 +13,7 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
+  EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
   extractIdsFromStoreObject,
   isEmptyField,
@@ -26,6 +27,7 @@ import {
 } from '../database/utils';
 import {
   BYPASS,
+  checkUserCanAccessStixElement,
   computeUserMemberAccessIds,
   isUserCanAccessStixElement,
   isUserCanAccessStreamUpdateEvent,
@@ -59,6 +61,7 @@ import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { extractStixRepresentative } from '../database/stix-representative';
 import { doYield } from '../utils/eventloop-utils';
 import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
 import { getStreamConsumerInformation } from '../modules/dataSharing/streamCollection-domain';
@@ -248,6 +251,22 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
   }
   // Return flattened results in reverse order (deepest dependencies first)
   return allResolvedElements.flat();
+};
+
+export const filterMergeEventSources = async (context, user, eventData) => {
+  const sources = eventData.context?.sources ?? [];
+  if (sources.length === 0) {
+    return eventData;
+  }
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  const accessibleSources = sources.filter((source) => checkUserCanAccessStixElement(context, user, source, hasPlatformOrg));
+  if (accessibleSources.length === sources.length) {
+    return eventData;
+  }
+  const sourcesNames = accessibleSources.map((source) => extractStixRepresentative(source)).join(', ');
+  const message = `merges ${eventData.data.extensions[STIX_EXT_OCTI].type} \`${sourcesNames}\` in \`${extractStixRepresentative(eventData.data)}\``;
+  return { ...eventData, message, context: { ...eventData.context, sources: accessibleSources } };
 };
 
 const createSseMiddleware = () => {
@@ -738,7 +757,8 @@ const createSseMiddleware = () => {
                       } else { // Create and merge
                         const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                         if (isValidResolution) {
-                          await client.sendEvent(eventId, event, eventData);
+                          const eventToSend = type === EVENT_TYPE_MERGE ? await filterMergeEventSources(context, user, eventData) : eventData;
+                          await client.sendEvent(eventId, event, eventToSend);
                           cache.set(stix.id, 'hit');
                         }
                       }
