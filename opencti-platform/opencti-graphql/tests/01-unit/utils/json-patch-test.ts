@@ -81,6 +81,9 @@ describe('computeJsonPatch', () => {
   it('should not confuse an object with a string holding its JSON', () => {
     expect(computeJsonPatch({ values: [{ a: 1 }, 'k'] }, { values: ['{"a":1}', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '{"a":1}' }]);
     expect(computeJsonPatch({ values: [{ id: 'x' }, 'k'] }, { values: ['#x', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '#x' }]);
+    expect(computeJsonPatch({ values: [[], 'k'] }, { values: ['[]', 'k'] })).toEqual([{ op: 'replace', path: '/values/0', value: '[]' }]);
+    expect(computeJsonPatch({ values: [[]] }, { values: ['[]'] })).toEqual([{ op: 'replace', path: '/values', value: ['[]'] }]);
+    expect(computeJsonPatch({ values: ['[]'] }, { values: [[]] })).toEqual([{ op: 'replace', path: '/values', value: [[]] }]);
   });
 
   it('should add, remove and replace object properties', () => {
