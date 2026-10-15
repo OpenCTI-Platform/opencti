@@ -5,12 +5,13 @@ import { layoutWorkflow } from '../layout/layoutWorkflow';
 export type Direction = 'TB' | 'LR' | 'RL' | 'BT';
 
 export type LayoutOptions = {
+  // Ignored for now: the layout is always top to bottom. Kept so callers need not change.
   direction: Direction;
   spacing: [number, number];
 };
 
 // Positions every node and writes render-only hints: `data.layout` on nodes (backward flag,
-// lane side, row) and `data.route` on edges (orthogonal waypoints). transformToWorkflowDefinition
+// lane side, rank) and `data.route` on edges (orthogonal waypoints). transformToWorkflowDefinition
 // reads named data fields only, so neither hint reaches the saved definition.
 export const applyLayout = (nodes: Node[], edges: Edge[], options: LayoutOptions): { nodes: Node[]; edges: Edge[] } => {
   const { positions, nodeHints, routes } = layoutWorkflow(nodes, edges, options);
