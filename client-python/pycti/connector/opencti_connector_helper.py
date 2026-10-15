@@ -1949,15 +1949,19 @@ class ConnectorInfo:
         :return: Dictionary containing all connector status information
         :rtype: dict
         """
-        return {
+        details = {
             "run_and_terminate": self._run_and_terminate,
             "buffering": self._buffering,
             "queue_threshold": self._queue_threshold,
             "queue_messages_size": self._queue_messages_size,
             "next_run_datetime": self._next_run_datetime,
             "last_run_datetime": self._last_run_datetime,
-            "errors": _sanitize_connector_errors(self._errors),
         }
+        errors = _sanitize_connector_errors(self._errors)
+        # Platforms without errors support reject the key, and the platform treats it missing as no error.
+        if errors:
+            details["errors"] = errors
+        return details
 
     @property
     def run_and_terminate(self) -> bool:
