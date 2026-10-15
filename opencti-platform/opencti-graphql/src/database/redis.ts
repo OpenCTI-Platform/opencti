@@ -325,7 +325,7 @@ export const redisInit = async () => {
   }
 };
 export const getRedisVersion = async () => {
-  const serverInfo = await getClientBase().call('INFO') as string;
+  const serverInfo = await getClientBase().info();
   const versionString = serverInfo.split('\r\n')[1];
   return versionString.split(':')[1];
 };
