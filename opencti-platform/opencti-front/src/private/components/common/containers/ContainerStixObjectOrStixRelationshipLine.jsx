@@ -271,6 +271,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on Case {
           name
         }
+        ... on CitizenshipDocument {
+          name
+        }
         ... on Note {
           attribute_abstract
         }
@@ -394,6 +397,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on Case {
               name
             }
+            ... on CitizenshipDocument {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -486,6 +492,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Case {
+              name
+            }
+            ... on CitizenshipDocument {
               name
             }
             ... on StixCyberObservable {
@@ -601,6 +610,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on Case {
               name
             }
+            ... on CitizenshipDocument {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -690,6 +702,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Case {
+              name
+            }
+            ... on CitizenshipDocument {
               name
             }
             ... on StixCyberObservable {

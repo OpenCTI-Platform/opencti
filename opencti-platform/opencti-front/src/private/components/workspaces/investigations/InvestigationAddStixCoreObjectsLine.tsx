@@ -190,6 +190,11 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
           name
           description
         }
+        ... on CitizenshipDocument{
+          name
+          description
+          x_opencti_citizenship_document_type
+        }
         ... on Indicator {
           name
           description
