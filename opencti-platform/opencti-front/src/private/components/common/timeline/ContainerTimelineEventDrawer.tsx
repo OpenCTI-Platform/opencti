@@ -33,6 +33,8 @@ import {
   cropLongTokens,
   describeTimelineEventSource,
   describeTimelineEventTimes,
+  isTimelineContextWindow,
+  TIMELINE_CONTEXT_LEGEND,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   TIMELINE_PRECISION_LABELS,
@@ -201,6 +203,11 @@ const ContainerTimelineEventDrawer = ({
               <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
                 {t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? 'Exact')}
               </Text>
+              {isTimelineContextWindow(event) && (
+                <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-event-context">
+                  {t_i18n(TIMELINE_CONTEXT_LEGEND)}
+                </Text>
+              )}
             </MetadataItem>
             <MetadataItem label={t_i18n('Lane')}>
               <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? 'Custom')} color={colors.lanes[lane]} size="sm" />

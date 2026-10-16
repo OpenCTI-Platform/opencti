@@ -162,6 +162,8 @@ export type TimelineSource = typeof TIMELINE_SOURCES[number];
 export const isTimelineContextWindow = (event: { rule_id?: string | null; kind: string }): boolean => event.rule_id === 'entity-first-last-seen'
   && event.kind !== 'incident_seen';
 
+export const TIMELINE_CONTEXT_LEGEND = 'Global first and last seen of the entity, context only: not dated in this incident';
+
 // The cases hold tasks; an Incident has none, so a Containment milestone is its only way to record the containment
 const TIMELINE_TASK_CONTAINER_TYPES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
 export const timelineContainerHasTasks = (entityType: string | null | undefined): boolean => !!entityType && TIMELINE_TASK_CONTAINER_TYPES.includes(entityType);

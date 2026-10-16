@@ -20,6 +20,7 @@ import {
   panDomain,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_ANCHOR_LABELS,
+  TIMELINE_CONTEXT_LEGEND,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   type TimelineAnchorKey,
@@ -96,7 +97,6 @@ const ZOOM_STEP = 0.7;
 const PAN_STEP = 0.15;
 const CONTEXT_OPACITY = 0.45;
 const HIDDEN_OPACITY = 0.35;
-const CONTEXT_LEGEND = 'Global first and last seen of the entity, context only: not dated in this incident';
 const HIDDEN_LEGEND = 'Hidden event, shown because "Show hidden events" is on';
 
 const truncate = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 1)}\u2026` : value);
@@ -381,7 +381,7 @@ const ContainerTimelineLanes = ({
         className="timeline-event"
         role={onSelect ? 'button' : undefined}
         tabIndex={onSelect ? 0 : undefined}
-        aria-label={[eventLabel(event), context && t_i18n(CONTEXT_LEGEND), event.hidden && t_i18n(HIDDEN_LEGEND)].filter(Boolean).join(', ')}
+        aria-label={[eventLabel(event), context && t_i18n(TIMELINE_CONTEXT_LEGEND), event.hidden && t_i18n(HIDDEN_LEGEND)].filter(Boolean).join(', ')}
         aria-pressed={onSelect ? selected : undefined}
         data-testid={`timeline-event-${event.id}`}
         data-context={context ? 'true' : undefined}
@@ -608,7 +608,7 @@ const ContainerTimelineLanes = ({
                   strokeOpacity={CONTEXT_OPACITY}
                 />
               </svg>
-              <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(CONTEXT_LEGEND)}</Text>
+              <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(TIMELINE_CONTEXT_LEGEND)}</Text>
             </span>
           )}
           {showsHiddenLegend && (
@@ -648,7 +648,7 @@ const ContainerTimelineLanes = ({
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Approximate time')}</Text>
           )}
           {isTimelineContextWindow(hover.event) && (
-            <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-context">{t_i18n(CONTEXT_LEGEND)}</Text>
+            <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-context">{t_i18n(TIMELINE_CONTEXT_LEGEND)}</Text>
           )}
           {hover.event.hidden && (
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-hidden">{t_i18n(HIDDEN_LEGEND)}</Text>

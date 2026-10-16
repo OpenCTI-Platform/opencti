@@ -82,3 +82,26 @@ describe('ContainerTimelineEventDrawer source', () => {
     expect(screen.getByTestId('timeline-event-source')).toHaveTextContent('Placed by kill chain order: this technique has no dated relationship');
   });
 });
+
+describe('ContainerTimelineEventDrawer context windows', () => {
+  const malwareSeen: TimelineEventDetails = {
+    ...indicatorEvent,
+    title: 'Malware LockBit seen',
+    kind: 'malware_seen',
+    lane: 'adversary',
+    rule_id: 'entity-first-last-seen',
+    element: { id: 'malware-1', entity_type: 'Malware', representative: { main: 'LockBit' } },
+  };
+
+  it('says under Time that the global first and last seen of an entity are context only', () => {
+    renderDrawer(malwareSeen);
+    expect(screen.getByTestId('timeline-event-context')).toHaveTextContent('Global first and last seen of the entity, context only: not dated in this incident');
+  });
+
+  it('shows no context caption for an event dated in this incident', () => {
+    renderDrawer(indicatorEvent);
+    expect(screen.queryByTestId('timeline-event-context')).not.toBeInTheDocument();
+    renderDrawer({ ...malwareSeen, kind: 'incident_seen' });
+    expect(screen.queryByTestId('timeline-event-context')).not.toBeInTheDocument();
+  });
+});

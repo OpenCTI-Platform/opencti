@@ -9,6 +9,8 @@ import type { TimelineChartEvent } from './ContainerTimelineLanes';
 import TimelineSourceStateChip from './TimelineSourceStateChip';
 import {
   groupEventsByBucket,
+  isTimelineContextWindow,
+  TIMELINE_CONTEXT_LEGEND,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   TIMELINE_PRECISION_LABELS,
@@ -108,6 +110,7 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
             {bucket.events.map((event) => {
               const lane = event.lane as TimelineLane;
               const selected = event.id === selectedId;
+              const context = isTimelineContextWindow(event);
               return (
                 <div key={event.id} role="listitem">
                   {/* The row opens the event: button semantics on the row content, list semantics on its wrapper */}
@@ -119,7 +122,7 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                     }}
                     tabIndex={event.id === activeId ? 0 : -1}
                     aria-current={selected ? 'true' : undefined}
-                    aria-label={`${event.title}, ${fldt(event.event_time)}, ${t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)}`}
+                    aria-label={[event.title, fldt(event.event_time), t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane), context && t_i18n(TIMELINE_CONTEXT_LEGEND)].filter(Boolean).join(', ')}
                     data-testid={`timeline-list-event-${event.id}`}
                     onFocus={() => setFocusedId(event.id)}
                     onKeyDown={(keyEvent) => onItemKeyDown(keyEvent, event)}
@@ -149,6 +152,11 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                         {event.pinned && <PushPinOutlined fontSize="inherit" titleAccess={t_i18n('Pinned')} />}
                         {event.hidden && <VisibilityOffOutlined fontSize="inherit" titleAccess={t_i18n('Hidden')} />}
                       </div>
+                      {context && (
+                        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5), color: colors.textSecondary }} data-testid="timeline-list-event-context">
+                          {t_i18n(TIMELINE_CONTEXT_LEGEND)}
+                        </Text>
+                      )}
                       <div style={{ display: 'flex', gap: theme.spacing(0.75), marginTop: theme.spacing(0.5), flexWrap: 'wrap' }}>
                         <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
                         <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
