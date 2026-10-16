@@ -144,7 +144,6 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
 
 export type HealthCheckCode = keyof typeof HEALTH_CHECK_REGISTRY;
 
-// A code read from storage can be unknown to this platform version
-export const getHealthCheckDefinition = (code: string): HealthCheckDefinition | undefined => {
-  return (HEALTH_CHECK_REGISTRY)[code];
+export const getHealthCheckDefinition = (code: HealthCheckCode): HealthCheckDefinition | undefined => {
+  return HEALTH_CHECK_REGISTRY[code];
 };
