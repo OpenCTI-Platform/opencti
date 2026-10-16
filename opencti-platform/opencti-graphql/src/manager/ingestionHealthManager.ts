@@ -136,8 +136,6 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
-    // Runtime data reported by the sources, one batch per source. Stopped elements are not monitored: nothing is read for them.
-    // Without it a missing heartbeat could not be told from an unreachable storage: the source is skipped until the next period
     let runtimeDataByIngestion: Map<string, RuntimeData>;
     const periodContext = { evaluatedAt: now(), isExistingUser, pingingConnectorsIds };
     try {
