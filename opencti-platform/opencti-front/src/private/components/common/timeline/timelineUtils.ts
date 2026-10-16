@@ -710,6 +710,13 @@ export const endsAfterStart = (start: Date | null | undefined, end: Date | null 
 // Lane and kind of a new milestone in the milestone form
 export const TIMELINE_MILESTONE_DEFAULT_LANE = 'response';
 export const TIMELINE_MILESTONE_DEFAULT_KIND = 'milestone';
+// Lane the milestone form picks when one of these events is chosen, which the analyst can still change
+export const TIMELINE_KIND_DEFAULT_LANES: Readonly<Partial<Record<string, TimelineLane>>> = {
+  containment: 'response',
+  eradication: 'response',
+  recovery: 'response',
+  notification: 'response',
+};
 // Opening the Timeline tab with this parameter opens the settings panel once
 export const TIMELINE_OPEN_SETTINGS_PARAM = 'timeline_settings';
 

@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "に含まれるファイル）に適用されます。",
   "The retention policy will be applied on global workbenches (workbenches contained in": "に含まれるワークベンチ）に適用されます。",
   "The retention policy will be applied on history logs of knowledge entities": "保持ポリシーは知識エンティティの履歴ログに適用される",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "イベントが描かれるタイムラインの行です。どのレーンにも当てはまらないイベントにはカスタムを使います。",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "イベントが描かれるタイムラインの行です。封じ込め、根絶、復旧、通知を選ぶとイベントは対応に移りますが、後から変更できます。どのレーンにも当てはまらないイベントにはカスタムを使います。",
   "The rule has been disabled, clean-up launched...": "ルールは無効化され、クリーンアップが開始されました...",
   "The rule has been enabled, rescan of platform data launched...": "ルールが有効化され、プラットフォームデータの再スキャンが開始されました...",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "この種類のすべてのタイムラインで共通です。種類のカスタマイズで選択します。",

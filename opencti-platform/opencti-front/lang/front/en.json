@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "The retention policy will be applied on global files (files contained in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "The retention policy will be applied on global workbenches (workbenches contained in",
   "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.",
   "The rule has been disabled, clean-up launched...": "The rule has been disabled, clean-up launched...",
   "The rule has been enabled, rescan of platform data launched...": "The rule has been enabled, rescan of platform data launched...",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "The same for every timeline of this type: they are chosen in the customization of the type.",

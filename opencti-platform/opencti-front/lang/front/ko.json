@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "보존 정책은 글로벌 파일(",
   "The retention policy will be applied on global workbenches (workbenches contained in": "에 포함된 파일)에 적용됩니다",
   "The retention policy will be applied on history logs of knowledge entities": "보존 정책은 지식 엔티티의 기록 로그에 적용됩니다",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "이벤트가 그려지는 타임라인의 행입니다. 다른 레인에 맞지 않는 이벤트에는 사용자 지정을 사용하세요.",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "이벤트가 그려지는 타임라인의 행입니다. 봉쇄, 근절, 복구 또는 알림을 선택하면 이벤트가 대응으로 이동하며, 이후에도 변경할 수 있습니다. 다른 레인에 맞지 않는 이벤트에는 사용자 지정을 사용하세요.",
   "The rule has been disabled, clean-up launched...": "규칙이 비활성화되었습니다, 정리 시작...",
   "The rule has been enabled, rescan of platform data launched...": "규칙이 활성화되었습니다, 플랫폼 데이터 다시 스캔 시작...",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "이 유형의 모든 타임라인에 동일하게 적용되며, 유형의 맞춤 설정에서 선택합니다.",

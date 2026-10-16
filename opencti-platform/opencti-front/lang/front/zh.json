@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "保留策略将应用于全局文件（包含在",
   "The retention policy will be applied on global workbenches (workbenches contained in": "保留策略将应用于全局工作台（工作台包含在",
   "The retention policy will be applied on history logs of knowledge entities": "保留政策将适用于知识实体的历史日志",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "事件绘制所在的时间线行。不属于任何其他泳道的事件请使用自定义。",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "事件绘制所在的时间线行。选择遏制、根除、恢复或通知时，事件会移到响应，您仍可更改。不属于任何其他泳道的事件请使用自定义。",
   "The rule has been disabled, clean-up launched...": "该规则已禁用，清理已启动",
   "The rule has been enabled, rescan of platform data launched...": "该规则已启用，平台数据的重新扫描已启动",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "此类型的所有时间线相同：在该类型的定制化中选择。",

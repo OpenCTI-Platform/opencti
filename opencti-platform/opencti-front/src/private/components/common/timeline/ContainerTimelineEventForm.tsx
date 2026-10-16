@@ -32,6 +32,7 @@ import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
 import useTimelineColors from './useTimelineColors';
 import {
   endsAfterStart,
+  TIMELINE_KIND_DEFAULT_LANES,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   TIMELINE_LANES,
@@ -225,7 +226,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               label={t_i18n('Lane')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
-              helpertext={t_i18n('The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.')}
+              helpertext={t_i18n('The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.')}
             >
               {TIMELINE_LANES.map((lane) => (
                 <SelectItem key={lane} value={lane}>{t_i18n(TIMELINE_LANE_LABELS[lane])}</SelectItem>
@@ -238,6 +239,10 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
               helpertext={t_i18n('What happened. Adding a milestone (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the containment anchor.')}
+              onChange={(_: string, kind: string) => {
+                const lane = TIMELINE_KIND_DEFAULT_LANES[kind];
+                if (lane) setFieldValue('lane', lane);
+              }}
             >
               {KIND_OPTIONS.map((kind) => (
                 <SelectItem key={kind} value={kind}>{t_i18n(TIMELINE_KIND_LABELS[kind])}</SelectItem>

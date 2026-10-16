@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "Le polizza di ritenzione verranno applicate a file globali (file contenuti in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Le polizza di ritenzione verranno applicate a workbench globali (workbench contenuti in",
   "The retention policy will be applied on history logs of knowledge entities": "La politica di conservazione sarà applicata ai registri cronologici delle entità di conoscenza",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "La riga della cronologia su cui è disegnato l'evento. Usa Personalizzato per un evento che non rientra in nessun'altra corsia.",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "La riga della cronologia su cui è disegnato l'evento. Scegliere Contenimento, Eradicazione, Ripristino o Notifica sposta l'evento in Risposta, e puoi comunque cambiarla. Usa Personalizzato per un evento che non rientra in nessun'altra corsia.",
   "The rule has been disabled, clean-up launched...": "La regola è stata disabilitata, pulizia avviata...",
   "The rule has been enabled, rescan of platform data launched...": "La regola è stata abilitata, riscan della piattaforma avviato...",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "Le stesse per tutte le cronologie di questo tipo: si scelgono nella personalizzazione del tipo.",

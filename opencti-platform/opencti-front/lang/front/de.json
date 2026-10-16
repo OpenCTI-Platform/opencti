@@ -5119,7 +5119,7 @@
   "The retention policy will be applied on global files (files contained in": "Die Aufbewahrungsrichtlinie wird auf globale Dateien angewendet (Dateien, die in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Die Aufbewahrungsrichtlinie wird auf globale Werkbänke angewandt (Werkbänke, die in",
   "The retention policy will be applied on history logs of knowledge entities": "Die Aufbewahrungspolitik wird auf Verlaufsprotokolle von Wissenseinheiten angewendet",
-  "The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.": "Die Zeile der Zeitleiste, in der das Ereignis dargestellt wird. Verwenden Sie Benutzerdefiniert für ein Ereignis, das in keine andere Spur passt.",
+  "The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.": "Die Zeile der Zeitleiste, in der das Ereignis dargestellt wird. Bei Eindämmung, Beseitigung, Wiederherstellung oder Benachrichtigung wird das Ereignis in Reaktion verschoben, was Sie weiterhin ändern können. Verwenden Sie Benutzerdefiniert für ein Ereignis, das in keine andere Spur passt.",
   "The rule has been disabled, clean-up launched...": "Die Regel wurde deaktiviert, Bereinigung eingeleitet...",
   "The rule has been enabled, rescan of platform data launched...": "Die Regel wurde aktiviert, erneuter Scan der Plattformdaten gestartet...",
   "The same for every timeline of this type: they are chosen in the customization of the type.": "Für alle Zeitleisten dieses Typs gleich: Sie werden in den Anpassungen des Typs gewählt.",
