@@ -39,6 +39,15 @@ Additional configuration options:
 !!! note
     By default, entities imported through this synchronizer keep no recognizable processing status, since the remote platform's status reference isn't valid locally. To keep processing statuses consistent across both platforms instead, enable [Entity status sync](../../administration/entities.md#workflow-section) on the entity types you want to synchronize.
 
+### Large files
+
+When `sync_manager:file_reference_mode_enabled` is set on the receiving platform, files above `sync_manager:file_reference_mode_size_threshold_kb` are staged in S3 and copied server-side, instead of travelling base64-encoded through RabbitMQ and the worker. See the [configuration](../../deployment/configuration.md#engines-schedules-managers).
+
+>Warning - "Requirements"
+    - Workers must run the same version as the platform. Older workers drop files that only carry a storage reference.
+    - The worker token must belong to a user with the `BYPASS` capability, so the copy runs as the synchronizer user.
+    - A single file cannot exceed 5 GB, the S3 server-side copy limit.
+
 ## Export an OpenCTI Stream
 
 You can export your existing OpenCTI Stream from the platform, making it easy to share your configuration with others.

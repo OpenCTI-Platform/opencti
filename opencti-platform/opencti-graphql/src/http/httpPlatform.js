@@ -15,7 +15,7 @@ import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSI
 import { sessionAuthenticateUser, userWithOrigin } from '../modules/user/user-domain';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
-import { downloadFile, getFileContent } from '../database/raw-file-storage';
+import { downloadFile, downloadFileRange, getFileContent } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -227,9 +227,10 @@ const createApp = async (app, schema) => {
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
-      const stream = await downloadFile(data.id);
+      const download = await downloadFileRange(data.id);
       res.attachment(file);
-      stream.pipe(res);
+      res.set('Content-Length', String(download.contentLength));
+      download.stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error getting storage get file', { cause: e });

@@ -1052,6 +1052,7 @@
   "Support version": "Version prise en charge",
   "SWID": "SWID",
   "Sync workflow statuses by name": "Synchroniser les statuts des flux de travail par nom",
+  "SYNC_INFLIGHT_CLEANUP_MANAGER": "Manager de nettoyage des fichiers de synchronisation en transit",
   "Synchronized": "Synchronisé",
   "Tags": "Tags",
   "Target entity": "Entité cible",
