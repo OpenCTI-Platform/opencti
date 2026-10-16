@@ -92,7 +92,7 @@ import {
   isTerminalHuntRunFailure,
 } from '../hunt-logic';
 import { isReadableByReadersOf, resolveHuntIocSet } from '../hunt-iocs';
-import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
+import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults, recordHuntedIocs } from './huntRun-iocs';
 import { type HuntRunInformationPatch, updateHuntLastRunStatusIfStill, updateHuntRunInformation } from '../hunt-stats';
 import {
   continueHuntIncident,
@@ -944,6 +944,14 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       }
     } catch (error) {
       stepFailed('[OPENCTI-MODULE] Hunt sightings update failed', error);
+    }
+  }
+  // The indicators and observables the run searched record when a hunt last looked them up, and last found them
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.ioc_results ?? []).length > 0) {
+    try {
+      await recordHuntedIocs(current);
+    } catch (error) {
+      stepFailed('[OPENCTI-MODULE] Hunted dates of the indicators update failed', error);
     }
   }
   // Only hits never seen before escalate: a standing hunt above its threshold on known activity opens nothing new. A
