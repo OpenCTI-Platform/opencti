@@ -55,7 +55,7 @@ Next to the status, the header always shows the primary action of the status: **
 
 Some items are warnings: they do not block the activation but deserve a look, for example "Splunk hunt has not answered recently: runs wait in the queue until it is back", or the indicators left out because they are more restricted than the hunt. Each security platform translates the logic to its own language, so the translation is read platform by platform. When a hunt is created and every time its logic changes, the platform asks each hunt connector of its scope that translates queries for a translation preview of the new logic, without running it. Until a connector answers, the checklist says "Splunk hunt is checking the translation of the hunt logic", and a Sigma rule no platform translated yet is never reported ready ("The translation of the hunt logic is not checked yet"). A platform whose connector cannot translate the logic is left out of the "Splunk hunt can run it" line: a logic that failed to translate for good on every platform that reported blocks the activation, while a logic, or some of its Sigma rules, that failed on some platforms only is a warning naming that failure ("Splunk hunt cannot translate 1 of the 3 Sigma rules, the others run"). **Run now** then leaves those platforms out and runs on the others; it is refused only when no platform is left. In a draft workspace, the checklist reminds that the hunt runs once the draft is validated. An active hunt keeps its logic: a change that would leave it with nothing to look for, such as removing the last indicator of an active indicator hunt, is refused with the item to complete, whether it is made from the hunt or through the API; pause the hunt first.
 
-A user who cannot change the hunt (without the knowledge update capability, or with only view access to the draft workspace that holds it) sees the status and the checklist without these actions and without **Edit the schedule** and **Edit the scope**. The items that ask for a change state the fact and who can act instead, for example "The scope matches no security platform yet; a user who can edit the hunt can change it".
+A user who cannot change the hunt (without the [capabilities to launch hunts](#required-capability), or with only view access to the draft workspace that holds it) sees the status and the checklist without these actions and without **Edit the schedule** and **Edit the scope**. The items that ask for a change state the fact and who can act instead, for example "The scope matches no security platform yet; a user who can edit the hunt can change it".
 
 ![The status header of a draft hunt: the statuses explained, Activate with "1 item to complete" and the checklist naming the missing logic](assets/first-hunt-activation-blocked.png)
 
@@ -278,7 +278,7 @@ The creation drawer, the edition drawer, the guided Sigma hunt and the **Logic**
 
 ![The only disabled state: XTM One is not configured, said once in the form header with Open the settings](assets/hunt-drawer-sigma-unavailable.png)
 
-Through the API, `huntAssist` takes the fields to write (none for the whole plan), an optional description of what to hunt and the hunt as it is being written (or the identifier of a saved hunt), and returns the proposal with the validation of its Sigma rule and the techniques found on the platform. It requires the knowledge update capability, saves nothing, and every call is recorded in the activity of the user. A failed call carries its cause in the `failure` field of the error data (`XTM_ONE_NOT_CONFIGURED`, `XTM_ONE_UNREACHABLE`, `XTM_ONE_TIMEOUT`, `XTM_ONE_REFUSED`, `XTM_ONE_QUOTA`, `XTM_ONE_NO_MODEL`, `XTM_ONE_NO_AGENT`, `XTM_ONE_INVALID_ANSWER`, `XTM_ONE_INCOMPLETE`).
+Through the API, `huntAssist` takes the fields to write (none for the whole plan), an optional description of what to hunt and the hunt as it is being written (or the identifier of a saved hunt), and returns the proposal with the validation of its Sigma rule and the techniques found on the platform. It requires the [capabilities to launch hunts](#required-capability), saves nothing, and every call is recorded in the activity of the user. A failed call carries its cause in the `failure` field of the error data (`XTM_ONE_NOT_CONFIGURED`, `XTM_ONE_UNREACHABLE`, `XTM_ONE_TIMEOUT`, `XTM_ONE_REFUSED`, `XTM_ONE_QUOTA`, `XTM_ONE_NO_MODEL`, `XTM_ONE_NO_AGENT`, `XTM_ONE_INVALID_ANSWER`, `XTM_ONE_INCOMPLETE`).
 
 ## Hunt packs
 
@@ -294,10 +294,16 @@ Hunts can run on a schedule, react to new knowledge, be armed by Priority Intell
 
 ## Access rights
 
+### Required capability
+
+Launching queries on the security platforms of an organization is a right of its own: creating, changing, running and triaging hunts take the **Launch hunts on security platforms** capability (`KNOWLEDGE_KNHUNT`, under **Access knowledge** in **Settings > Security > Roles**) on top of **Create / Update knowledge**. Upgrading the platform grants it to every role that holds **Create / Update knowledge**, so nobody loses the hunts they had; an administrator removes it from the roles that should edit the knowledge without hunting. A user without it reads the hunts and their runs, without the controls that change them, and the platform refuses the hunt mutations to that user (`huntAdd`, `huntFieldPatch`, `huntRunStart`, `huntTestQuery`, `huntRunRetry`, `huntRunTriage`, `huntRunEvidenceAdd`, `huntRunSetVerdict`, `huntPlan`, `huntAssist`, `huntPackImport`), as well as the generic edition and the import of a hunt.
+
+Automation acts with the capabilities of the user behind it: a **Run hunts** playbook step runs as the user who last wrote it, so that user needs the capability; the XTM One agents plan and triage hunts on behalf of the user who asked them.
+
 | Action | Capability |
 |---|---|
 | View hunts and runs | Access knowledge |
-| Create, update, run hunts, set verdicts, import packs | Create / Update knowledge |
+| Create, update, run hunts, triage runs, set verdicts, import packs | Create / Update knowledge and Launch hunts on security platforms |
 | Delete hunts | Delete knowledge |
 | Register a hunt connector, report runs | Connector API usage |
 

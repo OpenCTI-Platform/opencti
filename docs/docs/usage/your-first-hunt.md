@@ -12,7 +12,7 @@ A hunt runs on your SIEM, EDR or data lake through a **hunt connector**. The fir
 
 ![The first-use page of Defense > Hunts: the prerequisites with their state and the three starting points](assets/first-hunt-start.png)
 
-You need the **Create / Update knowledge** capability to create and run hunts.
+You need the **Create / Update knowledge** and **Launch hunts on security platforms** capabilities to create and run hunts (see [Required capability](hunts.md#required-capability)).
 
 ## Hunt for indicators
 

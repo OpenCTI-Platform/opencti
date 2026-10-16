@@ -42,7 +42,7 @@ vi.mock('../../../../../src/modules/hunt/hunt-loaders', async (importOriginal) =
 
 vi.mock('../../../../../src/modules/user/user-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../../src/modules/user/user-domain')>(),
-  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => (id === 'user-1' ? { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } : undefined)),
+  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => (id === 'user-1' ? { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'KNOWLEDGE_KNHUNT' }] } : undefined)),
 }));
 
 vi.mock('../../../../../src/database/engine', async (importOriginal) => ({
@@ -166,7 +166,8 @@ describe('Run hunts playbook step', () => {
 });
 
 describe('Run hunts playbook step access', () => {
-  const editor = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as unknown as AuthUser;
+  const editor = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'KNOWLEDGE_KNHUNT' }] } as unknown as AuthUser;
+  const knowledgeEditor = { id: 'user-3', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'AUTOMATION_AUTMANAGE' }] } as unknown as AuthUser;
   const reader = { id: 'user-2', capabilities: [{ name: 'KNOWLEDGE' }, { name: 'AUTOMATION_AUTMANAGE' }] } as unknown as AuthUser;
   const context = { user: editor } as AuthContext;
   const configuration = (huntIds: string[]) => JSON.stringify({ applyToElements: 'only-main', hunt_ids: huntIds });
@@ -180,7 +181,10 @@ describe('Run hunts playbook step access', () => {
 
   it('should refuse a hunt step to a user who cannot start hunt runs, and leave the other steps as written', async () => {
     await expect(writePlaybookHuntStep(context, reader, PLAYBOOK_HUNT_COMPONENT.id, configuration([])))
-      .rejects.toThrow('Running hunts in a playbook requires the capability to update the knowledge');
+      .rejects.toThrow('Running hunts in a playbook requires the capabilities to update the knowledge and to launch hunts on security platforms');
+    // Updating the knowledge is not enough: launching hunts is a capability of its own
+    await expect(writePlaybookHuntStep(context, knowledgeEditor, PLAYBOOK_HUNT_COMPONENT.id, configuration([])))
+      .rejects.toThrow('Running hunts in a playbook requires the capabilities to update the knowledge and to launch hunts on security platforms');
     await expect(writePlaybookHuntStep(context, reader, 'PLAYBOOK_LOGGER_COMPONENT', configuration(['hunt-1']))).resolves.toEqual(configuration(['hunt-1']));
     expect(storeLoadById).not.toHaveBeenCalled();
   });
@@ -216,7 +220,7 @@ describe('Run hunts playbook step access', () => {
     const written = JSON.parse(await writePlaybookDefinitionHuntSteps(context, editor, definition));
     expect(written.nodes[0].configuration).toEqual('{}');
     expect(JSON.parse(written.nodes[1].configuration)).toEqual({ hunt_ids: [], author_id: 'user-1' });
-    await expect(writePlaybookDefinitionHuntSteps(context, reader, definition)).rejects.toThrow('requires the capability to update the knowledge');
+    await expect(writePlaybookDefinitionHuntSteps(context, reader, definition)).rejects.toThrow('requires the capabilities to update the knowledge and to launch hunts');
   });
 
   it('should search the hunts of the step as its writer, and run none when its writer can no longer start hunt runs', async () => {

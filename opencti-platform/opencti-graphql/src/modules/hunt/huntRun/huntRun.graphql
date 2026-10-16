@@ -439,10 +439,10 @@ input HuntConnectorRegisterInput {
 }
 
 type Mutation {
-  huntRunRetry(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntRunTriage(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunRetry(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntRunTriage(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
   huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun @auth(for: [CONNECTORAPI])
-  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
   huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector @auth(for: [CONNECTORAPI])
 }
