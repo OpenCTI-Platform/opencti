@@ -518,6 +518,7 @@ describe('workflowBypassOperationCallback', () => {
     const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(false));
 
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback.reportOnWork();
 
     expect(setWorkflowStatus).toHaveBeenCalledTimes(2);
     expect(setWorkflowStatus).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'status-id', false);
@@ -536,12 +537,30 @@ describe('workflowBypassOperationCallback', () => {
     const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(true));
 
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }, { internal_id: 'entity-3' }]);
+    await callback.reportOnWork();
 
     expect(setWorkflowStatus).toHaveBeenCalledTimes(3);
     expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'boom', source: 'entity-1' });
     expect(reportExpectation).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'work-id', { error: 'not mapped', source: 'entity-2' });
     expect(reportExpectation).toHaveBeenNthCalledWith(3, testContext, ADMIN_USER, 'work-id', undefined);
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 3 });
+  });
+
+  it('should report on the work only once every page is applied', async () => {
+    vi.mocked(setWorkflowStatus).mockResolvedValue({ success: true });
+    const callback = workflowBypassOperationCallback(testContext, ADMIN_USER, task, buildOperations(true));
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback([{ internal_id: 'entity-3' }]);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(reportExpectation).not.toHaveBeenCalled();
+
+    await callback.reportOnWork();
+
+    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(testContext, ADMIN_USER, 'work-id', 3);
+    expect(reportExpectation).toHaveBeenCalledTimes(3);
   });
 });
 
@@ -575,6 +594,7 @@ describe('workflowTransitionOperationCallback', () => {
     const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, operations);
 
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+    await callback.reportOnWork();
 
     expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
     expect(reportExpectation).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'work-id', { error: 'Transition not allowed', source: 'entity-1' });
