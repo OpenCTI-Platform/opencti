@@ -27,13 +27,17 @@ import ComboboxField from '../../ComboboxField';
 import useSchema from '../../../utils/hooks/useSchema';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
 import { layerInputVars } from '../../../utils/fdsLayer';
+import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
 import DashboardVariableValueInput from './DashboardVariableValueInput';
+import SelectionValuesInput from './ValueInputs/SelectionValuesInput';
+import RestrictionFiltersField from './RestrictionFiltersField';
 import useKillChainNames from './useKillChainNames';
 
-// The types that will support a restriction of their values (PR 2b): the others have no restriction step.
+// The types whose values can be restricted: the others have no restriction step. Only an entity variable can be
+// restricted by filter.
 const RESTRICTABLE_TYPES: readonly DashboardVariableType[] = [
   'entity', 'label', 'marking', 'user', 'group', 'status', 'killChainPhase', 'vocabulary',
 ];
@@ -175,11 +179,6 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
     boolean: t_i18n('Boolean'),
     date: t_i18n('Date'),
   };
-  // A restriction set outside of this dialog is kept as is: its mode can neither be chosen nor left.
-  const keptRestrictionLabel = variable?.restriction.mode === 'selection'
-    ? t_i18n('Manual selection')
-    : t_i18n('By filter');
-
   const onSubmit = async (values: DashboardVariableDraft) => {
     try {
       await upsert(draftToVariable(values, values.id ?? newId));
@@ -227,8 +226,28 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
             const parameter = type ? TYPE_PARAMETER[type] : undefined;
             // The restriction and the default value wait for the type and for its parameter, which they depend on.
             const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
-            // A type, or one of its parameters, changing makes the default value meaningless.
-            const forgetDefaultValue = () => setFieldValue('defaultValue', '');
+            // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
+            // the rule with it. They only change in creation: they are locked in edition.
+            const forgetDefaultValue = () => {
+              setFieldValue('defaultValue', '');
+              setFieldValue('selectionValues', []);
+              setFieldValue('filters', undefined);
+            };
+            // A type that cannot be restricted, or restricted by filter, leaves its restriction.
+            const onTypeChange = (_name: string, nextType: string) => {
+              forgetDefaultValue();
+              const nextRestrictable = RESTRICTABLE_TYPES.includes(nextType as DashboardVariableType);
+              if (!nextRestrictable || (nextType !== 'entity' && values.restrictionMode === 'filters')) {
+                setFieldValue('restrictionMode', 'none');
+              }
+            };
+            // The values of a mode left are kept in the draft, so that coming back finds them: only the current mode is sent.
+            // The default value is chosen again, among the values the new mode allows.
+            const onRestrictionModeChange = (mode: string) => {
+              setFieldValue('restrictionMode', mode);
+              setFieldValue('defaultValue', '');
+              if (mode === 'filters' && !values.filters) setFieldValue('filters', emptyFilterGroup);
+            };
 
             return (
               <Form className="flex flex-col gap-6 min-h-0">
@@ -252,7 +271,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                       fullWidth
                       required
                       disabled={isEditing}
-                      onChange={forgetDefaultValue}
+                      onChange={onTypeChange}
                     >
                       {DASHBOARD_VARIABLE_TYPES.map((variableType) => (
                         <SelectItem key={variableType} value={variableType}>{typeLabels[variableType]}</SelectItem>
@@ -283,18 +302,51 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                         aria-label={t_i18n('Restriction')}
                         orientation="vertical"
                         value={values.restrictionMode}
-                        onValueChange={() => {}}
+                        onValueChange={onRestrictionModeChange}
                       >
-                        <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete || values.restrictionMode !== 'none'} />
-                        {values.restrictionMode !== 'none' && (
-                          <Radio value={values.restrictionMode} label={keptRestrictionLabel} disabled />
-                        )}
+                        <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
+                        <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
+                        {type === 'entity' && <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />}
                       </RadioGroup>
+                    )}
+                    {type && values.restrictionMode === 'selection' && (
+                      <SelectionValuesInput
+                        // Same key as the default value: the parameters of the type change what can be searched.
+                        key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}`}
+                        variable={draftToVariable({ ...values, restrictionMode: 'none' }, values.id ?? 'draft')}
+                        label={t_i18n('Values')}
+                        values={values.selectionValues}
+                        disabled={isTypeIncomplete}
+                        error={errors.selectionValues && (touched.selectionValues || values.selectionValues.length > 0) ? errors.selectionValues : undefined}
+                        onBlur={() => setFieldTouched('selectionValues', true)}
+                        onChange={(selectionValues) => {
+                          setFieldValue('selectionValues', selectionValues);
+                          // A default value removed from the selection is no longer allowed.
+                          if (!selectionValues.includes(values.defaultValue)) setFieldValue('defaultValue', '');
+                        }}
+                      />
+                    )}
+                    {type === 'entity' && values.restrictionMode === 'filters' && (
+                      <RestrictionFiltersField
+                        // The editor keeps its own state: other entity types start another rule.
+                        key={values.entityTypes.join()}
+                        entityTypes={values.entityTypes}
+                        label={t_i18n('Filters')}
+                        value={values.filters}
+                        error={touched.filters ? errors.filters : undefined}
+                        onChange={(filters) => {
+                          setFieldValue('filters', filters);
+                          setFieldTouched('filters', true, false);
+                          // Whether the default value still matches the rule is not known without a search: it is chosen again.
+                          setFieldValue('defaultValue', '');
+                        }}
+                      />
                     )}
                     {type ? (
                       <DashboardVariableValueInput
                         // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
-                        key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}`}
+                        // The restriction too: a new mode, selection or rule searches among other values.
+                        key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}${values.restrictionMode}${values.selectionValues.join()}${JSON.stringify(values.filters ?? null)}`}
                         label={t_i18n('Default value')}
                         variable={draftToVariable(values, values.id ?? 'draft')}
                         value={values.defaultValue}
