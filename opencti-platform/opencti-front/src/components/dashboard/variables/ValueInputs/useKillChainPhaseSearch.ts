@@ -33,10 +33,15 @@ export const killChainNameFilters = (killChainName: string): useKillChainPhaseSe
  * of every phase: with many phases in the platform, those of the kill chain could all fall outside of it.
  * Each search replaces the options with its result, labelled `[kill chain name] phase name` like the filters do.
  * `reset` puts back the result of the last search of an empty text (the whole kill chain), without a new request.
+ * `error` is set when a search fails (listing the phases needs the knowledge access, which not every user has), and
+ * cleared by the next successful search or when the kill chain changes.
  */
 const useKillChainPhaseSearch = (killChainName: string | undefined) => {
   const environment = useRelayEnvironment();
   const [options, setOptions] = useState<FilterOptionValue[]>([]);
+  // A failure belongs to the kill chain it happened for: another kill chain starts with no failure.
+  const [failure, setFailure] = useState<{ killChainName: string | undefined } | null>(null);
+  if (failure && failure.killChainName !== killChainName) setFailure(null);
   // Only the last search may answer: an earlier, slower one would put back the options of a previous text.
   const subscription = useRef<Subscription | null>(null);
   useEffect(() => () => subscription.current?.unsubscribe(), []);
@@ -60,9 +65,13 @@ const useKillChainPhaseSearch = (killChainName: string | undefined) => {
           }));
           if (text === '') unfiltered.current = phases;
           setOptions(phases);
+          setFailure(null);
         },
-        // A failed search offers nothing rather than the options of a previous text.
-        error: () => setOptions([]),
+        // A failed search offers nothing rather than the options of a previous text, and says so.
+        error: () => {
+          setOptions([]);
+          setFailure({ killChainName });
+        },
       });
   }, [environment, killChainName]);
 
@@ -71,7 +80,7 @@ const useKillChainPhaseSearch = (killChainName: string | undefined) => {
     setOptions(unfiltered.current);
   }, []);
 
-  return { options, search, reset };
+  return { options, search, reset, error: failure !== null && failure.killChainName === killChainName };
 };
 
 export default useKillChainPhaseSearch;

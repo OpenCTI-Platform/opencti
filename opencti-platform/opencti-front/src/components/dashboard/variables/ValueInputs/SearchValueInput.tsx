@@ -6,6 +6,7 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
@@ -44,6 +45,8 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
     : (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
         // A variable holds an id: neither the "No label" option nor the dynamic @me user can be a value.
         .filter((option) => option.value !== null && option.value !== ME_FILTER_VALUE);
+  // Listing the phases needs the knowledge access: without it no default value can be chosen, and the empty list says why.
+  const hasListingError = isKillChainPhase && killChainPhases.error;
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
 
@@ -59,6 +62,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
   return (
     <Combobox<FilterOptionValue>
       disabled={disabled}
+      error={hasListingError}
       clearable={commitOn === 'change'}
       options={options}
       value={selected}
@@ -81,6 +85,11 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
           <ComboboxTrigger />
         </ComboboxControls>
       </ComboboxField>
+      {hasListingError && (
+        <ComboboxHelperText aria-live="polite">
+          {t_i18n('The kill chain phases cannot be listed with your access rights or right now, so a default value cannot be chosen')}
+        </ComboboxHelperText>
+      )}
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
     </Combobox>
   );

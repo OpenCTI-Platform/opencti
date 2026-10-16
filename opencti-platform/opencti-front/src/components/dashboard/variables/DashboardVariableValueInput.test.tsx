@@ -380,6 +380,62 @@ describe('DashboardVariableValueInput', () => {
         await user.keyboard('r');
         expect(relayEnv.mock.getMostRecentOperation().request.variables).toEqual({ search: 'r', first: 100, filters: killChainFilters });
       });
+
+      describe('when the phases cannot be listed', () => {
+        // Listing the phases needs the knowledge access, which not every user has: the default value is an id, so no
+        // free text can replace the list, and the field says why it offers nothing.
+        const listingError = 'The kill chain phases cannot be listed with your access rights or right now, so a default value cannot be chosen';
+        const rareChain: DashboardVariableShape = { type: 'killChainPhase', killChainName: 'rare-chain', restriction: none };
+
+        it('says so, and offers no phase', async () => {
+          const { user, relayEnv } = renderInput(rareChain);
+          expect(screen.queryByText(listingError)).not.toBeInTheDocument();
+          await user.click(screen.getByRole('combobox'));
+          act(() => {
+            relayEnv.mock.rejectMostRecentOperation(new Error('forbidden'));
+          });
+          expect(screen.getByText(listingError)).toBeInTheDocument();
+          expect(screen.queryAllByRole('option')).toHaveLength(0);
+        });
+
+        it('stops saying so once a search succeeds', async () => {
+          const { user, relayEnv } = renderInput(rareChain);
+          await user.click(screen.getByRole('combobox'));
+          act(() => {
+            relayEnv.mock.rejectMostRecentOperation(new Error('unavailable'));
+          });
+          expect(screen.getByText(listingError)).toBeInTheDocument();
+          await user.keyboard('r');
+          act(() => {
+            relayEnv.mock.resolveMostRecentOperation((operation) => answerPhasesQuery(operation.request.variables));
+          });
+          expect(screen.queryByText(listingError)).not.toBeInTheDocument();
+          expect(optionNames()).toEqual(['[rare-chain] reconnaissance', '[rare-chain] delivery']);
+        });
+
+        it('stops saying so for another kill chain', async () => {
+          const { user, relayEnv, rerender, onChange } = renderInput(rareChain);
+          await user.click(screen.getByRole('combobox'));
+          act(() => {
+            relayEnv.mock.rejectMostRecentOperation(new Error('forbidden'));
+          });
+          expect(screen.getByText(listingError)).toBeInTheDocument();
+          rerender(<DashboardVariableValueInput variable={{ ...rareChain, killChainName: 'bulk-chain' }} value="" onChange={onChange} />);
+          expect(screen.queryByText(listingError)).not.toBeInTheDocument();
+          // Nor does it come back with the first kill chain: the failure was forgotten, not hidden.
+          rerender(<DashboardVariableValueInput variable={rareChain} value="" onChange={onChange} />);
+          expect(screen.queryByText(listingError)).not.toBeInTheDocument();
+        });
+
+        it('is never said for another type of variable, even when its own query fails', async () => {
+          const { user, relayEnv } = renderInput({ type: 'label', restriction: none }, 'label-1');
+          act(() => {
+            relayEnv.mock.rejectMostRecentOperation(new Error('forbidden'));
+          });
+          await user.click(screen.getByRole('combobox'));
+          expect(screen.queryByText(listingError)).not.toBeInTheDocument();
+        });
+      });
     });
 
     it('shows the label of the current value', () => {

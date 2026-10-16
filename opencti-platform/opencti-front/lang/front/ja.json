@@ -4911,6 +4911,7 @@
   "The importation of the file has been started": "ファイルのインポートが開始されました",
   "The investigation has been duplicated. You can manage it": "調査が複製されました。管理できます",
   "The kill chain names could not be loaded, type the name of the kill chain": "キルチェーン名を読み込めませんでした。キルチェーンの名前を入力してください",
+  "The kill chain phases cannot be listed with your access rights or right now, so a default value cannot be chosen": "お客様のアクセス権限では、または現在、キルチェーンのフェーズを一覧表示できないため、デフォルト値を選択できません",
   "The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen": "コンフィギュレーションで設定したライセンスは無効です。この画面で直接コンフィギュレーションできるように、ライセンスを変更するか、削除してください。",
   "The main object and the {count} relationships/references linked to it will be deleted permanently.": "メインオブジェクトとそれにリンクされた {count} リレーションシップ/参照は永久に削除されます。",
   "The main object and the {count} relationships/references linked to it will be restored.": "メインオブジェクトとそれにリンクされた{count}リレーションシップ/参照がリストアされます。",
