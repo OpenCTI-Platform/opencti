@@ -1,3 +1,15 @@
+export const FILIGRAN_DARK_THEME_NAME = 'Filigran Dark';
+export const FILIGRAN_LIGHT_THEME_NAME = 'Filigran Light';
+
+// Fixed standard ids of the built-in themes, identical on every platform so that a
+// configuration bundle can reference them. Frozen values of
+// idGenFromData(ENTITY_TYPE_THEME, { name }): never change them.
+// Custom themes keep a random standard id (theme.ts identifier).
+export const BUILT_IN_THEME_STANDARD_IDS: Record<string, string> = {
+  [FILIGRAN_DARK_THEME_NAME]: 'theme--d2685d62-9005-5d3c-9d77-b6b633599648',
+  [FILIGRAN_LIGHT_THEME_NAME]: 'theme--29754579-d178-5457-801d-92f9a1129174',
+};
+
 // Default values for Dark theme
 // Kept in sync with THEME_DARK_DEFAULT_* in opencti-front/src/components/ThemeDark.ts
 // (FDS bridge, fds-migration/TOKEN-MAPPING.md §1) so brand-new environments seed
