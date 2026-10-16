@@ -25407,7 +25407,7 @@ export type Query = {
   workflowDefinition?: Maybe<WorkflowSchema>;
   workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
-  workflowTransitionEvents: Array<Scalars['String']['output']>;
+  workflowMassTransitions: Array<WorkflowTransition>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
@@ -28658,8 +28658,12 @@ export type QueryWorkflowInstanceArgs = {
 };
 
 
-export type QueryWorkflowTransitionEventsArgs = {
+export type QueryWorkflowMassTransitionsArgs = {
+  entityIds?: InputMaybe<Array<Scalars['String']['input']>>;
   entityType: Scalars['String']['input'];
+  excludedIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -51502,7 +51506,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
   workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
-  workflowTransitionEvents?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryWorkflowTransitionEventsArgs, 'entityType'>>;
+  workflowMassTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType, RequireFields<QueryWorkflowMassTransitionsArgs, 'entityType'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;

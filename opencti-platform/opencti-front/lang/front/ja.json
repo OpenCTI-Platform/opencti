@@ -3524,6 +3524,7 @@
   "No template found for this name": "この名前に対応するテンプレートは見つかりませんでした",
   "No tokens found.": "トークンが見つかりません。",
   "No tokens found. Click \"Generate Token\" to create one.": "トークンが見つかりません。トークンの生成]をクリックしてトークンを生成してください。",
+  "No transition available for all selected entities": "選択したすべてのエンティティに共通する遷移はありません",
   "No value": "値なし",
   "No widget in this workspace": "このワークスペースにウィジェットはありません",
   "No work": "作業なし",

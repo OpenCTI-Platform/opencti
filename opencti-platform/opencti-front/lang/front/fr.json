@@ -3524,6 +3524,7 @@
   "No template found for this name": "Aucun modèle n'a été trouvé pour ce nom",
   "No tokens found.": "Aucun jeton trouvé.",
   "No tokens found. Click \"Generate Token\" to create one.": "Aucun jeton trouvé. Cliquez sur \"Générer\" pour en créer un.",
+  "No transition available for all selected entities": "Aucune transition disponible pour toutes les entités sélectionnées",
   "No value": "Aucune valeur",
   "No widget in this workspace": "Aucun widget dans cet espace de travail",
   "No work": "Aucune exécution",
