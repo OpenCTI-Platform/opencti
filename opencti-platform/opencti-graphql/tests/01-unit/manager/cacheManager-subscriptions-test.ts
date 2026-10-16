@@ -55,7 +55,7 @@ vi.mock('../../../src/database/middleware', () => ({
 }));
 
 vi.mock('../../../src/modules/connector/connector-domain', () => ({
-  connectors: vi.fn(async () => []),
+  connectorsForCache: vi.fn(async () => []),
 }));
 
 vi.mock('../../../src/modules/user/user-domain', () => ({

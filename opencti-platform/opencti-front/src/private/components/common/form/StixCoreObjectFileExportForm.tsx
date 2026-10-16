@@ -62,6 +62,7 @@ export interface StixCoreObjectFileExportFormInputs {
   fileToExport: FileOption | null;
   template: TemplateOption | null;
   exportAsFintel: boolean;
+  removeEmptySections: boolean;
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
@@ -145,6 +146,15 @@ const StixCoreObjectFileExportForm = ({
     }
   }, [isOpen]);
 
+  // Focus the connector field once step 2 mounts (clicking a format Card in
+  // step 1 sets stepIndex synchronously, so unlike a Dialog's own open
+  // transition there's no animated mount to race here).
+  useEffect(() => {
+    if (isOpen && stepIndex === 1) {
+      document.getElementById('stix-core-object-file-export-connector-input')?.focus();
+    }
+  }, [isOpen, stepIndex]);
+
   const handleSelectedContentMaxMarkingsChange = (
     values: FieldOption[] | undefined,
     setFieldValue: (field: string, value: unknown) => void,
@@ -197,6 +207,7 @@ const StixCoreObjectFileExportForm = ({
     format: defaultFormat,
     type: null,
     exportAsFintel: (templates?.length ?? 0) > 0 && !hasPresetFileToExport,
+    removeEmptySections: false,
     template: selectedDefaultTemplate ?? null,
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
@@ -232,6 +243,7 @@ const StixCoreObjectFileExportForm = ({
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => {
         const isFintelPdf = values.connector?.value === BUILT_IN_HTML_TO_PDF.value && values.exportAsFintel;
+        const isTemplateGeneratedExport = values.connector?.value === BUILT_IN_FROM_TEMPLATE.value || isFintelPdf;
 
         useEffect(() => {
           if (values.connector?.value === BUILT_IN_HTML_TO_PDF.value) {
@@ -482,13 +494,13 @@ const StixCoreObjectFileExportForm = ({
                   <Field
                     component={ComboboxField}
                     name="connector"
+                    id="stix-core-object-file-export-connector-input"
                     disabled={!values.format}
                     style={fieldSpacingContainerStyle}
                     options={connectors}
                     isOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
                     renderOption={(option: FieldOption) => option.label}
                     label={t_i18n('Connector')}
-                    autoFocus
                   />
                   {values.connector && (
                     <>
@@ -501,7 +513,7 @@ const StixCoreObjectFileExportForm = ({
                           containerstyle={fieldSpacingContainerStyle}
                         />
                       )}
-                      {(values.connector.value === BUILT_IN_FROM_TEMPLATE.value || isFintelPdf) && (
+                      {isTemplateGeneratedExport && (
                         <Field
                           component={ComboboxField}
                           name="template"
@@ -612,6 +624,15 @@ const StixCoreObjectFileExportForm = ({
                             />
                           )}
                         </>
+                      )}
+                      {isTemplateGeneratedExport && (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="removeEmptySections"
+                          label={t_i18n('Remove empty sections')}
+                          containerstyle={{ marginTop: 10 }}
+                        />
                       )}
                     </>
                   )}

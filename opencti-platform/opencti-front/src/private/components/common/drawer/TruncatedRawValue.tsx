@@ -20,7 +20,7 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const theme = useTheme<Theme>();
-  const textRef = useRef<HTMLSpanElement>(null);
+  const textRef = useRef<HTMLElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
   useEffect(() => {
@@ -55,11 +55,24 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   if (variant === 'text') {
     return (
       <>
-        <Tooltip title={isOverflowing ? t_i18n('Click to view full value') : ''}>
+        {/* describeChild: the full value stays the button's name, the tooltip only describes it */}
+        <Tooltip title={isOverflowing ? t_i18n('Click to view full value') : ''} describeChild>
+          {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
           <Box
             ref={textRef}
+            // One element measures and shows the value: a button only once it is truncated
+            component={isOverflowing ? 'button' : 'div'}
+            type={isOverflowing ? 'button' : undefined}
             onClick={isOverflowing ? () => setOpen(true) : undefined}
             sx={{
+              display: 'block',
+              width: '100%',
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              font: 'inherit',
+              lineHeight: 'inherit',
+              textAlign: 'left',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -92,13 +105,22 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
 
   return (
     <>
-      <Tooltip title={t_i18n('Click to view full value')}>
-        <pre
+      <Tooltip title={t_i18n('Click to view full value')} describeChild>
+        {/* FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67 */}
+        <button
+          type="button"
           onClick={() => setOpen(true)}
-          style={codeStyle}
+          style={{
+            ...codeStyle,
+            border: 'none',
+            padding: 0,
+            background: 'none',
+            textAlign: 'left',
+            whiteSpace: 'pre-wrap',
+          }}
         >
           {value.substring(0, MAX_LENGTH)}...
-        </pre>
+        </button>
       </Tooltip>
       {dialog}
     </>

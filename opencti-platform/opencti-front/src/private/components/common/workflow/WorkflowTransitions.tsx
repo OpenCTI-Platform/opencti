@@ -9,6 +9,7 @@ import {
   DialogFooter,
   DialogTitle,
   Icon,
+  IconButton,
   Menu,
   MenuContent,
   MenuItem,
@@ -42,6 +43,24 @@ import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMember
 import { relayErrorHandling } from '../../../../relay/environment';
 import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus';
 import Button from '@common/button/Button';
+
+const COMMENT_FIELD_ID = 'workflow-transition-comment';
+
+// The reason only lives in a tooltip, so the trigger is a button: keyboard and screen-reader users reach it too.
+const WorkflowErrorHint = ({ message, severity }: { message: string; severity: 'error' | 'warning' }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <IconButton
+        size="sm"
+        priority="tertiary"
+        variant={severity === 'error' ? 'destructive' : 'default'}
+        aria-label={message}
+        icon={<ErrorOutline color={severity} fontSize="small" />}
+      />
+    </TooltipTrigger>
+    <TooltipContent>{message}</TooltipContent>
+  </Tooltip>
+);
 
 interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
@@ -145,12 +164,10 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ErrorOutline color="error" fontSize="small" />
-            </TooltipTrigger>
-            <TooltipContent>{workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}</TooltipContent>
-          </Tooltip>
+          <WorkflowErrorHint
+            severity="error"
+            message={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}
+          />
           <Text as="span" variant="content-compact" style={{ color: 'var(--text-input-error)' }}>
             {t_i18n('Transition failed')}
           </Text>
@@ -177,12 +194,34 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     );
   }
 
+  // An external write kept the entity Status off the workflow without any transition running.
+  const divergence = workflowInstance.pendingError ? (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <WorkflowErrorHint severity="warning" message={workflowInstance.pendingError} />
+      <Text as="span" variant="content-compact" className="whitespace-nowrap">
+        {t_i18n('Status out of sync with the workflow')}
+      </Text>
+      {isBypass && (
+        <Button
+          variant="secondary"
+          size="small"
+          onClick={handleClear}
+          disabled={clearing || approving}
+          startIcon={<Close fontSize="small" />}
+        >
+          {t_i18n('Clear')}
+        </Button>
+      )}
+    </Box>
+  ) : null;
+
   if (workflowInstance.allowedTransitions.length === 0) {
-    return null;
+    return divergence;
   }
 
   return (
     <>
+      {divergence}
       {workflowInstance.allowedTransitions.length > 1 ? (
         <Menu open={menuOpen} onOpenChange={setMenuOpen}>
           <MenuTrigger asChild>
@@ -270,7 +309,19 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   if (!open && !disabled) setWizard(null);
                 }}
               >
-                <DialogContent>
+                <DialogContent
+                  // Radix focuses the first focusable element on open, which is the
+                  // close button: when there is a comment to write (sometimes
+                  // mandatory, the only action of this step), it gets the focus.
+                  // TextareaField does not forward a ref, so it is found by id.
+                  onOpenAutoFocus={(event) => {
+                    const commentField = document.getElementById(COMMENT_FIELD_ID);
+                    if (commentField) {
+                      event.preventDefault();
+                      commentField.focus();
+                    }
+                  }}
+                >
                   <DialogTitle className="flex flex-col gap-6">
                     <Text variant="title-md">{wizard.event}</Text>
 
@@ -296,6 +347,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                             </DialogDescription>
                             <Field
                               component={TextareaField}
+                              id={COMMENT_FIELD_ID}
                               name="comment"
                               label={t_i18n('Comment')}
                               required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}

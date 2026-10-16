@@ -2544,7 +2544,100 @@ tooltip; and the field must be 36px high empty and with chips. Then delete the
 
 ---
 
-## 67. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
+## 67. `Button` and `IconButton` always paint a box, so a control whose content *is* the target stays a bare `<button>`
+
+**Needed.** Fixing the `jsx-a11y` click-handler violations (#16818) turned
+four clickable non-interactive elements into real buttons. In each, the
+control's content is the visual, and the button must add no box of its own:
+- `TruncatedRawValue` — a truncated raw value, clicking it opens the full
+  value: as pre-wrapped code (`code` variant), or as a single line cut with an
+  ellipsis in the History and Audit tables (`text` variant, a button only once
+  the value overflows).
+- `MarkdownDisplay` — a markdown image, clicking it opens the preview.
+- `SearchInput` — the caret half of the AI search split control: a narrow
+  zone sharing one pill with the MUI `ToggleButton` beside it (hover tint,
+  focus ring, divider), and opening the agent picker.
+- `FilterIconButtonGlobalMode` — the and/or between the filters and groups of
+  a filter line, drawn as the operator badge of the filter chips (monospace,
+  tinted, 4px radius); clicking it switches the mode.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`):
+`Button` fixes its height per size (`h-6` / `h-9`) with horizontal padding,
+and every priority paints a fill or a border; `asChild` keeps those classes
+on the child. `IconButton` is a fixed square (24 or 36 px) with its own fill
+and focus ring. None has an unstyled variant.
+
+**Workaround.** FDS-WORKAROUND #67 at the four sites: a native
+`<button type="button">` reset to no border, padding or background, keeping
+the content's own layout (the and/or keeps the operator badge's own padding
+and tint). Each is a real, focusable, keyboard-operable
+control.
+
+**Ask.** A bare variant of `Button` (or a `ButtonBase` / `Pressable`
+primitive) that owns only the semantics and the focus ring: no height, no
+padding, no fill. That would cover content-as-control cases like these, and
+split controls built from two halves of one pill.
+
+**Removal test.** At a pin with that variant: replace the four
+`<button>`s, delete their reset styles and the markers, and check that the
+truncated code value keeps its whitespace and wrapping, the truncated text
+value its single line and ellipsis, the image keeps its size,
+the caret still reads as one pill with the AI toggle (idle, hover, focus),
+and the and/or still matches the filter chips' operator badge.
+
+## 68. A disabled `Button` or `IconButton` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
+
+**Needed.** Two places explain a disabled control in its tooltip: the
+integration catalog says why Deploy is disabled (an incompatible platform
+version), and the graph toolbar names each tool, disabled ones included.
+The tooltip must reach mouse users on hover and keyboard users on focus,
+which is the WAI-ARIA APG pattern for this case ("Focusability of disabled
+controls"): a button marked `aria-disabled` that stays focusable and
+hoverable, and simply does nothing when activated.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`).
+Without `asChild`, a disabled `Button` renders a native `disabled`
+attribute: no focus, no pointer events, so the tooltip trigger never
+fires. With `asChild`, it renders `aria-disabled` and stays focusable, but
+its `data-[disabled]:pointer-events-none` class still removes hover, so the
+tooltip only opens from the keyboard. `IconButton` passes `disabled`
+through to the native attribute, with `disabled:pointer-events-none`, and
+has no `aria-disabled` mode at all. No mode works as a tooltip trigger on
+its own.
+
+**Workaround.** FDS-WORKAROUND #68 at two sites, where the disabled
+button sits in a `<span tabIndex={0}>` that takes the hover and the focus
+for the tooltip:
+- `DisabledReasonTooltip`, around the library `Button` of the Deploy
+  actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
+  and `IngestionCatalogCardDeployButton`.
+- `GraphToolbarItem`, around every graph toolbar tool. It still renders the
+  MUI `IconButton` and `Tooltip`; moving it to the library's would hit this
+  same gap, so the span stays either way.
+
+The span is a focusable element with no role, which
+`jsx-a11y/no-noninteractive-tabindex` flags and is disabled at both sites:
+the Tab stop lands on that span, not on the button.
+
+**Ask.** A disabled mode of `Button` and `IconButton` that renders
+`aria-disabled` instead of `disabled`, keeps focus and pointer events, and
+blocks activation in JavaScript, for example a `focusableWhenDisabled`
+prop. That would make the button itself the tooltip trigger.
+
+**Removal test.** At a pin with that mode: pass the disabled state through
+it on the three Deploy buttons and on `GraphToolbarItem` (moved to the
+library `IconButton` and `Tooltip`), delete both `<span>`s with their
+markers and eslint-disables, and check that the tooltip shows on hover and
+on keyboard focus, that the screen reader announces the button as
+disabled, and that a click or Enter does nothing. In the graph toolbar,
+also check that each tool keeps its size and alignment, which the span's
+`inline-flex` holds today.
+
+---
+
+## 69. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
 
 **Needed.** A menu or list row that is itself the control (a `MenuItem` or a
 `role="option"` toggling a filter value) draws a check box next to the name of
