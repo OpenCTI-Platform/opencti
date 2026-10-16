@@ -1,9 +1,15 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Position, type EdgeProps, type XYPosition } from 'reactflow';
 import TransitionEdge from './TransitionEdge';
 import { getRoutePath } from '../layout/route';
+import { WorkflowEdgeActionsContext } from './WorkflowEdgeActionsContext';
+
+vi.mock('../../../../../../components/i18n', () => ({
+  useFormatter: () => ({ t_i18n: (key: string) => key }),
+}));
 
 vi.mock('@mui/styles', () => ({
   useTheme: () => ({
@@ -50,5 +56,47 @@ describe('TransitionEdge', () => {
   it('draws the stroke width it is given', () => {
     const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { strokeWidth: 2 })} /></svg>);
     expect(container.querySelector<SVGPathElement>('path#edge-1')!.style.strokeWidth).toBe('2');
+  });
+
+  describe('edge menu', () => {
+    const renderWithActions = () => {
+      const actions = { insertStatus: vi.fn(), deleteConnection: vi.fn() };
+      const view = render(
+        <WorkflowEdgeActionsContext.Provider value={actions}>
+          <svg><TransitionEdge {...makeProps([{ x: 0, y: 0 }, { x: 0, y: 100 }])} /></svg>
+        </WorkflowEdgeActionsContext.Provider>,
+      );
+      return { actions, view };
+    };
+    const openFromBadge = async () => {
+      fireEvent.mouseEnter(document.querySelector('svg > g')!);
+      await userEvent.click(screen.getByRole('button', { name: 'Edge actions' }));
+    };
+
+    it('offers to insert a status or delete the connection from the badge', async () => {
+      renderWithActions();
+      await openFromBadge();
+      expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Insert status here', 'Delete connection']);
+    });
+
+    it('opens the same menu when the edge itself is clicked', async () => {
+      const { view } = renderWithActions();
+      await userEvent.click(view.container.querySelector('path[stroke="transparent"]')!);
+      expect(screen.getByRole('menuitem', { name: 'Delete connection' })).toBeInTheDocument();
+    });
+
+    it('inserts a status on this edge', async () => {
+      const { actions } = renderWithActions();
+      await openFromBadge();
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Insert status here' }));
+      expect(actions.insertStatus).toHaveBeenCalledWith({ id: 'edge-1', source: 'A', target: 'B' });
+    });
+
+    it('deletes this connection', async () => {
+      const { actions } = renderWithActions();
+      await openFromBadge();
+      await userEvent.click(screen.getByRole('menuitem', { name: 'Delete connection' }));
+      expect(actions.deleteConnection).toHaveBeenCalledWith('edge-1');
+    });
   });
 });

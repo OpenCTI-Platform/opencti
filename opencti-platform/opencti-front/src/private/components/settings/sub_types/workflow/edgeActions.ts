@@ -1,5 +1,6 @@
 import type { Edge, Node } from 'reactflow';
 import { WorkflowNodeType } from './utils';
+import type { EdgeRef, WorkflowEdgeActions } from './EdgeTypes/WorkflowEdgeActionsContext';
 
 // Removes one connection from the workflow graph.
 // - transition -> status: the transition stays, with no target (an unlinked transition).
@@ -18,3 +19,19 @@ export const deleteConnection = (nodes: Node[], edges: Edge[], edgeId: string): 
   }
   return { nodes, edges: remaining };
 };
+
+// The actions behind the edge menu, bound to the current graph and the canvas setters.
+export const createEdgeActions = ({ nodes, edges, setNodes, setEdges, openInsertDrawer }: {
+  nodes: Node[];
+  edges: Edge[];
+  setNodes: (nodes: Node[]) => void;
+  setEdges: (edges: Edge[]) => void;
+  openInsertDrawer: (edge: EdgeRef) => void;
+}): WorkflowEdgeActions => ({
+  insertStatus: openInsertDrawer,
+  deleteConnection: (edgeId) => {
+    const next = deleteConnection(nodes, edges, edgeId);
+    setNodes(next.nodes);
+    setEdges(next.edges);
+  },
+});

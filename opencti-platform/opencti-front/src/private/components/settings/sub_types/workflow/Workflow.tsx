@@ -21,6 +21,8 @@ import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWor
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { getHoverHighlight } from './hoverHighlight';
+import { createEdgeActions } from './edgeActions';
+import { WorkflowEdgeActionsContext, type EdgeRef } from './EdgeTypes/WorkflowEdgeActionsContext';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
@@ -376,20 +378,29 @@ const Workflow = ({
     [getNode],
   );
 
+  // Opens the drawer that inserts a status (and a transition) in the middle of an edge.
+  const openInsertDrawer = useCallback((edge: EdgeRef) => {
+    setSelectedElement({
+      id: edge.id,
+      type: WorkflowNodeType.placeholder,
+      data: { name: null, conditions: {} },
+      position: { x: 0, y: 0 },
+      source: edge.source,
+      target: edge.target,
+    });
+    setOpen(true);
+  }, []);
   const onEdgeClick: EdgeMouseHandler = useCallback(
     (_event, edge) => {
-      const newState = {
-        id: edge.id,
-        type: WorkflowNodeType.placeholder,
-        data: { name: null, conditions: {} },
-        position: { x: 0, y: 0 },
-        source: edge.source,
-        target: edge.target,
-      };
-      setSelectedElement(newState);
-      setOpen(true);
+      // Transition edges open their own menu (insert a status, delete the connection).
+      if (edge.type === WorkflowNodeType.transition) return;
+      openInsertDrawer(edge);
     },
-    [],
+    [openInsertDrawer],
+  );
+  const edgeActions = useMemo(
+    () => createEdgeActions({ nodes, edges, setNodes, setEdges, openInsertDrawer }),
+    [nodes, edges, setNodes, setEdges, openInsertDrawer],
   );
 
   const onConnect = useStatusConnection();
@@ -421,86 +432,88 @@ const Workflow = ({
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
-      <ReactFlow
-        nodes={displayedNodes}
-        edges={displayedEdges}
-        onConnect={onConnect}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onNodeClick={onNodeClick}
-        onEdgeClick={onEdgeClick}
-        onNodeMouseEnter={onNodeMouseEnter}
-        onNodeMouseLeave={onNodeMouseLeave}
-        fitView
-        defaultViewport={defaultViewport}
-        minZoom={0.2}
-        fitViewOptions={fitViewOptions}
-        nodesDraggable={false}
-        zoomOnDoubleClick={false}
-        proOptions={proOptions}
-      >
-        {nodes.length ? (
-          <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <PublishButton
-              validationStatus={workflowDefinitionStatus}
-              onPublish={handlePublish}
-              onReset={handleReset}
-              onRestore={handleRestore}
-              hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
-            />
-            <Button
-              onClick={() => {
-                setSelectedElement({
-                  id: NEW_STATUS_NAME,
-                  type: WorkflowNodeType.placeholder,
-                  data: {},
-                  position: { x: 0, y: 0 },
-                });
-                setOpen(true);
+      <WorkflowEdgeActionsContext.Provider value={edgeActions}>
+        <ReactFlow
+          nodes={displayedNodes}
+          edges={displayedEdges}
+          onConnect={onConnect}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          onNodeMouseEnter={onNodeMouseEnter}
+          onNodeMouseLeave={onNodeMouseLeave}
+          fitView
+          defaultViewport={defaultViewport}
+          minZoom={0.2}
+          fitViewOptions={fitViewOptions}
+          nodesDraggable={false}
+          zoomOnDoubleClick={false}
+          proOptions={proOptions}
+        >
+          {nodes.length ? (
+            <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <PublishButton
+                validationStatus={workflowDefinitionStatus}
+                onPublish={handlePublish}
+                onReset={handleReset}
+                onRestore={handleRestore}
+                hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
+              />
+              <Button
+                onClick={() => {
+                  setSelectedElement({
+                    id: NEW_STATUS_NAME,
+                    type: WorkflowNodeType.placeholder,
+                    data: {},
+                    position: { x: 0, y: 0 },
+                  });
+                  setOpen(true);
+                }}
+              >
+                {t_i18n('Add Status')}
+              </Button>
+            </Panel>
+          ) : (
+            <Panel
+              position="top-center"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 12,
+                top: '40%',
               }}
             >
-              {t_i18n('Add Status')}
-            </Button>
-          </Panel>
-        ) : (
-          <Panel
-            position="top-center"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 12,
-              top: '40%',
-            }}
-          >
-            <Typography variant="subtitle2" color={theme.palette.text.light}>
-              {t_i18n('Start to define your workflow by adding a Status.')}
-            </Typography>
-            <Button
-              onClick={() => {
-                setSelectedElement({
-                  id: NEW_STATUS_NAME,
-                  type: WorkflowNodeType.placeholder,
-                  data: {},
-                  position: { x: 0, y: 0 },
-                });
-                setOpen(true);
-              }}
-            >
-              {t_i18n('Add Status')}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setEmptyStateRestoreConfirmOpen(true)}
-              disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
-            >
-              {t_i18n('Restore published version')}
-            </Button>
-          </Panel>
-        )}
-      </ReactFlow>
+              <Typography variant="subtitle2" color={theme.palette.text.light}>
+                {t_i18n('Start to define your workflow by adding a Status.')}
+              </Typography>
+              <Button
+                onClick={() => {
+                  setSelectedElement({
+                    id: NEW_STATUS_NAME,
+                    type: WorkflowNodeType.placeholder,
+                    data: {},
+                    position: { x: 0, y: 0 },
+                  });
+                  setOpen(true);
+                }}
+              >
+                {t_i18n('Add Status')}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setEmptyStateRestoreConfirmOpen(true)}
+                disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
+              >
+                {t_i18n('Restore published version')}
+              </Button>
+            </Panel>
+          )}
+        </ReactFlow>
+      </WorkflowEdgeActionsContext.Provider>
       <WorkflowEditionDrawer
         open={open}
         selectedElement={selectedElement}
