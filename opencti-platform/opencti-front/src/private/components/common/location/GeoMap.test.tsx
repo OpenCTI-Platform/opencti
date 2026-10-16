@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import GeoMap from './GeoMap';
 
@@ -41,6 +41,10 @@ describe('GeoMap', () => {
     localStorage.removeItem('opencti-map-renderer');
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('renders the MapLibre map when WebGL2 is available', () => {
     const { getByText, queryByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
     expect(getByText('Mini map')).toBeTruthy();
@@ -59,5 +63,15 @@ describe('GeoMap', () => {
     const { findByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
     expect(await findByText('Fallback map')).toBeTruthy();
     expect(maplibreMock.createdMaps).toBe(0);
+  });
+
+  it('renders the MapLibre map when local storage cannot be accessed', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('The operation is insecure.', 'SecurityError');
+    });
+    const { getByText, queryByText } = testRender(<GeoMap title="Mini map" zoom={4} />);
+    expect(getByText('Mini map')).toBeTruthy();
+    expect(queryByText('Fallback map')).toBeNull();
+    expect(maplibreMock.createdMaps).toBe(1);
   });
 });

@@ -53,6 +53,18 @@ describe('simplifyCountries', () => {
     expect(keys([border[0], border[border.length - 1]])).toEqual(keys([[10, 0], [10, 10]]));
   });
 
+  it('keeps the shared border of a small country unsimplified on both sides', () => {
+    const wiggle = Array.from({ length: 11 }, (_, index): Position => [index % 2 === 0 ? 0 : 0.00005, index / 1000]);
+    const small: Position[] = [...wiggle, [0.01, 0.01], [0.01, 0], [0, 0]];
+    const large: Position[] = [...[...wiggle].reverse(), [0, -10], [-10, -10], [-10, 10], [0, 10], [0, 0.01]];
+    const { countries, borders } = simplifyCountries(collectionOf(['SML', small], ['LRG', large]));
+    const wiggleKeys = keys(wiggle);
+    const containsWiggle = (positions: Position[]) => [...wiggleKeys].every((key) => keys(positions).has(key));
+    expect(containsWiggle(ringOf(countries, 0))).toBe(true);
+    expect(containsWiggle(ringOf(countries, 1))).toBe(true);
+    expect(borders.some((border) => keys(border).size === wiggleKeys.size && containsWiggle(border))).toBe(true);
+  });
+
   it('simplifies a shared border identically on both sides', () => {
     const { countries } = simplifyCountries(collectionOf(['WST', WEST], ['EST', EAST]));
     const onBorder = (ring: Position[]) => keys(ring.filter(([lon]) => Math.abs(lon - 10) < 1e-9));

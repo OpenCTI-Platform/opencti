@@ -11,6 +11,13 @@ export interface SimplifiedCountries {
   borders: Position[][];
 }
 
+interface Arc {
+  key: string;
+  forward: boolean;
+  canonical: Position[];
+  isShared: boolean;
+}
+
 const simplifiedCache = new WeakMap<CountriesCollection, SimplifiedCountries>();
 
 export const polygonsOf = (geometry: CountriesCollection['features'][number]['geometry']): Position[][][] => {
@@ -21,12 +28,13 @@ export const polygonsOf = (geometry: CountriesCollection['features'][number]['ge
 
 const pointKey = (position: Position) => `${position[0]},${position[1]}`;
 
-const edgeKeysOf = (loop: Position[]) => {
-  const pointKeys = loop.map(pointKey);
-  return pointKeys.map((key, index) => {
-    const next = pointKeys[(index + 1) % pointKeys.length];
+const keysOf = (loop: Position[]) => {
+  const points = loop.map(pointKey);
+  const edges = points.map((key, index) => {
+    const next = points[(index + 1) % points.length];
     return key < next ? `${key};${next}` : `${next};${key}`;
   });
+  return { points, edges };
 };
 
 const toLoop = (ring: Position[]) => {
@@ -41,8 +49,7 @@ const toLoop = (ring: Position[]) => {
   return loop;
 };
 
-const canonicalLoop = (loop: Position[]) => {
-  const keys = loop.map(pointKey);
+const canonicalLoop = (loop: Position[], keys: string[]) => {
   let minIndex = 0;
   keys.forEach((key, index) => {
     if (key < keys[minIndex]) minIndex = index;
@@ -53,10 +60,8 @@ const canonicalLoop = (loop: Position[]) => {
 
 const simplifyPositions = (positions: Position[]): Position[] => {
   const projected = positions.map(([lon, lat]) => L.CRS.EPSG3857.latLngToPoint(L.latLng(lat, lon), SIMPLIFY_ZOOM));
-  return L.LineUtil.simplify(projected, SIMPLIFY_TOLERANCE_PX).map((point) => {
-    const { lat, lng } = L.CRS.EPSG3857.pointToLatLng(point, SIMPLIFY_ZOOM);
-    return [lng, lat];
-  });
+  const positionOf = new Map(projected.map((point, index) => [point, positions[index]]));
+  return L.LineUtil.simplify(projected, SIMPLIFY_TOLERANCE_PX).map((point) => positionOf.get(point) ?? positions[0]);
 };
 
 export const simplifyCountries = (collection: CountriesCollection): SimplifiedCountries => {
@@ -65,16 +70,20 @@ export const simplifyCountries = (collection: CountriesCollection): SimplifiedCo
 
   const rings = collection.features.map((feature) => polygonsOf(feature.geometry));
   const loops = rings.map((polygons) => polygons.map((polygon) => polygon.map(toLoop)));
-  const loopEdges = loops.map((polygons) => polygons.map((polygon) => polygon.map(edgeKeysOf)));
+  const loopKeys = loops.map((polygons) => polygons.map((polygon) => polygon.map(keysOf)));
 
   const owners = new Map<string, string>();
+  const degrees = new Map<string, number>();
+  const incrementDegree = (key: string) => degrees.set(key, (degrees.get(key) ?? 0) + 1);
   collection.features.forEach(({ properties }, featureIndex) => {
-    for (const polygon of loopEdges[featureIndex]) {
-      for (const edges of polygon) {
-        for (const key of edges) {
+    for (const polygon of loopKeys[featureIndex]) {
+      for (const { points, edges } of polygon) {
+        for (const [index, key] of edges.entries()) {
           const current = owners.get(key);
           if (current === undefined) {
             owners.set(key, properties.ISO3);
+            incrementDegree(points[index]);
+            incrementDegree(points[(index + 1) % points.length]);
           } else if (!current.split('|').includes(properties.ISO3)) {
             owners.set(key, [...current.split('|'), properties.ISO3].sort().join('|'));
           }
@@ -83,50 +92,73 @@ export const simplifyCountries = (collection: CountriesCollection): SimplifiedCo
     }
   });
 
-  const arcs = new Map<string, Position[]>();
-  const borders: Position[][] = [];
-
-  const simplifyArc = (points: Position[], edgeOwners: string) => {
+  const toArc = (points: Position[], edgeOwners: string): Arc => {
     const isClosed = pointKey(points[0]) === pointKey(points[points.length - 1]);
     const forward = isClosed
       ? pointKey(points[1]) < pointKey(points[points.length - 2])
       : pointKey(points[0]) < pointKey(points[points.length - 1]);
     const canonical = forward ? points : [...points].reverse();
     const key = `${edgeOwners}|${canonical.length}|${pointKey(canonical[0])}|${pointKey(canonical[1])}|${pointKey(canonical[canonical.length - 1])}`;
-    let simplified = arcs.get(key);
-    if (!simplified) {
-      simplified = simplifyPositions(canonical);
-      if (isClosed && simplified.length < MIN_RING_POSITIONS) simplified = canonical;
-      arcs.set(key, simplified);
-      if (edgeOwners.includes('|')) borders.push(simplified);
-    }
-    return forward ? simplified : [...simplified].reverse();
+    return { key, forward, canonical, isShared: edgeOwners.includes('|') };
   };
 
-  const simplifyLoop = (loop: Position[], edges: string[], ring: Position[]) => {
-    if (loop.length < 3) return ring;
-    const labels = edges.map((key) => owners.get(key) ?? '');
-    const cuts = labels.flatMap((label, index) => (label === labels[(index - 1 + loop.length) % loop.length] ? [] : [index]));
-    if (cuts.length === 0) {
-      const simplified = simplifyArc(canonicalLoop(loop), labels[0]);
-      return simplified.length < MIN_RING_POSITIONS ? ring : simplified;
-    }
-    const simplified: Position[] = [];
-    cuts.forEach((cut, cutIndex) => {
+  const arcsOf = (loop: Position[], { points, edges }: { points: string[]; edges: string[] }): Arc[] | null => {
+    if (loop.length < 3) return null;
+    const ownersOf = (index: number) => owners.get(edges[index]) ?? '';
+    const cuts = points.flatMap((key, index) => ((degrees.get(key) ?? 0) >= 3 ? [index] : []));
+    if (cuts.length === 0) return [toArc(canonicalLoop(loop, points), ownersOf(0))];
+    return cuts.map((cut, cutIndex) => {
       const next = cuts[(cutIndex + 1) % cuts.length];
       const length = (next - cut + loop.length) % loop.length || loop.length;
-      const arc = Array.from({ length: length + 1 }, (_, offset) => loop[(cut + offset) % loop.length]);
-      const part = simplifyArc(arc, labels[cut]);
-      simplified.push(...(simplified.length === 0 ? part : part.slice(1)));
+      return toArc(Array.from({ length: length + 1 }, (_, offset) => loop[(cut + offset) % loop.length]), ownersOf(cut));
     });
-    return simplified.length < MIN_RING_POSITIONS ? ring : simplified;
   };
+
+  const simplifiedArcs = new Map<string, Position[]>();
+  const simplifiedPointsOf = (arc: Arc) => {
+    let simplified = simplifiedArcs.get(arc.key);
+    if (!simplified) {
+      simplified = simplifyPositions(arc.canonical);
+      simplifiedArcs.set(arc.key, simplified);
+    }
+    return simplified;
+  };
+
+  const assemble = (arcs: Arc[], pointsOf: (arc: Arc) => Position[]) => {
+    const assembled: Position[] = [];
+    for (const arc of arcs) {
+      const points = arc.forward ? pointsOf(arc) : [...pointsOf(arc)].reverse();
+      assembled.push(...(assembled.length === 0 ? points : points.slice(1)));
+    }
+    return assembled;
+  };
+
+  const loopArcs = loops.map((polygons, featureIndex) => polygons.map((polygon, polygonIndex) => (
+    polygon.map((loop, ringIndex) => arcsOf(loop, loopKeys[featureIndex][polygonIndex][ringIndex]))
+  )));
+
+  const preservedArcs = new Set<string>();
+  for (const arcs of loopArcs.flat(2)) {
+    if (arcs && assemble(arcs, simplifiedPointsOf).length < MIN_RING_POSITIONS) {
+      arcs.forEach((arc) => preservedArcs.add(arc.key));
+    }
+  }
+  const finalPointsOf = (arc: Arc) => (preservedArcs.has(arc.key) ? arc.canonical : simplifiedPointsOf(arc));
+
+  const borders: Position[][] = [];
+  const emittedBorders = new Set<string>();
+  for (const arc of loopArcs.flat(3)) {
+    if (arc && arc.isShared && !emittedBorders.has(arc.key)) {
+      emittedBorders.add(arc.key);
+      borders.push(finalPointsOf(arc));
+    }
+  }
 
   const countries: CountriesCollection = {
     ...collection,
     features: collection.features.map((feature, featureIndex) => {
-      const polygons = loops[featureIndex].map((polygon, polygonIndex) => (
-        polygon.map((loop, ringIndex) => simplifyLoop(loop, loopEdges[featureIndex][polygonIndex][ringIndex], rings[featureIndex][polygonIndex][ringIndex]))
+      const polygons = loopArcs[featureIndex].map((polygon, polygonIndex) => (
+        polygon.map((arcs, ringIndex) => (arcs ? assemble(arcs, finalPointsOf) : rings[featureIndex][polygonIndex][ringIndex]))
       ));
       if (feature.geometry.type === 'Polygon') {
         return { ...feature, geometry: { ...feature.geometry, coordinates: polygons[0] } };
