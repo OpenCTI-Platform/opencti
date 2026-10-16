@@ -621,6 +621,21 @@ describe('Workflow closing reason', () => {
     expect(mockCommit.mock.calls[0][0].variables).toMatchObject({ eventName: 'close', closingReason: 'false-positive' });
   });
 
+  it('describes the dialog with the closing reason prompt when no comment is asked', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'close', closingReason: CommentMode.allowed })],
+      },
+    });
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByText('close'));
+    expect(await screen.findByRole('dialog')).toHaveAccessibleDescription(/You can optionally select a closing reason before changing the status./);
+  });
+
   it('displays the closing reason of an entity when the workflow UI is enabled', () => {
     vi.mocked(useHelper).mockReturnValue({ isFeatureEnable: () => true } as unknown as ReturnType<typeof useHelper>);
     const entity = { x_opencti_closing_reason: 'duplicate' } as unknown as WorkflowStatusStixDomainObject_data$key;
