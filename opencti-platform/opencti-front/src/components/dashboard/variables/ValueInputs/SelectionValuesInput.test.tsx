@@ -88,6 +88,15 @@ describe('SelectionValuesInput', () => {
     expect(chips.map((chip) => chip.textContent)).toEqual(['malicious', 'benign', 'benign (2)']);
   });
 
+  it('keeps the known labels while the labels of a new selection resolve', () => {
+    mockEntities = {};
+    const onChange = vi.fn();
+    const { relayEnv, rerender } = testRender(<SelectionValuesInput variable={label} values={['label-1']} onChange={onChange} label="Values" />);
+    resolveLabels(relayEnv, { 'label-1': 'malicious' });
+    rerender(<SelectionValuesInput variable={label} values={['label-1', 'label-2']} onChange={onChange} label="Values" />);
+    expect(within(chipRow()).getAllByRole('listitem').map((chip) => chip.textContent)).toEqual(['malicious', 'Loading']);
+  });
+
   it('offers the names of the vocabulary category for a vocabulary variable', async () => {
     const variable: DashboardVariableShape = { type: 'vocabulary', vocabularyCategory: 'reliability_ov', restriction: none };
     const { user, relayEnv, onChange } = renderInput(variable, []);

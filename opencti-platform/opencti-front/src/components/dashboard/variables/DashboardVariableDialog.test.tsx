@@ -697,6 +697,24 @@ describe('DashboardVariableDialog', () => {
       expect(mocks.upsert).toHaveBeenCalledWith({ ...restricted, name: 'Countrys' });
     });
 
+    it('lets a non-entity variable restricted by filters leave its restriction, and says why it must', async () => {
+      const restricted: DashboardVariable = {
+        id: '44444444-4444-4444-8444-444444444444',
+        name: 'Topic',
+        type: 'label',
+        restriction: { mode: 'filters', filters: rule },
+        defaultValue: 'label-1',
+      };
+      const { user } = renderDialog({ variable: restricted, existingVariables: [restricted] });
+      const byFilter = await screen.findByRole('radio', { name: 'By filter' });
+      expect(byFilter).toBeChecked();
+      expect(screen.getByText('Only an entity variable can be restricted by filter')).toBeInTheDocument();
+      expect(submit()).toBeDisabled();
+      await user.click(screen.getByRole('radio', { name: 'No restriction' }));
+      await user.type(screen.getByTestId('value-input'), 'label-1');
+      await waitFor(() => expect(submit()).toBeEnabled());
+    });
+
     it('resends the filters restriction untouched when the name is edited', async () => {
       const restricted: DashboardVariable = {
         id: '33333333-3333-4333-8333-333333333333',

@@ -1,4 +1,4 @@
-import { Suspense, useId, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import Button from '@common/button/Button';
@@ -157,7 +157,6 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
   // Kept for the whole life of the dialog: submitting again after a failure must not create a second variable.
   const [newId] = useState(() => uuid());
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const titleId = useId();
 
   const typeLabels: Record<DashboardVariableType, string> = {
     entity: t_i18n('Entity'),
@@ -191,8 +190,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
       open={open}
       onClose={onClose}
       size="medium"
-      title={<span id={titleId}>{isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}</span>}
-      aria-labelledby={titleId}
+      // MUI names the dialog after its title.
+      title={isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}
       data-testid="dashboard-variable-dialog"
       // The name is what is typed first.
       slotProps={{ transition: { onEntered: () => nameInputRef.current?.focus() } }}
@@ -216,7 +215,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
             setFieldValue('selectionValues', []);
             setFieldValue('filters', undefined);
           };
-            // A type that cannot be restricted, or restricted by filter, leaves its restriction.
+          // A type that cannot be restricted, or restricted by filter, leaves its restriction.
           const onTypeChange = (_name: string, nextType: string) => {
             forgetDefaultValue();
             const nextRestrictable = RESTRICTABLE_TYPES.includes(nextType as DashboardVariableType);
@@ -224,8 +223,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
               setFieldValue('restrictionMode', 'none');
             }
           };
-            // The values of a mode left are kept in the draft, so that coming back finds them: only the current mode is sent.
-            // The default value is chosen again, among the values the new mode allows.
+          // The values of a mode left are kept in the draft, so that coming back finds them: only the current mode is sent.
+          // The default value is chosen again, among the values the new mode allows.
           const onRestrictionModeChange = (mode: string) => {
             setFieldValue('restrictionMode', mode);
             setFieldValue('defaultValue', '');
@@ -287,8 +286,14 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                   >
                     <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
                     <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
-                    {type === 'entity' && <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />}
+                    {/* Also shown for another type that holds one (a manifest written elsewhere), so that it can be left. */}
+                    {(type === 'entity' || values.restrictionMode === 'filters') && (
+                      <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />
+                    )}
                   </RadioGroup>
+                )}
+                {type !== 'entity' && values.restrictionMode === 'filters' && errors.filters && (
+                  <Alert severity="error" title={errors.filters} />
                 )}
                 {type && values.restrictionMode === 'selection' && (
                   <SelectionValuesInput
@@ -326,8 +331,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                 {type ? (
                   <DashboardVariableValueInput
                     // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
-                    // The restriction too: a new mode, selection or rule searches among other values.
-                    key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}${values.restrictionMode}${values.selectionValues.join()}${JSON.stringify(values.filters ?? null)}`}
+                    // The mode too, which changes the kind of input. A new selection or rule only changes its props.
+                    key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}${values.restrictionMode}`}
                     label={t_i18n('Default value')}
                     variable={draftToVariable(values, values.id ?? 'draft')}
                     value={values.defaultValue}
