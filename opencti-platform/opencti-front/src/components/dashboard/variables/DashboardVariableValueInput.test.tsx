@@ -236,6 +236,31 @@ describe('DashboardVariableValueInput', () => {
     });
   });
 
+  describe('entity restricted by filters', () => {
+    const rule = {
+      mode: 'and',
+      filters: [{ key: 'objectLabel', values: ['label-1'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+
+    it('searches within the rule, never through the free search of its type', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Organization'], restriction: { mode: 'filters', filters: rule } };
+      const { user, onChange, relayEnv } = renderInput(variable);
+      await user.click(screen.getByRole('combobox'));
+      expect(mockSearchEntities).not.toHaveBeenCalled();
+      const operation = relayEnv.mock.getMostRecentOperation();
+      expect(operation.request.variables).toEqual(expect.objectContaining({ search: '', types: ['Organization'] }));
+      expect(operation.request.variables.filters.filters[0]).toEqual(expect.objectContaining({ key: ['objectLabel'], values: ['label-1'] }));
+      act(() => {
+        relayEnv.mock.resolve(operation, {
+          data: { stixCoreObjects: { edges: [{ node: { id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+        });
+      });
+      await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
+      expect(onChange).toHaveBeenCalledWith('org-1');
+    });
+  });
+
   describe('entity pool', () => {
     it('searches labels and emits the picked label id', async () => {
       mockEntities = {
