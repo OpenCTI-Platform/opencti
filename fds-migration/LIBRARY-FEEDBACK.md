@@ -2661,3 +2661,52 @@ fill contrast but keeps the chip a focusable, clickable `<button>`.
 
 **Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
 variable must still open its popover on click and keep its hover tooltip.
+
+## 70. `Dialog` is always modal, so a form embedding the product's MUI filter editor cannot use it
+
+`Dialog` omits Radix's `modal` prop (`Omit<…DialogPrimitive.Root…, "modal">`):
+it is always modal. A modal Radix dialog sets `pointer-events: none` on `<body>`
+and traps the focus inside its content. Anything portalled outside of it is
+then neither clickable nor focusable.
+
+**Where it bites.** The dashboard variables dialog edits the rule of a variable
+restricted by filters with the shared filter editor (`Filters` +
+`FilterIconButton`), the one of the widget editor. Its key picker is a library
+`Combobox` and works, but the value of a filter is chosen in `FilterChipPopover`,
+a MUI `Popover` portalled to `<body>`: inside the library `Dialog` it does not
+open in a usable state. Rendering the MUI popover inside the dialog content is no
+way out either: the content is centred with a `translate`, which offsets a
+fixed-positioned popover.
+
+**Workaround.** FDS-WORKAROUND #70: `DashboardVariableDialog.tsx` goes back to the
+MUI wrapper `@common/dialog/Dialog`, as the widget editor (`WidgetUpsert.tsx`),
+and its `Dialog` adoption is removed from `migration-state.json`. The deletion
+dialog of a variable, which embeds no filter, stays on the library `Dialog`.
+
+**Ask.** Either a non-modal option on `Dialog`, or the product's filter editor
+moving to library floating surfaces (the value popover first).
+
+**Removal test.** Back on the library `Dialog`, create an entity variable, choose
+*By filter*, add a `Label` filter: the value popover opens, a label can be searched
+by typing and picked with the mouse, and the dialog stays open.
+
+## 71. `ComboboxChips` keys its chips by label, so two values sharing a label break the chip row
+
+`ComboboxChips` renders `engine.selectedValues.map(…)` with
+`key = engine.getOptionLabel(option)` (`components/combobox/Combobox.mjs`). Two
+selected values with the same label get the same React key.
+
+**Where it bites.** The values of a dashboard variable restricted to a selection
+are ids whose labels resolve after the field mounts: every chip is labelled
+`Loading` meanwhile, and React left stale `Loading` chips next to the resolved
+ones once the labels arrived. Two deleted entities (both `Restricted`) or two
+entities of the same name hit the same defect.
+
+**Workaround.** FDS-WORKAROUND #71: `SelectionValuesInput.tsx` numbers a label
+already taken (`benign`, `benign (2)`).
+
+**Ask.** Key the chips by position, or by a `getOptionKey` the host provides.
+
+**Removal test.** Drop the numbering; select three labels, two of the same name,
+switch the restriction mode away and back: exactly three chips, no `Loading` chip
+left once the labels resolve.

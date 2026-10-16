@@ -43,6 +43,7 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   // A value no longer found (deleted, not visible) keeps a chip, labelled `Restricted`, so that it can be removed.
   // The library keys its chips by label: a label already taken (values still loading, two restricted values,
   // two entities of the same name) is numbered, or React would leave stale chips behind.
+  // FDS-WORKAROUND #71: dropped once the chips are no longer keyed by label (fds-migration/LIBRARY-FEEDBACK.md).
   const seenLabels = new Map<string, number>();
   const selected = values.map((value) => {
     const option = options.find((candidate) => candidate.value === value)
