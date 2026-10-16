@@ -35,6 +35,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -49,7 +50,7 @@ from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
-from pydantic import TypeAdapter
+from pydantic import BaseModel, ConfigDict, TypeAdapter, ValidationError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
@@ -1032,7 +1033,7 @@ class PingAlive(threading.Thread):
         self.set_state = set_state
         self.exit_event = threading.Event()
         self.metric = metric
-        self.connector_info = connector_info
+        self.connector_info: ConnectorInfo = connector_info
 
     def ping(self) -> None:
         """Execute the ping loop to maintain connector heartbeat.
@@ -1053,10 +1054,10 @@ class PingAlive(threading.Thread):
                 initial_state = self.get_state()
                 connector_info = self.connector_info.all_details
 
-                if self.connector_info.last_run_result is not None:
+                if len(self.connector_info.errors) > 0:
                     self.connector_logger.error(
                         "[PING] ERROR during last run",
-                        {"last_run_result": self.connector_info.last_run_result},
+                        {"errors": self.connector_info.errors},
                     )
 
                 self.connector_logger.debug(
@@ -1832,6 +1833,15 @@ CRITICITY_RANK = {
 }
 
 
+class ConnectorRunError(BaseModel):
+    """Error returned by a connector run"""
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    code: str
+    message: str
+    criticity: int
+
+
 def _parse_criticity(value) -> ConnectorInfoErrorCriticity:
     if isinstance(value, ConnectorInfoErrorCriticity):
         return value
@@ -1911,7 +1921,7 @@ class ConnectorInfo:
         queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
-        errors: Optional[List[Dict]] = None,
+        errors: List[ConnectorRunError] = [],
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -1937,10 +1947,6 @@ class ConnectorInfo:
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
         self._errors: List[Dict] = list(errors) if errors else []
-
-        self._last_run_result: str | None = (
-            None  # Return from the last connector run, None means everything OK
-        )
 
     @property
     def all_details(self):
@@ -2052,27 +2058,7 @@ class ConnectorInfo:
         :type value: datetime
         """
         self._next_run_datetime = value
-
-    @property
-    def last_run_result(self) -> str | None:
-        """Get the result of the last run.
-
-        :return: The result of the last run, or None if everything was OK
-        :rtype: str or None
-        """
-        return self._last_run_result
-
-    @last_run_result.setter
-    def last_run_result(self, value: str | None) -> None:
-        """Get or set the result of the last run.
-
-        :param value: The result of the last run
-        :type value: str or None
-        :return: The result of the last run
-        :rtype: str or None
-        """
-        self._last_run_result = value
-
+    
     @property
     def last_run_datetime(self) -> datetime:
         """Get the last run datetime.
@@ -3224,7 +3210,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-        self, message_callback: Callable[[], None | str], duration_period: str
+        self, message_callback: Callable[[], Optional[List[Dict]]], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -3302,7 +3288,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def schedule_process(
         self,
-        message_callback: Callable[[], None | str],
+        message_callback: Callable[[], Optional[List[Dict]]],
         duration_period: Union[int, float],
     ) -> None:
         """Schedule the execution of a connector process.
@@ -3312,7 +3298,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         the next run based on the interval.
 
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3335,8 +3321,23 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                result = message_callback()
-                self.connector_info.last_run_result = result
+                error_list = message_callback()
+                # Strings, bytes and mappings are iterable but are not a list of errors
+                if not isinstance(error_list, Iterable) or isinstance(
+                    error_list, (str, bytes, Mapping)
+                ):
+                    self.connector_info.errors = []
+                else:
+                    result: List[ConnectorRunError] = []
+                    for error in error_list:
+                        try:
+                            result.append(ConnectorRunError.model_validate(error))
+                        except ValidationError as e:
+                            self.connector_logger.error(
+                                "Malformed error response from the connector",
+                                {"received": repr(error), "reason": str(e)},
+                            )
+                    self.connector_info.errors = result
 
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
