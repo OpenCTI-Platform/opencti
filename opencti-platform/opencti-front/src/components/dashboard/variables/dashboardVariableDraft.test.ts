@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DASHBOARD_VARIABLES_LIMITS, draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
-import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import type { Filter, FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const t_i18n = (s: string) => s;
@@ -252,7 +252,7 @@ describe('validateDraft', () => {
     });
 
     it('refuses a filters rule referencing another variable, at any depth', () => {
-      const tokenFilter = { key: 'objectLabel', values: ['$var:x'], operator: 'eq', mode: 'or' } as const;
+      const tokenFilter: Filter = { key: 'objectLabel', values: ['$var:x'], operator: 'eq', mode: 'or' };
       expect(validateDraft(filtersDraft({ filters: { ...rule, filters: [tokenFilter] } }), [], t_i18n).filters)
         .toBe('A filter cannot reference another variable');
       const nested: FilterGroup = { ...rule, filterGroups: [{ mode: 'or', filters: [tokenFilter], filterGroups: [] }] };

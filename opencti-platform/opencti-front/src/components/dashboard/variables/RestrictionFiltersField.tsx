@@ -36,7 +36,7 @@ const RestrictionFiltersField = ({ entityTypes, value, onChange, label, error }:
     // while a variable cannot restrict another one.
     <DashboardVariablesProvider variables={undefined}>
       <div className="flex flex-col gap-2" role="group" aria-label={label}>
-        <Text as="span" variant="body-sm">{label}</Text>
+        <Text as="span" variant="content-compact">{label}</Text>
         <div className="flex items-center">
           <Filters
             availableFilterKeys={availableFilterKeys}
@@ -53,7 +53,7 @@ const RestrictionFiltersField = ({ entityTypes, value, onChange, label, error }:
           searchContext={searchContext}
           entityTypes={entityTypes}
         />
-        {error && <Text as="span" variant="caption" className="text-input-error">{error}</Text>}
+        {error && <Text as="span" variant="content-compact" className="text-input-error">{error}</Text>}
       </div>
     </DashboardVariablesProvider>
   );
