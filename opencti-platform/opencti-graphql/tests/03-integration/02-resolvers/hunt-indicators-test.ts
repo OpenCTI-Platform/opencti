@@ -317,6 +317,31 @@ describe('Hunt readiness and indicator hunts', () => {
     expect(new Date(resultOf('198.51.100.71')?.first_seen as string).toISOString()).toEqual('2026-10-04T08:00:00.000Z');
     expect(resultOf('indicator-hunt-test.example.com')).toMatchObject({ verdict: 'not_seen', hits_count: 0 });
     expect(resultOf('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')).toMatchObject({ verdict: 'not_searched', reason: 'File hashes are not indexed on this platform' });
+    // The indicator found and the observable searched without a hit record when a hunt last looked them up, and found them
+    const hunted = await queryAsAdminWithSuccess({
+      query: gql`
+        query HuntedDates($indicator: String!, $observable: String!, $run: String!) {
+          indicator: huntEntityActivity(id: $indicator) { hunted_at matched_at }
+          observable: huntEntityActivity(id: $observable) { hunted_at matched_at }
+          huntRun(id: $run) { indicator: entity_matched(id: $indicator) observable: entity_matched(id: $observable) }
+        }
+      `,
+      variables: { indicator: indicatorId, observable: observableId, run: run.id },
+    });
+    const huntedAt = hunted.data?.indicator.hunted_at;
+    expect(huntedAt).toBeTruthy();
+    expect(hunted.data?.indicator.matched_at).toEqual(huntedAt);
+    expect(hunted.data?.observable).toEqual({ hunted_at: huntedAt, matched_at: null });
+    expect(hunted.data?.huntRun).toEqual({ indicator: true, observable: false });
+    // The dates are filters: a filter leaving out the entities hunted since the run no longer takes the indicator
+    const nameFilter = { key: ['name'], values: ['Indicator hunt test IP'] };
+    const indicatorsMatching = async (huntedFilter: Record<string, unknown>) => {
+      const filters = { mode: 'and', filterGroups: [], filters: [nameFilter, huntedFilter] };
+      const found = await queryAsAdminWithSuccess({ query: gql`query HuntedIndicators($filters: FilterGroup) { indicators(filters: $filters) { edges { node { id } } } }`, variables: { filters } });
+      return found.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id);
+    };
+    expect(await indicatorsMatching({ key: ['x_opencti_hunted_at'], values: [huntedAt], operator: 'gte' })).toEqual([indicatorId]);
+    expect(await indicatorsMatching({ key: ['x_opencti_hunted_at'], values: [huntedAt], operator: 'lt' })).toEqual([]);
   });
 
   it('should record a run without hits as inconclusive while a value was not searched, benign once every value was', async () => {

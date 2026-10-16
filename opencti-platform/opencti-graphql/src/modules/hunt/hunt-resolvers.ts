@@ -31,6 +31,7 @@ import { computeHuntStatistics, findHuntRunsForHunt, findHuntTranslationsView, s
 import { storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { findHuntKnownHits } from './huntHitRecord/huntHitRecord-domain';
+import { findHuntEntityActivity } from './huntRun/huntRun-iocs';
 
 const huntResolvers: Resolvers = {
   Query: {
@@ -51,6 +52,7 @@ const huntResolvers: Resolvers = {
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),
     huntDerivedContent: (_, { entityId }, context) => deriveHuntContent(context, context.user, entityId),
+    huntEntityActivity: (_, { id }, context) => findHuntEntityActivity(context, context.user, id),
   },
   Hunt: {
     huntTargets: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_TARGETS),

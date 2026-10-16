@@ -1,7 +1,10 @@
-import type { AuthContext } from '../../../types/user';
-import type { BasicStoreRelation } from '../../../types/store';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../../types/store';
 import { logApp } from '../../../config/conf';
-import { fullRelationsList } from '../../../database/middleware-loader';
+import { elRawUpdateByQuery } from '../../../database/engine';
+import { fullRelationsList, storeLoadById } from '../../../database/middleware-loader';
+import { READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 import { isStixCoreRelationship } from '../../../schema/stixCoreRelationship';
 import { HUNT_MANAGER_USER } from '../../../utils/access';
 import { truncate } from '../hunt-utils';
@@ -12,6 +15,7 @@ import {
   HUNT_IOC_VERDICT_NOT_SEEN,
   HUNT_IOC_VERDICT_PENDING,
   HUNT_IOC_VERDICT_SEEN,
+  HUNT_RUN_STATUS_COMPLETED,
   type HuntIocResult,
 } from './huntRun-types';
 
@@ -117,4 +121,81 @@ export const linkIocDeployments = async (context: AuthContext, run: BasicStoreEn
     logApp.warn('[OPENCTI-MODULE] Hunt run values cannot be linked to their deployments', { cause: error, runId: run.internal_id });
     return results;
   }
+};
+
+/** The indicators and observables whose values a run searched, and those of the values it found. */
+export const huntedIocIds = (results: HuntIocResult[] | null | undefined) => {
+  const searched = (results ?? []).filter((result) => result.verdict === HUNT_IOC_VERDICT_SEEN || result.verdict === HUNT_IOC_VERDICT_NOT_SEEN);
+  const idsOf = (list: HuntIocResult[]) => Array.from(new Set(list.flatMap((result) => result.source_ids ?? [])));
+  return { huntedIds: idsOf(searched), matchedIds: idsOf(searched.filter((result) => result.verdict === HUNT_IOC_VERDICT_SEEN)) };
+};
+
+// A date only moves forward: a run finalized late never takes back the date a later run wrote
+const HUNTED_DATES_SCRIPT = `
+  boolean changed = false;
+  if (ctx._source.x_opencti_hunted_at == null || ctx._source.x_opencti_hunted_at.compareTo(params.at) < 0) {
+    ctx._source.x_opencti_hunted_at = params.at;
+    changed = true;
+  }
+  if (params.matched.contains(ctx._source.internal_id)
+    && (ctx._source.x_opencti_hunt_matched_at == null || ctx._source.x_opencti_hunt_matched_at.compareTo(params.at) < 0)) {
+    ctx._source.x_opencti_hunt_matched_at = params.at;
+    changed = true;
+  }
+  if (!changed) { ctx.op = 'noop'; }
+`;
+
+/**
+ * Records on the indicators and observables a completed run searched when a hunt last looked them up, and on those it
+ * found when a hunt last matched them. The dates are platform bookkeeping written in place, without stream event nor
+ * history: they tell the next hunts what was already hunted, they are not knowledge to share.
+ */
+export const recordHuntedIocs = async (run: Pick<BasicStoreEntityHuntRun, 'ioc_results' | 'completed_at'>) => {
+  const { huntedIds, matchedIds } = huntedIocIds(run.ioc_results);
+  if (huntedIds.length === 0) {
+    return;
+  }
+  const at = new Date(run.completed_at ?? Date.now()).toISOString();
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES],
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: HUNTED_DATES_SCRIPT, lang: 'painless', params: { at, matched: matchedIds } },
+      query: { terms: { 'internal_id.keyword': huntedIds } },
+    },
+  });
+};
+
+/**
+ * Whether a completed run matched an entity of its hunt: an indicator or observable whose values the run searched is
+ * matched when one of them was seen; a source the values come from (a report, a threat) or the source of another kind
+ * of hunt is matched when the run has hits. Null when the run is not completed or did not search the entity.
+ */
+export const huntRunEntityMatched = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_status' | 'hits_count' | 'ioc_results'>, entityId: string) => {
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
+    return null;
+  }
+  const results = (run.ioc_results ?? []).filter((result) => (result.source_ids ?? []).includes(entityId));
+  if (results.length === 0) {
+    return (run.hits_count ?? 0) > 0;
+  }
+  if (results.some((result) => result.verdict === HUNT_IOC_VERDICT_SEEN)) {
+    return true;
+  }
+  return results.some((result) => result.verdict === HUNT_IOC_VERDICT_NOT_SEEN) ? false : null;
+};
+
+/** When a hunt last looked up an indicator or observable the user can read, and last found it. */
+export const findHuntEntityActivity = async (context: AuthContext, user: AuthUser, entityId: string) => {
+  const entity = await storeLoadById<BasicStoreEntity & { x_opencti_hunted_at?: string; x_opencti_hunt_matched_at?: string }>(
+    context,
+    user,
+    entityId,
+    ABSTRACT_STIX_CORE_OBJECT,
+  );
+  if (!entity) {
+    return null;
+  }
+  return { hunted_at: entity.x_opencti_hunted_at ?? null, matched_at: entity.x_opencti_hunt_matched_at ?? null };
 };
