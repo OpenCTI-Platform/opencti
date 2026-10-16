@@ -217,6 +217,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                                   {isDisplayed ? fullWidthSwitch : (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
+                                        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                                         <span tabIndex={0} style={{ display: 'inline-flex' }}>{fullWidthSwitch}</span>
                                       </TooltipTrigger>
                                       <TooltipContent>{t_i18n('Display the widget to choose its width')}</TooltipContent>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
 import {
@@ -111,11 +111,16 @@ const ContainerTimelineEventDrawer = ({
   const [annotation, setAnnotation] = useState(event?.annotation ?? '');
   const [annotating, setAnnotating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const annotationInput = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setAnnotation(event?.annotation ?? '');
     setAnnotating(false);
   }, [event?.id, event?.annotation]);
+
+  useEffect(() => {
+    if (annotating) annotationInput.current?.focus();
+  }, [annotating]);
 
   if (!event) {
     return <Drawer title={t_i18n('Timeline event')} open={false} onClose={onClose} />;
@@ -253,13 +258,13 @@ const ContainerTimelineEventDrawer = ({
               {canContribute && annotating ? (
                 <>
                   <Textarea
+                    ref={annotationInput}
                     value={annotation}
                     onChange={(changeEvent) => setAnnotation(changeEvent.target.value)}
                     aria-label={t_i18n('Annotation')}
                     placeholder={t_i18n('Add the analyst context of this event')}
                     rows={3}
                     maxLength={10000}
-                    autoFocus={true}
                     data-testid="timeline-annotation-input"
                   />
                   <div style={{ marginTop: theme.spacing(1), display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
