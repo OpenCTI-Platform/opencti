@@ -26,11 +26,9 @@ import './relationsRef/stixMetaObject-registrationRef';
 import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 // region registration modules, need to be imported before graphql code registration
-import './ingestionHealth/ingestionHealth';
 
 // incomplete modules
 // endregion
 // region graphql registration
-import './ingestionHealth/ingestionHealth-graphql';
 import './configPreset/configPreset-graphql';
 // endregion
