@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput } from '../../generated/graphql';
+import { FilterMode, VocabularyCategory } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
@@ -52,6 +52,8 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
 export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, vocabulary: BasicStoreEntityVocabulary) => {
   const categoryDefinition = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
   if (!categoryDefinition) {
+    // closing_reason_ov is hidden while the workflow engine is off: nothing can use its values then
+    if (vocabulary.category === VocabularyCategory.ClosingReasonOv) return 0;
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
   }
   return countAllThings(context, user, {

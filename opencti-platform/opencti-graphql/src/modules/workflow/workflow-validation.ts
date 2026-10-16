@@ -4,10 +4,11 @@ import { fullEntitiesList, storeLoadById, storeLoadByIds } from '../../database/
 import { FilterMode, FilterOperator, StatusScope } from '../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
-import { findUnreachableStates } from './domain/workflow-ordering';
+import { findForwardEdges, findUnreachableStates } from './domain/workflow-ordering';
 import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
@@ -62,6 +63,7 @@ export const workflowSerializedTransitionSchema = z.object({
   syncActions: z.array(workflowActionConfigSchema).optional(),
   conditions: workflowConditionConfigSchema.optional(),
   comment: z.enum(['allowed', 'required', 'disabled']).optional(),
+  closingReason: z.enum(['allowed', 'required', 'disabled']).optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -143,6 +145,12 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
     }
   }
 };
+
+const isClosingReasonEnabled = (transition: z.infer<typeof workflowSerializedTransitionSchema>) => {
+  return !!transition.closingReason && transition.closingReason !== 'disabled';
+};
+
+const toStateList = (states: string | string[] | null) => (Array.isArray(states) ? states : [states]).filter((state): state is string => !!state);
 
 export const validateWorkflowDefinitionData = async (
   context: AuthContext,
@@ -248,6 +256,29 @@ export const validateWorkflowDefinitionData = async (
     }
     if (transition.to && transition.to !== '*') {
       statesWithIncomingTransition.add(transition.to);
+    }
+
+    if (isClosingReasonEnabled(transition) && !isStixDomainObject(entityType)) {
+      errors.push({
+        type: 'CLOSING_REASON_NOT_SUPPORTED',
+        message: `Closing reason in transition '${transition.event}' is only supported for domain objects`,
+      });
+    } else if (isClosingReasonEnabled(transition) && transition.to === '*') {
+      errors.push({
+        type: 'CLOSING_REASON_NOT_LAST',
+        message: `Closing reason in transition '${transition.event}' is not allowed on a transition to any state`,
+      });
+    } else if (isClosingReasonEnabled(transition) && transition.to) {
+      // The entity is closed by the last transition asking for a reason, so none may follow
+      const forwardEdges = findForwardEdges(initialState, transitions, transition.to);
+      const nextClosingTransition = transitions.find((next) => next !== transition && isClosingReasonEnabled(next)
+        && toStateList(next.from).some((from) => forwardEdges.has(`${from}->${next.to}`)));
+      if (nextClosingTransition) {
+        errors.push({
+          type: 'CLOSING_REASON_NOT_LAST',
+          message: `Closing reason in transition '${transition.event}' is not allowed: transition '${nextClosingTransition.event}' further in the workflow already asks for one`,
+        });
+      }
     }
 
     if (transition.conditions) {

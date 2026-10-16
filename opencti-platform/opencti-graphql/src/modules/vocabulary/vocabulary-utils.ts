@@ -805,6 +805,13 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'linux' },
     { key: 'windows' },
   ],
+  closing_reason_ov: [
+    { key: 'true-positive', description: 'Confirmed and handled', order: 1 },
+    { key: 'false-positive', description: 'Not a real threat', order: 2 },
+    { key: 'duplicate', description: 'Duplicate of another entity', order: 3 },
+    { key: 'indeterminate', description: 'Could not be confirmed or dismissed', order: 4 },
+    { key: 'other', description: 'Other reason', order: 5 },
+  ],
   collection_layers_ov: [
     { key: 'container' },
     { key: 'cloud-control-plane' },
