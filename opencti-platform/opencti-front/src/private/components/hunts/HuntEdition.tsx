@@ -300,15 +300,13 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               autoPersistOnBlur={false}
               labelAction={<HuntAIAction request={{ kind: 'description' }} testId="hunt-description-generate" />}
             />
-            {values.hunt_type !== 'infrastructure' && (
-              <HuntEntitiesField
-                name="scopePlatforms"
-                label={t_i18n('Security platforms (empty for all)')}
-                types={HUNT_SCOPE_TYPES}
-                helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
-                style={fieldSpacingContainerStyle}
-              />
-            )}
+            <HuntEntitiesField
+              name="scopePlatforms"
+              label={t_i18n('Security platforms (empty for all)')}
+              types={HUNT_SCOPE_TYPES}
+              helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
+              style={fieldSpacingContainerStyle}
+            />
             <div style={fieldSpacingContainerStyle}>
               <HuntScheduleField />
             </div>

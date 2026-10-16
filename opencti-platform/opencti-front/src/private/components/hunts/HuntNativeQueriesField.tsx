@@ -48,7 +48,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
   const rows = (values[name] ?? []) as HuntNativeQueryFormValue[];
   const helper = (
     <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-      {t_i18n('Native queries override the Sigma translation on their platform. Infrastructure hunts need an internet query.')}
+      {t_i18n('Native queries override the Sigma translation on their platform.')}
     </Text>
   );
 
@@ -97,7 +97,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   }}
                 >
                   {HUNT_PLATFORMS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>{huntPlatformLabel(platform, t_i18n)}</SelectItem>
+                    <SelectItem key={platform} value={platform}>{huntPlatformLabel(platform)}</SelectItem>
                   ))}
                 </Field>
                 <Field
@@ -111,7 +111,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   helpertext={t_i18n('The language of the query, SPL for Splunk or KQL for Microsoft Sentinel')}
                 >
                   {HUNT_QUERY_LANGUAGES.map((language) => (
-                    <SelectItem key={language} value={language}>{huntQueryLanguageLabel(language, t_i18n)}</SelectItem>
+                    <SelectItem key={language} value={language}>{huntQueryLanguageLabel(language)}</SelectItem>
                   ))}
                 </Field>
                 <div style={{ paddingTop: 22 }}>

@@ -129,9 +129,8 @@ describe('Sigma rule of a hunt by its type', () => {
     await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'telemetry', sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
     // A hunt stored without a type is a detection-rule hunt
     await expect(validateHuntState(testContext, ADMIN_USER, { sigma_rule: BROKEN_RULE })).rejects.toThrow('Invalid Sigma rule');
-    // An indicator or internet infrastructure hunt is not refused for a rule it does not run and its form does not show
+    // An indicator hunt is not refused for a rule it does not run and its form does not show
     await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
-    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'infrastructure', sigma_rule: BROKEN_RULE })).resolves.toBeUndefined();
   });
 
   it('should run the Sigma rule of a detection-rule hunt only', () => {
@@ -139,6 +138,5 @@ describe('Sigma rule of a hunt by its type', () => {
     expect(huntSigmaRule({ sigma_rule: VALID_RULE })).toBe(VALID_RULE);
     expect(huntSigmaRule({ hunt_type: 'telemetry', sigma_rule: ' ' })).toBeNull();
     expect(huntSigmaRule({ hunt_type: 'indicators', sigma_rule: VALID_RULE })).toBeNull();
-    expect(huntSigmaRule({ hunt_type: 'infrastructure', sigma_rule: VALID_RULE })).toBeNull();
   });
 });

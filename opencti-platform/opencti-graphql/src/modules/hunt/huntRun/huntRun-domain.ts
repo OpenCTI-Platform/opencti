@@ -50,7 +50,6 @@ import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
 import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
-  HUNT_PLATFORM_INTERNET,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
@@ -386,7 +385,7 @@ export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: 
 };
 
 /**
- * The completed run of a hunt on a security platform (null: on the internet) whose time window ends last, among the runs
+ * The completed run of a hunt on a security platform (null: without one) whose time window ends last, among the runs
  * of the current logic of the hunt: a run of an earlier rule or query never searched for what the current one matches.
  */
 export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null, logicFingerprint: string) => {
@@ -454,7 +453,7 @@ export const recordHuntRunSummary = async (context: AuthContext, hunt: BasicStor
 
 interface HuntRunCreation {
   runs: BasicStoreEntityHuntRun[];
-  // The security platforms (or connectors, on the internet) left without a run when the creation was interrupted
+  // The security platforms left without a run when the creation was interrupted
   notCreatedOn: string[];
 }
 
@@ -664,17 +663,13 @@ export const startHuntRuns = async (
   await checkHuntEditAccess(context, user, hunt);
   // A logic its translation preview or a run already failed to translate for good on a platform fails again there: the
   // platform is left out before any connector slot or daily run is spent on it, and the start is refused when no other
-  // platform is left (the internet being the only target of the hunts that run on it)
+  // platform is left
   const failedOn = (await findHuntTranslations(context, user, hunt, input?.security_platform_ids ?? []))
     .filter((translation) => translation.state === 'failed');
   const translationRefusal = (translation: HuntTranslation) => {
     const { template, values } = huntTranslationMessage(translation);
     return FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
   };
-  const failedOnInternet = failedOn.find((translation) => !translation.run.security_platform_id);
-  if (failedOnInternet) {
-    throw translationRefusal(failedOnInternet);
-  }
   const creation = await createHuntRunsOnTargets(context, hunt, {
     trigger: 'manual',
     securityPlatformIds: input?.security_platform_ids ?? [],
@@ -711,10 +706,6 @@ export const startHuntRuns = async (
 const previewUnknownTranslations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, securityPlatformIds: string[]) => {
   const known = await findHuntTranslations(context, user, hunt, securityPlatformIds);
   const knownPlatformIds = known.map((translation) => translation.run.security_platform_id).filter((id): id is string => !!id);
-  // Internet infrastructure hunts run on no security platform: one known translation answers for all their connectors
-  if (known.some((translation) => !translation.run.security_platform_id)) {
-    return { created: [], known };
-  }
   const created = await createHuntRuns(context, hunt, {
     trigger: HUNT_RUN_TRIGGER_PREVIEW,
     mode: HUNT_RUN_MODE_PREVIEW,
@@ -793,7 +784,7 @@ export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatf
   // Partial (true), complete (false) or unknown (null): only complete results let a run without hits be benign
   results_truncated: run.results_truncated ?? null,
   time_window: { start: run.time_window_start, end: run.time_window_end },
-  security_platform: securityPlatformName ?? HUNT_PLATFORM_INTERNET,
+  security_platform: securityPlatformName ?? run.connector_name ?? '',
   translated_query: run.translated_query ?? '',
   evidence_sample: run.evidence_sample ?? [],
   hits_sample: run.hits_sample ?? [],
@@ -885,7 +876,7 @@ const HUNT_INCIDENT_LOCK = 'hunt_incident';
 // Each run escalates under its own transition lock: the runs of a hunt on a platform find or open their incident, and
 // record it, one at a time, so that runs escalated together continue the incident the first one opens
 const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Promise<T>): Promise<T> => {
-  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? HUNT_PLATFORM_INTERNET}`, action);
+  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? 'none'}`, action);
 };
 
 /**
@@ -1142,7 +1133,7 @@ export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, conne
 };
 
 /**
- * Cancels the runs of a hunt connector registered again against another security platform (or the internet): created for
+ * Cancels the runs of a hunt connector registered again against another security platform: created for
  * the former one, they would execute on the new one with their hits attributed to the former. Never fails the registration.
  */
 const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId: string, securityPlatformId: string | null) => {
@@ -1652,7 +1643,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     if (!platform) {
       throw ResourceNotFoundError('The security platform of the evidence cannot be found', { securityPlatformId: input.security_platform_id });
     }
-    // Evidence of a security platform never goes to a run of the internet, whose hits are known for the internet only
+    // Evidence of a security platform never goes to a run of another one, whose hits are known for that one only
     if ((run.security_platform_id ?? null) !== platform.internal_id) {
       throw FunctionalError('The evidence was observed on another security platform than the one of the run', { runId });
     }
@@ -1904,7 +1895,7 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
 });
 
 /**
- * The hunt connectors a user sees: those of the internet, and those bound to a security platform the user can read.
+ * The hunt connectors a user sees: those bound to a security platform the user can read.
  * The dispatch reads every connector (listHuntConnectors), whoever the hunt belongs to.
  */
 export const findHuntConnectors = async (context: AuthContext, user: AuthUser, onlyAlive = false) => {
@@ -1915,7 +1906,7 @@ export const findHuntConnectors = async (context: AuthContext, user: AuthUser, o
     : [];
   const readableIds = new Set(readable.map((platform) => platform.internal_id));
   return connectors
-    .filter((connector) => !connector.hunt_security_platform_id || readableIds.has(connector.hunt_security_platform_id))
+    .filter((connector) => !!connector.hunt_security_platform_id && readableIds.has(connector.hunt_security_platform_id))
     .map(toHuntConnectorView);
 };
 
@@ -1947,19 +1938,15 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
     throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
   }
   const name = input.security_platform_name?.trim();
-  if (platform !== HUNT_PLATFORM_INTERNET && !name) {
-    throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
+  if (!name) {
+    throw FunctionalError('A hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
   }
   // The security platform is the one of its deterministic identity (name and identity class), found without writing:
   // a registration never changes an existing platform, and creates a missing one only once it is accepted
-  const platformStandardId = platform !== HUNT_PLATFORM_INTERNET && name
-    ? generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string
-    : null;
+  const platformStandardId = generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string;
   const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
   const bind = async () => {
-    const existing = platformStandardId
-      ? await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, platformStandardId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
-      : null;
+    const existing = await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, platformStandardId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
     // A security platform is one product: connectors of the same kind share it, a connector of another kind never
     // executes its own query language against it
     const otherKind = existing ? (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
@@ -1978,8 +1965,8 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
       }
       let securityPlatformId: string | null = existing?.internal_id ?? null;
-      if (platformStandardId && !existing) {
-        const created = await addSecurityPlatform(context, user, { name: name as string, security_platform_type: input.security_platform_type ?? 'SIEM' });
+      if (!existing) {
+        const created = await addSecurityPlatform(context, user, { name, security_platform_type: input.security_platform_type ?? 'SIEM' });
         securityPlatformId = (created as BasicStoreEntitySecurityPlatform).internal_id;
       }
       const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
@@ -1988,7 +1975,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         hunt_security_platform_id: securityPlatformId,
         hunt_supports_preview: input.supports_preview !== false,
         // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
-        hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
+        hunt_supports_indicators: input.supports_indicators === true,
         hunt_max_concurrent_runs: maxConcurrent,
         hunt_setup: {
           documentation_url: sanitizeDocumentationUrl(input.documentation_url),
@@ -2000,7 +1987,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   };
   // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
   // both bind to it
-  const { element, securityPlatformId } = platformStandardId ? await withHuntLock(huntConnectorPlatformLockKey(platformStandardId), bind) : await bind();
+  const { element, securityPlatformId } = await withHuntLock(huntConnectorPlatformLockKey(platformStandardId), bind);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   if ((connector.hunt_security_platform_id ?? null) !== securityPlatformId) {
@@ -2164,7 +2151,7 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     runs_over_time: runsSeries,
     // A platform the reader cannot load (deleted or restricted) has an empty label, never its identifier
     runs_per_platform: platforms.map((bucket) => ({
-      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? ''),
+      label: String(platformNames.get(bucket.label) ?? ''),
       value: bucket.count,
     })),
     verdict_distribution: verdicts.map((bucket) => ({ label: String(bucket.label), value: bucket.count })),

@@ -77,31 +77,12 @@ describe('Hunt planner answers', () => {
     // An indicator hunt is built from the indicators themselves, the planner never proposes one
     expect(() => validateHuntPlanSpec(planAnswer({ hunt_type: 'indicators' }), [])).toThrow('does not match the hunt spec schema');
     expect(() => validateHuntPlanSpec(planAnswer({ sigma_rule: '', native_queries: [] }), [])).toThrow('Add a Sigma rule or a native query');
-    // A plan the activation would refuse is refused at planning: an internet query does not run a telemetry hunt
-    expect(() => validateHuntPlanSpec(planAnswer({ sigma_rule: '', native_queries: [{ platform: 'internet', language: 'internet', query: 'services.port: 443', pipeline: 'censys' }] }), []))
-      .toThrow('Add a Sigma rule or a native query');
     expect(() => validateHuntPlanSpec(planAnswer({ sigma_rule: 'title: broken' }), [])).toThrow('invalid Sigma rule');
-    expect(() => validateHuntPlanSpec(planAnswer({ hunt_type: 'infrastructure', sigma_rule: '' }), [])).toThrow('Add a native query for the internet platform');
+    // Hunts run on the detection stack: a plan of another type is refused
+    expect(() => validateHuntPlanSpec(planAnswer({ hunt_type: 'infrastructure', sigma_rule: '' }), [])).toThrow('does not match the hunt spec schema');
     expect(() => validateHuntPlanSpec(planAnswer({ native_queries: [{ platform: 'nowhere', language: 'x', query: 'y' }] }), [])).toThrow('platform must be one of');
-  });
-
-  it('should accept an infrastructure plan with an internet query', () => {
-    const spec = validateHuntPlanSpec(planAnswer({
-      hunt_type: 'infrastructure',
-      sigma_rule: '',
-      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
-    }), []);
-    expect(spec.hunt_type).toBe('infrastructure');
-    expect(spec.sigma_rule).toBe('');
-  });
-
-  it('should neither check nor keep the Sigma rule of an infrastructure plan, which runs none', () => {
-    const spec = validateHuntPlanSpec(planAnswer({
-      hunt_type: 'infrastructure',
-      sigma_rule: 'title: broken',
-      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
-    }), []);
-    expect(spec.sigma_rule).toBe('');
+    expect(() => validateHuntPlanSpec(planAnswer({ native_queries: [{ platform: 'internet', language: 'internet', query: 'services.port: 443' }] }), []))
+      .toThrow('platform must be one of');
   });
 });
 
@@ -207,12 +188,11 @@ describe('Hunt assistance answers', () => {
   });
 
   it('should refuse an answer without the asked field', () => {
-    const infrastructure = validateHuntPlanSpec(planAnswer({
-      hunt_type: 'infrastructure',
+    const nativeOnly = validateHuntPlanSpec(planAnswer({
       sigma_rule: '',
-      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
+      native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr process=rundll32.exe' }],
     }), []);
-    expect(() => pickHuntAssistance(infrastructure, resolveHuntAssistTarget(['sigma_rule'], {}))).toThrow('answered without: sigma_rule');
+    expect(() => pickHuntAssistance(nativeOnly, resolveHuntAssistTarget(['sigma_rule'], {}))).toThrow('answered without: sigma_rule');
     const withoutPatterns = validateHuntPlanSpec(planAnswer({ benign_patterns: [] }), []);
     expect(() => pickHuntAssistance(withoutPatterns, resolveHuntAssistTarget(['benign_patterns', 'hypothesis'], {}))).toThrow('answered without: benign_patterns');
     expect(failureOf(() => validateHuntPlanSpec(planAnswer({ sigma_rule: 'title: broken' }), []))).toBe('XTM_ONE_INVALID_ANSWER');

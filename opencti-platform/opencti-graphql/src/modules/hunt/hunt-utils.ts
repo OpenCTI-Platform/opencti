@@ -4,7 +4,7 @@ import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationStatus } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type HuntNativeQuery } from './hunt-types';
+import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence, HuntHit, HuntRuleResult } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
@@ -103,9 +103,9 @@ export const storedSigmaRules = (hunt: Omit<HuntSigmaRulesLike, 'hunt_type'>): s
   return isFilledRule(hunt.sigma_rule) ? [hunt.sigma_rule] : [];
 };
 
-/** The Sigma rules a hunt runs: an indicator or internet infrastructure hunt runs none, whatever rule it still carries. */
+/** The Sigma rules a hunt runs: an indicator hunt runs none, whatever rule it still carries. */
 export const huntSigmaRules = (hunt: HuntSigmaRulesLike): string[] => {
-  if (hunt.hunt_type === HUNT_TYPE_INDICATORS || hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
+  if (hunt.hunt_type === HUNT_TYPE_INDICATORS) {
     return [];
   }
   return storedSigmaRules(hunt);

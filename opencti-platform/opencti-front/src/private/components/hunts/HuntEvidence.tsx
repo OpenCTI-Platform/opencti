@@ -112,7 +112,7 @@ const HuntEvidenceComponent = ({ huntId }: { huntId: string }) => {
             </SelectItem>
             {runs.map((run) => (
               <SelectItem key={run.id} value={run.id}>
-                {`${fldt(run.completed_at ?? run.created_at)} - ${run.platform ?? t_i18n('Internet')}`}
+                {`${fldt(run.completed_at ?? run.created_at)} - ${run.platform ?? t_i18n('Unknown')}`}
               </SelectItem>
             ))}
           </SelectContent>

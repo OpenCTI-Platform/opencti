@@ -5,7 +5,7 @@ export const ENTITY_TYPE_HUNT_HIT_RECORD = 'Hunt-Hit-Record';
 
 interface HuntHitRecordAttributes {
   hunt_id: string;
-  // Null for a hunt on the internet (no security platform)
+  // Null for a run without security platform
   security_platform_id?: string | null;
   hit_key: string;
   // first_seen and last_seen (base attributes): when a run first found the hit, and when a run last found it, dated by

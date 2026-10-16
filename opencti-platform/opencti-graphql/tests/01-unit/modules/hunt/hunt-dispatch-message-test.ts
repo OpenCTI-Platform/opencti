@@ -129,9 +129,9 @@ describe('Hunt run message', () => {
     const run = { internal_id: 'run-4', attempt: 1, hunt_run_trigger: 'manual', hunt_run_mode: 'execute' };
     const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-4');
     expect(message.event.hunt.sigma_rule).toBe('title: t');
-    // The rule an internet infrastructure hunt still carries is not its logic
-    const internet = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'infrastructure' } as never, { hunt_platform: 'internet' } as never, null, 'work-4');
-    expect(internet.event.hunt.sigma_rule).toBeNull();
+    // The rule an indicator hunt still carries is not its logic
+    const indicators = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'indicators' } as never, { hunt_platform: 'splunk' } as never, null, 'work-4');
+    expect(indicators.event.hunt.sigma_rule).toBeNull();
   });
 
   it('should give the connector the native query of its platform only in a language it executes', async () => {

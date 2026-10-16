@@ -7,11 +7,9 @@ import { validateSigmaRule } from './hunt-sigma';
 import { validateHuntSchedule } from './hunt-schedule';
 import {
   ENTITY_TYPE_HUNT,
-  HUNT_PLATFORM_INTERNET,
   HUNT_SCHEDULE_MANUAL,
   HUNT_STATUS_ACTIVE,
   HUNT_TYPE_INDICATORS,
-  HUNT_TYPE_INFRASTRUCTURE,
   HUNT_TYPE_TELEMETRY,
   INPUT_HUNT_SOURCES,
   type HuntNativeQuery,
@@ -75,22 +73,16 @@ export const sigmaRuleError = (sigmaRule: string | null | undefined): string | n
 
 /**
  * What a hunt misses to run, null when it has the logic of its type: a Sigma rule or a telemetry native query for a
- * telemetry hunt, something to look for for an indicator hunt, an internet native query for an infrastructure hunt.
+ * telemetry hunt, something to look for for an indicator hunt.
  */
 export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>): { message: string; field: string } | null => {
   const huntType = state.hunt_type ?? HUNT_TYPE_TELEMETRY;
   const nativeQueries: HuntNativeQuery[] = normalizeNativeQueries(state.native_queries);
-  if (huntType === HUNT_TYPE_TELEMETRY) {
-    const hasTelemetryQuery = nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
-    if (storedSigmaRules(state).length === 0 && !hasTelemetryQuery) {
-      return { message: HUNT_MESSAGES.logicTelemetryMissing, field: 'sigma_rule' };
-    }
+  if (huntType === HUNT_TYPE_TELEMETRY && storedSigmaRules(state).length === 0 && nativeQueries.length === 0) {
+    return { message: HUNT_MESSAGES.logicTelemetryMissing, field: 'sigma_rule' };
   }
   if (huntType === HUNT_TYPE_INDICATORS && !hasHuntIocLogic(state)) {
     return { message: HUNT_MESSAGES.logicIndicatorsMissing, field: 'hunt_ioc_values' };
-  }
-  if (huntType === HUNT_TYPE_INFRASTRUCTURE && !nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET)) {
-    return { message: HUNT_MESSAGES.logicInfrastructureMissing, field: 'native_queries' };
   }
   return null;
 };

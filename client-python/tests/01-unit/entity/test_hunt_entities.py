@@ -407,10 +407,10 @@ class TestHuntRun(TestCase):
             )
         )
         run.register_connector(
-            connector_id="connector-1", platform="internet", languages=["internet"]
+            connector_id="connector-1", platform="splunk", languages=["spl"]
         )
         registration = _variables(opencti)["input"]
-        self.assertEqual(registration["platform"], "internet")
+        self.assertEqual(registration["platform"], "splunk")
         self.assertTrue(registration["supports_preview"])
 
     def test_list_reads_the_runs(self):

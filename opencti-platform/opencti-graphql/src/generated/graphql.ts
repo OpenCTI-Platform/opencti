@@ -12250,7 +12250,7 @@ export type HuntRunResultsSummary = {
   __typename?: 'HuntRunResultsSummary';
   observables: Scalars['Int']['output'];
   observed_data: Scalars['Int']['output'];
-  /** Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt */
+  /** Results of any other kind, for example the indicators a run attributes to itself */
   others: Scalars['Int']['output'];
   sightings: Scalars['Int']['output'];
 };
@@ -12439,7 +12439,6 @@ export enum HuntTranslationState {
 
 export enum HuntType {
   Indicators = 'indicators',
-  Infrastructure = 'infrastructure',
   Telemetry = 'telemetry'
 }
 

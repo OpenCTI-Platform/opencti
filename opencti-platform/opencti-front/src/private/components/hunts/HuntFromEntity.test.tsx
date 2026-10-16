@@ -119,18 +119,13 @@ describe('Hunt this from a threat', () => {
     expect(values()).toMatchObject({ type: 'indicators', entities: ['is-1', 'mal-1'] });
   });
 
-  it('explains every hunt type and what an internet infrastructure hunt does instead', async () => {
+  it('explains what each hunt type needs and where it runs', async () => {
     const { relayEnv } = renderForm(derived, buildDerivedHuntPrefill(threat, derived));
     await resolveConnectors(relayEnv);
     expect(screen.getByText(/looks them up in the telemetry of your security platforms, no query language needed/)).toBeInTheDocument();
     expect(screen.getByText(/runs it on the logs and events of your SIEM, EDR or data lake/)).toBeInTheDocument();
-    expect(screen.getByText(/not a Sigma rule or indicators: searches internet scan data/)).toBeInTheDocument();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('radio', { name: /Internet infrastructure \(outside-in\)/ }));
-    });
-    expect(values().type).toEqual('infrastructure');
-    expect(screen.getByText(/You are hunting the infrastructure of APT28 on the internet/)).toBeInTheDocument();
-    expect(screen.getByTestId('hunt-derived-infrastructure')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Indicators/ })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Detection rule \(Sigma or native query\)/ })).toBeInTheDocument();
   });
 
   it('says so when the platform holds neither indicators nor rules, and offers the other ways to start', async () => {
