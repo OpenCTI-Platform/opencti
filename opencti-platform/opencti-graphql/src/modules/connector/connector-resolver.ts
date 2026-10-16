@@ -1,4 +1,5 @@
 import { ConnectorPriorityGroup, type EditInput, type Resolvers } from '../../generated/graphql';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorContract,
@@ -75,6 +76,7 @@ const connectorResolvers: Resolvers = {
     latest_compatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).latest_compatible_version,
     has_newer_incompatible_version: async (cn, _, context) => (await context.batch.connectorUpdateStatusBatchLoader.load(cn)).has_newer_incompatible_version,
     jwks: () => getConnectorJwks(),
+    ...ingestionHealthFieldResolvers,
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),

@@ -779,6 +779,7 @@ type Synchronizer {
   queue_messages: Int!
   toConfigurationExport: String!
   consumer_metrics: StreamCollectionConsumer
+  ingestionHealth: IngestionHealth
 }
 
 type SynchronizerEdge {
@@ -10906,6 +10907,7 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+  ingestionHealth: IngestionHealth
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -10949,6 +10951,36 @@ type ConnectorManager implements BasicObject & InternalObject {
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!
+}
+
+enum IngestionHealthStatus {
+  critical
+  stopped
+  healthy
+  degraded
+}
+
+enum IngestionHealthCheckKind {
+  runtime
+  configuration
+}
+
+enum IngestionHealthCheckSeverity {
+  blocking
+  advisory
+}
+
+type IngestionHealthCheck {
+  health_check_code: String!
+  health_check_message: String
+  health_check_kind: IngestionHealthCheckKind!
+  health_check_severity: IngestionHealthCheckSeverity!
+}
+
+type IngestionHealth {
+  status: IngestionHealthStatus!
+  status_since: DateTime!
+  healthChecks: [IngestionHealthCheck!]!
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -13807,6 +13839,7 @@ type IngestionRss implements InternalObject & BasicObject {
   ingestion_running: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestionHealth: IngestionHealth
 }
 
 enum IngestionRssOrdering {
@@ -13908,6 +13941,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestionHealth: IngestionHealth
 }
 
 enum IngestionTaxiiOrdering {
@@ -14003,6 +14037,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user: Creator
   authorized_members: [MemberAccess!]
   toConfigurationExport: String!
+  ingestionHealth: IngestionHealth
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -14067,6 +14102,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   markings: [String!]
   toConfigurationExport: String!
   duplicateCsvMapper: CsvMapper!
+  ingestionHealth: IngestionHealth
 }
 
 enum IngestionCsvOrdering {
@@ -14181,6 +14217,7 @@ type IngestionJson implements InternalObject & BasicObject {
   markings: [String!]
   ssl_verify: Boolean
   toConfigurationExport: String!
+  ingestionHealth: IngestionHealth
 }
 
 type IngestionJsonMapperFromImport {

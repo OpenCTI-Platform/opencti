@@ -72,6 +72,10 @@ plugins:
       on_undefined: strict
       on_error_fail: true
 
+# Images are stored once at the gh-pages root, shared by all docs versions
+hooks:
+  - hooks/shared_assets.py
+
 # Extensions
 markdown_extensions:
   - attr_list
