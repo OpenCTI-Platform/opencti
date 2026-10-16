@@ -7,6 +7,7 @@ import { validateSigmaRule } from './hunt-sigma';
 import { validateHuntSchedule } from './hunt-schedule';
 import {
   ENTITY_TYPE_HUNT,
+  HUNT_IOC_SORTS,
   HUNT_SCHEDULE_MANUAL,
   HUNT_STATUS_ACTIVE,
   HUNT_TYPE_INDICATORS,
@@ -36,6 +37,7 @@ export interface HuntValidationState {
   sigma_rules?: string[] | null;
   native_queries?: unknown;
   hunt_ioc_filters?: string | null;
+  hunt_ioc_sort?: string | null;
   hunt_ioc_values?: unknown;
   [RELATION_HUNT_SOURCES]?: unknown;
   [INPUT_HUNT_SOURCES]?: unknown;
@@ -114,6 +116,9 @@ export const validateHuntState = async (context: AuthContext, user: AuthUser, st
     throw ValidationError(`A hunt has at most ${HUNT_CONFIG.maxIocsPerRun} sources`, INPUT_HUNT_SOURCES);
   }
   parseHuntFilterGroup(state.hunt_ioc_filters, 'hunt_ioc_filters');
+  if (state.hunt_ioc_sort && !HUNT_IOC_SORTS.includes(state.hunt_ioc_sort)) {
+    throw ValidationError(`hunt_ioc_sort must be one of ${HUNT_IOC_SORTS.join(', ')}`, 'hunt_ioc_sort');
+  }
   if (state.hunt_status === HUNT_STATUS_ACTIVE) {
     const logicError = huntLogicError(state);
     if (logicError) {

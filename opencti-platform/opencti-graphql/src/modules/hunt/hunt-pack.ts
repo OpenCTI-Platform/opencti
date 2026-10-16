@@ -251,6 +251,7 @@ export const planHuntPackImport = async (
     sigma_rules: stixHunt.sigma_rules,
     native_queries: stixHunt.native_queries ?? [],
     hunt_ioc_filters: stixHunt.hunt_ioc_filters || undefined,
+    hunt_ioc_sort: stixHunt.hunt_ioc_sort || undefined,
     hunt_ioc_values: stixHunt.hunt_ioc_values ?? [],
     hunt_schedule: stixHunt.hunt_schedule,
     time_window_hours: stixHunt.time_window_hours,
@@ -295,7 +296,7 @@ const readHuntPackFile = async (file: Promise<FileHandle>): Promise<string> => {
   });
 };
 
-const PACK_HUNT_STRING_FIELDS = ['description', 'hypothesis', 'hunt_type', 'sigma_rule', 'hunt_ioc_filters', 'hunt_schedule', 'created_by_ref'];
+const PACK_HUNT_STRING_FIELDS = ['description', 'hypothesis', 'hunt_type', 'sigma_rule', 'hunt_ioc_filters', 'hunt_ioc_sort', 'hunt_schedule', 'created_by_ref'];
 const PACK_HUNT_NUMBER_FIELDS = ['time_window_hours', 'escalation_threshold', 'hunt_max_results'];
 const PACK_HUNT_STRING_LIST_FIELDS = [
   'object_marking_refs',

@@ -20,6 +20,7 @@ import {
   planHunt,
 } from './hunt-domain';
 import { computeHuntReadiness } from './hunt-readiness';
+import { HUNT_IOC_FILTER_MAX, previewHuntIocFilter } from './hunt-iocs';
 import { deriveHuntContent, HUNT_MAX_RELATED_SOURCES } from './hunt-derivation';
 import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
@@ -44,6 +45,7 @@ const huntResolvers: Resolvers = {
       max_results_per_run: HUNT_CONFIG.maxResultsPerRun,
       max_sigma_rules: HUNT_MAX_SIGMA_RULES,
       max_iocs_per_run: HUNT_CONFIG.maxIocsPerRun,
+      max_filter_entities_per_run: HUNT_IOC_FILTER_MAX,
       max_related_sources: HUNT_MAX_RELATED_SOURCES,
     }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
@@ -62,6 +64,7 @@ const huntResolvers: Resolvers = {
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
     iocSet: (hunt, { first }, context) => loadHuntIocSet(context, context.user, hunt, first),
+    iocFilterPreview: (hunt, { filters, sort }, context) => previewHuntIocFilter(context, hunt, { filters, sort }),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
     knownHits: (hunt, _, context) => findHuntKnownHits(context, context.user, hunt.id),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),
