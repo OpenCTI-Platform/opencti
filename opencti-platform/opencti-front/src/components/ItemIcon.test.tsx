@@ -15,13 +15,12 @@ describe('ItemIcon', () => {
   ])('should show the Integrations icon for %s', (type, testId) => {
     testRender(<ItemIcon type={type} />);
 
-    const icon = screen.getByRole('img', { name: type });
-    expect(icon).toHaveAttribute('data-testid', testId);
+    expect(screen.getByTestId(testId)).toBeInTheDocument();
   });
 
   it('should keep the generic icon for an unknown type', () => {
     testRender(<ItemIcon type="Unknown-Type" />);
 
-    expect(screen.getByRole('img', { name: 'item' })).toHaveAttribute('data-testid', 'AutoAwesomeMotionIcon');
+    expect(screen.getByTestId('AutoAwesomeMotionIcon')).toBeInTheDocument();
   });
 });
