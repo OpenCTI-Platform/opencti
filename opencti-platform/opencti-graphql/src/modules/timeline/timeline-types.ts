@@ -54,6 +54,7 @@ export const TIMELINE_KINDS = [
   'task_due',
   'task_completed',
   'status_changed',
+  'incident_closed',
   'assigned',
   'note_added',
   'opinion_added',

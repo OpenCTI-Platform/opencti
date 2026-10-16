@@ -53,8 +53,9 @@ export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | 
   });
 };
 
-// A due date is a plan, not something the team did
-const isResponseAction = (event: AnchorEventLike) => event.lane === 'response' && event.kind !== 'task_due';
+// A due date is a plan, not something the team did, and the closure of an incident the case contains ends its handling:
+// an incident closed before its incident response was opened never starts the response
+const isResponseAction = (event: AnchorEventLike) => event.lane === 'response' && event.kind !== 'task_due' && event.kind !== 'incident_closed';
 
 // The global first and last seen of a malware or a threat date it anywhere, not in this incident, and a technique placed
 // by kill chain order has no date of its own
@@ -69,7 +70,8 @@ const isIncidentAdversaryActivity = (event: AnchorEventLike) => event.lane === '
  *   observed data, first seen of the incident, adversary milestones); the global first and last seen windows of the
  *   malware, tools, infrastructures and threats stay on the lane as context only
  * - first_detection: first event of the detection lane (platform sightings, coverage results, hunts, deployments, manual detections)
- * - first_response: first thing the team did, first event of the response lane except the due dates of tasks
+ * - first_response: first thing the team did, first event of the response lane except the due dates of tasks and the
+ *   closure of the incidents an incident response contains
  * - containment: first containment milestone or first completion of a task that completes the containment (switch, or the
  *   legacy containment label); an Incident holds no task, so only its milestones count
  * - closure: last transition to a final workflow status, only while the container is still closed

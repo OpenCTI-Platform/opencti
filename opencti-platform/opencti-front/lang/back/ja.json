@@ -120,6 +120,7 @@
   "CISA KEV": "CISA KEV",
   "Client certificate authentication": "クライアント証明書認証",
   "ClientCertStrategy": "クライアント証明書戦略",
+  "Closure of the incidents an incident response contains, read from their history": "インシデント対応に含まれるインシデントのクローズ（履歴から読み取り）",
   "Collection": "認証タイプ",
   "Color": "色",
   "Command line": "コマンドライン",

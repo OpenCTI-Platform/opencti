@@ -124,6 +124,7 @@
   "Client certificate authentication": "Client-Zertifikatsauthentifizierung",
   "ClientCertStrategy": "Client Cert Strategie",
   "Closure": "Abschluss",
+  "Closure of the incidents an incident response contains, read from their history": "Schließung der Vorfälle, die eine Vorfallsreaktion enthält, aus ihrem Verlauf gelesen",
   "Collection": "Sammlung",
   "Color": "Farbe",
   "Command line": "Befehlszeile",

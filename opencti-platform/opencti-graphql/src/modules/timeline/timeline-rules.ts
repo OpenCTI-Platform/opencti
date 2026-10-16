@@ -121,6 +121,8 @@ export interface TimelineDerivationInput {
   externalReferences: TimelineElementData[];
   history: TimelineHistoryEntry[];
   taskHistory: TimelineHistoryEntry[];
+  // Updates of the incidents an incident response contains (their workflow transitions)
+  incidentHistory: TimelineHistoryEntry[];
   killChainPhases: Map<string, TimelineKillChainPhaseData>;
   statuses: Map<string, TimelineStatusData>;
   soft: TimelineSoftSources;
@@ -659,6 +661,49 @@ const workflowRule: TimelineRule = {
   }),
 };
 
+/**
+ * The incident is often closed (contained, eradicated, recovered) while its incident response stays open for the
+ * post-incident work: its latest transition to the last status of its workflow, while it stays closed, is a moment of
+ * the response. An incident closed without such a history entry falls back to its last update.
+ */
+const incidentClosureRule: TimelineRule = {
+  id: 'incident-closure',
+  label: 'Closure of the incidents an incident response contains, read from their history',
+  kinds: ['incident_closed'],
+  derive: (input) => {
+    if (input.container.entity_type !== 'Case-Incident') return [];
+    return input.entities.filter((incident) => incident.entity_type === 'Incident' && isFinalStatus(input, incident.workflow_id)).map((incident) => {
+      const closures = input.incidentHistory
+        .filter((entry) => entry.entity_id === incident.id)
+        .flatMap((entry) => entry.changes
+          .filter((change) => changeField(change) === 'x_opencti_workflow_id' && change.added.some((a) => isFinalStatus(input, a.raw)))
+          .map(() => ({ time: toTimelineTime(entry.timestamp), entry })))
+        .filter((closure): closure is { time: number; entry: TimelineHistoryEntry } => closure.time !== null)
+        .sort((a, b) => b.time - a.time);
+      const latest = closures[0];
+      const fallback = toTimelineTime(incident.updated_at);
+      const time = latest?.time ?? fallback;
+      if (time === null) return null;
+      const status = incident.workflow_id ? input.statuses.get(incident.workflow_id) : undefined;
+      const event: DerivedTimelineEvent = {
+        rule_id: 'incident-closure',
+        kind: 'incident_closed',
+        lane: 'response',
+        element_id: incident.id,
+        element_type: incident.entity_type,
+        event_time: iso(time),
+        time_precision: latest ? 'exact' : 'approximate',
+        name: `Incident ${incident.name} closed`,
+        description: status ? `Status ${status.name}` : undefined,
+        markings: mergeMarkings(incident.markings, latest?.entry.markings ?? []),
+        created_by_id: incident.created_by_id,
+        creator_ids: latest?.entry.user_id ? [latest.entry.user_id] : [],
+      };
+      return event;
+    }).filter((event): event is DerivedTimelineEvent => event !== null);
+  },
+};
+
 const assignmentRule: TimelineRule = {
   id: 'assignment',
   label: 'Assignees and participants added, read from the history',
@@ -1176,6 +1221,7 @@ export const TIMELINE_CORE_RULES: TimelineRule[] = [
   caseOpenedRule,
   taskRule,
   workflowRule,
+  incidentClosureRule,
   assignmentRule,
   noteRule,
   opinionRule,

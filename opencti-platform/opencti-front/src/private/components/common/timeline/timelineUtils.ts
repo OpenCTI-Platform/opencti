@@ -33,6 +33,7 @@ export const TIMELINE_KIND_LABELS: Record<string, string> = {
   task_due: 'Task due',
   task_completed: 'Task completed',
   status_changed: 'Status changed',
+  incident_closed: 'Incident closed',
   assigned: 'Assignment',
   note_added: 'Note added',
   opinion_added: 'Opinion added',
@@ -561,6 +562,7 @@ export const TIMELINE_SOURCE_SENTENCES: Record<string, string> = {
   'task-containment': 'Taken from the history of the task that completes the containment: the moment it reached the last status of its workflow',
   'workflow-status': 'Taken from the history of the case: the change of its status',
   'workflow-closure': 'Taken from the history of the case: the change of its status',
+  'incident-closure': 'Taken from the history of the incident: the latest moment it reached the last status of its workflow',
   assignment: 'Taken from the history of the case: the assignees and participants added',
   'note-added': 'Taken from the creation date of the note {name}',
   'opinion-added': 'Taken from the creation date of the opinion {name}',
@@ -579,6 +581,7 @@ export const TIMELINE_APPROXIMATE_SOURCE_SENTENCES: Record<string, string> = {
   'report-published': 'Taken from the creation date of the report: it has no Publication date',
   task_completed: 'Taken from the last update of the task: its history does not tell when it reached the last status of its workflow',
   'task-containment': 'Taken from the last update of the task that completes the containment: its history does not tell when it reached the last status of its workflow',
+  'incident-closure': 'Taken from the last update of the incident: its history does not tell when it reached the last status of its workflow',
 };
 /** Where an event comes from in words: an analyst milestone, or the attributes and the entity a rule took its dates from. */
 export const describeTimelineEventSource = (

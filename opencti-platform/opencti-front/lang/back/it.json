@@ -120,6 +120,7 @@
   "CISA KEV": "CISA KEV",
   "Client certificate authentication": "Autenticazione tramite certificato client",
   "ClientCertStrategy": "Strategia di certificazione del cliente",
+  "Closure of the incidents an incident response contains, read from their history": "Chiusura degli incidenti contenuti in una risposta agli incidenti, letta dalla loro cronologia",
   "Collection": "Collezione",
   "Color": "Colore",
   "Command line": "Riga di comando",

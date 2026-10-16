@@ -23,6 +23,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/st
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../securityCoverage/securityCoverage-types';
@@ -498,6 +499,18 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
     ],
     filterGroups: [],
   }, TIMELINE_MAX_HISTORY) : [];
+  // Updates of the incidents an incident response contains: the closure of an incident is a moment of its response
+  const incidentIds = container.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT
+    ? entities.filter((e) => e.entity_type === ENTITY_TYPE_INCIDENT).map((e) => e.internal_id)
+    : [];
+  const incidentHistory = incidentIds.length > 0 ? await findHistory(context, bounds, {
+    mode: FilterMode.And,
+    filters: [
+      { key: ['context_data.id'], values: incidentIds },
+      { key: ['event_scope'], values: ['update'] },
+    ],
+    filterGroups: [],
+  }, TIMELINE_MAX_HISTORY) : [];
   const statuses = await loadStatuses(context);
   const toElement = (e: AnyStoreElement) => toTimelineElement(e);
   const entitiesData = entities.map(toElement);
@@ -520,6 +533,7 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
       externalReferences: externalReferences.map(toElement),
       history: [...history, ...objectMerges],
       taskHistory,
+      incidentHistory,
       killChainPhases: killChainPhasesMap,
       statuses,
       soft,

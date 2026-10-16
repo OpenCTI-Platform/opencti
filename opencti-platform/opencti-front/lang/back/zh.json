@@ -120,6 +120,7 @@
   "CISA KEV": "CISA KEV",
   "Client certificate authentication": "客户端证书认证",
   "ClientCertStrategy": "Client Cert Strategy",
+  "Closure of the incidents an incident response contains, read from their history": "事件响应所含事件的关闭（从其历史记录读取）",
   "Collection": "采集",
   "Color": "颜色",
   "Command line": "命令行",

@@ -24,7 +24,7 @@ Events are organized in lanes, from the adversary to the response:
 |:-----|:--------|
 | Adversary | Techniques used (in kill chain order), first and last seen of malware, tools, infrastructures, threats and incidents, observation windows of observed data, sightings that are not from a security platform |
 | Detection | Sightings from security platforms, security coverage results, hunt runs, indicator deployments, detection milestones |
-| Response | Opening of the case, tasks created, due and completed, workflow status transitions, assignments, notes, opinions, investigation steps |
+| Response | Opening of the case, tasks created, due and completed, workflow status transitions, closure of the incidents an incident response contains, assignments, notes, opinions, investigation steps |
 | Evidence | Indicators validity windows, reports and external references published, files uploaded, investigation findings about elements outside the case |
 | Knowledge | Objects added to the case, relationships created, merges |
 | Custom | Analyst milestones that do not belong to another lane |
@@ -45,6 +45,7 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Case | Opening (creation date of the case) |
 | Tasks | Creation date, Due date and first completion (the moment the task reached the last status of its workflow, read from its history), kept when the task is reopened (the completion of a task that completes the containment records the containment, see below) |
 | History of the container | Workflow status transitions, assignees and participants added, objects added, merges |
+| Incidents contained in an incident response | **Incident closed**, in the response lane: the latest moment the incident reached the last status of its workflow, read from its history (its last update, approximate, when the history does not tell), as long as it stays closed. The incident is often closed (contained, eradicated, recovered) while its incident response stays open for the post-incident work |
 | Relationships between objects of the case | Creation |
 
 The following sources are used when they exist on the platform, and are otherwise ignored:
@@ -70,7 +71,7 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 |:-------|:-----------|
 | First adversary activity | First activity of this incident on the adversary lane: a dated `uses` or `targets` relationship of a technique, a sighting, observed data, the first seen of the incident or a contained incident, an adversary milestone. The global first and last seen of malware, tools, infrastructures and threats, and the techniques placed in kill chain order, never count |
 | First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
-| First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts |
+| First response | First thing the team did: opening of the case, a task created or completed, a status change, an assignment, a note, an opinion or a response milestone. The due date of a task is a plan and never counts, nor does the closure of an incident the incident response contains |
 | Containment | First **Containment** milestone. On an Incident Response, a Request for Information or a Request for Takedown, also the completion of a task that completes the containment. An Incident holds no task: a **Containment** milestone, added with **Add an event**, is its only way to record the containment |
 | Closure | Last transition to the final workflow status, while the case stays closed |
 

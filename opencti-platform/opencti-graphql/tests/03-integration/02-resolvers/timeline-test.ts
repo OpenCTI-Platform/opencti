@@ -121,6 +121,16 @@ const TASK_FIELD_PATCH = gql`
     taskFieldPatch(id: $id, input: $input) { id }
   }
 `;
+const INCIDENT_ADD = gql`
+  mutation TimelineIncidentAdd($input: IncidentAddInput!) {
+    incidentAdd(input: $input) { id standard_id }
+  }
+`;
+const INCIDENT_FIELD_PATCH = gql`
+  mutation TimelineIncidentFieldPatch($id: ID!, $input: [EditInput]!) {
+    incidentEdit(id: $id) { fieldPatch(input: $input) { id } }
+  }
+`;
 const TASK_CONTAINMENT = gql`
   query TimelineTaskContainment($id: String!) {
     task(id: $id) { id completes_containment workflow_completed toStix }
@@ -625,7 +635,9 @@ describe('Incident and case timeline', () => {
       let authoredNoteId: string;
       let authoredOpinionId: string;
       let authorId: string;
+      let closedIncidentId: string;
       const taskStatusIds: string[] = [];
+      const incidentStatusIds: string[] = [];
 
       beforeAll(async () => {
         const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
@@ -634,23 +646,27 @@ describe('Incident and case timeline', () => {
         const templateId = (name: string) => templates.data.statusTemplates.edges
           .map((edge: { node: { id: string; name: string } }) => edge.node)
           .find((node: { name: string }) => node.name === name)?.id;
-        // Orders above any other status of tasks: CLOSED is the last status of their workflow
-        const addStatus = async (name: string, order: number) => {
+        // Orders above any other status of the type: CLOSED is the last status of its workflow
+        const addStatus = async (type: string, ids: string[], name: string, order: number) => {
           const result = await queryAsAdminWithSuccess({
             query: SUB_TYPE_STATUS_ADD,
-            variables: { id: 'Task', input: { template_id: templateId(name), order, scope: 'GLOBAL' } },
+            variables: { id: type, input: { template_id: templateId(name), order, scope: 'GLOBAL' } },
           });
           const status = result.data.subTypeEdit.statusAdd.statuses.find((s: { order: number }) => s.order === order);
-          taskStatusIds.push(status.id);
+          ids.push(status.id);
           return status.id as string;
         };
-        await addStatus('NEW', 900);
-        await addStatus('CLOSED', 901);
+        await addStatus('Task', taskStatusIds, 'NEW', 900);
+        await addStatus('Task', taskStatusIds, 'CLOSED', 901);
+        await addStatus('Incident', incidentStatusIds, 'NEW', 900);
+        await addStatus('Incident', incidentStatusIds, 'CLOSED', 901);
         const label = await queryAsAdminWithSuccess({ query: LABEL_ADD, variables: { input: { value: 'containment', color: '#ff9800' } } });
         containmentLabelId = label.data.labelAdd.id;
+        const closedIncident = await queryAsAdminWithSuccess({ query: INCIDENT_ADD, variables: { input: { name: 'Timeline incident closed before its response' } } });
+        closedIncidentId = closedIncident.data.incidentAdd.id;
         const containmentCase = await queryAsAdminWithSuccess({
           query: CASE_INCIDENT_ADD,
-          variables: { input: { name: 'Timeline containment case', created: '2026-03-01T08:00:00.000Z', objects: [attackPatternId] } },
+          variables: { input: { name: 'Timeline containment case', created: '2026-03-01T08:00:00.000Z', objects: [attackPatternId, closedIncidentId] } },
         });
         containmentCaseId = containmentCase.data.caseIncidentAdd.id;
         const task = await queryAsAdminWithSuccess({
@@ -683,6 +699,7 @@ describe('Incident and case timeline', () => {
         authoredOpinionId = opinion.data.opinionAdd.id;
         await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: containmentTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
         await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: switchTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
+        await queryAsAdminWithSuccess({ query: INCIDENT_FIELD_PATCH, variables: { id: closedIncidentId, input: [{ key: 'x_opencti_workflow_id', value: [incidentStatusIds[1]] }] } });
         await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: containmentCaseId } });
       });
 
@@ -693,6 +710,7 @@ describe('Incident and case timeline', () => {
           [STIX_CORE_OBJECT_DELETE, containmentTaskId],
           [STIX_CORE_OBJECT_DELETE, switchTaskId],
           [STIX_CORE_OBJECT_DELETE, containmentCaseId],
+          [STIX_CORE_OBJECT_DELETE, closedIncidentId],
           [LABEL_DELETE, containmentLabelId],
         ];
         for (let index = 0; index < deletions.length; index += 1) {
@@ -701,6 +719,9 @@ describe('Incident and case timeline', () => {
         }
         for (let index = 0; index < taskStatusIds.length; index += 1) {
           await queryAsAdmin({ query: SUB_TYPE_STATUS_DELETE, variables: { id: 'Task', statusId: taskStatusIds[index] } });
+        }
+        for (let index = 0; index < incidentStatusIds.length; index += 1) {
+          await queryAsAdmin({ query: SUB_TYPE_STATUS_DELETE, variables: { id: 'Incident', statusId: incidentStatusIds[index] } });
         }
         if (containmentCaseId) await deleteContainerTimeline(containmentCaseId);
       });
@@ -714,6 +735,19 @@ describe('Incident and case timeline', () => {
         const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: containmentCaseId } });
         const first = completions.map((event) => event.event_time).sort()[0];
         expect(iso(anchors.data.timelineAnchors.containment)).toEqual(first);
+      });
+
+      it('the closure of an incident the incident response contains is an event of its response', async () => {
+        const closures = await listTimeline(containmentCaseId, { kinds: ['incident_closed'] });
+        expect(closures).toHaveLength(1);
+        expect(closures[0]).toMatchObject({
+          rule_id: 'incident-closure',
+          lane: 'response',
+          element_id: closedIncidentId,
+          element_type: 'Incident',
+          precision: 'exact',
+          title: 'Incident Timeline incident closed before its response closed',
+        });
       });
 
       it('should expose the containment switch of a task and carry it in the timeline extension of its STIX', async () => {

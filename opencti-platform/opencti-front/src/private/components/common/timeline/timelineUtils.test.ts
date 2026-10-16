@@ -253,6 +253,10 @@ describe('Timeline event source', () => {
     expect(describeTimelineEventSource(derived('task-lifecycle', { kind: 'task_completed' }), t)).toBe('Taken from the history of the task: the moment it reached the last status of its workflow');
     expect(describeTimelineEventSource(derived('task-containment', { kind: 'task_completed' }), t))
       .toBe('Taken from the history of the task that completes the containment: the moment it reached the last status of its workflow');
+    expect(describeTimelineEventSource(derived('incident-closure', { kind: 'incident_closed' }), t))
+      .toBe('Taken from the history of the incident: the latest moment it reached the last status of its workflow');
+    expect(describeTimelineEventSource(derived('incident-closure', { kind: 'incident_closed', precision: 'approximate' }), t))
+      .toBe('Taken from the last update of the incident: its history does not tell when it reached the last status of its workflow');
   });
 
   it('keeps the generic wording for a milestone and for a rule it does not know', () => {

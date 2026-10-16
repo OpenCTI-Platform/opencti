@@ -44,6 +44,7 @@ const buildInput = (overrides: Partial<TimelineDerivationInput> = {}): TimelineD
   externalReferences: [],
   history: [],
   taskHistory: [],
+  incidentHistory: [],
   killChainPhases: new Map(),
   statuses: new Map(),
   soft: { coverageResults: [], coverageRelationships: [], huntRuns: [], deployments: [], investigationRuns: [] },
@@ -265,6 +266,8 @@ describe('Timeline response rules', () => {
     ['status-closed', { id: 'status-closed', name: 'CLOSED', order: 9, type: 'Case-Incident', is_final: true }],
     ['task-open', { id: 'task-open', name: 'OPEN', order: 1, type: 'Task', is_final: false }],
     ['task-done', { id: 'task-done', name: 'DONE', order: 2, type: 'Task', is_final: true }],
+    ['incident-open', { id: 'incident-open', name: 'IN PROGRESS', order: 1, type: 'Incident', is_final: false }],
+    ['incident-closed', { id: 'incident-closed', name: 'RESOLVED', order: 2, type: 'Incident', is_final: true }],
   ]);
 
   it('should open the case and read workflow transitions and assignments from the history', () => {
@@ -375,6 +378,65 @@ describe('Timeline response rules', () => {
       tasks: [element({ id: 'task-1', entity_type: 'Task', name: 'Patch', created: '2026-03-10T09:00:00.000Z', updated_at: '2026-03-12T09:00:00.000Z', workflow_id: 'task-done' })],
     });
     expect(derive(input).find((e) => e.kind === 'task_completed')).toMatchObject({ rule_id: 'task-lifecycle', time_precision: 'approximate', event_time: '2026-03-12T09:00:00.000Z' });
+  });
+
+  describe('closure of the incidents of an incident response', () => {
+    const incidentTransition = (id: string, timestamp: string, added: string, removed: string) => ({
+      id,
+      timestamp,
+      event_scope: 'update',
+      entity_id: 'incident-1',
+      entity_type: 'Incident',
+      entity_name: 'Ransomware on the file servers',
+      message: 'replaces status',
+      user_id: 'user-3',
+      markings: [],
+      changes: [{ field: 'Incident--x_opencti_workflow_id', added: [{ raw: added }], removed: [{ raw: removed }] }],
+    });
+    const incident = (workflowId: string | null) => element({
+      id: 'incident-1',
+      entity_type: 'Incident',
+      name: 'Ransomware on the file servers',
+      workflow_id: workflowId,
+      updated_at: '2026-03-14T10:00:00.000Z',
+      markings: ['marking-incident'],
+    });
+    const history = [
+      incidentTransition('ih-1', '2026-03-12T09:00:00.000Z', 'incident-closed', 'incident-open'),
+      incidentTransition('ih-2', '2026-03-12T18:00:00.000Z', 'incident-open', 'incident-closed'),
+      incidentTransition('ih-3', '2026-03-13T11:00:00.000Z', 'incident-closed', 'incident-open'),
+    ];
+    const closures = (input: Partial<TimelineDerivationInput>) => derive(buildInput({ statuses, ...input })).filter((e) => e.kind === 'incident_closed');
+
+    it('should date the closure of a contained incident in the response lane, from its latest transition to the last status', () => {
+      const [closed, ...others] = closures({ entities: [incident('incident-closed')], incidentHistory: history });
+      expect(others).toEqual([]);
+      expect(closed).toMatchObject({
+        rule_id: 'incident-closure',
+        lane: 'response',
+        element_id: 'incident-1',
+        element_type: 'Incident',
+        event_time: '2026-03-13T11:00:00.000Z',
+        time_precision: 'exact',
+        name: 'Incident Ransomware on the file servers closed',
+        description: 'Status RESOLVED',
+        markings: ['marking-incident'],
+        creator_ids: ['user-3'],
+      });
+    });
+
+    it('should leave out an incident reopened since, and fall back to the last update without a transition', () => {
+      expect(closures({ entities: [incident('incident-open')], incidentHistory: history.slice(0, 2) })).toEqual([]);
+      expect(closures({ entities: [incident(null)] })).toEqual([]);
+      expect(closures({ entities: [incident('incident-closed')] })).toEqual([
+        expect.objectContaining({ event_time: '2026-03-14T10:00:00.000Z', time_precision: 'approximate' }),
+      ]);
+    });
+
+    it('should only read the incidents of an incident response', () => {
+      const rfi = { ...element({ id: 'rfi-1', entity_type: 'Case-Rfi', name: 'Question', created: '2026-03-10T08:00:00.000Z' }), is_case: true, files: [] };
+      expect(closures({ container: rfi, entities: [incident('incident-closed')], incidentHistory: history })).toEqual([]);
+    });
   });
 
   it('should derive notes and opinions', () => {

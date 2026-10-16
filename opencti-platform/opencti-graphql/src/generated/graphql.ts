@@ -36830,6 +36830,7 @@ export enum TimelineEventKind {
   Eradication = 'eradication',
   FileUploaded = 'file_uploaded',
   HuntRun = 'hunt_run',
+  IncidentClosed = 'incident_closed',
   IncidentSeen = 'incident_seen',
   IndicatorValid = 'indicator_valid',
   InfrastructureSeen = 'infrastructure_seen',

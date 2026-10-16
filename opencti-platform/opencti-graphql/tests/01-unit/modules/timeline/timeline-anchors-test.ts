@@ -86,6 +86,14 @@ describe('Timeline anchors', () => {
     expect(anchors.first_response).toEqual('2026-03-04T00:00:00.000Z');
   });
 
+  it('should never start the response with the closure of an incident closed before the incident response opened', () => {
+    const anchors = computeTimelineAnchors([
+      ...events,
+      { lane: 'response' as const, kind: 'incident_closed' as const, rule_id: 'incident-closure', event_time: '2026-02-12T00:00:00.000Z' },
+    ], { isClosed: false, computedAt });
+    expect(anchors.first_response).toEqual('2026-03-04T00:00:00.000Z');
+  });
+
   it('should never set a headline date with an event dated in the future', () => {
     const future = [
       { lane: 'response' as const, kind: 'task_due' as const, rule_id: 'task-lifecycle', event_time: '2026-05-01T00:00:00.000Z' },
