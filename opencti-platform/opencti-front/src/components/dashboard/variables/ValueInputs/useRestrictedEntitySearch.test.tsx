@@ -14,7 +14,7 @@ const rule: FilterGroup = {
 const answer = (names: [string, string][]) => ({
   data: {
     stixCoreObjects: {
-      edges: names.map(([id, name]) => ({ node: { id, entity_type: 'Organization', representative: { main: name } } })),
+      edges: names.map(([id, name]) => ({ node: { __typename: 'Organization', id, entity_type: 'Organization', representative: { main: name } } })),
     },
   },
 });

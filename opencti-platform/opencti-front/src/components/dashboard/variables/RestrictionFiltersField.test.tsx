@@ -14,7 +14,7 @@ vi.mock('@components/common/lists/Filters', () => ({
       <div>
         <span data-testid="filters-variables">{variables === undefined ? 'none' : variables.length}</span>
         <span data-testid="filters-entity-types">{availableEntityTypes.join()}</span>
-        <button type="button" onClick={() => helpers.handleAddSingleValueFilter('objectLabel', 'label-2')}>Add a label</button>
+        <button type="button" onClick={() => helpers.handleAddSingleValueFilter('f1', 'label-2')}>Add a label</button>
       </div>
     );
   },
