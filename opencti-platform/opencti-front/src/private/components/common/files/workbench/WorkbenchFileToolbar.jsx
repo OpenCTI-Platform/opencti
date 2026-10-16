@@ -182,15 +182,25 @@ class WorkbenchFileToolbar extends Component {
             <Toolbar style={{ minHeight: 54 }}>
               <Stack
                 direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ width: '100%' }}
+                sx={{
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                }}
               >
-                <Stack direction="row" alignItems="center" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   <Typography
                     className={classes.title}
-                    color="inherit"
                     variant="subtitle1"
+                    sx={{
+                      color: 'inherit',
+                    }}
                   >
                     {`${numberOfSelectedElements} ${t('selected')}`}
                   </Typography>
@@ -203,7 +213,13 @@ class WorkbenchFileToolbar extends Component {
                   </IconButton>
                 </Stack>
 
-                <Stack direction="row" alignItems="center" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   <IconButton
                     aria-label={t('Apply marking')}
                     disabled={numberOfSelectedElements === 0}

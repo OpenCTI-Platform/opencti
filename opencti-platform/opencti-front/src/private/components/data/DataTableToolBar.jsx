@@ -2429,8 +2429,10 @@ class DataTableToolBar extends Component {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}
-                    color="inherit"
                     variant="subtitle1"
+                    sx={{
+                      color: 'inherit',
+                    }}
                   >
                     <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
                   </Typography>

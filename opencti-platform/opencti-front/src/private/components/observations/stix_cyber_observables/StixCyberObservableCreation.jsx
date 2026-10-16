@@ -1107,7 +1107,13 @@ const StixCyberObservableCreation = ({
           open={speeddial ? open : status.open}
           onClose={speeddial ? handleClose : localHandleClose}
           title={(
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
               {t_i18n('Create an observable')}
               {!isFromBulkRelation && status.type
                 ? (

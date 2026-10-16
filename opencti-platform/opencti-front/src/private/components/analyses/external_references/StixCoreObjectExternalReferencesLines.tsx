@@ -292,7 +292,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                             divider={true}
                             disablePadding
                             secondaryAction={(
-                              <Stack direction="row" gap={0.5}>
+                              <Stack
+                                direction="row"
+                                sx={{
+                                  gap: 0.5,
+                                }}
+                              >
                                 <Tooltip title={t_i18n('Browse the link')}>
                                   <IconButton
                                     onClick={() => handleOpenExternalLink(
@@ -354,14 +359,18 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                                 )}
                                 slotProps={{
                                   primary: {
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
+                                    sx: {
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    },
                                   },
                                   secondary: {
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
+                                    sx: {
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    },
                                   },
                                 }}
                               />
@@ -401,7 +410,12 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                           divider={true}
                           disablePadding
                           secondaryAction={(
-                            <Stack direction="row" gap={0.5}>
+                            <Stack
+                              direction="row"
+                              sx={{
+                                gap: 0.5,
+                              }}
+                            >
                               {!isFileAttached && (
                                 <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                                   <FileUploader
@@ -449,14 +463,18 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                               )}
                               slotProps={{
                                 primary: {
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
+                                  sx: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
                                 },
                                 secondary: {
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
+                                  sx: {
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                  },
                                 },
                               }}
                             />

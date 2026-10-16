@@ -91,7 +91,12 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
               variant="outlined"
               style={{ marginTop: 20 }}
             >
-              <Stack spacing={1} pl={1}>
+              <Stack
+                spacing={1}
+                sx={{
+                  pl: 1,
+                }}
+              >
                 <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
 
                 <div>

@@ -4602,7 +4602,10 @@ const StixCoreRelationshipOverview = ({
               </div>
             </Link>
             <Divider style={{ marginTop: 30, marginBottom: 15 }} />
-            <Stack gap={2}>
+            <Stack sx={{
+              gap: 2,
+            }}
+            >
               <div>
                 <Label>
                   {t_i18n('Description')}

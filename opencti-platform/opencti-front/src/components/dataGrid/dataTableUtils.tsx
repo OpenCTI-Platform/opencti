@@ -60,9 +60,11 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
       <Tooltip title={displayedData}>
         <Stack
           direction="row"
-          gap={1}
-          alignItems="center"
-          sx={{ maxWidth: '100%' }}
+          sx={{
+            gap: 1,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
         >
           <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
@@ -223,7 +225,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ color }) => (
       <Tooltip title={color}>
-        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: color,
@@ -1406,7 +1415,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
-        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: x_opencti_color,

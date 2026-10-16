@@ -387,7 +387,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               <Grid item xs={12}>
-                <Stack gap={1}>
+                <Stack sx={{
+                  gap: 1,
+                }}
+                >
                   <Label
                     action={(
                       <Button

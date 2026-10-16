@@ -87,9 +87,9 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
     <Card>
       <Stack
         direction="row"
-        alignItems="center"
-        justifyContent="space-between"
         sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
           borderBottom: '1px solid',
           borderColor: theme.palette.border.main,
           pb: 2,
@@ -112,7 +112,13 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
           </Typography>
         </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <Tooltip title={t_i18n('Go to note')}>
             <IconButton
               aria-label={t_i18n('Go to note')}
@@ -133,7 +139,12 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
       </Stack>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 8 }} gap={3}>
+        <Grid
+          size={{ xs: 8 }}
+          sx={{
+            gap: 3,
+          }}
+        >
           <Box>
             <Label>{t_i18n('Abstract')}</Label>
             <FieldOrEmpty source={note.attribute_abstract}>

@@ -67,7 +67,13 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
     const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
     return (
       <>
-        <Grid container={true} spacing={3} alignItems="flex-end">
+        <Grid
+          container={true}
+          spacing={3}
+          sx={{
+            alignItems: 'flex-end',
+          }}
+        >
           <Grid item xs={6}>
             <Field
               component={TextField}
@@ -125,7 +131,13 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
   }
   return (
     <>
-      <Grid container={true} spacing={3} alignItems="flex-end">
+      <Grid
+        container={true}
+        spacing={3}
+        sx={{
+          alignItems: 'flex-end',
+        }}
+      >
         <Grid item xs={6}>
           <Field
             component={TextField}

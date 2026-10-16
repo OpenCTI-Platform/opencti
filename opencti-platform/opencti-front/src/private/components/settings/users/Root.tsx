@@ -127,7 +127,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
             { label: data.name || data.user_email, current: true },
           ]}
           />
-          <Stack direction="row" alignItems="center" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {data.name}
             </TitleMainEntity>

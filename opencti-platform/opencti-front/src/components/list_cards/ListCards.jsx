@@ -145,7 +145,12 @@ class ListCards extends Component {
                   </IconButton>
                 </div>
                 <div className={classes.filler} />
-                <Stack direction="row" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                  }}
+                >
                   {numberOfElements && (
                     <div style={{ alignSelf: 'center' }}>
                       <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
@@ -219,8 +224,8 @@ class ListCards extends Component {
                     additionalHeaderButtons && (
                       <Stack
                         direction="row"
-                        gap={1}
                         sx={{
+                          gap: 1,
                           '&:empty': {
                             display: 'none',
                           },

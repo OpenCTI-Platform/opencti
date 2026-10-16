@@ -116,7 +116,10 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         gap: theme.spacing(4),
       }}
     >
-      <Stack gap={2.5}>
+      <Stack sx={{
+        gap: 2.5,
+      }}
+      >
         <Field
           component={TextField}
           variant="outlined"
@@ -248,7 +251,10 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
       </Stack>
 
       {/* LOGIN ASIDE TYPE */}
-      <Stack gap={1}>
+      <Stack sx={{
+        gap: 1,
+      }}
+      >
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 400 }}>
           {t_i18n('Login Page Customisation')}
         </Typography>
@@ -257,7 +263,10 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
           {t_i18n('Right panel customisation')}
         </Label>
 
-        <Stack gap={2.5}>
+        <Stack sx={{
+          gap: 2.5,
+        }}
+        >
           {/* FDS-WORKAROUND #45 retired in library #190; the empty string is still a real
               product state — see fds-migration/MIGRATION-DECISIONS.md#theme-background-select */}
           <Select

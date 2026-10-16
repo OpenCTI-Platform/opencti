@@ -85,7 +85,13 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
               {t_i18n('Request for information types')}
             </Label>
             <FieldOrEmpty source={informationTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {informationTypes.map((informationType) => (
                   <Tag
                     key={informationType}

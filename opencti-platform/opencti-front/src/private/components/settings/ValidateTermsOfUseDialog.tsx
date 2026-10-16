@@ -49,12 +49,20 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
       title={t_i18n('Validate the Filigran AI Terms')}
       showCloseButton
     >
-      <Stack gap={3}>
+      <Stack sx={{
+        gap: 3,
+      }}
+      >
         <Typography>
           {t_i18n('Please take a moment to review our "Filigran AI Terms". Our chatbot is here to assist you, but it\'s important to understand how it works and what to expect. Please read the full terms to know how we protect your data and ensure service quality.')}
         </Typography>
 
-        <Stack alignItems="center" gap={2}>
+        <Stack
+          sx={{
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
           <Button
             href="https://filigran.io/app/uploads/2025/09/filigran-ai-terms-september-2025.pdf"
             target="_blank"

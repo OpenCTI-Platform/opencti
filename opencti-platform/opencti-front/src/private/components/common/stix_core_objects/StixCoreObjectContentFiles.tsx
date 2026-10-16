@@ -272,7 +272,12 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         title={t_i18n('Files')}
         actions={(
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <FileUploader
                 entityId={stixCoreObjectId}
                 onUploadSuccess={onFileChange}

@@ -218,7 +218,13 @@ const RelationshipsSection: React.FC<RelationshipsSectionProps> = ({
     }
 
     return (
-      <Stack key={relationship.id} className={classes.relationshipGroup} gap={2}>
+      <Stack
+        key={relationship.id}
+        className={classes.relationshipGroup}
+        sx={{
+          gap: 2,
+        }}
+      >
         <div className={classes.fieldHeader}>
           <Typography className={classes.fieldTitle}>
             {t_i18n('Relationship')} {index + 1}

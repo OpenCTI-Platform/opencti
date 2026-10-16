@@ -35,9 +35,26 @@ const WidgetNumber = ({
   };
 
   return (
-    <Stack height="100%" justifyContent="space-between">
-      <Stack direction="row" alignItems="start">
-        <Stack direction="row" alignItems="start" gap={1} flex={1}>
+    <Stack
+      sx={{
+        height: '100%',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'start',
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'start',
+            gap: 1,
+            flex: 1,
+          }}
+        >
           <Typography
             color={theme.palette.text.light}
             variant="body2"
@@ -57,8 +74,10 @@ const WidgetNumber = ({
 
       <Stack
         direction="row"
-        justifyContent="space-between"
-        alignItems="center"
+        sx={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
       >
         <div
           data-testid={`card-number-${label}`}

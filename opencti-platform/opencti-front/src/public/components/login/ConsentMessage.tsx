@@ -42,12 +42,14 @@ const ConsentMessage = ({
         {platform_consent_message}
       </LoginMarkdown>
       <Box
-        mt={1}
-        gap={0.5}
-        display="flex"
-        alignItems="start"
-        sx={{ cursor: 'pointer' }}
         onClick={onToggle}
+        sx={{
+          mt: 1,
+          gap: 0.5,
+          display: 'flex',
+          alignItems: 'start',
+          cursor: 'pointer',
+        }}
       >
         <Checkbox
           name="consent"

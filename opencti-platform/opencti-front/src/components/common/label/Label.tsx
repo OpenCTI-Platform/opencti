@@ -39,9 +39,10 @@ const Label = ({
   return (
     <Stack
       direction="row"
-      alignItems="center"
-      sx={containerSx}
-      gap={0.5}
+      sx={[{
+        alignItems: 'center',
+        gap: 0.5,
+      }, ...(Array.isArray(containerSx) ? containerSx : [containerSx])]}
     >
       <Typography variant="h6" sx={titleSx}>
         {children}

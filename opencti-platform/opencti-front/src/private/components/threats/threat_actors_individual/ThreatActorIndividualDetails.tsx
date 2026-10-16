@@ -119,7 +119,13 @@ const ThreatActorIndividualDetails: FunctionComponent<
                 {t_i18n('Threat actor types')}
               </Label>
               <FieldOrEmpty source={data.threat_actor_types}>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    flexWrap: 'wrap',
+                    gap: 1,
+                  }}
+                >
                   {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
                     <Tag
                       key={threatActorIndividualType}

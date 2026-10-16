@@ -183,8 +183,10 @@ const ToolBar: FunctionComponent<{
       <Toolbar style={{ minHeight: 54 }}>
         <Typography
           className={classes.title}
-          color="inherit"
           variant="subtitle1"
+          sx={{
+            color: 'inherit',
+          }}
         >
           <span className={classes.titleNumber}>
             {numberOfSelectedElements}

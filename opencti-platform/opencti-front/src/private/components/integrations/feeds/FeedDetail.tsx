@@ -393,8 +393,22 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
       />
 
       {/* Same flat header layout as the connector detail page. */}
-      <Stack direction="row" justifyContent="space-between" gap={2} sx={{ width: '100%' }}>
-        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'space-between',
+          gap: 2,
+          width: '100%',
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            gap: 2,
+            alignItems: 'center',
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               height: 56,
@@ -459,7 +473,13 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
             )}
           </Box>
         </Stack>
-        <Stack direction="row" alignItems="center" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           {/* Same gate as the legacy feed list lines: read-only INGESTION
               users do not get the mutation actions. */}
           <Security needs={[INGESTION_SETINGESTIONS]}>

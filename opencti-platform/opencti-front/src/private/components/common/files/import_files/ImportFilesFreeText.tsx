@@ -80,7 +80,14 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
                 htmlInput: { style: { padding: 8 } },
               }}
             />
-            <Stack direction="row" gap={1} justifyContent="flex-end" sx={{ width: '100%' }}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                justifyContent: 'flex-end',
+                width: '100%',
+              }}
+            >
               <Button
                 variant="secondary"
                 disabled={isSubmitting}

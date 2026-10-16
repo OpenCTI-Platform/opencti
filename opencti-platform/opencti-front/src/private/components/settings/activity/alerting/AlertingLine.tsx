@@ -148,10 +148,12 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
             {data.trigger_type === 'digest' && (
               <Stack
                 direction="row"
-                gap={1}
-                flexWrap="nowrap"
-                overflow="hidden"
-                textOverflow="ellipsis"
+                sx={{
+                  gap: 1,
+                  flexWrap: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
               >
                 <Tag
                   label={`${t_i18n('Period: ')}${data.period}`}
