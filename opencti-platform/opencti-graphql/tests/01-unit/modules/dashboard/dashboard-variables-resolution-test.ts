@@ -221,3 +221,17 @@ describe('Dashboard variables resolution - time zone validation', () => {
     }
   });
 });
+
+describe('Dashboard variables resolution - unknown time zone in the backend', () => {
+  // Backend only: the front falls back to the local calendar day of the browser instead (date-fns addDays).
+  it('should shift a date variable by one calendar day in UTC when its time zone is unknown', () => {
+    const variableId = '44444444-4444-4444-8444-444444444444';
+    const input = { mode: 'and', filters: [{ key: 'created_at', values: [`$var:${variableId}`], operator: 'lte', mode: 'or' }], filterGroups: [] };
+    const values = new Map([[variableId, '2026-03-28T23:00:00.000Z']]);
+    const result = resolveVariablesInFilterGroup(input, values, { dateVariableIds: new Set([variableId]), timeZone: 'Nowhere/Unknown' });
+    expect(result).toEqual({
+      filters: { mode: 'and', filters: [{ key: 'created_at', values: ['2026-03-29T23:00:00.000Z'], operator: 'lte', mode: 'or' }], filterGroups: [] },
+      unresolved: [],
+    });
+  });
+});

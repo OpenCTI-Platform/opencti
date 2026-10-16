@@ -1,3 +1,4 @@
+import { addDays } from 'date-fns';
 import type { DashboardVariable } from './dashboard-types';
 
 // Mirror of opencti-graphql/src/modules/dashboard/dashboard-variables-resolution.ts.
@@ -22,7 +23,13 @@ const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-const buildWallClockFormatter = (timeZone: string) => {
+// Time zones already reported as unusable: the fallback warns once per zone, not for every value it shifts.
+const warnedUnusableTimeZones = new Set<string>();
+
+// Formatter of the wall clock time in `timeZone`, or null when the browser cannot use the time zone: an id that `Intl`
+// rejects (a browser with limited ICU), or `Etc/Unknown` (a host without configured time zone).
+const buildWallClockFormatter = (timeZone: string): Intl.DateTimeFormat | null => {
+  if (!timeZone) return null;
   const formatOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'numeric',
@@ -33,10 +40,11 @@ const buildWallClockFormatter = (timeZone: string) => {
     hourCycle: 'h23',
   };
   try {
-    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone });
+    const formatter = new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone });
+    const resolvedTimeZone = formatter.resolvedOptions().timeZone;
+    return resolvedTimeZone && resolvedTimeZone !== 'Etc/Unknown' ? formatter : null;
   } catch {
-    // An invalid or unknown time zone falls back to UTC.
-    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone: 'UTC' });
+    return null;
   }
 };
 
@@ -59,12 +67,21 @@ const toWallClock = (time: number, formatter: Intl.DateTimeFormat) => {
  * the date-fns `addDays` of the fixed date input (FilterValueInput).
  * A wall clock time skipped by a daylight saving change (gap) gives the instant after the gap, moved forward by the
  * length of the gap; a wall clock time repeated by a change (overlap) gives its first occurrence. Both follow JavaScript
- * dates, hence date-fns. A value that is not a date is returned unchanged; an invalid time zone falls back to UTC.
+ * dates, hence date-fns. A value that is not a date is returned unchanged. A time zone the browser cannot use falls back,
+ * with a warning, to the date-fns `addDays` of the fixed date input itself (local calendar day of the browser), so that
+ * both stay aligned; UTC, the fallback of the back, would shift the day by the offset of the browser.
  */
 const addCalendarDayInTimeZone = (isoString: string, timeZone: string): string => {
   const time = new Date(isoString).getTime();
   if (Number.isNaN(time)) return isoString;
   const formatter = buildWallClockFormatter(timeZone);
+  if (!formatter) {
+    if (!warnedUnusableTimeZones.has(timeZone)) {
+      warnedUnusableTimeZones.add(timeZone);
+      console.warn(`Dashboard variables: unusable time zone "${timeZone}", date variables are shifted by one local calendar day instead`);
+    }
+    return addDays(new Date(isoString), 1).toISOString();
+  }
   const offsetAt = (instant: number) => toWallClock(instant, formatter) - instant;
   const targetWallClock = toWallClock(time, formatter) + ONE_DAY_MS;
   // Offsets of the zone on both sides of a daylight saving change that may happen around the target.

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { addDays } from 'date-fns';
 import cases from '../../../../opencti-graphql/tests/data/dashboard-variables/resolution-cases.json';
 import { buildDefaultVariableValues, isStrictIsoDate, isValidVariableValue, resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
 import type { DashboardVariable } from './dashboard-types';
@@ -142,5 +143,40 @@ describe('Dashboard variables resolution - strict ISO-8601 dates', () => {
     expect(isStrictIsoDate(value)).toBe(true);
     expect(isValidVariableValue(dateVariable(), value)).toBe(true);
     expect(buildDefaultVariableValues([dateVariable(value)])).toEqual(new Map([['v', value]]));
+  });
+});
+
+describe('Dashboard variables resolution - unusable time zone', () => {
+  const variableId = '44444444-4444-4444-8444-444444444444';
+  const lteFilter = { mode: 'and', filters: [{ key: 'created_at', values: [`$var:${variableId}`], operator: 'lte', mode: 'or' }], filterGroups: [] };
+  const shift = (value: string, timeZone: string) => {
+    const options = { dateVariableIds: new Set([variableId]), timeZone };
+    return resolveVariablesInFilterGroup(lteFilter, new Map([[variableId, value]]), options).filters.filters[0].values;
+  };
+
+  // Each case uses its own zone: a zone is reported once per page load.
+  it.each(['Nowhere/Unknown', 'Etc/Unknown'])('shifts by one local calendar day, like the fixed date input, in "%s", warning once', (timeZone) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const iso = '2026-03-28T23:00:00.000Z';
+      // Computed like the fixed date input, so that the expectation holds in the time zone of any machine.
+      const expected = addDays(new Date(iso), 1).toISOString();
+      expect(shift(iso, timeZone)).toEqual([expected]);
+      expect(shift(iso, timeZone)).toEqual([expected]);
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain(timeZone);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('returns a value that is not a date unchanged', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(shift('not a date', 'Nowhere/Else')).toEqual(['not a date']);
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
