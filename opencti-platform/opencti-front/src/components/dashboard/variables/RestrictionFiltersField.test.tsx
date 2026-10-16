@@ -19,6 +19,11 @@ vi.mock('@components/common/lists/Filters', () => ({
     );
   },
 }));
+// The filter keys come from the schema of the platform, absent from the test user context.
+vi.mock('../../../utils/filters/filtersUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/filters/filtersUtils')>()),
+  useAvailableFilterKeysForEntityTypes: () => ['objectLabel'],
+}));
 vi.mock('../../FilterIconButton', () => ({
   default: ({ filters }: { filters: FilterGroup }) => (
     <span data-testid="rule">{filters.filters.map((filter) => `${filter.key}=${filter.values.join()}`).join(';')}</span>
