@@ -38,7 +38,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
-import { fillCustomFieldsDefaultValues } from '../customField/custom-field-validator';
+import { fillCustomFieldsDefaultValues, transformCustomFieldValueAddInput } from '../customField/custom-field-validator';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -246,4 +246,12 @@ export const fillDefaultCustomFieldValues = async (context: AuthContext, user: A
     }
   }
   return input;
+};
+
+// Custom field values an entity will be created with, before its creation: the input values
+// (customFieldValues) in the stored format, then the default values of its entity type
+export const resolveCustomFieldValuesForCreation = async (context: AuthContext, user: AuthUser, input: any, entityType: string, entitySetting: any) => {
+  const customFieldValues = await transformCustomFieldValueAddInput(context, user, input.customFieldValues ?? [], entityType);
+  const inputWithDefaults = await fillDefaultCustomFieldValues(context, user, { ...input, custom_field_values: customFieldValues }, entitySetting);
+  return inputWithDefaults.custom_field_values ?? [];
 };
