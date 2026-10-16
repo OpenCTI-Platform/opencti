@@ -1634,16 +1634,21 @@ const getWorkflowBypassRequirements = (definitionData: WorkflowDefinitionRespons
   };
 };
 
-export const getWorkflowBypassStatuses = async (context: AuthContext, user: AuthUser, entityId: string) => {
-  const { entity, definitionData, currentState, scope, executionContext, executionUser } = await loadWorkflowBypass(context, user, entityId);
-  if (!definitionData) return [];
+// Statuses of the entity type and scope mapped to a state of the workflow, in workflow order
+const findWorkflowMappedStatuses = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope,
+  definitionData: WorkflowDefinitionResponse,
+): Promise<BasicWorkflowStatus[]> => {
   const stateIds = Array.from(extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]));
   if (stateIds.length === 0) return [];
-  const statuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+  const statuses = await fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], {
     filters: {
       mode: FilterMode.And,
       filters: [
-        { key: ['type'], values: [entity.entity_type] },
+        { key: ['type'], values: [entityType] },
         { key: ['scope'], values: [scope] },
         { key: ['template_id'], values: stateIds },
       ],
@@ -1653,9 +1658,26 @@ export const getWorkflowBypassStatuses = async (context: AuthContext, user: Auth
     orderMode: OrderingMode.Asc,
   });
   return statuses.filter((status) => status.entity_type === ENTITY_TYPE_STATUS
-    && status.type === entity.entity_type && status.scope === scope && stateIds.includes(status.template_id))
-    .sort((left, right) => left.order - right.order)
-    .map((status) => ({ status, ...getWorkflowBypassRequirements(definitionData, currentState, status.template_id) }));
+    && status.type === entityType && status.scope === scope && stateIds.includes(status.template_id))
+    .sort((left, right) => left.order - right.order);
+};
+
+export const getWorkflowBypassStatuses = async (context: AuthContext, user: AuthUser, entityId: string) => {
+  const { entity, definitionData, currentState, scope, executionContext, executionUser } = await loadWorkflowBypass(context, user, entityId);
+  if (!definitionData) return [];
+  const statuses = await findWorkflowMappedStatuses(executionContext, executionUser, entity.entity_type, scope, definitionData);
+  return statuses.map((status) => ({ status, ...getWorkflowBypassRequirements(definitionData, currentState, status.template_id) }));
+};
+
+/**
+ * Statuses of the published workflow of an entity type, for a mass status update. Exposed to
+ * knowledge editors, unlike `workflowDefinition`.
+ */
+export const getWorkflowStatuses = async (context: AuthContext, user: AuthUser, entityType: string): Promise<BasicWorkflowStatus[]> => {
+  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
+  const definitionData = await getWorkflowDefinition(context, user, entityType, false);
+  if (!definitionData) return [];
+  return findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, StatusScope.Global, definitionData);
 };
 
 const executeWorkflowBypass = async (

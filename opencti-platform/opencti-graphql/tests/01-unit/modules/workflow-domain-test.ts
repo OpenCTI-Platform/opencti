@@ -25,6 +25,7 @@ import {
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
   getMassWorkflowTransitions,
+  getWorkflowStatuses,
   initializeEntityWorkflow,
   isStatusTemplateUsedInWorkflows,
   isStatusUsedInWorkflow,
@@ -4491,5 +4492,48 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     expect(logApp.error).toHaveBeenCalledOnce();
     expect(lastUpdateInputs().map((input: any) => input.key)).toEqual(['history', 'pendingError']);
     expect(lastHistory()).toEqual([expect.objectContaining({ event: 'event_external_kept', status_id: 'status-reviewing-id', reason: 'sync_failed' })]);
+  });
+});
+
+describe('getWorkflowStatuses', () => {
+  const definition = {
+    initialState: 'new',
+    states: [{ statusId: 'new' }, { statusId: 'analyse' }],
+    transitions: [{ from: 'new', to: 'analyse', event: 'start' }],
+  };
+  const makeStatus = (id: string, template_id: string, order: number, scope = 'GLOBAL') => ({
+    id, entity_type: 'Status', type: 'Report', scope, template_id, order,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-def-id', published_version: { id: 'v1', content: JSON.stringify(definition) } });
+  });
+
+  it('should list the statuses of the published workflow, ordered', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      makeStatus('status-analyse', 'analyse', 1),
+      makeStatus('status-closed', 'closed', 2),
+      makeStatus('status-new', 'new', 0),
+      makeStatus('status-new-request', 'new', 0, 'REQUEST_ACCESS'),
+    ]);
+
+    const result = await getWorkflowStatuses(mockContext, mockUser, 'Report');
+
+    expect(result.map((status) => status.id)).toEqual(['status-new', 'status-analyse']);
+  });
+
+  it('should list nothing when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
+  });
+
+  it('should list nothing while ENTITIES_WORKFLOW is disabled', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+
+    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
   });
 });

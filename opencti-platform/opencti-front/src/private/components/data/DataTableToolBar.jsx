@@ -118,8 +118,10 @@ import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectP
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
+import { ItemStatusWorkflow } from '../common/workflow/WorkflowBypassStatus';
 import {
   buildTransitionOptions,
+  buildWorkflowStatusOptions,
   buildWorkflowTransitionAction,
   isFieldOptionDisabled,
   WORKFLOW_TRANSITION_FIELD,
@@ -344,6 +346,14 @@ const toolBarWorkflowQuery = graphql`
     $excludedIds: [String!]
   ) {
     workflowDefinitionPublished(entityType: $entityType)
+    workflowStatuses(entityType: $entityType) {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
     workflowMassTransitions(
       entityType: $entityType
       entityIds: $entityIds
@@ -480,6 +490,7 @@ class DataTableToolBar extends Component {
       workflowBypass: false,
       workflowLoading: false,
       transitionOptions: [],
+      workflowStatusOptions: [],
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
@@ -539,6 +550,7 @@ class DataTableToolBar extends Component {
       workflowBypass: false,
       workflowLoading: !!workflowEntityType,
       transitionOptions: [],
+      workflowStatusOptions: [],
     });
     if (workflowEntityType) {
       fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType, ...workflowTarget })
@@ -550,6 +562,7 @@ class DataTableToolBar extends Component {
             workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
             workflowLoading: false,
             transitionOptions: buildTransitionOptions(data?.workflowMassTransitions ?? []),
+            workflowStatusOptions: buildWorkflowStatusOptions(data?.workflowStatuses ?? []),
           });
         })
         .catch(() => {
@@ -1824,12 +1837,13 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
-            options={this.state.statuses}
+            // With a published workflow, only its statuses can be set, as in the single entity status change
+            options={this.state.workflowPublished ? this.state.workflowStatusOptions : this.state.statuses}
             onInputChange={(newValue, meta) => {
-              if (meta.cause === 'type') (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
+              if (meta.cause === 'type' && !this.state.workflowPublished) (this.searchStatuses.bind(this, i, selectedTypes))(newValue);
             }}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
-            renderOption={(option) => (
+            renderOption={(option) => (option.status ? <ItemStatusWorkflow status={option.status} /> : (
               <>
                 <div className={classes.icon}>
                   <Avatar
@@ -1845,11 +1859,11 @@ class DataTableToolBar extends Component {
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </>
-            )}
+            ))}
           >
             <ComboboxLabel>{t('Values')}</ComboboxLabel>
             <ComboboxField>
-              <ComboboxInput onFocus={() => (this.searchStatuses.bind(this, i, selectedTypes))('')} />
+              <ComboboxInput onFocus={() => !this.state.workflowPublished && (this.searchStatuses.bind(this, i, selectedTypes))('')} />
               <ComboboxControls>
                 <ComboboxTrigger />
               </ComboboxControls>
