@@ -57,7 +57,7 @@ The following sources come from other modules. Their rules are part of the timel
 | Indicator deployments | Deployments of the indicators of the case on security platforms, in the detection lane | Inactive: activates when the Indicator deployments module is installed |
 | Case Autopilot investigation runs | One **Investigation step** per run (from its start to its completion, still open while it runs) and one per goal plan action the run reached or that found something, with its step state (an action with a source still querying stays open), in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision | Inactive: activates when the Case Autopilot module is installed |
 
-While a module is not installed, the events it would produce are shown as inactive in the **Events** filter of the toolbar and in the timeline settings, with the module that activates them, and they cannot be picked.
+While a module is not installed, the events it would produce are shown as inactive in the **Events** filter of the toolbar and in the timeline settings, with the module that activates them, and they cannot be picked. The timeline settings list them after the other events.
 
 ### Precision
 

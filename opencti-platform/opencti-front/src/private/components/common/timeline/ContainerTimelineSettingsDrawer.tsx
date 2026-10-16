@@ -67,6 +67,8 @@ const ContainerTimelineSettingsDrawer = ({
   const helpStyle = { color: colors.textSecondary, margin: theme.spacing(0.75, 0, 1) };
   const [values, setValues] = useState<TimelineSettingsValues>(settings);
   const activeKinds = TIMELINE_KINDS.filter((kind) => !inactiveKinds[kind]);
+  // The events of the modules not installed come last, so that the rows that can be changed stay together
+  const listedKinds = [...activeKinds, ...TIMELINE_KINDS.filter((kind) => inactiveKinds[kind])];
   const [saving, setSaving] = useState(false);
   const [commit] = useApiMutation<ContainerTimelineMutationsSettingsMutation>(timelineSettingsUpdateMutation);
 
@@ -140,7 +142,7 @@ const ContainerTimelineSettingsDrawer = ({
           </Text>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
-          {TIMELINE_KINDS.map((kind) => (
+          {listedKinds.map((kind) => (
             <Checkbox
               key={kind}
               label={t_i18n(TIMELINE_KIND_LABELS[kind])}
