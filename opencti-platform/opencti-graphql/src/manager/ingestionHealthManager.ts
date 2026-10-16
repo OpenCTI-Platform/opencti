@@ -25,7 +25,7 @@ import {
   computeIngestionHealthPatch,
   HealthTransition,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
-import type { HealthChecksContext } from '../modules/ingestionHealth/ingestionHealth-registry';
+import type { GlobalIngestionHealthContext } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';
@@ -38,9 +38,6 @@ const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key
 const SCHEDULE_TIME = conf.get('ingestion_health_manager:interval') || 60000; // 1 minute
 
 type IngestionElement = BasicStoreEntity & IngestionHealthFields;
-
-// Computed once at the beginning of each period, shared by the evaluation of every ingestion
-type PeriodContext = Pick<HealthChecksContext, 'isExistingUser' | 'pingingConnectorsIds'>;
 
 interface IngestionSource<T extends IngestionElement> {
   entityType: string;
@@ -86,14 +83,18 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
   element: T,
-  periodContext: PeriodContext,
+  periodContext: GlobalIngestionHealthContext,
   runtimeData: RuntimeData,
 ) => {
   // Stopped on purpose: the status is stopped, the runtime is not monitored (no runtime data read, no runtime check),
   // the configuration checks still are
   const isStopped = isIngestionStopped(element);
-  const healthContext = { evaluatedAt: now(), runtimeData: isStopped ? {} : runtimeData, isStopped };
-  const checks = computeIngestionHealthChecks(element, { ...healthContext, ...periodContext });
+  const healthContext = {
+    ...periodContext,
+    runtimeData: isStopped ? {} : runtimeData,
+    isStopped,
+  };
+  const checks = computeIngestionHealthChecks(element, healthContext);
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
     return;
@@ -131,7 +132,6 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
 
   // check the ingestions sources
-  const periodContext: PeriodContext = { isExistingUser, pingingConnectorsIds };
   for (let sourceIndex = 0; sourceIndex < INGESTION_SOURCES.length; sourceIndex += 1) {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
@@ -139,6 +139,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     // Runtime data reported by the sources, one batch per source. Stopped elements are not monitored: nothing is read for them.
     // Without it a missing heartbeat could not be told from an unreachable storage: the source is skipped until the next period
     let runtimeDataByIngestion: Map<string, RuntimeData>;
+    const periodContext = { evaluatedAt: now(), isExistingUser, pingingConnectorsIds };
     try {
       const monitoredIds = elements.filter((element) => !isIngestionStopped(element)).map((element) => element.internal_id);
       runtimeDataByIngestion = await getRuntimeDataMany(monitoredIds);

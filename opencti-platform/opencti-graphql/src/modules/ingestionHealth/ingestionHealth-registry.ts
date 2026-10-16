@@ -19,25 +19,22 @@ export interface HealthCheckIngestor {
   user_id?: string | null;
 }
 
-// What decides whether a check applies, computed once at the beginning of each period of the ingestion health manager
-export interface HealthCheckEnablingContext extends Pick<HealthContext, 'isStopped'> {
-  // Connectors pinging continuously
-  pingingConnectorsIds: Set<string>;
-}
-
-// What the evaluation looks at, besides the configuration of the ingestion.
-// A new check needing a new fact adds a field here, not a parameter to every function.
-export interface HealthContext {
+// Computed once at the beginning of each period of the ingestion health manager, shared by the evaluation of every ingestion
+export interface GlobalIngestionHealthContext {
   // The moment of the evaluation: what is stale is judged against it
   evaluatedAt: string;
+  // Connectors pinging continuously
+  pingingConnectorsIds: Set<string>;
+  isExistingUser: (userId: string) => boolean;
+}
+
+// What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
+// A new check needing a new fact adds a field here, not a parameter to every function.
+export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
   // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
   runtimeData?: RuntimeData;
   // Stopped on purpose (by the composer, or a feed or sync switched off): wins over every check
   isStopped?: boolean;
-}
-
-export interface HealthChecksContext extends HealthContext, HealthCheckEnablingContext {
-  isExistingUser: (userId: string) => boolean;
 }
 
 // What describes one occurrence of a failing check, stored with it in Elasticsearch (health_check_metadata) and given back to message().
@@ -48,13 +45,13 @@ interface BaseHealthCheckDefinition {
   severity: IngestionHealthCheckSeverity;
   message: (metadata: HealthCheckMetadata) => string;
   // Whether the ingestor is evaluated for this check
-  isEnabled: (ingestor: HealthCheckIngestor, context: HealthCheckEnablingContext) => boolean;
+  isEnabled: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => boolean;
 }
 
 // getFailure returns null when the check passes, and the metadata of the failure when it fails ({} when there is nothing to tell)
 interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
   kind: IngestionHealthCheckKind.Configuration;
-  getFailure: (ingestor: HealthCheckIngestor, context: HealthChecksContext) => HealthCheckMetadata | null;
+  getFailure: (ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
 }
 
 // A runtime check is judged from a value reported by the sources: the name of its entry in RUNTIME_DATA.
@@ -64,7 +61,7 @@ type RuntimeCheckDefinition = {
   [T in RuntimeDataType]: BaseHealthCheckDefinition & {
     kind: IngestionHealthCheckKind.Runtime;
     runtimeData: T;
-    getFailure: (value: RuntimeDataValue<T> | undefined, context: HealthChecksContext) => HealthCheckMetadata | null;
+    getFailure: (value: RuntimeDataValue<T> | undefined, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
   };
 }[RuntimeDataType];
 
@@ -120,7 +117,7 @@ export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: str
 
 // Kind, severity and message describe the type of check, not one occurrence: they are never stored,
 // so changing them never requires rewriting Elasticsearch.
-export const HEALTH_CHECK_REGISTRY = {
+export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
   // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
@@ -149,5 +146,5 @@ export type HealthCheckCode = keyof typeof HEALTH_CHECK_REGISTRY;
 
 // A code read from storage can be unknown to this platform version
 export const getHealthCheckDefinition = (code: string): HealthCheckDefinition | undefined => {
-  return (HEALTH_CHECK_REGISTRY as Record<string, HealthCheckDefinition>)[code];
+  return (HEALTH_CHECK_REGISTRY)[code];
 };
