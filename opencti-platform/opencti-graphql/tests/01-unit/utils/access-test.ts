@@ -240,6 +240,12 @@ describe('User access entity testing', async () => {
     expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, false)).toEqual(true);
     expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, true)).toEqual(false);
   });
+  it('should apply organization check on STIX element with unknown type', () => {
+    // Raw stix custom object unknown to the platform schema: deliberately not a complete StixObject
+    const customObject = { id: 'x-acme-thing--f3e554eb-60f5-587c-9191-4f25e9ba9f32', spec_version: '2.1', type: 'x-acme-thing' } as unknown as StixObject;
+    expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, customObject, false)).toEqual(true);
+    expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, customObject, true)).toEqual(false);
+  });
   it('User in authorized members should access stored element', () => {
     const hasAccess = checkUserFilterStoreElements(testContext, user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(true);
