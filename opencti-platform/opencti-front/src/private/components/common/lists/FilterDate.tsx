@@ -74,7 +74,6 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 
   return (
     <DatePicker
-      enableAccessibleFieldDOMStructure={false}
       key={filterKey}
       label={filterLabel}
       value={buildDate(dateState || findFilterFromKey(inputValues, filterKey, operator)?.values[0])}

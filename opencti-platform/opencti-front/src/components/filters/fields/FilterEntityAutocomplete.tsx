@@ -140,8 +140,8 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       onChange={handleAutocompleteChange}
       disableCloseOnSelect
       isOptionEqualToValue={(option, val) => option.value === val.value}
-      renderTags={(tagValue, getTagProps) => tagValue.map((option, index) => {
-        const { key, onDelete, className } = getTagProps({ index });
+      renderValue={(tagValue, getItemProps) => tagValue.map((option, index) => {
+        const { key, onDelete, className } = getItemProps({ index });
         const isLockedValue = disabled && tagValue.length === 1;
         const chip = isLockedValue
           ? (
@@ -192,8 +192,9 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
         <TextField
           {...paramsInput}
           slotProps={{
+            ...paramsInput.slotProps,
             input: {
-              ...paramsInput.InputProps,
+              ...paramsInput.slotProps.input,
               // A real, focusable button instead of the native type="search"
               // clear icon, which keyboard users cannot reach.
               endAdornment: (
@@ -224,7 +225,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
                           additionalEntityTypes={filterKey === 'regardingOf' && subKey === 'id' ? ['External-Reference'] : undefined}
                         />
                       )
-                    : paramsInput.InputProps.endAdornment}
+                    : paramsInput.slotProps.input.endAdornment}
                 </>
               ),
             },

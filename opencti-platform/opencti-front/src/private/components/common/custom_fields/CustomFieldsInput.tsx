@@ -164,7 +164,6 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
   if (definition.field_type === 'date') {
     return (
       <DateTimePicker
-        enableAccessibleFieldDOMStructure={false}
         value={value ? new Date(String(value)) : null}
         onChange={(date) => {
           const nextVal = date ? date.toISOString() : '';
