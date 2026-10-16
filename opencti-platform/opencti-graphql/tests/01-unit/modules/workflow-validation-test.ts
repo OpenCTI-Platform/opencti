@@ -1250,4 +1250,52 @@ describe('Workflow Validation – transition closingReason field', () => {
     const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeDefinition('disabled')), 'DraftWorkspace');
     expect(result.some((e) => e.type === 'CLOSING_REASON_NOT_SUPPORTED')).toBe(false);
   });
+
+  describe('closing reason further in the workflow', () => {
+    const makeChain = (startMode: string, closeMode: string, extraTransitions: object[] = []) => ({
+      initialState: 'new',
+      states: [{ statusId: 'new' }, { statusId: 'in_progress' }, { statusId: 'closed' }, { statusId: 'archived' }],
+      transitions: [
+        { from: 'new', to: 'in_progress', event: 'start', closingReason: startMode },
+        { from: 'in_progress', to: 'closed', event: 'close', closingReason: closeMode },
+        { from: 'closed', to: 'archived', event: 'archive' },
+        ...extraTransitions,
+      ],
+    });
+
+    it.each(['allowed', 'required'])('should fail when a %s closing reason is followed by another one', async (mode) => {
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(makeChain(mode, 'required')), 'Incident');
+      expect(result).toEqual([expect.objectContaining({
+        type: 'CLOSING_REASON_NOT_LAST',
+        message: "Closing reason in transition 'start' is not allowed: transition 'close' further in the workflow already asks for one",
+      })]);
+    });
+
+    it('should accept states after the closing one, and a way back', async () => {
+      const definition = makeChain('disabled', 'required', [{ from: 'closed', to: 'in_progress', event: 'reopen' }]);
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result).toHaveLength(0);
+    });
+
+    it('should not count a closing reason asked on a way back', async () => {
+      const definition = makeChain('disabled', 'required', [{ from: 'closed', to: 'in_progress', event: 'reopen', closingReason: 'allowed' }]);
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result.map((e) => e.message)).toEqual([
+        "Closing reason in transition 'reopen' is not allowed: transition 'close' further in the workflow already asks for one",
+      ]);
+    });
+
+    it('should fail when a closing reason leads to any state', async () => {
+      const definition = {
+        initialState: 'new',
+        states: [{ statusId: 'new' }],
+        transitions: [{ from: 'new', to: '*', event: 'close', closingReason: 'allowed' }],
+      };
+      const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(result).toContainEqual(expect.objectContaining({
+        type: 'CLOSING_REASON_NOT_LAST',
+        message: "Closing reason in transition 'close' is not allowed on a transition to any state",
+      }));
+    });
+  });
 });
