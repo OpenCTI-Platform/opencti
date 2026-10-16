@@ -101,8 +101,8 @@ testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
-// + 2 upserts in observedData-domain-test + 5 updates by the runs of the hunt tests
-testUpdatedCounter['observed-data'] = 8;
+// + 2 upserts in observedData-domain-test + 3 updates by the runs of the hunt tests
+testUpdatedCounter['observed-data'] = 6;
 testUpdatedCounter.opinion = 6;
 testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
