@@ -67,7 +67,7 @@ When the platform holds no hunt yet, **Defense > Hunts** explains what a hunt do
 
 - **Hunt for indicators**: paste values or pick indicators, choose where and how far back, and the hunt starts with its first run;
 - **Hunt with a detection rule (Sigma)**: paste a Sigma rule, validated as you type, then the same two steps;
-- **Plan a hunt with AI or import a hunt pack**: the AI planner (Enterprise Edition, XTM One) or a hunt pack file or the XTM Hub.
+- **Plan a hunt with AI or import a hunt pack**: the AI planner (Enterprise Edition, XTM One) or a hunt pack file.
 
 The checklist **Before your first hunt** shows the live state of each prerequisite with its next action: the hunt connectors (none deployed, deployed but not answering, or active and how many look up indicators), XTM One (needed to plan a hunt with AI) and the Enterprise Edition (needed for scheduled and standing hunts and AI planning; manual hunts work without it). It stays above the list of hunts until every prerequisite is met.
 
@@ -282,7 +282,7 @@ Through the API, `huntAssist` takes the fields to write (none for the whole plan
 
 ## Hunt packs
 
-Hunts can be shared as **hunt packs**: STIX 2.1 bundles carrying the hunts through a dedicated extension, together with their techniques and targets. The extension definition in the bundle points to the [JSON Schema of the hunt object](https://raw.githubusercontent.com/OpenCTI-Platform/opencti/master/opencti-platform/opencti-graphql/config/schema/hunt-extension.json), so that other STIX tools can validate it. Export one or several hunts from the hunts list, import a pack from the same list or deploy it from the XTM Hub. Selecting all the hunts of the list exports every hunt matching its filters and search, not only the loaded page; a pack holds at most 200 hunts, so a larger selection is refused until it is narrowed.
+Hunts can be shared as **hunt packs**: STIX 2.1 bundles carrying the hunts through a dedicated extension, together with their techniques and targets. The extension definition in the bundle points to the [JSON Schema of the hunt object](https://raw.githubusercontent.com/OpenCTI-Platform/opencti/master/opencti-platform/opencti-graphql/config/schema/hunt-extension.json), so that other STIX tools can validate it. Export one or several hunts from the hunts list and import a pack file from the same list. Selecting all the hunts of the list exports every hunt matching its filters and search, not only the loaded page; a pack holds at most 200 hunts, so a larger selection is refused until it is narrowed.
 
 Importing a pack creates the missing hunts and updates the existing ones. A hunt is identified by its name: a pack hunt with the name of a hunt of the platform updates that hunt, whatever STIX ID the pack gives it. The local run settings of an existing hunt (status, schedule, scope, trigger filters, PIR activation) are kept: a pack update changes the logic, never how and where your hunts run. Hunts of a pack that are new to the platform are created as drafts. Every hunt of the pack is checked before the first one is written, and the pack is refused as a whole, with nothing imported, when it holds an invalid hunt (for instance a hunt without a name, or a single value where a list is expected), two hunts with the same name, or a hunt named like a hunt of the platform you cannot read. A pack hunt carries at most 50 labels of at most 256 characters each, and a pack at most 500 distinct labels.
 

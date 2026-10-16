@@ -332,7 +332,7 @@ const Hunts = () => {
                   </Security>,
                   <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
                   <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
-                    <HuntPackImportButton paginationOptions={queryPaginationOptions} showHubLink={false} />
+                    <HuntPackImportButton paginationOptions={queryPaginationOptions} />
                   </Security>,
                 ]}
                 createButton={(

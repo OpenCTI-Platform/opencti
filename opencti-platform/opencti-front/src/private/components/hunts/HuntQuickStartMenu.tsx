@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { AutoAwesomeOutlined, CloudDownloadOutlined, PolicyOutlined, RuleOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined, PolicyOutlined, RuleOutlined } from '@mui/icons-material';
 import { Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import HuntGuidedCreation, { type HuntGuidedKind } from './HuntGuidedCreation';
 import HuntPlanDialog from './HuntPlanDialog';
-import { useHuntPackHubUrl } from './HuntPack';
 import useHuntAI from './useHuntAI';
 
 /** Why planning a hunt with AI is not available here, or null when it is. */
@@ -20,14 +19,10 @@ export const useHuntPlanDisabledReason = (): string | null => {
   return null;
 };
 
-/**
- * The quick starts of the first-use page, kept in the toolbar of the list of hunts once the platform holds hunts.
- * The XTM Hub link lives here: the toolbar of the list has no room for it next to the create button.
- */
+/** The quick starts of the first-use page, kept in the toolbar of the list of hunts once the platform holds hunts. */
 const HuntQuickStartMenu = () => {
   const { t_i18n } = useFormatter();
   const planDisabledReason = useHuntPlanDisabledReason();
-  const hubUrl = useHuntPackHubUrl();
   const [guided, setGuided] = useState<HuntGuidedKind | null>(null);
   const [planning, setPlanning] = useState(false);
   return (
@@ -57,15 +52,6 @@ const HuntQuickStartMenu = () => {
           ) : (
             <MenuItem startIcon={<AutoAwesomeOutlined fontSize="small" />} onSelect={() => setPlanning(true)} data-testid="hunts-quick-start-plan">
               {t_i18n('Plan a hunt with AI')}
-            </MenuItem>
-          )}
-          {hubUrl && (
-            <MenuItem
-              startIcon={<CloudDownloadOutlined fontSize="small" />}
-              onSelect={() => window.open(hubUrl, '_blank', 'noopener,noreferrer')}
-              data-testid="hunts-quick-start-hub"
-            >
-              {t_i18n('Import from XTM Hub')}
             </MenuItem>
           )}
         </MenuContent>
