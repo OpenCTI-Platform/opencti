@@ -11,7 +11,7 @@ PING_RESULT = {
 CONNECTOR_INFO = {"run_and_terminate": False, "buffering": False}
 CONNECTOR_INFO_WITH_ERRORS = {
     **CONNECTOR_INFO,
-    "errors": [{"code": "API_UNREACHABLE", "message": "", "criticity": "HIGH"}],
+    "errors": [{"code": "API_UNREACHABLE", "message": "", "criticity": 2}],
 }
 
 

@@ -6,7 +6,6 @@ from .api.opencti_api_connector import OpenCTIApiConnector
 from .api.opencti_api_work import OpenCTIApiWork
 from .connector.opencti_connector import ConnectorType, OpenCTIConnector
 from .connector.opencti_connector_helper import (
-    ConnectorInfoErrorCriticity,
     OpenCTIConnectorHelper,
     get_config_variable,
 )
@@ -117,7 +116,6 @@ __all__ = [
     "CaseRft",
     "Channel",
     "Task",
-    "ConnectorInfoErrorCriticity",
     "ConnectorType",
     "CourseOfAction",
     "DataComponent",
