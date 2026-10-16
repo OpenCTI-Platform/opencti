@@ -83,7 +83,7 @@ describe('updateLocalAuth - lockout policy', () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
     mockStoredSettings({ local_auth_lockout_max_duration: 30 });
     await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_duration: 31 }))
-      .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
+      .rejects.toThrowError('Lockout duration must be lower than or equal to lockout max duration');
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
@@ -92,7 +92,7 @@ describe('updateLocalAuth - lockout policy', () => {
     mockCachedSettings({ local_auth_lockout_max_duration: 180 });
     mockStoredSettings({ local_auth_lockout_max_duration: 30 });
     await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_duration: 31 }))
-      .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
+      .rejects.toThrowError('Lockout duration must be lower than or equal to lockout max duration');
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
@@ -121,14 +121,14 @@ describe('updateLocalAuth - lockout policy', () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
     mockStoredSettings({ local_auth_lockout_duration: 500, local_auth_lockout_max_duration: 120 });
     await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_enabled: true }))
-      .rejects.toThrowError('Lockout duration must be lower or equal to lockout max duration');
+      .rejects.toThrowError('Lockout duration must be lower than or equal to lockout max duration');
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['max attempts', { local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT + 1 }, `Lockout max attempts must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`],
-    ['window', { local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT + 1 }, `Lockout window must be lower or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`],
-    ['max duration', { local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT + 1 }, `Lockout max duration must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`],
+    ['max attempts', { local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT + 1 }, `Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`],
+    ['window', { local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT + 1 }, `Lockout window must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`],
+    ['max duration', { local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT + 1 }, `Lockout max duration must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`],
   ])('should reject a %s above its upper bound', async (_, lockoutInput, expectedMessage) => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
     await expect(updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCKOUT_INPUT, ...lockoutInput }))
@@ -147,6 +147,12 @@ describe('updateLocalAuth - lockout policy', () => {
     };
     await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...boundInput });
     expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, ...boundInput });
+  });
+
+  it('should accept the default policy, which must stay within the upper bounds', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCAL_AUTH_LOCKOUT_DEFAULTS, local_auth_lockout_enabled: true });
+    expect(patchAttribute).toHaveBeenCalled();
   });
 });
 
