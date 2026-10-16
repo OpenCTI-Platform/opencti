@@ -321,7 +321,7 @@ export const sendEventWithFilteredObjectRefs = async (
   const isObjectRefsPatched = Array.isArray(eventContext?.patch) && Array.isArray(eventContext?.reverse_patch)
     && eventContext.reverse_patch.some((operation) => operation.path === '/object_refs' || operation.path.startsWith('/object_refs/'));
   const previous = isObjectRefsPatched ? jsonpatch.applyPatch(structuredClone(data), eventContext.reverse_patch).newDocument : undefined;
-  const objectsRefs = [...new Set([...(data.object_refs ?? []), ...(previous?.object_refs ?? [])])];
+  const objectsRefs = previous?.object_refs ? [...new Set([...(data.object_refs ?? []), ...previous.object_refs])] : (data.object_refs ?? []);
   if (objectsRefs.length > 0) {
     const objectsRefsNotFoundInCache = objectsRefs.filter((ref) => !cache.has(ref));
     const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache.length > 0
