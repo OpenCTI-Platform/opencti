@@ -88,7 +88,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await page.keyboard.press('Escape');
     await expect(lanesFilter).toHaveValue('Lanes (1)');
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
-    await page.getByRole('combobox', { name: 'Events' }).click();
+    await page.getByRole('combobox', { name: 'Events', exact: true }).click();
     // Every event is a named, checkable row
     await expect(page.getByRole('option', { name: 'Malware seen', exact: true })).toHaveAttribute('aria-selected', 'false');
     await capture('filters');
