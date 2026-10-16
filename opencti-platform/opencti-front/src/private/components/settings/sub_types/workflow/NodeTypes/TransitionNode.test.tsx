@@ -106,11 +106,11 @@ describe('TransitionNode – direction', () => {
 // Hover highlight
 // ---------------------------------------------------------------------------
 describe('TransitionNode – highlight', () => {
-  it('draws a 2px border in the accent colour and thickens its label while highlighted', () => {
+  it('draws a 1.5px border in the accent colour and thickens its label while highlighted', () => {
     const { container } = testRender(<TransitionNode {...makeProps({ highlighted: true })} />);
     const hexagon = container.querySelector('path')!;
     expect(hexagon.getAttribute('stroke')).toBe('#1976d2');
-    expect(hexagon.getAttribute('stroke-width')).toBe('2');
+    expect(hexagon.getAttribute('stroke-width')).toBe('1.5');
     expect(screen.getByText('Approve').parentElement!.style.textShadow).not.toBe('');
   });
 

@@ -48,7 +48,7 @@ describe('StatusNode', () => {
     render('#ff9800', true);
     const box = chipBox();
     expect(box.style.border).toBe('1px solid rgb(255, 152, 0)');
-    expect(box.style.boxShadow).toBe('0 0 0 1px #ff9800');
+    expect(box.style.boxShadow).toBe('0 0 0 0.5px #ff9800');
     expect(box.style.textShadow).not.toBe('');
   });
 
