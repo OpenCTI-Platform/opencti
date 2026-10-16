@@ -8,6 +8,17 @@ interface WorkflowActionInput {
   values: { label: string; value: string }[];
 }
 
+interface MassTransition {
+  event: string;
+  toState: string;
+  toStatus?: { template?: { name: string } | null } | null;
+}
+
+export const buildTransitionOptions = (transitions: readonly MassTransition[]) => transitions.map((transition) => ({
+  label: `${transition.event} → ${transition.toStatus?.template?.name ?? transition.toState}`,
+  value: transition.event,
+}));
+
 export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => ({
   type: input.type,
   context: {
