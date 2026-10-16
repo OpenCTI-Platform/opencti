@@ -147,12 +147,12 @@ export const computeIngestionHealthPatch = (
   const { evaluatedAt } = context;
   const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks, context);
-  const nextChecks = normalizeHealthChecks(checks);
-  const isStatusChanged = currentHealth?.status !== status;
-  const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
   if (!status) {
     return currentHealth ? { ingestion_health: null } : null;
   }
+  const nextChecks = normalizeHealthChecks(checks);
+  const isStatusChanged = currentHealth?.status !== status;
+  const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
   if (!isStatusChanged && !isChecksChanged) {
     return null;
   }
