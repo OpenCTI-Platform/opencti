@@ -127,8 +127,8 @@ test.describe.serial('Threat Advisory happy flow', () => {
       // The "Update" button lives on the draft's Overview tab, not Containers.
       await page.goto(`/dashboard/data/import/draft/${draftId}/overview`, { waitUntil: 'domcontentloaded' });
       await overview.assertCanEdit();
-      await expect(toolbar.getTransitionsActions().getByText('Reject')).toBeVisible();
-      await expect(toolbar.getTransitionsActions().getByText('Send to OrgC for review')).toBeVisible();
+      await toolbar.assertTransitionVisible('Reject');
+      await toolbar.assertTransitionVisible('Send to OrgC for review');
     });
 
     await test.step('Step 8: ManagerOrgA moves the draft to "OrgC analyst review"', async () => {
@@ -143,8 +143,8 @@ test.describe.serial('Threat Advisory happy flow', () => {
 
     await test.step('Step 10: AnalystOrgC sees "SEND TO ORGC MANAGER" + REJECT', async () => {
       await openDraft(USERS.analystOrgC);
-      await expect(toolbar.getTransitionsActions().getByText('SEND TO ORGC MANAGER')).toBeVisible();
-      await expect(toolbar.getTransitionsActions().getByText('Reject')).toBeVisible();
+      await toolbar.assertTransitionVisible('SEND TO ORGC MANAGER');
+      await toolbar.assertTransitionVisible('Reject');
     });
 
     await test.step('Step 11: AnalystOrgC moves the draft to "OrgC manager review"', async () => {
@@ -159,8 +159,8 @@ test.describe.serial('Threat Advisory happy flow', () => {
 
     await test.step('Step 13: ManagerOrgC sees "SHARE TO ORG" + REJECT', async () => {
       await openDraft(USERS.managerOrgC);
-      await expect(toolbar.getTransitionsActions().getByText('SHARE TO ORG')).toBeVisible();
-      await expect(toolbar.getTransitionsActions().getByText('Reject')).toBeVisible();
+      await toolbar.assertTransitionVisible('SHARE TO ORG');
+      await toolbar.assertTransitionVisible('Reject');
     });
 
     await test.step('Steps 14-15: ManagerOrgC shares to OrgB, task succeeds, status becomes "Ready for validation"', async () => {

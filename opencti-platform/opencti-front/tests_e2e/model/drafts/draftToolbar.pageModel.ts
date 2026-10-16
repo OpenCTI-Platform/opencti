@@ -42,8 +42,9 @@ export default class DraftToolbarPageModel {
   }
 
   /**
-   * Clicks a transition by its exact event name. Handles both UI variants: direct buttons
-   * (< 3 allowed transitions) and the "Next status" dropdown menu (>= 3 allowed transitions).
+   * Clicks a transition by its exact event name. Handles both UI variants: a direct button
+   * (exactly 1 allowed transition) and the "Next status" dropdown menu (2 or more, per
+   * `WorkflowTransitions.tsx`'s `allowedTransitions.length > 1` check).
    */
   async openTransition(eventName: string) {
     const actions = this.getTransitionsActions();
@@ -57,6 +58,24 @@ export default class DraftToolbarPageModel {
     }
     await nextStatusButton.click();
     return this.page.getByRole('menuitem', { name: eventName, exact: true }).click();
+  }
+
+  /**
+   * Asserts a transition is available without triggering it. Same two UI variants as
+   * `openTransition`: a visible direct button, or a menu item inside the (closed) "Next
+   * status" dropdown - opened, checked, then closed again to leave the toolbar as found.
+   */
+  async assertTransitionVisible(eventName: string) {
+    const actions = this.getTransitionsActions();
+    const directButton = actions.getByRole('button', { name: eventName, exact: true });
+    const nextStatusButton = actions.getByRole('button', { name: 'Next status' });
+    await expect(directButton.or(nextStatusButton)).toBeVisible();
+    if (await directButton.count() > 0) {
+      return;
+    }
+    await nextStatusButton.click();
+    await expect(this.page.getByRole('menuitem', { name: eventName, exact: true })).toBeVisible();
+    await this.page.keyboard.press('Escape');
   }
 
   /**
