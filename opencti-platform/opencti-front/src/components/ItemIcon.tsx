@@ -72,7 +72,7 @@ import {
   VisibilityOutlined,
   WebAssetOutlined,
   WifiTetheringOutlined,
-  WorkOutline,
+  WorkOutlined,
   WorkspacesOutlined,
 } from '@mui/icons-material';
 import {
@@ -350,7 +350,7 @@ const iconSelector = (
     case 'statustemplate':
       return <FactCheckOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'case':
-      return <WorkOutline style={style} fontSize={fontSize} role="img" aria-label={type} />;
+      return <WorkOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'case-incident':
       return (
         <BriefcaseEyeOutline style={style} fontSize={fontSize} role="img" aria-label={type} />
