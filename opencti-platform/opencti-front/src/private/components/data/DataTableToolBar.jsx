@@ -118,7 +118,13 @@ import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectP
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
-import { buildTransitionOptions, buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD, withWorkflowBypassOptions } from '../common/workflow/workflowMassActions';
+import {
+  buildTransitionOptions,
+  buildWorkflowTransitionAction,
+  isFieldOptionDisabled,
+  WORKFLOW_TRANSITION_FIELD,
+  withWorkflowBypassOptions,
+} from '../common/workflow/workflowMassActions';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -1162,10 +1168,6 @@ class DataTableToolBar extends Component {
 
     const sortedOptions = options.sort((a, b) => a.label.localeCompare(b.label));
 
-    const toBackendField = (field) => (field === WORKFLOW_TRANSITION_FIELD ? 'x_opencti_workflow_id' : field);
-    const selectedFields = actionsInputs.map((a) => toBackendField(a.field)).filter(Boolean);
-    const replaceSelectedFields = actionsInputs.filter((a) => a.type === 'REPLACE').map((a) => toBackendField(a.field)).filter(Boolean);
-
     return (
       <Select
         disabled={disabled}
@@ -1181,8 +1183,7 @@ class DataTableToolBar extends Component {
             sortedOptions.map(
               (n) => {
               // disable some fields to prevent making several actions on the same key if one of them is a replace
-                const disableField = (replaceSelectedFields.includes(toBackendField(n.value)) && actionsInputs[i]?.field !== n.value)
-                  || (selectedFields.includes(toBackendField(n.value)) && actionsInputs[i]?.type === 'REPLACE');
+                const disableField = isFieldOptionDisabled(actionsInputs, i, n.value);
                 return (
                   <SelectItem
                     key={n.value}

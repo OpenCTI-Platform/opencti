@@ -34,3 +34,21 @@ export const withWorkflowBypassOptions = (options?: { applyTransitionActions?: b
   ...options,
   applyTransitionActions: options?.applyTransitionActions ?? true,
 });
+
+interface ActionInput {
+  type?: string;
+  field?: string;
+}
+
+const toBackendField = (field?: string) => (field === WORKFLOW_TRANSITION_FIELD ? WORKFLOW_STATUS_FIELD : field);
+
+// A field cannot get several actions when one of them is a replace. Status and Workflow transition
+// write the same field, so they exclude each other across rows, but a row can swap between them.
+export const isFieldOptionDisabled = (actionsInputs: ActionInput[], index: number, field: string) => {
+  const backendField = toBackendField(field);
+  if (toBackendField(actionsInputs[index]?.field) === backendField) return false;
+  const otherInputs = actionsInputs.filter((_, inputIndex) => inputIndex !== index);
+  const isReplacedElsewhere = otherInputs.some((input) => input.type === 'REPLACE' && toBackendField(input.field) === backendField);
+  const isUsedElsewhere = otherInputs.some((input) => toBackendField(input.field) === backendField);
+  return isReplacedElsewhere || (isUsedElsewhere && actionsInputs[index]?.type === 'REPLACE');
+};
