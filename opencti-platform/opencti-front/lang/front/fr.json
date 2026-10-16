@@ -4899,6 +4899,7 @@
   "The dashboard has been duplicated. You can manage it": "Le tableau de bord a été dupliqué. Vous pouvez l'administrer",
   "the dedicated page": "la page dédiée",
   "The default groups are:": "Les groupes par défaut sont les suivants",
+  "The default value of this variable is not valid: the widgets that use it show no data": "La valeur par défaut de cette variable n'est pas valide : les widgets qui l'utilisent n'affichent aucune donnée",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "Le déploiement de connecteurs à partir de ce catalogue nécessite une licence Enterprise Edition.",
   "The design {name} is currently set as default. Do you want to replace it?": "Le thème {name} est actuellement défini comme thème par défaut. Souhaitez-vous le remplacer ?",
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "La déconnexion est toujours en cours. La fermeture de cette boîte de dialogue mettra fin à la déconnexion. Voulez-vous vraiment fermer cette boîte de dialogue ?",

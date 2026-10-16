@@ -4899,6 +4899,7 @@
   "The dashboard has been duplicated. You can manage it": "仪表板已被复制。你可以管理它",
   "the dedicated page": "专用页面",
   "The default groups are:": "默认组别为",
+  "The default value of this variable is not valid: the widgets that use it show no data": "此变量的默认值无效：使用该变量的小工具不显示任何数据",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "部署此目录中的连接器需要企业版许可证。",
   "The design {name} is currently set as default. Do you want to replace it?": "当前默认设计为 {name}。您要替换它吗？",
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "断开连接过程仍在进行中。关闭此对话框将终止断开连接。您确定要关闭吗？",

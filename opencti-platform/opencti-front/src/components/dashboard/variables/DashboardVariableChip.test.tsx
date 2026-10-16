@@ -102,6 +102,38 @@ describe('DashboardVariableChip', () => {
     expect(screen.queryByText('Not used by any widget')).not.toBeInTheDocument();
   });
 
+  it('warns, stays clickable and explains on hover when the default value is not valid', async () => {
+    const { user } = renderChip({ hasInvalidDefault: true });
+    const chip = screen.getByTestId('dashboard-variable-chip-Sector');
+    expect(chip).toHaveAttribute('data-invalid-default', 'true');
+    const button = within(chip).getByRole('button', { name: 'Sector : Energy' });
+    expect(button).toBeEnabled();
+    // Distinct from the critical state of a Restricted value.
+    expect(button.className).not.toMatch(/feedback-error/);
+    await user.hover(button);
+    expect((await screen.findAllByText('The default value of this variable is not valid: the widgets that use it show no data')).length).toBeGreaterThan(0);
+    await user.click(button);
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
+
+  it('shows the warning rather than the unused explanation when both apply', async () => {
+    const { user } = renderChip({ hasInvalidDefault: true, usedInWidgetIds: [] });
+    const chip = screen.getByTestId('dashboard-variable-chip-Sector');
+    expect(chip).toHaveAttribute('data-invalid-default', 'true');
+    expect(chip).toHaveAttribute('data-unused', 'true');
+    await user.hover(within(chip).getByRole('button', { name: 'Sector : Energy' }));
+    expect((await screen.findAllByText(/The default value of this variable is not valid/)).length).toBeGreaterThan(0);
+    expect(screen.queryByText('Not used by any widget')).not.toBeInTheDocument();
+  });
+
+  it('shows no warning when the default value is valid', async () => {
+    const { user } = renderChip();
+    const chip = screen.getByTestId('dashboard-variable-chip-Sector');
+    expect(chip).not.toHaveAttribute('data-invalid-default');
+    await user.hover(within(chip).getByRole('button', { name: 'Sector : Energy' }));
+    expect(screen.queryByText(/The default value of this variable is not valid/)).not.toBeInTheDocument();
+  });
+
   it('turns critical and reads Restricted when the value cannot be resolved', () => {
     mockLabels.current = (values) => ({ labels: new Map(values.map((value) => [value, 'Restricted'])), restricted: new Set(values) });
     renderChip({ variable: org, value: 'unknown-id' });

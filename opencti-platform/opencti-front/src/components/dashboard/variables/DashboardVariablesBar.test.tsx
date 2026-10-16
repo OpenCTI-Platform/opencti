@@ -64,6 +64,14 @@ describe('DashboardVariablesBar', () => {
     expect(screen.getByTestId('dashboard-variable-chip-Country')).toHaveAttribute('data-unused', 'true');
   });
 
+  it('warns on the chip of a variable whose default value is not valid, and only on that one', () => {
+    const quantity: DashboardVariable = { id: 'var-3', name: 'Quantity', type: 'numeric', restriction: { mode: 'none' }, defaultValue: ' 42' };
+    renderBar({ variables: [sector, country, quantity] });
+    expect(screen.getByTestId('dashboard-variable-chip-Quantity')).toHaveAttribute('data-invalid-default', 'true');
+    expect(screen.getByTestId('dashboard-variable-chip-Sector')).not.toHaveAttribute('data-invalid-default');
+    expect(screen.getByTestId('dashboard-variable-chip-Country')).not.toHaveAttribute('data-invalid-default');
+  });
+
   it('calls onSetValue with the variable id and the new value, and nothing else', async () => {
     const { user, onSetValue, onReset, onSetAsDefaults } = renderBar();
     await user.click(screen.getByRole('button', { name: 'Country : Not set' }));

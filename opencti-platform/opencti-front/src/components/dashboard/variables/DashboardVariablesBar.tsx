@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Stack from '@mui/material/Stack';
 import { AddOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardVariable } from '../dashboard-types';
+import { getInvalidDefaultVariableIds } from '../dashboardVariableDefaults';
 import DashboardVariableChip from './DashboardVariableChip';
 import { useVariablesValueLabels } from './useVariableValueLabels';
 
@@ -55,6 +56,8 @@ const DashboardVariablesBar = ({
   // One query for the ids of all the chips, rather than one per chip.
   const valueLabels = useVariablesValueLabels(variables.map((variable) => ({ id: variable.id, variable, value: values.get(variable.id) })));
 
+  const invalidDefaultIds = useMemo(() => getInvalidDefaultVariableIds(variables), [variables]);
+
   if (variables.length === 0 && !onCreate) return null;
 
   const isModified = isModifiedFromDefaults(variables, values, defaults);
@@ -83,6 +86,7 @@ const DashboardVariablesBar = ({
           value={values.get(variable.id)}
           valueLabels={valueLabels.get(variable.id)}
           disabled={isSubmitting}
+          hasInvalidDefault={invalidDefaultIds.has(variable.id)}
           usedInWidgetIds={usedInWidgetIdsByVariable.get(variable.id) ?? []}
           onChange={(value) => onSetValue(variable.id, value)}
           onEdit={onEdit}

@@ -4899,6 +4899,7 @@
   "The dashboard has been duplicated. You can manage it": "The dashboard has been duplicated. You can manage it",
   "the dedicated page": "the dedicated page",
   "The default groups are:": "The default groups are:",
+  "The default value of this variable is not valid: the widgets that use it show no data": "The default value of this variable is not valid: the widgets that use it show no data",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "The deployment of connectors from this catalog requires an Enterprise Edition license.",
   "The design {name} is currently set as default. Do you want to replace it?": "The design {name} is currently set as default. Do you want to replace it?",
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?",

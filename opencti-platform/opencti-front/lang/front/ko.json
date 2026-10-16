@@ -4899,6 +4899,7 @@
   "The dashboard has been duplicated. You can manage it": "대시보드가 복제되었습니다. 관리할 수 있습니다",
   "the dedicated page": "전용 페이지",
   "The default groups are:": "기본 그룹은 다음과 같습니다:",
+  "The default value of this variable is not valid: the widgets that use it show no data": "이 변수의 기본값이 유효하지 않습니다. 이 변수를 사용하는 위젯에는 데이터가 표시되지 않습니다",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "이 카탈로그에서 커넥터를 배포하려면 Enterprise Edition 라이선스가 필요합니다.",
   "The design {name} is currently set as default. Do you want to replace it?": "현재 {name} 디자인이 기본으로 설정되어 있습니다. 이 디자인을 변경하시겠습니까?",
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "연결 해제 중입니다. 이 대화 상자를 닫으면 연결 해제가 중단됩니다. 정말 닫으시겠습니까?",

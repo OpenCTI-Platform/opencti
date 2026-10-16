@@ -18,6 +18,8 @@ export interface DashboardVariableChipProps {
   // Effective value (undefined when the variable has neither a value nor a default).
   value: string | undefined;
   usedInWidgetIds: readonly string[];
+  // The default of the variable is ignored (invalid for its type): the widgets using it have no value.
+  hasInvalidDefault?: boolean;
   // The labels of the current value, when the bar already resolved those of all its chips at once.
   // The chip resolves its own value when it is not provided.
   valueLabels?: VariableValueLabels;
@@ -36,7 +38,7 @@ const inputKey = (variable: DashboardVariable) => [
   'killChainName' in variable ? variable.killChainName : '',
 ].join('|');
 
-const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, disabled = false, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
+const DashboardVariableChip = ({ variable, value, usedInWidgetIds, hasInvalidDefault = false, valueLabels, disabled = false, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   // Nothing to resolve (so no query) when the bar already did.
@@ -59,14 +61,24 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
     action(variable);
   };
 
+  // Restricted is the stronger state: the value itself cannot be shown.
+  let severity: 'critical' | 'medium' | 'neutral' = 'neutral';
+  if (isRestricted) severity = 'critical';
+  else if (hasInvalidDefault) severity = 'medium';
+
   const chip = (
     <Chip
       label={`${variable.name} : ${valueLabel}`}
-      severity={isRestricted ? 'critical' : 'neutral'}
+      severity={severity}
       disabled={disabled}
       onClick={(event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget)}
     />
   );
+
+  // The warning wins over the muted state: it is the one the owner can act on.
+  let tooltipText: string | undefined;
+  if (hasInvalidDefault) tooltipText = t_i18n('The default value of this variable is not valid: the widgets that use it show no data');
+  else if (isUnused) tooltipText = t_i18n('Not used by any widget');
 
   return (
     <Stack
@@ -74,14 +86,15 @@ const DashboardVariableChip = ({ variable, value, usedInWidgetIds, valueLabels, 
       alignItems="center"
       data-testid={`dashboard-variable-chip-${variable.name}`}
       data-unused={isUnused}
+      data-invalid-default={hasInvalidDefault ? 'true' : undefined}
       style={isUnused ? { opacity: UNUSED_OPACITY } : undefined}
     >
-      {isUnused ? (
+      {tooltipText ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <span>{chip}</span>
           </TooltipTrigger>
-          <TooltipContent>{t_i18n('Not used by any widget')}</TooltipContent>
+          <TooltipContent>{tooltipText}</TooltipContent>
         </Tooltip>
       ) : chip}
       <Popover

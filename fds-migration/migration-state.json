@@ -542,7 +542,7 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables: the chip of a variable, `Name : value`, clickable to open its value input; severity critical when the value cannot be resolved (Restricted), neutral otherwise.",
+      "reason": "dashboard variables: the chip of a variable, `Name : value`, clickable to open its value input; severity critical when the value cannot be resolved (Restricted), medium when the default value of the variable is not valid (warning), neutral otherwise.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
       ]
@@ -553,7 +553,7 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables: explains `Not used by any widget` on the muted chip of a variable no widget references.",
+      "reason": "dashboard variables: explains `Not used by any widget` on the muted chip of a variable no widget references, or that its default value is not valid (the warning wins).",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
       ]

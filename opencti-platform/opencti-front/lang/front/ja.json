@@ -4899,6 +4899,7 @@
   "The dashboard has been duplicated. You can manage it": "ダッシュボードが複製されました。管理できるよ",
   "the dedicated page": "専用ページ",
   "The default groups are:": "デフォルトのグループは以下の通り：",
+  "The default value of this variable is not valid: the widgets that use it show no data": "この変数のデフォルト値が無効です。この変数を使用するウィジェットにはデータが表示されません",
   "The deployment of connectors from this catalog requires an Enterprise Edition license.": "このカタログからコネクタを展開するには、Enterprise Edition のライセンスが必要です。",
   "The design {name} is currently set as default. Do you want to replace it?": "現在、{name}というデザインがデフォルトとして設定されています。これを変更しますか？",
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "切断処理がまだ進行中です。このダイアログを閉じると、切断が中止されます。本当に閉じますか？",
