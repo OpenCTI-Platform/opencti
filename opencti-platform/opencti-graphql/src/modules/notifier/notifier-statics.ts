@@ -5,6 +5,7 @@ import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
 import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 import { LOGO_TEMPLATE } from '../../utils/emailTemplates/logo';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { INGESTION_HEALTH_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -154,6 +155,113 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
 
 export const STATIC_NOTIFIER_UI = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
 export const STATIC_NOTIFIER_EMAIL = '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822';
+
+// region Notifier Health email
+export const STATIC_NOTIFIER_HEALTH_EMAIL = '19b97b2d-9fa5-496b-95b6-3f3703c9a959';
+
+// For the ingestion health activity events: the scope, the ingestion and a link to its overview (the front resolveLink routes)
+export const HEALTH_EMAIL_TITLE = '<% const healthEventsCount = notification_content.reduce((count, contentLine) => count + contentLine.events.length, 0); %>'
+  + '<% if (healthEventsCount === 1) { %>[health] <%= notification_content[0].events[0].operation %> - <%= notification_content[0].title %>'
+  + '<% } else { %>[health] <%= healthEventsCount %> ingestion health events<% } %>';
+
+export const HEALTH_EMAIL_TEMPLATE = `
+${HEADER_TEMPLATE}
+<%
+  const healthScopeColors = { critical: '#d32f2f', degraded: '#ed6c02', recovered: '#2e7d32', stopped: '#757575' };
+  const ingestionTypeLabels = {
+    Connector: 'Connector',
+    Sync: 'Sync',
+    IngestionRss: 'RSS feed',
+    IngestionTaxii: 'TAXII feed',
+    IngestionTaxiiCollection: 'TAXII push feed',
+    IngestionCsv: 'CSV feed',
+    IngestionJson: 'JSON feed',
+  };
+  const ingestionPaths = {
+    Connector: 'integrations/connectors',
+    Sync: 'integrations/feeds/sync',
+    IngestionRss: 'integrations/feeds/rss',
+    IngestionTaxii: 'integrations/feeds/taxii',
+    IngestionTaxiiCollection: 'integrations/feeds/taxii-push',
+    IngestionCsv: 'integrations/feeds/csv',
+    IngestionJson: 'integrations/feeds/json',
+  };
+%>
+   <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" bgcolor="#f5f8fa" style="margin: 0; padding: 0; font-family: Helvetica, Arial, sans-serif; font-size: 16px; width: 100%; min-width: 100%;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#f5f8fa" style="font-family: Helvetica, Arial, sans-serif; font-size: 16px; color: #425b76; line-height: 1.5; width: 100%; min-width: 100%; background-color: #f5f8fa;">
+         <tbody>
+            <tr>
+               <td align="center" valign="top">
+                  <table border="0" cellpadding="0" cellspacing="0" width="700" bgcolor="#ffffff" style="width: 700px; background-color: #ffffff;" class="emailWrapper">
+                     <tbody>
+                        <tr>
+                           <td style="height: 4px; background-color: #001bda; font-size: 4px; line-height: 4px;">&nbsp;</td>
+                        </tr>
+                        <tr>
+                           <td align="center" valign="middle" class="logo">
+                              ${LOGO_TEMPLATE}
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="center" valign="middle" style="padding: 10px 0 30px 0;">
+                              <h1 style="font-size: 24px; font-weight: 600; margin: 0;"><%= settings.platform_title %></h1>
+                              <p style="font-size: 15px; margin: 10px 0 0 0;">Ingestion health</p>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td align="center" valign="top">
+                              <table border="0" cellpadding="0" cellspacing="0" width="500" style="width: 500px;" class="emailContainer">
+                                 <tbody>
+                                    <% notification_content.forEach((contentLine) => { %>
+                                      <% contentLine.events.forEach((contentEvent) => { %>
+                                        <tr>
+                                           <td valign="middle" style="padding: 15px 0; border-top: 1px solid #eaf0f6; line-height: 1.4;">
+                                              <span style="display: inline-block; padding: 4px 8px; border-radius: 3px; color: #ffffff; font-size: 12px; font-weight: 600; text-transform: uppercase; background-color: <%= healthScopeColors[contentEvent.operation] || '#757575' %>;"><%= contentEvent.operation %></span>
+                                              <span style="margin-left: 10px; font-weight: 600;"><%= contentLine.title %></span>
+                                              <span style="margin-left: 5px; font-size: 12px;">(<%= ingestionTypeLabels[contentEvent.entity_type] || contentEvent.entity_type %>)</span>
+                                           </td>
+                                           <td width="60" align="right" valign="middle" style="padding: 15px 0; border-top: 1px solid #eaf0f6;">
+                                              <% if (contentEvent.instance_id) { %>
+                                                <a href="<%= platform_uri %>/dashboard/<%= ingestionPaths[contentEvent.entity_type] || 'id' %>/<%= contentEvent.instance_id %>?source=email" target="_blank" style="display: inline-block; border: 1px solid #cbd6e2; border-radius: 3px; background-color: #eaf0f6; color: #425b76; font-size: 12px; line-height: 12px; padding: 8px 12px; text-decoration: none; white-space: nowrap;">View</a>
+                                              <% } %>
+                                           </td>
+                                        </tr>
+                                      <% }) %>
+                                    <% }) %>
+                                 </tbody>
+                              </table>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td style="padding-top: 30px;">
+                              ${FOOTER_TEMPLATE}
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </body>
+</html>
+`;
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+const STATIC_HEALTH_EMAIL_NOTIFIER: BasicStoreEntityNotifier = {
+  id: STATIC_NOTIFIER_HEALTH_EMAIL,
+  standard_id: `notifier--${STATIC_NOTIFIER_HEALTH_EMAIL}`,
+  entity_type: ENTITY_TYPE_NOTIFIER,
+  parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
+  internal_id: STATIC_NOTIFIER_HEALTH_EMAIL,
+  built_in: true,
+  name: 'Ingestion health default mailer',
+  description: 'Send ingestion health activity events to the user email',
+  notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL,
+  notifier_configuration: JSON.stringify({ title: HEALTH_EMAIL_TITLE, template: HEALTH_EMAIL_TEMPLATE }),
+};
+// endregion
 
 export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -386,6 +494,7 @@ ${HEADER_TEMPLATE}
       `,
     }),
   },
+  ...(isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) ? [STATIC_HEALTH_EMAIL_NOTIFIER] : []),
 ];
 
 export const SIMPLIFIED_EMAIL_TEMPLATE = `
