@@ -503,7 +503,7 @@ const IocValuesTable = ({ hunt }: { hunt: HuntLogicData }) => {
   return (
     <div data-testid="hunt-ioc-values">
       <Text variant="content-compact-bold">
-        {t_i18n('{count} values to look for', { values: { count: n(iocSet.iocs_count) } })}
+        {t_i18n('{count, plural, one {# value to look for} other {# values to look for}}', { values: { count: iocSet.iocs_count } })}
       </Text>
       {notes.map((note) => (
         <Text key={note} variant="content-caption" style={{ display: 'block', color: theme.palette.warn.main }}>{note}</Text>
