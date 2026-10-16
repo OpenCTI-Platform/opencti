@@ -7,7 +7,8 @@ import { routeEdges } from './route';
 import type { LayoutInputEdge, LayoutInputNode, LayoutNodeHints, LayoutResult, LayoutSpacing } from './types';
 
 // Layered layout for workflow graphs (status -> transition -> status). Pure and deterministic:
-// same input, same output. See the "Workflow Layout Engine" spec for the seven phases.
+// same input, same output. Phases: break cycles and rank (rank.ts), reduce crossings (order.ts),
+// place on x (place.ts), side lanes for loops (lanes.ts), orthogonal routing (route.ts).
 export const layoutWorkflow = (nodes: LayoutInputNode[], edges: LayoutInputEdge[], { spacing }: LayoutSpacing): LayoutResult => {
   const result: LayoutResult = { positions: new Map(), nodeHints: new Map(), routes: new Map() };
   const graph = buildGraph(nodes, edges);

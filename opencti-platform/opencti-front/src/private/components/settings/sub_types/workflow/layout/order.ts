@@ -56,6 +56,9 @@ export const orderLayers = (graph: Graph, ranked: RankedGraph): Ordering => {
 
   const segmentsByRank = layers.map(() => [] as typeof segments);
   segments.forEach((s) => segmentsByRank[layered.get(s.u)!.rank].push(s));
+  // O(S²) per row, run about 24 times: ~20 ms for 30 statuses, ~1 s on the main thread for 150
+  // statuses / 300 transitions. Past that, count with an accumulator tree (Barth, Jünger, Mutzel)
+  // or stop after a few sweeps without improvement.
   const crossingsAt = (r: number) => {
     const rowSegments = segmentsByRank[r] ?? [];
     let c = 0;
