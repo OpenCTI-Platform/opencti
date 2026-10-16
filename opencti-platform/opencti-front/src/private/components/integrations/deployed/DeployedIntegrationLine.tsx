@@ -20,12 +20,12 @@ import { paperBorder } from '../paperSurface';
 // section renders as a proper aligned table. Widths are percentages of the
 // row so the table always fills the available space; the name column absorbs
 // the rest. Metric columns collapse on small screens instead of squeezing
-// the names.
+// the names. Every data column, header included, is aligned on the left.
 const COLUMNS = {
   type: { width: '13%', minWidth: 110, display: { xs: 'none', sm: 'flex' } },
   description: { width: '18%', display: { xs: 'none', lg: 'flex' } },
-  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' }, justifyContent: 'flex-end' },
-  throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' }, justifyContent: 'flex-end' },
+  messages: { width: '8%', minWidth: 72, display: { xs: 'none', sm: 'flex' } },
+  throughput: { width: '9%', minWidth: 84, display: { xs: 'none', md: 'flex' } },
   date: { width: '12%', minWidth: 130, display: { xs: 'none', md: 'flex' } },
   status: { width: '9%', minWidth: 84, display: 'flex' },
   healthStatus: { width: '9%', minWidth: 84, display: 'flex' },
@@ -33,6 +33,7 @@ const COLUMNS = {
 } as const;
 
 const cellSx = (column: keyof typeof COLUMNS) => ({
+  justifyContent: 'flex-start',
   ...COLUMNS[column],
   flexShrink: 0,
   alignItems: 'center',
@@ -221,7 +222,7 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           {item.description || EMPTY_VALUE}
         </Typography>
       </Box>
-      {/* Messages column: queued messages badge (right-aligned numbers). */}
+      {/* Messages column: queued messages badge. */}
       <Box sx={cellSx('messages')}>
         {item.messagesCount != null ? (
           <Tooltip title={t_i18n('Queued messages')}>
