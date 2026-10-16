@@ -2,6 +2,7 @@ import { deepPurple, green, indigo, red } from '@mui/material/colors';
 import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
+import { resolveLink } from '../../../../utils/Entity';
 
 export const colors: Record<string, string> = {
   none: green[500],
@@ -16,6 +17,16 @@ export const getFirstOperation = ({ notification_content, notification_type }: P
   const firstEvent = events.at(0);
   const isDigest = notification_type === 'digest';
   return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+};
+
+// Not STIX objects: /dashboard/id cannot resolve them, link to their own page instead
+const NON_STIX_LINKED_TYPES = ['DraftWorkspace', 'Connector', 'Sync', 'IngestionRss', 'IngestionTaxii', 'IngestionTaxiiCollection', 'IngestionCsv', 'IngestionJson'];
+
+export const computeNotificationLink = (instanceId: string, entityType: string | null | undefined) => {
+  if (entityType && NON_STIX_LINKED_TYPES.includes(entityType)) {
+    return `${resolveLink(entityType)}/${instanceId}`;
+  }
+  return `/dashboard/id/${instanceId}`;
 };
 
 export const iconSelector = (operation: string) => {
