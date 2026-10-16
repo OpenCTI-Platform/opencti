@@ -363,6 +363,14 @@ export const createDefaultRetentionRules = async (context) => {
     scope: 'activity',
     active: false,
   });
+  // Create default disabled retention rule for draft (30 days, inactive)
+  await createRetentionRule(context, SYSTEM_USER, {
+    name: 'Draft retention',
+    max_retention: 30,
+    retention_unit: 'days',
+    scope: 'draft',
+    active: false,
+  });
 };
 
 const createBasicRolesAndCapabilities = async (context) => {

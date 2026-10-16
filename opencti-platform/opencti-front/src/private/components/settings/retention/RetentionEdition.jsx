@@ -56,6 +56,7 @@ const RetentionEditionContainer = (props) => {
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeysDrafts = useAvailableFilterKeysForEntityTypes(['DraftWorkspace']);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -198,7 +199,7 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            {retentionRule.scope === 'knowledge'
+            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'draft')
               && (
                 <>
                   <Box
@@ -211,9 +212,9 @@ const RetentionEditionContainer = (props) => {
                     }}
                   >
                     <Filters
-                      availableFilterKeys={availableFilterKeys}
+                      availableFilterKeys={retentionRule.scope === 'draft' ? availableFilterKeysDrafts : availableFilterKeys}
                       helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                      searchContext={{ entityTypes: retentionRule.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                     />
                   </Box>
                   <FilterIconButton
@@ -222,7 +223,7 @@ const RetentionEditionContainer = (props) => {
                     availableFilterKeys={availableFilterKeys}
                     redirection
                     entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    searchContext={{ entityTypes: retentionRule.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
                 </>
               )
