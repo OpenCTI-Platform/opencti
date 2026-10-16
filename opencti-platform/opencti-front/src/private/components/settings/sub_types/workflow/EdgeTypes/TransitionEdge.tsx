@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { getRoutePath } from '../layout/route';
 import { WorkflowEdgeActionsContext } from './WorkflowEdgeActionsContext';
 
-const BADGE_SIZE = 16;
+const BADGE_SIZE = 24;
 
 const TransitionEdge = ({
   id,
@@ -83,17 +83,28 @@ const TransitionEdge = ({
             <MenuTrigger asChild>
               <IconButton
                 size="sm"
+                priority="secondary"
                 aria-label={t_i18n('Edge actions')}
                 icon={<Icon name="ellipsis-vertical" size={16} />}
-                // FDS-WORKAROUND #69: IconButton has no 16px size — see fds-migration/LIBRARY-FEEDBACK.md #69
-                style={{ width: BADGE_SIZE, height: BADGE_SIZE, minWidth: BADGE_SIZE }}
+                // Outlined badge: the canvas colour behind it hides the edge line; the smallest IconButton is 24px.
+                style={{
+                  width: BADGE_SIZE,
+                  height: BADGE_SIZE,
+                  minWidth: BADGE_SIZE,
+                  backgroundColor: theme.palette.background.default,
+                  borderColor: theme.palette.primary.main,
+                  transition: 'border-width 0.2s',
+                  borderWidth: isHovered ? 1.5 : (style?.strokeWidth ?? 1),
+                }}
               />
             </MenuTrigger>
-            <MenuContent align="start">
+            <MenuContent
+              align="start"
+              style={{ minWidth: 'var(--radix-dropdown-menu-trigger-width)', maxWidth: 'calc(100vw - 32px)' }}
+            >
               <MenuItem startIcon={<Icon name="circle-plus" size={16} />} onSelect={() => insertStatus({ id, source, target })}>
                 {t_i18n('Insert status here')}
               </MenuItem>
-              <MenuSeparator />
               <MenuItem
                 startIcon={<Icon name="trash-2" size={16} className="text-icon-error" />}
                 // FDS-WORKAROUND #64: MenuItem has no destructive tone — see fds-migration/LIBRARY-FEEDBACK.md #64

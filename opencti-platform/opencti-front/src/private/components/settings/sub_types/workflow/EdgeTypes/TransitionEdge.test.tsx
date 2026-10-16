@@ -79,6 +79,14 @@ describe('TransitionEdge', () => {
       expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Insert status here', 'Delete connection']);
     });
 
+    it('shows an outlined badge rather than a filled one', () => {
+      renderWithActions();
+      fireEvent.mouseEnter(document.querySelector('svg > g')!);
+      const badge = screen.getByRole('button', { name: 'Edge actions' });
+      expect(badge.className).toContain('border-filigran-brand-primary-transparency-55');
+      expect(badge.className).not.toContain('bg-filigran-brand-primary ');
+    });
+
     it('opens the same menu when the edge itself is clicked', async () => {
       const { view } = renderWithActions();
       await userEvent.click(view.container.querySelector('path[stroke="transparent"]')!);
