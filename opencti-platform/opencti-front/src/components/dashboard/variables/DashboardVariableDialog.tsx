@@ -21,7 +21,7 @@ import SelectFieldFds, { SelectItem } from '../../fields/SelectFieldFds';
 import ComboboxField from '../../ComboboxField';
 import useSchema from '../../../utils/hooks/useSchema';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
-import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
@@ -188,7 +188,11 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
     // FDS-WORKAROUND #70: back to the library Dialog once it can host them (fds-migration/LIBRARY-FEEDBACK.md).
     <Dialog
       open={open}
-      onClose={onClose}
+      // MUI closes on any Escape, even one a list of the form already handled (and prevented) to close itself.
+      onClose={(event: { defaultPrevented?: boolean }, reason) => {
+        if (reason === 'escapeKeyDown' && event.defaultPrevented) return;
+        onClose();
+      }}
       size="medium"
       // MUI names the dialog after its title.
       title={isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}
@@ -228,7 +232,6 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
           const onRestrictionModeChange = (mode: string) => {
             setFieldValue('restrictionMode', mode);
             setFieldValue('defaultValue', '');
-            if (mode === 'filters' && !values.filters) setFieldValue('filters', emptyFilterGroup);
           };
 
           return (
@@ -286,7 +289,10 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     onValueChange={onRestrictionModeChange}
                   >
                     <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
-                    <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
+                    {/* A type without restriction only shows the one it holds, so that it can be left. */}
+                    {(!type || RESTRICTABLE_TYPES.includes(type) || values.restrictionMode === 'selection') && (
+                      <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
+                    )}
                     {/* Also shown for another type that holds one (a manifest written elsewhere), so that it can be left. */}
                     {(type === 'entity' || values.restrictionMode === 'filters') && (
                       <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />
@@ -323,8 +329,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     // Shown as soon as the mode is chosen: Create stays disabled until the rule is valid.
                     error={errors.filters}
                     onChange={(filters) => {
-                      const isSameRule = JSON.stringify(normalizeFilterGroupForBackend(filters))
-                        === JSON.stringify(normalizeFilterGroupForBackend(values.filters));
+                      const isSameRule = serializeFilterGroupForBackend(filters) === serializeFilterGroupForBackend(values.filters);
                       setFieldValue('filters', filters);
                       // Whether the default value still matches the rule is not known without a search: it is chosen again,
                       // unless the rule sent is the same (a filter added without value yet, which is not sent).

@@ -127,6 +127,15 @@ describe('DashboardVariableDialog', () => {
     expect(mocks.onClose).toHaveBeenCalledTimes(2);
   });
 
+  it('closes only the list, not the dialog, on Escape in an open list', async () => {
+    const { user } = renderDialog();
+    await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+    expect(await screen.findByRole('option', { name: 'Label' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('option', { name: 'Label' })).not.toBeInTheDocument());
+    expect(mocks.onClose).not.toHaveBeenCalled();
+  });
+
   it('shows every field from the start, the ones depending on the type disabled until it is chosen', async () => {
     const { user } = renderDialog();
     expect(nameInput()).toBeEnabled();
