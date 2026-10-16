@@ -16407,6 +16407,7 @@ input SecurityCoverageResultAddInput {
 enum HuntType {
   telemetry
   indicators
+  infrastructure
 }
 
 enum HuntStatus {
@@ -17277,7 +17278,7 @@ type HuntRunResultsSummary {
   observables: Int!
 
   """
-  Results of any other kind, for example the indicators a run attributes to itself
+  Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt
   """
   others: Int!
 }

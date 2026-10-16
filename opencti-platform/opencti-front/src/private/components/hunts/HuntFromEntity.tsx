@@ -216,6 +216,7 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
   const hasElements = derived.elements.length > 0;
   const hasRules = derived.rules.length > 0;
   const isIndicatorHunt = values.hunt_type === 'indicators';
+  const isInfrastructureHunt = values.hunt_type === 'infrastructure';
 
   const toggleSource = (source: HuntDerivedSource, checked: boolean) => {
     const others = values.iocEntities.filter((option) => option.value !== source.id);
@@ -245,6 +246,11 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
       <Text variant="title-xs" as="h3" style={{ margin: 0 }}>
         {t_i18n('What the platform found for {name}', { values: { name } })}
       </Text>
+      {isInfrastructureHunt && (
+        <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-derived-infrastructure">
+          {t_i18n('An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint query in the Logic section.')}
+        </Text>
+      )}
       {!hasElements && !hasRules && (
         <div style={{ marginTop: theme.spacing(1) }}>
           <EmptyDerivation derived={derived} />
@@ -320,7 +326,7 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
           <div role="group" aria-labelledby={rulesLabelId} style={{ maxHeight: RULES_LIST_MAX_HEIGHT, overflowY: 'auto', marginTop: theme.spacing(1), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
             {derived.rules.map((rule) => {
               const techniques = rule.technique_ids.map((id) => techniquesById.get(id)).filter((technique) => !!technique).map((technique) => huntTechniqueName(technique));
-              const language = rule.pattern_type === 'sigma' ? 'Sigma' : huntQueryLanguageLabel(rule.pattern_type);
+              const language = rule.pattern_type === 'sigma' ? 'Sigma' : huntQueryLanguageLabel(rule.pattern_type, t_i18n);
               const platform = derivedRulePlatform(rule);
               const platformTaken = !!platform && takenPlatforms.has(platform) && takenPlatforms.get(platform) !== rule.id;
               let description = techniques.length > 0

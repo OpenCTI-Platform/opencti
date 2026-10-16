@@ -103,10 +103,12 @@ describe('Hunt status header', () => {
   });
 
   it('words a missing logic as the platform does', () => {
-    expect(huntLogicMissingSentence('', [])).toBe('Add a Sigma rule or a native query');
-    expect(huntLogicMissingSentence('  ', [])).toBe('Add a Sigma rule or a native query');
-    expect(huntLogicMissingSentence('title: x', [])).toBeNull();
-    expect(huntLogicMissingSentence('', [{ platform: 'splunk' }])).toBeNull();
+    expect(huntLogicMissingSentence('telemetry', '', [])).toBe('Add a Sigma rule or a native query');
+    expect(huntLogicMissingSentence('telemetry', '', [{ platform: 'internet' }])).toBe('Add a Sigma rule or a native query');
+    expect(huntLogicMissingSentence('telemetry', 'title: x', [])).toBeNull();
+    expect(huntLogicMissingSentence('telemetry', '', [{ platform: 'splunk' }])).toBeNull();
+    expect(huntLogicMissingSentence('infrastructure', '', [{ platform: 'splunk' }])).toBe('Add a native query for the internet platform');
+    expect(huntLogicMissingSentence('infrastructure', '', [{ platform: 'internet' }])).toBeNull();
   });
 });
 

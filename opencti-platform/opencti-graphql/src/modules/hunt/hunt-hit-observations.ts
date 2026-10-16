@@ -357,6 +357,6 @@ export const createHuntHitObservations = async (context: AuthContext, hunt: Basi
       }
     }
   };
-  await withHuntLock(`${OBSERVED_DATA_LOCK}_${run.security_platform_id ?? 'none'}`, observe);
+  await withHuntLock(`${OBSERVED_DATA_LOCK}_${run.security_platform_id ?? 'internet'}`, observe);
   return { observedDataIds: Array.from(observedDataIds), observableIds: Array.from(evidenceIds) };
 };

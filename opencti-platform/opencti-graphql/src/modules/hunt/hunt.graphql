@@ -1,6 +1,7 @@
 enum HuntType {
   telemetry
   indicators
+  infrastructure
 }
 enum HuntStatus {
   draft

@@ -115,13 +115,15 @@ export const useHuntFormValidation = (iocFilters: string | null = null) => {
     name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
     description: Yup.string().nullable(),
     hypothesis: Yup.string().nullable(),
-    hunt_type: Yup.string().oneOf(['telemetry', 'indicators']),
+    hunt_type: Yup.string().oneOf(['telemetry', 'indicators', 'infrastructure']),
     hunt_status: Yup.string().oneOf(['draft', 'active', 'paused', 'retired'])
       .test('hunt-logic', function testLogic(status) {
         if (status !== 'active') return true;
         const values = this.parent as HuntFormValues;
         if (huntFormHasLogic(values, iocFilters)) return true;
-        const sentence = values.hunt_type === 'indicators' ? 'Add the indicators or observables to look for' : 'Add a Sigma rule or a native query';
+        let sentence = 'Add a Sigma rule or a native query';
+        if (values.hunt_type === 'indicators') sentence = 'Add the indicators or observables to look for';
+        if (values.hunt_type === 'infrastructure') sentence = 'Add a native query for the internet platform';
         return this.createError({ message: t_i18n('An active hunt cannot run: {sentence}', { values: { sentence: t_i18n(sentence) } }) });
       }),
     sigma_rule: Yup.string().nullable(),
@@ -355,12 +357,14 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
               </div>
 
               <div style={shown(2)} data-testid="hunt-creation-step-execution">
-                <HuntEntitiesField
-                  name="scopePlatforms"
-                  label={t_i18n('Security platforms (empty for all)')}
-                  types={HUNT_SCOPE_TYPES}
-                  helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
-                />
+                {values.hunt_type !== 'infrastructure' && (
+                  <HuntEntitiesField
+                    name="scopePlatforms"
+                    label={t_i18n('Security platforms (empty for all)')}
+                    types={HUNT_SCOPE_TYPES}
+                    helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
+                  />
+                )}
                 {values.hunt_type === 'indicators' && (
                   <HuntIndicatorSupportWarning scopePlatformIds={values.scopePlatforms.map((platform) => platform.value)} style={fieldSpacingContainerStyle} />
                 )}

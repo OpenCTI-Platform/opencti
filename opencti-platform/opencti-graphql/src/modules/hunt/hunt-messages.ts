@@ -4,6 +4,7 @@
  */
 export const HUNT_MESSAGES = {
   logicTelemetryMissing: 'Add a Sigma rule or a native query',
+  logicInfrastructureMissing: 'Add a native query for the internet platform',
   logicIndicatorsMissing: 'Add the indicators or observables to look for',
   logicIndicatorsEmpty: 'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators',
   sigmaInvalid: 'Invalid Sigma rule: {errors}',
@@ -16,6 +17,7 @@ export const HUNT_MESSAGES = {
   iocUnsupported: '{count} indicators have no value a lookup can search: a pattern in another language or without an equality comparison',
   connectorMissing: 'No hunt connector can run it on the platforms of its scope: deploy a hunt connector or widen the scope',
   connectorIndicatorsMissing: 'No hunt connector of its scope supports indicator lookups: deploy one that does, such as the Splunk hunt connector',
+  connectorInternetMissing: 'No internet hunt connector is deployed: deploy the infrastructure tracker connector',
   connectorReady: '{connectors} can run it',
   connectorUnreachable: '{connectors} has not answered recently: runs wait in the queue until it is back',
   scheduleManual: 'Manual: it runs when you click Run now',
@@ -27,6 +29,7 @@ export const HUNT_MESSAGES = {
   scopeAll: 'Runs on every hunt-capable security platform',
   scopePlatforms: 'Runs on {platforms}',
   scopeEmpty: 'The scope matches no security platform: edit the scope',
+  scopeInternet: 'Runs on the internet hunt connectors',
   draftWorkspace: 'In a draft workspace: the hunt runs once the draft is validated',
   queueConnectorDeleted: 'The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager',
   queueConnectorOffline: '{connector} has not answered recently: the run starts once it is back',

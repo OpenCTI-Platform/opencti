@@ -81,7 +81,7 @@ export const huntAssistInput = (values: HuntAIFormValues, request: HuntAIRequest
     ...(nativeQuery ? { native_query_platform: nativeQuery.platform, native_query_language: nativeQuery.language } : {}),
     ...(options.huntId ? { hunt_id: options.huntId } : {}),
     ...(has(values, 'name') ? { name: values.name ?? '' } : {}),
-    ...(has(values, 'hunt_type') && values.hunt_type ? { hunt_type: values.hunt_type as 'telemetry' | 'indicators' } : {}),
+    ...(has(values, 'hunt_type') && values.hunt_type ? { hunt_type: values.hunt_type as 'telemetry' | 'indicators' | 'infrastructure' } : {}),
     ...(has(values, 'hypothesis') ? { hypothesis: values.hypothesis ?? '' } : {}),
     ...(has(values, 'description') ? { description: values.description ?? '' } : {}),
     ...(has(values, 'sigma_rule') ? { sigma_rule: values.sigma_rule ?? '' } : {}),

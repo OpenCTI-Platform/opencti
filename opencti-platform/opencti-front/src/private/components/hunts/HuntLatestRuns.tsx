@@ -88,7 +88,7 @@ const LatestRunsList = ({ huntId, canEdit }: HuntLatestRunsProps) => {
             <HuntRunStatusChip value={run.hunt_run_status} />
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <Text variant="content-compact">{run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown')}</Text>
+                <Text variant="content-compact">{run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet')}</Text>
               </span>
               <Text variant="content-caption">{t_i18n(huntRunTriggerLabel(run.hunt_run_trigger))}</Text>
             </span>

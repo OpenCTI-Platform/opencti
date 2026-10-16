@@ -218,7 +218,7 @@ const HuntEditContext = createContext(false);
 /** The controls that change the hunt or its runs, which the platform refuses to a user who can only view the hunt. */
 const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useContext(HuntEditContext) ? <>{children}</> : null);
 
-const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown');
+const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
 
 /** A date shown relative to now, the absolute date in its tooltip. */
 const RelativeDate = ({ date, label }: { date: string; label?: (relative: string) => string }) => {
@@ -1031,7 +1031,7 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
         {run.translated_query && (
           <Card title={t_i18n('Translated query')}>
             <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
-              <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language)}</Text>
+              <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
               <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
             </Disclosure>
           </Card>

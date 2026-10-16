@@ -187,7 +187,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
       label: 'Platform',
       percentWidth: 16,
       isSortable: false,
-      render: ({ securityPlatform, connector_name }: HuntRuns_RunFragment$data) => defaultRender(securityPlatform?.name ?? connector_name ?? t_i18n('Unknown')),
+      render: ({ securityPlatform, connector_name }: HuntRuns_RunFragment$data) => defaultRender(securityPlatform?.name ?? connector_name ?? t_i18n('Internet')),
     },
     hits_count: {
       id: 'hits_count',
@@ -201,7 +201,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
         if (!results_truncated) {
           return defaultRender(n(hits_count));
         }
-        const platform = securityPlatform?.name ?? connector_name ?? t_i18n('Unknown');
+        const platform = securityPlatform?.name ?? connector_name ?? t_i18n('Internet');
         return (
           <Tooltip>
             <TooltipTrigger asChild>

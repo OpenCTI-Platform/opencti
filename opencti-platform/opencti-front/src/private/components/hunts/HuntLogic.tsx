@@ -33,6 +33,7 @@ import {
   HUNT_DOCS,
   HUNT_FIRST_RULE,
   HUNT_IOC_ELEMENT_TYPES,
+  HUNT_PLATFORM_INTERNET,
   huntQueryLanguageLabel,
   huntTimeWindowPresets,
   normalizeNativeQueries,
@@ -152,8 +153,11 @@ type HuntLogicData = HuntLogic_hunt$data;
 const scopePlatformIdsOf = (hunt: HuntLogicData) => (hunt.scopePlatforms ?? []).map((platform) => platform.id);
 
 /** The sentence of the platform when the edited logic of a hunt misses what its type needs, null otherwise. */
-export const huntLogicMissingSentence = (sigmaRule: string, nativeQueries: ReadonlyArray<{ platform: string }>) => {
-  if (sigmaRule.trim().length === 0 && nativeQueries.length === 0) {
+export const huntLogicMissingSentence = (huntType: string, sigmaRule: string, nativeQueries: ReadonlyArray<{ platform: string }>) => {
+  if (huntType === 'infrastructure') {
+    return nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET) ? null : 'Add a native query for the internet platform';
+  }
+  if (sigmaRule.trim().length === 0 && !nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET)) {
     return 'Add a Sigma rule or a native query';
   }
   return null;
@@ -224,7 +228,7 @@ const HuntTranslations = ({ hunt }: { hunt: HuntLogicData }) => {
       {hunt.translations.map((translation) => {
         const state = TRANSLATION_STATES[translation.state] ?? TRANSLATION_STATES.checking;
         const failedRules = translation.rules.filter((rule) => rule.status !== 'completed');
-        const platform = translation.securityPlatform?.name ?? translation.connector_name ?? t_i18n('Unknown');
+        const platform = translation.securityPlatform?.name ?? translation.connector_name ?? t_i18n('Internet');
         return (
           <li key={translation.run_id} data-testid="hunt-translation" data-state={translation.state}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
@@ -246,7 +250,7 @@ const HuntTranslations = ({ hunt }: { hunt: HuntLogicData }) => {
             )}
             {translation.translated_query && (
               <details style={{ marginTop: theme.spacing(0.5) }}>
-                <summary><Text variant="content-caption" as="span">{t_i18n('Show the query')} ({huntQueryLanguageLabel(translation.query_language)})</Text></summary>
+                <summary><Text variant="content-caption" as="span">{t_i18n('Show the query')} ({huntQueryLanguageLabel(translation.query_language, t_i18n)})</Text></summary>
                 <CodeBlock code={translation.translated_query} language={prismLanguageOf(translation.query_language)} customHeight="auto" />
               </details>
             )}
@@ -290,6 +294,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
   const [saved, setSaved] = useState(false);
   const [previewSignal, setPreviewSignal] = useState(0);
   const previewAfterSave = useRef(false);
+  const isTelemetry = hunt.hunt_type !== 'infrastructure';
   const savedRules = hunt.sigma_rules.length > 0 ? hunt.sigma_rules : [hunt.sigma_rule ?? ''];
   const initialValues: LogicValues = {
     sigma_rule: savedRules[0] ?? '',
@@ -313,7 +318,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
   });
   const onSubmit = (values: LogicValues, { setSubmitting, resetForm }: { setSubmitting: (submitting: boolean) => void; resetForm: (next: { values: LogicValues }) => void }) => {
     const input: { key: string; value: unknown[] }[] = [
-      { key: 'sigma_rules', value: formSigmaRules(values) },
+      ...(isTelemetry ? [{ key: 'sigma_rules', value: formSigmaRules(values) }] : []),
       { key: 'native_queries', value: normalizeNativeQueries(values.native_queries) },
     ];
     commit({
@@ -341,7 +346,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
   return (
     <Formik<LogicValues> initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit} enableReinitialize>
       {({ values, dirty, isSubmitting, submitForm, resetForm }) => {
-        const missing = huntLogicMissingSentence(formSigmaRules(values).join('\n'), normalizeNativeQueries(values.native_queries));
+        const missing = huntLogicMissingSentence(hunt.hunt_type, formSigmaRules(values).join('\n'), normalizeNativeQueries(values.native_queries));
         const saveBar = (testId: string) => (
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
@@ -379,20 +384,22 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
                 {saveBar('hunt-logic-save-top')}
               </div>
               <Grid container spacing={3}>
-                <Grid item xs={12} lg={7}>
-                  <Card title={t_i18n('Sigma rules')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
-                    <HuntSigmaRulesField
-                      label={t_i18n('Sigma rule (YAML)')}
-                      helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
-                      placeholder={SIGMA_RULE_PLACEHOLDER}
-                      minRows={14}
-                      maxRows={40}
-                      disabled={!canEdit}
-                      testId="hunt-logic-sigma"
-                    />
-                  </Card>
-                </Grid>
-                <Grid item xs={12} lg={5}>
+                {isTelemetry && (
+                  <Grid item xs={12} lg={7}>
+                    <Card title={t_i18n('Sigma rules')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
+                      <HuntSigmaRulesField
+                        label={t_i18n('Sigma rule (YAML)')}
+                        helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
+                        placeholder={SIGMA_RULE_PLACEHOLDER}
+                        minRows={14}
+                        maxRows={40}
+                        disabled={!canEdit}
+                        testId="hunt-logic-sigma"
+                      />
+                    </Card>
+                  </Grid>
+                )}
+                <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
                   <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
                     <HuntTranslations hunt={hunt} />
                     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

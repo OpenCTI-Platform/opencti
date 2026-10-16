@@ -149,7 +149,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
   const draftContext = useDraftContext();
   const [open, setOpen] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
-  // null while unknown
+  // null while unknown, and for infrastructure hunts, which run on the internet hunt connectors
   const [runnablePlatforms, setRunnablePlatforms] = useState<number | null>(null);
   const [commit] = useDialogMutation<HuntRunStartMutation>(huntRunStartMutation);
   const openDialog = (next: boolean) => {
@@ -159,7 +159,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
   };
   const canRun = canStartHuntRun(hunt.hunt_status, !!draftContext);
   // Until the hunt connectors are loaded, a run could start without knowing whether any platform can execute it
-  const platformsUnavailable = runnablePlatforms === null || runnablePlatforms === 0;
+  const platformsUnavailable = hunt.hunt_type !== 'infrastructure' && (runnablePlatforms === null || runnablePlatforms === 0);
   const scopePlatformIds = (hunt.scopePlatforms ?? []).map((platform) => platform.id);
   const { maxTimeWindowHours } = useHuntConfiguration();
   const validation = Yup.object().shape({
@@ -252,15 +252,19 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
             {({ values, setFieldValue, submitForm, isSubmitting }) => (
               <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
-                  <Suspense fallback={<Spinner size="md" label={t_i18n('Loading')} />}>
-                    <PlatformChoices
-                      selected={values.security_platform_ids}
-                      onChange={(ids) => setFieldValue('security_platform_ids', ids)}
-                      scopePlatformIds={scopePlatformIds}
-                      huntType={hunt.hunt_type}
-                      onCount={setRunnablePlatforms}
-                    />
-                  </Suspense>
+                  {hunt.hunt_type === 'infrastructure' ? (
+                    <Text variant="content-compact">{t_i18n('Infrastructure hunts run on the internet hunt connectors')}</Text>
+                  ) : (
+                    <Suspense fallback={<Spinner size="md" label={t_i18n('Loading')} />}>
+                      <PlatformChoices
+                        selected={values.security_platform_ids}
+                        onChange={(ids) => setFieldValue('security_platform_ids', ids)}
+                        scopePlatformIds={scopePlatformIds}
+                        huntType={hunt.hunt_type}
+                        onCount={setRunnablePlatforms}
+                      />
+                    </Suspense>
+                  )}
                   <div style={{ marginTop: theme.spacing(2) }}>
                     <Field
                       component={TextField}

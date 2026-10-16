@@ -21,7 +21,8 @@ export const ATTRIBUTE_HUNT_SOURCES = 'source_refs';
 // region enumerations
 export const HUNT_TYPE_TELEMETRY = 'telemetry';
 export const HUNT_TYPE_INDICATORS = 'indicators';
-export const HUNT_TYPES = [HUNT_TYPE_TELEMETRY, HUNT_TYPE_INDICATORS];
+export const HUNT_TYPE_INFRASTRUCTURE = 'infrastructure';
+export const HUNT_TYPES = [HUNT_TYPE_TELEMETRY, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE];
 
 export const HUNT_STATUS_DRAFT = 'draft';
 export const HUNT_STATUS_ACTIVE = 'active';
@@ -37,6 +38,7 @@ export const HUNT_SOURCE_KINDS = [HUNT_SOURCE_ANALYST, HUNT_SOURCE_AGENT, HUNT_S
 export const HUNT_SCHEDULE_MANUAL = 'manual';
 export const HUNT_SCHEDULE_STANDING = 'standing';
 
+export const HUNT_PLATFORM_INTERNET = 'internet';
 export const HUNT_PLATFORMS = [
   'splunk',
   'microsoft-sentinel',
@@ -47,6 +49,7 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
+  HUNT_PLATFORM_INTERNET,
 ];
 // endregion
 
