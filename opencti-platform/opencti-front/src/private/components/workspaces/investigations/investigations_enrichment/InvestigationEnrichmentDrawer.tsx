@@ -35,8 +35,6 @@ const InvestigationEnrichmentDrawer = ({
     return worksMap;
   }, [investigation]);
 
-  console.log(works);
-
   return (
     <Drawer
       title={t_i18n('Enrichment')}
