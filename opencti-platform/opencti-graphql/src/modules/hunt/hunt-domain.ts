@@ -586,30 +586,27 @@ const huntInputOfPlan = (
   { entities, reports, threats, techniques, indicators }: HuntPlanKnowledge & { entities: BasicStoreEntity[] },
   scopePlatformIds: string[],
   benignPatterns: string[],
-): HuntAddInput => {
-  const infrastructure = spec.hunt_type === HuntType.Infrastructure;
-  return {
-    name: spec.name,
-    description: [spec.description, spec.rationale ? `Rationale: ${spec.rationale}` : ''].filter((part) => part.length > 0).join('\n\n'),
-    hypothesis: spec.hypothesis,
-    hunt_type: infrastructure ? HuntType.Infrastructure : HuntType.Telemetry,
-    // An infrastructure hunt runs on the internet scanning services, never on a security platform
-    hunt_scope: infrastructure ? '' : buildHuntScopeFilter(scopePlatformIds),
-    // Validating the draft workspace creates the hunt; an analyst then activates it from its readiness checklist
-    hunt_status: HuntStatus.Draft,
-    hunt_source_kind: HuntSourceKind.Agent,
-    sigma_rule: spec.sigma_rule,
-    native_queries: spec.native_queries,
-    expected_observables: spec.expected_observables,
-    benign_patterns: Array.from(new Set([...spec.benign_patterns, ...benignPatterns])),
-    escalation_threshold: spec.escalation_threshold,
-    time_window_hours: spec.time_window_hours,
-    huntTechniques: [...techniques.map((technique) => technique.internal_id), ...spec.technique_ids],
-    huntTargets: spec.target_ids.length > 0 ? spec.target_ids : threats.map((threat) => threat.internal_id),
-    huntSources: [...indicators, ...reports].filter((entity) => HUNT_SOURCE_TYPES.includes(entity.entity_type)).map((entity) => entity.internal_id),
-    objectMarking: Array.from(new Set(entities.flatMap((entity) => (entity[RELATION_OBJECT_MARKING] ?? []) as string[]))),
-  };
-};
+): HuntAddInput => ({
+  name: spec.name,
+  description: [spec.description, spec.rationale ? `Rationale: ${spec.rationale}` : ''].filter((part) => part.length > 0).join('\n\n'),
+  hypothesis: spec.hypothesis,
+  hunt_type: spec.hunt_type === HuntType.Infrastructure ? HuntType.Infrastructure : HuntType.Telemetry,
+  // An infrastructure hunt runs on the internet scanning services, never on a security platform
+  hunt_scope: spec.hunt_type === HuntType.Infrastructure ? '' : buildHuntScopeFilter(scopePlatformIds),
+  // Validating the draft workspace creates the hunt; an analyst then activates it from its readiness checklist
+  hunt_status: HuntStatus.Draft,
+  hunt_source_kind: HuntSourceKind.Agent,
+  sigma_rule: spec.sigma_rule,
+  native_queries: spec.native_queries,
+  expected_observables: spec.expected_observables,
+  benign_patterns: Array.from(new Set([...spec.benign_patterns, ...benignPatterns])),
+  escalation_threshold: spec.escalation_threshold,
+  time_window_hours: spec.time_window_hours,
+  huntTechniques: [...techniques.map((technique) => technique.internal_id), ...spec.technique_ids],
+  huntTargets: spec.target_ids.length > 0 ? spec.target_ids : threats.map((threat) => threat.internal_id),
+  huntSources: [...indicators, ...reports].filter((entity) => HUNT_SOURCE_TYPES.includes(entity.entity_type)).map((entity) => entity.internal_id),
+  objectMarking: Array.from(new Set(entities.flatMap((entity) => (entity[RELATION_OBJECT_MARKING] ?? []) as string[]))),
+});
 
 export const planHunt = async (context: AuthContext, user: AuthUser, input: HuntPlanInput) => {
   await checkEnterpriseEdition(context);
