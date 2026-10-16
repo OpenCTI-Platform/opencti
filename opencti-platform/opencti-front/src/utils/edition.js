@@ -125,7 +125,7 @@ export const instanceEventTypesOptions = [
 
 // Incident and case timeline events: offered by the trigger forms, never selected by default
 export const timelineEventTypesOptions = [
-  { value: 'timeline_anchor_changed', label: 'Timeline anchor changed' },
+  { value: 'timeline_anchor_changed', label: 'Headline date changed' },
   { value: 'timeline_milestone_added', label: 'Timeline milestone added' },
 ];
 

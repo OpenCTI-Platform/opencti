@@ -9037,7 +9037,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   sync_workflow_status_by_name?: Maybe<Scalars['Boolean']['output']>;
   target_type: Scalars['String']['output'];
-  /** Headline dates the timelines of this type show, the lists filter on and the Timeline anchor changed trigger notifies, in their order (the default ones until customized); null on the types without a timeline */
+  /** Headline dates the timelines of this type show, the lists filter on and the Headline date changed trigger notifies, in their order (the default ones until customized); null on the types without a timeline */
   timeline_headline_dates?: Maybe<Array<TimelineHeadlineDate>>;
   updated_at: Scalars['DateTime']['output'];
   workflow_configuration?: Maybe<Scalars['Boolean']['output']>;

@@ -110,7 +110,7 @@ registerDefinition(TIMELINE_SETTINGS_DEFINITION);
 // region attributes carried by the timeline containers (written through the side channel, never by users)
 export const timelineAnchorsAttribute: ObjectAttribute = {
   name: ATTRIBUTE_TIMELINE_ANCHORS,
-  label: 'Timeline anchors',
+  label: 'Headline dates',
   type: 'object',
   format: 'standard',
   mandatoryType: 'no',
@@ -128,8 +128,8 @@ export const timelineAnchorsAttribute: ObjectAttribute = {
     { name: 'recovery', label: 'Recovery', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'notification', label: 'Notification', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'closure', label: 'Closure', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'computed_at', label: 'Timeline anchors computed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'changed_at', label: 'Timeline anchors changed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'computed_at', label: 'Headline dates computed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'changed_at', label: 'Headline dates changed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   sortBy: { path: `${ATTRIBUTE_TIMELINE_ANCHORS}.first_adversary_activity`, type: 'date' },
 };

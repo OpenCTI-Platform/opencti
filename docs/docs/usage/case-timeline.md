@@ -9,10 +9,10 @@ The timeline answers questions that lists cannot: when did the adversary act, wh
 ## Where to find it
 
 - **Timeline tab**: on the Incident, Incident Response, Request for Information and Request for Takedown pages, after the Content tab.
-- **Overview strip**: a compact view on the overview of the same pages, with the case anchors and an **Open the timeline** link. It is a widget of the overview layout, which administrators can move, resize or hide (see [Overview layout](#overview-layout)).
+- **Overview strip**: a compact view on the overview of the same pages, with the headline dates of the case and an **Open the timeline** link. It is a widget of the overview layout, which administrators can move, resize or hide (see [Overview layout](#overview-layout)).
 - **Widget**: the **Incident and case timeline** visualization in custom dashboards and custom views (see [Dashboards and custom views](#dashboards-and-custom-views)).
 
-![Timeline tab of an incident response: anchors, toolbar and the events of the case in their lanes](assets/case-timeline-lanes-populated.png)
+![Timeline tab of an incident response: headline dates, toolbar and the events of the case in their lanes](assets/case-timeline-lanes-populated.png)
 
 ## What the timeline shows
 
@@ -31,7 +31,7 @@ Events are organized in lanes, from the adversary to the response:
 
 ### Derived events
 
-Derived events are computed from the knowledge of the case by a set of derivation rules. They never modify the knowledge: the only data written are the timeline events, the timeline settings and the anchors of the container.
+Derived events are computed from the knowledge of the case by a set of derivation rules. They never modify the knowledge: the only data written are the timeline events, the timeline settings and the headline dates of the container.
 
 | Source | Events |
 |:-------|:-------|
@@ -65,11 +65,11 @@ Each event carries a precision: **Exact**, **Hour**, **Day** or **Approximate**.
 
 A window that has started without a known end (a technique used by a relationship without a stop time, a hunt or investigation run still running, a deployment still active, an indicator valid without an end date) is drawn up to the right edge of the lanes, lighter and with a dashed outline, and reads **Since <start>, still open**. It is kept in every later time window of the list, the summary and the exports.
 
-## Anchors
+## Headline dates
 
-The timeline computes per-case anchors, displayed on the overview strip and at the top of the Timeline tab:
+The timeline computes the headline dates of each case, displayed on the overview strip and at the top of the Timeline tab:
 
-| Anchor | Definition |
+| Headline date | Definition |
 |:-------|:-----------|
 | First adversary activity | First activity of this incident on the adversary lane: a dated `uses` or `targets` relationship of a technique, a sighting, observed data, the first seen of the incident or a contained incident, an adversary milestone. The global first and last seen of malware, tools, infrastructures and threats, and the techniques placed in kill chain order, never count |
 | First detection | First event of the detection lane (security platform sightings, coverage results, hunts, deployments, detection milestones) |
@@ -80,25 +80,25 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 | Notification | First **Notification** milestone, added with **Add an event** (hidden by default) |
 | Closure | Last transition to the final workflow status, while the case stays closed |
 
-An event dated in the future, such as a milestone planned ahead, never sets an anchor: it counts once its date has passed and the timeline is computed again.
+An event dated in the future, such as a milestone planned ahead, never sets a headline date: it counts once its date has passed and the timeline is computed again.
 
 ### Headline dates of a type
 
-The anchors a type shows are its headline dates. Administrators choose them in **Settings > Customization > Entity types**, on the **Timeline** tab of Incident, Incident Response, Request for Information or Request for Takedown: one switch per anchor, in the order the timelines show them. First adversary activity, First detection, First response, Containment and Closure are shown by default; Eradication, Recovery and Notification are hidden by default. At least one date stays shown, and a change applies at once to every timeline of the type.
+Each type shows a choice of these dates. Administrators choose them in **Settings > Customization > Entity types**, on the **Timeline** tab of Incident, Incident Response, Request for Information or Request for Takedown: one switch per date, in the order the timelines show them. First adversary activity, First detection, First response, Containment and Closure are shown by default; Eradication, Recovery and Notification are hidden by default. At least one date stays shown, and a change applies at once to every timeline of the type.
 
 ![Timeline tab of the customization of incident responses](assets/case-timeline-headline-dates-customization.png)
 
-The headline dates of the type are the ones the timeline shows at its top and on the overview strip, the dashed lines of the lanes and the dashboard widget, the anchors of the exports (SVG, PNG, PDF), the anchor filters of the lists of the type, and the changes the **Timeline anchor changed** trigger notifies. Every anchor is still computed and stored, so that switching a date on shows it at once, and the API returns them all. The **Timeline settings** drawer of a case lists the headline dates of its type, with a link to the **Timeline** tab for the users who can customize the types.
+The headline dates of the type are the ones the timeline shows at its top and on the overview strip, the dashed lines of the lanes and the dashboard widget, the dates of the exports (SVG, PNG, PDF), the date filters of the lists of the type, and the changes the **Headline date changed** trigger notifies. Every headline date is still computed and stored, so that switching a date on shows it at once, and the API returns them all. The **Timeline settings** drawer of a case lists the headline dates of its type, with a link to the **Timeline** tab for the users who can customize the types.
 
 ### Containment from a task
 
-On the cases (Incident Response, Request for Information, Request for Takedown), when a task reaches the last status of its workflow, its edition form and its **Details** card offer the switch **This task completes the containment**. Once it is on, the completion of the task records the containment of the case: the first such completion, or the first **Containment** milestone if it is earlier, sets the containment anchor. The switch stays visible while it is on, also if the task is reopened, and travels with the task in its STIX representation (timeline extension). The task edition form also edits the labels of the task.
+On the cases (Incident Response, Request for Information, Request for Takedown), when a task reaches the last status of its workflow, its edition form and its **Details** card offer the switch **This task completes the containment**. Once it is on, the completion of the task records the containment of the case: the first such completion, or the first **Containment** milestone if it is earlier, sets the **Containment** headline date. The switch stays visible while it is on, also if the task is reopened, and travels with the task in its STIX representation (timeline extension). The task edition form also edits the labels of the task.
 
 The `containment` label is kept as the legacy route: a completed task labelled `containment` (in any case) still records the containment, so that the tasks marked before the switch existed keep their meaning.
 
-![Anchors of an incident response once the containment is recorded](assets/case-timeline-anchors-containment.png)
+![Headline dates of an incident response once the containment is recorded](assets/case-timeline-anchors-containment.png)
 
-The overview of incidents and cases shows the same anchors with a miniature of the lanes:
+The overview of incidents and cases shows the same headline dates with a miniature of the lanes:
 
 ![Timeline strip on the overview of an incident response](assets/case-timeline-overview-strip.png)
 
@@ -106,9 +106,9 @@ The strip counts and draws the events the timeline settings show. It groups them
 
 ![Timeline strip of a case whose events are all hidden by the timeline settings](assets/case-timeline-overview-widget-hidden.png)
 
-Hidden events never move an anchor. Every reader of the case sees the same anchors, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves an anchor. Click an anchor to center the timeline on it.
+Hidden events never move a headline date. Every reader of the case sees the same headline dates, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves a headline date. Click a headline date to center the timeline on it.
 
-The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last generation of the timeline from the knowledge; a milestone, a pin or a hidden event recomputes the anchors without moving it, and the nightly consistency pass regenerates the timelines whose `computed_at` is older than `timeline_manager:consistency_max_age_days`) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date; the lists offer the filters of the headline dates of the type, the API filters and sorts on every anchor), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
+The headline dates are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last generation of the timeline from the knowledge; a milestone, a pin or a hidden event recomputes the headline dates without moving it, and the nightly consistency pass regenerates the timelines whose `computed_at` is older than `timeline_manager:consistency_max_age_days`) and `changed_at` (last change of one of the dates). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date; the lists offer the filters of the headline dates of the type, the API filters and sorts on every headline date), and `changed_at` lets integrations fetch only the containers whose headline dates changed since their last synchronization. OpenCTI does not aggregate them into metrics.
 
 ## Overview layout
 
@@ -138,7 +138,7 @@ When the case holds no dated knowledge yet, the Timeline tab explains what fills
 
 ![Timeline tab of an incident without dated knowledge yet](assets/case-timeline-first-use-empty.png)
 
-When the events cannot be loaded, the tab says so, suggests checking the connection, and offers **Retry**; the anchors and the toolbar stay available.
+When the events cannot be loaded, the tab says so, suggests checking the connection, and offers **Retry**; the headline dates and the toolbar stay available.
 
 ![Timeline tab when its events cannot be loaded](assets/case-timeline-error-state.png)
 
@@ -176,14 +176,14 @@ Events that come from an investigation step show its state with the seven step s
 ### Pin, hide and annotate
 
 - **Pin** keeps an event highlighted and available through the **Pinned only** filter.
-- **Hide** removes an event from the default view (use **Show hidden events** to see it again: hidden events are drawn lighter, hidden windows also hatched, and the legend under the lanes and their tooltip name them). Hidden events never move an anchor.
+- **Hide** removes an event from the default view (use **Show hidden events** to see it again: hidden events are drawn lighter, hidden windows also hatched, and the legend under the lanes and their tooltip name them). Hidden events never move a headline date.
 - **Annotate** adds the analyst context of an event.
 
 Derived events follow the knowledge of the case: they can be pinned, hidden and annotated, but not edited or deleted. Pins, hidden flags and annotations survive every regeneration.
 
 ### Milestones
 
-Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, an event, a description and markings, and can be pinned at creation. The **Event** list starts with the milestones (Milestone, Containment, Eradication, Recovery, Notification), followed by every other event of the timeline, so that something the knowledge of the case does not hold yet (a sighting, a technique) can be recorded by hand. A **Containment** milestone records the containment anchor. A new event starts as a **Milestone** of the **Response** lane, and picking **Containment**, **Eradication**, **Recovery** or **Notification** selects the **Response** lane, even if another lane was picked before; the lane can still be changed afterwards.
+Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, an event, a description and markings, and can be pinned at creation. The **Event** list starts with the milestones (Milestone, Containment, Eradication, Recovery, Notification), followed by every other event of the timeline, so that something the knowledge of the case does not hold yet (a sighting, a technique) can be recorded by hand. A **Containment** milestone sets the **Containment** headline date. A new event starts as a **Milestone** of the **Response** lane, and picking **Containment**, **Eradication**, **Recovery** or **Notification** selects the **Response** lane, even if another lane was picked before; the lane can still be changed afterwards.
 
 Milestones can be edited and deleted by the users who can update the case.
 
@@ -229,7 +229,7 @@ Incident and case timelines are not available in public dashboards.
 
 Two event types are available in live triggers and digests (see [Notifications and alerting](notifications.md)):
 
-- **Timeline anchor changed**: a headline date of an incident or case moved, for example when the containment is recorded or the case is closed. An anchor the type does not show (see [Headline dates of a type](#headline-dates-of-a-type)) is not notified.
+- **Headline date changed**: a headline date of an incident or case moved, for example when the containment is recorded or the case is closed. A date the type does not show (see [Headline dates of a type](#headline-dates-of-a-type)) is not notified.
 - **Timeline milestone added**: an analyst or an integration added a milestone.
 
 The trigger filters apply to the incident or case, and only users who can access it (and the milestone) are notified.
@@ -237,7 +237,7 @@ The trigger filters apply to the incident or case, and only users who can access
 ## Access and security
 
 - Timeline events inherit the markings and authorized members of the container, and the markings of the element they come from or point to (a milestone linked to a marked element carries its markings). Users only see the events of the elements they can access, in the timeline, the widget and the exports.
-- Some derived events also carry data of other elements: a technique is dated by its `uses` and `targets` relationships, a hunt run shown on its hunt tells about the run, and a finding of an investigation is dated and named by its run. Such an event carries their markings too, and users only see it when they can access each of these elements as well. The anchors and the timeline exchanged with the container only use events that every reader of the container can see.
+- Some derived events also carry data of other elements: a technique is dated by its `uses` and `targets` relationships, a hunt run shown on its hunt tells about the run, and a finding of an investigation is dated and named by its run. Such an event carries their markings too, and users only see it when they can access each of these elements as well. The headline dates and the timeline exchanged with the container only use events that every reader of the container can see.
 - Reading the timeline requires access to the container. Adding milestones, pinning, hiding, annotating, changing the settings and regenerating require the capability to update knowledge and edit access to the container; milestones can only be edited or deleted by these users, and never inside a draft.
 
 ## Exchange and API

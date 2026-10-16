@@ -138,4 +138,4 @@ When a new version of OpenCTI adds a widget to the overview of an entity type, a
 
 ### Timeline headline dates
 
-Incident, Incident Response, Request for Information and Request for Takedown have a **Timeline** tab: it chooses the headline dates their timelines show, mark on their lanes, offer as filters of their lists and notify through the **Timeline anchor changed** trigger. See [Headline dates of a type](../usage/case-timeline.md#headline-dates-of-a-type).
+Incident, Incident Response, Request for Information and Request for Takedown have a **Timeline** tab: it chooses the headline dates their timelines show, mark on their lanes, offer as filters of their lists and notify through the **Headline date changed** trigger. See [Headline dates of a type](../usage/case-timeline.md#headline-dates-of-a-type).

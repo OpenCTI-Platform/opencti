@@ -311,7 +311,7 @@ const ContainerTimelineEventDrawer = ({
         <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
           <DialogContent>
             <DialogTitle>{t_i18n('Delete the event {title}?', { values: { title: cropLongTokens(event.title) } })}</DialogTitle>
-            <DialogBody>{t_i18n('The event is removed from the timeline and its anchors are recomputed.')}</DialogBody>
+            <DialogBody>{t_i18n('The event is removed from the timeline and its headline dates are recomputed.')}</DialogBody>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setConfirmDelete(false)}>{t_i18n('Cancel')}</Button>
               <Button

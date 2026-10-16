@@ -34,7 +34,7 @@ export const EntitySettingTimelineDates = ({ entityType, headlineDates, disabled
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="entity-setting-timeline">
       <Text variant="content-base" as="p" style={{ margin: 0 }}>
-        {t_i18n('The dates shown above the timelines of this type. They are marked on the lanes, offered as filters of the lists, and notified by the Timeline anchor changed trigger. At least one date stays shown.')}
+        {t_i18n('The dates shown above the timelines of this type. They are marked on the lanes, offered as filters of the lists, and notified by the Headline date changed trigger. At least one date stays shown.')}
       </Text>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: theme.spacing(2, 3) }}>
         {TIMELINE_ANCHOR_KEYS.map((key) => {

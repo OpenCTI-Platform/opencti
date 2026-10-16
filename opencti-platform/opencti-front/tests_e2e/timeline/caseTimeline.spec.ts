@@ -33,7 +33,7 @@ const timelineCodename = () => {
  * Restrict the view to one lane, open the events filter and clear the lanes.
  * Open an event with the keyboard, pin it and filter on pinned events.
  * Add a milestone from the drawer form, hide it and show hidden events again.
- * Record a containment and check the containment anchor.
+ * Record a containment and check the Containment headline date.
  * Export the timeline as CSV.
  * Open the timeline settings.
  * Fail the loading of the events: the error panel offers to retry, and the retry loads them.

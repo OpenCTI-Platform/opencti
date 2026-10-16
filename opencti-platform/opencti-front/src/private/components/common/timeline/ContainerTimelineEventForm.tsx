@@ -238,7 +238,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               label={t_i18n('Event')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
-              helpertext={t_i18n('What happened. Adding a milestone (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the containment anchor.')}
+              helpertext={t_i18n('What happened. Adding a milestone (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the Containment headline date.')}
               onChange={(_: string, kind: string) => {
                 const lane = TIMELINE_KIND_DEFAULT_LANES[kind];
                 if (lane) setFieldValue('lane', lane);

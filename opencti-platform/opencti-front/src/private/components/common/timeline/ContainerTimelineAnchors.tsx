@@ -53,7 +53,7 @@ const ContainerTimelineAnchorList = ({ anchors, withTasks, headlineDates }: Cont
   // The time elapsed counts from the first adversary activity only where it is shown
   const origin = headlineDates.includes('first_adversary_activity') ? toTime(anchors?.first_adversary_activity) : null;
   return (
-    <div role="list" aria-label={t_i18n('Timeline anchors')} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }} data-testid="timeline-anchors">
+    <div role="list" aria-label={t_i18n('Headline dates')} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }} data-testid="timeline-anchors">
       {headlineDates.map((key) => {
         const time = toTime(anchors?.[key]);
         const elapsed = time !== null && origin !== null && key !== 'first_adversary_activity' ? elapsedLabel(origin, time) : null;
@@ -104,7 +104,7 @@ const ContainerTimelineAnchors = ({
   return (
     <div
       role="list"
-      aria-label={t_i18n('Timeline anchors')}
+      aria-label={t_i18n('Headline dates')}
       style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: theme.spacing(1.25) }}
       data-testid="timeline-anchors"
     >

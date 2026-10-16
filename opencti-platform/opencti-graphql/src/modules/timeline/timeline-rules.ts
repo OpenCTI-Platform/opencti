@@ -595,7 +595,7 @@ export const isContainmentTask = (task: TimelineElementData): boolean => task.co
 
 const taskRule: TimelineRule = {
   id: 'task-lifecycle',
-  label: 'Tasks created, due and completed (the completion of a task that completes the containment sets the containment anchor)',
+  label: 'Tasks created, due and completed (the completion of a task that completes the containment sets the Containment headline date)',
   kinds: ['task_created', 'task_due', 'task_completed'],
   derive: (input) => input.tasks.flatMap((task) => {
     const events: DerivedTimelineEvent[] = [];
