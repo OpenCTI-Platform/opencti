@@ -135,7 +135,7 @@ export const buildHealthTransitionMessage = (element: { name: string; entity_typ
 // endregion
 
 // region api
-const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
+export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
     const definition = HEALTH_CHECK_REGISTRY[check.health_check_code];
     if (!definition) {

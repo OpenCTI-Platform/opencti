@@ -20,7 +20,7 @@ export interface HealthCheckIngestor {
 }
 
 // What decides whether a check applies, computed once at the beginning of each period of the ingestion health manager
-export interface HealthCheckEnablingContext {
+export interface HealthCheckEnablingContext extends Pick<HealthContext, 'isStopped'> {
   // Connectors pinging continuously
   pingingConnectorsIds: Set<string>;
 }
@@ -32,6 +32,8 @@ export interface HealthContext {
   evaluatedAt: string;
   // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
   runtimeData?: RuntimeData;
+  // Stopped on purpose (by the composer, or a feed or sync switched off): wins over every check
+  isStopped?: boolean;
 }
 
 export interface HealthChecksContext extends HealthContext, HealthCheckEnablingContext {
@@ -57,6 +59,7 @@ interface ConfigurationCheckDefinition extends BaseHealthCheckDefinition {
 
 // A runtime check is judged from a value reported by the sources: the name of its entry in RUNTIME_DATA.
 // The value is undefined when the sources reported nothing.
+// Its isEnabled must be false for a stopped ingestor: nothing is read for it, a missing value would be reported as a failure.
 type RuntimeCheckDefinition = {
   [T in RuntimeDataType]: BaseHealthCheckDefinition & {
     kind: IngestionHealthCheckKind.Runtime;
@@ -135,8 +138,8 @@ export const HEALTH_CHECK_REGISTRY = {
     kind: IngestionHealthCheckKind.Runtime,
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'No heartbeat received',
-    // Only the connectors pinging continuously: the others would be missing their heartbeat between two runs
-    isEnabled: (ingestor, { pingingConnectorsIds }) => isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
+    // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
+    isEnabled: (ingestor, { isStopped, pingingConnectorsIds }) => !isStopped && isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
     runtimeData: 'heartbeat',
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   },
