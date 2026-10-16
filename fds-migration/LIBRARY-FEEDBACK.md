@@ -2366,9 +2366,7 @@ only the menu row lacks it.
 
 **Workaround.** FDS-WORKAROUND #64 in `SettingsMapSource.tsx`: the Delete row
 sets its text colour inline from the theme's `palette.error.main`, and its icon
-takes MUI's `color="error"`. Same marker in the workflow editor's edge menu
-(`workflow/EdgeTypes/TransitionEdge.tsx`): its *Delete connection* row sets the
-same inline colour, which its library `Icon` inherits.
+takes MUI's `color="error"`.
 
 **Ask.** A `destructive` tone on `MenuItem`, covering the text, the icon slot and
 the hover state, named like the button family's.
@@ -2636,26 +2634,3 @@ on keyboard focus, that the screen reader announces the button as
 disabled, and that a click or Enter does nothing. In the graph toolbar,
 also check that each tool keeps its size and alignment, which the span's
 `inline-flex` holds today.
-
----
-
-## 69. `IconButton` stops at 24px, so a 16px badge on a canvas edge needs a size override
-
-**Needed.** The workflow editor shows a 16px badge in the middle of a hovered
-transition edge. It opens the edge menu (*Insert status here*, *Delete
-connection*). At 24px the badge covers the edge's own route and the arrowheads
-of short edges.
-
-**Today.** `iconButtonVariants` has `size: "md" | "sm"`, and `sm` is `h-6 w-6`
-(24px). `ICON_SIZES` starts at 16.
-
-**Workaround.** FDS-WORKAROUND #69 in `workflow/EdgeTypes/TransitionEdge.tsx`:
-the `sm` `IconButton` used as the `MenuTrigger` gets an inline `width`,
-`height` and `minWidth` of 16px, and its glyph uses the smallest icon size (16).
-
-**Ask.** An `xs` size on `IconButton` (16px box) for dense canvas controls,
-with an icon size that fits it (12).
-
-**Removal test.** At a pin with `size="xs"`: use it on the edge badge, remove
-the inline size and the marker, and check that the badge is 16px, centred on
-the edge, and that the menu still opens from it.
