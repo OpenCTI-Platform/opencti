@@ -3,7 +3,7 @@
  * (`workflow-e2e-product-test-plan.md`). Starts a fresh draft and fast-forwards it to
  * MO MANAGER REVIEW (equivalent to happy-flow steps 1-7), instead of replaying the full happy path.
  */
-import { expect, test } from '../fixtures/baseFixtures';
+import { test } from '../fixtures/baseFixtures';
 import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import DraftOverviewPageModel from '../model/drafts/draftOverview.pageModel';
 import { advanceDraftToStatus, createThreatAdvisoryDraft, openDraft, USERS } from './threatAdvisoryDraftHelpers';
@@ -22,8 +22,8 @@ test('Threat Advisory - rejection by ManagerOrgA', { tag: ['@ee', '@workflow'] }
     await openDraft(page, draftId, USERS.managerOrgA, 'overview');
     await overview.assertCanEdit();
     await toolbar.assertStatus('MO MANAGER REVIEW');
-    await expect(toolbar.getTransitionsActions().getByText('Reject')).toBeVisible();
-    await expect(toolbar.getTransitionsActions().getByText('Send to OrgC for review')).toBeVisible();
+    await toolbar.assertTransitionVisible('Reject');
+    await toolbar.assertTransitionVisible('Send to OrgC for review');
   });
 
   await test.step('Step 2: selecting "Reject" requires a comment before confirming', async () => {
