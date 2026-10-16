@@ -1321,6 +1321,7 @@ const recordReportedHits = async (
       iocKeysByHit,
       sightedIdsByHit,
       seenAt: reportedAt,
+      objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
     });
     const { newHits, recurringHits } = splitHitsByKeys(hits.count, newCount, recurringCount);
     return { hits_identified: true, hits_new_count: newHits, hits_recurring_count: recurringHits };
@@ -1677,6 +1678,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           seenAt: observedAt.toISOString(),
           keepKnown: !await isHuntRunRemembered(context, current),
           uncountedOnly: true,
+          objectMarking: current[RELATION_OBJECT_MARKING] ?? [],
         };
         // The run takes its hits before the records count them for it: evidence sent again after a failed patch finds
         // its hits uncounted and counts them, never leaving them out as counted already
