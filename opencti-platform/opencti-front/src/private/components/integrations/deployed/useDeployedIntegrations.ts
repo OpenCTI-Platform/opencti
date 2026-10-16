@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
-import { type IngestionHealthData } from '@components/data/connectors/IngestionHealthChip';
+import type { IngestionHealthChip_ingestionHealth$key } from '@components/data/connectors/__generated__/IngestionHealthChip_ingestionHealth.graphql';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
@@ -44,7 +44,7 @@ export interface DeployedIntegrationItem {
   detailUrl: string;
   searchText: string;
   // Ingestion health (connectors, feeds and syncs; forms have none)
-  ingestionHealth?: IngestionHealthData | null;
+  ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
