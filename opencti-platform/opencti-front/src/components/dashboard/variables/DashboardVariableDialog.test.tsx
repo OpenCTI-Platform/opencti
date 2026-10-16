@@ -36,6 +36,33 @@ vi.mock('./DashboardVariableValueInput', () => ({
   ),
 }));
 
+vi.mock('./ValueInputs/SelectionValuesInput', () => ({
+  default: ({ values, onChange, label, error }: { values: string[]; onChange: (values: string[]) => void; label: string; error?: string }) => (
+    <>
+      <input
+        aria-label={label}
+        data-testid="selection-input"
+        value={values.join(',')}
+        onChange={(event) => onChange(event.target.value ? event.target.value.split(',') : [])}
+      />
+      {error && <span>{error}</span>}
+    </>
+  ),
+}));
+// Hoisted: the mock of the rule editor below emits them.
+const { rule, otherRule } = vi.hoisted(() => {
+  const labelRule = (labelId: string) => ({ mode: 'and', filters: [{ key: 'objectLabel', values: [labelId], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  return { rule: labelRule('label-1'), otherRule: labelRule('label-2') };
+});
+vi.mock('./RestrictionFiltersField', () => ({
+  default: ({ onChange, entityTypes }: { onChange: (filters: unknown) => void; entityTypes: string[] }) => (
+    <div data-testid="rule-editor" data-entity-types={entityTypes.join()}>
+      <button type="button" onClick={() => onChange(rule)}>Set rule</button>
+      <button type="button" onClick={() => onChange(otherRule)}>Set other rule</button>
+    </div>
+  ),
+}));
+
 import DashboardVariableDialog from './DashboardVariableDialog';
 
 const userContext = createMockUserContext({
@@ -141,19 +168,134 @@ describe('DashboardVariableDialog', () => {
     expect(screen.queryByRole('textbox', { name: 'Type parameter' })).not.toBeInTheDocument();
   });
 
-  it('offers nothing but No restriction, checked, in the restriction group', async () => {
-    const { user } = renderDialog();
-    await user.type(nameInput(), 'Label');
-    await user.click(await screen.findByRole('combobox', { name: /Type/ }));
-    await user.click(screen.getByRole('option', { name: 'Label' }));
-    const group = await screen.findByRole('radiogroup');
-    const radios = within(group).getAllByRole('radio');
-    expect(radios).toHaveLength(1);
-    expect(radios[0]).toBeChecked();
-    expect(radios[0]).toBeEnabled();
-    expect(within(group).getByText('No restriction')).toBeInTheDocument();
-    expect(screen.queryByText('Manual selection')).not.toBeInTheDocument();
-    expect(screen.queryByText('By filter')).not.toBeInTheDocument();
+  describe('restriction', () => {
+    const chooseType = async (user: ReturnType<typeof renderDialog>['user'], typeLabel: string) => {
+      await user.type(nameInput(), 'Var');
+      await user.click(await screen.findByRole('combobox', { name: /Type/ }));
+      await user.click(screen.getByRole('option', { name: typeLabel }));
+    };
+    const chooseEntityType = async (user: ReturnType<typeof renderDialog>['user']) => {
+      await user.click(await screen.findByRole('combobox', { name: /Entity types/ }));
+      await user.click(screen.getByRole('option', { name: 'Malware' }));
+      await user.keyboard('{Escape}');
+    };
+    const radio = (name: string) => within(screen.getByRole('radiogroup')).getByRole('radio', { name });
+
+    it('offers the three modes for an entity variable, No restriction checked by default', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      expect(within(screen.getByRole('radiogroup')).getAllByRole('radio')).toHaveLength(3);
+      expect(radio('No restriction')).toBeChecked();
+      expect(radio('Manual selection')).toBeEnabled();
+      expect(radio('By filter')).toBeEnabled();
+    });
+
+    it('does not offer By filter for a label variable', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      expect(within(screen.getByRole('radiogroup')).getAllByRole('radio')).toHaveLength(2);
+      expect(screen.queryByRole('radio', { name: 'By filter' })).not.toBeInTheDocument();
+    });
+
+    it('creates a variable restricted to a selection, its default value among the selected values', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.type(screen.getByTestId('selection-input'), 'label-1,label-2');
+      const valueInput = screen.getByTestId('value-input');
+      expect(JSON.parse(valueInput.dataset.variable ?? '').restriction).toEqual({ mode: 'selection', values: ['label-1', 'label-2'] });
+      await user.type(valueInput, 'label-2');
+      await waitFor(() => expect(submit()).toBeEnabled());
+      await user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+      expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'label',
+        restriction: { mode: 'selection', values: ['label-1', 'label-2'] },
+        defaultValue: 'label-2',
+      }));
+    });
+
+    it('keeps Create disabled while the selection is empty, or the default value is outside of it', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.type(screen.getByTestId('value-input'), 'label-3');
+      expect(submit()).toBeDisabled();
+      await user.type(screen.getByTestId('selection-input'), 'label-1');
+      expect(submit()).toBeDisabled();
+      expect(mocks.upsert).not.toHaveBeenCalled();
+    });
+
+    it('forgets the default value removed from the selection', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.type(screen.getByTestId('selection-input'), 'label-1,label-2');
+      await user.type(screen.getByTestId('value-input'), 'label-2');
+      await user.clear(screen.getByTestId('selection-input'));
+      await user.type(screen.getByTestId('selection-input'), 'label-1');
+      expect(screen.getByTestId('value-input')).toHaveValue('');
+    });
+
+    it('creates a variable restricted by filters, searching its default value within the rule', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      await user.click(radio('By filter'));
+      expect(screen.getByTestId('rule-editor')).toHaveAttribute('data-entity-types', 'Malware');
+      expect(submit()).toBeDisabled();
+      await user.click(screen.getByRole('button', { name: 'Set rule' }));
+      const valueInput = screen.getByTestId('value-input');
+      expect(JSON.parse(valueInput.dataset.variable ?? '').restriction).toEqual({ mode: 'filters', filters: rule });
+      await user.type(valueInput, 'malware-1');
+      await waitFor(() => expect(submit()).toBeEnabled());
+      await user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledTimes(1));
+      expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({
+        type: 'entity',
+        restriction: { mode: 'filters', filters: rule },
+        defaultValue: 'malware-1',
+      }));
+    });
+
+    it('forgets the default value when the rule changes', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      await user.click(radio('By filter'));
+      await user.click(screen.getByRole('button', { name: 'Set rule' }));
+      await user.type(screen.getByTestId('value-input'), 'malware-1');
+      await user.click(screen.getByRole('button', { name: 'Set other rule' }));
+      expect(screen.getByTestId('value-input')).toHaveValue('');
+    });
+
+    it('forgets the default value when the mode changes, and finds the selection back', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.type(screen.getByTestId('selection-input'), 'label-1');
+      await user.type(screen.getByTestId('value-input'), 'label-1');
+      await user.click(radio('No restriction'));
+      expect(screen.getByTestId('value-input')).toHaveValue('');
+      expect(screen.queryByTestId('selection-input')).not.toBeInTheDocument();
+      await user.click(radio('Manual selection'));
+      expect(screen.getByTestId('selection-input')).toHaveValue('label-1');
+      expect(screen.getByTestId('value-input')).toHaveValue('');
+    });
+
+    it('goes back to No restriction when the type changes to a type without restriction', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Label');
+      await user.click(radio('Manual selection'));
+      await user.click(screen.getByRole('combobox', { name: /Type/ }));
+      await user.click(screen.getByRole('option', { name: 'Text' }));
+      expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+      await user.type(screen.getByTestId('value-input'), 'Energy');
+      await waitFor(() => expect(submit()).toBeEnabled());
+      await user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ type: 'text', restriction: { mode: 'none' } })));
+    });
   });
 
   it.each(['Boolean', 'Date'])('starts a %s variable without default value, and keeps Create disabled until one is chosen', async (typeLabel) => {
@@ -545,31 +687,33 @@ describe('DashboardVariableDialog', () => {
         defaultValue: 'label-1',
       };
       const { user } = renderDialog({ variable: restricted, existingVariables: [restricted] });
-      const radios = within(await screen.findByRole('radiogroup')).getAllByRole('radio');
-      const manual = screen.getByRole('radio', { name: 'Manual selection' });
-      expect(radios).toContain(manual);
+      const manual = within(await screen.findByRole('radiogroup')).getByRole('radio', { name: 'Manual selection' });
       expect(manual).toBeChecked();
-      expect(manual).toBeDisabled();
+      expect(manual).toBeEnabled();
+      expect(screen.getByTestId('selection-input')).toHaveValue('label-1,label-2');
       await user.type(nameInput(), 's');
       await user.click(submit());
       await waitFor(() => expect(mocks.onClose).toHaveBeenCalledTimes(1));
       expect(mocks.upsert).toHaveBeenCalledWith({ ...restricted, name: 'Countrys' });
     });
 
-    it('shows the filters restriction as a disabled By filter option', async () => {
-      const filters = { mode: 'and', filters: [], filterGroups: [] };
+    it('resends the filters restriction untouched when the name is edited', async () => {
       const restricted: DashboardVariable = {
         id: '33333333-3333-4333-8333-333333333333',
         name: 'Actor',
         type: 'entity',
         entityTypes: ['Malware'],
-        restriction: { mode: 'filters', filters },
+        restriction: { mode: 'filters', filters: rule },
         defaultValue: 'abc',
       };
-      renderDialog({ variable: restricted, existingVariables: [restricted] });
+      const { user } = renderDialog({ variable: restricted, existingVariables: [restricted] });
       const byFilter = await screen.findByRole('radio', { name: 'By filter' });
       expect(byFilter).toBeChecked();
-      expect(byFilter).toBeDisabled();
+      expect(byFilter).toBeEnabled();
+      await user.type(nameInput(), 's');
+      await user.click(submit());
+      await waitFor(() => expect(mocks.onClose).toHaveBeenCalledTimes(1));
+      expect(mocks.upsert).toHaveBeenCalledWith({ ...restricted, name: 'Actors' });
     });
   });
 });
