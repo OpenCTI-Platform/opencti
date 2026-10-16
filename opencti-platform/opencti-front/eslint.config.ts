@@ -12,8 +12,10 @@ import stylistic from '@stylistic/eslint-plugin';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default defineConfig([
-  // Build and tool output is already named once, in `.gitignore`.
-  includeIgnoreFile(fileURLToPath(new URL('.gitignore', import.meta.url))),
+  includeIgnoreFile(
+    [fileURLToPath(new URL('../../.gitignore', import.meta.url)), fileURLToPath(new URL('.gitignore', import.meta.url))],
+    { gitignoreResolution: true },
+  ),
 
   {
     ignores: [

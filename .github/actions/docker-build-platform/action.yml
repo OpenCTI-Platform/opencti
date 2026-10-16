@@ -46,7 +46,7 @@ runs:
     - name: Build (platform)
       uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
       with:
-        context: opencti-platform
+        context: .
         file: opencti-platform/Dockerfile${{ inputs.docker_image_suffix }}
         push: 'false'
         outputs: type=docker,dest=/tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
