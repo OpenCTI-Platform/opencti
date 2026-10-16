@@ -646,4 +646,12 @@ describe('taskList', () => {
 
     expect(processed).toBe(true);
   });
+
+  it('should complete the list task when the callback fails, as before it was awaited', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'entity-1' }] as any);
+    const callback = vi.fn().mockRejectedValue(new Error('queue unavailable'));
+
+    await expect(taskList(testContext, ADMIN_USER, { id: 'task-id', task_ids: ['entity-1'] }, callback)).resolves.toBeUndefined();
+    expect(callback).toHaveBeenCalledTimes(1);
+  });
 });
