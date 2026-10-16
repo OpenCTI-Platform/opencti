@@ -302,6 +302,7 @@ const watchBody = (response: Response, { onProgress, onEnd, toError }: BodyWatch
     },
   });
   source.on('error', (error) => watched.destroy(toError(error)));
+  watched.on('error', () => undefined);
   watched.on('close', () => {
     source.destroy();
     onEnd();
