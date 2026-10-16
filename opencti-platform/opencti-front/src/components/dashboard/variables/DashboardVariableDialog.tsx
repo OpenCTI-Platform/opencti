@@ -153,6 +153,9 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
   const { t_i18n } = useFormatter();
   const { upsert } = useDashboardVariableMutations(workspaceId);
   const isEditing = variable !== undefined;
+  // The restriction stored on the variable. One its type does not support (a manifest written elsewhere) is still
+  // shown, read only, so that it can be left, and found again after another mode was tried.
+  const storedRestrictionMode = variable?.restriction.mode ?? 'none';
   const initialValues = useMemo(() => (variable ? variableToDraft(variable) : emptyDraft), [variable]);
   // Kept for the whole life of the dialog: submitting again after a failure must not create a second variable.
   const [newId] = useState(() => uuid());
@@ -212,6 +215,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
           const parameter = type ? TYPE_PARAMETER[type] : undefined;
           // The restriction and the default value wait for the type and for its parameter, which they depend on.
           const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
+          const isRestrictable = !type || RESTRICTABLE_TYPES.includes(type);
           // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
           // the rule with it. They only change in creation: they are locked in edition.
           const forgetDefaultValue = () => {
@@ -279,9 +283,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                   />
                 )}
                 {parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
-                {/* A type that cannot be restricted shows no restriction, unless it holds one (a manifest written elsewhere):
-                    it can then be left. */}
-                {(!type || RESTRICTABLE_TYPES.includes(type) || values.restrictionMode !== 'none') && (
+                {/* A type that cannot be restricted shows no restriction, unless it holds one. */}
+                {(isRestrictable || storedRestrictionMode !== 'none') && (
                   <RadioGroup
                     aria-label={t_i18n('Restriction')}
                     orientation="vertical"
@@ -289,12 +292,10 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     onValueChange={onRestrictionModeChange}
                   >
                     <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
-                    {/* A type without restriction only shows the one it holds, so that it can be left. */}
-                    {(!type || RESTRICTABLE_TYPES.includes(type) || values.restrictionMode === 'selection') && (
+                    {(isRestrictable || storedRestrictionMode === 'selection') && (
                       <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
                     )}
-                    {/* Also shown for another type that holds one (a manifest written elsewhere), so that it can be left. */}
-                    {(type === 'entity' || values.restrictionMode === 'filters') && (
+                    {(type === 'entity' || storedRestrictionMode === 'filters') && (
                       <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />
                     )}
                   </RadioGroup>
@@ -309,7 +310,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     variable={draftToVariable({ ...values, restrictionMode: 'none' }, values.id ?? 'draft')}
                     label={t_i18n('Values')}
                     values={values.selectionValues}
-                    disabled={isTypeIncomplete}
+                    // A type that cannot be restricted has no values to search: its selection is only shown.
+                    disabled={isTypeIncomplete || !isRestrictable}
                     // Shown as soon as the mode is chosen: Create stays disabled until the selection is valid.
                     error={errors.selectionValues}
                     onChange={(selectionValues) => {

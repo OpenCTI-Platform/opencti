@@ -57,6 +57,17 @@ describe('useRestrictedEntitySearch', () => {
     expect(hook.result.current.options).toEqual([]);
   });
 
+  it('keeps the options when the rule sent does not change', () => {
+    let filters = rule;
+    const { relayEnv, hook } = testRenderHook(() => useRestrictedEntitySearch(['Organization'], filters));
+    act(() => hook.result.current.search(''));
+    act(() => relayEnv.mock.resolveMostRecentOperation(answer([['org-1', 'Acme Corp']])));
+    // A filter without value yet is not sent.
+    filters = { ...rule, filters: [...rule.filters, { id: 'f2', key: 'objectMarking', values: [], operator: 'eq', mode: 'or' }] };
+    hook.rerender();
+    expect(hook.result.current.options).toHaveLength(1);
+  });
+
   it('offers nothing when the search fails', () => {
     const { relayEnv, hook } = testRenderHook(() => useRestrictedEntitySearch(['Organization'], rule));
     act(() => hook.result.current.search(''));

@@ -37,10 +37,17 @@ vi.mock('./DashboardVariableValueInput', () => ({
 }));
 
 vi.mock('./ValueInputs/SelectionValuesInput', () => ({
-  default: ({ values, onChange, label, error }: { values: string[]; onChange: (values: string[]) => void; label: string; error?: string }) => (
+  default: ({ values, onChange, label, error, disabled }: {
+    values: string[];
+    onChange: (values: string[]) => void;
+    label: string;
+    error?: string;
+    disabled?: boolean;
+  }) => (
     <>
       <input
         aria-label={label}
+        disabled={disabled}
         data-testid="selection-input"
         value={values.join(',')}
         onChange={(event) => onChange(event.target.value ? event.target.value.split(',') : [])}
@@ -758,7 +765,12 @@ describe('DashboardVariableDialog', () => {
       };
       const { user } = renderDialog({ variable: restricted, existingVariables: [restricted] });
       expect(await screen.findByRole('radio', { name: 'Manual selection' })).toBeChecked();
+      expect(screen.queryByRole('radio', { name: 'By filter' })).not.toBeInTheDocument();
+      // SelectionValuesInput is mocked as a plain input: its disabled state is what the dialog hands it.
+      expect(screen.getByTestId('selection-input')).toBeDisabled();
       await user.click(screen.getByRole('radio', { name: 'No restriction' }));
+      // The selection held can still be found again.
+      expect(screen.getByRole('radio', { name: 'Manual selection' })).toBeInTheDocument();
       await user.type(screen.getByTestId('value-input'), 'Europe');
       await user.type(nameInput(), 's');
       await user.click(submit());
