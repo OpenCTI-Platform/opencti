@@ -1,5 +1,5 @@
-import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { blueGrey, deepPurple, green, indigo, orange, red } from '@mui/material/colors';
+import { BellAlertOutline, BellCheckOutline, BellCogOutline, BellOffOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { resolveLink } from '../../../../utils/Entity';
@@ -10,6 +10,11 @@ export const colors: Record<string, string> = {
   update: deepPurple[500],
   delete: red[500],
   multiple: indigo[500],
+  // ingestion health transitions
+  critical: red[500],
+  degraded: orange[500],
+  recovered: green[500],
+  stopped: blueGrey[500],
 };
 
 export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
@@ -37,6 +42,13 @@ export const iconSelector = (operation: string) => {
       return <BellCogOutline style={{ color: colors[operation] }} />;
     case 'delete':
       return <BellRemoveOutline style={{ color: colors[operation] }} />;
+    case 'critical':
+    case 'degraded':
+      return <BellAlertOutline style={{ color: colors[operation] }} />;
+    case 'recovered':
+      return <BellCheckOutline style={{ color: colors[operation] }} />;
+    case 'stopped':
+      return <BellOffOutline style={{ color: colors[operation] }} />;
     case 'multiple':
       return (
         <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
