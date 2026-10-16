@@ -24,6 +24,10 @@ export const huntCountSetting = (setting: unknown, fallback: number, min = 1): n
 };
 const countConf = (key: string, fallback: number, min = 1): number => huntCountSetting(conf.get(key), fallback, min);
 
+// What a playbook hunt step does with the hunts the planner proposes: propose them for review, or create them active
+export const HUNT_AGENT_AUTONOMY_PROPOSE = 'propose';
+export const HUNT_AGENT_AUTONOMY_RUN = 'run';
+
 export const HUNT_CONFIG = {
   enabled: booleanConf('hunt_manager:enabled', true),
   lockKey: conf.get('hunt_manager:lock_key') || 'hunt_manager_lock',
@@ -55,6 +59,7 @@ export const HUNT_CONFIG = {
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
   previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
   maxHitRecordsPurgedPerTick: countConf('hunt_manager:max_hit_records_purged_per_tick', 10000),
+  agentHuntAutonomy: conf.get('hunt_manager:agent_hunt_autonomy') === HUNT_AGENT_AUTONOMY_RUN ? HUNT_AGENT_AUTONOMY_RUN : HUNT_AGENT_AUTONOMY_PROPOSE,
   scheduleLookbackMinutes: Number.isFinite(Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     ? Math.max(0, Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     : 15,

@@ -29,7 +29,17 @@ import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from '.
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import HuntEntitiesField from './HuntEntitiesField';
 import { HUNT_DIALOG_BODY_STYLE } from './hunt-layout-utils';
-import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
+import {
+  HUNT_PLANNER_INTENT,
+  HUNT_SOURCE_TYPES,
+  HUNT_TARGET_TYPES,
+  HUNT_TECHNIQUE_TYPES,
+  huntDraftWorkspacePath,
+  huntPlatformLabel,
+  huntQueryLanguageLabel,
+  huntTypeLabel,
+} from './hunt-utils';
+import { prismLanguageOf } from './HuntCodeEditor';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
 import { layerInputVars } from '../../../utils/fdsLayer';
 
@@ -57,6 +67,11 @@ const huntPlanDialogMutation = graphql`
         hypothesis
         hunt_type
         sigma_rule
+        native_queries {
+          platform
+          language
+          query
+        }
       }
     }
   }
@@ -153,6 +168,18 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
             <div>
               <Text variant="content-compact-bold">{t_i18n('Sigma rule')}</Text>
               <CodeBlock language="yaml" code={current.hunt.sigma_rule} customHeight="240px" />
+            </div>
+          )}
+          {(current.hunt.native_queries ?? []).length > 0 && (
+            <div data-testid="hunt-plan-native-queries">
+              <Text variant="content-compact-bold">{t_i18n('Native queries')}</Text>
+              <Text variant="content-compact">{t_i18n('Native queries override the Sigma translation on their platform.')}</Text>
+              {(current.hunt.native_queries ?? []).map((nativeQuery) => (
+                <div key={`${nativeQuery.platform}-${nativeQuery.language}`} style={{ marginTop: theme.spacing(1) }}>
+                  <Text variant="content-compact">{`${huntPlatformLabel(nativeQuery.platform)} - ${huntQueryLanguageLabel(nativeQuery.language)}`}</Text>
+                  <CodeBlock language={prismLanguageOf(nativeQuery.language)} code={nativeQuery.query} customHeight="auto" />
+                </div>
+              ))}
             </div>
           )}
         </>

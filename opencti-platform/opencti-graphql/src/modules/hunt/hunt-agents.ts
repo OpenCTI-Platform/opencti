@@ -1,4 +1,5 @@
 import Ajv, { type JSONSchemaType, type SchemaObject } from 'ajv';
+import sanitizeHtml from 'sanitize-html';
 import type { AuthContext } from '../../types/user';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -239,11 +240,18 @@ export const huntAgentRefusalErrors = (answer: unknown): string[] | null => {
     .map((error) => error.trim().substring(0, AGENT_REFUSAL_MAX_ERROR_LENGTH));
 };
 
+/** A security platform of a planner request: the native queries of a plan are kept for these platforms and languages only. */
+export interface HuntPlannerPlatform {
+  platform?: string | null;
+  languages: string[];
+}
+
 /**
  * Deterministic validation of a planner answer, the platform never trusts the model output:
- * strict schema, Sigma structure, bounded numbers, ATT&CK ids format and targets grounded on the input.
+ * strict schema, Sigma structure, bounded numbers, ATT&CK ids format and targets grounded on the input. Given the
+ * platforms of the request, the native queries written for another platform or language are dropped.
  */
-export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[]): HuntPlanSpec => {
+export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[], platforms: HuntPlannerPlatform[] | null = null): HuntPlanSpec => {
   if (!validatePlanSchema(raw)) {
     throw huntAgentError(HUNT_AGENT_FAILURE.invalidAnswer, 'The hunt planner answer does not match the hunt spec schema', { errors: ajv.errorsText(validatePlanSchema.errors) });
   }
@@ -254,6 +262,9 @@ export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[]): 
     nativeQueries = normalizeNativeQueries(spec.native_queries ?? []);
   } catch (error) {
     throw huntAgentError(HUNT_AGENT_FAILURE.invalidAnswer, `The hunt planner answer contains an invalid native query: ${(error as Error).message}`);
+  }
+  if (platforms) {
+    nativeQueries = nativeQueries.filter((query) => platforms.some((platform) => platform.platform === query.platform && platform.languages.includes(query.language)));
   }
   // A plan is proposed only if it can be activated: the logic rules of an active hunt apply
   const logicError = huntLogicError({ hunt_type: spec.hunt_type, sigma_rule: sigmaRule, native_queries: nativeQueries });
@@ -284,6 +295,69 @@ export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[]): 
     target_ids: Array.from(new Set((spec.target_ids ?? []).filter((id) => allowedTargets.has(id)))),
     rationale: (spec.rationale ?? '').trim(),
   };
+};
+
+export const HUNT_PLANNER_MAX_PROPOSALS = 3;
+export const HUNT_SOURCE_TEXT_MAX_LENGTH = 20000;
+// Below this, a text alone gives the planner too little to ground a hunt on
+export const HUNT_SOURCE_TEXT_MIN_LENGTH = 200;
+
+/** The plans of a planner answer, `{ "proposals": [...] }`; a bare plan object, as older planners answer, is the only proposal. */
+export const huntPlanProposals = (answer: unknown): unknown[] => {
+  if (answer && typeof answer === 'object' && !Array.isArray(answer)) {
+    const { proposals } = answer as { proposals?: unknown };
+    if (Array.isArray(proposals)) {
+      return proposals;
+    }
+  }
+  return [answer];
+};
+
+/**
+ * The valid plans of a planner answer, at most max of them: each plan is validated on its own (validateHuntPlanSpec)
+ * and an invalid one is dropped. Fails with the reason of the first invalid plan when none is valid.
+ */
+export const validateHuntPlanProposals = (answer: unknown, allowedTargetIds: string[], platforms: HuntPlannerPlatform[] | null, max: number): HuntPlanSpec[] => {
+  const proposals = huntPlanProposals(answer);
+  const plans: HuntPlanSpec[] = [];
+  let firstError: unknown = null;
+  for (let index = 0; index < proposals.length && plans.length < max; index += 1) {
+    try {
+      plans.push(validateHuntPlanSpec(proposals[index], allowedTargetIds, platforms));
+    } catch (error) {
+      firstError = firstError ?? error;
+    }
+  }
+  if (plans.length === 0) {
+    throw firstError ?? huntAgentError(HUNT_AGENT_FAILURE.invalidAnswer, 'The hunt planner answered without any plan');
+  }
+  return plans;
+};
+
+const BLOCK_END = /<\/(?:p|div|li|tr|h[1-6]|blockquote|pre|table)\s*>|<br\s*\/?>/gi;
+const TEXT_ENTITIES: [RegExp, string][] = [[/&nbsp;|\u00a0/g, ' '], [/&lt;/g, '<'], [/&gt;/g, '>'], [/&quot;/g, '"'], [/&#39;/g, '\''], [/&amp;/g, '&']];
+
+/**
+ * The text hunts are planned from when the knowledge holds no indicator nor detection rule: the name, description and
+ * content (as text) of the entity, separated by blank lines, cut on a word at HUNT_SOURCE_TEXT_MAX_LENGTH characters.
+ */
+export const buildHuntSourceText = (entity: { name?: string | null; description?: string | null; content?: string | null }) => {
+  const content = entity.content
+    ? TEXT_ENTITIES.reduce(
+        (text, [pattern, value]) => text.replace(pattern, value),
+        sanitizeHtml(entity.content.replace(BLOCK_END, '\n'), { allowedTags: [], allowedAttributes: {} }),
+      )
+    : '';
+  const text = [entity.name, entity.description, content]
+    .map((part) => (part ?? '').replace(/[ \t]+/g, ' ').replace(/\s*\n\s*\n\s*/g, '\n\n').trim())
+    .filter((part) => part.length > 0)
+    .join('\n\n');
+  if (text.length <= HUNT_SOURCE_TEXT_MAX_LENGTH) {
+    return text;
+  }
+  const cut = text.substring(0, HUNT_SOURCE_TEXT_MAX_LENGTH + 1);
+  const lastSpace = cut.search(/\s\S*$/);
+  return (lastSpace > 0 ? cut.substring(0, lastSpace) : cut.substring(0, HUNT_SOURCE_TEXT_MAX_LENGTH)).trim();
 };
 
 // region assistance of a hunt being written
