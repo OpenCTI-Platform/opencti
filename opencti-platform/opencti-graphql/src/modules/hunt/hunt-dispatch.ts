@@ -1,13 +1,13 @@
 import { findByIds } from './hunt-loaders';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { huntRunTransitionLockKey, withHuntLock } from './hunt-lock';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { completeConnector, loadConnectorsHeartbeats } from '../../database/repository';
-import { pushToConnector } from '../../database/rabbitmq';
+import { completeConnector, loadConnectorsHeartbeats } from '../connector/connector-domain';
+import { pushToConnector } from '../connector/connector-rabbitmq';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { fullEntitiesList } from '../../database/middleware-loader';

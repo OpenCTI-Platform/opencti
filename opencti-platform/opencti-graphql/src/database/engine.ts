@@ -1054,7 +1054,7 @@ export const elIndexGetAlias = async (indexName: string): Promise<any> => {
   return oebp(r_1);
 };
 export const elPlatformIndices = async (): Promise<any> => {
-  const args = { index: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
+  const args = { index: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
   if (engine instanceof ElkClient) {
     const r = await engine.cat.indices(args);
     return oebp(r);
@@ -1085,7 +1085,7 @@ export const elIndexSetting = async (index: any): Promise<{ settings: any; rollo
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async (): Promise<any[]> => {
-  const args = { name: `${ES_INDEX_PREFIX}*`, format: 'JSON' };
+  const args = { name: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
   if (engine instanceof ElkClient) {
     const r = await engine.cat.templates(args);
     return oebp(r);

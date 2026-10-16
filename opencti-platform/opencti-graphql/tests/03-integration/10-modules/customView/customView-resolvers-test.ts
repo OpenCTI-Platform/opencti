@@ -768,3 +768,59 @@ describe('CustomView resolvers', () => {
     });
   });
 });
+
+describe('CustomView and dashboard variables', () => {
+  const VARIABLES = [{ id: '11111111-1111-4111-8111-111111111111', name: 'Type', type: 'entityType', restriction: { mode: 'none' }, defaultValue: 'Malware' }];
+  const withVariables = (manifest: string | undefined) => toB64({ ...fromB64<Record<string, unknown>>(manifest), variables: VARIABLES, presets: [] });
+  const readStoredManifest = async (id: string) => {
+    const result = await queryAsAdminWithSuccess({ query: READ_CUSTOM_VIEW_QUERY, variables: { id } });
+    return fromB64(result.data.customView.manifest);
+  };
+  const createdIds: string[] = [];
+
+  afterAll(async () => {
+    for (let i = 0; i < createdIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: DELETE_CUSTOM_VIEW_QUERY, variables: { id: createdIds[i] } });
+    }
+    // Creations count in the telemetry gauges checked by the next run
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+  });
+
+  it('should never store dashboard variables in a custom view manifest', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view with variables', manifest: withVariables(DASHBOARD_MANIFEST), targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    const customViewId = created.data.customViewAdd.id;
+    createdIds.push(customViewId);
+    expect(await readStoredManifest(customViewId)).not.toHaveProperty('variables');
+
+    await queryAsAdminWithSuccess({ query: EDIT_CUSTOM_VIEW_QUERY, variables: { id: customViewId, input: [{ key: 'manifest', value: [withVariables(DASHBOARD_MANIFEST)] }] } });
+    const edited = await readStoredManifest(customViewId);
+    expect(edited).not.toHaveProperty('variables');
+    expect(edited).not.toHaveProperty('presets');
+
+    await queryAsAdminWithSuccess({
+      query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+      variables: { id: customViewId, input: { file: createUploadFile('./tests/03-integration/10-modules/customView/data/', 'custom-view-widget.json'), manifest: withVariables(DASHBOARD_MANIFEST) } },
+    });
+    const withImportedWidget = await readStoredManifest(customViewId);
+    expect(Object.keys(withImportedWidget.widgets).length).toBeGreaterThan(Object.keys(fromB64(DASHBOARD_MANIFEST).widgets).length);
+    expect(withImportedWidget).not.toHaveProperty('variables');
+
+    const duplicated = await queryAsAdminWithSuccess({
+      query: DUPLICATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Duplicated custom view with variables', manifest: withVariables(DASHBOARD_MANIFEST), targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    createdIds.push(duplicated.data.customViewDuplicate.id);
+    expect(await readStoredManifest(duplicated.data.customViewDuplicate.id)).not.toHaveProperty('variables');
+
+    const imported = await queryAsAdminWithSuccess({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-valid-variables.json') },
+    });
+    createdIds.push(imported.data.customViewConfigurationImport.id);
+    expect(await readStoredManifest(imported.data.customViewConfigurationImport.id)).not.toHaveProperty('variables');
+  });
+});

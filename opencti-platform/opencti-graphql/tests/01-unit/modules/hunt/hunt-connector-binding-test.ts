@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { elCount } from '../../../../src/database/engine';
-import { redisGetConnectorsHeartbeats } from '../../../../src/database/redis';
+import { redisGetConnectorsHeartbeats } from '../../../../src/modules/connector/connector-redis';
 import { addSecurityPlatform } from '../../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { generateStandardId } from '../../../../src/schema/identifier';
@@ -12,7 +12,7 @@ import { huntRunTransitionLockKey, withHuntLock } from '../../../../src/modules/
 import { findHuntConnectors, huntConnectorPlatformLockKey, registerHuntConnector } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
-import type { BasicStoreEntityConnector } from '../../../../src/types/connector';
+import type { BasicStoreEntityConnector } from '../../../../src/modules/connector/connector-types';
 import type { AuthUser } from '../../../../src/types/user';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
@@ -41,6 +41,10 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/redis')>(),
   notify: vi.fn(async (_topic, instance) => instance),
+}));
+
+vi.mock('../../../../src/modules/connector/connector-redis', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/connector/connector-redis')>(),
   redisGetConnectorsHeartbeats: vi.fn(async () => new Map()),
 }));
 

@@ -16,7 +16,7 @@ import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { HUNT_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { HUNT_MESSAGES } from './hunt-messages';
 import { huntLogicFingerprint } from './hunt-logic';

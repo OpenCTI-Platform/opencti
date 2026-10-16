@@ -16,8 +16,6 @@ interface RelativeDateInputProps {
   valueOrder: number;
   dateInput: string[];
   setDateInput: (value: string[]) => void;
-  /** Only ONE field in the popover may claim focus. */
-  autoFocus?: boolean;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
@@ -28,7 +26,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   valueOrder,
   dateInput,
   setDateInput,
-  autoFocus = false,
 }) => {
   const { t_i18n, smhd } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -51,6 +48,27 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   useEffect(() => {
     setDraft(dateInput[valueOrder]);
   }, [dateInput[valueOrder]]);
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const hasMounted = useRef(false);
+  const isAbsoluteMode = isValidDate(dateInput[valueOrder]);
+
+  // The operator select is rendered before this field, so removing autoFocus
+  // made it take an extra Tab to reach the value. Only the first field
+  // ("From") should claim focus on open; the second ("To") is reached
+  // naturally via Tab from the first.
+  // Switching between the free-text field and the native one remounts the
+  // input, so the focus is put back on it when that left it on <body>.
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      if (valueOrder === 0) {
+        inputRef.current?.focus();
+      }
+    } else if (document.activeElement === document.body) {
+      inputRef.current?.focus();
+    }
+  }, [isAbsoluteMode]);
 
   const generateErrorMessage = (values: string[]) => {
     const newValue = values[valueOrder];
@@ -115,8 +133,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   // falls back to a plain TextField + a calendar icon (MUI's own `CalendarIcon`, same as the
   // native mode's built-in one, for visual consistency) that opens an anchored picker overlay to
   // go back to picking a real date.
-  const isAbsoluteMode = isValidDate(committedValue);
-
   if (isAbsoluteMode) {
     return (
       <div style={{ display: 'flex', flex: 1, minWidth: 0, alignItems: 'center' }}>
@@ -141,10 +157,10 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
                 }
               },
               id: filter?.id ?? `${filterKey}-id`,
+              inputRef,
               size: 'small',
               variant: 'outlined',
               fullWidth: true,
-              autoFocus,
               error: errorMessage !== undefined,
               helperText: errorMessage,
             },
@@ -164,12 +180,12 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         fullWidth={true}
         id={filter?.id ?? `${filterKey}-id`}
         label={label}
+        inputRef={inputRef}
         value={displayValue}
         onChange={(event) => {
           setDraft(event.target.value);
           handleChangeValue(event.target.value);
         }}
-        autoFocus={autoFocus}
         onFocus={() => setIsEditing(true)}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {

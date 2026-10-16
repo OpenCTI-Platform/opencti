@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { findByIds } from '../hunt-loaders';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
-import type { BasicStoreEntityConnector } from '../../../types/connector';
+import type { BasicStoreEntityConnector } from '../../connector/connector-types';
 import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
 import { huntRunTransitionLockKey, withHuntLock } from '../hunt-lock';
@@ -20,7 +20,7 @@ import {
 import { elAggregationCount, elCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
-import { pushToConnector } from '../../../database/rabbitmq';
+import { pushToConnector } from '../../connector/connector-rabbitmq';
 import { createWork, deleteWork } from '../../../domain/work';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';

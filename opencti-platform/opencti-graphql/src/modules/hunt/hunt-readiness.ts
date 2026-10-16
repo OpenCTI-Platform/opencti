@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntityConnector } from '../../types/connector';
+import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { HUNT_PLATFORM_INTERNET, HUNT_SCHEDULE_MANUAL, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type BasicStoreEntityHunt } from './hunt-types';
 import { HUNT_CONFIG, huntSigmaRules, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';

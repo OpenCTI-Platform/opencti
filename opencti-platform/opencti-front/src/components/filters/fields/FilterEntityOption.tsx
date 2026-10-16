@@ -28,6 +28,9 @@ const FilterEntityOption: FunctionComponent<FilterEntityOptionProps> = ({
       <TooltipTrigger asChild>
         <li
           {...liProps}
+          // Both already set by MUI's option props; stated so the aria-disabled below reads as an option's.
+          role="option"
+          aria-selected={liProps['aria-selected']}
           aria-disabled={disabled}
           aria-label={option.label}
           style={{

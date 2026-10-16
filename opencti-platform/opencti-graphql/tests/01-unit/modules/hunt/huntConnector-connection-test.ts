@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pushToConnector } from '../../../../src/database/rabbitmq';
+import { pushToConnector } from '../../../../src/modules/connector/connector-rabbitmq';
 import { deleteWork } from '../../../../src/domain/work';
 import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { reportHuntConnectorCheck, testHuntConnectorConnection } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
@@ -40,8 +40,8 @@ vi.mock('../../../../src/domain/work', async (importOriginal) => ({
   deleteWork: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../../../src/database/rabbitmq', async (importOriginal) => ({
-  ...await importOriginal<typeof import('../../../../src/database/rabbitmq')>(),
+vi.mock('../../../../src/modules/connector/connector-rabbitmq', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/connector/connector-rabbitmq')>(),
   pushToConnector: vi.fn(),
 }));
 

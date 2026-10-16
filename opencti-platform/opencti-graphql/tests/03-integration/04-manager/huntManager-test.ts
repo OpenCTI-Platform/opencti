@@ -45,14 +45,14 @@ import {
   runScheduledHunts,
 } from '../../../src/modules/hunt/hunt-automation';
 import { redisSetManagerEventState } from '../../../src/database/redis';
-import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as rabbitmq from '../../../src/modules/connector/connector-rabbitmq';
 import * as workDomain from '../../../src/domain/work';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 import { findPlaybookHuntRuns, loadHuntRunResultsForPlaybook } from '../../../src/modules/hunt/hunt-playbook';
 import * as huntRunDomain from '../../../src/modules/hunt/huntRun/huntRun-domain';
 import * as middleware from '../../../src/database/middleware';
-import * as repository from '../../../src/database/repository';
+import * as repository from '../../../src/modules/connector/connector-domain';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const CONNECTOR_ID = '6d2f4c1e-8a3b-4f6e-9c7d-2b5a1e0f3d02';

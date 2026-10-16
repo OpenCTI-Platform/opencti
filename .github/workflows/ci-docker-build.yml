@@ -40,7 +40,7 @@ on:
 jobs:
   build-opencti-platform:
     name: Build OpenCTI Platform image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
@@ -86,7 +86,7 @@ jobs:
           labels: ${{ steps.meta-builder.outputs.labels }}
 
       - name: Upload builder docker image artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-opencti-builder
           path: /tmp/opencti-builder.tar
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload opencti docker image artifact
         if: ${{ inputs.publish_to_registry == 'false' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-opencti-platform
           path: /tmp/opencti-platform.tar
@@ -120,7 +120,7 @@ jobs:
 
   build-opencti-worker:
     name: Build OpenCTI Worker image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
@@ -166,7 +166,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: docker-image-opencti-worker
           path: /tmp/opencti-worker.tar

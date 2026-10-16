@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.27
+# syntax=docker/dockerfile:1.28
 FROM filigran/alpine-python-nodejs-fips:python3.12-nodejs24 AS base
 FROM node:24-alpine3.23 AS base-nonfips
 

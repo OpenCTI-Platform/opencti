@@ -25,7 +25,7 @@ import {
   toHuntConnectorView,
   triageHuntRun,
 } from './huntRun-domain';
-import type { BasicStoreEntityConnector } from '../../../types/connector';
+import type { BasicStoreEntityConnector } from '../../connector/connector-types';
 import { huntRunQueueReason } from '../hunt-dispatch';
 import { huntRunFailureReason } from '../hunt-logic';
 import { annotateHuntRunHits } from '../huntHitRecord/huntHitRecord-domain';

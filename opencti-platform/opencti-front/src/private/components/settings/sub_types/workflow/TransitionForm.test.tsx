@@ -17,7 +17,7 @@ vi.mock('./WorkflowFieldList', () => ({
 }));
 
 vi.mock('./WorkflowConditionFilters', () => ({
-  default: () => <div data-testid="workflow-condition-filters" />,
+  default: ({ entityType }: { entityType?: string }) => <div data-testid="workflow-condition-filters" data-entity-type={entityType} />,
 }));
 
 vi.mock('../../../../../components/TextField', () => ({
@@ -313,6 +313,11 @@ describe('TransitionForm – rendering', () => {
   it('renders WorkflowConditionFilters when conditions are defined', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
+  });
+
+  it('passes the workflow entity type to WorkflowConditionFilters', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } }, vi.fn(), 'Report');
+    expect(screen.getByTestId('workflow-condition-filters').getAttribute('data-entity-type')).toBe('Report');
   });
 
   it('does not render WorkflowConditionFilters when conditions are undefined', () => {
