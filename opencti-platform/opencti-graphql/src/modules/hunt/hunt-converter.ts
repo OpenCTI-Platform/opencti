@@ -27,6 +27,7 @@ const convertHuntToStix = (instance: StoreEntityHunt): StixHunt => {
     sigma_rules: storedSigmaRules(instance),
     native_queries: (instance.native_queries ?? []).map((nativeQuery) => cleanObject({ ...nativeQuery })),
     hunt_ioc_filters: instance.hunt_ioc_filters ?? '',
+    ...(instance.hunt_ioc_sort ? { hunt_ioc_sort: instance.hunt_ioc_sort } : {}),
     hunt_ioc_values: (instance.hunt_ioc_values ?? []).map((value) => ({ observable_type: value.observable_type, value: value.value })),
     hunt_scope: instance.hunt_scope ?? '',
     hunt_schedule: instance.hunt_schedule,

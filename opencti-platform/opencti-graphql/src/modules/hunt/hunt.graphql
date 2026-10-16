@@ -89,6 +89,20 @@ type HuntIoc {
   value: String!
   sources: [HuntIocSource!]!
 }
+"The order an indicator hunt takes the indicators and observables matching its filter in"
+enum HuntIocSort {
+  created_at_desc
+  created_at_asc
+  updated_at_desc
+  updated_at_asc
+}
+"What the filter of an indicator hunt takes at the next run"
+type HuntIocFilterPreview {
+  "Indicators and observables matching the filter that the hunt can take"
+  matching_count: Int!
+  "How many of them the next run takes, in the order of the hunt"
+  taken_count: Int!
+}
 "The values an indicator hunt looks up at its next run"
 type HuntIocSet {
   iocs_count: Int!
@@ -184,6 +198,8 @@ type HuntConfiguration {
   max_sigma_rules: Int!
   "The most values an indicator hunt run looks up"
   max_iocs_per_run: Int!
+  "The most indicators and observables a run takes from the filter of an indicator hunt"
+  max_filter_entities_per_run: Int!
   "The malware and tools a threat uses, and the threats attributed to it, followed by a hunt started from it (each list)"
   max_related_sources: Int!
 }
@@ -334,6 +350,10 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   translations: [HuntTranslation!]!
   "Indicator hunts: the filter over indicators and observables"
   hunt_ioc_filters: String
+  "Indicator hunts: the order a run takes what the filter matches in, newest created first when not set"
+  hunt_ioc_sort: HuntIocSort
+  "Indicator hunts: what the filter, the stored one or the one given, takes at the next run"
+  iocFilterPreview(filters: String, sort: HuntIocSort): HuntIocFilterPreview
   "Indicator hunts: the values pasted as text"
   hunt_ioc_values: [HuntIocValue!]
   "Indicator hunts: the values the next run looks up"
@@ -548,6 +568,7 @@ input HuntAddInput {
   sigma_rules: [String!]
   native_queries: [HuntNativeQueryInput!]
   hunt_ioc_filters: String
+  hunt_ioc_sort: HuntIocSort
   hunt_ioc_values: [HuntIocValueInput!]
   hunt_scope: String
   hunt_schedule: String
