@@ -8,6 +8,7 @@ import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { queryAsAdminWithSuccess } from '../utils/testQueryHelper';
+import { MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import type { StoreObject } from '../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
@@ -49,6 +50,22 @@ const CREATE_CASE_QUERY = gql`
           }
         }
       }
+    }
+  }
+`;
+
+const CREATE_ORGANIZATION_QUERY = gql`
+  mutation OrganizationAdd($input: OrganizationAddInput!) {
+    organizationAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const CREATE_MALWARE_QUERY = gql`
+  mutation MalwareAdd($input: MalwareAddInput!) {
+    malwareAdd(input: $input) {
+      id
     }
   }
 `;
@@ -141,7 +158,33 @@ describe('Should stream parent resolutions correctly working', () => {
   });
 
   it('should load containers for the stream without hydrating their members', async () => {
-    const reportId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    // Self-contained data: an author, a marking and members that are neither of them
+    const author = await queryAsAdminWithSuccess({
+      query: CREATE_ORGANIZATION_QUERY,
+      variables: { input: { name: 'Organization-Base-Data-Resolution' } },
+    });
+    const authorId = author.data.organizationAdd.id;
+    const memberIds: string[] = [];
+    for (let index = 0; index < 2; index += 1) {
+      const malware = await queryAsAdminWithSuccess({
+        query: CREATE_MALWARE_QUERY,
+        variables: { input: { name: `Malware-Base-Data-Resolution-${index}` } },
+      });
+      memberIds.push(malware.data.malwareAdd.id);
+    }
+    const report = await queryAsAdminWithSuccess({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Report-Base-Data-Resolution',
+          published: '2020-02-26T00:51:35.000Z',
+          createdBy: authorId,
+          objectMarking: [MARKING_TLP_GREEN],
+          objects: memberIds,
+        },
+      },
+    });
+    const reportId = report.data.reportAdd.id;
     const full = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId) as any;
     const base = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId, { objectsBaseData: true }) as any;
     expect(full.objects.length).toBeGreaterThan(0);
@@ -157,5 +200,11 @@ describe('Should stream parent resolutions correctly working', () => {
     expect(base.objectMarking).toEqual(full.objectMarking);
     // STIX conversion is unchanged
     expect(convertStoreToStix_2_1(base as StoreObject)).toEqual(convertStoreToStix_2_1(full as StoreObject));
+    // CLEANUP
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: reportId } });
+    for (let index = 0; index < memberIds.length; index += 1) {
+      await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: memberIds[index] } });
+    }
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: authorId } });
   });
 });

@@ -287,7 +287,8 @@ const loadMissingElements = async (state, ids) => {
     if (!loadedInternalIds.has(missingElement.internal_id)) {
       loadedInternalIds.add(missingElement.internal_id);
       const stix = convertStoreToStix_2_1(missingElement);
-      const elementIds = extractIdsFromStoreObject(missingElement);
+      // Loads also match alias ids: index the entry under them too, or a ref matching only an alias would never be walked
+      const elementIds = [...extractIdsFromStoreObject(missingElement), ...(missingElement.i_aliases_ids ?? [])];
       const entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds };
       elementIds.forEach((id) => {
         seenIds.add(id);
@@ -334,10 +335,15 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
   // seenIds: requested or loaded ids, published or not. pending: loaded entries not walked yet, by each of their ids.
   const state = { context, user, cache, seenIds: new Set(), loadedInternalIds: new Set(), pending: new Map() };
   const requiredToLoad = [...new Set(requiredRefs.filter((id) => !cache.has(id)))];
-  if (requiredToLoad.length > 0) {
-    await loadMissingElements(state, requiredToLoad);
-    if (requiredToLoad.some((id) => !state.pending.has(id))) {
-      return false;
+  // Loaded in slices of the batch size, all before any publication.
+  // Ids already loaded by a previous slice (through another of their ids) are skipped.
+  for (let index = 0; index < requiredToLoad.length; index += RESOLUTION_BATCH_SIZE) {
+    const slice = requiredToLoad.slice(index, index + RESOLUTION_BATCH_SIZE).filter((id) => !state.seenIds.has(id));
+    if (slice.length > 0) {
+      await loadMissingElements(state, slice);
+      if (slice.some((id) => !state.pending.has(id))) {
+        return false;
+      }
     }
   }
   let toPublish = [];
