@@ -62,8 +62,8 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
             type: node.entity_type,
             group: node.entity_type,
           }));
-          // Grouped options must be contiguous.
-          setOptions(entities.sort((a, b) => a.group.localeCompare(b.group)));
+          // Grouped options must be contiguous; sorted by label within a type, as the free search.
+          setOptions(entities.sort((a, b) => a.group.localeCompare(b.group) || a.label.localeCompare(b.label)));
         },
         // A failed search offers nothing rather than the options of a previous text.
         error: () => setOptions([]),

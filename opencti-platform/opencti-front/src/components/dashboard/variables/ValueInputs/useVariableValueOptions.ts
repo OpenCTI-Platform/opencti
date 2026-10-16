@@ -38,7 +38,8 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
   const killChainPhases = useKillChainPhaseSearch(variable.killChainName);
   const isRestrictedByFilters = variable.type === 'entity' && variable.restriction.mode === 'filters';
   const restrictedEntities = useRestrictedEntitySearch(
-    entityTypes,
+    // Same scope as the free search: External-Reference is no Stix-Core-Object.
+    entityTypes.filter((entityType) => entityType !== 'External-Reference'),
     variable.restriction.mode === 'filters' ? variable.restriction.filters : undefined,
   );
 
@@ -47,7 +48,9 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
     // search: the list goes back to every entity of the rule.
     return {
       options: restrictedEntities.options,
-      search: (_event, text, cause = 'type') => restrictedEntities.search(cause === 'type' ? text : ''),
+      search: (_event, text, cause = 'type') => {
+        if (isSearchable) restrictedEntities.search(cause === 'type' ? text : '');
+      },
     };
   }
   const options = isKillChainPhase
