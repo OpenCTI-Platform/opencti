@@ -90,13 +90,16 @@ const findTasksToExecute = async (context) => {
   });
 };
 
+const ruleScanOrder = (taskPosition) => (isEmptyField(taskPosition) ? 'created_at' : 'updated_at');
 export const taskRule = async (context, user, task, callback) => {
   const { task_position, rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    // Ordered by an immutable field: applying the rule updates the scanned elements, an updated_at order would list them again.
+    // A legacy task_position is a cursor on the updated_at order, so it keeps that order to resume where it stopped.
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), ...buildEntityFilters(scan.types, scan), after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -106,7 +109,7 @@ export const taskRule = async (context, user, task, callback) => {
       filterGroups: [],
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), filters, after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }

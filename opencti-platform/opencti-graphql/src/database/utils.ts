@@ -354,16 +354,19 @@ export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
 };
 
 // Turn a function call into a potential long running async call
+// lockId scopes the mutual exclusion (default: the execution itself). Two executions of the same work
+// (duplicate messages) must share it, otherwise they run concurrently on the same data.
 export const runFunctionAsLongRunning = async (
   context: AuthContext,
   user: AuthUser,
   functionToRun: () => Promise<void>,
   executionId: string,
+  lockId: string = executionId,
 ): Promise<boolean> => {
   let lock: { unlock: () => any } | undefined;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(executionId, { draftId: getDraftContext(context, user) });
+    lock = await lockResources([lockId], { draftId: getDraftContext(context, user) });
     const currentAsyncCall = await redisGetAsyncCall(executionId);
     // If a call was already processed and is finished, return true
     if (currentAsyncCall && currentAsyncCall !== '0') {
