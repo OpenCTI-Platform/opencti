@@ -28,7 +28,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { computeNotificationLink, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
@@ -245,11 +245,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
-      if (firstEvent.entity_type === 'DraftWorkspace') {
-        navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
-      } else {
-        navigate(`/dashboard/id/${firstEvent.instance_id}`);
-      }
+      navigate(computeNotificationLink(firstEvent.instance_id, firstEvent.entity_type));
     }
   };
 
