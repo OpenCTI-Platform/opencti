@@ -47,7 +47,7 @@ import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__gen
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Label from '../../../../components/common/label/Label';
-import ConnectorHuntDetails from '../../hunts/ConnectorHuntDetails';
+import ConnectorHuntConnectionTest from '../../hunts/ConnectorHuntConnectionTest';
 import Tag from '../../../../components/common/tag/Tag';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 import { graphql } from 'relay-runtime';
@@ -715,8 +715,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </Grid>
       </Grid>
       {connector.hunt && (
-        <div style={{ marginBottom: 20 }} data-testid="connector-hunt-card">
-          <ConnectorHuntDetails connectorId={connector.id} data={connector.hunt} />
+        <div style={{ marginBottom: 20 }} data-testid="connector-hunt-connection-test">
+          <ConnectorHuntConnectionTest connectorId={connector.id} data={connector.hunt} />
         </div>
       )}
     </>
@@ -1074,7 +1074,7 @@ const Connector = createRefetchContainer(
         connector_type
         connector_scope
         hunt {
-          ...ConnectorHuntDetails_hunt
+          ...ConnectorHuntConnectionTest_hunt
         }
         connector_state
         version

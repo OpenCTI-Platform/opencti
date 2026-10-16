@@ -18,14 +18,15 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 Each hunt connector queries its platform with an account of its own. Give that account the least-privilege permissions
 below, not an administrator role: the connector only reads, and only creates and deletes its own search jobs.
 
-The same list shows in the product, on the page of the connector: the **Hunted platform** card has a **Required
-permissions** panel, filled by the connector at registration, with a link to the section of this page. The panel stays
-open until a connection test has passed, then folds and opens again with one click. When you deploy or update a hunt
-connector from the connector catalog, a **Before you start** notice of the form links to the section of that connector.
+The same list shows in the product, in **Defense > Hunts**: the setup checklist, above the list until every prerequisite is
+met and behind **Hunting setup** afterwards, has a **Required permissions of** panel per deployed hunt connector, filled
+by the connector at registration, with a link to the section of this page. When you deploy or update a hunt connector
+from the connector catalog, a **Before you start** notice of the form links to the section of that connector.
 
-![Hunted platform card of a Splunk hunt connector not tested yet: the required permissions open, with the setup documentation and Test connection](assets/hunt-connector-permissions.png)
-Once the connector runs, **Test connection** on the same card checks the account; see
-[Test the connection](#test-the-connection).
+![Setup checklist of Defense > Hunts: the required permissions of a Splunk hunt connector, with its setup documentation](assets/hunt-connector-permissions.png)
+
+Once the connector runs, **Test connection** on the **Connection test** card of its connector page checks the account;
+see [Test the connection](#test-the-connection).
 
 Each section ends with the **quotas and limits** of the platform, as its vendor documents them. A run sends its queries
 one after the other, so a run holds at most one query on the platform at a time: `CONNECTOR_MAX_CONCURRENT_RUNS` is the
@@ -71,7 +72,7 @@ SPLUNK_HUNT_APP=search
 SPLUNK_HUNT_SEARCH_PREFIX=index=wineventlog OR index=sysmon
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It checks the token, the `search` capability of the roles of the account, then runs one search in the app. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It checks the token, the `search` capability of the roles of the account, then runs one search in the app. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -121,7 +122,7 @@ MICROSOFT_SENTINEL_HUNT_CLIENT_SECRET=ChangeMe
 MICROSOFT_SENTINEL_HUNT_WORKSPACE_ID=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token and runs one query on the workspace. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It requests a token and runs one query on the workspace. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -168,7 +169,7 @@ MICROSOFT_DEFENDER_HUNT_CLIENT_ID=ChangeMe
 MICROSOFT_DEFENDER_HUNT_CLIENT_SECRET=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token from Microsoft Entra ID, then runs `DeviceInfo | take 1` over the last 7 days. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence. A tenant without device telemetry passes with a warning.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It requests a token from Microsoft Entra ID, then runs `DeviceInfo | take 1` over the last 7 days. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence. A tenant without device telemetry passes with a warning.
 
 #### Quotas and limits
 
@@ -218,7 +219,7 @@ ELASTIC_SECURITY_HUNT_INDICES=logs-*,winlogbeat-*
 ELASTIC_SECURITY_HUNT_QUERY_LANGUAGE=esql
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -269,7 +270,7 @@ CROWDSTRIKE_LOGSCALE_HUNT_CLIENT_SECRET=ChangeMe
 CROWDSTRIKE_LOGSCALE_HUNT_REPOSITORY=search-all
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one query job on the repository. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It runs one query job on the repository. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -324,7 +325,7 @@ GOOGLE_SECOPS_HUNT_CLIENT_EMAIL=opencti-hunt@my-project.iam.gserviceaccount.com
 GOOGLE_SECOPS_HUNT_CLIENT_ID=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token and runs one UDM search. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It requests a token and runs one UDM search. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -376,7 +377,7 @@ OPENSEARCH_OCSF_HUNT_PASSWORD=ChangeMe
 OPENSEARCH_OCSF_HUNT_INDICES=ocsf-*
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Connection test** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
 
 #### Quotas and limits
 
@@ -447,16 +448,13 @@ Several connectors can serve the same platform type for different security platf
 
 Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**.
 
-The page of a hunt connector (**Data > Ingestion > Connectors**) adds a **Hunted platform** card: the platform, its security platform, the query languages the connector executes, the maximum number of runs it accepts at the same time and whether it supports translation previews. Readers who can see Defense > Hunts also get the latest runs of the connector, each opening its run, and a link to the Hunts list.
-
-![Hunted platform card on the page of a Splunk hunt connector, with its latest hunt runs](assets/hunt-connector-page.png)
+The page of a hunt connector (**Data > Ingestion > Connectors**) is the page of any connector: its state, its works and its configuration, with one more card, **Connection test**. Its hunts and their runs stay in Defense > Hunts.
 
 ### Test the connection
 
-The **Hunted platform** card lists the **Required permissions** the connector declares (open until a connection test has
-passed), with a link to its setup documentation, and the **Test connection** action (users with the **Manage connector
-state** capability; the others read who can run the test). The
-connector then checks its account on the platform and answers with one result per check, shown on the card in a few
+The **Connection test** card of the connector page has the **Test connection** action (users with the **Manage connector
+state** capability; the others read who can run the test) and the **Required permissions** the connector declares, open
+until a connection test has passed, with a link to its setup documentation. The connector then checks its account on the platform and answers with one result per check, shown on the card in a few
 seconds:
 
 - each check passes or fails with a sentence in plain words: a refused token names the variable to fix, a missing

@@ -1,11 +1,13 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { AutoAwesomeOutlined, MenuBookOutlined, PolicyOutlined, RuleOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined, MenuBookOutlined, PolicyOutlined, RuleOutlined, SettingsOutlined } from '@mui/icons-material';
 import { Crosshairs } from 'mdi-material-ui';
 import { Hero, HeroBody, HeroHeader, Text, Thumbnail } from '@filigran/design-system';
 import Button from '@common/button/Button';
+import Drawer from '@components/common/drawer/Drawer';
 import Card from '../../../components/common/card/Card';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
@@ -176,6 +178,36 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
       {guided && <HuntGuidedCreation kind={guided} open onClose={() => setGuided(null)} />}
       <HuntPlanDialog open={planning} onClose={() => setPlanning(false)} entityIds={[]} />
     </div>
+  );
+};
+
+const HuntsSetupDrawerContent = () => {
+  const setupState = useHuntsSetupState();
+  return <HuntsSetupChecklist state={setupState} showHeading={false} />;
+};
+
+/** The setup checklist on demand, once its banner is gone: the permissions of each hunt connector stay one click away. */
+export const HuntsSetupButton = () => {
+  const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="secondary" startIcon={<SettingsOutlined fontSize="small" />} onClick={() => setOpen(true)} data-testid="hunts-setup-open">
+        {t_i18n('Hunting setup')}
+      </Button>
+      <Drawer
+        title={t_i18n('Hunting setup')}
+        open={open}
+        onClose={() => setOpen(false)}
+        learnMore={{ href: HUNT_DOCS.connectors, testId: 'hunts-setup-learn-more' }}
+      >
+        {open ? (
+          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <HuntsSetupDrawerContent />
+          </Suspense>
+        ) : null}
+      </Drawer>
+    </>
   );
 };
 

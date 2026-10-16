@@ -11,6 +11,7 @@ import type { Theme } from '../../../components/Theme';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import useHuntAI from './useHuntAI';
 import { HUNT_DOCS } from './hunt-utils';
+import { HuntConnectorRequiredPermissions } from './HuntConnectorSetup';
 import { HuntsSetupChecklistQuery } from './__generated__/HuntsSetupChecklistQuery.graphql';
 
 export const HUNT_CONNECTOR_CATALOG_PATH = '/dashboard/data/ingestion/catalog';
@@ -20,11 +21,24 @@ const huntsSetupChecklistQuery = graphql`
   query HuntsSetupChecklistQuery {
     huntConnectors(onlyAlive: false) {
       id
+      name
       active
       supports_indicators
+      documentation_url
+      required_permissions {
+        name
+        purpose
+      }
     }
   }
 `;
+
+export interface HuntsSetupConnector {
+  readonly id: string;
+  readonly name: string;
+  readonly documentation_url?: string | null;
+  readonly required_permissions: ReadonlyArray<{ readonly name: string; readonly purpose: string }>;
+}
 
 export interface HuntsSetupState {
   connectorsCount: number;
@@ -32,6 +46,8 @@ export interface HuntsSetupState {
   indicatorsCount: number;
   xtmOneConfigured: boolean;
   isEnterpriseEdition: boolean;
+  /** The deployed hunt connectors, with the permissions each declares on its platform */
+  connectors?: ReadonlyArray<HuntsSetupConnector>;
 }
 
 /** Whether every prerequisite of the hunting area is met: a live hunt connector, XTM One and the Enterprise Edition. */
@@ -47,6 +63,7 @@ export const useHuntsSetupState = (): HuntsSetupState => {
     indicatorsCount: alive.filter((connector) => connector.supports_indicators).length,
     xtmOneConfigured,
     isEnterpriseEdition,
+    connectors: huntConnectors,
   };
 };
 
@@ -67,7 +84,7 @@ const Row = ({ met, children, action, testId }: { met: boolean; children: React.
  * What the platform needs before hunts can run, with the live state of each prerequisite and its next action; shown on
  * the Hunts page until every prerequisite is met.
  */
-const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
+const HuntsSetupChecklist = ({ state, showHeading = true }: { state: HuntsSetupState; showHeading?: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, n } = useFormatter();
   const canSetParameters = useGranted([SETTINGS_SETPARAMETERS]);
@@ -81,7 +98,7 @@ const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
   }
   return (
     <div data-testid="hunts-setup-checklist">
-      <Text variant="content-compact-bold" as="h3" style={{ margin: `0 0 ${theme.spacing(1)} 0` }}>{t_i18n('Before your first hunt')}</Text>
+      {showHeading && <Text variant="content-compact-bold" as="h3" style={{ margin: `0 0 ${theme.spacing(1)} 0` }}>{t_i18n('Before your first hunt')}</Text>}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(0.75) }}>
         <Row
           met={state.aliveCount > 0}
@@ -97,6 +114,21 @@ const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
         >
           {connectorsSentence}
         </Row>
+        {(state.connectors ?? []).length > 0 && (
+          <li style={{ paddingLeft: theme.spacing(3.5) }} data-testid="hunts-setup-permissions">
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }}>
+              {(state.connectors ?? []).map((connector) => (
+                <li key={connector.id}>
+                  <HuntConnectorRequiredPermissions
+                    label={t_i18n('Required permissions of {connector}', { values: { connector: connector.name } })}
+                    permissions={connector.required_permissions}
+                    documentationUrl={connector.documentation_url}
+                  />
+                </li>
+              ))}
+            </ul>
+          </li>
+        )}
         {state.aliveCount > 0 && (
           <Row met={state.indicatorsCount > 0} testId="hunts-setup-indicators">
             {state.indicatorsCount > 0

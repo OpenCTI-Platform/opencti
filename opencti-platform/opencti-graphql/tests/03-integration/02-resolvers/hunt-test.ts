@@ -283,7 +283,7 @@ describe('Hunt resolvers', () => {
     securityPlatformId = connector.securityPlatform.id;
     const list = await queryAsAdminWithSuccess({ query: HUNT_CONNECTORS });
     expect(list.data?.huntConnectors.map((c: { id: string }) => c.id)).toContain(CONNECTOR_ID);
-    // The connector page reads the hunted platform from the connector itself, null for every other type
+    // The connection test card of the connector page reads the registration from the connector itself, null for every other type
     const connectors = await queryAsAdminWithSuccess({ query: CONNECTORS_HUNT });
     type ConnectorHunt = { platform: string; languages: string[]; supports_preview: boolean; securityPlatform: { name: string } };
     const all = connectors.data?.connectors as { id: string; connector_type: string; hunt: ConnectorHunt | null }[];

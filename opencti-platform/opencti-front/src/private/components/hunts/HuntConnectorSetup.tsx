@@ -4,7 +4,6 @@ import { useTheme } from '@mui/styles';
 import { CheckCircleOutlined, ErrorOutlineOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { Alert, Spinner, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
-import Label from '../../../components/common/label/Label';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
@@ -43,10 +42,11 @@ interface ConnectionCheck {
  * The permissions a hunt connector needs on its platform, as it declares them, with its setup documentation: the
  * "Before you start" block of its documentation, where the user configures it.
  */
-export const HuntConnectorRequiredPermissions = ({ permissions, documentationUrl, defaultOpen = false }: {
+export const HuntConnectorRequiredPermissions = ({ permissions, documentationUrl, defaultOpen = false, label }: {
   permissions: ReadonlyArray<RequiredPermission>;
   documentationUrl: string | null | undefined;
   defaultOpen?: boolean;
+  label?: string;
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -62,7 +62,7 @@ export const HuntConnectorRequiredPermissions = ({ permissions, documentationUrl
         startIcon={open ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
         data-testid="connector-hunt-permissions-toggle"
       >
-        {t_i18n('Required permissions')}
+        {label ?? t_i18n('Required permissions')}
       </Button>
       {open && (
         <div style={{ marginTop: theme.spacing(1) }}>
@@ -204,27 +204,22 @@ export const HuntConnectorTestConnection = ({ connectorId, active, check }: {
     });
   };
   return (
-    <div data-testid="connector-hunt-connection">
-      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-        <Label>{t_i18n('Connection test')}</Label>
-        <Security needs={[MODULES_MODMANAGE]}>
-          <Button
-            size="small"
-            variant="secondary"
-            onClick={testConnection}
-            disabled={!active || inFlight || requested || (check?.status === 'pending' && !isStaleConnectionCheck(check))}
-            data-testid="connector-hunt-test-connection"
-          >
-            {t_i18n('Test connection')}
-          </Button>
-        </Security>
-      </div>
+    <div data-testid="connector-hunt-connection" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(1) }}>
+      <Security needs={[MODULES_MODMANAGE]}>
+        <Button
+          size="small"
+          variant="secondary"
+          onClick={testConnection}
+          disabled={!active || inFlight || requested || (check?.status === 'pending' && !isStaleConnectionCheck(check))}
+          data-testid="connector-hunt-test-connection"
+        >
+          {t_i18n('Test connection')}
+        </Button>
+      </Security>
       {!active && (
         <Text variant="content-caption">{t_i18n('The connector is not running: start it, then test the connection')}</Text>
       )}
-      <div style={{ marginTop: theme.spacing(1) }}>
-        <ConnectionCheckResult check={check} requested={requested} />
-      </div>
+      <ConnectionCheckResult check={check} requested={requested} />
     </div>
   );
 };

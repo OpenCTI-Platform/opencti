@@ -186,11 +186,6 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await capture(page, 'hunt-schedule-field.png', scheduleField);
   });
 
-  test('Hunted platform on the connector page', async ({ page }) => {
-    await page.goto(`/dashboard/data/ingestion/connectors/${seeded.connectorId}`);
-    await capture(page, 'hunt-connector-page.png', page.getByTestId('connector-hunt-card'), page.getByTestId('connector-hunt-runs'));
-  });
-
   test('Draft banner of a hunt proposed by an agent', async ({ page, request }) => {
     const draftHuntId = await seedAgentDraftHunt(request, 'Encoded PowerShell proposed by the Hunt Planner');
     try {
@@ -243,12 +238,17 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   const captureSetupSurfaces = async (page: Page, request: APIRequestContext, suffix: string) => {
     const setup = await seedHuntConnectorWithSetup(request, 'Splunk hunt - EU SOC', 'Splunk Enterprise - EU SOC');
     try {
+      // The setup checklist of Defense > Hunts lists the permissions each deployed hunt connector declares
+      const huntsPage = new HuntsPage(page);
+      await huntsPage.goto();
+      const checklist = page.getByTestId('hunts-setup-checklist').first();
+      await checklist.getByRole('button', { name: 'Required permissions of Splunk hunt - EU SOC' }).click();
+      await capture(page, `hunt-connector-permissions${suffix}.png`, checklist, checklist.getByText('srchIndexesAllowed'));
+      // The connector page tests them: untested, the permissions are open under the Test connection
       await page.goto(`/dashboard/data/ingestion/connectors/${setup.connectorId}`);
-      const card = page.getByTestId('connector-hunt-card');
+      const card = page.getByTestId('connector-hunt-connection-test');
       const permissions = card.getByTestId('connector-hunt-permissions');
-      // Untested: the permissions are open, next to the connection test
       await expect(permissions).toHaveAttribute('data-open', 'true');
-      await capture(page, `hunt-connector-permissions${suffix}.png`, card, permissions.getByText('srchIndexesAllowed'));
       await testHuntConnection(request, setup.connectorId, [
         { name: 'Authentication', ok: true, message: 'Splunk accepted the credentials of the connector.' },
         { name: 'search', ok: false, message: 'Access denied: the roles of svc_opencti_hunt lack the search capability: add it to one of its roles in Settings > Roles.' },
