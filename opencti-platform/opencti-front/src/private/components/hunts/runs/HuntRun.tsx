@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/styles';
 import { ArrowBackOutlined, AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
-import { Alert, Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert, Chip, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import CodeBlock from '@components/common/CodeBlock';
@@ -25,7 +25,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT } from '../../common/routes/paths';
-import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
+import { HuntRunStatusChip, HuntVerdictChip, RelativeDate } from '../HuntChips';
 import { prismLanguageOf } from '../HuntCodeEditor';
 import useHuntAI from '../useHuntAI';
 import {
@@ -217,20 +217,6 @@ const HuntEditContext = createContext(false);
 const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useContext(HuntEditContext) ? <>{children}</> : null);
 
 const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown');
-
-/** A date shown relative to now, the absolute date in its tooltip. */
-const RelativeDate = ({ date, label }: { date: string; label?: (relative: string) => string }) => {
-  const { fldt, rd } = useFormatter();
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
-        <span tabIndex={0}>{label ? label(rd(date)) : rd(date)}</span>
-      </TooltipTrigger>
-      <TooltipContent>{fldt(date)}</TooltipContent>
-    </Tooltip>
-  );
-};
 
 interface DetailRow {
   key: string;

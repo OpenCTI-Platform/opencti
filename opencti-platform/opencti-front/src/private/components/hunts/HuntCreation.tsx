@@ -44,6 +44,7 @@ import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
 import useHuntConfiguration from './useHuntConfiguration';
 import HuntIocFields from './HuntIocFields';
+import HuntIocFilterTake from './HuntIocFilterTake';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
 import {
   emptyHuntFormValues,
@@ -241,6 +242,8 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
           await submitForm();
         };
         const shown = (index: number): React.CSSProperties => (step === index ? {} : { display: 'none' });
+        // The order of the filter is chosen with it; the count needs the hunt, whose markings the count reads with
+        const iocFilterHolds = (iocFiltersState[0].filters ?? []).length > 0 || (iocFiltersState[0].filterGroups ?? []).length > 0;
         return (
           <Form data-testid="hunt-creation-form">
             <HuntAIAssistProvider reasonInHeader>
@@ -277,7 +280,18 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
                 ) : (
                   <>
                     <HuntFormSectionTitle>{values.hunt_type === 'indicators' ? t_i18n('What to look for') : t_i18n('Logic')}</HuntFormSectionTitle>
-                    {values.hunt_type === 'indicators' && <HuntIocFields filtersState={iocFiltersState} />}
+                    {values.hunt_type === 'indicators' && (
+                      <HuntIocFields
+                        filtersState={iocFiltersState}
+                        filterFooter={iocFilterHolds ? (
+                          <HuntIocFilterTake
+                            filters={serializeFilterGroupForBackend(iocFiltersState[0])}
+                            sort={values.hunt_ioc_sort}
+                            onSortChange={(sort) => setFieldValue('hunt_ioc_sort', sort)}
+                          />
+                        ) : undefined}
+                      />
+                    )}
                     {values.hunt_type === 'telemetry' && (
                       <div style={fieldSpacingContainerStyle}>
                         <HuntSigmaRulesField

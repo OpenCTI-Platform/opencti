@@ -46,7 +46,9 @@ describe('Hunt status header', () => {
 
   it('never names a control in the meanings shown to a user who can only view the hunt', () => {
     HUNT_STATUSES.forEach((status) => expect(HUNT_STATUS_MEANINGS_READ_ONLY[status]).not.toMatch(/Run now|click/));
-    expect(HUNT_STATUS_MEANINGS_READ_ONLY.paused).toBe('The schedule and the triggers are stopped; a user who can edit the hunt can still run it.');
+    // The right named is the one to launch hunts, which updating the knowledge alone does not give
+    expect(HUNT_STATUS_MEANINGS_READ_ONLY.paused).toBe('The schedule and the triggers are stopped; a user allowed to launch hunts can still run it.');
+    expect(HUNT_STATUS_MEANINGS_READ_ONLY.active).toBe('The hunt runs: on its schedule, when a playbook runs it, or when a user allowed to launch hunts runs it.');
   });
 
   it('lists each readiness item with the place to fix the unmet ones', () => {
@@ -78,7 +80,7 @@ describe('Hunt status header', () => {
     expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when you click Run now');
     unmount();
     testRender(<HuntReadinessChecklist huntId="hunt-id" items={[manual]} canEdit={false} />);
-    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user who can edit the hunt runs it');
+    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user allowed to launch hunts runs it');
   });
 
   it('never asks a user who can only view the hunt for a change they cannot make', () => {

@@ -69,7 +69,21 @@ describe('Hunts of an entity', () => {
     expect(within(rows[0]).getByTestId('hunt-verdict-chip')).toBeInTheDocument();
     expect(within(rows[0]).getByText(/1 hit$/)).toBeInTheDocument();
     expect(within(rows[1]).getByText('Never run')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '10 more in the hunts list' })).toBeInTheDocument();
+    // Without a Defense tab to lead to, the hunts list filtered on the hunts of the entity
+    const viewAll = screen.getByRole('link', { name: 'View all 12 hunts' });
+    const target = new URL(viewAll.getAttribute('href') ?? '', 'http://localhost');
+    expect(target.pathname).toBe('/dashboard/defense/hunts');
+    expect(JSON.parse(target.searchParams.get('filters') ?? '{}')).toMatchObject({
+      mode: 'or',
+      filters: [{ key: 'huntSources', values: ['malware-id'] }, { key: 'huntTargets', values: ['malware-id'] }],
+    });
+  });
+
+  it('shows the latest five hunts on the overview and leads to all of them in the Defense tab', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" viewAllLink="/dashboard/arsenal/malwares/malware-id/defense" />);
+    const { variables } = await resolveHunts(relayEnv, ['a', 'b', 'c', 'd', 'e'].map((id) => huntNode(id, null)), 6);
+    expect(variables.first).toBe(5);
+    expect(screen.getByRole('link', { name: 'View all 6 hunts' })).toHaveAttribute('href', '/dashboard/arsenal/malwares/malware-id/defense');
   });
 
   it('says never run only for a hunt without any execution, and takes the verdict of the latest execution', async () => {
@@ -126,9 +140,11 @@ describe('Hunts of an entity', () => {
     expect(variables.entityId).toBe('indicator-id');
     expect(screen.getByTestId('hunts-of-entity-activity')).toHaveTextContent(/^Last hunted .+, last matched .+$/);
     const rows = screen.getAllByTestId('hunts-of-entity-row');
-    const matched = within(rows[0]).getByRole('link', { name: /^Matched by the last run on .+, 4 hits$/ });
+    // The dates are relative, the absolute date in the tooltip
+    const matched = within(rows[0]).getByRole('link', { name: /^Matched by the last run .+, 4 hits$/ });
     expect(matched).toHaveAttribute('href', '/dashboard/defense/hunts/a/runs/a-run');
-    expect(within(rows[1]).getByRole('link', { name: /^Not matched by the last run on / })).toHaveAttribute('href', '/dashboard/defense/hunts/b/runs/b-run');
+    expect(within(rows[1]).getByRole('link', { name: /^Not matched by the last run / })).toHaveAttribute('href', '/dashboard/defense/hunts/b/runs/b-run');
+    expect(matched).not.toHaveTextContent(/ on /);
   });
 
   it('dates the entity on the overview even when no hunt names it, a hunt having reached it through its filter', async () => {

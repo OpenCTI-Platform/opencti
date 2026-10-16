@@ -69,7 +69,7 @@ const LatestRunsList = ({ huntId, canEdit }: HuntLatestRunsProps) => {
           <HuntHelp
             text={canEdit
               ? t_i18n('Next step: Run now at the top of the page, or Activate it to run on its schedule. Each run appears here with its verdict.')
-              : t_i18n('Each run appears here with its verdict once a user who can edit the hunt runs it or activates it.')}
+              : t_i18n('Each run appears here with its verdict once a user allowed to launch hunts runs it or activates it.')}
             href={HUNT_DOCS.runHunt}
           />
         </Text>

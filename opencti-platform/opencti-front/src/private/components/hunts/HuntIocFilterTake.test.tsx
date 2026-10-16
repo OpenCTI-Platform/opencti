@@ -91,8 +91,31 @@ describe('What a run takes out of the filter of an indicator hunt', () => {
     expect(result.current.exclusion.excluded).toBe(true);
   });
 
-  it('asks nothing while the hunt has no filter', async () => {
-    testRender(<HuntIocFilterTake huntId="hunt-1" filters={null} sort="created_at_desc" onSortChange={() => undefined} />);
+  it('reads one match in the singular', async () => {
+    answer(1, 1);
+    testRender(<HuntIocFilterTake huntId="hunt-1" filters={FILTERS} sort="created_at_desc" onSortChange={() => undefined} />);
+    await waitFor(() => expect(screen.getByTestId('hunt-ioc-filter-count'))
+      .toHaveTextContent('1 indicator or observable matches the filter: the next run takes it'));
+  });
+
+  it('keeps the count on screen while the next one loads, and says when the platform could not count', async () => {
+    answer(2340, 100);
+    const props = { huntId: 'hunt-1', sort: 'created_at_desc' as const, onSortChange: () => undefined, lastRunAt: '2026-10-15T06:00:00.000Z', onExcludeHunted: () => undefined };
+    const { rerender } = testRender(<HuntIocFilterTake {...props} filters={FILTERS} />);
+    await screen.findByTestId('hunt-ioc-exclude-hunted');
+    fetchQueryMock.mockReturnValue({ toPromise: () => Promise.reject(new Error('unavailable')) });
+    rerender(<HuntIocFilterTake {...props} filters={FILTERS.replace('apt28', 'apt29')} />);
+    // Until the next answer, the previous count and the suggestion stay where they are
+    expect(screen.getByTestId('hunt-ioc-filter-count')).toHaveTextContent(/^2,340 indicators/);
+    expect(screen.getByTestId('hunt-ioc-exclude-hunted')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('hunt-ioc-filter-count')).toHaveTextContent('The platform could not count what the filter matches.'));
+    expect(screen.getByText('Each run takes at most 100 of them:')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-ioc-exclude-hunted')).not.toBeInTheDocument();
+  });
+
+  it('counts nothing for a hunt being created, which has no markings to count with yet', async () => {
+    testRender(<HuntIocFilterTake filters={FILTERS} sort="created_at_desc" onSortChange={() => undefined} />);
+    expect(screen.getByText('Each run takes at most 100 of them:')).toBeInTheDocument();
     expect(screen.getByTestId('hunt-ioc-sort')).toHaveTextContent('Newest created first');
     await new Promise((resolve) => {
       setTimeout(resolve, 500);

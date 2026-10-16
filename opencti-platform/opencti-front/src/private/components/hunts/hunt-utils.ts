@@ -377,7 +377,7 @@ export const HUNT_STATUS_MEANINGS: Record<HuntStatusValue, string> = {
 export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
   ...HUNT_STATUS_MEANINGS,
   active: 'The hunt runs: on its schedule, when a playbook runs it, or when a user allowed to launch hunts runs it.',
-  paused: 'The schedule and the triggers are stopped; a user who can edit the hunt can still run it.',
+  paused: 'The schedule and the triggers are stopped; a user allowed to launch hunts can still run it.',
 };
 
 /**
@@ -385,7 +385,7 @@ export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
  * reads them: the fact, then who can act on it.
  */
 export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
-  'Manual: it runs when you click Run now': 'Manual: it runs when a user who can edit the hunt runs it',
+  'Manual: it runs when you click Run now': 'Manual: it runs when a user allowed to launch hunts runs it',
   'Add a Sigma rule or a native query': 'No Sigma rule or native query yet; a user who can edit the hunt can add one',
   'Add the indicators or observables to look for': 'No indicators or observables to look for yet; a user who can edit the hunt can add them',
   'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators':
@@ -691,6 +691,11 @@ export interface HuntNativeQueryFormValue {
   rule_key?: string;
 }
 
+/** The orders in which a run takes the indicators and observables of the filter of an indicator hunt, newest first by default. */
+export const HUNT_IOC_SORTS = ['created_at_desc', 'created_at_asc', 'updated_at_desc', 'updated_at_asc'] as const;
+export type HuntIocSortValue = typeof HUNT_IOC_SORTS[number];
+export const HUNT_IOC_SORT_DEFAULT: HuntIocSortValue = 'created_at_desc';
+
 export interface HuntFormValues {
   name: string;
   description: string;
@@ -717,6 +722,7 @@ export interface HuntFormValues {
   iocElements: FieldOption[];
   iocEntities: FieldOption[];
   ioc_values_text: string;
+  hunt_ioc_sort: HuntIocSortValue;
   createdBy: FieldOption | undefined | null;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
@@ -747,6 +753,7 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   iocElements: [],
   iocEntities: [],
   ioc_values_text: '',
+  hunt_ioc_sort: HUNT_IOC_SORT_DEFAULT,
   createdBy: undefined,
   objectMarking: [],
   objectLabel: [],
@@ -817,7 +824,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     sigma_rule: values.hunt_type === 'telemetry' ? values.sigma_rule : '',
     sigma_rules: values.hunt_type === 'telemetry' ? formSigmaRules(values) : [],
     native_queries: isIndicators ? [] : normalizeNativeQueries(values.native_queries),
-    ...(isIndicators ? { hunt_ioc_values: parseIocText(values.ioc_values_text).values, hunt_ioc_filters: iocFilters } : {}),
+    ...(isIndicators ? { hunt_ioc_values: parseIocText(values.ioc_values_text).values, hunt_ioc_filters: iocFilters, hunt_ioc_sort: values.hunt_ioc_sort } : {}),
     hunt_scope: buildHuntScope(optionValues(values.scopePlatforms)),
     hunt_schedule: schedule,
     trigger_filters: schedule === HUNT_SCHEDULE_STANDING ? triggerFilters : '',

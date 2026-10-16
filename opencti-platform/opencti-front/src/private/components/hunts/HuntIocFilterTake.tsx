@@ -10,10 +10,9 @@ import { fetchQuery } from '../../../relay/environment';
 import type { Filter, FilterGroup, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
 import { extractAllFilters } from '../../../utils/filters/filtersUtils';
 import useHuntConfiguration from './useHuntConfiguration';
+import { HUNT_IOC_SORTS } from './hunt-utils';
 import { HuntIocFilterTakeQuery, HuntIocSort } from './__generated__/HuntIocFilterTakeQuery.graphql';
 
-export const HUNT_IOC_SORT_DEFAULT: HuntIocSort = 'created_at_desc';
-const HUNT_IOC_SORTS: HuntIocSort[] = ['created_at_desc', 'created_at_asc', 'updated_at_desc', 'updated_at_asc'];
 // The count waits for the user to stop editing the filter before asking the platform
 const COUNT_DELAY_MS = 400;
 
@@ -77,9 +76,10 @@ export const useHuntedExclusion = ([filters, helpers]: [FilterGroup, handleFilte
 };
 
 interface HuntIocFilterTakeProps {
-  huntId: string;
-  /** The filter as edited, serialized for the platform; null when it holds no filter */
-  filters: string | null;
+  /** The hunt whose markings and organizations the count reads with; a hunt being created has none, and no count */
+  huntId?: string;
+  /** The filter as edited, serialized for the platform: shown only once the filter holds a condition */
+  filters: string;
   sort: HuntIocSort;
   onSortChange: (sort: HuntIocSort) => void;
   disabled?: boolean;
@@ -98,17 +98,25 @@ const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = fal
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const { maxFilterEntitiesPerRun } = useHuntConfiguration();
+  // The previous count stays on screen while the next one loads, so that the block never collapses under the cursor
   const [count, setCount] = useState<{ matching_count: number; taken_count: number } | null>(null);
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    setCount(null);
-    if (!filters) return undefined;
+    if (!huntId) return undefined;
     let current = true;
     const timer = setTimeout(() => {
       fetchQuery<HuntIocFilterTakeQuery>(huntIocFilterTakeQuery, { id: huntId, filters, sort }).toPromise()
         .then((data) => {
-          if (current) setCount(data?.hunt?.iocFilterPreview ?? null);
+          if (!current) return;
+          const preview = data?.hunt?.iocFilterPreview ?? null;
+          setCount(preview);
+          setFailed(!preview);
         })
-        .catch(() => undefined);
+        .catch(() => {
+          if (!current) return;
+          setCount(null);
+          setFailed(true);
+        });
     }, COUNT_DELAY_MS);
     return () => {
       current = false;
@@ -117,22 +125,26 @@ const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = fal
   }, [huntId, filters, sort]);
   const caption = { display: 'block', color: theme.palette.text.secondary };
   let countLine: string | null = null;
-  if (filters && count) {
+  if (failed) {
+    countLine = t_i18n('The platform could not count what the filter matches.');
+  } else if (count) {
     if (count.matching_count === 0) {
       countLine = t_i18n('No indicator or observable the hunt can take matches the filter');
     } else if (count.taken_count < count.matching_count) {
-      countLine = t_i18n('{count, number} indicators and observables match the filter: the next run takes {taken, number} of them, in the order above', {
+      countLine = t_i18n('{count, plural, one {# indicator or observable matches the filter: the next run takes {taken, number} of them, in the order above} other {# indicators and observables match the filter: the next run takes {taken, number} of them, in the order above}}', {
         values: { count: count.matching_count, taken: count.taken_count },
       });
     } else {
-      countLine = t_i18n('{count, number} indicators and observables match the filter: the next run takes them all', { values: { count: count.matching_count } });
+      countLine = t_i18n('{count, plural, one {# indicator or observable matches the filter: the next run takes it} other {# indicators and observables match the filter: the next run takes them all}}', {
+        values: { count: count.matching_count },
+      });
     }
   }
   return (
     <div style={{ marginTop: theme.spacing(1), display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }} data-testid="hunt-ioc-filter-take">
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
         <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
-          {t_i18n('Each run takes at most {max} of them:', { values: { max: maxFilterEntitiesPerRun } })}
+          {t_i18n('Each run takes at most {max, number} of them:', { values: { max: maxFilterEntitiesPerRun } })}
         </Text>
         <Select value={sort} onValueChange={(value) => onSortChange(value as HuntIocSort)} disabled={disabled}>
           <SelectTrigger aria-label={t_i18n('Order of the indicators and observables taken from the filter')} style={{ minWidth: 220 }} data-testid="hunt-ioc-sort">
@@ -147,7 +159,7 @@ const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = fal
         <Text variant="content-caption" style={caption} role="status" aria-live="polite" data-testid="hunt-ioc-filter-count">{countLine}</Text>
       )}
       {/* Worth it only when the filter holds more than a run takes: the next runs go through the entities not hunted yet */}
-      {count && count.taken_count < count.matching_count && lastRunAt && !huntedExcluded && onExcludeHunted && !disabled && (
+      {!failed && count && count.taken_count < count.matching_count && lastRunAt && !huntedExcluded && onExcludeHunted && !disabled && (
         <div>
           <Button variant="tertiary" size="small" onClick={() => onExcludeHunted(lastRunAt)} data-testid="hunt-ioc-exclude-hunted">
             {t_i18n('Exclude the entities hunted since {date}', { values: { date: fldt(lastRunAt) } })}

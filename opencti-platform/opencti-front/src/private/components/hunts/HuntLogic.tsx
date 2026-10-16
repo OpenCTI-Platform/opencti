@@ -15,6 +15,7 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
+import useGranted from '../../../utils/hooks/useGranted';
 import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
@@ -26,7 +27,7 @@ import HuntSigmaRulesField from './HuntSigmaRulesField';
 import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
-import HuntIocFilterTake, { HUNT_IOC_SORT_DEFAULT, useHuntedExclusion } from './HuntIocFilterTake';
+import HuntIocFilterTake, { useHuntedExclusion } from './HuntIocFilterTake';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
 import { iocTypeLabel, iocValuesToText, parseIocText } from './hunt-ioc-utils';
 import {
@@ -34,6 +35,7 @@ import {
   HUNT_DOCS,
   HUNT_FIRST_RULE,
   HUNT_IOC_ELEMENT_TYPES,
+  HUNT_IOC_SORT_DEFAULT,
   huntQueryLanguageLabel,
   huntTimeWindowPresets,
   normalizeNativeQueries,
@@ -286,6 +288,23 @@ const sigmaRuleTitle = (rule: string) => {
   return title || rule.trim().split(/\r?\n/)[0].substring(0, 80);
 };
 
+/** Why the logic of a hunt is read-only: the capabilities the user lacks, or the access to this hunt. */
+const ReadOnlyLogicCaption = ({ canEdit }: { canEdit: boolean }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const capable = useGranted(HUNT_CAPABILITIES, true);
+  if (canEdit) {
+    return null;
+  }
+  return (
+    <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(2), color: theme.palette.text.secondary }} data-testid="hunt-logic-read-only">
+      {capable
+        ? t_i18n('You can view this hunt but not change it.')
+        : t_i18n('Changing and running hunts needs the Launch hunts on security platforms capability.')}
+    </Text>
+  );
+};
+
 const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -384,6 +403,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
               <Grid container spacing={3}>
                 <Grid item xs={12} lg={7}>
                   <Card title={t_i18n('Sigma rules')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
+                    <ReadOnlyLogicCaption canEdit={canEdit} />
                     <HuntSigmaRulesField
                       label={t_i18n('Sigma rule (YAML)')}
                       helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
@@ -625,13 +645,14 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
             <Grid container spacing={3}>
               <Grid item xs={12} lg={7}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
+                  <ReadOnlyLogicCaption canEdit={canEdit} />
                   <HuntIocFields
                     filtersState={filtersState}
                     disabled={!canEdit}
-                    filterFooter={(
+                    filterFooter={noFilter ? undefined : (
                       <HuntIocFilterTake
                         huntId={hunt.id}
-                        filters={noFilter ? null : filtersJson}
+                        filters={filtersJson}
                         sort={sort}
                         onSortChange={setSort}
                         disabled={!canEdit}

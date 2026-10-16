@@ -116,7 +116,8 @@ const HuntIocFields = ({ filtersState, disabled = false, withFilters = true, fil
               <Filters helpers={helpers} availableFilterKeys={availableFilterKeys} searchContext={searchContext} />
             </div>
           )}
-          <FilterIconButton filters={filters} helpers={helpers} entityTypes={IOC_FILTER_ENTITY_TYPES} searchContext={searchContext} redirection />
+          {/* Without its helpers, the filter displays read-only chips */}
+          <FilterIconButton filters={filters} helpers={disabled ? undefined : helpers} entityTypes={IOC_FILTER_ENTITY_TYPES} searchContext={searchContext} redirection />
           {filterFooter}
           <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
             <HuntHelp
