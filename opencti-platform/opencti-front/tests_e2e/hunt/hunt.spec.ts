@@ -61,6 +61,8 @@ test('Hunt manual creation, tabs and Logic validation', { tag: ['@hunt', '@mutat
   await expect(huntDetails.getRunsPage()).toBeVisible();
   await huntDetails.tabs.goToEvidenceTab();
   await expect(huntDetails.getEvidencePage()).toBeVisible();
+  await huntDetails.tabs.goToCoverageTab();
+  await expect(huntDetails.getCoveragePage()).toBeVisible();
   await huntDetails.tabs.goToHistoryTab();
   await huntDetails.tabs.goToOverviewTab();
   await expect(huntDetails.getOverview()).toBeVisible();

@@ -2,7 +2,18 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
-import { huntRunStatusLabel, huntRunStatusSeverity, huntSourceKindLabel, huntStatusLabel, huntStatusSeverity, huntVerdictLabel, huntVerdictSeverity } from './hunt-utils';
+import {
+  huntRunStatusLabel,
+  huntRunStatusSeverity,
+  huntSourceKindLabel,
+  huntStatusLabel,
+  huntStatusSeverity,
+  huntTechniqueValidationLabel,
+  huntTechniqueValidationSeverity,
+  type HuntTechniqueValidationStatus,
+  huntVerdictLabel,
+  huntVerdictSeverity,
+} from './hunt-utils';
 
 interface RelativeDateProps {
   /** One date, or the dates of a sentence that names several */
@@ -59,4 +70,9 @@ export const HuntVerdictChip = ({ value }: ValueChipProps) => {
 export const HuntSourceKindChip = ({ value }: ValueChipProps) => {
   const { t_i18n } = useFormatter();
   return <Chip label={t_i18n(huntSourceKindLabel(value))} severity={value === 'analyst' ? 'neutral' : 'info'} />;
+};
+
+export const HuntTechniqueValidationChip = ({ status }: { status: HuntTechniqueValidationStatus }) => {
+  const { t_i18n } = useFormatter();
+  return <Chip label={t_i18n(huntTechniqueValidationLabel(status))} severity={huntTechniqueValidationSeverity(status)} />;
 };

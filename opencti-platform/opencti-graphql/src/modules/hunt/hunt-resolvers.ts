@@ -13,6 +13,7 @@ import {
   huntDeleteRelation,
   huntEditField,
   huntSigmaValidation,
+  huntValidateFromEmulation,
   importHuntPack,
   loadHuntIocSet,
   loadHuntRefs,
@@ -27,7 +28,7 @@ import { validateSigmaRule } from './hunt-sigma';
 import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, HUNT_INCIDENT_MODE_INCIDENT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, huntIncidentMode, huntRuleKey, storedSigmaRules } from './hunt-utils';
-import { computeHuntStatistics, findHuntRunsForHunt, findHuntTranslationsView, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
+import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, findHuntTranslationsView, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
 import { storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { findHuntKnownHits } from './huntHitRecord/huntHitRecord-domain';
@@ -59,6 +60,7 @@ const huntResolvers: Resolvers = {
     huntTechniques: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_TECHNIQUES),
     huntSources: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_SOURCES),
     scopePlatforms: (hunt, _, context) => loadHuntScopePlatforms(context, context.user, hunt),
+    techniqueValidations: (hunt, _, context) => computeHuntTechniqueValidations(context, context.user, hunt),
     sigmaValidation: (hunt) => huntSigmaValidation(hunt),
     sigma_rules: (hunt) => storedSigmaRules(hunt),
     sigma_rule_keys: (hunt) => storedSigmaRules(hunt).map(huntRuleKey),
@@ -98,6 +100,7 @@ const huntResolvers: Resolvers = {
     huntTestQuery: (_, { id, securityPlatformId }, context) => startHuntPreview(context, context.user, id, securityPlatformId),
     huntPlan: (_, { input }, context) => planHunt(context, context.user, input),
     huntAssist: (_, { input }, context) => assistHunt(context, context.user, input),
+    huntValidateFromEmulation: (_, { input }, context) => huntValidateFromEmulation(context, context.user, input),
     huntPackImport: (_, { file }, context) => importHuntPack(context, context.user, file),
   },
   Subscription: {

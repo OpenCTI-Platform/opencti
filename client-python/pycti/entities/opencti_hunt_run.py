@@ -71,6 +71,8 @@ class HuntRun:
             incident_proposal
             incident_id
             draft_id
+            aev_inject_id
+            technique_id
             attempt
             next_retry_at
             started_at

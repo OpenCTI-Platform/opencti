@@ -32,17 +32,20 @@ import {
   HuntSourceKind,
   HuntStatus,
   HuntType,
+  type HuntValidateFromEmulationInput,
   type InputMaybe,
+  OrderingMode,
   type StixRefRelationshipAddInput,
 } from '../../generated/graphql';
 import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { addHuntPlanCount } from '../../manager/telemetryManager';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
+import { HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { resolveAgentJwtUser } from '../playbook/components/ai-agent-shared';
 import {
   type BasicStoreEntityHunt,
@@ -51,6 +54,7 @@ import {
   HUNT_STATUS_ACTIVE,
   HUNT_TYPE_INDICATORS,
   INPUT_HUNT_SOURCES,
+  INPUT_HUNT_TECHNIQUES,
   RELATION_HUNT_SOURCES,
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
@@ -94,12 +98,15 @@ import {
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { huntStateLockKey, withHuntLock } from './hunt-lock';
-import { cancelDeletedHuntRuns, findHuntConnectors, markHuntRunsOrphaned, startHuntTranslationCheck } from './huntRun/huntRun-domain';
+import { filterEditableHunts } from './hunt-access';
+import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, markHuntRunsOrphaned, startHuntTranslationCheck } from './huntRun/huntRun-domain';
+import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/i;
 const PLAN_MAX_ENTITIES = 50;
 const PLAN_MAX_REPORT_OBJECTS = 50;
 const PLAN_MAX_PIR_ENTITIES = 25;
+const VALIDATION_LOCK = 'hunt_emulation_validation';
 
 // region read
 export const findHuntById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -783,6 +790,123 @@ export const assistHunt = async (context: AuthContext, user: AuthUser, input: Hu
     },
   });
   return { ...proposal, fields: proposal.fields as string[] as HuntAssistField[], techniques, unknown_technique_ids: unknown };
+};
+// endregion
+
+// region OpenAEV emulation validation
+const resolveEmulationTechnique = async (context: AuthContext, user: AuthUser, techniqueId: string) => {
+  if (ATTACK_TECHNIQUE_ID.test(techniqueId)) {
+    const [technique] = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_ATTACK_PATTERN], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: [techniqueId.toUpperCase()] }], filterGroups: [] },
+    });
+    return technique ?? null;
+  }
+  return storeLoadById<BasicStoreEntity>(context, user, techniqueId, ENTITY_TYPE_ATTACK_PATTERN);
+};
+
+const resolveEmulationPlatform = async (context: AuthContext, user: AuthUser, input: HuntValidateFromEmulationInput) => {
+  if (input.security_platform_id) {
+    const platform = await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, input.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+    if (platform) {
+      return platform;
+    }
+  }
+  if (input.security_platform_name) {
+    const [platform] = await fullEntitiesList<BasicStoreEntitySecurityPlatform>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [input.security_platform_name] }], filterGroups: [] },
+    });
+    return platform ?? null;
+  }
+  return null;
+};
+
+/**
+ * OpenAEV validation loop: an inject emulating a technique completed on an asset monitored by a security platform.
+ * Every active hunt covering the technique runs on that platform over the emulation window (idempotent per
+ * inject, technique, hunt, platform and security coverage: an inject emulating several techniques, or validated for
+ * several security coverages, gets runs of its own for each). Completed runs write coverage_information hunt_detected
+ * on the security coverage.
+ */
+export const huntValidateFromEmulation = async (context: AuthContext, user: AuthUser, input: HuntValidateFromEmulationInput) => {
+  await checkEnterpriseEdition(context);
+  const windowStart = new Date(input.window_start);
+  const windowEnd = new Date(input.window_end);
+  if (Number.isNaN(windowStart.getTime()) || Number.isNaN(windowEnd.getTime()) || windowStart.getTime() >= windowEnd.getTime()) {
+    throw FunctionalError('The emulation window is invalid', { window_start: input.window_start, window_end: input.window_end });
+  }
+  const technique = await resolveEmulationTechnique(context, user, input.technique_id);
+  if (!technique) {
+    throw ResourceNotFoundError('The emulated technique cannot be found', { techniqueId: input.technique_id });
+  }
+  const platform = await resolveEmulationPlatform(context, user, input);
+  if (!platform) {
+    throw ResourceNotFoundError('The security platform of the emulation cannot be found', { securityPlatformId: input.security_platform_id, securityPlatformName: input.security_platform_name });
+  }
+  let securityCoverageId: string | null = null;
+  if (input.security_coverage_id) {
+    const coverage = await storeLoadById<BasicStoreEntity>(context, user, input.security_coverage_id, ENTITY_TYPE_SECURITY_COVERAGE);
+    // Runs of an unknown coverage would be validations whose result no coverage ever receives
+    if (!coverage) {
+      throw ResourceNotFoundError('The security coverage of the emulation cannot be found', { securityCoverageId: input.security_coverage_id });
+    }
+    securityCoverageId = coverage.internal_id;
+  }
+  // Every active hunt covering the technique, read page by page in a stable order
+  const coveringHunts = await fullEntitiesList<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
+        { key: [INPUT_HUNT_TECHNIQUES], values: [technique.internal_id] },
+      ],
+      filterGroups: [],
+    },
+    orderBy: 'created_at',
+    orderMode: OrderingMode.Asc,
+    // The dispatched runs carry the techniques, targets and sources of the hunts
+    withoutRels: false,
+  });
+  // Running a hunt changes it: the hunts the caller can only read are left out
+  const hunts = await filterEditableHunts(context, user, coveringHunts);
+  // Retries of the same inject and technique on the same platform are serialized, so the runs already created are always seen
+  const runs = await withHuntLock(`${VALIDATION_LOCK}_${input.inject_id}_${technique.internal_id}_${platform.internal_id}`, async () => {
+    const existingRuns = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          { key: ['aev_inject_id'], values: [input.inject_id] },
+          { key: ['technique_id'], values: [technique.internal_id] },
+          { key: ['security_platform_id'], values: [platform.internal_id] },
+          { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_EMULATION] },
+        ],
+        filterGroups: [],
+      },
+      noFiltersChecking: true,
+    });
+    const validationRuns: BasicStoreEntityHuntRun[] = [];
+    for (let index = 0; index < hunts.length; index += 1) {
+      const hunt = hunts[index];
+      const existing = existingRuns.filter((run) => run.hunt_id === hunt.internal_id && (run.security_coverage_id ?? null) === securityCoverageId);
+      if (existing.length > 0) {
+        validationRuns.push(...existing);
+      } else {
+        const created = await createHuntRuns(context, hunt, {
+          trigger: HUNT_RUN_TRIGGER_EMULATION,
+          securityPlatformIds: [platform.internal_id],
+          windowStart: windowStart.toISOString(),
+          windowEnd: windowEnd.toISOString(),
+          aevInjectId: input.inject_id,
+          securityCoverageId,
+          techniqueId: technique.internal_id,
+          triggeredBy: user.id,
+        });
+        validationRuns.push(...created);
+      }
+    }
+    return validationRuns;
+  });
+  logApp.info('[OPENCTI-MODULE] Hunt validation from emulation', { injectId: input.inject_id, technique: technique.internal_id, platform: platform.internal_id, hunts: hunts.length, runs: runs.length });
+  return { hunts_count: hunts.length, runs };
 };
 // endregion
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip, HuntVerdictChip } from './HuntChips';
+import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip, HuntTechniqueValidationChip, HuntVerdictChip } from './HuntChips';
 
 describe('HuntChips', () => {
   it('labels the hunt status', () => {
@@ -28,5 +28,10 @@ describe('HuntChips', () => {
   it('labels the origin of the hunt', () => {
     testRender(<HuntSourceKindChip value="agent" />);
     expect(screen.getByText('AI agent')).toBeInTheDocument();
+  });
+
+  it('labels the emulation validation of a technique', () => {
+    testRender(<HuntTechniqueValidationChip status="validated" />);
+    expect(screen.getByText('Detection proven')).toBeInTheDocument();
   });
 });

@@ -42,7 +42,8 @@ testCreatedCounter.indicator = 65;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 12;
+// - 1 created and deleted by the hunt test of the coverages validated by the same inject
+testCreatedCounter['intrusion-set'] = 13;
 testCreatedCounter['ipv4-addr'] = 2;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -62,7 +63,8 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
-testCreatedCounter.relationship = 158;
+// + 2 has-covered created by the hunt test of the coverages validated by the same inject
+testCreatedCounter.relationship = 160;
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8;
 testCreatedCounter.software = 2;
@@ -74,12 +76,12 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 26;
-testCreatedCounter['security-coverage-result'] = 21;
+testCreatedCounter['security-coverage'] = 28;
+testCreatedCounter['security-coverage-result'] = 23;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 8;
+testUpdatedCounter.relationship = 10;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 20;
@@ -102,8 +104,8 @@ testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
-// + 2 upserts in observedData-domain-test + 3 updates by the runs of the hunt tests
-testUpdatedCounter['observed-data'] = 6;
+// + 2 upserts in observedData-domain-test + 5 updates by the runs of the hunt tests
+testUpdatedCounter['observed-data'] = 8;
 testUpdatedCounter.opinion = 6;
 testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
@@ -112,7 +114,7 @@ testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
-testUpdatedCounter.sighting = 8;
+testUpdatedCounter.sighting = 10;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 5;
@@ -156,7 +158,8 @@ testDeletedCounter.indicator = 37;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 11;
+// - 1 created and deleted by the hunt test of the coverages validated by the same inject
+testDeletedCounter['intrusion-set'] = 12;
 testDeletedCounter['ipv4-addr'] = 2;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
@@ -186,8 +189,8 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 24;
-testDeletedCounter['security-coverage-result'] = 19;
+testDeletedCounter['security-coverage'] = 26;
+testDeletedCounter['security-coverage-result'] = 21;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
