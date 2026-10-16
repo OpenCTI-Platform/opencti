@@ -186,7 +186,7 @@ import { addOrganization } from '../organization/organization-domain';
 import { logAuthInfo } from '../authenticationProvider/providers-logger';
 import { hashSHA256 } from '../../utils/hash';
 import { normalizeEmail } from '../../utils/email';
-import { withoutUserSecrets } from '../../utils/redaction';
+import { withoutUserSecrets } from './user-secrets';
 import { checkPasswordNotReused, computeNextPasswordHistory, consumePasswordChangeAttempt, isLocalUser, readPasswordHistoryCount } from './user-password-history';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
