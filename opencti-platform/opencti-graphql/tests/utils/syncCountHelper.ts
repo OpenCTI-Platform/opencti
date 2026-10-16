@@ -34,11 +34,11 @@ testCreatedCounter.grouping = 2;
 testCreatedCounter.hostname = 1; // created and deleted by hunt-indicators-test
 testCreatedCounter.hunt = 20;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 64;
+testCreatedCounter.identity = 65;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
-testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 64;
+testCreatedCounter.incident = 8;
+testCreatedCounter.indicator = 65;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -61,6 +61,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
+// 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
 testCreatedCounter.relationship = 158;
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8;
@@ -94,7 +95,7 @@ testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
-testUpdatedCounter.hunt = 22;
+testUpdatedCounter.hunt = 16;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 30;
 testUpdatedCounter.label = 1;
@@ -149,9 +150,9 @@ testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
 testDeletedCounter.hostname = 1; // created and deleted by hunt-indicators-test
 testDeletedCounter.hunt = 20;
-testDeletedCounter.identity = 47;
-testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 36;
+testDeletedCounter.identity = 48;
+testDeletedCounter.incident = 7;
+testDeletedCounter.indicator = 37;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test

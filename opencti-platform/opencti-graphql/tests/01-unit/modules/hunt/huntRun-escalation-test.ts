@@ -168,9 +168,9 @@ const running = {
 } as unknown as BasicStoreEntityHuntRun;
 
 describe('Escalation at the end of a run above the threshold', () => {
-  const loading = (run: BasicStoreEntityHuntRun) => {
-    vi.mocked(storeLoadById).mockImplementation(async (_context, _user, _id, type) => (type === 'Hunt' ? hunt : { ...run, ...finalState() }) as never);
-    vi.mocked(internalLoadById).mockResolvedValue(hunt as never);
+  const loading = (run: BasicStoreEntityHuntRun, ofHunt: BasicStoreEntityHunt = hunt) => {
+    vi.mocked(storeLoadById).mockImplementation(async (_context, _user, _id, type) => (type === 'Hunt' ? ofHunt : { ...run, ...finalState() }) as never);
+    vi.mocked(internalLoadById).mockResolvedValue(ofHunt as never);
     vi.mocked(updateHuntRunInformation).mockResolvedValue(undefined as never);
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...run, ...finalState(), ...patch } }) as never);
   };
@@ -245,6 +245,30 @@ describe('Escalation at the end of a run above the threshold', () => {
     await setHuntRunVerdict(testContext, ADMIN_USER, 'run-1', { verdict: 'true_positive' } as never);
     expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
     expect(finalState()).toMatchObject({ verdict: 'true_positive', draft_id: 'draft-1', incident_id: 'incident-1' });
+  });
+
+  it('should open the incident itself, without a draft, for a hunt that opens its incidents directly', async () => {
+    const direct = { ...hunt, hunt_incident_mode: 'incident' } as BasicStoreEntityHunt;
+    loading({ ...running, hunt_run_trigger: 'schedule', auto_escalation: true }, direct);
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+    expect(vi.mocked(createHuntIncidentInWorkspace).mock.calls.at(-1)?.[4]).toBeNull();
+    expect(finalState()).toMatchObject({ incident_id: 'incident-1', incident_stix_id: 'incident--1', incident_continued: false });
+    expect(finalState().draft_id).toBeUndefined();
+    // The true positive of a manual run opens it directly as well
+    vi.mocked(patchAttribute).mockReset();
+    loading({ ...running, hunt_run_status: 'completed', hits_count: 28, verdict_source: 'auto', auto_escalation: false } as BasicStoreEntityHuntRun, direct);
+    await setHuntRunVerdict(testContext, ADMIN_USER, 'run-1', { verdict: 'true_positive' } as never);
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+    expect(finalState()).toMatchObject({ verdict: 'true_positive', incident_id: 'incident-1' });
+    expect(finalState().draft_id).toBeUndefined();
+  });
+
+  it('should keep the draft an interrupted finalization opened, even once the hunt opens its incidents directly', async () => {
+    loading({ ...running, hunt_run_trigger: 'schedule', auto_escalation: true, draft_id: 'draft-0' } as BasicStoreEntityHuntRun, { ...hunt, hunt_incident_mode: 'incident' } as BasicStoreEntityHunt);
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+    expect(vi.mocked(createHuntIncidentInWorkspace).mock.calls.at(-1)?.[4]).toEqual('draft-0');
   });
 });
 

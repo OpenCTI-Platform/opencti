@@ -23,9 +23,10 @@ import DraftsHorizontalBars from '@components/common/drafts/DraftsHorizontalBars
 import DraftsMultiVerticalBars from '@components/common/drafts/DraftsMultiVerticalBars';
 import DraftsMultiLineChart from '@components/common/drafts/DraftsMultiLineChart';
 import DraftsMultiAreaChart from '@components/common/drafts/DraftsMultiAreaChart';
+import HuntRunsWidgetList from '@components/hunts/runs/HuntRunsWidgetList';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
-import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
+import { isDraftWorkspaceFilterGroup, isHuntRunFilterGroup } from '../../utils/filters/filtersUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardEntitiesVizProps {
@@ -39,6 +40,11 @@ interface DashboardEntitiesVizProps {
 const isDraftWorkspaceWidget = (widgetData: Widget): boolean => {
   return widgetData.dataSelection.length > 0
     && widgetData.dataSelection.every((selection) => isDraftWorkspaceFilterGroup(selection.filters));
+};
+
+const isHuntRunWidget = (widgetData: Widget): boolean => {
+  return widgetData.dataSelection.length > 0
+    && widgetData.dataSelection.every((selection) => isHuntRunFilterGroup(selection.filters));
 };
 
 const DashboardEntitiesViz = ({
@@ -102,6 +108,18 @@ const DashboardEntitiesViz = ({
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
             title={undefined} // because calling js component in ts
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+            config={config}
+          />
+        );
+      }
+      if (isHuntRunWidget(widget)) {
+        return (
+          <HuntRunsWidgetList
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
             popover={popover}
             host={host}
             refreshRate={refreshRate}

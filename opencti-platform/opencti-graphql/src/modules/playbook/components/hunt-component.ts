@@ -40,7 +40,7 @@ import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PL
 import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
 import { canLaunchHunts, checkHuntEditAccess, filterEditableHunts } from '../../hunt/hunt-access';
 import { deriveHuntContent, derivedHuntInput } from '../../hunt/hunt-derivation';
-import { addHunt } from '../../hunt/hunt-domain';
+import { addHunt, planAgentHunts } from '../../hunt/hunt-domain';
 import { isRestrictedToMembers } from '../../hunt/hunt-iocs';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 
@@ -50,9 +50,11 @@ const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
 const PLAYBOOK_HUNT_IDS_PER_QUERY = 500;
 
 // The step runs existing hunts (the configured ones, or the active hunts of the elements), or derives a hunt from each
-// element, as "Hunt this" does, created or found again by its name, and runs it
+// element, as "Hunt this" does, created or found again by its name, and runs it; with the agent source, an element
+// from which no hunt derives (no indicator nor detection rule) gets the hunts the planner proposes from its text
 export const PLAYBOOK_HUNT_SOURCE_EXISTING = 'existing';
 export const PLAYBOOK_HUNT_SOURCE_DERIVED = 'derived';
+export const PLAYBOOK_HUNT_SOURCE_AGENT = 'agent';
 
 export interface HuntComponentConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -88,13 +90,14 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
       oneOf: [
         { const: PLAYBOOK_HUNT_SOURCE_EXISTING, title: 'Run existing hunts' },
         { const: PLAYBOOK_HUNT_SOURCE_DERIVED, title: 'Derive a hunt from each element (created, or found again by its name), then run it' },
+        { const: PLAYBOOK_HUNT_SOURCE_AGENT, title: 'Derive a hunt from each element, or have the hunt planner propose up to 3 when none derives' },
       ],
     },
     hunt_ids: {
       type: 'array',
       uniqueItems: true,
       default: [],
-      $ref: 'Hunts to run (empty: the active hunts targeting the threats, techniques and indicators of the elements)',
+      $ref: 'Existing hunts to run (Run existing hunts only; empty: the active hunts targeting the threats, techniques and indicators of the elements)',
       items: { type: 'string', oneOf: [] },
     },
     security_platform_ids: {
@@ -267,10 +270,11 @@ const loadActiveHunts = async (context: AuthContext, author: AuthUser, huntIds: 
 /**
  * The hunt of each element in scope, derived as "Hunt this" derives it (derivedHuntInput) and identified by its name: a
  * hunt of that name is run again, else the hunt is created with the markings of the element, active when it can run
- * (a draft runs nothing). An element restricted to authorized members gives no hunt, a hunt holding no such
- * restriction. Only the hunts the writer of the step can read and change are run, at most max_hunts.
+ * (a draft runs nothing). With the planner, an element from which no hunt derives gets the hunts the planner proposes
+ * from its text and knowledge (planAgentHunts). An element restricted to authorized members gives no hunt, a hunt
+ * holding no such restriction. Only the hunts the writer of the step can read and change are run, at most max_hunts.
  */
-const derivePlaybookHunts = async (context: AuthContext, author: AuthUser, elements: StixObject[], configuration: WrittenHuntConfiguration) => {
+const derivePlaybookHunts = async (context: AuthContext, author: AuthUser, elements: StixObject[], configuration: WrittenHuntConfiguration, withPlanner: boolean) => {
   const maxHunts = Math.min(PLAYBOOK_HUNT_MAX_HUNTS, Math.max(1, Math.round(configuration.max_hunts || 10)));
   const entities = await findByIds<BasicStoreEntity>(context, author, elements.map((element) => element.id));
   const huntIds = new Set<string>();
@@ -293,6 +297,9 @@ const derivePlaybookHunts = async (context: AuthContext, author: AuthUser, eleme
           });
           huntIds.add(created.internal_id);
         }
+      } else if (withPlanner && !isRestrictedToMembers(entity)) {
+        const planned = await planAgentHunts(context, author, entity, maxHunts - huntIds.size);
+        planned.forEach((hunt) => huntIds.add(hunt.internal_id));
       }
     } catch (error) {
       logApp.warn('[OPENCTI-MODULE] Playbook hunt step could not derive the hunt of an element', { cause: error, entityId: entity.internal_id });
@@ -307,9 +314,10 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
   if (!author) {
     return [];
   }
-  return configuration.hunt_source === PLAYBOOK_HUNT_SOURCE_DERIVED
-    ? derivePlaybookHunts(context, author, elements, configuration)
-    : findPlaybookHunts(context, author, elements, configuration);
+  if (configuration.hunt_source === PLAYBOOK_HUNT_SOURCE_DERIVED || configuration.hunt_source === PLAYBOOK_HUNT_SOURCE_AGENT) {
+    return derivePlaybookHunts(context, author, elements, configuration, configuration.hunt_source === PLAYBOOK_HUNT_SOURCE_AGENT);
+  }
+  return findPlaybookHunts(context, author, elements, configuration);
 };
 
 const HUNT_PLAYBOOK_DEBOUNCE_LOCK = 'hunt_playbook_debounce';

@@ -45,6 +45,7 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
+  'sentinelone',
 ] as const;
 export const HUNT_QUERY_LANGUAGES = [
   'spl',
@@ -58,6 +59,7 @@ export const HUNT_QUERY_LANGUAGES = [
   'ppl',
   'opensearch-lucene',
   'sql',
+  'powerquery',
 ] as const;
 /** Default query language of each platform, offered first when a native query row is added */
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
@@ -70,6 +72,7 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   opensearch: 'ppl',
   clickhouse: 'sql',
   's3-ocsf': 'sql',
+  sentinelone: 'powerquery',
 };
 
 // Product and language names are proper nouns, never translated
@@ -83,6 +86,7 @@ const HUNT_PLATFORM_NAMES: Record<string, string> = {
   opensearch: 'OpenSearch',
   clickhouse: 'ClickHouse',
   's3-ocsf': 'Amazon S3 (OCSF)',
+  sentinelone: 'SentinelOne Singularity',
 };
 const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   spl: 'SPL',
@@ -96,6 +100,7 @@ const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   ppl: 'PPL',
   'opensearch-lucene': 'OpenSearch Lucene',
   sql: 'SQL',
+  powerquery: 'SentinelOne PowerQuery',
 };
 
 export const huntPlatformLabel = (platform: string | null | undefined) => {
@@ -221,6 +226,7 @@ export const HUNT_DOCS = {
   indicatorHunts: `${HUNT_DOCS_BASE}/hunt-indicators/`,
   connectors: `${HUNT_DOCS_BASE}/hunt-connectors/`,
   runs: `${HUNT_DOCS_BASE}/hunts/#results-evidence-and-verdicts`,
+  incident: `${HUNT_DOCS_BASE}/hunts/#incidents`,
   produces: `${HUNT_DOCS_BASE}/hunts/#what-a-run-produces`,
   runHunt: `${HUNT_DOCS_BASE}/hunts/#run-a-hunt`,
   activate: `${HUNT_DOCS_BASE}/hunts/#activate-a-hunt`,
@@ -305,6 +311,7 @@ const HUNT_CONNECTOR_SETUP_SECTIONS: Record<string, string> = {
   'crowdstrike-logscale-hunt': 'crowdstrike-logscale',
   'google-secops-hunt': 'google-secops',
   'opensearch-ocsf-hunt': 'opensearch-ocsf',
+  'sentinelone-hunt': 'sentinelone',
 };
 
 export const huntConnectorSetupDocumentation = (slug: string | null | undefined) => {
@@ -521,6 +528,30 @@ export const huntVerdictSourceLabel = (source?: string | null) => {
     default: return 'Not recorded';
   }
 };
+
+// Chart axes cut long names, hence the short name of a telemetry hunt
+const huntTypeWidgetLabel = (huntType: string): string | null => {
+  if (huntType === 'telemetry') return 'Detection rule';
+  return huntType === 'indicators' ? huntTypeLabel(huntType) : null;
+};
+
+/**
+ * The label of a value of the hunt attribute a dashboard widget breaks down on, or null for any other attribute.
+ * Distributions return the values capitalized (`True_positive`).
+ */
+export const huntWidgetValueLabel = (attribute: string, value: string): string | null => {
+  const key = value.toLowerCase();
+  switch (attribute) {
+    case 'verdict': return huntVerdictLabel(key);
+    case 'verdict_source': return huntVerdictSourceLabel(key);
+    case 'hunt_run_status': return huntRunStatusLabel(key);
+    case 'hunt_run_trigger': return huntRunTriggerLabel(key);
+    case 'hunt_type': return huntTypeWidgetLabel(key);
+    case 'hunt_source_kind': return huntSourceKindLabel(key);
+    case 'hunt_status': return huntStatusLabel(key);
+    default: return null;
+  }
+};
 // endregion
 
 // region status transitions
@@ -697,6 +728,16 @@ export const HUNT_IOC_SORTS = ['created_at_desc', 'created_at_asc', 'updated_at_
 export type HuntIocSortValue = typeof HUNT_IOC_SORTS[number];
 export const HUNT_IOC_SORT_DEFAULT: HuntIocSortValue = 'created_at_desc';
 
+/** What an escalating run opens: an incident draft an analyst validates, by default, or the incident itself. */
+export const HUNT_INCIDENT_MODES = ['draft', 'incident'] as const;
+export type HuntIncidentModeValue = typeof HUNT_INCIDENT_MODES[number];
+export const HUNT_INCIDENT_MODE_DEFAULT: HuntIncidentModeValue = 'draft';
+export const huntIncidentModeValue = (mode?: string | null): HuntIncidentModeValue => (mode === 'incident' ? 'incident' : HUNT_INCIDENT_MODE_DEFAULT);
+/** Where the hits of a run an analyst escalates go, as the incident mode of its hunt sets it. */
+export const huntEscalationTarget = (mode?: string | null) => (huntIncidentModeValue(mode) === 'incident'
+  ? 'The hits go to the open incident of this hunt, or to a new incident'
+  : 'The hits go to the open incident of this hunt, or to a new incident draft');
+
 export interface HuntFormValues {
   name: string;
   description: string;
@@ -715,6 +756,7 @@ export interface HuntFormValues {
   benign_patterns: string;
   escalation_threshold: number | string;
   escalate_manual_runs: boolean;
+  hunt_incident_mode: HuntIncidentModeValue;
   hunt_max_results: number | string;
   huntTargets: FieldOption[];
   huntTechniques: FieldOption[];
@@ -747,6 +789,7 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   benign_patterns: '',
   escalation_threshold: HUNT_DEFAULT_ESCALATION_THRESHOLD,
   escalate_manual_runs: false,
+  hunt_incident_mode: HUNT_INCIDENT_MODE_DEFAULT,
   hunt_max_results: '',
   huntTargets: [],
   huntTechniques: [],
@@ -834,6 +877,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     benign_patterns: parseBenignPatterns(values.benign_patterns),
     escalation_threshold: toInteger(values.escalation_threshold, HUNT_DEFAULT_ESCALATION_THRESHOLD),
     escalate_manual_runs: values.escalate_manual_runs,
+    hunt_incident_mode: values.hunt_incident_mode,
     hunt_max_results: toInteger(values.hunt_max_results, null),
     huntTargets: optionValues(values.huntTargets),
     huntTechniques: optionValues(values.huntTechniques),
@@ -873,6 +917,7 @@ export const HUNT_EDITABLE_KEYS = [
   'benign_patterns',
   'escalation_threshold',
   'escalate_manual_runs',
+  'hunt_incident_mode',
   'hunt_max_results',
   'huntTargets',
   'huntTechniques',

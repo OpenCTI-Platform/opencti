@@ -208,7 +208,7 @@ type HuntRun implements BasicObject & InternalObject {
   verdict_proposal_rationale: String
   verdict_proposal_agent: String
   incident_proposal: String
-  "The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time"
+  "The run opens an incident by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time"
   auto_escalation: Boolean!
   incident_id: String
   "STIX id of the incident of the run: it still finds the incident once its draft is validated"
@@ -226,6 +226,8 @@ type HuntRun implements BasicObject & InternalObject {
   started_at: DateTime
   completed_at: DateTime
   cost_ms: Int
+  "The queries the run sent to its platform, as its hunt connector reported them; null when the connector does not count them"
+  queries_count: Int
   error_message: String
   "False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail"
   failure_retryable: Boolean
@@ -302,7 +304,7 @@ input HuntRunVerdictInput {
   verdict: HuntRunVerdict!
   hunt_analyst_feedback: String
   source: HuntVerdictSource
-  "A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one"
+  "A true positive verdict opens an incident from the run, as its hunt sets it, unless false; ignored for any other verdict or a run that has one"
   create_incident: Boolean
 }
 
@@ -409,6 +411,8 @@ input HuntRunReportInput {
   observations: [HuntRunObservationInput!]
   result_ids: [String!]
   cost_ms: Int
+  "The queries the run sent to its platform, which count against the quotas of the platform"
+  queries_count: Int
   error: String
   "Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried"
   retryable: Boolean

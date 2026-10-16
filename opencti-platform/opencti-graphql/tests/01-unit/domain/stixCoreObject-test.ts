@@ -209,6 +209,20 @@ describe('stix core object widget types', () => {
     expect(filters).toContainEqual(expect.objectContaining({ key: ['hunt_run_mode'], values: ['preview'], operator: 'not_eq' }));
   });
 
+  it('should count and chart the records of hunt hits when a widget filters on their type', () => {
+    const input = { filters: typeFilter(['Hunt-Hit-Record']) };
+    const { types, args } = extractWidgetTypesFromArgs(input, ['Stix-Core-Object']);
+    expect(types).toEqual(['Stix-Core-Object', 'Hunt-Hit-Record']);
+    expect(args).toBe(input);
+  });
+
+  it('should leave translation previews out when a widget charts runs and hit records together', () => {
+    const { types, args } = extractWidgetTypesFromArgs({ filters: typeFilter(['Hunt-Run', 'Hunt-Hit-Record']) }, ['Stix-Core-Object']);
+    expect(types).toEqual(['Stix-Core-Object', 'Hunt-Run', 'Hunt-Hit-Record']);
+    const filters = (args as { filters: { filters: { key: string[]; values: string[]; operator: string }[] } }).filters.filters;
+    expect(filters).toContainEqual(expect.objectContaining({ key: ['hunt_run_mode'], values: ['preview'], operator: 'not_eq' }));
+  });
+
   it('should leave the types and filters of other widgets as they are', () => {
     const input = { filters: typeFilter(['Report']) };
     const { types, args } = extractWidgetTypesFromArgs(input, ['Report']);
