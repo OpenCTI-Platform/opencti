@@ -16,16 +16,12 @@ import {
   isAutoEscalatedHuntRun,
   isHuntRunHuntDeleted,
   registerHuntConnector,
-  reportHuntConnectorCheck,
   reportHuntRun,
   resolveHuntRunIocResults,
   retryHuntRun,
-  testHuntConnectorConnection,
   setHuntRunVerdict,
-  toHuntConnectorView,
   triageHuntRun,
 } from './huntRun-domain';
-import type { BasicStoreEntityConnector } from '../../connector/connector-types';
 import { huntRunQueueReason } from '../hunt-dispatch';
 import { huntRunFailureReason } from '../hunt-logic';
 import { annotateHuntRunHits } from '../huntHitRecord/huntHitRecord-domain';
@@ -84,13 +80,6 @@ const huntRunResolvers: Resolvers = {
       ? storeLoadById(context, context.user, connector.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
       : null),
   },
-  Connector: {
-    hunt: (connector) => {
-      // The Connector type is not mapped to its store entity in the generated resolver types
-      const stored = connector as unknown as BasicStoreEntityConnector;
-      return stored.hunt_platform ? toHuntConnectorView(stored) : null;
-    },
-  },
   Mutation: {
     huntRunRetry: (_, { id }, context) => retryHuntRun(context, context.user, id),
     huntRunSetVerdict: (_, { id, input }, context) => setHuntRunVerdict(context, context.user, id, input),
@@ -98,8 +87,6 @@ const huntRunResolvers: Resolvers = {
     huntRunReport: (_, { id, input }, context) => reportHuntRun(context, context.user, id, input),
     huntRunEvidenceAdd: (_, { id, input }, context) => addHuntRunEvidence(context, context.user, id, input),
     huntConnectorRegister: (_, { input }, context) => registerHuntConnector(context, context.user, input),
-    huntConnectorTestConnection: (_, { id }, context) => testHuntConnectorConnection(context, context.user, id) as any,
-    huntConnectorCheckReport: (_, { input }, context) => reportHuntConnectorCheck(context, context.user, input) as any,
   },
 };
 

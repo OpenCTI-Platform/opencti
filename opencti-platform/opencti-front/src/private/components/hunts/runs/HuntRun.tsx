@@ -226,6 +226,7 @@ const RelativeDate = ({ date, label }: { date: string; label?: (relative: string
   return (
     <Tooltip>
       <TooltipTrigger asChild>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0}>{label ? label(rd(date)) : rd(date)}</span>
       </TooltipTrigger>
       <TooltipContent>{fldt(date)}</TooltipContent>
@@ -363,13 +364,9 @@ const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
       );
       break;
     case 'access':
-      // The sentence of the connector names the missing permission, as its connection test does
+      // The sentence of the connector names the missing permission
       title = t_i18n('Access denied on {platform}', { values: { platform } });
-      action = run.connector_id ? (
-        <Button variant="secondary" size="small" component={Link} to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-test-connection">
-          {t_i18n('Test the connection of the connector')}
-        </Button>
-      ) : undefined;
+      action = checkConnector;
       break;
     case 'refused':
     case 'request':

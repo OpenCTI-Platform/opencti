@@ -229,7 +229,6 @@ export const HUNT_DOCS = {
   firstHunt: `${HUNT_DOCS_BASE}/your-first-hunt/`,
   indicatorHunts: `${HUNT_DOCS_BASE}/hunt-indicators/`,
   connectors: `${HUNT_DOCS_BASE}/hunt-connectors/`,
-  connectionTest: `${HUNT_DOCS_BASE}/hunt-connectors/#test-the-connection`,
   runs: `${HUNT_DOCS_BASE}/hunts/#results-evidence-and-verdicts`,
   produces: `${HUNT_DOCS_BASE}/hunts/#what-a-run-produces`,
   runHunt: `${HUNT_DOCS_BASE}/hunts/#run-a-hunt`,
@@ -505,7 +504,7 @@ export interface HuntRunFailure {
 /**
  * Class of failure of a failed or timed out run. Hunt connectors built on the connectors SDK report a failure as
  * "<exception class>: <message>" (HuntTimeoutError, HuntTranslationError, HuntAccessDeniedError, HuntExecutionError,
- * HuntRequestError). An access denied failure carries the same sentence as the connection test of the connector.
+ * HuntRequestError). An access denied failure carries the sentence of the connector naming what its account lacks.
  */
 export const huntRunFailure = (status?: string | null, errorMessage?: string | null): HuntRunFailure | null => {
   if (status !== 'failed' && status !== 'timeout') {

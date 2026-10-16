@@ -43,14 +43,6 @@ export interface BasicStoreEntityConnector extends BasicStoreEntity {
     documentation_url?: string | null;
     required_permissions?: { name: string; purpose: string }[];
   } | null;
-  hunt_connection_check?: {
-    id: string;
-    work_id?: string | null;
-    status: string;
-    requested_at?: string | null;
-    checked_at?: string | null;
-    checks?: { name: string; ok: boolean; message: string }[];
-  } | null;
   hunt_max_concurrent_runs?: number | null;
   // endregion
   // region composer (set only on composer-managed connectors)

@@ -18,14 +18,12 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 Each hunt connector queries its platform with an account of its own. Give that account the least-privilege permissions
 below, not an administrator role: the connector only reads, and only creates and deletes its own search jobs.
 
-The same list shows in the product, on the page of the connector: the **Hunted platform** card has a **Required
-permissions** panel, filled by the connector at registration, with a link to the section of this page. The panel stays
-open until a connection test has passed, then folds and opens again with one click. When you deploy or update a hunt
-connector from the connector catalog, a **Before you start** notice of the form links to the section of that connector.
+The same list shows in the product, in **Defense > Hunts**: the setup checklist, above the list until every prerequisite is
+met and behind **Hunting setup** afterwards, has a **Required permissions of** panel per deployed hunt connector, filled
+by the connector at registration, with a link to the section of this page. When you deploy or update a hunt connector
+from the connector catalog, a **Before you start** notice of the form links to the section of that connector.
 
-![Hunted platform card of a Splunk hunt connector not tested yet: the required permissions open, with the setup documentation and Test connection](assets/hunt-connector-permissions.png)
-Once the connector runs, **Test connection** on the same card checks the account; see
-[Test the connection](#test-the-connection).
+![Setup checklist of Defense > Hunts: the required permissions of a Splunk hunt connector, with its setup documentation](assets/hunt-connector-permissions.png)
 
 ### Splunk
 
@@ -66,7 +64,7 @@ SPLUNK_HUNT_APP=search
 SPLUNK_HUNT_SEARCH_PREFIX=index=wineventlog OR index=sysmon
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It checks the token, the `search` capability of the roles of the account, then runs one search in the app. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/splunk-hunt/README.md).
 
@@ -106,7 +104,7 @@ MICROSOFT_SENTINEL_HUNT_CLIENT_SECRET=ChangeMe
 MICROSOFT_SENTINEL_HUNT_WORKSPACE_ID=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token and runs one query on the workspace. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/microsoft-sentinel-hunt/README.md).
 
@@ -143,7 +141,7 @@ MICROSOFT_DEFENDER_HUNT_CLIENT_ID=ChangeMe
 MICROSOFT_DEFENDER_HUNT_CLIENT_SECRET=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token from Microsoft Entra ID, then runs `DeviceInfo | take 1` over the last 7 days. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence. A tenant without device telemetry passes with a warning.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/microsoft-defender-hunt/README.md).
 
@@ -183,7 +181,7 @@ ELASTIC_SECURITY_HUNT_INDICES=logs-*,winlogbeat-*
 ELASTIC_SECURITY_HUNT_QUERY_LANGUAGE=esql
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/elastic-security-hunt/README.md).
 
@@ -224,7 +222,7 @@ CROWDSTRIKE_LOGSCALE_HUNT_CLIENT_SECRET=ChangeMe
 CROWDSTRIKE_LOGSCALE_HUNT_REPOSITORY=search-all
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one query job on the repository. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/crowdstrike-logscale-hunt/README.md).
 
@@ -268,7 +266,7 @@ GOOGLE_SECOPS_HUNT_CLIENT_EMAIL=opencti-hunt@my-project.iam.gserviceaccount.com
 GOOGLE_SECOPS_HUNT_CLIENT_ID=ChangeMe
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It requests a token and runs one UDM search. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/google-secops-hunt/README.md).
 
@@ -309,7 +307,7 @@ OPENSEARCH_OCSF_HUNT_PASSWORD=ChangeMe
 OPENSEARCH_OCSF_HUNT_INDICES=ocsf-*
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search on the hunted indices. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/opensearch-ocsf-hunt/README.md).
 
@@ -351,7 +349,7 @@ INFRASTRUCTURE_TRACKER_URLSCAN_API_KEY=ChangeMe
 INFRASTRUCTURE_TRACKER_INTERNETDB_ENABLED=true
 ```
 
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search per source with a key, unlikely to match, which counts against the quota of the source. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
+A hunt run refused by the platform fails as **Access denied on** the platform, with the sentence of the connector naming the missing permission and what to grant.
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/infrastructure-tracker/README.md).
 
@@ -361,36 +359,15 @@ At startup a hunt connector registers its platform, the languages it executes an
 
 Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The `internet` platform has no security platform.
 
-Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**.
+Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**. The page of a hunt connector (**Data > Ingestion > Connectors**) is the page of any connector: its state, its works and its configuration.
 
-The page of a hunt connector (**Data > Ingestion > Connectors**) adds a **Hunted platform** card: the platform, its security platform, the query languages the connector executes, the maximum number of runs it accepts at the same time and whether it supports translation previews. Readers who can see Defense > Hunts also get the latest runs of the connector, each opening its run, and a link to the Hunts list.
+### Access denied
 
-![Hunted platform card on the page of a Splunk hunt connector, with its latest hunt runs](assets/hunt-connector-page.png)
+A hunt run refused by the platform (HTTP 401 or 403) fails as **Access denied on** the platform, with the sentence of the
+connector naming what its account lacks and where to grant it (for example "Access denied: the roles of svc_opencti_hunt
+lack the search capability: add it to one of its roles in Settings > Roles"), and a link to the connector.
 
-### Test the connection
-
-The **Hunted platform** card lists the **Required permissions** the connector declares (open until a connection test has
-passed), with a link to its setup documentation, and the **Test connection** action (users with the **Manage connector
-state** capability; the others read who can run the test). The
-connector then checks its account on the platform and answers with one result per check, shown on the card in a few
-seconds:
-
-- each check passes or fails with a sentence in plain words: a refused token names the variable to fix, a missing
-  permission names the permission and where to grant it (for example "Access denied: the roles of svc_opencti_hunt lack
-  the search capability: add it to one of its roles in Settings > Roles");
-- a search allowed but finding no event in the last 15 minutes passes with a warning: check that the account can read
-  the hunted data;
-- a connector that does not answer within two minutes probably runs a version without connection tests: update it, or
-  read its logs.
-
-![A failed connection test: the credentials are accepted, the search capability is missing and the check says where to grant it](assets/hunt-connection-test-failed.png)
-
-![A passed connection test: every check passes and the required permissions fold](assets/hunt-connection-test-passed.png)
-
-A hunt run refused by the platform (HTTP 401 or 403) fails as **Access denied on** the platform, with the same sentence
-as the connection test and a link to it.
-
-![A run refused by Splunk: Access denied on the platform, the sentence of the connector naming what the account lacks, and Test the connection of the connector](assets/hunt-run-access-denied.png)
+![A run refused by Splunk: Access denied on the platform, the sentence of the connector naming what the account lacks, and Check the connector](assets/hunt-run-access-denied.png)
 
 ## Run lifecycle
 
@@ -422,10 +399,9 @@ OpenCTI only accepts the report of a run from the connector it was dispatched to
 The Python library `pycti` provides the helpers of the hunt connector contract:
 
 - `ConnectorType.INTERNAL_HUNT`, the connector type,
-- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown on the Hunted platform card. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform (or the internet) no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
-- `helper.listen_hunt(callback)`, the consumption of the runs (the callback receives the run message) and of the connection tests (`mode` `check`, no run),
-- `helper.report_hunt_connection_check(check_id, checks)`, the answer to a connection test: one `{name, ok, message}` per check. Like the run report, it carries the work the test was dispatched with (by default the work of the message being processed), so that hunt connectors sharing a user cannot answer each other's tests,
+- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown in the setup checklist of Defense > Hunts. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform (or the internet) no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
+- `helper.listen_hunt(callback)`, the consumption of the runs (the callback receives the run message),
 - `helper.report_hunt_run(run_id, status, ...)`, the run report, `hit_keys`, `first_hit_at`, `last_hit_at`, `rule_results` and `observations` included. It carries the work the run was dispatched with (by default the work of the message being processed): OpenCTI accepts the report of a dispatched run only with it, so that hunt connectors sharing a user cannot report each other's runs,
 - `api.hunt` and `api.hunt_run`, the hunt and hunt run entities.
 
-The connectors SDK provides an `InternalHuntConnector` base class and a template implementing the full lifecycle (deadline, Sigma translation through pySigma, result mapping to STIX, evidence hashing): a new platform only implements the query execution. It declares its `required_permissions` and `documentation_url`, and its `connection_test_query()` (or `connection_checks()`, each check through `run_check()`) for **Test connection**. Its API client (`HuntApiClient`) raises `HuntAccessDeniedError` on HTTP 401 and 403, with the `access_denied_hints` sentence of the connector naming what the account lacks.
+The connectors SDK provides an `InternalHuntConnector` base class and a template implementing the full lifecycle (deadline, Sigma translation through pySigma, result mapping to STIX, evidence hashing): a new platform only implements the query execution. It declares its `required_permissions` and `documentation_url`. Its API client (`HuntApiClient`) raises `HuntAccessDeniedError` on HTTP 401 and 403, with the `access_denied_hints` sentence of the connector naming what the account lacks.

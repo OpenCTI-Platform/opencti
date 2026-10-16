@@ -482,7 +482,6 @@
   "Hunt armed by a PIR": "PIR によって準備完了のハント",
   "Hunt benign patterns": "ハントの無害なパターン",
   "Hunt concurrent runs": "ハントの同時実行数",
-  "Hunt connection test": "ハントの接続テスト",
   "Hunt connector setup": "ハントコネクターのセットアップ",
   "Hunt escalation threshold": "ハントのエスカレーションしきい値",
   "Hunt expected observables": "ハントの想定オブザーバブル",

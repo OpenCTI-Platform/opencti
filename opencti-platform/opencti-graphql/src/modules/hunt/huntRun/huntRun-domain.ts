@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { findByIds } from '../hunt-loaders';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
@@ -20,8 +19,6 @@ import {
 import { elAggregationCount, elCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
-import { pushToConnector } from '../../connector/connector-rabbitmq';
-import { createWork, deleteWork } from '../../../domain/work';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
 import { generateStandardId } from '../../../schema/identifier';
@@ -35,7 +32,6 @@ import {
   FilterOperator,
   OrderingMode,
   type FilterGroup,
-  type HuntConnectorCheckReportInput,
   type HuntConnectorRegisterInput,
   type HuntRunEvidenceAddInput,
   type HuntRunReportInput,
@@ -115,10 +111,6 @@ import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
-  HUNT_CONNECTION_CHECK_FAILED,
-  HUNT_CONNECTION_CHECK_MODE,
-  HUNT_CONNECTION_CHECK_PASSED,
-  HUNT_CONNECTION_CHECK_PENDING,
   HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_AUTONOMOUS_TRIGGERS,
   HUNT_RUN_FINALIZABLE_STATUSES,
@@ -1876,12 +1868,10 @@ export interface HuntConnectorView {
   security_platform_id: string | null;
   required_permissions: { name: string; purpose: string }[];
   documentation_url: string | null;
-  connection_check: NonNullable<BasicStoreEntityConnector['hunt_connection_check']> | null;
   updated_at: string | Date;
 }
 
 const REQUIRED_PERMISSIONS_MAX = 20;
-const CONNECTION_CHECKS_MAX = 20;
 
 /** The permissions a connector declares, bounded: a name and its purpose each. */
 const sanitizeRequiredPermissions = (permissions: { name?: string | null; purpose?: string | null }[] | null | undefined) => {
@@ -1910,7 +1900,6 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
   security_platform_id: connector.hunt_security_platform_id ?? null,
   required_permissions: connector.hunt_setup?.required_permissions ?? [],
   documentation_url: connector.hunt_setup?.documentation_url ?? null,
-  connection_check: connector.hunt_connection_check ? { ...connector.hunt_connection_check, checks: connector.hunt_connection_check.checks ?? [] } : null,
   updated_at: connector.updated_at,
 });
 
@@ -2019,106 +2008,6 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   }
   logApp.info('[OPENCTI-MODULE] Hunt connector registered', { connectorId: connector.internal_id, platform, securityPlatformId });
   return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: true });
-};
-
-const loadHuntConnector = async (context: AuthContext, connectorId: string) => {
-  const connectors = await listHuntConnectors(context, false);
-  const connector = connectors.find((candidate) => candidate.internal_id === connectorId);
-  if (!connector) {
-    throw ResourceNotFoundError('Hunt connector cannot be found', { connectorId });
-  }
-  return connector;
-};
-
-const HUNT_CONNECTION_CHECK_LOCK = 'hunt_connection_check';
-const connectionCheckLockKey = (connectorId: string) => `${HUNT_CONNECTION_CHECK_LOCK}_${connectorId}`;
-
-/**
- * Asks a hunt connector to test its connection and its permissions on its platform. The connector answers with one
- * result per check, in plain words, read on the connector until it arrives. The tests of a connector and its answers run
- * one at a time under its lock, so a test that cannot be sent restores the result it replaced, never a newer test.
- */
-export const testHuntConnectorConnection = async (context: AuthContext, user: AuthUser, connectorId: string) => {
-  const listed = await loadHuntConnector(context, connectorId);
-  if (listed.active !== true) {
-    throw FunctionalError('The hunt connector has not answered recently: start it, then test the connection again', { connectorId });
-  }
-  const { connector, element } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
-    // Read under the lock: the stored result is the one every earlier test left, dispatched or rolled back
-    const current = await loadHuntConnector(context, connectorId);
-    const work = await createWork(context, user, current, 'Connection test', current.internal_id);
-    if (!work) {
-      throw FunctionalError('The connection test work cannot be created', { connectorId });
-    }
-    const check = { id: uuidv4(), work_id: work.id, status: HUNT_CONNECTION_CHECK_PENDING, requested_at: now(), checked_at: null, checks: [] };
-    const previousCheck = current.hunt_connection_check ?? null;
-    const patched = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
-    try {
-      await pushToConnector(current.internal_id, {
-        internal: { work_id: work.id, applicant_id: user.id, mode: 'manual', trigger: 'connection_check' },
-        event: { event_type: CONNECTOR_INTERNAL_HUNT, mode: HUNT_CONNECTION_CHECK_MODE, connection_check: { id: check.id } },
-      });
-    } catch (error) {
-      // Nothing was published: the work no connector will ever process is deleted and the previous test result comes
-      // back, so the connector page does not wait for an answer that cannot arrive
-      await deleteWork(context, SYSTEM_USER, work.id)
-        .catch((deleteError: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt connection test work cannot be deleted after a failed dispatch', { cause: deleteError, connectorId, workId: work.id }));
-      await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: previousCheck });
-      throw error;
-    }
-    return { connector: current, element: patched.element };
-  });
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `tests the connection of the hunt connector \`${connector.name}\``,
-    context_data: { id: connector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input: {} },
-  });
-  return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: connector.active });
-};
-
-/**
- * The answer of a hunt connector to its last connection test: one result per check, the test passed when all pass.
- * The answer comes in the work the test was dispatched with: the id of a test can be read, its work only reaches the
- * connector it was sent to, so a connector sharing the user of another one never answers its test.
- */
-export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthUser, input: HuntConnectorCheckReportInput) => {
-  const listed = await loadHuntConnector(context, input.connector_id);
-  if (!isHuntConnectorOwner(user, listed)) {
-    throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
-  }
-  const workId = input.work_id ?? context.workId;
-  const checks = input.checks
-    .map((item) => ({ name: truncate(item.name.trim(), 256), ok: item.ok === true, message: truncate(item.message.trim(), 2048) }))
-    .slice(0, CONNECTION_CHECKS_MAX);
-  const passed = checks.length > 0 && checks.every((item) => item.ok);
-  // Under the lock of the tests of the connector: the answer never lands on a test being dispatched or rolled back
-  const { connector, element, check } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
-    const current = await loadHuntConnector(context, input.connector_id);
-    if (!isHuntConnectorOwner(user, current)) {
-      throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
-    }
-    if (current.hunt_connection_check?.id !== input.check_id) {
-      throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
-    }
-    if (!isBypassUser(user) && (!workId || current.hunt_connection_check.work_id !== workId)) {
-      throw ForbiddenAccess('A hunt connector can only report the connection test it received', { connectorId: input.connector_id });
-    }
-    const result = {
-      ...current.hunt_connection_check,
-      status: passed ? HUNT_CONNECTION_CHECK_PASSED : HUNT_CONNECTION_CHECK_FAILED,
-      checked_at: now(),
-      checks,
-    };
-    const patched = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: result });
-    return { connector: current, element: patched.element, check: result };
-  });
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-  logApp.info('[OPENCTI-MODULE] Hunt connector connection tested', { connectorId: connector.internal_id, status: check.status });
-  return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: connector.active });
 };
 // endregion
 

@@ -216,24 +216,6 @@ export const seedHuntConnectorWithSetup = async (request: APIRequestContext, nam
   return { connectorId, securityPlatformId: registration.huntConnectorRegister.securityPlatform.id };
 };
 
-/**
- * Tests the connection of a hunt connector and answers the test the way the connector does, one result per check.
- */
-export const testHuntConnection = async (request: APIRequestContext, connectorId: string, checks: Array<{ name: string; ok: boolean; message: string }>) => {
-  const requested = await graphqlRequest<{ huntConnectorTestConnection: { connection_check: { id: string } } }>(request, `
-    mutation { huntConnectorTestConnection(id: "${connectorId}") { connection_check { id } } }
-  `, 'Test the connection of the hunt connector');
-  const checkId = requested.huntConnectorTestConnection.connection_check.id;
-  const items = checks.map((check) => `{ name: ${JSON.stringify(check.name)}, ok: ${check.ok}, message: ${JSON.stringify(check.message)} }`);
-  await graphqlRequest(request, `
-    mutation {
-      huntConnectorCheckReport(input: { connector_id: "${connectorId}", check_id: "${checkId}", checks: [${items.join(', ')}] }) {
-        connection_check { status }
-      }
-    }
-  `, 'Report the connection test of the hunt connector');
-};
-
 export const huntScopeOf = (securityPlatformId: string) => JSON.stringify({
   mode: 'and', filters: [{ key: ['id'], values: [securityPlatformId], operator: 'eq', mode: 'or' }], filterGroups: [],
 });

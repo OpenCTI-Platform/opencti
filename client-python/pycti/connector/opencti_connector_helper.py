@@ -3306,29 +3306,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             documentation_url=documentation_url,
         )
 
-    def report_hunt_connection_check(
-        self, check_id: str, checks: List[Dict], work_id: Optional[str] = None
-    ) -> Dict:
-        """Report the answer of this INTERNAL_HUNT connector to a connection test.
-
-        :param check_id: the id of the connection test, from the check message
-        :type check_id: str
-        :param checks: one result per check, as {name, ok, message}, the message in plain
-            words (for example "Access denied: the account lacks the search capability")
-        :type checks: List[Dict]
-        :param work_id: the work the test was dispatched with; by default the work of the
-            message being processed, which binds the answer to this connector
-        :type work_id: str
-        :return: the hunt connector
-        :rtype: Dict
-        """
-        return self.api.hunt_run.report_connection_check(
-            connector_id=self.connect_id,
-            check_id=check_id,
-            checks=checks,
-            work_id=work_id or self.work_id,
-        )
-
     def report_hunt_run(
         self,
         run_id: str,
@@ -3427,11 +3404,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         failure itself (as ``timeout`` for instance) sets the
         ``hunt_run_reported`` attribute of the error to ``True``: the run is
         then not reported again. The callback receives the ``event`` of the
-        message (hunt, time window, limits, security platform). A connection
-        test (``mode`` ``check``) has no run: the callback answers it with
-        :meth:`report_hunt_connection_check`, and an error it raises is
-        reported as the one failed check, then raised again (a report that
-        fails is logged, never raised in its place).
+        message (hunt, time window, limits, security platform).
 
         :param message_callback: function processing a hunt run event
         :type message_callback: Callable[[Dict], str]
@@ -3445,35 +3418,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 raise ValueError(
                     "The message is not a hunt run (event_type INTERNAL_HUNT expected)"
                 )
-            # A connection test: no hunt run, the callback answers with its checks
-            if event_data.get("mode") == "check":
-                check_id = (event_data.get("connection_check") or {}).get("id")
-                if not check_id:
-                    raise ValueError(
-                        "The connection test message has no connection_check.id"
-                    )
-                try:
-                    return message_callback(event_data)
-                except Exception as err:
-                    if getattr(err, "hunt_run_reported", False) is not True:
-                        try:
-                            self.report_hunt_connection_check(
-                                check_id,
-                                [
-                                    {
-                                        "name": "Connection test",
-                                        "ok": False,
-                                        "message": str(err),
-                                    }
-                                ],
-                            )
-                        except Exception as error:  # pylint: disable=broad-except
-                            # The test error is raised, never the one of its report
-                            self.connector_logger.warning(
-                                "Hunt connection test failure not reported",
-                                {"check_id": check_id, "reason": str(error)},
-                            )
-                    raise
             run_id = (event_data.get("hunt_run") or {}).get("id")
             if not run_id:
                 raise ValueError("The hunt run message has no hunt_run.id")
