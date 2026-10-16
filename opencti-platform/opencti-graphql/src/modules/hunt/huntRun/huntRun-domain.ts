@@ -103,7 +103,7 @@ import {
 } from '../hunt-incident';
 import { createHuntHitObservations } from '../hunt-hit-observations';
 import { huntSightedIdsByHit, resolveHuntSightingTargets, upsertHuntSightings } from '../hunt-sightings';
-import { findHitKeysNewOnPlatform, isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
+import { findHitKeysNewOnPlatform, huntContextOfRun, isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -536,6 +536,9 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
     }
     const runInput = {
       hunt_id: hunt.internal_id,
+      hunt_type: hunt.hunt_type,
+      hunt_source_kind: hunt.hunt_source_kind ?? null,
+      hunt_technique_ids: hunt[RELATION_HUNT_TECHNIQUES] ?? [],
       hunt_run_status: HUNT_RUN_STATUS_QUEUED,
       hunt_run_trigger: request.trigger,
       hunt_run_mode: mode,
@@ -1330,6 +1333,7 @@ const recordReportedHits = async (
       sightedIdsByHit,
       seenAt: reportedAt,
       objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
+      huntContext: huntContextOfRun(run),
     });
     const { newHits, recurringHits } = splitHitsByKeys(hits.count, newCount, recurringCount);
     return { hits_identified: true, hits_new_count: newHits, hits_recurring_count: recurringHits };
@@ -1687,6 +1691,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           keepKnown: !await isHuntRunRemembered(context, current),
           uncountedOnly: true,
           objectMarking: current[RELATION_OBJECT_MARKING] ?? [],
+          huntContext: huntContextOfRun(current),
         };
         // The run takes its hits before the records count them for it: evidence sent again after a failed patch finds
         // its hits uncounted and counts them, never leaving them out as counted already

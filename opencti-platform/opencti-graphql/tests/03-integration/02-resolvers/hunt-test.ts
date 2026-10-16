@@ -382,6 +382,10 @@ describe('Hunt resolvers', () => {
     expect(run.connector_id).toEqual(CONNECTOR_ID);
     expect(run.security_platform_id).toEqual(securityPlatformId);
     expect(run.verdict).toEqual('pending');
+    // The run keeps the type and the origin of its hunt, for the dashboard widgets filtering runs on them
+    const stored = await internalLoadById<BasicStoreEntity & { hunt_type?: string; hunt_source_kind?: string }>(testContext, ADMIN_USER, run.id, { type: ENTITY_TYPE_HUNT_RUN });
+    expect(stored.hunt_type).toEqual('telemetry');
+    expect(stored.hunt_source_kind).toEqual('analyst');
   });
 
   it('should refuse to create, change, run and triage hunts to a role updating the knowledge without the hunt capability', async () => {

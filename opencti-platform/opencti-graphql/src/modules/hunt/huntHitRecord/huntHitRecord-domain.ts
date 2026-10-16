@@ -165,7 +165,18 @@ export interface HuntHitsRecordInput {
   uncountedOnly?: boolean;
   // The markings of the run, those of its hunt and of its security platform
   objectMarking?: string[];
+  // The type, origin and techniques of the hunt, written on the records the run creates
+  huntContext?: HuntHitRecordHuntContext;
 }
+
+export type HuntHitRecordHuntContext = Pick<BasicStoreEntityHuntHitRecord, 'hunt_type' | 'hunt_source_kind' | 'hunt_technique_ids'>;
+
+/** The context of the hunt a run carries, for the records of its hits. */
+export const huntContextOfRun = (run: HuntHitRecordHuntContext): HuntHitRecordHuntContext => ({
+  hunt_type: run.hunt_type ?? null,
+  hunt_source_kind: run.hunt_source_kind ?? null,
+  hunt_technique_ids: run.hunt_technique_ids ?? null,
+});
 
 /**
  * Whether the records of the hits of a run still tell whether the run counted them, for its late evidence. The later
@@ -244,6 +255,7 @@ export const recordHuntHits = async (
         entity_type: ENTITY_TYPE_HUNT_HIT_RECORD,
         hunt_id: input.huntId,
         security_platform_id: input.securityPlatformId ?? null,
+        ...input.huntContext,
         hit_key: key,
         first_seen: seenAt,
         last_seen: seenAt,

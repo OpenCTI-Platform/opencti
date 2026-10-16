@@ -5,6 +5,10 @@ export const ENTITY_TYPE_HUNT_HIT_RECORD = 'Hunt-Hit-Record';
 
 interface HuntHitRecordAttributes {
   hunt_id: string;
+  // The type, origin and techniques of the hunt, from the run that first found the hit, so that dashboards filter on them
+  hunt_type?: string | null;
+  hunt_source_kind?: string | null;
+  hunt_technique_ids?: string[] | null;
   // Null for a run without security platform
   security_platform_id?: string | null;
   hit_key: string;
