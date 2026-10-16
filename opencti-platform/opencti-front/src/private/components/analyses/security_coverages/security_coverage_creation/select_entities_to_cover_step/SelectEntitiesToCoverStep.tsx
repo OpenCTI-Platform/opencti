@@ -21,6 +21,12 @@ import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LO
 
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
+  // Hide the entities already covered by this security coverage result.
+  excludedCoveredResultId?: string;
+  // Hide these entities, for example the ones still being covered by a background task.
+  excludedEntityIds?: string[];
+  // Prevent going to the next step until at least one entity is selected.
+  nextRequiresSelection?: boolean;
   onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCancel?: () => void;
@@ -131,6 +137,9 @@ const DATA_COLUMNS = {
 
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
+  excludedCoveredResultId,
+  excludedEntityIds,
+  nextRequiresSelection = false,
   onNext,
   onCreate,
   onCancel,
@@ -160,7 +169,7 @@ const SelectEntitiesToCoverStep = ({
 
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: buildCoveredEntitiesFilters(coveredEntity),
+    filters: buildCoveredEntitiesFilters(coveredEntity, excludedCoveredResultId, excludedEntityIds),
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
@@ -224,6 +233,7 @@ const SelectEntitiesToCoverStep = ({
         )}
         <Button
           variant={onCreate ? 'primary' : 'secondary'}
+          disabled={nextRequiresSelection && !selection}
           onClick={() => onNext(selection, Object.values(selectedElements))}
         >
           {t_i18n('Next')}
