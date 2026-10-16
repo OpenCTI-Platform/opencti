@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import crypto from 'node:crypto';
+import bytes from 'bytes';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
@@ -59,6 +60,37 @@ export const decodeOidcState = (state: string | undefined) => {
   } catch {
     return undefined;
   }
+};
+
+// graphql-upload accepts files of any size and in any number by default, so a single request could fill the
+// temporary directory where uploads are buffered, then the platform storage.
+// Artifacts (malware samples) can legitimately weigh up to 1GB, each platform can tighten these limits.
+export const DEFAULT_MAX_UPLOAD_FILE_SIZE = '1gb';
+export const DEFAULT_MAX_UPLOAD_FILES = 20;
+
+interface GraphqlUploadOptions {
+  maxFileSize: number;
+  maxFiles: number;
+}
+
+const parsePositiveSize = (size: string | number): number | null => {
+  const parsed = bytes.parse(size);
+  return parsed !== null && Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const parsePositiveInteger = (value: string | number): number | null => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
+// An unparsable file limit falls back to the platform default, never to graphql-upload unlimited default.
+export const buildGraphqlUploadOptions = (
+  uploadFileSizeLimit: string | number = DEFAULT_MAX_UPLOAD_FILE_SIZE,
+  uploadMaxFiles: string | number = DEFAULT_MAX_UPLOAD_FILES,
+): GraphqlUploadOptions => {
+  const maxFileSize = parsePositiveSize(uploadFileSizeLimit) ?? bytes.parse(DEFAULT_MAX_UPLOAD_FILE_SIZE) as number;
+  const maxFiles = parsePositiveInteger(uploadMaxFiles) ?? DEFAULT_MAX_UPLOAD_FILES;
+  return { maxFileSize, maxFiles };
 };
 
 export const buildRateLimiterOptions = (): Options => {
