@@ -3,7 +3,7 @@ import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import type { useRestrictedEntitySearchQuery, useRestrictedEntitySearchQuery$variables } from './__generated__/useRestrictedEntitySearchQuery.graphql';
 
 const restrictedEntitySearchQuery = graphql`
@@ -37,7 +37,8 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
   useEffect(() => () => subscription.current?.unsubscribe(), []);
   // Signatures keep the search stable across renders that pass new arrays or groups with the same content.
   const typesSignature = JSON.stringify(entityTypes);
-  const filtersSignature = JSON.stringify(filters ?? null);
+  // The rule as sent: a change that does not alter it (a filter without value yet) neither resets nor searches again.
+  const filtersSignature = filters ? serializeFilterGroupForBackend(filters) : 'null';
   // Options found for other types or another rule are not offered: they may not match the new one.
   useEffect(() => {
     subscription.current?.unsubscribe();
@@ -46,12 +47,12 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
 
   const search = useCallback((text: string) => {
     subscription.current?.unsubscribe();
-    const rule: FilterGroup | null = JSON.parse(filtersSignature);
+    const rule: useRestrictedEntitySearchQuery$variables['filters'] = JSON.parse(filtersSignature);
     const variables: useRestrictedEntitySearchQuery$variables = {
       search: text,
       types: JSON.parse(typesSignature),
       first: RESTRICTED_ENTITY_SEARCH_SIZE,
-      filters: rule ? normalizeFilterGroupForBackend(rule) : null,
+      filters: rule,
     };
     subscription.current = fetchQuery<useRestrictedEntitySearchQuery>(environment, restrictedEntitySearchQuery, variables, { fetchPolicy: 'store-or-network' })
       .subscribe({

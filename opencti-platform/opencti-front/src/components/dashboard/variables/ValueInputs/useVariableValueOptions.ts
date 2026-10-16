@@ -40,7 +40,7 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
   const restrictedEntities = useRestrictedEntitySearch(
     // Same scope as the free search: External-Reference is no Stix-Core-Object.
     entityTypes.filter((entityType) => entityType !== 'External-Reference'),
-    variable.restriction.mode === 'filters' ? variable.restriction.filters : undefined,
+    isRestrictedByFilters && variable.restriction.mode === 'filters' ? variable.restriction.filters : undefined,
   );
 
   if (isRestrictedByFilters) {
