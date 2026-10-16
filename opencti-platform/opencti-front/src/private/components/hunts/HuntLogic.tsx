@@ -26,7 +26,7 @@ import HuntSigmaRulesField from './HuntSigmaRulesField';
 import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
-import HuntIocFilterTake, { HUNT_IOC_SORT_DEFAULT } from './HuntIocFilterTake';
+import HuntIocFilterTake, { HUNT_IOC_SORT_DEFAULT, useHuntedExclusion } from './HuntIocFilterTake';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
 import { iocTypeLabel, iocValuesToText, parseIocText } from './hunt-ioc-utils';
 import {
@@ -84,6 +84,7 @@ const huntLogicFragment = graphql`
     }
     hunt_ioc_filters
     hunt_ioc_sort
+    last_run_at
     hunt_ioc_values {
       observable_type
       value
@@ -559,6 +560,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
   const [saved, setSaved] = useState(false);
   const storedFilters = deserializeFilterGroupForFrontend(hunt.hunt_ioc_filters) ?? emptyFilterGroup;
   const filtersState = useFiltersState(storedFilters);
+  const huntedExclusion = useHuntedExclusion(filtersState);
   const sources = (hunt.huntSources ?? []).map((source) => ({ value: source.id, label: source.representative.main, type: source.entity_type }));
   const initialValues: IocValues = {
     iocElements: sources.filter((source) => HUNT_IOC_ELEMENT_TYPES.includes(source.type)),
@@ -626,7 +628,18 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
                   <HuntIocFields
                     filtersState={filtersState}
                     disabled={!canEdit}
-                    filterFooter={<HuntIocFilterTake huntId={hunt.id} filters={noFilter ? null : filtersJson} sort={sort} onSortChange={setSort} disabled={!canEdit} />}
+                    filterFooter={(
+                      <HuntIocFilterTake
+                        huntId={hunt.id}
+                        filters={noFilter ? null : filtersJson}
+                        sort={sort}
+                        onSortChange={setSort}
+                        disabled={!canEdit}
+                        lastRunAt={hunt.last_run_at}
+                        huntedExcluded={huntedExclusion.excluded}
+                        onExcludeHunted={huntedExclusion.exclude}
+                      />
+                    )}
                   />
                   <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>

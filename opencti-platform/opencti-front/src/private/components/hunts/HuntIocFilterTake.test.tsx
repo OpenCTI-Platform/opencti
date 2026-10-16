@@ -1,8 +1,10 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { act, renderHook, screen, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import HuntIocFilterTake from './HuntIocFilterTake';
+import useFiltersState from '../../../utils/filters/useFiltersState';
+import { serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import HuntIocFilterTake, { useHuntedExclusion } from './HuntIocFilterTake';
 
 const { fetchQueryMock } = vi.hoisted(() => ({ fetchQueryMock: vi.fn() }));
 
@@ -42,6 +44,51 @@ describe('What a run takes out of the filter of an indicator hunt', () => {
     testRender(<HuntIocFilterTake huntId="hunt-1" filters={FILTERS} sort="created_at_desc" onSortChange={() => undefined} />);
     await waitFor(() => expect(screen.getByTestId('hunt-ioc-filter-count'))
       .toHaveTextContent('No indicator or observable the hunt can take matches the filter'));
+  });
+
+  it('suggests leaving out the entities hunted since the last run when the filter holds more than a run takes', async () => {
+    answer(2340, 100);
+    const onExcludeHunted = vi.fn();
+    const props = { huntId: 'hunt-1', filters: FILTERS, sort: 'created_at_desc' as const, onSortChange: () => undefined, lastRunAt: '2026-10-15T06:00:00.000Z', onExcludeHunted };
+    const { user, unmount } = testRender(<HuntIocFilterTake {...props} />);
+    const suggestion = await screen.findByTestId('hunt-ioc-exclude-hunted');
+    expect(suggestion).toHaveTextContent(/^Exclude the entities hunted since /);
+    await user.click(suggestion);
+    expect(onExcludeHunted).toHaveBeenCalledWith('2026-10-15T06:00:00.000Z');
+    unmount();
+    // Already left out, or every match taken: nothing to suggest
+    const { unmount: unmountExcluded } = testRender(<HuntIocFilterTake {...props} huntedExcluded />);
+    await screen.findByTestId('hunt-ioc-filter-count');
+    expect(screen.queryByTestId('hunt-ioc-exclude-hunted')).not.toBeInTheDocument();
+    unmountExcluded();
+    answer(40, 40);
+    testRender(<HuntIocFilterTake {...props} />);
+    await screen.findByTestId('hunt-ioc-filter-count');
+    expect(screen.queryByTestId('hunt-ioc-exclude-hunted')).not.toBeInTheDocument();
+  });
+
+  it('leaves out the entities hunted since a date in a group of their own, keeping the ones never hunted', async () => {
+    const initial = { mode: 'and', filters: [{ key: 'objectLabel', values: ['apt28'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+    const { result } = renderHook(() => {
+      const filtersState = useFiltersState(initial);
+      return { filters: filtersState[0], exclusion: useHuntedExclusion(filtersState) };
+    });
+    expect(result.current.exclusion.excluded).toBe(false);
+    act(() => result.current.exclusion.exclude('2026-10-15T06:00:00.000Z'));
+    await waitFor(() => expect(result.current.filters.filterGroups[0]?.filters).toHaveLength(2));
+    expect(JSON.parse(serializeFilterGroupForBackend(result.current.filters))).toEqual({
+      mode: 'and',
+      filters: [{ key: ['objectLabel'], values: ['apt28'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{
+        mode: 'or',
+        filters: [
+          { key: ['x_opencti_hunted_at'], values: ['2026-10-15T06:00:00.000Z'], operator: 'lt', mode: 'or' },
+          { key: ['x_opencti_hunted_at'], values: [], operator: 'nil', mode: 'or' },
+        ],
+        filterGroups: [],
+      }],
+    });
+    expect(result.current.exclusion.excluded).toBe(true);
   });
 
   it('asks nothing while the hunt has no filter', async () => {

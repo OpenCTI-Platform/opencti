@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
+import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/styles';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { fetchQuery } from '../../../relay/environment';
+import type { Filter, FilterGroup, handleFilterHelpers } from '../../../utils/filters/filtersHelpers-types';
+import { extractAllFilters } from '../../../utils/filters/filtersUtils';
 import useHuntConfiguration from './useHuntConfiguration';
 import { HuntIocFilterTakeQuery, HuntIocSort } from './__generated__/HuntIocFilterTakeQuery.graphql';
 
@@ -38,6 +42,40 @@ export const huntIocSortLabel = (sort: HuntIocSort, t_i18n: (key: string) => str
   }
 };
 
+export const HUNTED_AT_FILTER_KEY = 'x_opencti_hunted_at';
+
+const groupOfFilter = (group: FilterGroup, filterId: string): FilterGroup | undefined => {
+  if ((group.filters ?? []).some((filter) => filter.id === filterId)) {
+    return group;
+  }
+  return (group.filterGroups ?? []).map((subGroup) => groupOfFilter(subGroup, filterId)).find((found) => !!found);
+};
+
+/**
+ * Leaves the entities already hunted out of the filter of a hunt: a group of its own keeps the entities never hunted or
+ * hunted before a date. The group is created with its first condition, the second one joins it once the group exists.
+ */
+export const useHuntedExclusion = ([filters, helpers]: [FilterGroup, handleFilterHelpers]) => {
+  const [pendingFilterId, setPendingFilterId] = useState<string | null>(null);
+  useEffect(() => {
+    const group = pendingFilterId ? groupOfFilter(filters, pendingFilterId) : undefined;
+    if (!group?.id) {
+      return;
+    }
+    setPendingFilterId(null);
+    const neverHunted: Filter = { id: uuid(), key: HUNTED_AT_FILTER_KEY, operator: 'nil', values: [], mode: 'or' };
+    helpers.handleAddFilterWithEmptyValue(neverHunted, group.id);
+    helpers.handleSwitchGlobalMode(group.id);
+  }, [filters, pendingFilterId]);
+  const excluded = extractAllFilters(filters).some((filter) => filter.key === HUNTED_AT_FILTER_KEY);
+  const exclude = (date: string) => {
+    const huntedBefore: Filter = { id: uuid(), key: HUNTED_AT_FILTER_KEY, operator: 'lt', values: [date], mode: 'or' };
+    setPendingFilterId(huntedBefore.id ?? null);
+    helpers.handleAddFilterGroup(undefined, huntedBefore);
+  };
+  return { excluded, exclude };
+};
+
 interface HuntIocFilterTakeProps {
   huntId: string;
   /** The filter as edited, serialized for the platform; null when it holds no filter */
@@ -45,15 +83,20 @@ interface HuntIocFilterTakeProps {
   sort: HuntIocSort;
   onSortChange: (sort: HuntIocSort) => void;
   disabled?: boolean;
+  /** The date of the latest run of the hunt, which the exclusion of the entities already hunted starts from */
+  lastRunAt?: string | null;
+  /** Whether the filter leaves out the entities already hunted */
+  huntedExcluded?: boolean;
+  onExcludeHunted?: (date: string) => void;
 }
 
 /**
  * What a run takes out of the filter of an indicator hunt: at most the limit of the platform, in the order chosen
  * here, with the count of what the filter as edited matches.
  */
-const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = false }: HuntIocFilterTakeProps) => {
+const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = false, lastRunAt, huntedExcluded = false, onExcludeHunted }: HuntIocFilterTakeProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const { maxFilterEntitiesPerRun } = useHuntConfiguration();
   const [count, setCount] = useState<{ matching_count: number; taken_count: number } | null>(null);
   useEffect(() => {
@@ -102,6 +145,14 @@ const HuntIocFilterTake = ({ huntId, filters, sort, onSortChange, disabled = fal
       </div>
       {countLine && (
         <Text variant="content-caption" style={caption} role="status" aria-live="polite" data-testid="hunt-ioc-filter-count">{countLine}</Text>
+      )}
+      {/* Worth it only when the filter holds more than a run takes: the next runs go through the entities not hunted yet */}
+      {count && count.taken_count < count.matching_count && lastRunAt && !huntedExcluded && onExcludeHunted && !disabled && (
+        <div>
+          <Button variant="tertiary" size="small" onClick={() => onExcludeHunted(lastRunAt)} data-testid="hunt-ioc-exclude-hunted">
+            {t_i18n('Exclude the entities hunted since {date}', { values: { date: fldt(lastRunAt) } })}
+          </Button>
+        </div>
       )}
     </div>
   );
