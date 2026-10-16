@@ -46,7 +46,7 @@ const TransitionEdge = ({
           fill: 'none',
           stroke: theme.palette.primary.main,
           transition: 'stroke-width 0.2s',
-          strokeWidth: isHovered ? 2 : 1,
+          strokeWidth: isHovered ? 1.5 : (style?.strokeWidth ?? 1),
         }}
         d={edgePath}
         markerEnd={markerEnd}

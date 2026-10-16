@@ -63,6 +63,10 @@ export enum WorkflowActionType {
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
+// Label weight for nodes lit by a hover. A text shadow, not font-weight: a bolder label could
+// widen a status chip, and React Flow would then re-measure the node and re-run the layout.
+export const HIGHLIGHT_LABEL_SHADOW = '0 0 0.6px currentColor';
+
 const formatActions = (actions: Action[] = []) => {
   return actions.map(({ type, params }) => {
     if (type === 'updateAuthorizedMembers') {

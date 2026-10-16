@@ -10,11 +10,15 @@ vi.mock('reactflow', () => ({
   Position: { Top: 'top', Bottom: 'bottom' },
 }));
 
-const render = (color?: string) => testRender(
+const render = (color?: string, highlighted?: boolean) => testRender(
   <StatusNode
-    {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color } } } as unknown as NodeProps)}
+    {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color }, highlighted } } as unknown as NodeProps)}
   />,
 );
+const chipBox = () => {
+  const chip = screen.getByText('In progress').closest('[style]') as HTMLElement;
+  return chip.style.justifyContent ? chip : (chip.parentElement as HTMLElement);
+};
 
 describe('StatusNode', () => {
   it('centres its label and carries a full-opacity border of the status colour', () => {
@@ -38,5 +42,19 @@ describe('StatusNode', () => {
     expect(box.style.border).toBe('');
     expect(box.style.color).toBe('');
     expect(box.style.backgroundColor).toBe('');
+  });
+
+  it('doubles its border and thickens its label while highlighted, without changing its size', () => {
+    render('#ff9800', true);
+    const box = chipBox();
+    expect(box.style.border).toBe('1px solid rgb(255, 152, 0)');
+    expect(box.style.boxShadow).toBe('0 0 0 1px #ff9800');
+    expect(box.style.textShadow).not.toBe('');
+  });
+
+  it('keeps a single border and a plain label when not highlighted', () => {
+    render('#ff9800');
+    expect(chipBox().style.boxShadow).toBe('');
+    expect(chipBox().style.textShadow).toBe('');
   });
 });

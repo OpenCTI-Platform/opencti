@@ -207,7 +207,12 @@ vi.mock('./PublishButton', () => ({
 }));
 
 vi.mock('./NodeTypes', () => ({
-  default: {},
+  // A bare status node that exposes the hover flag the canvas passes down.
+  default: {
+    status: ({ id, data }: { id: string; data: { highlighted?: boolean } }) => (
+      <div data-testid={`status-${id}`} data-highlighted={String(data.highlighted === true)} />
+    ),
+  },
 }));
 
 vi.mock('./EdgeTypes', () => ({
@@ -436,8 +441,8 @@ describe('Workflow Component', () => {
       const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
       fireEvent.mouseEnter(nodeElement(container, 'node-a'));
 
-      expect(nodeElement(container, 'node-c').style.opacity).toBe('0.2');
-      expect(nodeElement(container, 'node-b').style.opacity).not.toBe('0.2');
+      expect(nodeElement(container, 'node-c').style.opacity).toBe('0.3');
+      expect(nodeElement(container, 'node-b').style.opacity).not.toBe('0.3');
     });
 
     it('restores every node when the pointer leaves', () => {
@@ -445,7 +450,17 @@ describe('Workflow Component', () => {
       fireEvent.mouseEnter(nodeElement(container, 'node-a'));
       fireEvent.mouseLeave(nodeElement(container, 'node-a'));
 
-      expect(nodeElement(container, 'node-c').style.opacity).not.toBe('0.2');
+      expect(nodeElement(container, 'node-c').style.opacity).not.toBe('0.3');
+    });
+
+    it('flags only the lit nodes as highlighted, so they grow their border and label', () => {
+      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+      expect(screen.getByTestId('status-node-b').dataset.highlighted).toBe('false');
+      fireEvent.mouseEnter(nodeElement(container, 'node-a'));
+
+      expect(screen.getByTestId('status-node-a').dataset.highlighted).toBe('true');
+      expect(screen.getByTestId('status-node-b').dataset.highlighted).toBe('true');
+      expect(screen.getByTestId('status-node-c').dataset.highlighted).toBe('false');
     });
 
     it('does not refit the view or save while hovering', () => {

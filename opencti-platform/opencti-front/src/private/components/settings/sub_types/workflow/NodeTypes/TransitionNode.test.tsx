@@ -101,3 +101,24 @@ describe('TransitionNode – direction', () => {
     expect(screen.getByTestId('handle-target').style.top).toBe('-2px');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Hover highlight
+// ---------------------------------------------------------------------------
+describe('TransitionNode – highlight', () => {
+  it('draws a 2px border in the accent colour and thickens its label while highlighted', () => {
+    const { container } = testRender(<TransitionNode {...makeProps({ highlighted: true })} />);
+    const hexagon = container.querySelector('path')!;
+    expect(hexagon.getAttribute('stroke')).toBe('#1976d2');
+    expect(hexagon.getAttribute('stroke-width')).toBe('2');
+    expect(screen.getByText('Approve').parentElement!.style.textShadow).not.toBe('');
+  });
+
+  it('keeps a 1px neutral border and a plain label otherwise', () => {
+    const { container } = testRender(<TransitionNode {...makeProps()} />);
+    const hexagon = container.querySelector('path')!;
+    expect(hexagon.getAttribute('stroke-width')).toBe('1');
+    expect(hexagon.getAttribute('stroke')).not.toBe('#1976d2');
+    expect(screen.getByText('Approve').parentElement!.style.textShadow).toBe('');
+  });
+});

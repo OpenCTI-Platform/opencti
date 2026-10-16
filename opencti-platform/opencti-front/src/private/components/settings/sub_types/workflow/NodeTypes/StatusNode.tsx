@@ -2,12 +2,13 @@ import { Handle, NodeProps, Position } from 'reactflow';
 import { useTheme } from '@mui/material';
 import { Chip } from '@filigran/design-system';
 import { hexToRGB } from '../../../../../../utils/Colors';
-import { NODE_SIZE } from '../utils';
+import { HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 
 const StatusNode = ({ id, data }: NodeProps) => {
   const theme = useTheme();
   const { name, color } = data.statusTemplate;
+  const highlighted = data.highlighted === true;
   return (
     <div className="workflow-status-node" style={{ position: 'relative' }}>
       <div
@@ -38,6 +39,8 @@ const StatusNode = ({ id, data }: NodeProps) => {
           justifyContent: 'center',
           // The label inherits it; the chip's own ink is off in the host sheet.
           ...(color ? { border: `1px solid ${color}`, color, backgroundColor: hexToRGB(color) } : {}),
+          // Lit by a hover: a second 1px ring outside the border keeps the node's size unchanged.
+          ...(highlighted ? { boxShadow: `0 0 0 0.5px ${color ?? 'currentColor'}`, textShadow: HIGHLIGHT_LABEL_SHADOW } : {}),
         }}
         label={snakeCaseToSentenceCase(name)}
       />

@@ -46,4 +46,9 @@ describe('TransitionEdge', () => {
     const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { opacity: 0.2 })} /></svg>);
     expect(container.querySelector<SVGGElement>('svg > g')!.style.opacity).toBe('0.2');
   });
+
+  it('draws the stroke width it is given', () => {
+    const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { strokeWidth: 2 })} /></svg>);
+    expect(container.querySelector<SVGPathElement>('path#edge-1')!.style.strokeWidth).toBe('2');
+  });
 });

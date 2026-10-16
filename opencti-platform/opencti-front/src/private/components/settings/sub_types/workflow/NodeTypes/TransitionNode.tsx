@@ -2,7 +2,7 @@ import { Handle, NodeProps, Position, useReactFlow } from 'reactflow';
 import { useFormatter } from '../../../../../../components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { CommentMode, NODE_SIZE } from '../utils';
+import { CommentMode, HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 import { useMemo } from 'react';
 
@@ -27,6 +27,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
 
   // useWorkflowLayout decides which transitions go back up the graph.
   const isBackwardTransition = data.layout?.backward ?? false;
+  const highlighted = data.highlighted === true;
 
   const conditionAndActions = useMemo(() => {
     const filterCount = data.conditions?.filters?.filters?.length ?? 0;
@@ -68,11 +69,14 @@ const TransitionNode = ({ data, id }: NodeProps) => {
           <path
             d={hexagonPath}
             fill={theme.palette.background.paper}
-            strokeWidth={strokeWidth}
+            strokeWidth={highlighted ? 1.5 : strokeWidth}
             stroke={
-              theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.12)'
-                : 'rgba(0, 0, 0, 0.12)'
+              // Lit by a hover: a 1.5px border in the accent colour.
+              highlighted
+                ? theme.palette.primary.main
+                : theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.12)'
+                  : 'rgba(0, 0, 0, 0.12)'
             }
           />
         </g>
@@ -88,6 +92,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
             fontSize: 9,
             color: theme.palette.primary.main,
             pointerEvents: 'none',
+            textShadow: highlighted ? HIGHLIGHT_LABEL_SHADOW : undefined,
           }}
           >
             <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>

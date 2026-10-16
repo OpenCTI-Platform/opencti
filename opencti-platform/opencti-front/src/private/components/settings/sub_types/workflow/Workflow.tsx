@@ -401,14 +401,23 @@ const Workflow = ({
   const onNodeMouseEnter: NodeMouseHandler = useCallback((_, node) => setHoveredId(node.id), []);
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
-  const displayedNodes = useMemo(() => nodes.map((node) => ({
-    ...node,
-    style: { ...node.style, opacity: highlight && !highlight.nodeIds.has(node.id) ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
-  })), [nodes, highlight]);
-  const displayedEdges = useMemo(() => edges.map((edge) => ({
-    ...edge,
-    style: { ...edge.style, opacity: highlight && !highlight.edgeIds.has(edge.id) ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
-  })), [edges, highlight]);
+  // Lit nodes get `data.highlighted` (2px border, thicker label); lit edges get a 2px stroke.
+  const displayedNodes = useMemo(() => nodes.map((node) => {
+    const lit = !!highlight && highlight.nodeIds.has(node.id);
+    return {
+      ...node,
+      data: lit ? { ...node.data, highlighted: true } : node.data,
+      style: { ...node.style, opacity: highlight && !lit ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
+    };
+  }), [nodes, highlight]);
+  const displayedEdges = useMemo(() => edges.map((edge) => {
+    const lit = !!highlight && highlight.edgeIds.has(edge.id);
+    const grow = lit && edge.type !== WorkflowNodeType.placeholder;
+    return {
+      ...edge,
+      style: { ...edge.style, opacity: highlight && !lit ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION, ...(grow ? { strokeWidth: 1.5 } : {}) },
+    };
+  }), [edges, highlight]);
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
