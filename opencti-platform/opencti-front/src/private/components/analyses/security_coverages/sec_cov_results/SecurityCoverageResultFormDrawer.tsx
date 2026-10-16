@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Typography } from '@mui/material';
 
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
@@ -262,17 +263,23 @@ const SecurityCoverageResultFormDrawer = ({
           />
 
           {isUpdate && activeStep === 0 && (
-            <SecurityCoverageResultList
-              results={results ?? []}
-              onCancel={close}
-              onSelect={(result) => {
-                setResultToEdit(result);
-                setFormDetails(resultToFormData(result));
-                setSelectedEntities(undefined);
-                setRelToEntities(undefined);
-                setActiveStep(1);
-              }}
-            />
+            <>
+              <Typography variant="h4" gutterBottom>
+                {t_i18n('Security coverage results')}
+              </Typography>
+              <SecurityCoverageResultList
+                securityCoverageId={id}
+                results={results ?? []}
+                onCancel={close}
+                onSelect={(result) => {
+                  setResultToEdit(result);
+                  setFormDetails(resultToFormData(result));
+                  setSelectedEntities(undefined);
+                  setRelToEntities(undefined);
+                  setActiveStep(1);
+                }}
+              />
+            </>
           )}
 
           <div style={{ ...stepVisibility(0) }}>
@@ -292,6 +299,9 @@ const SecurityCoverageResultFormDrawer = ({
 
           {(!isUpdate || resultToEdit) && (
             <div style={{ ...stepVisibility(1) }}>
+              <Typography variant="h4" gutterBottom>
+                {t_i18n('Entities to test coverage')}
+              </Typography>
               <SelectEntitiesToCoverStep
                 key={resultToEdit?.id}
                 onCancel={close}
