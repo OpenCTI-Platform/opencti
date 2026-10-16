@@ -50,13 +50,15 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   // The library keys its chips by label: a label already taken (values still loading, two restricted values,
   // two entities of the same name) is numbered, or React would leave stale chips behind.
   // FDS-WORKAROUND #71: dropped once the chips are no longer keyed by label (fds-migration/LIBRARY-FEEDBACK.md).
-  const seenLabels = new Map<string, number>();
+  // A number is taken until the label is free: `Acme`, `Acme` and `Acme (2)` give `Acme`, `Acme (2)`, `Acme (2) (2)`.
+  const usedLabels = new Set<string>();
   const selected = values.map((value) => {
     const option = options.find((candidate) => candidate.value === value)
       ?? { value, label: labels.get(value) ?? knownLabels.current.get(value) ?? t_i18n('Loading'), type: variable.type };
-    const count = (seenLabels.get(option.label) ?? 0) + 1;
-    seenLabels.set(option.label, count);
-    return count === 1 ? option : { ...option, label: `${option.label} (${count})` };
+    let label = option.label;
+    for (let count = 2; usedLabels.has(label); count += 1) label = `${option.label} (${count})`;
+    usedLabels.add(label);
+    return label === option.label ? option : { ...option, label };
   });
 
   const runSearch = (event: SyntheticEvent, text: string, cause?: Parameters<typeof search>[2]) => {

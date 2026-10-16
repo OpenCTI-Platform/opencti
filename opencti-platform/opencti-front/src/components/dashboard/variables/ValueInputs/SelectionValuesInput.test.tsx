@@ -97,6 +97,13 @@ describe('SelectionValuesInput', () => {
     expect(within(chipRow()).getAllByRole('listitem').map((chip) => chip.textContent)).toEqual(['malicious', 'Loading']);
   });
 
+  it('numbers a label until it is free, even next to a name that already looks numbered', () => {
+    mockEntities = {};
+    const { relayEnv } = renderInput(label, ['label-1', 'label-2', 'label-3']);
+    resolveLabels(relayEnv, { 'label-1': 'Acme', 'label-2': 'Acme', 'label-3': 'Acme (2)' });
+    expect(within(chipRow()).getAllByRole('listitem').map((chip) => chip.textContent)).toEqual(['Acme', 'Acme (2)', 'Acme (2) (2)']);
+  });
+
   it('offers the names of the vocabulary category for a vocabulary variable', async () => {
     const variable: DashboardVariableShape = { type: 'vocabulary', vocabularyCategory: 'reliability_ov', restriction: none };
     const { user, relayEnv, onChange } = renderInput(variable, []);

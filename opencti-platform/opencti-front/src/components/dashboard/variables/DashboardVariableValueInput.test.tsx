@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import testRender from '../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 
 const mockSearchEntities = vi.fn();
 const mockUseSearchEntities = vi.fn();
@@ -258,6 +258,16 @@ describe('DashboardVariableValueInput', () => {
       });
       await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
       expect(onChange).toHaveBeenCalledWith('org-1');
+    });
+
+    it('searches nothing for an entity variable of meta object types only', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Label'], restriction: { mode: 'filters', filters: rule } };
+      const userContext = createMockUserContext({ schema: { scrs: [], sdos: [], scos: [], smos: [{ id: 'Label', label: 'Label' }] } });
+      const { user, relayEnv } = testRender(<DashboardVariableValueInput variable={variable} value="" onChange={vi.fn()} />, { userContext });
+      await user.click(screen.getByRole('combobox'));
+      await user.type(screen.getByRole('combobox'), 'apt');
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      expect(screen.queryAllByRole('option')).toHaveLength(0);
     });
 
     it('goes back to every entity of the rule once a value is picked', async () => {
