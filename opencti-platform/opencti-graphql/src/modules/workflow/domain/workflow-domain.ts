@@ -1489,6 +1489,12 @@ export const triggerWorkflowEvent = async (
     const result = await instance.trigger(eventName);
 
     if (!result.success) {
+      // The engine names the state by its status template id, unreadable in task errors and notifications
+      if (!definition.getTransition(currentStateId, eventName)) {
+        const statusTemplate = await storeLoadById<BasicStoreEntity>(executionContext, executionUser, currentStateId, ENTITY_TYPE_STATUS_TEMPLATE);
+        const reason = `Transition '${eventName}' is not available from status '${statusTemplate?.name ?? currentStateId}'`;
+        return { ...result, reason, entity };
+      }
       return { ...result, entity };
     }
 
