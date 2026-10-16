@@ -2352,6 +2352,12 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
+**Also at.** `FilterValueVariableSwitch.tsx` (dashboard widget filters): the
+"Fixed value" / "Variable" switch of a date, numeric or free text value is
+specified with text segments. It uses the library group with two glyphs, each
+named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
+With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
@@ -2637,7 +2643,28 @@ also check that each tool keeps its size and alignment, which the span's
 
 ---
 
-## 69. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
+## 69. `Chip` has no muted state that stays clickable, so a dashboard variable no widget uses is dimmed by hand
+
+**Where.** `DashboardVariableChip.tsx` (dashboard variables bar). A variable that
+no widget references must read as inactive (it still has to open its value
+input, so the user can change it) and explain itself in a `Tooltip`.
+
+**Gap.** The only muted state of `Chip` is `disabled`, which is non-interactive:
+the click that opens the value popover would be lost. There is no tone between
+`neutral` and `disabled`.
+
+**Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`).
+
+**Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
+fill contrast but keeps the chip a focusable, clickable `<button>`.
+
+**Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
+variable must still open its popover on click and keep its hover tooltip.
+
+---
+
+## 70. `Checkbox` `presentational` drops `label` silently, so a row can ship with unnamed boxes
 
 **Needed.** A menu or list row that is itself the control (a `MenuItem` or a
 `role="option"` toggling a filter value) draws a check box next to the name of
