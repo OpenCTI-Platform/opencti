@@ -18,7 +18,7 @@ import { createStreamProcessor, storeNotificationEvent } from '../database/strea
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { ActivityStreamEvent, SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { topEntitiesList } from '../database/middleware-loader';
@@ -59,7 +59,8 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     // status: 'error' | 'success'
     const event = events[index];
     const { message, data, origin, event_scope } = event.data;
-    let sourceUser = origin.user_id ? platformUsers.get(origin.user_id) : SYSTEM_USER;
+    // Internal users (managers) are not in the users cache
+    let sourceUser = origin.user_id ? (INTERNAL_USERS[origin.user_id] || platformUsers.get(origin.user_id)) : SYSTEM_USER;
     if (ENABLED_DEMO_MODE) sourceUser = REDACTED_USER;
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
       const { trigger, users } = triggers[triggerIndex];
