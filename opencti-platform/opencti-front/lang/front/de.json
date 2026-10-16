@@ -1295,6 +1295,7 @@
   "Decay rules": "Zerfallregeln",
   "Decay Rules | Customization | Settings": "Abklingregeln | Anpassung | Einstellungen",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Abklingregeln werden auf Indikatoren in der Reihenfolge ihrer Priorität angewandt (vom höchsten zum niedrigsten Wert, wobei der niedrigste Wert 0 ist). Es gibt integrierte Regeln, die standardmäßig angewendet werden und nicht bearbeitet werden können. Sie können eine benutzerdefinierte Abklingregel hinzufügen und ihre Prioritätsreihenfolge festlegen.",
+  "Decimal": "Dezimalzahl",
   "Decline": "Ablehnen",
   "Decline this call": "Diesen Aufruf ablehnen",
   "Declined": "Abgelehnt",

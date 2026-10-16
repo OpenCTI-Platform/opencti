@@ -408,6 +408,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
     field_id: string;
     field_name: string;
     int_value?: number;
+    float_value?: number;
     string_value?: string;
     boolean_value?: boolean;
     date_value?: string;
