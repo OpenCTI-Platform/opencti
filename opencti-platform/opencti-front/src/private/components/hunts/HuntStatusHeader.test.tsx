@@ -157,6 +157,14 @@ describe('Hunt status header dialogs', () => {
     expect(screen.getByTestId('hunt-query-preview-open')).toBeInTheDocument();
   });
 
+  it('offers no query preview for an infrastructure hunt, whose fingerprint documents are never translated', () => {
+    testRender(<HuntStatusHeader data={{ ...hunt, hunt_type: 'infrastructure' } as never} />, {
+      userContext: createMockUserContext({ me: { name: 'admin', user_email: 'admin@opencti.io', capabilities: [{ name: BYPASS }] } as never }),
+    });
+    expect(screen.getByTestId('hunt-status-to-paused')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-query-preview-open')).not.toBeInTheDocument();
+  });
+
   it('keeps the checklist of a draft collapsed under its summary line', async () => {
     const unmetScope = item('scope', 'unmet', 'Add a security platform to the scope of the hunt');
     const { user } = testRender(<HuntStatusHeader data={{ ...hunt, hunt_status: 'draft', readiness: { ready: false, items: [unmetScope] } } as never} />, {

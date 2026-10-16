@@ -187,7 +187,11 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
           <Grid item xs={12}>
             <Label>{t_i18n('Scope')}</Label>
             {advancedScope && <Text variant="content-compact">{t_i18n('Advanced scope filters')}</Text>}
-            {!advancedScope && scopeItems.length === 0 && <Text variant="content-compact">{t_i18n('Every hunt-capable security platform')}</Text>}
+            {!advancedScope && scopeItems.length === 0 && (
+              <Text variant="content-compact" data-testid="hunt-scope-all">
+                {hunt.hunt_type === 'infrastructure' ? t_i18n('Every connected internet scanning service') : t_i18n('Every hunt-capable security platform')}
+              </Text>
+            )}
             {!advancedScope && scopeItems.length > 0 && <EntityChips items={scopeItems} testId="hunt-scope-platforms" />}
           </Grid>
           <Grid item xs={4}>

@@ -379,7 +379,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
               <Button variant="secondary" onClick={() => resetForm()} disabled={!dirty || isSubmitting}>
                 {t_i18n('Discard changes')}
               </Button>
-              {dirty && (
+              {dirty && isTelemetry && (
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -427,23 +427,31 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
                 )}
                 <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
                   <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
-                    <HuntTranslations hunt={hunt} />
-                    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                      <HuntTranslationPreview
-                        huntId={hunt.id}
-                        huntType={hunt.hunt_type}
-                        scopePlatformIds={scopePlatformIdsOf(hunt)}
-                        dirty={dirty}
-                        startSignal={previewSignal}
-                        canStart={canEdit}
-                      />
-                    </Suspense>
+                    {isTelemetry ? (
+                      <>
+                        <HuntTranslations hunt={hunt} />
+                        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                          <HuntTranslationPreview
+                            huntId={hunt.id}
+                            huntType={hunt.hunt_type}
+                            scopePlatformIds={scopePlatformIdsOf(hunt)}
+                            dirty={dirty}
+                            startSignal={previewSignal}
+                            canStart={canEdit}
+                          />
+                        </Suspense>
+                      </>
+                    ) : (
+                      <Text variant="content-compact" data-testid="hunt-logic-no-translation">
+                        {t_i18n('Fingerprint documents run as written on each internet scanning service: there is no translation to preview.')}
+                      </Text>
+                    )}
                     <LogicReadinessNotes hunt={hunt} canEdit={canEdit} />
                   </Card>
                 </Grid>
                 <Grid item xs={12}>
-                  <Card title={t_i18n('Native queries')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} />}>
-                    <HuntNativeQueriesField disabled={!canEdit} ruleOptions={ruleOptions} />
+                  <Card title={isTelemetry ? t_i18n('Native queries') : t_i18n('Fingerprint documents')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} />}>
+                    <HuntNativeQueriesField disabled={!canEdit} ruleOptions={ruleOptions} infrastructure={!isTelemetry} />
                   </Card>
                 </Grid>
               </Grid>

@@ -320,7 +320,14 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
                   type="number"
                   name="time_window_hours"
                   label={t_i18n('Time window (hours)')}
-                  helperText={<HuntHelp text={t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')} href={HUNT_DOCS.runHunt} />}
+                  helperText={(
+                    <HuntHelp
+                      text={values.hunt_type === 'infrastructure'
+                        ? t_i18n('The period of internet scan data each run searches, ending when it starts, for example 168 for 7 days')
+                        : t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')}
+                      href={HUNT_DOCS.runHunt}
+                    />
+                  )}
                   fullWidth
                   required
                 />

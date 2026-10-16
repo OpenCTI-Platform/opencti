@@ -242,7 +242,9 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
         <DialogContent size="md" data-testid="hunt-run-start-dialog" style={{ ...layerInputVars } as React.CSSProperties}>
           <DialogTitle>{t_i18n('Run the hunt now')}</DialogTitle>
           <DialogDescription>
-            {t_i18n('The hunt is dispatched to the hunt connectors of its scope; each platform gets its own run.')}
+            {hunt.hunt_type === 'infrastructure'
+              ? t_i18n('The hunt runs on every connected internet scanning service; each service gets its own run.')
+              : t_i18n('The hunt is dispatched to the hunt connectors of its scope; each platform gets its own run.')}
           </DialogDescription>
           <Formik<RunStartValues>
             initialValues={{ security_platform_ids: [], time_window_hours: hunt.time_window_hours }}
@@ -252,9 +254,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
             {({ values, setFieldValue, submitForm, isSubmitting }) => (
               <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
-                  {hunt.hunt_type === 'infrastructure' ? (
-                    <Text variant="content-compact">{t_i18n('Infrastructure hunts run on every connected internet scanning service')}</Text>
-                  ) : (
+                  {hunt.hunt_type !== 'infrastructure' && (
                     <Suspense fallback={<Spinner size="md" label={t_i18n('Loading')} />}>
                       <PlatformChoices
                         selected={values.security_platform_ids}
@@ -265,7 +265,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
                       />
                     </Suspense>
                   )}
-                  <div style={{ marginTop: theme.spacing(2) }}>
+                  <div style={{ marginTop: hunt.hunt_type === 'infrastructure' ? 0 : theme.spacing(2) }}>
                     <Field
                       component={TextField}
                       name="time_window_hours"
