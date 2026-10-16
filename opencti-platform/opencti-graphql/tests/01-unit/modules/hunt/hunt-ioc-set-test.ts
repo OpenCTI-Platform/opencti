@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { pageEntitiesConnection, pageRegardingEntitiesConnection } from '../../../../src/database/middleware-loader';
-import { resolveHuntIocSet } from '../../../../src/modules/hunt/hunt-iocs';
+import { HUNT_IOC_FILTER_MAX, previewHuntIocFilter, resolveHuntIocSet } from '../../../../src/modules/hunt/hunt-iocs';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { type BasicStoreEntityHunt, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from '../../../../src/modules/hunt/hunt-types';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { validateHuntState } from '../../../../src/modules/hunt/hunt-validators';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { isBypassUser, SYSTEM_USER } from '../../../../src/utils/access';
 import type { AuthUser } from '../../../../src/types/user';
 
@@ -193,6 +193,64 @@ describe('Access a hunt reads its values with', () => {
     const forRun = await resolveHuntIocSet(testContext, hunt);
     expect(forRun.iocs.map((ioc) => ioc.value)).toEqual(['10.9.0.0']);
     expect(forRun.restricted_count).toBe(0);
+  });
+});
+
+describe('Filter of an indicator hunt', () => {
+  const filter = { mode: 'and', filters: [{ key: ['indicator_types'], values: ['malicious-activity'], operator: 'eq', mode: 'or' }], filterGroups: [] };
+  const filterHunt = (extra: Record<string, unknown> = {}) => ({ internal_id: 'hunt-1', hunt_type: 'indicators', hunt_ioc_filters: JSON.stringify(filter), ...extra }) as unknown as BasicStoreEntityHunt;
+  // The filter matches `count` addresses, a query returning at most as many as asked
+  const serveMatches = (count: number) => vi.mocked(pageEntitiesConnection).mockImplementation(async (_context, _user, _types, opts) => ({
+    edges: Array.from({ length: Math.min(count, opts?.first ?? count) }, (_, index) => ({ node: address('report-7', index) })),
+    pageInfo: { globalCount: count },
+  }) as never);
+  const filterQuery = (index = 0) => vi.mocked(pageEntitiesConnection).mock.calls[index][3];
+
+  beforeEach(() => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map() as never);
+    vi.mocked(findByIds).mockReset();
+    vi.mocked(findByIds).mockResolvedValue([] as never);
+    vi.mocked(pageEntitiesConnection).mockReset();
+  });
+
+  it('should take at most 100 of the matching indicators and observables, newest created first unless the hunt chooses', async () => {
+    serveMatches(250);
+    const set = await resolveHuntIocSet(testContext, filterHunt());
+    expect(set.iocs).toHaveLength(HUNT_IOC_FILTER_MAX);
+    // The order of the hunt chooses what a run takes out of a larger filter: nothing is cut
+    expect(set.truncated).toBe(false);
+    expect(filterQuery()).toMatchObject({ first: HUNT_IOC_FILTER_MAX, orderBy: 'created_at', orderMode: 'desc' });
+    await resolveHuntIocSet(testContext, filterHunt({ hunt_ioc_sort: 'updated_at_asc' }));
+    expect(filterQuery(1)).toMatchObject({ first: HUNT_IOC_FILTER_MAX, orderBy: 'updated_at', orderMode: 'asc' });
+  });
+
+  it('should read only the elements shared with every organization of the hunt, as a run discloses them', async () => {
+    serveMatches(3);
+    await resolveHuntIocSet(testContext, filterHunt({ [RELATION_GRANTED_TO]: ['org-a', 'org-b'] }));
+    expect(filterQuery()?.filters).toEqual({
+      mode: 'and',
+      filters: [{ key: ['objectOrganization'], values: ['org-a', 'org-b'], operator: 'eq', mode: 'and' }],
+      filterGroups: [filter],
+    });
+    // A viewer counts the elements left out among those he reads, the ones of other organizations included
+    await resolveHuntIocSet(testContext, filterHunt({ [RELATION_GRANTED_TO]: ['org-a'] }), ADMIN_USER);
+    expect(filterQuery(2)?.filters).toEqual(filter);
+  });
+
+  it('should preview what the stored or the edited filter takes at the next run', async () => {
+    serveMatches(250);
+    expect(await previewHuntIocFilter(testContext, filterHunt())).toEqual({ matching_count: 250, taken_count: HUNT_IOC_FILTER_MAX });
+    serveMatches(40);
+    expect(await previewHuntIocFilter(testContext, filterHunt(), { sort: 'created_at_asc' })).toEqual({ matching_count: 40, taken_count: 40 });
+    expect(filterQuery(1)).toMatchObject({ orderBy: 'created_at', orderMode: 'asc' });
+    // An edited filter emptied takes nothing, without a query
+    expect(await previewHuntIocFilter(testContext, filterHunt(), { filters: null })).toEqual({ matching_count: 0, taken_count: 0 });
+    expect(pageEntitiesConnection).toHaveBeenCalledTimes(2);
+  });
+
+  it('should refuse an order a hunt does not know', async () => {
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', hunt_ioc_sort: 'name_asc' })).rejects.toThrow('hunt_ioc_sort must be one of');
+    await expect(validateHuntState(testContext, ADMIN_USER, { hunt_type: 'indicators', hunt_ioc_sort: 'updated_at_desc' })).resolves.toBeUndefined();
   });
 });
 

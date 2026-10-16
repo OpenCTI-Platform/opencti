@@ -486,6 +486,7 @@
   "Hunt escalation threshold": "Umbral de escalado de la caza",
   "Hunt expected observables": "Observables esperados de la caza",
   "Hunt hypothesis": "Hipótesis de la caza",
+  "Hunt indicator filter order": "Orden del filtro de indicadores de búsqueda",
   "Hunt indicator filters": "Filtros de indicadores de búsqueda",
   "Hunt indicator lookups": "Búsquedas de indicadores",
   "Hunt last run date": "Fecha de la última ejecución de la caza",

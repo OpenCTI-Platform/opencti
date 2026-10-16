@@ -22,9 +22,10 @@ import {
 import { KNOWLEDGE, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { type FilterGroup, FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { findByIds } from './hunt-loaders';
 import { HUNT_IOC_CONTAINER_TYPES, HUNT_IOC_OBSERVABLE_TYPES, HUNT_IOC_SUBJECT_TYPES } from './hunt-entity-types';
-import { type BasicStoreEntityHunt, type HuntIocValue, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from './hunt-types';
+import { type BasicStoreEntityHunt, HUNT_IOC_SORT_CREATED_DESC, HUNT_IOC_SORTS, type HuntIocValue, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from './hunt-types';
 import { HUNT_CONFIG, parseHuntFilterGroup, sha256 } from './hunt-utils';
 
 export const HUNT_IOC_HASH_ALGORITHMS = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'] as const;
@@ -318,6 +319,32 @@ export const huntReaderAccess = async (context: AuthContext, hunt: AccessRestric
 
 export const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];
 
+// A run takes at most this many of the indicators and observables matching the filter of its hunt, in the order of the hunt
+export const HUNT_IOC_FILTER_MAX = 100;
+
+/** The order a hunt takes what its filter matches in: by creation or update date, newest created first when not set. */
+export const huntIocOrder = (sort: string | null | undefined) => {
+  const value = sort && HUNT_IOC_SORTS.includes(sort) ? sort : HUNT_IOC_SORT_CREATED_DESC;
+  return {
+    orderBy: value.startsWith('updated_at') ? 'updated_at' : 'created_at',
+    orderMode: value.endsWith('_asc') ? OrderingMode.Asc : OrderingMode.Desc,
+  };
+};
+
+// The access of the reader reads the elements shared with any organization of the hunt, the rule of disclosure takes
+// those shared with all of them: the query reads these only, so that the elements it takes and counts are the ones a run takes
+const disclosableFilters = (hunt: AccessRestricted, filters: FilterGroup): FilterGroup => {
+  const organizationIds = hunt[RELATION_GRANTED_TO] ?? [];
+  if (organizationIds.length === 0) {
+    return filters;
+  }
+  return {
+    mode: FilterMode.And,
+    filters: [{ key: ['objectOrganization'], values: organizationIds, operator: FilterOperator.Eq, mode: FilterMode.And }],
+    filterGroups: [filters],
+  };
+};
+
 /** Indicators and observables contained in a report, a grouping or an incident response. */
 export const listContainedIocElements = async (context: AuthContext, user: AuthUser, sourceId: string, first: number) => {
   const connection = await pageRegardingEntitiesConnection<IocElement>(context, user, sourceId, RELATION_OBJECT, IOC_ELEMENT_TYPES, false, { first });
@@ -362,14 +389,21 @@ export const iocElementName = (element: IocElement) => String(element.name ?? el
 
 type HuntIocReach = Pick<HuntIocSource, 'via' | 'matched_filter'>;
 
+interface HuntIocReadOptions {
+  // Read as the reader of the hunt: the filter only reads what the rule of disclosure can take
+  asHuntReader?: boolean;
+}
+
 /**
  * The indicators and observables an indicator hunt reaches with an access: its indicators and observables, those
  * contained in its reports, groupings and incident responses or linked to its threats and incidents, and those matching
- * its filter. The sources, the expansions and the filter share one budget of elements read, one more than a run looks
- * up, a query that reads nothing taking one: however many sources a hunt has, resolving its values reads and queries a
- * bounded number of elements, and the sources and values left unread make the set truncated.
+ * its filter, at most HUNT_IOC_FILTER_MAX of them in the order of the hunt. The sources, the expansions and the filter
+ * share one budget of elements read, one more than a run looks up, a query that reads nothing taking one: however many
+ * sources a hunt has, resolving its values reads and queries a bounded number of elements, and the sources and values
+ * left unread make the set truncated. The filter matching more elements than a run takes is no truncation: the order
+ * of the hunt chooses them.
  */
-const readHuntIocElements = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
+const readHuntIocElements = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, options: HuntIocReadOptions = {}) => {
   let budget = HUNT_CONFIG.maxIocsPerRun + 1;
   const sourceIds = hunt[RELATION_HUNT_SOURCES] ?? [];
   const readSourceIds = sourceIds.slice(0, budget);
@@ -405,7 +439,11 @@ const readHuntIocElements = async (context: AuthContext, user: AuthUser, hunt: B
   }
   const filters = parseHuntFilterGroup(hunt.hunt_ioc_filters, 'hunt_ioc_filters');
   if (filters && budget > 0) {
-    const matching = await pageEntitiesConnection<IocElement>(context, user, IOC_ELEMENT_TYPES, { filters, first: budget });
+    const matching = await pageEntitiesConnection<IocElement>(context, user, IOC_ELEMENT_TYPES, {
+      filters: options.asHuntReader ? disclosableFilters(hunt, filters) : filters,
+      first: Math.min(budget, HUNT_IOC_FILTER_MAX),
+      ...huntIocOrder(hunt.hunt_ioc_sort),
+    });
     budget -= Math.max(1, matching.edges.length);
     const matched = matching.edges.map((edge) => edge.node);
     matched.forEach((element) => reach(element, { via: null, matched_filter: true }));
@@ -425,7 +463,7 @@ const readHuntIocElements = async (context: AuthContext, user: AuthUser, hunt: B
 export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEntityHunt, viewer?: AuthUser | null): Promise<HuntIocSet> => {
   const max = HUNT_CONFIG.maxIocsPerRun;
   const reader = await huntReaderAccess(context, hunt);
-  const { elements, reached, truncated } = await readHuntIocElements(reader.context, reader.user, hunt);
+  const { elements, reached, truncated } = await readHuntIocElements(reader.context, reader.user, hunt, { asHuntReader: true });
   const markings = await getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const isDisclosable = (element: IocElement) => isDisclosableByHunt(hunt, element, markings as Map<string, BasicStoreEntityMarkingDefinition>);
   const byKey = new Map<string, HuntIoc>();
@@ -480,6 +518,25 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
     unsupported_count: unsupported,
     truncated: truncated || iocs.length > max,
   };
+};
+
+/**
+ * What the filter of an indicator hunt, stored or as edited, takes at the next run: the indicators and observables it
+ * matches that the hunt can take, read with the access of its readers, and how many of them a run takes.
+ */
+export const previewHuntIocFilter = async (context: AuthContext, hunt: BasicStoreEntityHunt, edited: { filters?: string | null; sort?: string | null } = {}) => {
+  const filters = parseHuntFilterGroup(edited.filters !== undefined ? edited.filters : hunt.hunt_ioc_filters, 'hunt_ioc_filters');
+  if (!filters) {
+    return { matching_count: 0, taken_count: 0 };
+  }
+  const reader = await huntReaderAccess(context, hunt);
+  const matching = await pageEntitiesConnection<IocElement>(reader.context, reader.user, IOC_ELEMENT_TYPES, {
+    filters: disclosableFilters(hunt, filters),
+    first: 1,
+    ...huntIocOrder(edited.sort !== undefined ? edited.sort : hunt.hunt_ioc_sort),
+  });
+  const count = matching.pageInfo.globalCount;
+  return { matching_count: count, taken_count: Math.min(count, HUNT_IOC_FILTER_MAX) };
 };
 
 /**

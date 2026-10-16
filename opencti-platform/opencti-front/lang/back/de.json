@@ -486,6 +486,7 @@
   "Hunt escalation threshold": "Eskalationsschwelle der Hunt",
   "Hunt expected observables": "Erwartete Observables der Hunt",
   "Hunt hypothesis": "Hunt-Hypothese",
+  "Hunt indicator filter order": "Reihenfolge des Indikatorfilters der Jagd",
   "Hunt indicator filters": "Indikatorfilter der Jagd",
   "Hunt indicator lookups": "Indikatorabfragen der Jagd",
   "Hunt last run date": "Datum der letzten Hunt-Ausführung",

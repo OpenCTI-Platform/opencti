@@ -45,6 +45,11 @@
       }
     },
     "hunt_ioc_filters": { "type": "string", "description": "Filter group, as JSON, selecting the indicators and observables an indicator hunt looks for." },
+    "hunt_ioc_sort": {
+      "type": "string",
+      "enum": ["created_at_desc", "created_at_asc", "updated_at_desc", "updated_at_asc"],
+      "description": "Order in which a run takes the indicators and observables matching hunt_ioc_filters, at most 100 per run."
+    },
     "hunt_ioc_values": {
       "type": "array",
       "description": "Values pasted into an indicator hunt.",

@@ -15,7 +15,7 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { HUNT_MESSAGES } from '../../../src/modules/hunt/hunt-messages';
-import { type HuntIocSet, resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
+import { type HuntIocSet, previewHuntIocFilter, resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
 import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace } from '../../../src/modules/hunt/hunt-incident';
 import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-types';
@@ -254,6 +254,9 @@ describe('Hunt readiness and indicator hunts', () => {
     expect(forEditor.restricted_count).toEqual(0);
     const redHunt = { ...filterHunt, [RELATION_OBJECT_MARKING]: [red.internal_id] } as unknown as BasicStoreEntityHunt;
     expect(values(await resolveHuntIocSet(testContext, redHunt, ADMIN_USER))).toEqual(['198.51.100.71', '198.51.100.72']);
+    // The count shown under the filter covers what the hunt can take: the TLP:RED indicator for a hunt marked TLP:RED only
+    expect(await previewHuntIocFilter(testContext, filterHunt)).toEqual({ matching_count: 1, taken_count: 1 });
+    expect(await previewHuntIocFilter(testContext, redHunt, { sort: 'updated_at_asc' })).toEqual({ matching_count: 2, taken_count: 2 });
     // The results page of a run lists and counts the results the user can read only
     const run = { internal_id: uuid(), updated_at: new Date().toISOString(), result_ids: [indicatorId, restrictedIndicatorId] } as unknown as BasicStoreEntityHuntRun;
     const editorResults = await findHuntRunResults(testContext, editor, run);
