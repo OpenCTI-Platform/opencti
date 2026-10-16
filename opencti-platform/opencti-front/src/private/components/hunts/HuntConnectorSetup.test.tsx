@@ -59,6 +59,7 @@ describe('Connection test of a hunt connector', () => {
 
   it('shows one plain-words result per check of a finished test', () => {
     const failed = check('failed', {
+      checked_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
       checks: [
         { name: 'Authentication', ok: true, message: 'The service account signs in.' },
         { name: 'search', ok: false, message: 'The account cannot create search jobs.' },
@@ -66,6 +67,7 @@ describe('Connection test of a hunt connector', () => {
     });
     testRender(<HuntConnectorTestConnection connectorId="connector-1" active check={failed} />, asUser([MODULES_MODMANAGE]));
     expect(screen.getByTestId('connector-hunt-check-status')).toHaveAttribute('data-status', 'failed');
+    expect(screen.getByTestId('connector-hunt-check-date')).toHaveTextContent('Connection test failed 2 minutes ago');
     const items = screen.getAllByTestId('connector-hunt-check-item');
     expect(items.map((item) => item.getAttribute('data-ok'))).toEqual(['true', 'false']);
     expect(screen.getByText('The account cannot create search jobs.')).toBeInTheDocument();

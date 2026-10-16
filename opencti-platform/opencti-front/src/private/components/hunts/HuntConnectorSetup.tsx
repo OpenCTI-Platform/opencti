@@ -12,6 +12,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { HUNT_DOCS, huntConnectorSetupDocumentation } from './hunt-utils';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { isStaleConnectionCheck } from './hunt-connection-check-utils';
+import { RelativeDate } from './HuntChips';
 import { HuntConnectorSetupTestConnectionMutation } from './__generated__/HuntConnectorSetupTestConnectionMutation.graphql';
 
 const huntConnectorSetupTestConnectionMutation = graphql`
@@ -115,7 +116,7 @@ export const HuntConnectorDeploymentNotice = ({ slug }: { slug: string | null | 
 
 const ConnectionCheckResult = ({ check, requested }: { check: ConnectionCheck | null | undefined; requested: boolean }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const canTest = useGranted([MODULES_MODMANAGE]);
   const pending = requested || check?.status === 'pending';
   if (!check && !requested) {
@@ -148,9 +149,13 @@ const ConnectionCheckResult = ({ check, requested }: { check: ConnectionCheck | 
           ? <CheckCircleOutlined fontSize="small" style={{ color: theme.palette.success.main }} />
           : <ErrorOutlineOutlined fontSize="small" style={{ color: theme.palette.error.main }} />}
         <Text variant="content-compact">
-          {passed
-            ? t_i18n('Connection test passed on {date}', { values: { date: fldt(check?.checked_at) } })
-            : t_i18n('Connection test failed on {date}', { values: { date: fldt(check?.checked_at) } })}
+          <RelativeDate
+            date={check?.checked_at ?? ''}
+            label={(date) => (passed
+              ? t_i18n('Connection test passed {date}', { values: { date } })
+              : t_i18n('Connection test failed {date}', { values: { date } }))}
+            testId="connector-hunt-check-date"
+          />
         </Text>
       </div>
       <ul style={{ listStyle: 'none', margin: theme.spacing(1, 0, 0), padding: 0 }}>
