@@ -333,7 +333,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                         entityTypes={values.entityTypes}
                         label={t_i18n('Filters')}
                         value={values.filters}
-                        error={touched.filters ? errors.filters : undefined}
+                        error={touched.filters || isEditing ? errors.filters : undefined}
                         onChange={(filters) => {
                           setFieldValue('filters', filters);
                           setFieldTouched('filters', true, false);

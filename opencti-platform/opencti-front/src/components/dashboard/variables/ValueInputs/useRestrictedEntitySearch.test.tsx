@@ -41,7 +41,8 @@ describe('useRestrictedEntitySearch', () => {
     act(() => hook.result.current.search('ac'));
     const second = relayEnv.mock.getMostRecentOperation();
     act(() => relayEnv.mock.resolve(second, answer([['org-1', 'Acme Corp']])));
-    act(() => relayEnv.mock.resolve(first, answer([['org-2', 'Another Corp'], ['org-3', 'Alpha']])));
+    // The earlier search was cancelled: its answer can no longer arrive.
+    expect(() => relayEnv.mock.resolve(first, answer([['org-2', 'Another Corp']]))).toThrow();
     expect(hook.result.current.options.map((option) => option.label)).toEqual(['Acme Corp']);
   });
 
