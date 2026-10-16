@@ -103,9 +103,9 @@ describe('resolvePdfMakeEmbeddedImages', () => {
 describe('buildTimelinePdfDefinition', () => {
   // Same layout as the HTML export of the server: a drawing wider than any page, then the headline dates and the events
   const html = [
-    '<div><h1>Timeline - Incident Demo</h1><p>Case-Incident - Generated at 2026-10-13 08:00 UTC</p>',
+    '<div><h1>Timeline - Incident Demo</h1><p>Incident response - Generated at 2026-10-13 08:00 UTC</p>',
     '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900"><rect x="0" y="0" width="1200" height="900" fill="#ffffff"/></svg>',
-    '<h2 class="pdf-pagebreak-before">Anchors</h2><table><tbody><tr><td>Closure</td><td>-</td></tr></tbody></table>',
+    '<h2 class="pdf-pagebreak-before">Headline dates</h2><table><tbody><tr><td>Closure</td><td>Not reached</td></tr></tbody></table>',
     '<h2>Events</h2><table><thead><tr><th>Time</th><th>Title</th></tr></thead><tbody><tr><td>2026-03-01 00:00 UTC</td><td>Phishing</td></tr></tbody></table>',
     '</div>',
   ].join('');

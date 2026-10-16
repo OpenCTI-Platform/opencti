@@ -112,11 +112,22 @@ describe('Timeline exports', () => {
     expect(html).not.toContain('\u27a1');
   });
 
+  it('should print the translated type of the container, the headline dates heading and the dates not reached in the PDF', () => {
+    expect(renderTimelineHtml(input)).toContain('<p>Incident response - Generated at 2026-04-01 10:30 UTC</p>');
+    const labels = { 'type.Case-Incident': 'Réponse à incident', anchors: 'Dates clés', not_reached: 'Non atteint' };
+    const html = renderTimelineHtml({ ...input, labels });
+    expect(html).toContain('<p>Réponse à incident - Generated at 2026-04-01 10:30 UTC</p>');
+    expect(html).toContain('<h2 class="pdf-pagebreak-before">Dates clés</h2>');
+    expect(html).toContain('<td>Closure</td><td>Non atteint</td>');
+    expect(html).not.toContain('Case-Incident');
+    expect(html).not.toContain('<td>-</td>');
+  });
+
   it('should show the headline dates of the type of the container only', () => {
     // The default headline dates leave the eradication out, even when it is dated
     expect(renderTimelineSvg(input)).not.toContain('>Eradication</text>');
     expect(renderTimelineHtml(input)).not.toContain('<td>Eradication</td>');
-    expect(renderTimelineHtml(input)).toContain('<td>Closure</td><td>-</td>');
+    expect(renderTimelineHtml(input)).toContain('<td>Closure</td><td>Not reached</td>');
     const customized = { ...input, headlineDates: ['containment', 'eradication'] as const };
     const svg = renderTimelineSvg(customized);
     expect(svg).toContain('>Eradication</text>');
@@ -129,7 +140,7 @@ describe('Timeline exports', () => {
   it('should put the drawing first in the HTML of the PDF and start the tables on the next page', () => {
     const html = renderTimelineHtml(input);
     const drawing = html.indexOf('<svg');
-    const anchors = html.indexOf('<h2 class="pdf-pagebreak-before">Anchors</h2>');
+    const anchors = html.indexOf('<h2 class="pdf-pagebreak-before">Headline dates</h2>');
     expect(drawing).toBeGreaterThan(html.indexOf('<h1>'));
     expect(anchors).toBeGreaterThan(html.indexOf('</svg>'));
     expect(html.indexOf('<h2>Events</h2>')).toBeGreaterThan(anchors);

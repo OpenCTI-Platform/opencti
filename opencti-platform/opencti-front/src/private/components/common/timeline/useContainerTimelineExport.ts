@@ -16,6 +16,7 @@ import {
   buildTimelineFileName,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_ANCHOR_LABELS,
+  TIMELINE_CONTAINER_TYPES,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   TIMELINE_LANES,
@@ -115,32 +116,35 @@ export interface TimelineFileOptions extends TimelineExportFilters {
   format: TimelineExportFormat;
 }
 
+/** Every label the server writes in an export, translated: exports are standalone documents. */
+export const timelineExportLabels = (t_i18n: (message: string) => string) => [
+  { key: 'title', label: t_i18n('Timeline') },
+  { key: 'generated_at', label: t_i18n('Generated at') },
+  { key: 'anchors', label: t_i18n('Headline dates') },
+  { key: 'not_reached', label: t_i18n('Not reached') },
+  ...TIMELINE_CONTAINER_TYPES.map((type) => ({ key: `type.${type}`, label: t_i18n(`entity_${type}`) })),
+  { key: 'events', label: t_i18n('Events') },
+  { key: 'no_events', label: t_i18n('No event') },
+  ...TIMELINE_LANES.map((lane) => ({ key: `lane.${lane}`, label: t_i18n(TIMELINE_LANE_LABELS[lane]) })),
+  ...Object.entries(TIMELINE_KIND_LABELS).map(([kind, label]) => ({ key: `kind.${kind}`, label: t_i18n(label) })),
+  ...TIMELINE_PRECISIONS.map((precision) => ({ key: `precision.${precision}`, label: t_i18n(TIMELINE_PRECISION_LABELS[precision]) })),
+  ...TIMELINE_ANCHOR_KEYS.map((key) => ({ key: `anchor.${key}`, label: t_i18n(TIMELINE_ANCHOR_LABELS[key]) })),
+  { key: 'column.time', label: t_i18n('Time') },
+  { key: 'column.end_time', label: t_i18n('End time') },
+  { key: 'column.lane', label: t_i18n('Lane') },
+  { key: 'column.kind', label: t_i18n('Event') },
+  { key: 'column.precision', label: t_i18n('Precision') },
+  { key: 'column.title', label: t_i18n('Title') },
+  { key: 'column.element', label: t_i18n('Element') },
+  { key: 'column.annotation', label: t_i18n('Annotation') },
+  { key: 'still_open', label: t_i18n('Still open') },
+  { key: 'context_window', label: t_i18n('Global first and last seen of the entity, context only: not dated in this incident') },
+];
+
 /** Renders a timeline export as a file content, from the events the current user can see. */
 export const useTimelineFileRenderer = () => {
   const { t_i18n } = useFormatter();
-
-  // Exports are standalone documents: every label the server writes is translated here
-  const labels = () => [
-    { key: 'title', label: t_i18n('Timeline') },
-    { key: 'generated_at', label: t_i18n('Generated at') },
-    { key: 'anchors', label: t_i18n('Anchors') },
-    { key: 'events', label: t_i18n('Events') },
-    { key: 'no_events', label: t_i18n('No event') },
-    ...TIMELINE_LANES.map((lane) => ({ key: `lane.${lane}`, label: t_i18n(TIMELINE_LANE_LABELS[lane]) })),
-    ...Object.entries(TIMELINE_KIND_LABELS).map(([kind, label]) => ({ key: `kind.${kind}`, label: t_i18n(label) })),
-    ...TIMELINE_PRECISIONS.map((precision) => ({ key: `precision.${precision}`, label: t_i18n(TIMELINE_PRECISION_LABELS[precision]) })),
-    ...TIMELINE_ANCHOR_KEYS.map((key) => ({ key: `anchor.${key}`, label: t_i18n(TIMELINE_ANCHOR_LABELS[key]) })),
-    { key: 'column.time', label: t_i18n('Time') },
-    { key: 'column.end_time', label: t_i18n('End time') },
-    { key: 'column.lane', label: t_i18n('Lane') },
-    { key: 'column.kind', label: t_i18n('Event') },
-    { key: 'column.precision', label: t_i18n('Precision') },
-    { key: 'column.title', label: t_i18n('Title') },
-    { key: 'column.element', label: t_i18n('Element') },
-    { key: 'column.annotation', label: t_i18n('Annotation') },
-    { key: 'still_open', label: t_i18n('Still open') },
-    { key: 'context_window', label: t_i18n('Global first and last seen of the entity, context only: not dated in this incident') },
-  ];
+  const labels = () => timelineExportLabels(t_i18n);
 
   const fetchServerExport = async (options: TimelineFileOptions, format: TimelineServerFormat) => {
     const variables: ContainerTimelineMutationsExportQuery$variables = {

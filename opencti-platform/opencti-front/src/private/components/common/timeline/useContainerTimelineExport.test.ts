@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { timelineExportErrorMessage } from './useContainerTimelineExport';
+import { timelineExportErrorMessage, timelineExportLabels } from './useContainerTimelineExport';
 
 const translate = (message: string) => `translated: ${message}`;
+
+describe('Timeline export labels', () => {
+  it('translates the type of the container, the headline dates heading and the dates not reached', () => {
+    const labels = Object.fromEntries(timelineExportLabels(translate).map(({ key, label }) => [key, label]));
+    expect(labels['type.Case-Incident']).toEqual('translated: entity_Case-Incident');
+    expect(labels['type.Incident']).toEqual('translated: entity_Incident');
+    expect(labels.anchors).toEqual('translated: Headline dates');
+    expect(labels.not_reached).toEqual('translated: Not reached');
+  });
+});
 
 describe('Timeline export error message', () => {
   it('asks to narrow an export too large to build at once', () => {

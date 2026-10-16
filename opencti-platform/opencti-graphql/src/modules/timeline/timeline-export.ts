@@ -53,7 +53,12 @@ const LANE_COLORS: Record<TimelineLaneValue, string> = {
 const DEFAULT_LABELS: Record<string, string> = {
   title: 'Timeline',
   generated_at: 'Generated at',
-  anchors: 'Anchors',
+  anchors: 'Headline dates',
+  not_reached: 'Not reached',
+  'type.Incident': 'Incident',
+  'type.Case-Incident': 'Incident response',
+  'type.Case-Rfi': 'Request for information',
+  'type.Case-Rft': 'Request for takedown',
   events: 'Events',
   no_events: 'No event',
   'lane.adversary': 'Adversary',
@@ -497,7 +502,7 @@ const EMOJI_ARROW = /\u27a1\ufe0f?/g;
 export const renderTimelineHtml = (input: TimelineExportInput): string => {
   const anchorsRows = exportHeadlineDates(input).map((key) => {
     const value = input.anchors?.[key];
-    return `<tr><td>${escapeXml(label(input, `anchor.${key}`))}</td><td>${escapeXml(value ? formatExportDate(value) : '-')}</td></tr>`;
+    return `<tr><td>${escapeXml(label(input, `anchor.${key}`))}</td><td>${escapeXml(value ? formatExportDate(value) : label(input, 'not_reached'))}</td></tr>`;
   }).join('');
   const eventRows = input.events.map((event) => [
     formatExportDate(event.event_time),
@@ -514,7 +519,7 @@ export const renderTimelineHtml = (input: TimelineExportInput): string => {
   return [
     '<div>',
     `<h1>${escapeXml(`${label(input, 'title')} - ${input.containerName}`)}</h1>`,
-    `<p>${escapeXml(`${input.containerType} - ${label(input, 'generated_at')} ${formatExportDate(input.generatedAt)}`)}</p>`,
+    `<p>${escapeXml(`${label(input, `type.${input.containerType}`, input.containerType)} - ${label(input, 'generated_at')} ${formatExportDate(input.generatedAt)}`)}</p>`,
     renderTimelineSvg(input),
     `<h2 class="pdf-pagebreak-before">${escapeXml(label(input, 'anchors'))}</h2>`,
     `<table><tbody>${anchorsRows}</tbody></table>`,
