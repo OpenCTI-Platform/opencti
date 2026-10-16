@@ -21,12 +21,7 @@ export const ingestionFeedsQuery = graphql`
           current_state_date
           queue_messages
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id
@@ -52,12 +47,7 @@ export const ingestionFeedsQuery = graphql`
           created_at
           updated_at
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id
@@ -84,12 +74,7 @@ export const ingestionFeedsQuery = graphql`
           created_at
           updated_at
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id
@@ -111,12 +96,7 @@ export const ingestionFeedsQuery = graphql`
           created_at
           updated_at
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id
@@ -142,12 +122,7 @@ export const ingestionFeedsQuery = graphql`
           created_at
           updated_at
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id
@@ -173,12 +148,7 @@ export const ingestionFeedsQuery = graphql`
           created_at
           updated_at
           ingestionHealth {
-            status
-            status_since
-            healthChecks {
-              health_check_code
-              health_check_message
-            }
+            ...IngestionHealthChip_ingestionHealth
           }
           user {
             id

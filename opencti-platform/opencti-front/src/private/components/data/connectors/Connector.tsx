@@ -1074,12 +1074,7 @@ const Connector = createRefetchContainer(
         connector_user_id
         is_managed
         ingestionHealth {
-          status
-          status_since
-          healthChecks {
-            health_check_code
-            health_check_message
-          }
+          ...IngestionHealthChip_ingestionHealth
         }
         manager_contract_configuration {
           key
