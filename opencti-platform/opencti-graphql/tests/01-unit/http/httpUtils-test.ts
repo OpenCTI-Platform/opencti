@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters, buildRateLimiterOptions } from '../../../src/http/httpUtils';
+import {
+  encodeOidcState,
+  decodeOidcState,
+  buildPublicHelmetParameters,
+  buildDefaultHelmetParameters,
+  buildRateLimiterOptions,
+  buildGraphqlUploadOptions,
+} from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
 import type { Request, Response } from 'express';
@@ -272,5 +279,33 @@ describe('httpUtils: buildRateLimiter configuration tests', () => {
     const skip = rateLimiter.skip as (req: Partial<Request>, res: Partial<Response>) => boolean;
     // Even with no IP, user-agent prefix match should still skip
     expect(skip(mockReq(undefined, 'Mozilla/5.0'), {} as Response)).toBe(true);
+  });
+});
+
+describe('httpUtils: buildGraphqlUploadOptions', () => {
+  const defaultFileLimits = { maxFileSize: 1024 * 1024 * 1024, maxFiles: 20 };
+
+  it('should apply the platform default upload file limits', () => {
+    expect(buildGraphqlUploadOptions()).toEqual(defaultFileLimits);
+  });
+
+  it('should always bound the uploaded files, graphql-upload accepting any size and count by default', () => {
+    const options = buildGraphqlUploadOptions();
+    expect(Number.isFinite(options.maxFileSize)).toBe(true);
+    expect(Number.isFinite(options.maxFiles)).toBe(true);
+  });
+
+  it('should apply the configured upload file limits', () => {
+    expect(buildGraphqlUploadOptions('10mb', 5)).toEqual({ maxFileSize: 10 * 1024 * 1024, maxFiles: 5 });
+    expect(buildGraphqlUploadOptions(2097152, '3')).toEqual({ maxFileSize: 2097152, maxFiles: 3 });
+  });
+
+  it('should fall back to the platform default, never to unlimited, for an invalid upload file limit', () => {
+    ['not-a-size', '', 0, -1, '0mb'].forEach((size) => {
+      expect(buildGraphqlUploadOptions(size).maxFileSize).toBe(defaultFileLimits.maxFileSize);
+    });
+    ['not-a-number', '', 0, -1, 2.5, 'Infinity'].forEach((count) => {
+      expect(buildGraphqlUploadOptions('10mb', count).maxFiles).toBe(defaultFileLimits.maxFiles);
+    });
   });
 });
