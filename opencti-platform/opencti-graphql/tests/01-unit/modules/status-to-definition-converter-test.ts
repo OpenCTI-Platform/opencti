@@ -237,6 +237,31 @@ describe('convertStatusToDefinition', () => {
     expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't2', event: 'MOVE_TO_T2' }));
   });
 
+  it('keeps event names unique when different display names normalize to the same event', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+      buildStatus({ id: 's3', template_id: 't3', order: 3 }),
+      buildStatus({ id: 's4', template_id: 't4', order: 4 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: 'In Progress' }),
+      buildTemplate({ id: 't2', name: 'In-progress' }),
+      buildTemplate({ id: 't3', name: 'In Progress 2' }),
+      buildTemplate({ id: 't4', name: 'Done' }),
+    ];
+
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition, diagnostics } = byScope[StatusScope.Global]!;
+    const events = definition.transitions.map((t) => t.event);
+    expect(new Set(events).size).toBe(events.length);
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't1', event: 'MOVE_TO_IN_PROGRESS' }));
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't2', event: 'MOVE_TO_IN_PROGRESS_3' }));
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't3', event: 'MOVE_TO_IN_PROGRESS_2' }));
+    expect(diagnostics).toEqual([]);
+  });
+
   it('returns no transitions for a single-state definition', () => {
     const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
     const templates = [buildTemplate({ id: 't1', name: 'New' })];
