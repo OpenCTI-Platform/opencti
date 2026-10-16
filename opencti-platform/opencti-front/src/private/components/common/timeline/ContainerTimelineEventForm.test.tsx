@@ -25,6 +25,14 @@ describe('ContainerTimelineEventForm lane of the event', () => {
     expect(screen.getByRole('combobox', { name: 'Event' })).toHaveTextContent('Milestone');
   });
 
+  it('asks for the event before the lane, the event choosing the lane of the response milestones', async () => {
+    renderForm();
+    await screen.findByTestId('timeline-event-form');
+    const event = screen.getByRole('combobox', { name: 'Event' });
+    const lane = screen.getByRole('combobox', { name: 'Lane' });
+    expect(event.compareDocumentPosition(lane) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('moves a response milestone to the response lane, and lets the analyst change the lane again', async () => {
     const { user, relayEnv } = renderForm();
     await screen.findByTestId('timeline-event-form');

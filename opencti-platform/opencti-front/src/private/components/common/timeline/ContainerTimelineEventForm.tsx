@@ -222,18 +222,6 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
             </Field>
             <Field
               component={SelectFieldFds}
-              name="lane"
-              label={t_i18n('Lane')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
-              helpertext={t_i18n('The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.')}
-            >
-              {TIMELINE_LANES.map((lane) => (
-                <SelectItem key={lane} value={lane}>{t_i18n(TIMELINE_LANE_LABELS[lane])}</SelectItem>
-              ))}
-            </Field>
-            <Field
-              component={SelectFieldFds}
               name="kind"
               label={t_i18n('Event')}
               fullWidth={true}
@@ -246,6 +234,18 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
             >
               {KIND_OPTIONS.map((kind) => (
                 <SelectItem key={kind} value={kind}>{t_i18n(TIMELINE_KIND_LABELS[kind])}</SelectItem>
+              ))}
+            </Field>
+            <Field
+              component={SelectFieldFds}
+              name="lane"
+              label={t_i18n('Lane')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              helpertext={t_i18n('The row of the timeline the event is drawn on. Picking Containment, Eradication, Recovery or Notification moves the event to Response, and you can still change it. Use Custom for an event that fits no other lane.')}
+            >
+              {TIMELINE_LANES.map((lane) => (
+                <SelectItem key={lane} value={lane}>{t_i18n(TIMELINE_LANE_LABELS[lane])}</SelectItem>
               ))}
             </Field>
             <Field component={MarkdownField} name="description" label={t_i18n('Description')} fullWidth={true} multiline={true} rows="4" style={fieldSpacingContainerStyle} />
