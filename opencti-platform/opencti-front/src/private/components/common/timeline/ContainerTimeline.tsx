@@ -21,6 +21,7 @@ import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
 import { ContainerTimelineEmptyState, ContainerTimelineErrorBoundary, ContainerTimelineSkeleton } from './ContainerTimelineStates';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
+import useTimelineHeadlineDates from './useTimelineHeadlineDates';
 import {
   containerTimelineUpdatedSubscription,
   notifyTimelineMutationErrors,
@@ -51,6 +52,7 @@ import {
   effectiveKinds,
   effectiveLanes,
   hasClearableTimelineFilters,
+  headlineAnchorsOf,
   isTimelineViewFilteredBy,
   parseTimelineViewState,
   serializeTimelineViewState,
@@ -58,6 +60,7 @@ import {
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   TIMELINE_OPEN_SETTINGS_PARAM,
+  type TimelineAnchorKey,
   type TimelineDomain,
   timelineExportWindow,
   type TimelineGrouping,
@@ -86,6 +89,9 @@ export const containerTimelineSummaryQuery = graphql`
         first_detection
         first_response
         containment
+        eradication
+        recovery
+        notification
         closure
         computed_at
       }
@@ -318,6 +324,8 @@ interface ContainerTimelineEventsViewProps {
   onCenter: (domain: TimelineDomain) => void;
   regenerating: boolean;
   actions: TimelineActions;
+  // The lanes mark the headline dates of the type only
+  headlineDates: readonly TimelineAnchorKey[];
 }
 
 const ContainerTimelineEventsView = ({
@@ -341,6 +349,7 @@ const ContainerTimelineEventsView = ({
   onCenter,
   regenerating,
   actions,
+  headlineDates,
 }: ContainerTimelineEventsViewProps) => {
   const { t_i18n, n } = useFormatter();
   const theme = useTheme();
@@ -390,7 +399,7 @@ const ContainerTimelineEventsView = ({
       loadNext(EVENTS_PAGE_SIZE);
     }
   }, [linkedEventId, linkedTime, events, hasNext, isLoadingNext]);
-  const anchors = summary.anchors;
+  const anchors = useMemo(() => headlineAnchorsOf(summary.anchors, headlineDates), [summary.anchors, headlineDates]);
   // The fit frames every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
   const frameStart = data.containerTimelineBounds?.frame_start;
   const frameEnd = data.containerTimelineBounds?.frame_end;
@@ -491,6 +500,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
+  const headlineDates = useTimelineHeadlineDates(entityType);
   const [searchParams, setSearchParams] = useSearchParams();
   const settings = summary?.settings;
   const defaults = useMemo(() => ({
@@ -667,6 +677,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
       <ContainerTimelineAnchors
         anchors={summary.anchors}
         withTasks={timelineContainerHasTasks(entityType)}
+        headlineDates={headlineDates}
         onAnchorClick={(time) => {
           const centered = centerDomain(currentTimelineDomain(domain, visibleDomain, state.zoom), time);
           clearTimeout(urlTimer.current);
@@ -741,6 +752,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
                 }}
                 regenerating={regenerating}
                 actions={actions}
+                headlineDates={headlineDates}
               />
             </Suspense>
           </ContainerTimelineErrorBoundary>
@@ -757,6 +769,8 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
       />
       <ContainerTimelineSettingsDrawer
         containerId={containerId}
+        entityType={entityType}
+        headlineDates={headlineDates}
         open={settingsOpen}
         settings={settings}
         onClose={() => setSettingsOpen(false)}

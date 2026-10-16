@@ -1,4 +1,4 @@
-import type { Resolvers, TimelineEventSource, TimelinePrecision } from '../../generated/graphql';
+import type { Resolvers, TimelineEventSource, TimelineHeadlineDate, TimelinePrecision } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
@@ -9,7 +9,8 @@ import { loadThroughDenormalized } from '../../resolvers/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_CREATED_BY } from '../../schema/general';
 import { isStixObject } from '../../schema/stixCoreObject';
 import { isStixRelationship } from '../../schema/stixRelationship';
-import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
+import { ATTRIBUTE_TIMELINE_ANCHORS, ENTITY_TYPE_TIMELINE_EVENT, isTimelineContainerType, TIMELINE_ANCHOR_KEYS, TIMELINE_CONTAINER_TYPES } from './timeline-types';
+import { resolveTimelineHeadlineDates } from './timeline-anchors';
 import {
   addTimelineEvent,
   addTimelineExportFile,
@@ -79,6 +80,11 @@ const timelineResolvers: Resolvers = {
     createdBy: (event, _, context) => loadThroughDenormalized(context, context.user, event, INPUT_CREATED_BY),
     objectMarking: (event, _, context) => context.batch.markingsBatchLoader.load(event),
     creators: (event, _, context) => loadCreators(context, context.user, event),
+  },
+  EntitySetting: {
+    timeline_headline_dates: (entitySetting) => (isTimelineContainerType(entitySetting.target_type)
+      ? resolveTimelineHeadlineDates(entitySetting.timeline_headline_dates) as TimelineHeadlineDate[]
+      : null),
   },
   Mutation: {
     timelineEventAdd: (_, { input }, context) => addTimelineEvent(context, context.user, input),

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
-import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
+import { Checkbox, Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import { notifyTimelineMutationErrors, timelineSettingsUpdateMutation } from './ContainerTimelineMutations';
 import type {
   ContainerTimelineMutationsSettingsMutation,
@@ -17,6 +18,7 @@ import type {
   TimelineZoomWindow as GqlTimelineZoomWindow,
 } from './__generated__/ContainerTimelineMutationsSettingsMutation.graphql';
 import {
+  TIMELINE_ANCHOR_LABELS,
   TIMELINE_GROUPING_LABELS,
   TIMELINE_GROUPINGS,
   TIMELINE_KIND_LABELS,
@@ -25,6 +27,7 @@ import {
   TIMELINE_LANES,
   TIMELINE_ZOOM_LABELS,
   TIMELINE_ZOOM_WINDOWS,
+  type TimelineAnchorKey,
 } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
 import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
@@ -38,6 +41,9 @@ export interface TimelineSettingsValues {
 
 interface ContainerTimelineSettingsDrawerProps {
   containerId: string;
+  entityType: string;
+  // Headline dates of the type, set in Settings > Customization
+  headlineDates: readonly TimelineAnchorKey[];
   open: boolean;
   settings: TimelineSettingsValues;
   onClose: () => void;
@@ -57,10 +63,11 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
 };
 
 /** Per-container timeline settings, shared by every user of the case timeline. */
-const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
+const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDates, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
+  const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const helpStyle = { color: colors.textSecondary, margin: theme.spacing(0.75, 0, 1) };
   const [values, setValues] = useState<TimelineSettingsValues>(settings);
   const [saving, setSaving] = useState(false);
@@ -110,6 +117,24 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
               onCheckedChange={() => setValues({ ...values, enabled_lanes: toggle(values.enabled_lanes, lane) })}
             />
           ))}
+        </div>
+        <div style={{ marginTop: theme.spacing(2.5) }} data-testid="timeline-settings-headline-dates">
+          <SectionTitle>{t_i18n('Headline dates')}</SectionTitle>
+          <Text variant="content-caption" as="p" style={helpStyle}>
+            {t_i18n('The same for every timeline of this type: they are chosen in the customization of the type.')}
+          </Text>
+          <div role="list" aria-label={t_i18n('Headline dates')} style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.75) }}>
+            {headlineDates.map((key) => (
+              <span role="listitem" key={key}><Chip label={t_i18n(TIMELINE_ANCHOR_LABELS[key])} size="sm" /></span>
+            ))}
+          </div>
+          {canCustomize && (
+            <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }}>
+              <Link to={`/dashboard/settings/customization/entity_types/${entityType}/timeline`} data-testid="timeline-settings-headline-dates-link">
+                {t_i18n('Change the headline dates of this type')}
+              </Link>
+            </Text>
+          )}
         </div>
         <div style={{ display: 'flex', gap: theme.spacing(2), marginTop: theme.spacing(2.5) }}>
           <div style={{ flex: 1 }}>

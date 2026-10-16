@@ -26,7 +26,7 @@ As with other objects in OpenCTI, you can also leverage the `Notes` to add some 
 
 You can also use `Opinions` to collect how the Case has been handled, helping you to build Lessons Learned.
 
-Every Case and Incident also has a living timeline, assembled automatically from its knowledge, notes and history (and, on the cases, from their tasks), with analyst milestones and anchors such as the first detection and the containment. On an Incident, which holds no task, the containment is recorded with a **Containment** milestone. See [Incident and case timeline](case-timeline.md).
+Every Case and Incident also has a living timeline, assembled automatically from its knowledge, notes and history (and, on the cases, from their tasks), with analyst milestones and anchors such as the first detection and the containment. On an Incident, which holds no task, the containment is recorded with a **Containment** milestone. Administrators choose the headline dates each type shows (eradication, recovery and notification can join the default ones) on the **Timeline** tab of its customization. See [Incident and case timeline](case-timeline.md).
 
 ![Incident Responses' list](assets/case-opinion.png)
 

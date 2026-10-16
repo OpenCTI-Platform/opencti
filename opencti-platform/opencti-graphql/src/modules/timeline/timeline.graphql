@@ -88,9 +88,32 @@ type TimelineAnchors {
   first_detection: DateTime
   first_response: DateTime
   containment: DateTime
+  "First Eradication milestone"
+  eradication: DateTime
+  "First Recovery milestone"
+  recovery: DateTime
+  "First Notification milestone"
+  notification: DateTime
   closure: DateTime
   computed_at: DateTime
   changed_at: DateTime
+}
+
+"A headline date of the timelines (an anchor)"
+enum TimelineHeadlineDate {
+  first_adversary_activity
+  first_detection
+  first_response
+  containment
+  eradication
+  recovery
+  notification
+  closure
+}
+
+extend type EntitySetting {
+  "Headline dates the timelines of this type show, the lists filter on and the Timeline anchor changed trigger notifies, in their order (the default ones until customized); null on the types without a timeline"
+  timeline_headline_dates: [TimelineHeadlineDate!] @auth
 }
 
 type TimelineEvent implements InternalObject & BasicObject {
@@ -321,6 +344,9 @@ extend enum IncidentsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -330,6 +356,9 @@ extend enum CaseIncidentsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -339,6 +368,9 @@ extend enum CaseRfisOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -348,6 +380,9 @@ extend enum CaseRftsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at

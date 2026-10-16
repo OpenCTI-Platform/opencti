@@ -3155,9 +3155,12 @@ export enum CaseIncidentsOrdering {
   TimelineClosure = 'timeline_closure',
   TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
+  TimelineEradication = 'timeline_eradication',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
   TimelineFirstResponse = 'timeline_first_response',
+  TimelineNotification = 'timeline_notification',
+  TimelineRecovery = 'timeline_recovery',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3494,9 +3497,12 @@ export enum CaseRfisOrdering {
   TimelineClosure = 'timeline_closure',
   TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
+  TimelineEradication = 'timeline_eradication',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
   TimelineFirstResponse = 'timeline_first_response',
+  TimelineNotification = 'timeline_notification',
+  TimelineRecovery = 'timeline_recovery',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3830,9 +3836,12 @@ export enum CaseRftsOrdering {
   TimelineClosure = 'timeline_closure',
   TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
+  TimelineEradication = 'timeline_eradication',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
   TimelineFirstResponse = 'timeline_first_response',
+  TimelineNotification = 'timeline_notification',
+  TimelineRecovery = 'timeline_recovery',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -9028,6 +9037,8 @@ export type EntitySetting = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   sync_workflow_status_by_name?: Maybe<Scalars['Boolean']['output']>;
   target_type: Scalars['String']['output'];
+  /** Headline dates the timelines of this type show, the lists filter on and the Timeline anchor changed trigger notifies, in their order (the default ones until customized); null on the types without a timeline */
+  timeline_headline_dates?: Maybe<Array<TimelineHeadlineDate>>;
   updated_at: Scalars['DateTime']['output'];
   workflow_configuration?: Maybe<Scalars['Boolean']['output']>;
   workflow_id?: Maybe<Scalars['String']['output']>;
@@ -12981,9 +12992,12 @@ export enum IncidentsOrdering {
   TimelineClosure = 'timeline_closure',
   TimelineComputedAt = 'timeline_computed_at',
   TimelineContainment = 'timeline_containment',
+  TimelineEradication = 'timeline_eradication',
   TimelineFirstAdversaryActivity = 'timeline_first_adversary_activity',
   TimelineFirstDetection = 'timeline_first_detection',
   TimelineFirstResponse = 'timeline_first_response',
+  TimelineNotification = 'timeline_notification',
+  TimelineRecovery = 'timeline_recovery',
   UpdatedAt = 'updated_at',
   XOpenctiScore = 'x_opencti_score',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -36713,9 +36727,15 @@ export type TimelineAnchors = {
   closure?: Maybe<Scalars['DateTime']['output']>;
   computed_at?: Maybe<Scalars['DateTime']['output']>;
   containment?: Maybe<Scalars['DateTime']['output']>;
+  /** First Eradication milestone */
+  eradication?: Maybe<Scalars['DateTime']['output']>;
   first_adversary_activity?: Maybe<Scalars['DateTime']['output']>;
   first_detection?: Maybe<Scalars['DateTime']['output']>;
   first_response?: Maybe<Scalars['DateTime']['output']>;
+  /** First Notification milestone */
+  notification?: Maybe<Scalars['DateTime']['output']>;
+  /** First Recovery milestone */
+  recovery?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type TimelineBounds = {
@@ -36884,6 +36904,18 @@ export enum TimelineGrouping {
   Day = 'day',
   Hour = 'hour',
   Week = 'week'
+}
+
+/** A headline date of the timelines (an anchor) */
+export enum TimelineHeadlineDate {
+  Closure = 'closure',
+  Containment = 'containment',
+  Eradication = 'eradication',
+  FirstAdversaryActivity = 'first_adversary_activity',
+  FirstDetection = 'first_detection',
+  FirstResponse = 'first_response',
+  Notification = 'notification',
+  Recovery = 'recovery'
 }
 
 export type TimelineKindDistribution = {
@@ -42372,6 +42404,7 @@ export type ResolversTypes = ResolversObject<{
   TimelineExportFormat: TimelineExportFormat;
   TimelineExportLabelInput: TimelineExportLabelInput;
   TimelineGrouping: TimelineGrouping;
+  TimelineHeadlineDate: TimelineHeadlineDate;
   TimelineKindDistribution: ResolverTypeWrapper<TimelineKindDistribution>;
   TimelineLane: TimelineLane;
   TimelineLaneDistribution: ResolverTypeWrapper<TimelineLaneDistribution>;
@@ -46635,6 +46668,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   sync_workflow_status_by_name?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  timeline_headline_dates?: Resolver<Maybe<Array<ResolversTypes['TimelineHeadlineDate']>>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflow_configuration?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -54584,9 +54618,12 @@ export type TimelineAnchorsResolvers<ContextType = any, ParentType extends Resol
   closure?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   containment?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  eradication?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   first_adversary_activity?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   first_detection?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   first_response?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  notification?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  recovery?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
 export type TimelineBoundsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineBounds'] = ResolversParentTypes['TimelineBounds']> = ResolversObject<{

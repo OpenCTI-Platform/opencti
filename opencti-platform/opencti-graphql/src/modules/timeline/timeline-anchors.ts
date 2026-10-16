@@ -1,6 +1,6 @@
 import { isTimelineContextWindow, RULE_TASK_CONTAINMENT, RULE_TECHNIQUE, RULE_WORKFLOW_CLOSURE, toTimelineTime } from './timeline-rules';
 import type { TimelineAnchorBounds, TimelineAnchorKey, TimelineAnchors, TimelineKindValue, TimelineLaneValue } from './timeline-types';
-import { TIMELINE_ANCHOR_KEYS } from './timeline-types';
+import { TIMELINE_ANCHOR_KEYS, TIMELINE_DEFAULT_HEADLINE_DATES } from './timeline-types';
 
 export interface AnchorEventLike {
   lane: TimelineLaneValue;
@@ -44,6 +44,15 @@ const maxTime = (events: AnchorEventLike[], bound?: string | null): string | nul
   return max !== null ? new Date(max).toISOString() : null;
 };
 
+/**
+ * Headline dates of a timeline type, in the order of the anchors: the ones its customization stores, the default ones
+ * when it stores none (an empty choice is stored as none, so a type always keeps at least one headline date).
+ */
+export const resolveTimelineHeadlineDates = (stored: readonly string[] | null | undefined): TimelineAnchorKey[] => {
+  const chosen = TIMELINE_ANCHOR_KEYS.filter((key) => (stored ?? []).includes(key));
+  return chosen.length > 0 ? chosen : [...TIMELINE_DEFAULT_HEADLINE_DATES];
+};
+
 /** Return the anchors whose value changed (computed_at and changed_at excluded). */
 export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | undefined, next: Pick<TimelineAnchors, TimelineAnchorKey>): TimelineAnchorKey[] => {
   return TIMELINE_ANCHOR_KEYS.filter((key) => {
@@ -74,7 +83,10 @@ const isIncidentAdversaryActivity = (event: AnchorEventLike) => event.lane === '
  *   closure of the incidents an incident response contains
  * - containment: first containment milestone or first completion of a task that completes the containment (switch, or the
  *   legacy containment label); an Incident holds no task, so only its milestones count
+ * - eradication, recovery, notification: first milestone of that kind
  * - closure: last transition to a final workflow status, only while the container is still closed
+ * Every anchor is computed whatever the headline dates of the type: its customization decides which ones the timeline
+ * shows, the lists filter on and the trigger notifies, and a date it turns on has its value at once.
  * computed_at is the last generation of the timeline from the knowledge (the consistency pass regenerates the timelines
  * it finds too old), changed_at moves only when one of these values moves: consumers use changed_at as their incremental
  * cursor.
@@ -92,6 +104,9 @@ export const computeTimelineAnchors = (events: AnchorEventLike[], context: Ancho
     first_detection: minTime(visible.filter((e) => e.lane === 'detection'), bounds.first_detection),
     first_response: minTime(visible.filter(isResponseAction), bounds.first_response),
     containment: minTime(visible.filter((e) => e.kind === 'containment' || e.rule_id === RULE_TASK_CONTAINMENT), bounds.containment),
+    eradication: minTime(visible.filter((e) => e.kind === 'eradication'), bounds.eradication),
+    recovery: minTime(visible.filter((e) => e.kind === 'recovery'), bounds.recovery),
+    notification: minTime(visible.filter((e) => e.kind === 'notification'), bounds.notification),
     closure: context.isClosed ? maxTime(visible.filter((e) => e.rule_id === RULE_WORKFLOW_CLOSURE), bounds.closure) : null,
   };
   const previousChangedAt = context.previous?.changed_at;
@@ -102,11 +117,5 @@ export const computeTimelineAnchors = (events: AnchorEventLike[], context: Ancho
 /** Anchor values of events whatever the status of their container (the closure applies only while it is closed). */
 export const computeTimelineAnchorBounds = (events: AnchorEventLike[], now: string = new Date().toISOString()): TimelineAnchorBounds => {
   const anchors = computeTimelineAnchors(events, { isClosed: true, computedAt: new Date(0).toISOString(), now });
-  return {
-    first_adversary_activity: anchors.first_adversary_activity,
-    first_detection: anchors.first_detection,
-    first_response: anchors.first_response,
-    containment: anchors.containment,
-    closure: anchors.closure,
-  };
+  return Object.fromEntries(TIMELINE_ANCHOR_KEYS.map((key) => [key, anchors[key]])) as TimelineAnchorBounds;
 };

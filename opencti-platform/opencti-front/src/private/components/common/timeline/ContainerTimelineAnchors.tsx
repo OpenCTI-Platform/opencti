@@ -4,19 +4,11 @@ import { useTheme } from '@mui/material/styles';
 import { Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
-import { elapsedBetween, TIMELINE_ANCHOR_KEYS, TIMELINE_ANCHOR_LABELS, type TimelineAnchorKey, toTime } from './timelineUtils';
+import { elapsedBetween, TIMELINE_ANCHOR_LABELS, TIMELINE_DEFAULT_HEADLINE_DATES, timelineAnchorHelp as anchorHelp, type TimelineAnchorKey, toTime } from './timelineUtils';
 import type { TimelineChartAnchors } from './ContainerTimelineLanes';
 
-const ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
-  first_adversary_activity: 'First event of the adversary lane',
-  first_detection: 'First event of the detection lane (security platform sightings, coverage results, hunts, deployments)',
-  first_response: 'First thing the team did: case opened, task created or completed, status change, assignment, note or response milestone (due dates and future dates never count)',
-  containment: 'First Containment milestone, added with Add an event',
-  closure: 'Last transition to the final workflow status, while the case stays closed',
-};
-const CONTAINMENT_HELP_WITH_TASKS = 'First Containment milestone, or first task completed with This task completes the containment switched on (or labelled containment)';
-
-const anchorHelp = (key: TimelineAnchorKey, withTasks: boolean) => (key === 'containment' && withTasks ? CONTAINMENT_HELP_WITH_TASKS : ANCHOR_HELP[key]);
+// Up to six tiles on one row, more on two balanced rows
+const MAX_TILES_PER_ROW = 6;
 
 interface ContainerTimelineAnchorsProps {
   anchors: TimelineChartAnchors;
@@ -24,6 +16,8 @@ interface ContainerTimelineAnchorsProps {
   dense?: boolean;
   // The container holds tasks (the cases), which can also record the containment
   withTasks?: boolean;
+  // Headline dates of the type of the container, in their order
+  headlineDates?: readonly TimelineAnchorKey[];
   onAnchorClick?: (time: number) => void;
 }
 
@@ -44,16 +38,23 @@ const useElapsedLabel = () => {
   };
 };
 
-const ContainerTimelineAnchorList = ({ anchors, withTasks }: { anchors: TimelineChartAnchors; withTasks: boolean }) => {
+interface ContainerTimelineAnchorListProps {
+  anchors: TimelineChartAnchors;
+  withTasks: boolean;
+  headlineDates: readonly TimelineAnchorKey[];
+}
+
+const ContainerTimelineAnchorList = ({ anchors, withTasks, headlineDates }: ContainerTimelineAnchorListProps) => {
   const { t_i18n } = useFormatter();
   const intl = useIntl();
   const theme = useTheme();
   const colors = useTimelineColors();
   const elapsedLabel = useElapsedLabel();
-  const origin = toTime(anchors?.first_adversary_activity);
+  // The time elapsed counts from the first adversary activity only where it is shown
+  const origin = headlineDates.includes('first_adversary_activity') ? toTime(anchors?.first_adversary_activity) : null;
   return (
     <div role="list" aria-label={t_i18n('Timeline anchors')} style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }} data-testid="timeline-anchors">
-      {TIMELINE_ANCHOR_KEYS.map((key) => {
+      {headlineDates.map((key) => {
         const time = toTime(anchors?.[key]);
         const elapsed = time !== null && origin !== null && key !== 'first_adversary_activity' ? elapsedLabel(origin, time) : null;
         return (
@@ -86,21 +87,28 @@ const ContainerTimelineAnchorList = ({ anchors, withTasks }: { anchors: Timeline
 };
 
 /** Per-case anchor timestamps (no aggregated metric): one tile per anchor, empty when not reached yet. */
-const ContainerTimelineAnchors = ({ anchors, dense = false, withTasks = false, onAnchorClick }: ContainerTimelineAnchorsProps) => {
+const ContainerTimelineAnchors = ({
+  anchors,
+  dense = false,
+  withTasks = false,
+  headlineDates = TIMELINE_DEFAULT_HEADLINE_DATES,
+  onAnchorClick,
+}: ContainerTimelineAnchorsProps) => {
   const { t_i18n, fldt } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
   if (dense) {
-    return <ContainerTimelineAnchorList anchors={anchors} withTasks={withTasks} />;
+    return <ContainerTimelineAnchorList anchors={anchors} withTasks={withTasks} headlineDates={headlineDates} />;
   }
+  const columns = headlineDates.length <= MAX_TILES_PER_ROW ? headlineDates.length : Math.ceil(headlineDates.length / 2);
   return (
     <div
       role="list"
       aria-label={t_i18n('Timeline anchors')}
-      style={{ display: 'grid', gridTemplateColumns: `repeat(${TIMELINE_ANCHOR_KEYS.length}, minmax(0, 1fr))`, gap: theme.spacing(1.25) }}
+      style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: theme.spacing(1.25) }}
       data-testid="timeline-anchors"
     >
-      {TIMELINE_ANCHOR_KEYS.map((key) => {
+      {headlineDates.map((key) => {
         const value = anchors?.[key] ?? null;
         const time = toTime(value);
         const tileStyle: React.CSSProperties = {

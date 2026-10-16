@@ -86,17 +86,33 @@ export type TimelineAnalystField = typeof TIMELINE_ANALYST_FIELDS[number];
 export const TIMELINE_CLEARABLE_ANALYST_FIELDS = ['annotation', 'ordering_hint'] as const;
 export type TimelineClearableAnalystField = typeof TIMELINE_CLEARABLE_ANALYST_FIELDS[number];
 
-export const TIMELINE_ANCHOR_KEYS = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'] as const;
+export const TIMELINE_ANCHOR_KEYS = [
+  'first_adversary_activity',
+  'first_detection',
+  'first_response',
+  'containment',
+  'eradication',
+  'recovery',
+  'notification',
+  'closure',
+] as const;
 export type TimelineAnchorKey = typeof TIMELINE_ANCHOR_KEYS[number];
+// Headline dates of a timeline type until its customization says otherwise
+export const TIMELINE_DEFAULT_HEADLINE_DATES: readonly TimelineAnchorKey[] = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'];
 
 export const ATTRIBUTE_TIMELINE_ANCHORS = 'x_opencti_timeline_anchors';
 export const ATTRIBUTE_TIMELINE_EXCHANGE = 'x_opencti_timeline';
+// Entity setting of the timeline container types: the headline dates their timelines show, filter on and notify
+export const ATTRIBUTE_TIMELINE_HEADLINE_DATES = 'timeline_headline_dates';
 
 export interface TimelineAnchors {
   first_adversary_activity: string | null;
   first_detection: string | null;
   first_response: string | null;
   containment: string | null;
+  eradication: string | null;
+  recovery: string | null;
+  notification: string | null;
   closure: string | null;
   // Last generation from the knowledge; null until the first one (contributions added before it do not count)
   computed_at: string | null;

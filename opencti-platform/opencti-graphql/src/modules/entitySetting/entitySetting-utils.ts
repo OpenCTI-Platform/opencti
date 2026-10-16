@@ -35,6 +35,9 @@ import type { MandatoryType } from '../../schema/attribute-definition';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+import { ATTRIBUTE_TIMELINE_HEADLINE_DATES } from '../timeline/timeline-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
@@ -88,6 +91,8 @@ export const defaultScale = JSON.stringify({
 });
 
 const templateObjectSettings = ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference', 'workflow_configuration', 'sync_workflow_status_by_name', 'templates', 'workflow_id'];
+// The types carrying a timeline choose its headline dates
+const timelineObjectSettings = [...templateObjectSettings, ATTRIBUTE_TIMELINE_HEADLINE_DATES];
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
@@ -103,13 +108,15 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CAMPAIGN]: templateObjectSettings,
   [ENTITY_TYPE_MALWARE]: templateObjectSettings,
   [ENTITY_TYPE_VULNERABILITY]: templateObjectSettings,
-  [ENTITY_TYPE_INCIDENT]: templateObjectSettings,
+  [ENTITY_TYPE_INCIDENT]: timelineObjectSettings,
+  [ENTITY_TYPE_CONTAINER_CASE_INCIDENT]: timelineObjectSettings,
+  [ENTITY_TYPE_CONTAINER_CASE_RFT]: timelineObjectSettings,
   // enforce_reference not available on specific entities
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
   [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
-  [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...templateObjectSettings, 'request_access_workflow'],
+  [ENTITY_TYPE_CONTAINER_CASE_RFI]: [...timelineObjectSettings, 'request_access_workflow'],
   [ENTITY_TYPE_DRAFT_WORKSPACE]: ['attributes_configuration', 'platform_hidden_type', 'workflow_configuration', 'sync_workflow_status_by_name', 'workflow_id'],
 };
 

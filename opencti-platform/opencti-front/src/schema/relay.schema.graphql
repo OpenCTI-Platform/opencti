@@ -5449,6 +5449,9 @@ enum IncidentsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -10363,6 +10366,11 @@ type EntitySetting implements InternalObject & BasicObject {
   defaultOverviewLayoutCustomization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
+
+  """
+  Headline dates the timelines of this type show, the lists filter on and the Timeline anchor changed trigger notifies, in their order (the default ones until customized); null on the types without a timeline
+  """
+  timeline_headline_dates: [TimelineHeadlineDate!]
 }
 
 type WorkflowDefinitionMutationResult {
@@ -12537,6 +12545,9 @@ enum CaseIncidentsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -12695,6 +12706,9 @@ enum CaseRfisOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -12845,6 +12859,9 @@ enum CaseRftsOrdering {
   timeline_first_detection
   timeline_first_response
   timeline_containment
+  timeline_eradication
+  timeline_recovery
+  timeline_notification
   timeline_closure
   timeline_computed_at
   timeline_changed_at
@@ -17894,9 +17911,30 @@ type TimelineAnchors {
   first_detection: DateTime
   first_response: DateTime
   containment: DateTime
+
+  """First Eradication milestone"""
+  eradication: DateTime
+
+  """First Recovery milestone"""
+  recovery: DateTime
+
+  """First Notification milestone"""
+  notification: DateTime
   closure: DateTime
   computed_at: DateTime
   changed_at: DateTime
+}
+
+"""A headline date of the timelines (an anchor)"""
+enum TimelineHeadlineDate {
+  first_adversary_activity
+  first_detection
+  first_response
+  containment
+  eradication
+  recovery
+  notification
+  closure
 }
 
 type TimelineEvent implements InternalObject & BasicObject {

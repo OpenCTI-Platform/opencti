@@ -28,6 +28,9 @@ const ANCHOR_LABELS: Record<TimelineAnchorKey, string> = {
   first_detection: 'first detection',
   first_response: 'first response',
   containment: 'containment',
+  eradication: 'eradication',
+  recovery: 'recovery',
+  notification: 'notification',
   closure: 'closure',
 };
 

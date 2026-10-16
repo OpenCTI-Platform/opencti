@@ -24,6 +24,9 @@ const input: TimelineExportInput = {
     first_detection: '2026-03-03T00:00:00.000Z',
     first_response: null,
     containment: '2026-03-05T00:00:00.000Z',
+    eradication: '2026-03-06T00:00:00.000Z',
+    recovery: null,
+    notification: null,
     closure: null,
     computed_at: '2026-04-01T00:00:00.000Z',
     changed_at: '2026-04-01T00:00:00.000Z',
@@ -98,6 +101,20 @@ describe('Timeline exports', () => {
     expect(html).toContain('Hosts isolated');
     expect(html).toContain('2026-03-05 00:00 UTC');
     expect(html).not.toContain('<case>');
+  });
+
+  it('should show the headline dates of the type of the container only', () => {
+    // The default headline dates leave the eradication out, even when it is dated
+    expect(renderTimelineSvg(input)).not.toContain('>Eradication</text>');
+    expect(renderTimelineHtml(input)).not.toContain('<td>Eradication</td>');
+    expect(renderTimelineHtml(input)).toContain('<td>Closure</td><td>-</td>');
+    const customized = { ...input, headlineDates: ['containment', 'eradication'] as const };
+    const svg = renderTimelineSvg(customized);
+    expect(svg).toContain('>Eradication</text>');
+    expect(svg).not.toContain('>First adversary activity</text>');
+    const html = renderTimelineHtml(customized);
+    expect(html).toContain('<td>Eradication</td><td>2026-03-06 00:00 UTC</td>');
+    expect(html).not.toContain('<td>Closure</td>');
   });
 
   it('should put the drawing first in the HTML of the PDF and start the tables on the next page', () => {

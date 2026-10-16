@@ -1,11 +1,31 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { screen, waitFor, within } from '@testing-library/react';
 import type { OperationDescriptor } from 'relay-runtime';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineStrip from './ContainerTimelineStrip';
+import { TIMELINE_DEFAULT_HEADLINE_DATES, type TimelineAnchorKey } from './timelineUtils';
 
-const NO_ANCHORS = { first_adversary_activity: null, first_detection: null, first_response: null, containment: null, closure: null };
+// Headline dates of the type, set in Settings > Customization
+const headlineDates = vi.hoisted(() => ({ current: [] as readonly string[] }));
+vi.mock('./useTimelineHeadlineDates', () => ({ default: () => headlineDates.current }));
+
+const NO_ANCHORS = {
+  first_adversary_activity: null,
+  first_detection: null,
+  first_response: null,
+  containment: null,
+  eradication: null,
+  recovery: null,
+  notification: null,
+  closure: null,
+};
+let anchors: Record<TimelineAnchorKey, string | null> = NO_ANCHORS;
+
+beforeEach(() => {
+  headlineDates.current = TIMELINE_DEFAULT_HEADLINE_DATES;
+  anchors = NO_ANCHORS;
+});
 
 interface StripCase {
   canEdit?: boolean;
@@ -26,7 +46,7 @@ const renderStrip = async (total: number, shownEvents: Array<Record<string, unkn
             first_event_time: total > 0 ? '2026-02-01T09:00:00.000Z' : null,
             last_event_time: total > 0 ? '2026-02-03T09:00:00.000Z' : null,
             can_edit: canEdit,
-            anchors: NO_ANCHORS,
+            anchors,
             settings: { id: 'timeline-settings-1', enabled_lanes: enabledLanes, hidden_kinds: hiddenKinds, default_grouping: 'day' },
           },
         },
@@ -117,6 +137,21 @@ describe('ContainerTimelineStrip', () => {
     }]);
     expect(await screen.findByTestId('timeline-strip-summary')).toHaveTextContent('1 event');
     expect(screen.queryByTestId('timeline-strip-empty')).toBeNull();
+  });
+
+  it('lists the headline dates of the type only, in their order', async () => {
+    headlineDates.current = ['containment', 'recovery', 'closure'];
+    anchors = { ...NO_ANCHORS, first_detection: '2026-02-01T10:00:00.000Z', recovery: '2026-02-03T08:00:00.000Z' };
+    await renderStrip(1, [stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z')]);
+    const list = await screen.findByTestId('timeline-anchors');
+    expect(within(list).getAllByRole('listitem').map((item) => item.getAttribute('data-testid'))).toEqual([
+      'timeline-anchor-containment',
+      'timeline-anchor-recovery',
+      'timeline-anchor-closure',
+    ]);
+    // A date the type does not show is left out even when it is reached
+    expect(screen.queryByTestId('timeline-anchor-first_detection')).toBeNull();
+    expect(screen.getByTestId('timeline-anchor-recovery')).not.toHaveTextContent('Not reached');
   });
 
   it('lists the events of a numbered circle, each opening the Timeline tab on that event', async () => {

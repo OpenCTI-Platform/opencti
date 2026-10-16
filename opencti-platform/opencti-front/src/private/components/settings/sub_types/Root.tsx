@@ -15,10 +15,12 @@ import {
   SUBTYPE_TAB_CUSTOM_VIEWS,
   SUBTYPE_TAB_OVERVIEW_LAYOUT,
   SUBTYPE_TAB_TEMPLATES,
+  SUBTYPE_TAB_TIMELINE,
   SUBTYPE_TAB_WORKFLOW,
   SUBTYPE_TABS,
   useSubTypeOutletContext,
 } from './SubTypeOutletContext';
+import EntitySettingTimeline from './entity_setting/EntitySettingTimeline';
 import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
@@ -74,6 +76,7 @@ const RootSubType = () => {
           />
           <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
           <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} />
+          <Route path={SUBTYPE_TAB_TIMELINE} element={<EntitySettingTimeline />} />
         </Route>
         <Route
           path={`/${SUBTYPE_TAB_TEMPLATES}/:templateId`}

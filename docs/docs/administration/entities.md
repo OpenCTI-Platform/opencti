@@ -135,3 +135,7 @@ The widgets can be reordered, extended to their full width, or hidden: switch of
 To reset the layout to its default version, click the button next to the section title.
 
 When a new version of OpenCTI adds a widget to the overview of an entity type, a layout customized before the upgrade shows it where the default layout places it, after the widget that precedes it by default. For example, the **Timeline** of incidents and cases comes right after **Basic information**, on half of the row (see [Incident and case timeline](../usage/case-timeline.md#overview-layout)). If the new widget leaves another one alone on its row, switch on **Full width** for that widget.
+
+### Timeline headline dates
+
+Incident, Incident Response, Request for Information and Request for Takedown have a **Timeline** tab: it chooses the headline dates their timelines show, mark on their lanes, offer as filters of their lists and notify through the **Timeline anchor changed** trigger. See [Headline dates of a type](../usage/case-timeline.md#headline-dates-of-a-type).

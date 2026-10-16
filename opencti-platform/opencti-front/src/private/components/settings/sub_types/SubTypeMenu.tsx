@@ -48,6 +48,11 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
             <Link to={`${basePath}/custom-views`}>{t_i18n('Custom Views')}</Link>
           </TabsTrigger>
         )}
+        {tabs.timeline && (
+          <TabsTrigger value="timeline" asChild>
+            <Link to={`${basePath}/timeline`}>{t_i18n('Timeline')}</Link>
+          </TabsTrigger>
+        )}
       </TabsList>
     </Tabs>
   );

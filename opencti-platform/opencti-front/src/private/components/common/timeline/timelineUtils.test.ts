@@ -19,11 +19,13 @@ import {
   groupEventsByBucket,
   groupOverflowItems,
   hasClearableTimelineFilters,
+  headlineAnchorsOf,
   isTimelineViewFilteredBy,
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
   parseTimelineViewState,
+  resolveTimelineHeadlineDates,
   serializeTimelineViewState,
   TIMELINE_KINDS,
   TIMELINE_MIN_SPAN,
@@ -437,5 +439,20 @@ describe('Timeline compact views', () => {
     expect(elapsedBetween(at(1, 9), at(3, 7) + 30 * 60 * 1000)).toEqual({ sign: 1, days: 1, hours: 22, minutes: 30 });
     expect(elapsedBetween(at(3, 9), at(3, 7))).toEqual({ sign: -1, days: 0, hours: 2, minutes: 0 });
     expect(elapsedBetween(at(3, 9), at(3, 9) + 20 * 1000)).toEqual({ sign: 0, days: 0, hours: 0, minutes: 0 });
+  });
+});
+
+describe('Timeline headline dates', () => {
+  it('should resolve the headline dates of a type in their order, the default ones until it chooses some', () => {
+    const defaults = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'];
+    expect(resolveTimelineHeadlineDates(null)).toEqual(defaults);
+    expect(resolveTimelineHeadlineDates([])).toEqual(defaults);
+    expect(resolveTimelineHeadlineDates(['closure', 'notification', 'eradication'])).toEqual(['eradication', 'notification', 'closure']);
+  });
+
+  it('should keep for the lanes the anchors of the headline dates only', () => {
+    const anchors = { first_detection: '2026-02-01T00:00:00.000Z', recovery: '2026-02-02T00:00:00.000Z', closure: null };
+    expect(headlineAnchorsOf(anchors, ['recovery', 'closure'])).toEqual({ recovery: '2026-02-02T00:00:00.000Z', closure: null });
+    expect(headlineAnchorsOf(null, ['recovery'])).toBeNull();
   });
 });

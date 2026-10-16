@@ -52,14 +52,58 @@ export const TIMELINE_KIND_LABELS: Record<string, string> = {
 };
 export const TIMELINE_KINDS = Object.keys(TIMELINE_KIND_LABELS);
 
-export const TIMELINE_ANCHOR_KEYS = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'] as const;
+export const TIMELINE_ANCHOR_KEYS = [
+  'first_adversary_activity',
+  'first_detection',
+  'first_response',
+  'containment',
+  'eradication',
+  'recovery',
+  'notification',
+  'closure',
+] as const;
 export type TimelineAnchorKey = typeof TIMELINE_ANCHOR_KEYS[number];
 export const TIMELINE_ANCHOR_LABELS: Record<TimelineAnchorKey, string> = {
   first_adversary_activity: 'First adversary activity',
   first_detection: 'First detection',
   first_response: 'First response',
   containment: 'Containment',
+  eradication: 'Eradication',
+  recovery: 'Recovery',
+  notification: 'Notification',
   closure: 'Closure',
+};
+const TIMELINE_ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
+  first_adversary_activity: 'First event of the adversary lane',
+  first_detection: 'First event of the detection lane (security platform sightings, coverage results, hunts, deployments)',
+  first_response: 'First thing the team did: case opened, task created or completed, status change, assignment, note or response milestone (due dates and future dates never count)',
+  containment: 'First Containment milestone, added with Add an event',
+  eradication: 'First Eradication milestone, added with Add an event',
+  recovery: 'First Recovery milestone, added with Add an event',
+  notification: 'First Notification milestone, added with Add an event',
+  closure: 'Last transition to the final workflow status, while the case stays closed',
+};
+const CONTAINMENT_HELP_WITH_TASKS = 'First Containment milestone, or first task completed with This task completes the containment switched on (or labelled containment)';
+
+/** How a headline date is set, for the containers with tasks (the cases) or without (the incidents). */
+export const timelineAnchorHelp = (key: TimelineAnchorKey, withTasks: boolean) => (key === 'containment' && withTasks ? CONTAINMENT_HELP_WITH_TASKS : TIMELINE_ANCHOR_HELP[key]);
+
+// Shown until the type is customized (Settings > Customization > the type > Timeline)
+export const TIMELINE_DEFAULT_HEADLINE_DATES: readonly TimelineAnchorKey[] = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'];
+
+/** Headline dates of a type in their order, the default ones while it chooses none. */
+export const resolveTimelineHeadlineDates = (stored: readonly string[] | null | undefined): TimelineAnchorKey[] => {
+  const chosen = TIMELINE_ANCHOR_KEYS.filter((key) => (stored ?? []).includes(key));
+  return chosen.length > 0 ? chosen : [...TIMELINE_DEFAULT_HEADLINE_DATES];
+};
+
+/** The anchors the lanes draw: the headline dates of the type only. */
+export const headlineAnchorsOf = <T extends Partial<Record<TimelineAnchorKey, string | null | undefined>>>(
+  anchors: T | null | undefined,
+  headlineDates: readonly TimelineAnchorKey[],
+): Partial<Record<TimelineAnchorKey, string | null | undefined>> | null => {
+  if (!anchors) return null;
+  return Object.fromEntries(headlineDates.map((key) => [key, anchors[key]]));
 };
 
 export const TIMELINE_PRECISIONS = ['exact', 'hour', 'day', 'approximate'] as const;

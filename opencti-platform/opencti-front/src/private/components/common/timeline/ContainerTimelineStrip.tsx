@@ -23,17 +23,20 @@ import {
   computeVisibleDomain,
   effectiveKinds,
   effectiveLanes,
+  headlineAnchorsOf,
   TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   TIMELINE_MILESTONE_DEFAULT_KIND,
   TIMELINE_MILESTONE_DEFAULT_LANE,
   TIMELINE_OPEN_SETTINGS_PARAM,
+  type TimelineAnchorKey,
   type TimelineGrouping,
   timelineContainerHasTasks,
   toTime,
 } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
+import useTimelineHeadlineDates from './useTimelineHeadlineDates';
 
 const STRIP_EVENTS = 300;
 // Height of the miniature of the lanes while the events load (the axis and two lanes)
@@ -51,6 +54,9 @@ export const containerTimelineStripQuery = graphql`
         first_detection
         first_response
         containment
+        eradication
+        recovery
+        notification
         closure
       }
       settings {
@@ -242,9 +248,10 @@ interface ContainerTimelineStripContentProps {
   containerId: string;
   timelinePath: string;
   withTasks: boolean;
+  headlineDates: readonly TimelineAnchorKey[];
 }
 
-const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, withTasks }: ContainerTimelineStripContentProps) => {
+const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, withTasks, headlineDates }: ContainerTimelineStripContentProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
@@ -258,13 +265,13 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, wi
               containerId={containerId}
               enabledLanes={summary?.settings.enabled_lanes ?? []}
               hiddenKinds={summary?.settings.hidden_kinds ?? []}
-              anchors={summary?.anchors}
+              anchors={headlineAnchorsOf(summary?.anchors, headlineDates)}
               grouping={(summary?.settings.default_grouping ?? 'day') as TimelineGrouping}
               timelinePath={timelinePath}
               canEdit={canEdit}
             />
           </Suspense>
-          <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} withTasks={withTasks} />
+          <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} withTasks={withTasks} headlineDates={headlineDates} />
         </>
       ) : (
         <ContainerTimelineStripEmpty
@@ -281,7 +288,7 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, wi
 };
 
 /** Placeholder in the shape of the card: summary line, miniature of the lanes, anchor rows and footer link. */
-const ContainerTimelineStripSkeleton = () => {
+const ContainerTimelineStripSkeleton = ({ anchorRows }: { anchorRows: number }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   return (
@@ -289,7 +296,7 @@ const ContainerTimelineStripSkeleton = () => {
       <Skeleton variant="text" width="45%" />
       <Skeleton variant="rounded" height={LANES_PLACEHOLDER_HEIGHT} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }}>
-        {TIMELINE_ANCHOR_KEYS.map((key) => <Skeleton key={key} variant="text" />)}
+        {TIMELINE_ANCHOR_KEYS.slice(0, anchorRows).map((key) => <Skeleton key={key} variant="text" />)}
       </div>
       <Skeleton variant="text" width={120} />
     </div>
@@ -306,15 +313,22 @@ interface ContainerTimelineStripProps {
 const ContainerTimelineStrip = ({ containerId, entityType, basePath }: ContainerTimelineStripProps) => {
   const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading<ContainerTimelineStripQuery>(containerTimelineStripQuery, { id: containerId });
+  const headlineDates = useTimelineHeadlineDates(entityType);
   const timelinePath = `${basePath}/timeline`;
   return (
     <Card title={t_i18n('Timeline')}>
       {queryRef ? (
-        <Suspense fallback={<ContainerTimelineStripSkeleton />}>
-          <ContainerTimelineStripContent queryRef={queryRef} containerId={containerId} timelinePath={timelinePath} withTasks={timelineContainerHasTasks(entityType)} />
+        <Suspense fallback={<ContainerTimelineStripSkeleton anchorRows={headlineDates.length} />}>
+          <ContainerTimelineStripContent
+            queryRef={queryRef}
+            containerId={containerId}
+            timelinePath={timelinePath}
+            withTasks={timelineContainerHasTasks(entityType)}
+            headlineDates={headlineDates}
+          />
         </Suspense>
       ) : (
-        <ContainerTimelineStripSkeleton />
+        <ContainerTimelineStripSkeleton anchorRows={headlineDates.length} />
       )}
     </Card>
   );

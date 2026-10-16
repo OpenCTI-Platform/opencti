@@ -66,6 +66,7 @@ import {
 import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors } from './timeline-anchors';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { notifyTimelineAnchorsChanged } from './timeline-notification';
+import { loadTimelineHeadlineDates } from './timeline-headline-dates';
 import { addTimelineDerivedEventCount } from '../../manager/telemetryManager';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 
@@ -885,8 +886,13 @@ export const refreshTimelineContributions = async (
   if (changedAnchors.length > 0) {
     await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'anchors', changed_event_ids: [], anchors }, opts.actor);
     if (hadAnchors && opts.notifyAnchors !== false) {
-      await notifyTimelineAnchorsChanged(context, container.internal_id, changedAnchors, anchors)
-        .catch((error) => logApp.error('[TIMELINE] Unable to notify anchor changes', { cause: error, containerId: container.internal_id }));
+      // Only the headline dates of the type are notified
+      const headlineDates = await loadTimelineHeadlineDates(context, container.entity_type);
+      const notifiedAnchors = changedAnchors.filter((key) => headlineDates.includes(key));
+      if (notifiedAnchors.length > 0) {
+        await notifyTimelineAnchorsChanged(context, container.internal_id, notifiedAnchors, anchors)
+          .catch((error) => logApp.error('[TIMELINE] Unable to notify anchor changes', { cause: error, containerId: container.internal_id }));
+      }
     }
   }
   return { anchors, changedAnchors, cappedAnchorBounds };

@@ -11,6 +11,7 @@ import { telemetry } from '../../config/tracing';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';
 import { EditOperation } from '../../generated/graphql';
+import { ATTRIBUTE_TIMELINE_HEADLINE_DATES, TIMELINE_ANCHOR_KEYS } from '../timeline/timeline-types';
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 
@@ -36,6 +37,20 @@ export const validateSetting = (typeId: string, setting: string) => {
       setting,
       entity: typeId,
     });
+  }
+};
+
+const headlineDatesValidation = (entitySetting: BasicStoreEntityEntitySetting) => {
+  const headlineDates = entitySetting.timeline_headline_dates;
+  if (headlineDates === undefined || headlineDates === null) {
+    return;
+  }
+  if (headlineDates.length === 0) {
+    throw ValidationError('At least one headline date must stay shown', ATTRIBUTE_TIMELINE_HEADLINE_DATES);
+  }
+  const unknownDates = headlineDates.filter((key) => !(TIMELINE_ANCHOR_KEYS as readonly string[]).includes(key));
+  if (unknownDates.length > 0) {
+    throw ValidationError('This headline date does not exist', ATTRIBUTE_TIMELINE_HEADLINE_DATES, { values: unknownDates });
   }
 };
 
@@ -113,6 +128,7 @@ export const validateEntitySettingCreation = async (context: AuthContext, user: 
 
     await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
     await attributesConfigurationValidation(entitySetting.target_type, entitySetting);
+    headlineDatesValidation(entitySetting);
 
     return true;
   };
@@ -134,6 +150,7 @@ export const validateEntitySettingUpdate = async (context: AuthContext, user: Au
 
     await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
     await attributesConfigurationValidation(entitySettingInitial.target_type, entitySetting);
+    headlineDatesValidation(entitySetting);
 
     return true;
   };

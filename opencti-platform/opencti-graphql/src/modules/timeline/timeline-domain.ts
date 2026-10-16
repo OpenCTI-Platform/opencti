@@ -47,6 +47,7 @@ import {
   TIMELINE_KINDS,
   TIMELINE_MILESTONE_KINDS,
   type TimelineAnalystField,
+  type TimelineAnchorKey,
   type TimelineAnchors,
   type TimelinePendingAnnotation,
 } from './timeline-types';
@@ -87,6 +88,7 @@ import {
 } from './timeline-engine';
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { computeTimelineAnchors } from './timeline-anchors';
+import { loadTimelineHeadlineDates } from './timeline-headline-dates';
 import { isContainerClosed } from './timeline-loader';
 import { RULE_ENTITY_SEEN } from './timeline-rules';
 import { notifyTimelineMilestoneAdded, notifyTimelineMilestonesAdded } from './timeline-notification';
@@ -554,6 +556,7 @@ interface TimelineExportSnapshot {
   elements: Record<string, AnyStoreElement>;
   // Computed from the exported events only: an event left out by the ceiling or the filters never moves an anchor of the file
   anchors: TimelineAnchors;
+  headlineDates: TimelineAnchorKey[];
 }
 
 // An export is built in memory and answered at once: the text of its events is bounded (in characters, about 10 MB),
@@ -635,7 +638,8 @@ const loadExportedTimelineEvents = async (
   }
   const exported = pages.events;
   const anchors = computeTimelineAnchors(exported, { isClosed: await isContainerClosed(context, container), computedAt: now() });
-  return { container, items: exported, elements, anchors };
+  const headlineDates = await loadTimelineHeadlineDates(context, container.entity_type);
+  return { container, items: exported, elements, anchors, headlineDates };
 };
 
 const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineExportArgs): string => {
@@ -670,6 +674,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
     generatedAt: now(),
     labels,
     lanes: args.lanes,
+    headlineDates: snapshot.headlineDates,
   };
   switch (args.format) {
     case 'csv':

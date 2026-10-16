@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors } from '../../../../src/modules/timeline/timeline-anchors';
+import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchors, resolveTimelineHeadlineDates } from '../../../../src/modules/timeline/timeline-anchors';
 import { RULE_ENTITY_SEEN, RULE_TASK_CONTAINMENT, RULE_TECHNIQUE, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 
 const computedAt = '2026-04-01T00:00:00.000Z';
@@ -24,10 +24,36 @@ describe('Timeline anchors', () => {
       first_detection: '2026-03-03T00:00:00.000Z',
       first_response: '2026-03-04T00:00:00.000Z',
       containment: '2026-03-05T00:00:00.000Z',
+      eradication: null,
+      recovery: null,
+      notification: null,
       closure: '2026-03-10T00:00:00.000Z',
       computed_at: computedAt,
       changed_at: computedAt,
     });
+  });
+
+  it('should date the eradication, the recovery and the notification from their first milestone', () => {
+    const anchors = computeTimelineAnchors([
+      ...events,
+      { lane: 'response' as const, kind: 'eradication' as const, event_time: '2026-03-07T00:00:00.000Z' },
+      { lane: 'response' as const, kind: 'eradication' as const, event_time: '2026-03-06T12:00:00.000Z' },
+      { lane: 'response' as const, kind: 'recovery' as const, event_time: '2026-03-08T00:00:00.000Z' },
+      { lane: 'response' as const, kind: 'recovery' as const, event_time: '2026-03-07T12:00:00.000Z', hidden: true },
+      { lane: 'custom' as const, kind: 'notification' as const, event_time: '2026-03-09T00:00:00.000Z' },
+    ], { isClosed: false, computedAt });
+    expect(anchors).toMatchObject({
+      eradication: '2026-03-06T12:00:00.000Z',
+      recovery: '2026-03-08T00:00:00.000Z',
+      notification: '2026-03-09T00:00:00.000Z',
+    });
+  });
+
+  it('should resolve the headline dates of a type, in their order, to the default ones until it chooses some', () => {
+    expect(resolveTimelineHeadlineDates(undefined)).toEqual(['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure']);
+    expect(resolveTimelineHeadlineDates([])).toEqual(['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure']);
+    expect(resolveTimelineHeadlineDates(['closure', 'recovery', 'first_detection', 'unknown'])).toEqual(['first_detection', 'recovery', 'closure']);
+    expect(resolveTimelineHeadlineDates(['unknown'])).toEqual(['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure']);
   });
 
   it('should keep the change date while no anchor value moves', () => {
@@ -138,6 +164,9 @@ describe('Timeline anchors', () => {
       first_detection: '2026-03-07T00:00:00.000Z',
       first_response: '2026-03-12T00:00:00.000Z',
       containment: null,
+      eradication: null,
+      recovery: null,
+      notification: null,
       closure: '2026-03-12T00:00:00.000Z',
     });
     // An analyst hides the only stored detection afterwards: the anchors still read the events beyond the cap
@@ -158,5 +187,7 @@ describe('Timeline anchors', () => {
     expect(diffTimelineAnchors(previous, next)).toEqual(['closure']);
     expect(diffTimelineAnchors(next, next)).toEqual([]);
     expect(diffTimelineAnchors(undefined, next)).toEqual(['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure']);
+    const eradicated = computeTimelineAnchors([...events, { lane: 'response' as const, kind: 'eradication' as const, event_time: '2026-03-07T00:00:00.000Z' }], { isClosed: true, computedAt });
+    expect(diffTimelineAnchors(next, eradicated)).toEqual(['eradication']);
   });
 });

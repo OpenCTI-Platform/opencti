@@ -1,5 +1,5 @@
 import { isTimelineContextWindow } from './timeline-rules';
-import { TIMELINE_ANCHOR_KEYS, type TimelineAnchorKey, type TimelineAnchors, type TimelineLaneValue } from './timeline-types';
+import { TIMELINE_ANCHOR_KEYS, TIMELINE_DEFAULT_HEADLINE_DATES, type TimelineAnchorKey, type TimelineAnchors, type TimelineLaneValue } from './timeline-types';
 
 export interface TimelineExportEvent {
   id: string;
@@ -29,7 +29,13 @@ export interface TimelineExportInput {
   labels?: Record<string, string>;
   /** Lanes of the view the export was made from; none means every lane. */
   lanes?: readonly string[] | null;
+  /** Headline dates of the type of the container; none means the default ones. */
+  headlineDates?: readonly TimelineAnchorKey[] | null;
 }
+
+const exportHeadlineDates = (input: TimelineExportInput): readonly TimelineAnchorKey[] => (
+  input.headlineDates && input.headlineDates.length > 0 ? TIMELINE_ANCHOR_KEYS.filter((key) => input.headlineDates?.includes(key)) : TIMELINE_DEFAULT_HEADLINE_DATES
+);
 
 // Fixed palette: an export is a standalone document and must render the same in every theme.
 // The lane and text tones are the ones of the light theme of the platform (design-system light tokens).
@@ -60,6 +66,9 @@ const DEFAULT_LABELS: Record<string, string> = {
   'anchor.first_detection': 'First detection',
   'anchor.first_response': 'First response',
   'anchor.containment': 'Containment',
+  'anchor.eradication': 'Eradication',
+  'anchor.recovery': 'Recovery',
+  'anchor.notification': 'Notification',
   'anchor.closure': 'Closure',
   'column.time': 'Time',
   'column.end_time': 'End time',
@@ -308,7 +317,7 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
     times.push(new Date(event.event_time).getTime());
     if (event.event_end_time) times.push(new Date(event.event_end_time).getTime());
   });
-  const anchorValues = TIMELINE_ANCHOR_KEYS
+  const anchorValues = exportHeadlineDates(input)
     .map((key) => ({ key, value: input.anchors?.[key] }))
     .filter((anchor): anchor is { key: TimelineAnchorKey; value: string } => !!anchor.value);
   times.push(...anchorValues.map((anchor) => new Date(anchor.value).getTime()));
@@ -434,7 +443,7 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
  * `pdf-pagebreak-before` class asks the PDF export to break.
  */
 export const renderTimelineHtml = (input: TimelineExportInput): string => {
-  const anchorsRows = TIMELINE_ANCHOR_KEYS.map((key) => {
+  const anchorsRows = exportHeadlineDates(input).map((key) => {
     const value = input.anchors?.[key];
     return `<tr><td>${escapeXml(label(input, `anchor.${key}`))}</td><td>${escapeXml(value ? formatExportDate(value) : '-')}</td></tr>`;
   }).join('');

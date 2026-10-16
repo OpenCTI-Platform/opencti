@@ -36,6 +36,33 @@ describe('ContainerTimelineAnchors on the overview card', () => {
   });
 });
 
+describe('ContainerTimelineAnchors headline dates', () => {
+  const customized = { ...anchors, eradication: '2026-02-04T10:00:00.000Z', recovery: null, notification: '2026-02-05T10:00:00.000Z' };
+
+  it('shows the headline dates of the type only, in their order', () => {
+    testRender(<ContainerTimelineAnchors anchors={customized} headlineDates={['first_detection', 'eradication', 'notification']} />);
+    expect(screen.getAllByRole('listitem').map((item) => item.querySelector('[data-testid]')?.getAttribute('data-testid'))).toEqual([
+      'timeline-anchor-first_detection',
+      'timeline-anchor-eradication',
+      'timeline-anchor-notification',
+    ]);
+    expect(screen.getByTestId('timeline-anchor-eradication')).toHaveTextContent('Eradication');
+    expect(screen.queryByTestId('timeline-anchor-closure')).toBeNull();
+  });
+
+  it('puts more than six tiles on two balanced rows', () => {
+    const every = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'eradication', 'recovery', 'notification', 'closure'] as const;
+    testRender(<ContainerTimelineAnchors anchors={customized} headlineDates={every} />);
+    expect(screen.getByTestId('timeline-anchors').style.gridTemplateColumns).toEqual('repeat(4, minmax(0, 1fr))');
+  });
+
+  it('counts no time elapsed from a first adversary activity the type does not show', () => {
+    testRender(<ContainerTimelineAnchors anchors={customized} dense={true} headlineDates={['first_detection', 'eradication']} />);
+    expect(screen.getByTestId('timeline-anchor-first_detection-elapsed')).toBeEmptyDOMElement();
+    expect(screen.getByTestId('timeline-anchor-eradication-elapsed')).toBeEmptyDOMElement();
+  });
+});
+
 describe('ContainerTimelineAnchors containment help', () => {
   it('names the tasks on a case, which can record the containment', async () => {
     const { user } = testRender(<ContainerTimelineAnchors anchors={anchors} withTasks={true} />);

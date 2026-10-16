@@ -45,6 +45,7 @@ import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship
 import { MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
+import { generateFilterKeysSchema } from '../../../src/domain/filterKeysSchema';
 
 const KILL_CHAIN_PHASE_ADD = gql`
   mutation TimelineKillChainPhaseAdd($input: KillChainPhaseAddInput!) {
@@ -343,7 +344,17 @@ const TIMELINE_EVENT = gql`
 `;
 const TIMELINE_ANCHORS = gql`
   query TimelineAnchors($containerId: String!) {
-    timelineAnchors(containerId: $containerId) { first_adversary_activity first_detection first_response containment closure computed_at changed_at }
+    timelineAnchors(containerId: $containerId) { first_adversary_activity first_detection first_response containment eradication recovery notification closure computed_at changed_at }
+  }
+`;
+const ENTITY_SETTING_HEADLINE_DATES = gql`
+  query TimelineHeadlineDatesSetting($targetType: String!) {
+    entitySettingByType(targetType: $targetType) { id target_type timeline_headline_dates }
+  }
+`;
+const ENTITY_SETTING_HEADLINE_DATES_PATCH = gql`
+  mutation TimelineHeadlineDatesPatch($ids: [ID!]!, $input: [EditInput!]!) {
+    entitySettingsFieldPatch(ids: $ids, input: $input) { id timeline_headline_dates }
   }
 `;
 const TIMELINE_RULES = gql`
@@ -1432,6 +1443,63 @@ describe('Incident and case timeline', () => {
         variables: { filters: since('computed_at', 'gte', computedAt), orderBy: 'timeline_computed_at', orderMode: 'desc' },
       });
       expect(ids(computedSince)).toContain(caseIncident.id);
+    });
+
+    it('should follow the headline dates the type of the container is customized with', async () => {
+      const DEFAULT_HEADLINE_DATES = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'];
+      const patchHeadlineDates = (id: string, value: string[]) => ({ query: ENTITY_SETTING_HEADLINE_DATES_PATCH, variables: { ids: [id], input: [{ key: 'timeline_headline_dates', value }] } });
+      const anchorFilterKeys = async () => {
+        const schema = await generateFilterKeysSchema();
+        const keysOf = (type: string) => (schema.find((entry) => entry.entity_type === type)?.filters_schema ?? [])
+          .map((entry) => entry.filterKey).filter((key) => key.startsWith('x_opencti_timeline_anchors.')).sort();
+        const parentDefinition = schema.find((entry) => entry.entity_type === 'Stix-Domain-Object')?.filters_schema
+          .find((entry) => entry.filterKey === 'x_opencti_timeline_anchors.recovery')?.filterDefinition;
+        return { caseIncident: keysOf('Case-Incident'), incident: keysOf('Incident'), recoveryTypes: parentDefinition?.subEntityTypes ?? null };
+      };
+      const setting = await queryAsAdminWithSuccess({ query: ENTITY_SETTING_HEADLINE_DATES, variables: { targetType: 'Case-Incident' } });
+      const settingId = setting.data.entitySettingByType.id;
+      expect(setting.data.entitySettingByType.timeline_headline_dates).toEqual(DEFAULT_HEADLINE_DATES);
+      // A type without a timeline has no headline dates and cannot be given any
+      const report = await queryAsAdminWithSuccess({ query: ENTITY_SETTING_HEADLINE_DATES, variables: { targetType: 'Report' } });
+      expect(report.data.entitySettingByType.timeline_headline_dates).toBeNull();
+      await queryAsAdminWithError(patchHeadlineDates(report.data.entitySettingByType.id, ['closure']), 'This setting is not available for this entity');
+      await queryAsAdminWithError(patchHeadlineDates(settingId, ['closure', 'lunch']), 'This headline date does not exist');
+      const notified = vi.spyOn(timelineNotification, 'notifyTimelineAnchorsChanged');
+      const added: string[] = [];
+      try {
+        const patched = await queryAsAdminWithSuccess(patchHeadlineDates(settingId, ['recovery', 'containment']));
+        expect(patched.data.entitySettingsFieldPatch[0].timeline_headline_dates).toEqual(['containment', 'recovery']);
+        // The lists of the type filter on its headline dates only, the other types keep theirs
+        expect(await anchorFilterKeys()).toEqual({
+          caseIncident: ['x_opencti_timeline_anchors.containment', 'x_opencti_timeline_anchors.recovery'],
+          incident: DEFAULT_HEADLINE_DATES.map((key) => `x_opencti_timeline_anchors.${key}`).sort(),
+          recoveryTypes: ['Case-Incident'],
+        });
+        // Every date is still computed, but only a headline date of the type notifies its change
+        const eradication = await queryAsAdminWithSuccess({
+          query: TIMELINE_EVENT_ADD,
+          variables: { input: { container_id: caseIncident.id, event_time: '2026-02-06T08:00:00.000Z', title: 'Dropper removed', kind: 'eradication', lane: 'response' } },
+        });
+        added.push(eradication.data.timelineEventAdd.id);
+        const anchors = await queryAsAdminWithSuccess({ query: TIMELINE_ANCHORS, variables: { containerId: caseIncident.id } });
+        expect(iso(anchors.data.timelineAnchors.eradication)).toEqual('2026-02-06T08:00:00.000Z');
+        expect(notified).not.toHaveBeenCalled();
+        const recovery = await queryAsAdminWithSuccess({
+          query: TIMELINE_EVENT_ADD,
+          variables: { input: { container_id: caseIncident.id, event_time: '2026-02-07T08:00:00.000Z', title: 'Hosts back in production', kind: 'recovery', lane: 'response' } },
+        });
+        added.push(recovery.data.timelineEventAdd.id);
+        await awaitUntilCondition(async () => notified.mock.calls.length === 1, 3000, { message: 'The recovery was not notified in time' });
+        expect(notified.mock.calls[0][1]).toEqual(caseIncident.id);
+        expect(notified.mock.calls[0][2]).toEqual(['recovery']);
+      } finally {
+        notified.mockRestore();
+        for (let index = 0; index < added.length; index += 1) {
+          await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added[index] } });
+        }
+        await queryAsAdminWithSuccess(patchHeadlineDates(settingId, DEFAULT_HEADLINE_DATES));
+      }
+      expect((await anchorFilterKeys()).caseIncident).toEqual(DEFAULT_HEADLINE_DATES.map((key) => `x_opencti_timeline_anchors.${key}`).sort());
     });
   });
 

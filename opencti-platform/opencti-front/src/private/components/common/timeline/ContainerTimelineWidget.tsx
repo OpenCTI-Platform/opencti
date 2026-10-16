@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { resolveLink } from '../../../../utils/Entity';
 import ContainerTimelineLanes, { type TimelineChartAnchors } from './ContainerTimelineLanes';
+import useTimelineHeadlineDates from './useTimelineHeadlineDates';
 import type { ContainerTimelineWidgetQuery } from './__generated__/ContainerTimelineWidgetQuery.graphql';
 import type {
   ContainerTimelineWidgetEventsQuery,
@@ -21,6 +22,7 @@ import {
   computeVisibleDomain,
   effectiveKinds,
   effectiveLanes,
+  headlineAnchorsOf,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   TIMELINE_ZOOM_WINDOWS,
@@ -53,6 +55,9 @@ export const containerTimelineWidgetQuery = graphql`
         first_detection
         first_response
         containment
+        eradication
+        recovery
+        notification
         closure
       }
       settings {
@@ -180,6 +185,7 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
     containerTimelineWidgetQuery,
     queryRef,
   );
+  const headlineDates = useTimelineHeadlineDates(container?.entity_type);
   if (!container || !summary) {
     return renderWidget(null, <WidgetNoData message={t_i18n('The selected incident or case is not available')} />);
   }
@@ -210,7 +216,7 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
           hiddenKinds={summary.settings.hidden_kinds}
           zoomWindow={zoomWindow}
           grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
-          anchors={summary.anchors}
+          anchors={headlineAnchorsOf(summary.anchors, headlineDates)}
         />
       </Suspense>
     </div>
