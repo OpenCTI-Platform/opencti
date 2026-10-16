@@ -10,6 +10,7 @@
   "- you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "- 조직에 대한 액세스 권한이 특별히 부여되지 않는 한 더 이상 기본 플랫폼 조직과 관련이 없습니다.",
   "- your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "- 사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Hunting setup": "헌팅 설정",
+  "Launch hunts on security platforms": "보안 플랫폼에서 헌트 실행",
   "Native queries override the Sigma translation on their platform.": "네이티브 쿼리는 해당 플랫폼에서 Sigma 변환보다 우선합니다.",
   "Pick the type from what you have: indicators or a detection rule.": "가진 것에 맞춰 유형을 선택하세요: 지표 또는 탐지 규칙.",
   "Required permissions of {connector}": "{connector}에 필요한 권한",

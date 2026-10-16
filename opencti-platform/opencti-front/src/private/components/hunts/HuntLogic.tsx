@@ -15,7 +15,7 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
@@ -190,7 +190,7 @@ const ActivateAfterSave = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: bo
             </span>
           )}
       action={unmet.length === 0 ? (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+        <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
           <Button size="small" onClick={activate} disabled={inFlight} data-testid="hunt-logic-activate">{t_i18n('Activate')}</Button>
         </Security>
       ) : undefined}
@@ -343,7 +343,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
       {({ values, dirty, isSubmitting, submitForm, resetForm }) => {
         const missing = huntLogicMissingSentence(formSigmaRules(values).join('\n'), normalizeNativeQueries(values.native_queries));
         const saveBar = (testId: string) => (
-          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+          <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
               {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
               <Button variant="secondary" onClick={() => resetForm()} disabled={!dirty || isSubmitting}>
@@ -618,7 +618,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
               <Grid item xs={12} lg={7}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
                   <HuntIocFields filtersState={filtersState} disabled={!canEdit} />
-                  <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+                  <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                       {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
                       <Button variant="secondary" onClick={onDiscard} disabled={!dirty || isSubmitting} data-testid="hunt-logic-discard">

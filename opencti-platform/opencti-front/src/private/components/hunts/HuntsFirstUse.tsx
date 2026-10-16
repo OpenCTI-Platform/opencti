@@ -11,7 +11,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import { HuntCreationDrawer, insertCreatedHunt } from './HuntCreation';
 import HuntGuidedCreation, { type HuntGuidedKind } from './HuntGuidedCreation';
 import HuntPlanDialog from './HuntPlanDialog';
@@ -90,7 +90,7 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
           </div>
         </HeroBody>
       </Hero>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={HUNT_CAPABILITIES} matchAll>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(2) }} data-testid="hunts-first-use-starting-points">
           <StartingPoint
             icon={<PolicyOutlined fontSize="small" aria-hidden />}
@@ -152,7 +152,7 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
         </div>
       </Security>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: theme.spacing(1) }}>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={HUNT_CAPABILITIES} matchAll>
           <Button variant="tertiary" onClick={() => setCreating(true)} data-testid="hunts-first-use-create">{t_i18n('Create a hunt with every option')}</Button>
         </Security>
         <Button
