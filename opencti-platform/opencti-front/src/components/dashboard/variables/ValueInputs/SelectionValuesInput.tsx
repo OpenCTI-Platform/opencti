@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import { type SyntheticEvent, useRef } from 'react';
 import {
   Combobox,
   ComboboxChips,
@@ -37,6 +37,9 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   const { options: searchOptions, search } = useVariableValueOptions(variable);
   const vocabularyNames = useVocabularyNames(isVocabulary ? variable.vocabularyCategory : undefined);
   const { labels } = useVariableValueLabels(variable, values);
+  // Each pick resolves the labels of the whole selection again: the labels already known stay shown meanwhile,
+  // instead of every chip going back to `Loading`.
+  const knownLabels = useRef(new Map<string, string>());
   const options: FilterOptionValue[] = isVocabulary
     ? vocabularyNames.map((name) => ({ value: name, label: name, type: 'Vocabulary' }))
     : searchOptions;
@@ -44,10 +47,14 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   // The library keys its chips by label: a label already taken (values still loading, two restricted values,
   // two entities of the same name) is numbered, or React would leave stale chips behind.
   // FDS-WORKAROUND #71: dropped once the chips are no longer keyed by label (fds-migration/LIBRARY-FEEDBACK.md).
+  options.forEach((option) => {
+    if (option.value) knownLabels.current.set(option.value, option.label);
+  });
+  labels.forEach((name, value) => knownLabels.current.set(value, name));
   const seenLabels = new Map<string, number>();
   const selected = values.map((value) => {
     const option = options.find((candidate) => candidate.value === value)
-      ?? { value, label: labels.get(value) ?? t_i18n('Loading'), type: variable.type };
+      ?? { value, label: labels.get(value) ?? knownLabels.current.get(value) ?? t_i18n('Loading'), type: variable.type };
     const count = (seenLabels.get(option.label) ?? 0) + 1;
     seenLabels.set(option.label, count);
     return count === 1 ? option : { ...option, label: `${option.label} (${count})` };

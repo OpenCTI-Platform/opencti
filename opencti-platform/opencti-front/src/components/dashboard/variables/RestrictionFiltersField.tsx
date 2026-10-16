@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Text } from '@filigran/design-system';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../FilterIconButton';
@@ -23,7 +23,9 @@ export interface RestrictionFiltersFieldProps {
 const RestrictionFiltersField = ({ entityTypes, value, onChange, label, error }: RestrictionFiltersFieldProps) => {
   const [filters, helpers] = useFiltersState(value ?? emptyFilterGroup);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes);
-  const searchContext = { entityTypes };
+  // Stable across the renders of the dialog (one per keystroke in any of its fields).
+  const typesSignature = JSON.stringify(entityTypes);
+  const searchContext = useMemo(() => ({ entityTypes: JSON.parse(typesSignature) as string[] }), [typesSignature]);
   // The rule is reported on each of its changes, not on mount: the dialog would read the first render as an edit.
   const isMounted = useRef(false);
   useEffect(() => {
