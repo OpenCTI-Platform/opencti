@@ -4,16 +4,20 @@ import { screen } from '@testing-library/react';
 import type { NodeProps } from 'reactflow';
 import StatusNode from './StatusNode';
 import testRender from '../../../../../../utils/tests/test-render';
+import { HoverHighlightContext } from '../hoverHighlight';
 
 vi.mock('reactflow', () => ({
   Handle: () => <div data-testid="handle" />,
   Position: { Top: 'top', Bottom: 'bottom' },
 }));
 
-const render = (color?: string, highlighted?: boolean) => testRender(
-  <StatusNode
-    {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color }, highlighted } } as unknown as NodeProps)}
-  />,
+// hover: 'lit' when this node is in the hovered neighbourhood, 'dimmed' when another one is hovered.
+const render = (color?: string, hover?: 'lit' | 'dimmed') => testRender(
+  <HoverHighlightContext.Provider value={hover ? { nodeIds: new Set([hover === 'lit' ? 'n1' : 'other']), edgeIds: new Set() } : null}>
+    <StatusNode
+      {...({ id: 'n1', data: { statusTemplate: { name: 'in_progress', color } } } as unknown as NodeProps)}
+    />
+  </HoverHighlightContext.Provider>,
 );
 const chipBox = () => {
   const chip = screen.getByText('In progress').closest('[style]') as HTMLElement;
@@ -45,7 +49,7 @@ describe('StatusNode', () => {
   });
 
   it('doubles its border and thickens its label while highlighted, without changing its size', () => {
-    render('#ff9800', true);
+    render('#ff9800', 'lit');
     const box = chipBox();
     expect(box.style.border).toBe('1px solid rgb(255, 152, 0)');
     expect(box.style.boxShadow).toBe('0 0 0 0.5px #ff9800');
@@ -56,5 +60,10 @@ describe('StatusNode', () => {
     render('#ff9800');
     expect(chipBox().style.boxShadow).toBe('');
     expect(chipBox().style.textShadow).toBe('');
+  });
+
+  it('fades while another node is hovered', () => {
+    const { container } = render('#ff9800', 'dimmed');
+    expect(container.querySelector<HTMLElement>('.workflow-status-node')!.style.opacity).toBe('0.3');
   });
 });

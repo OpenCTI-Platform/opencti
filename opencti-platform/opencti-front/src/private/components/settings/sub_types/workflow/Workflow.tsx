@@ -20,7 +20,7 @@ import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestor
 import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
-import { getHoverHighlight } from './hoverHighlight';
+import { getHoverHighlight, HoverHighlightContext } from './hoverHighlight';
 import { createEdgeActions } from './edgeActions';
 import { WorkflowEdgeActionsContext, type EdgeRef } from './EdgeTypes/WorkflowEdgeActionsContext';
 import { useTheme } from '@mui/material/styles';
@@ -128,8 +128,6 @@ const workflowDefinitionRestorePublishedMutation = graphql`
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
-const DIMMED_OPACITY = 0.3;
-const HOVER_TRANSITION = 'opacity 150ms';
 
 const emptyElement = {
   id: NEW_STATUS_NAME,
@@ -405,114 +403,98 @@ const Workflow = ({
 
   const onConnect = useStatusConnection();
 
-  // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims.
-  // Only the props given to ReactFlow change; writing to `nodes`/`edges` state would refit the
-  // view and trigger the autosave on every hover.
+  // Hover highlight: the hovered node's neighbourhood stays lit and everything else dims. Nodes
+  // and edges read it from HoverHighlightContext; the nodes/edges given to ReactFlow stay
+  // untouched, so nothing about a hover reaches state, the drawer or the layout.
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const onNodeMouseEnter: NodeMouseHandler = useCallback((_, node) => setHoveredId(node.id), []);
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => setHoveredId(null), []);
   const highlight = useMemo(() => getHoverHighlight(hoveredId, nodes, edges), [hoveredId, nodes, edges]);
-  // Lit nodes get `data.highlighted` (2px border, thicker label); lit edges get a 2px stroke.
-  const displayedNodes = useMemo(() => nodes.map((node) => {
-    const lit = !!highlight && highlight.nodeIds.has(node.id);
-    return {
-      ...node,
-      data: lit ? { ...node.data, highlighted: true } : node.data,
-      style: { ...node.style, opacity: highlight && !lit ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION },
-    };
-  }), [nodes, highlight]);
-  const displayedEdges = useMemo(() => edges.map((edge) => {
-    const lit = !!highlight && highlight.edgeIds.has(edge.id);
-    const grow = lit && edge.type !== WorkflowNodeType.placeholder;
-    return {
-      ...edge,
-      style: { ...edge.style, opacity: highlight && !lit ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION, ...(grow ? { strokeWidth: 1.5 } : {}) },
-    };
-  }), [edges, highlight]);
-
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
       <WorkflowEdgeActionsContext.Provider value={edgeActions}>
-        <ReactFlow
-          nodes={displayedNodes}
-          edges={displayedEdges}
-          onConnect={onConnect}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          onNodeClick={onNodeClick}
-          onEdgeClick={onEdgeClick}
-          onNodeMouseEnter={onNodeMouseEnter}
-          onNodeMouseLeave={onNodeMouseLeave}
-          fitView
-          defaultViewport={defaultViewport}
-          minZoom={0.2}
-          fitViewOptions={fitViewOptions}
-          nodesDraggable={false}
-          zoomOnDoubleClick={false}
-          proOptions={proOptions}
-        >
-          {nodes.length ? (
-            <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <PublishButton
-                validationStatus={workflowDefinitionStatus}
-                onPublish={handlePublish}
-                onReset={handleReset}
-                onRestore={handleRestore}
-                hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
-              />
-              <Button
-                onClick={() => {
-                  setSelectedElement({
-                    id: NEW_STATUS_NAME,
-                    type: WorkflowNodeType.placeholder,
-                    data: {},
-                    position: { x: 0, y: 0 },
-                  });
-                  setOpen(true);
+        <HoverHighlightContext.Provider value={highlight}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onConnect={onConnect}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            onNodeMouseEnter={onNodeMouseEnter}
+            onNodeMouseLeave={onNodeMouseLeave}
+            fitView
+            defaultViewport={defaultViewport}
+            minZoom={0.2}
+            fitViewOptions={fitViewOptions}
+            nodesDraggable={false}
+            zoomOnDoubleClick={false}
+            proOptions={proOptions}
+          >
+            {nodes.length ? (
+              <Panel position="top-right" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <PublishButton
+                  validationStatus={workflowDefinitionStatus}
+                  onPublish={handlePublish}
+                  onReset={handleReset}
+                  onRestore={handleRestore}
+                  hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
+                />
+                <Button
+                  onClick={() => {
+                    setSelectedElement({
+                      id: NEW_STATUS_NAME,
+                      type: WorkflowNodeType.placeholder,
+                      data: {},
+                      position: { x: 0, y: 0 },
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  {t_i18n('Add Status')}
+                </Button>
+              </Panel>
+            ) : (
+              <Panel
+                position="top-center"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  top: '40%',
                 }}
               >
-                {t_i18n('Add Status')}
-              </Button>
-            </Panel>
-          ) : (
-            <Panel
-              position="top-center"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 12,
-                top: '40%',
-              }}
-            >
-              <Typography variant="subtitle2" color={theme.palette.text.light}>
-                {t_i18n('Start to define your workflow by adding a Status.')}
-              </Typography>
-              <Button
-                onClick={() => {
-                  setSelectedElement({
-                    id: NEW_STATUS_NAME,
-                    type: WorkflowNodeType.placeholder,
-                    data: {},
-                    position: { x: 0, y: 0 },
-                  });
-                  setOpen(true);
-                }}
-              >
-                {t_i18n('Add Status')}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => setEmptyStateRestoreConfirmOpen(true)}
-                disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
-              >
-                {t_i18n('Restore published version')}
-              </Button>
-            </Panel>
-          )}
-        </ReactFlow>
+                <Typography variant="subtitle2" color={theme.palette.text.light}>
+                  {t_i18n('Start to define your workflow by adding a Status.')}
+                </Typography>
+                <Button
+                  onClick={() => {
+                    setSelectedElement({
+                      id: NEW_STATUS_NAME,
+                      type: WorkflowNodeType.placeholder,
+                      data: {},
+                      position: { x: 0, y: 0 },
+                    });
+                    setOpen(true);
+                  }}
+                >
+                  {t_i18n('Add Status')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setEmptyStateRestoreConfirmOpen(true)}
+                  disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
+                >
+                  {t_i18n('Restore published version')}
+                </Button>
+              </Panel>
+            )}
+          </ReactFlow>
+        </HoverHighlightContext.Provider>
       </WorkflowEdgeActionsContext.Provider>
       <WorkflowEditionDrawer
         open={open}

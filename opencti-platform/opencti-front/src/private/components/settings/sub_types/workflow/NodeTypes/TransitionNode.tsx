@@ -5,6 +5,7 @@ import type { Theme } from '../../../../../../components/Theme';
 import { CommentMode, HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 import { useMemo } from 'react';
+import { hoverFade, useNodeHighlight } from '../hoverHighlight';
 
 const generatePath = (points: number[][]) => {
   const path = points.map(([x, y]) => `${x},${y}`).join(' L');
@@ -27,7 +28,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
 
   // useWorkflowLayout decides which transitions go back up the graph.
   const isBackwardTransition = data.layout?.backward ?? false;
-  const highlighted = data.highlighted === true;
+  const { lit: highlighted, dimmed } = useNodeHighlight(id);
 
   const conditionAndActions = useMemo(() => {
     const filterCount = data.conditions?.filters?.filters?.length ?? 0;
@@ -58,7 +59,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const sourcePosition = isBackwardTransition ? Position.Top : Position.Bottom;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', ...hoverFade(dimmed) }}>
       <Handle
         type="target"
         position={targetPosition}

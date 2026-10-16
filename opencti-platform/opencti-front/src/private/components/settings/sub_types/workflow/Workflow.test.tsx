@@ -206,14 +206,16 @@ vi.mock('./PublishButton', () => ({
   ),
 }));
 
-vi.mock('./NodeTypes', () => ({
-  // A bare status node that exposes the hover flag the canvas passes down.
-  default: {
-    status: ({ id, data }: { id: string; data: { highlighted?: boolean } }) => (
-      <div data-testid={`status-${id}`} data-highlighted={String(data.highlighted === true)} />
-    ),
-  },
-}));
+vi.mock('./NodeTypes', async () => {
+  const { useNodeHighlight } = await vi.importActual<typeof import('./hoverHighlight')>('./hoverHighlight');
+  // A bare status node that exposes what it reads from the hover context, and whether the
+  // node data it receives carries a hover flag (it must not).
+  const StatusStub = ({ id, data }: { id: string; data: Record<string, unknown> }) => {
+    const { lit, dimmed } = useNodeHighlight(id);
+    return <div data-testid={`status-${id}`} data-lit={String(lit)} data-dimmed={String(dimmed)} data-carries-flag={String('highlighted' in data)} />;
+  };
+  return { default: { status: StatusStub } };
+});
 
 vi.mock('./EdgeTypes', () => ({
   default: {},
@@ -441,8 +443,8 @@ describe('Workflow Component', () => {
       const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
       fireEvent.mouseEnter(nodeElement(container, 'node-a'));
 
-      expect(nodeElement(container, 'node-c').style.opacity).toBe('0.3');
-      expect(nodeElement(container, 'node-b').style.opacity).not.toBe('0.3');
+      expect(screen.getByTestId('status-node-c').dataset.dimmed).toBe('true');
+      expect(screen.getByTestId('status-node-b').dataset.dimmed).toBe('false');
     });
 
     it('restores every node when the pointer leaves', () => {
@@ -450,17 +452,27 @@ describe('Workflow Component', () => {
       fireEvent.mouseEnter(nodeElement(container, 'node-a'));
       fireEvent.mouseLeave(nodeElement(container, 'node-a'));
 
-      expect(nodeElement(container, 'node-c').style.opacity).not.toBe('0.3');
+      expect(screen.getByTestId('status-node-c').dataset.dimmed).toBe('false');
     });
 
-    it('flags only the lit nodes as highlighted, so they grow their border and label', () => {
+    it('lights only the hovered neighbourhood, so it grows its border and label', () => {
       const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
-      expect(screen.getByTestId('status-node-b').dataset.highlighted).toBe('false');
+      expect(screen.getByTestId('status-node-b').dataset.lit).toBe('false');
       fireEvent.mouseEnter(nodeElement(container, 'node-a'));
 
-      expect(screen.getByTestId('status-node-a').dataset.highlighted).toBe('true');
-      expect(screen.getByTestId('status-node-b').dataset.highlighted).toBe('true');
-      expect(screen.getByTestId('status-node-c').dataset.highlighted).toBe('false');
+      expect(screen.getByTestId('status-node-a').dataset.lit).toBe('true');
+      expect(screen.getByTestId('status-node-b').dataset.lit).toBe('true');
+      expect(screen.getByTestId('status-node-c').dataset.lit).toBe('false');
+    });
+
+    it('keeps hover state out of the nodes given to React Flow', () => {
+      // React Flow stores what it receives; setNodes(fn), onNodeClick and the layout read it
+      // back, so a hover flag there would end up saved in the drawer and in state.
+      const { container } = renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+      fireEvent.mouseEnter(nodeElement(container, 'node-a'));
+
+      expect(screen.getByTestId('status-node-b').dataset.carriesFlag).toBe('false');
+      expect(nodeElement(container, 'node-c').style.opacity).toBe('');
     });
 
     it('does not refit the view or save while hovering', () => {

@@ -1,11 +1,12 @@
 import { useContext, useState } from 'react';
 import { EdgeProps, getSmoothStepPath, type XYPosition } from 'reactflow';
 import { useTheme } from '@mui/styles';
-import { Icon, IconButton, Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
+import { Icon, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@filigran/design-system';
 import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
 import { getRoutePath } from '../layout/route';
 import { WorkflowEdgeActionsContext } from './WorkflowEdgeActionsContext';
+import { hoverFade, useEdgeHighlight } from '../hoverHighlight';
 
 const BADGE_SIZE = 24;
 
@@ -21,13 +22,15 @@ const TransitionEdge = ({
   targetPosition,
   markerEnd,
   data,
-  style,
+  selected,
 }: EdgeProps<{ route?: XYPosition[] }>) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { insertStatus, deleteConnection } = useContext(WorkflowEdgeActionsContext);
   const [isHovered, setIsHovered] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { lit, dimmed } = useEdgeHighlight(id);
+  const strokeWidth = isHovered || lit ? 1.5 : 1;
   // useWorkflowLayout routes every edge; smoothstep covers the frame before the first layout.
   const route = data?.route;
   const [edgePath, edgeCenterX, edgeCenterY] = route && route.length >= 2
@@ -47,8 +50,8 @@ const TransitionEdge = ({
     <g
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      // Workflow dims edges outside a hovered node's neighbourhood through style.opacity.
-      style={{ opacity: style?.opacity, transition: style?.transition }}
+      // Fades while a hovered node's neighbourhood leaves this edge out.
+      style={hoverFade(dimmed)}
     >
       <path
         id={id}
@@ -56,7 +59,7 @@ const TransitionEdge = ({
           fill: 'none',
           stroke: theme.palette.primary.main,
           transition: 'stroke-width 0.2s',
-          strokeWidth: isHovered ? 1.5 : (style?.strokeWidth ?? 1),
+          strokeWidth,
         }}
         d={edgePath}
         markerEnd={markerEnd}
@@ -70,8 +73,9 @@ const TransitionEdge = ({
         onClick={() => setMenuOpen(true)}
       />
 
-      {/* The edge menu: insert a status here, or delete this connection. */}
-      {(isHovered || menuOpen) && (
+      {/* The edge menu: insert a status here, or delete this connection. A selected edge keeps
+          its badge, so a keyboard user (Tab to the edge, Enter to select it) can reach it. */}
+      {(isHovered || menuOpen || selected) && (
         <foreignObject
           x={edgeCenterX - BADGE_SIZE / 2}
           y={edgeCenterY - BADGE_SIZE / 2}
@@ -94,7 +98,7 @@ const TransitionEdge = ({
                   backgroundColor: theme.palette.background.default,
                   borderColor: theme.palette.primary.main,
                   transition: 'border-width 0.2s',
-                  borderWidth: isHovered ? 1.5 : (style?.strokeWidth ?? 1),
+                  borderWidth: strokeWidth,
                 }}
               />
             </MenuTrigger>
@@ -105,10 +109,11 @@ const TransitionEdge = ({
               <MenuItem startIcon={<Icon name="circle-plus" size={16} />} onSelect={() => insertStatus({ id, source, target })}>
                 {t_i18n('Insert status here')}
               </MenuItem>
+              <MenuSeparator />
               <MenuItem
                 startIcon={<Icon name="trash-2" size={16} className="text-icon-error" />}
                 // FDS-WORKAROUND #64: MenuItem has no destructive tone — see fds-migration/LIBRARY-FEEDBACK.md #64
-                style={{ color: theme.palette.error?.main }}
+                style={{ color: theme.palette.error.main }}
                 onSelect={() => deleteConnection(id)}
               >
                 {t_i18n('Delete connection')}

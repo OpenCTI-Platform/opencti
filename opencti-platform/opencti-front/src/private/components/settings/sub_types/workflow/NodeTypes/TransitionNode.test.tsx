@@ -5,6 +5,7 @@ import TransitionNode from './TransitionNode';
 import testRender from '../../../../../../utils/tests/test-render';
 import type { Edge, NodeProps, Position } from 'reactflow';
 import { CommentMode } from '../utils';
+import { HoverHighlightContext } from '../hoverHighlight';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -106,8 +107,12 @@ describe('TransitionNode – direction', () => {
 // Hover highlight
 // ---------------------------------------------------------------------------
 describe('TransitionNode – highlight', () => {
+  const hovering = (litId: string) => ({ nodeIds: new Set([litId]), edgeIds: new Set<string>() });
+
   it('draws a 1.5px border in the accent colour and thickens its label while highlighted', () => {
-    const { container } = testRender(<TransitionNode {...makeProps({ highlighted: true })} />);
+    const { container } = testRender(
+      <HoverHighlightContext.Provider value={hovering('transition-1')}><TransitionNode {...makeProps()} /></HoverHighlightContext.Provider>,
+    );
     const hexagon = container.querySelector('path')!;
     expect(hexagon.getAttribute('stroke')).toBe('#1976d2');
     expect(hexagon.getAttribute('stroke-width')).toBe('1.5');
@@ -120,5 +125,12 @@ describe('TransitionNode – highlight', () => {
     expect(hexagon.getAttribute('stroke-width')).toBe('1');
     expect(hexagon.getAttribute('stroke')).not.toBe('#1976d2');
     expect(screen.getByText('Approve').parentElement!.style.textShadow).toBe('');
+  });
+
+  it('fades while another node is hovered', () => {
+    const { container } = testRender(
+      <HoverHighlightContext.Provider value={hovering('other')}><TransitionNode {...makeProps()} /></HoverHighlightContext.Provider>,
+    );
+    expect(container.querySelector('svg')!.parentElement!.style.opacity).toBe('0.3');
   });
 });

@@ -6,6 +6,7 @@ import { Position, type EdgeProps, type XYPosition } from 'reactflow';
 import TransitionEdge from './TransitionEdge';
 import { getRoutePath } from '../layout/route';
 import { WorkflowEdgeActionsContext } from './WorkflowEdgeActionsContext';
+import { HoverHighlightContext } from '../hoverHighlight';
 
 vi.mock('../../../../../../components/i18n', () => ({
   useFormatter: () => ({ t_i18n: (key: string) => key }),
@@ -16,11 +17,12 @@ vi.mock('@mui/styles', () => ({
     palette: {
       primary: { main: '#1976d2' },
       background: { default: '#121212' },
+      error: { main: '#d32f2f' },
     },
   }),
 }));
 
-const makeProps = (route?: XYPosition[], style?: React.CSSProperties) => ({
+const makeProps = (route?: XYPosition[], selected = false) => ({
   id: 'edge-1',
   source: 'A',
   target: 'B',
@@ -31,7 +33,7 @@ const makeProps = (route?: XYPosition[], style?: React.CSSProperties) => ({
   sourcePosition: Position.Bottom,
   targetPosition: Position.Top,
   data: route ? { route } : undefined,
-  style,
+  selected,
 }) as EdgeProps<{ route?: XYPosition[] }>;
 
 const visiblePath = (container: HTMLElement) => container.querySelector('path#edge-1')!.getAttribute('d');
@@ -48,14 +50,20 @@ describe('TransitionEdge', () => {
     expect(visiblePath(container)).toMatch(/^M ?0[ ,]0/);
   });
 
-  it('fades the whole edge with the opacity it is given', () => {
-    const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { opacity: 0.2 })} /></svg>);
-    expect(container.querySelector<SVGGElement>('svg > g')!.style.opacity).toBe('0.2');
+  const withHover = (litEdgeId: string) => (
+    <HoverHighlightContext.Provider value={{ nodeIds: new Set(), edgeIds: new Set([litEdgeId]) }}>
+      <svg><TransitionEdge {...makeProps()} /></svg>
+    </HoverHighlightContext.Provider>
+  );
+
+  it('fades the whole edge while it is outside the hovered neighbourhood', () => {
+    const { container } = render(withHover('another-edge'));
+    expect(container.querySelector<SVGGElement>('svg > g')!.style.opacity).toBe('0.3');
   });
 
-  it('draws the stroke width it is given', () => {
-    const { container } = render(<svg><TransitionEdge {...makeProps(undefined, { strokeWidth: 2 })} /></svg>);
-    expect(container.querySelector<SVGPathElement>('path#edge-1')!.style.strokeWidth).toBe('2');
+  it('draws a 1.5px stroke while it is lit', () => {
+    const { container } = render(withHover('edge-1'));
+    expect(container.querySelector<SVGPathElement>('path#edge-1')!.style.strokeWidth).toBe('1.5');
   });
 
   describe('edge menu', () => {
@@ -72,6 +80,18 @@ describe('TransitionEdge', () => {
       fireEvent.mouseEnter(document.querySelector('svg > g')!);
       await userEvent.click(screen.getByRole('button', { name: 'Edge actions' }));
     };
+
+    it('shows the badge while the edge is selected, so the keyboard can reach the menu', () => {
+      // React Flow selects a focused edge on Enter or Space; the badge then joins the Tab order.
+      render(<svg><TransitionEdge {...makeProps([{ x: 0, y: 0 }, { x: 0, y: 100 }], true)} /></svg>);
+      expect(screen.getByRole('button', { name: 'Edge actions' })).toBeInTheDocument();
+    });
+
+    it('separates the destructive row from the others', async () => {
+      renderWithActions();
+      await openFromBadge();
+      expect(screen.getByRole('separator')).toBeInTheDocument();
+    });
 
     it('offers to insert a status or delete the connection from the badge', async () => {
       renderWithActions();

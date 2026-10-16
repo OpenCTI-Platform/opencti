@@ -1,3 +1,4 @@
+import { createContext, useContext } from 'react';
 import { WorkflowNodeType } from './utils';
 import type { LayoutInputEdge, LayoutInputNode } from './layout/types';
 
@@ -39,3 +40,22 @@ export const getHoverHighlight = (hoveredId: string | null, nodes: LayoutInputNo
   });
   return { nodeIds, edgeIds };
 };
+
+export const DIMMED_OPACITY = 0.3;
+const HOVER_TRANSITION = 'opacity 150ms';
+
+// The current highlight, shared with node and edge components. It never goes into the
+// nodes/edges given to React Flow: React Flow stores those, and setNodes(fn), onNodeClick and
+// the layout read them back, so a hover flag there would leak into state and the drawer.
+export const HoverHighlightContext = createContext<HoverHighlight | null>(null);
+
+const useHighlight = (id: string, kind: 'nodeIds' | 'edgeIds') => {
+  const highlight = useContext(HoverHighlightContext);
+  const lit = !!highlight && highlight[kind].has(id);
+  return { lit, dimmed: !!highlight && !lit };
+};
+export const useNodeHighlight = (id: string) => useHighlight(id, 'nodeIds');
+export const useEdgeHighlight = (id: string) => useHighlight(id, 'edgeIds');
+
+// Root style of a node or edge: fades it while it is outside the hovered neighbourhood.
+export const hoverFade = (dimmed: boolean) => ({ opacity: dimmed ? DIMMED_OPACITY : 1, transition: HOVER_TRANSITION });
