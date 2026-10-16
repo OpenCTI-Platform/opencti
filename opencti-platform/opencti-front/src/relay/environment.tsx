@@ -106,8 +106,9 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn: subscribeFn as unknown as SubscribeFunction,
 });
 const store = new Store(new RecordSource());
-const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
-const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
+// A singleton config preset category and its only item share the same id
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'ConfigPresetExportableType']);
+export const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
   if (!id) return null;
   if (namespacedTypenames.has(typeName)) {
