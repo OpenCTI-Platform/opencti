@@ -42,7 +42,7 @@ testCreatedCounter.indicator = 64;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 11;
+testCreatedCounter['intrusion-set'] = 12;
 testCreatedCounter['ipv4-addr'] = 2;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -61,7 +61,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 156;
+testCreatedCounter.relationship = 158;
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8;
 testCreatedCounter.software = 2;
@@ -73,12 +73,12 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 26;
-testCreatedCounter['security-coverage-result'] = 21;
+testCreatedCounter['security-coverage'] = 28;
+testCreatedCounter['security-coverage-result'] = 23;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
-testUpdatedCounter.relationship = 8;
+testUpdatedCounter.relationship = 10;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 20;
@@ -155,7 +155,7 @@ testDeletedCounter.indicator = 36;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 10;
+testDeletedCounter['intrusion-set'] = 11;
 testDeletedCounter['ipv4-addr'] = 2;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
@@ -185,8 +185,8 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 24;
-testDeletedCounter['security-coverage-result'] = 19;
+testDeletedCounter['security-coverage'] = 26;
+testDeletedCounter['security-coverage-result'] = 21;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

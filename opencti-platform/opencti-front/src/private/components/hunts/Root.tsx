@@ -18,6 +18,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { getPaddingRight } from '../../../utils/utils';
 import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
 import Hunt from './Hunt';
+import HuntCoverage from './HuntCoverage';
 import HuntDeletion from './HuntDeletion';
 import HuntEdition from './HuntEdition';
 import HuntEvidence from './HuntEvidence';
@@ -80,6 +81,7 @@ const huntQuery = graphql`
       ...Hunt_hunt
       ...HuntLogic_hunt
       ...HuntStatusHeader_hunt
+      ...HuntCoverage_hunt
       ...StixCoreObjectContent_stixCoreObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -151,6 +153,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
           logic: <HuntLogic data={hunt} canEdit={canEdit} />,
           runs: <HuntRuns hunt={hunt} canEdit={canEdit} />,
           evidence: <HuntEvidence huntId={hunt.id} />,
+          coverage: <HuntCoverage data={hunt} />,
           content: <StixCoreObjectContentRoot stixCoreObject={hunt} />,
           files: (
             <FileManager

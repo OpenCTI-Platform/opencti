@@ -109,6 +109,8 @@ const completedRun = (overrides: Record<string, unknown> = {}) => ({
   incident_proposal: JSON.stringify({ name: 'Encoded PowerShell on WS-01', severity: 'high' }),
   incident_id: null,
   draft_id: null,
+  security_coverage_id: 'coverage-1',
+  technique_id: null,
   triggeredBy: { id: 'user-1', name: 'admin' },
   attempt: 1,
   next_retry_at: null,
@@ -117,7 +119,7 @@ const completedRun = (overrides: Record<string, unknown> = {}) => ({
   completed_at: '2026-10-05T12:00:12Z',
   cost_ms: 10000,
   error_message: null,
-  playbook_id: 'playbook-1',
+  playbook_id: null,
   created_at: '2026-10-05T12:00:00Z',
   ioc_results: [],
   rule_results: [rule('rule-1', 3)],
@@ -226,7 +228,7 @@ describe('Hunt run page', () => {
     expect(screen.getByTestId('hunt-run-evidence')).toHaveTextContent('host.name');
     expect(screen.getByTestId('hunt-run-knowledge')).toHaveTextContent('1 sighting created, 2 observed data, 3 observables');
     expect(screen.getByTestId('hunt-run-results')).toHaveTextContent('powershell -enc');
-    expect(screen.getByTestId('hunt-run-links')).toHaveTextContent('Open the playbook');
+    expect(screen.getByTestId('hunt-run-links')).toHaveTextContent('Open the security coverage');
     expect(screen.getByTestId('hunt-run-view-results')).toHaveTextContent('View the 1 result');
     expect(screen.getByTestId('hunt-run-details')).toHaveTextContent('Splunk Hunt');
     expect(screen.getByTestId('hunt-run-connector-link')).toHaveAttribute('href', '/dashboard/data/ingestion/connectors/connector-1');

@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Scheduled hunts, standing hunts, PIR activation and playbook hunt components are available under the **OpenCTI Enterprise Edition** licence. Please read the [dedicated page](../administration/enterprise.md) for full details.
+    Scheduled hunts, standing hunts, PIR activation, playbook hunt components and the validation from OpenAEV are available under the **OpenCTI Enterprise Edition** licence. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
     Manual hunts, manual runs, query tests, verdicts and hunt packs are part of the Community Edition.
 
@@ -16,7 +16,7 @@ The **schedule** of a hunt is `manual` (the default), `standing` (see below) or 
 
 When a scheduled hunt is due, the hunt manager runs it on the platforms of its scope and computes its next occurrence from the current date: occurrences missed during an outage are not replayed. The next run date is displayed on the hunt.
 
-Scheduled, standing and PIR armed runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence that started no run, because its runs could not be created at all (for instance while the search engine is unavailable) or no hunt connector serves the scope yet, stays due and is tried again at the next tick, like a standing trigger or a PIR arming. Manual runs, query tests and playbook steps, which expect an answer now, only target the connectors that are online.
+Scheduled, standing and PIR armed runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence that started no run, because its runs could not be created at all (for instance while the search engine is unavailable) or no hunt connector serves the scope yet, stays due and is tried again at the next tick, like a standing trigger or a PIR arming. Manual runs, query tests, playbook steps and validations from OpenAEV, which expect an answer now, only target the connectors that are online.
 
 ## Standing hunts
 
@@ -59,6 +59,12 @@ Two steps make every new report hunted on its own, with no hunt written beforeha
 2. **Run hunts**, with **Hunts** set to **Derive a hunt from each element**, applied to the main element of the bundle.
 
 Each new report gets the hunt **Hunt this** proposes for it: an indicator hunt over its indicators and observables when it holds some, otherwise a detection-rule hunt running the detection rules of its techniques. The hunt runs on its scope at once; add **Wait for the hunt results** and **Match hunt results** to act on what it found, for example notify the team or open a case on a true positive.
+
+## Validation from OpenAEV
+
+When OpenAEV finishes an inject for a technique on an asset whose security platform is known, it asks OpenCTI to validate the detection: every active hunt covering the technique runs on the hunt connector of that security platform, over the execution window of the inject. The request is idempotent per inject, technique, hunt, platform and security coverage, including when OpenAEV delivers the same inject several times at once: an inject emulating several techniques gets runs of its own for each technique.
+
+When the runs complete, OpenCTI writes the `hunt_detected` coverage on the security coverage of the simulation: 100 when a hunt found the emulated activity on any security platform of the inject, 0 otherwise. Each security coverage only reads its own validation runs, and a retried run counts like the run it replaces. This coverage is kept when OpenAEV later updates the security coverage.
 
 ## Hunt manager
 

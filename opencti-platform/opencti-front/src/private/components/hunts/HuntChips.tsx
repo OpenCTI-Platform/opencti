@@ -1,7 +1,18 @@
 import React from 'react';
 import { Chip } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
-import { huntRunStatusLabel, huntRunStatusSeverity, huntSourceKindLabel, huntStatusLabel, huntStatusSeverity, huntVerdictLabel, huntVerdictSeverity } from './hunt-utils';
+import {
+  huntRunStatusLabel,
+  huntRunStatusSeverity,
+  huntSourceKindLabel,
+  huntStatusLabel,
+  huntStatusSeverity,
+  huntTechniqueValidationLabel,
+  huntTechniqueValidationSeverity,
+  type HuntTechniqueValidationStatus,
+  huntVerdictLabel,
+  huntVerdictSeverity,
+} from './hunt-utils';
 
 interface ValueChipProps {
   value?: string | null;
@@ -25,4 +36,9 @@ export const HuntVerdictChip = ({ value }: ValueChipProps) => {
 export const HuntSourceKindChip = ({ value }: ValueChipProps) => {
   const { t_i18n } = useFormatter();
   return <Chip label={t_i18n(huntSourceKindLabel(value))} severity={value === 'analyst' ? 'neutral' : 'info'} />;
+};
+
+export const HuntTechniqueValidationChip = ({ status }: { status: HuntTechniqueValidationStatus }) => {
+  const { t_i18n } = useFormatter();
+  return <Chip label={t_i18n(huntTechniqueValidationLabel(status))} severity={huntTechniqueValidationSeverity(status)} />;
 };

@@ -11331,6 +11331,7 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  techniqueValidations: Array<HuntTechniqueValidation>;
   time_window_hours: Scalars['Int']['output'];
   toStix?: Maybe<Scalars['String']['output']>;
   toStixBundle?: Maybe<Scalars['String']['output']>;
@@ -12069,6 +12070,7 @@ export type HuntRequiredPermissionInput = {
 
 export type HuntRun = BasicObject & InternalObject & {
   __typename?: 'HuntRun';
+  aev_inject_id?: Maybe<Scalars['String']['output']>;
   attempt: Scalars['Int']['output'];
   /** The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time */
   auto_escalation: Scalars['Boolean']['output'];
@@ -12139,11 +12141,14 @@ export type HuntRun = BasicObject & InternalObject & {
   /** Detection-rule hunts: one result per Sigma rule, null when the connector ran the first rule only */
   rule_results?: Maybe<Array<HuntRunRuleResult>>;
   securityPlatform?: Maybe<SecurityPlatform>;
+  security_coverage_id?: Maybe<Scalars['String']['output']>;
   security_platform_id?: Maybe<Scalars['String']['output']>;
   /** Sightings of the hunt the run created; the other sightings among its results were updated in place */
   sightings_created_count?: Maybe<Scalars['Int']['output']>;
   standard_id: Scalars['String']['output'];
   started_at?: Maybe<Scalars['DateTime']['output']>;
+  technique?: Maybe<AttackPattern>;
+  technique_id?: Maybe<Scalars['String']['output']>;
   /** The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap */
   time_window_continued: Scalars['Boolean']['output'];
   time_window_end?: Maybe<Scalars['DateTime']['output']>;
@@ -12299,6 +12304,7 @@ export enum HuntRunStatus {
 }
 
 export enum HuntRunTrigger {
+  Emulation = 'emulation',
   Manual = 'manual',
   Pir = 'pir',
   Playbook = 'playbook',
@@ -12393,6 +12399,21 @@ export enum HuntStatus {
   Retired = 'retired'
 }
 
+export type HuntTechniqueValidation = {
+  __typename?: 'HuntTechniqueValidation';
+  detected_runs_count: Scalars['Int']['output'];
+  emulation_runs_count: Scalars['Int']['output'];
+  status: HuntTechniqueValidationStatus;
+  technique_id: Scalars['String']['output'];
+};
+
+export enum HuntTechniqueValidationStatus {
+  InProgress = 'in_progress',
+  NotDetected = 'not_detected',
+  NotValidated = 'not_validated',
+  Validated = 'validated'
+}
+
 /** The last translation of the current logic of a hunt on a security platform, by a translation preview or a run */
 export type HuntTranslation = {
   __typename?: 'HuntTranslation';
@@ -12420,6 +12441,22 @@ export enum HuntType {
   Indicators = 'indicators',
   Telemetry = 'telemetry'
 }
+
+export type HuntValidateFromEmulationInput = {
+  inject_id: Scalars['String']['input'];
+  security_coverage_id?: InputMaybe<Scalars['String']['input']>;
+  security_platform_id?: InputMaybe<Scalars['String']['input']>;
+  security_platform_name?: InputMaybe<Scalars['String']['input']>;
+  technique_id: Scalars['String']['input'];
+  window_end: Scalars['DateTime']['input'];
+  window_start: Scalars['DateTime']['input'];
+};
+
+export type HuntValidation = {
+  __typename?: 'HuntValidation';
+  hunts_count: Scalars['Int']['output'];
+  runs: Array<HuntRun>;
+};
 
 export enum HuntVerdictSource {
   Agent = 'agent',
@@ -18774,6 +18811,7 @@ export type Mutation = {
   huntRunStart: Array<HuntRun>;
   huntRunTriage?: Maybe<HuntRun>;
   huntTestQuery?: Maybe<HuntRun>;
+  huntValidateFromEmulation?: Maybe<HuntValidation>;
   identityAdd?: Maybe<Identity>;
   identityEdit?: Maybe<IdentityEditMutations>;
   incidentAdd?: Maybe<Incident>;
@@ -20191,6 +20229,11 @@ export type MutationHuntRunTriageArgs = {
 export type MutationHuntTestQueryArgs = {
   id: Scalars['ID']['input'];
   securityPlatformId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type MutationHuntValidateFromEmulationArgs = {
+  input: HuntValidateFromEmulationInput;
 };
 
 
@@ -42704,9 +42747,13 @@ export type ResolversTypes = ResolversObject<{
   HuntStatisticsBucket: ResolverTypeWrapper<HuntStatisticsBucket>;
   HuntStatisticsPoint: ResolverTypeWrapper<HuntStatisticsPoint>;
   HuntStatus: HuntStatus;
+  HuntTechniqueValidation: ResolverTypeWrapper<HuntTechniqueValidation>;
+  HuntTechniqueValidationStatus: HuntTechniqueValidationStatus;
   HuntTranslation: ResolverTypeWrapper<Omit<HuntTranslation, 'securityPlatform'> & { securityPlatform?: Maybe<ResolversTypes['SecurityPlatform']> }>;
   HuntTranslationState: HuntTranslationState;
   HuntType: HuntType;
+  HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
+  HuntValidation: ResolverTypeWrapper<Omit<HuntValidation, 'runs'> & { runs: Array<ResolversTypes['HuntRun']> }>;
   HuntVerdictSource: HuntVerdictSource;
   HuntsOrdering: HuntsOrdering;
   ICCID: ResolverTypeWrapper<Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -43900,7 +43947,10 @@ export type ResolversParentTypes = ResolversObject<{
   HuntStatistics: HuntStatistics;
   HuntStatisticsBucket: HuntStatisticsBucket;
   HuntStatisticsPoint: HuntStatisticsPoint;
+  HuntTechniqueValidation: HuntTechniqueValidation;
   HuntTranslation: Omit<HuntTranslation, 'securityPlatform'> & { securityPlatform?: Maybe<ResolversParentTypes['SecurityPlatform']> };
+  HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
+  HuntValidation: Omit<HuntValidation, 'runs'> & { runs: Array<ResolversParentTypes['HuntRun']> };
   ICCID: Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ICCIDAddInput: IccidAddInput;
   ID: Scalars['ID']['output'];
@@ -48483,6 +48533,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HuntStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  techniqueValidations?: Resolver<Array<ResolversTypes['HuntTechniqueValidation']>, ParentType, ContextType>;
   time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HuntToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48743,6 +48794,7 @@ export type HuntRequiredPermissionResolvers<ContextType = any, ParentType extend
 }>;
 
 export type HuntRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRun'] = ResolversParentTypes['HuntRun']> = ResolversObject<{
+  aev_inject_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attempt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   auto_escalation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48796,10 +48848,13 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   results_truncated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   rule_results?: Resolver<Maybe<Array<ResolversTypes['HuntRunRuleResult']>>, ParentType, ContextType>;
   securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
+  security_coverage_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   security_platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sightings_created_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  technique?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType>;
+  technique_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   time_window_continued?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   time_window_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   time_window_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48888,6 +48943,13 @@ export type HuntStatisticsPointResolvers<ContextType = any, ParentType extends R
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type HuntTechniqueValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntTechniqueValidation'] = ResolversParentTypes['HuntTechniqueValidation']> = ResolversObject<{
+  detected_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  emulation_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntTechniqueValidationStatus'], ParentType, ContextType>;
+  technique_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type HuntTranslationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntTranslation'] = ResolversParentTypes['HuntTranslation']> = ResolversObject<{
   connector_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48899,6 +48961,11 @@ export type HuntTranslationResolvers<ContextType = any, ParentType extends Resol
   state?: Resolver<ResolversTypes['HuntTranslationState'], ParentType, ContextType>;
   translated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   translated_query?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntValidation'] = ResolversParentTypes['HuntValidation']> = ResolversObject<{
+  hunts_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  runs?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType>;
 }>;
 
 export type IccidResolvers<ContextType = any, ParentType extends ResolversParentTypes['ICCID'] = ResolversParentTypes['ICCID']> = ResolversObject<{
@@ -51264,6 +51331,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   huntRunStart?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunStartArgs, 'id'>>;
   huntRunTriage?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunTriageArgs, 'id'>>;
   huntTestQuery?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntTestQueryArgs, 'id'>>;
+  huntValidateFromEmulation?: Resolver<Maybe<ResolversTypes['HuntValidation']>, ParentType, ContextType, RequireFields<MutationHuntValidateFromEmulationArgs, 'input'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
   identityEdit?: Resolver<Maybe<ResolversTypes['IdentityEditMutations']>, ParentType, ContextType, RequireFields<MutationIdentityEditArgs, 'id'>>;
   incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<MutationIncidentAddArgs, 'input'>>;
@@ -57610,7 +57678,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
   HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;
   HuntStatisticsPoint?: HuntStatisticsPointResolvers<ContextType>;
+  HuntTechniqueValidation?: HuntTechniqueValidationResolvers<ContextType>;
   HuntTranslation?: HuntTranslationResolvers<ContextType>;
+  HuntValidation?: HuntValidationResolvers<ContextType>;
   ICCID?: IccidResolvers<ContextType>;
   IMEI?: ImeiResolvers<ContextType>;
   IMSI?: ImsiResolvers<ContextType>;
