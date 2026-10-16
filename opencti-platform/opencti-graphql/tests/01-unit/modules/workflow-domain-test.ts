@@ -3237,6 +3237,25 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
+  it('names the current status when the event has no transition from it', async () => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: asyncDefinition, validation_errors: [] } });
+      if (id === 'reviewing') return Promise.resolve({ id: 'reviewing', name: 'In review' });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'reviewing', history: '[]' });
+    (WorkflowFactory.createDefinition as any).mockReturnValueOnce({ getTransition: () => undefined });
+    (WorkflowFactory.getInstance as any).mockReturnValueOnce({
+      trigger: vi.fn().mockResolvedValue({ success: false, reason: "No transition found from state 'reviewing' for event 'submit'" }),
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    expect(result).toMatchObject({ success: false, reason: "Transition 'submit' is not available from status 'In review'" });
+  });
+
   it('wraps unexpected errors and returns success:false', async () => {
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
