@@ -1,4 +1,5 @@
 name: OpenCTI CD Release
+run-name: OpenCTI CD Release ${{ inputs.tag || github.ref_name }}
 # Release pipeline for OpenCTI tags (X.Y.Z and X.Y.Z-lts.N)
 #
 # DRY-RUN ONLY for now: the publish-pycti job is commented out, nothing can be published.
@@ -39,7 +40,7 @@ jobs:
   # -----------------------
   validate:
     name: Validate release tag
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -128,7 +129,7 @@ jobs:
   # -----------------------
   build-pycti:
     name: Build pycti
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     needs: [validate]
     steps:
@@ -178,7 +179,7 @@ jobs:
 
   pycti-dry-run:
     name: Publish pycti (dry-run)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     needs: [validate, build-pycti]
     steps:
@@ -250,7 +251,7 @@ jobs:
   # Publication disabled until the dry run is validated: no job of this workflow can publish anything.
   # publish-pycti:
   #   name: Publish pycti
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-26.04
   #   timeout-minutes: 15
   #   needs: [validate, build-pycti]
   #   if: needs.validate.outputs.publish == 'true'
@@ -279,7 +280,7 @@ jobs:
   # the release script tags connectors only once pycti is available, so this job gates both.
   wait-connectors:
     name: Wait for connectors release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 35
     needs: [validate]
     steps:
@@ -299,7 +300,7 @@ jobs:
   # on workflow_dispatch); they check out the validated commit themselves to build the release sources.
   build-builder:
     name: Build builder image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     needs: [validate]
     steps:
@@ -320,12 +321,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-24.04 }
-          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-24.04-arm }
-          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-24.04 }
-          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-24.04-arm }
+          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-26.04-arm }
+          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-26.04-arm }
           # fips is amd64 only, as with CircleCI
-          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-24.04 }
+          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-26.04 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-platform
@@ -347,12 +348,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-24.04 }
-          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-24.04-arm }
-          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-24.04 }
-          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-24.04-arm }
+          - { variant: standard, suffix: "", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: standard, suffix: "", arch: arm64, runner: ubuntu-26.04-arm }
+          - { variant: ubi9, suffix: "_ubi9", arch: amd64, runner: ubuntu-26.04 }
+          - { variant: ubi9, suffix: "_ubi9", arch: arm64, runner: ubuntu-26.04-arm }
           # fips is amd64 only, as with CircleCI
-          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-24.04 }
+          - { variant: fips, suffix: "_fips", arch: amd64, runner: ubuntu-26.04 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-worker
@@ -371,7 +372,7 @@ jobs:
   # without the docker repository (unlike rolling tarballs).
   build-tar:
     name: Build platform tarball (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     # wait-connectors: connectors tag to clone, connectors manifest of the tag, pycti on PyPI ("yarn build")
     needs: [validate, wait-connectors]
@@ -441,7 +442,7 @@ jobs:
   # -----------------------
   app-sbom:
     name: Build and generate app SBOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     needs: [validate, wait-connectors, build-builder]
     steps:
@@ -543,7 +544,7 @@ jobs:
   # Container SBOMs are generated from the amd64 image of each variant, as for rolling.
   generate-sbom-platform:
     name: Generate SBOM (platform ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     needs: [validate, build-platform]
     strategy:
@@ -565,7 +566,7 @@ jobs:
 
   generate-sbom-worker:
     name: Generate SBOM (worker ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     needs: [validate, build-worker]
     strategy:
@@ -587,7 +588,7 @@ jobs:
 
   merge-sbom:
     name: Merge SBOM (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     needs: [validate, app-sbom, generate-sbom-platform, generate-sbom-worker]
     strategy:
@@ -657,7 +658,7 @@ jobs:
   # /!\ Artifact names, layout and release-manifest.json are a contract with the release repository.
   bundle:
     name: Bundle release artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     needs: [validate, build-platform, build-worker, build-tar, merge-sbom]
     steps:
@@ -800,7 +801,7 @@ jobs:
   # -----------------------
   summary:
     name: Release summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     needs: [validate, build-pycti, bundle]
     permissions:
