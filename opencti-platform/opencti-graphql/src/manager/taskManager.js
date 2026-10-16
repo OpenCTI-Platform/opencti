@@ -620,33 +620,42 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
 };
 
 // Workflow operations go through the workflow engine, element by element, instead of the workers.
-// Each element is reported on the task work, so the task completes and rejections are listed as errors.
+// The task work is only told about the elements once every page is applied, so it cannot complete
+// early; rejected elements are listed as work errors.
 const workflowOperationCallback = (context, user, task, applyOnElement) => {
   let totalProcessed = task.task_processed_number;
-  return async (elements) => {
-    if (task.work_id) {
-      await updateExpectationsNumber(context, user, task.work_id, elements.length);
-    }
+  let appliedCount = 0;
+  const errors = [];
+  const callback = async (elements) => {
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const element = elements[index];
-      let errorData;
       try {
         const result = await applyOnElement(element);
         if (!result.success) {
-          errorData = { error: result.reason, source: element.internal_id };
+          errors.push({ error: result.reason, source: element.internal_id });
         }
       } catch (error) {
         logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Workflow operation error, skipping element', { cause: error, id: element.internal_id });
-        errorData = { error: error.message, source: element.internal_id };
-      }
-      if (task.work_id) {
-        await reportExpectation(context, user, task.work_id, errorData);
+        errors.push({ error: error.message, source: element.internal_id });
       }
     }
+    appliedCount += elements.length;
     totalProcessed += elements.length;
     await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
+  callback.reportOnWork = async () => {
+    if (!task.work_id) return;
+    if (appliedCount === 0) {
+      await updateProcessedTime(context, user, task.work_id, 'No element to process');
+      return;
+    }
+    await updateExpectationsNumber(context, user, task.work_id, appliedCount);
+    for (let index = 0; index < appliedCount; index += 1) {
+      await reportExpectation(context, user, task.work_id, errors[index]);
+    }
+  };
+  return callback;
 };
 
 export const workflowBypassOperationCallback = (context, user, task, operations) => {
@@ -717,6 +726,9 @@ export const workerTaskHandler = async (context, user, task, actionType, operati
   // nothing to the workers, its work is completed here, otherwise it would stay in progress
   if (task.work_id && callback.hasQueuedWork?.() === false) {
     await updateProcessedTime(context, user, task.work_id, 'No change to apply');
+  }
+  if (callback.reportOnWork) {
+    await callback.reportOnWork();
   }
   return updateTask(context, task.id, { completed: true });
 };
