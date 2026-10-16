@@ -77,6 +77,17 @@ describe('SelectionValuesInput', () => {
     expect(onChange).toHaveBeenLastCalledWith(['label-1']);
   });
 
+  it('keeps one chip per value while the labels resolve, and after', () => {
+    mockEntities = {};
+    const { relayEnv } = renderInput(label, ['label-1', 'label-2', 'label-3']);
+    // Same label for every chip while resolving: the library keys its chips by label, each must stay distinct.
+    expect(within(chipRow()).getAllByRole('listitem')).toHaveLength(3);
+    resolveLabels(relayEnv, { 'label-1': 'malicious', 'label-2': 'benign', 'label-3': 'benign' });
+    const chips = within(chipRow()).getAllByRole('listitem');
+    expect(chips).toHaveLength(3);
+    expect(chips.map((chip) => chip.textContent)).toEqual(['malicious', 'benign', 'benign (2)']);
+  });
+
   it('offers the names of the vocabulary category for a vocabulary variable', async () => {
     const variable: DashboardVariableShape = { type: 'vocabulary', vocabularyCategory: 'reliability_ov', restriction: none };
     const { user, relayEnv, onChange } = renderInput(variable, []);
