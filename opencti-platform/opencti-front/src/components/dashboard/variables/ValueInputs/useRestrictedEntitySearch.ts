@@ -4,10 +4,7 @@ import type { Subscription } from 'relay-runtime';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import type {
-  useRestrictedEntitySearchQuery,
-  useRestrictedEntitySearchQuery$variables,
-} from './__generated__/useRestrictedEntitySearchQuery.graphql';
+import type { useRestrictedEntitySearchQuery, useRestrictedEntitySearchQuery$variables } from './__generated__/useRestrictedEntitySearchQuery.graphql';
 
 const restrictedEntitySearchQuery = graphql`
   query useRestrictedEntitySearchQuery($search: String, $types: [String], $first: Int, $filters: FilterGroup) {
