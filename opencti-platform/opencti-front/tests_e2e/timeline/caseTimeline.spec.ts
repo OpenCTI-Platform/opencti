@@ -30,7 +30,7 @@ const timelineCodename = () => {
  * Derive the timeline of a seeded incident response.
  * Check the overview strip and the position of the Timeline tab (after Content).
  * Check the lanes view, the anchors and the list view kept in the URL.
- * Restrict the view to one lane, open the kinds filter and clear the lanes.
+ * Restrict the view to one lane, open the events filter and clear the lanes.
  * Open an event with the keyboard, pin it and filter on pinned events.
  * Add a milestone from the drawer form, hide it and show hidden events again.
  * Record a containment and check the containment anchor.
@@ -79,7 +79,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await capture('lanes-populated');
     // endregion
 
-    // region Filters: the view restricted to the Response lane (the opening of the case is there) and the kinds list open
+    // region Filters: the view restricted to the Response lane (the opening of the case is there) and the events list open
     const lanesFilter = page.getByRole('combobox', { name: 'Lanes' });
     await lanesFilter.click();
     const responseLane = page.getByRole('option', { name: 'Response', exact: true });

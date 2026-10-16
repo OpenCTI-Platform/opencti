@@ -87,7 +87,7 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     // region Every event hidden by the timeline settings: the card offers the settings
     await setTimelineLanes(request, timelineCase.caseId, ['custom']);
     await page.goto(overviewUrl);
-    await expect(page.getByTestId('timeline-strip-empty')).toContainText('Every event of the case is in a lane or a kind the timeline settings hide.');
+    await expect(page.getByTestId('timeline-strip-empty')).toContainText('The timeline settings hide every event of the case (lanes switched off or events hidden by default).');
     await expect(page.getByTestId('timeline-strip-add-milestone')).toHaveCount(0);
     await captureOverview(page, testInfo, 'overview-widget-hidden');
     await page.getByTestId('timeline-strip-open-settings').click();
