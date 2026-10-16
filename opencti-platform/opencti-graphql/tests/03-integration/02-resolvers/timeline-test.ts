@@ -1480,6 +1480,8 @@ describe('Incident and case timeline', () => {
 
     it('should follow the headline dates the type of the container is customized with', async () => {
       const DEFAULT_HEADLINE_DATES = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'];
+      // The cursors of the incremental reads stay filterable on every type, whatever its headline dates
+      const filterKeysOf = (headlineDates: string[]) => [...headlineDates, 'changed_at', 'computed_at'].map((key) => `x_opencti_timeline_anchors.${key}`).sort();
       const patchHeadlineDates = (id: string, value: string[]) => ({ query: ENTITY_SETTING_HEADLINE_DATES_PATCH, variables: { ids: [id], input: [{ key: 'timeline_headline_dates', value }] } });
       const anchorFilterKeys = async () => {
         const schema = await generateFilterKeysSchema();
@@ -1504,8 +1506,8 @@ describe('Incident and case timeline', () => {
         expect(patched.data.entitySettingsFieldPatch[0].timeline_headline_dates).toEqual(['containment', 'recovery']);
         // The lists of the type filter on its headline dates only, the other types keep theirs
         expect(await anchorFilterKeys()).toEqual({
-          caseIncident: ['x_opencti_timeline_anchors.containment', 'x_opencti_timeline_anchors.recovery'],
-          incident: DEFAULT_HEADLINE_DATES.map((key) => `x_opencti_timeline_anchors.${key}`).sort(),
+          caseIncident: filterKeysOf(['containment', 'recovery']),
+          incident: filterKeysOf(DEFAULT_HEADLINE_DATES),
           recoveryTypes: ['Case-Incident'],
         });
         // Every date is still computed, but only a headline date of the type notifies its change
@@ -1532,7 +1534,7 @@ describe('Incident and case timeline', () => {
         }
         await queryAsAdminWithSuccess(patchHeadlineDates(settingId, DEFAULT_HEADLINE_DATES));
       }
-      expect((await anchorFilterKeys()).caseIncident).toEqual(DEFAULT_HEADLINE_DATES.map((key) => `x_opencti_timeline_anchors.${key}`).sort());
+      expect((await anchorFilterKeys()).caseIncident).toEqual(filterKeysOf(DEFAULT_HEADLINE_DATES));
     });
   });
 
