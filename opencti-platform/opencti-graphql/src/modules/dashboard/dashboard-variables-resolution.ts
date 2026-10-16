@@ -2,6 +2,8 @@
 // This module is mirrored in opencti-front (src/components/dashboard/dashboardVariablesResolution.ts);
 // both sides are locked by tests/data/dashboard-variables/resolution-cases.json.
 
+import { logApp } from '../../config/conf';
+
 const DASHBOARD_VARIABLE_TOKEN_PREFIX = '$var:';
 
 const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -25,6 +27,23 @@ const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Whether `timeZone` is a non-empty time zone name that the runtime supports (a Node build without full ICU only
+ * supports UTC). The GraphQL input of the publication form, which will send the time zone of the publisher, must call
+ * it and throw a FunctionalError when it fails: the UTC fallback of the day shift is only a last resort.
+ */
+export const isValidTimeZone = (timeZone: string): boolean => {
+  if (!timeZone) return false;
+  try {
+    return Boolean(new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone);
+  } catch {
+    return false;
+  }
+};
+
+// Invalid time zones already logged: the UTC fallback is logged once per zone, not for every value it shifts.
+const loggedInvalidTimeZones = new Set<string>();
+
 const buildWallClockFormatter = (timeZone: string) => {
   const formatOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -38,7 +57,12 @@ const buildWallClockFormatter = (timeZone: string) => {
   try {
     return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone });
   } catch {
-    // An invalid or unknown time zone falls back to UTC.
+    // Last resort, since a time zone sent by a client is validated first (isValidTimeZone): an invalid or unsupported
+    // time zone falls back to UTC, which shifts the day by the offset of the zone. Logged, never thrown.
+    if (!loggedInvalidTimeZones.has(timeZone)) {
+      loggedInvalidTimeZones.add(timeZone);
+      logApp.warn('[DASHBOARD] Unsupported time zone for a date variable, its day shift is counted in UTC', { timeZone });
+    }
     return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone: 'UTC' });
   }
 };
@@ -62,7 +86,8 @@ const toWallClock = (time: number, formatter: Intl.DateTimeFormat) => {
  * date-fns `addDays` of the fixed date input when counted in the time zone of the browser.
  * A wall clock time skipped by a daylight saving change (gap) gives the instant after the gap, moved forward by the
  * length of the gap; a wall clock time repeated by a change (overlap) gives its first occurrence. Both follow JavaScript
- * dates, hence date-fns. A value that is not a date is returned unchanged; an invalid time zone falls back to UTC.
+ * dates, hence date-fns. A value that is not a date is returned unchanged; an invalid time zone falls back to UTC,
+ * with a log (a time zone sent by a client must be checked with isValidTimeZone first).
  */
 const addCalendarDayInTimeZone = (isoString: string, timeZone: string): string => {
   const time = new Date(isoString).getTime();

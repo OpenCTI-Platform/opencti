@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import cases from '../../../data/dashboard-variables/resolution-cases.json';
+import { logApp } from '../../../../src/config/conf';
 import {
   buildDashboardDateVariableIds,
   buildDashboardVariableDefaultValues,
@@ -8,6 +9,7 @@ import {
   extractDashboardVariableIds,
   isStrictIsoDate,
   isValidDashboardVariableValue,
+  isValidTimeZone,
   parseDashboardVariableToken,
   resolveDashboardVariablesInWidgets,
   resolveVariablesInFilterGroup,
@@ -190,5 +192,32 @@ describe('Dashboard variables resolution - strict ISO-8601 dates', () => {
     expect(isStrictIsoDate(value)).toBe(true);
     expect(isValidDashboardVariableValue('date', value)).toBe(true);
     expect(buildDashboardVariableDefaultValues([{ id: VAR_A, type: 'date', defaultValue: value }])).toEqual(new Map([[VAR_A, value]]));
+  });
+});
+
+describe('Dashboard variables resolution - time zone validation', () => {
+  it.each([
+    ['Europe/Paris', true],
+    ['UTC', true],
+    ['Not/AZone', false],
+    ['', false],
+  ])('should tell whether "%s" is a valid time zone', (timeZone, expected) => {
+    expect(isValidTimeZone(timeZone)).toBe(expected);
+  });
+
+  it('should still fall back to UTC for an invalid time zone, logging it once', () => {
+    const warnSpy = vi.spyOn(logApp, 'warn');
+    try {
+      const lteFilter = { mode: 'and', filters: [{ key: ['created_at'], values: [`$var:${VAR_A}`], operator: 'lte' }], filterGroups: [] };
+      const values = new Map([[VAR_A, '2026-03-28T23:00:00.000Z']]);
+      const resolve = () => resolveVariablesInFilterGroup(lteFilter, values, { dateVariableIds: new Set([VAR_A]), timeZone: 'Invalid/LoggedOnce' });
+      // One UTC day later, not the 23 hours of a calendar day in a zone springing forward that night.
+      expect(resolve().filters.filters[0].values).toEqual(['2026-03-29T23:00:00.000Z']);
+      expect(resolve().filters.filters[0].values).toEqual(['2026-03-29T23:00:00.000Z']);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('time zone'), { timeZone: 'Invalid/LoggedOnce' });
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });
