@@ -1094,10 +1094,17 @@ enum BackgroundTasksOrdering {
   _score
 }
 
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
+
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 
 type BackgroundTaskAction {

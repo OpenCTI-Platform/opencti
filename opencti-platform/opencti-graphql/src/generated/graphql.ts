@@ -1835,6 +1835,7 @@ export type BackgroundTaskConnectionEdge = {
 export type BackgroundTaskContext = {
   __typename?: 'BackgroundTaskContext';
   field?: Maybe<Scalars['String']['output']>;
+  options?: Maybe<BackgroundTaskContextOptions>;
   type?: Maybe<BackgroundTaskContextType>;
   values: Array<Maybe<Scalars['String']['output']>>;
 };
@@ -1844,6 +1845,13 @@ export type BackgroundTaskContextInput = {
   options?: InputMaybe<BackgroundTaskContextOptionsInput>;
   type?: InputMaybe<BackgroundTaskContextType>;
   values: Array<InputMaybe<Scalars['String']['input']>>;
+};
+
+export type BackgroundTaskContextOptions = {
+  __typename?: 'BackgroundTaskContextOptions';
+  applyTransitionActions?: Maybe<Scalars['Boolean']['output']>;
+  eventName?: Maybe<Scalars['String']['output']>;
+  includeNeighbours?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type BackgroundTaskContextOptionsInput = {
@@ -40850,6 +40858,7 @@ export type ResolversTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: ResolverTypeWrapper<Omit<BackgroundTaskConnectionEdge, 'node'> & { node: ResolversTypes['BackgroundTask'] }>;
   BackgroundTaskContext: ResolverTypeWrapper<BackgroundTaskContext>;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptions: ResolverTypeWrapper<BackgroundTaskContextOptions>;
   BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskContextType: BackgroundTaskContextType;
   BackgroundTaskError: ResolverTypeWrapper<BackgroundTaskError>;
@@ -42044,6 +42053,7 @@ export type ResolversParentTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: Omit<BackgroundTaskConnectionEdge, 'node'> & { node: ResolversParentTypes['BackgroundTask'] };
   BackgroundTaskContext: BackgroundTaskContext;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptions: BackgroundTaskContextOptions;
   BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskError: BackgroundTaskError;
   BankAccount: Omit<BankAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -43662,8 +43672,15 @@ export type BackgroundTaskConnectionEdgeResolvers<ContextType = any, ParentType 
 
 export type BackgroundTaskContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskContext'] = ResolversParentTypes['BackgroundTaskContext']> = ResolversObject<{
   field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  options?: Resolver<Maybe<ResolversTypes['BackgroundTaskContextOptions']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['BackgroundTaskContextType']>, ParentType, ContextType>;
   values?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+}>;
+
+export type BackgroundTaskContextOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskContextOptions'] = ResolversParentTypes['BackgroundTaskContextOptions']> = ResolversObject<{
+  applyTransitionActions?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  eventName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  includeNeighbours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskError'] = ResolversParentTypes['BackgroundTaskError']> = ResolversObject<{
@@ -55256,6 +55273,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BackgroundTaskConnection?: BackgroundTaskConnectionResolvers<ContextType>;
   BackgroundTaskConnectionEdge?: BackgroundTaskConnectionEdgeResolvers<ContextType>;
   BackgroundTaskContext?: BackgroundTaskContextResolvers<ContextType>;
+  BackgroundTaskContextOptions?: BackgroundTaskContextOptionsResolvers<ContextType>;
   BackgroundTaskError?: BackgroundTaskErrorResolvers<ContextType>;
   BankAccount?: BankAccountResolvers<ContextType>;
   BasicObject?: BasicObjectResolvers<ContextType>;
