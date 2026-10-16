@@ -111,8 +111,10 @@ const MetricRow: FunctionComponent<MetricRowProps> = ({ label, value, tooltip, t
     <ListItem sx={{ py: 1, px: 0 }}>
       <ListItemText
         primary={label}
-        primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
         sx={{ flex: '0 0 auto', minWidth: 160 }}
+        slotProps={{
+          primary: { variant: 'body2', sx: { color: theme?.palette?.text?.secondary } },
+        }}
       />
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -174,8 +176,10 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
         <ListItem sx={{ py: 1, px: 0 }}>
           <ListItemText
             primary={t_i18n('Status')}
-            primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
             sx={{ flex: '0 0 auto', minWidth: 160 }}
+            slotProps={{
+              primary: { variant: 'body2', sx: { color: theme?.palette?.text?.secondary } },
+            }}
           />
           <Box sx={{ ml: 'auto' }}>
             <Chip

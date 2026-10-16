@@ -616,9 +616,11 @@ const FeedEditionContainer = (props) => {
                                           value={feedAttributes[i]?.multi_match_separator ?? ','}
                                           onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
                                           sx={{ width: 100 }}
-                                          inputProps={{ maxLength: 3 }}
                                           error={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator}
                                           helperText={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator ? t_i18n('Must differ from CSV separator') : undefined}
+                                          slotProps={{
+                                            htmlInput: { maxLength: 3 },
+                                          }}
                                         />
                                       )}
                                     </>

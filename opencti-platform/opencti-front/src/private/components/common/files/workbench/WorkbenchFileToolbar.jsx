@@ -168,12 +168,14 @@ class WorkbenchFileToolbar extends Component {
               paper: classes.bottomNav,
             }}
             open={isOpen}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              paper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >

@@ -3103,7 +3103,9 @@ class DataTableToolBar extends Component {
                             )}
                             value={element.id}
                             name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                            slotProps={{
+                              input: { 'aria-label': 'keptEntityID' },
+                            }}
                           />
                         )}
                       >
@@ -3243,7 +3245,9 @@ class DataTableToolBar extends Component {
                               this,
                               connector.id,
                             )}
-                            inputProps={{ 'aria-label': 'controlled' }}
+                            slotProps={{
+                              input: { 'aria-label': 'controlled' },
+                            }}
                           />
                         )}
                       >
