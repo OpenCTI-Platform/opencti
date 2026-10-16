@@ -205,7 +205,7 @@ Milestones can be edited and deleted by the users who can update the case.
 
 The CSV contains one line per event with its time, end time, lane, event (Sighting, Containment, ...), precision, title, element, source and annotation. The PDF is laid out on A4 landscape pages: the timeline drawing, scaled to fit the first page whole, then the anchors and the list of events on the following pages. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
 
-In the drawing (SVG, PNG and PDF), each lane grows to give overlapping windows and close events their own row, events too close to be told apart are grouped into a numbered circle whose tooltip lists them, and the labels of the headline dates are staggered so that two dates of the same day stay readable.
+In the drawing (SVG, PNG and PDF), each lane grows to give overlapping windows and close events their own row, events too close to be told apart are grouped into a numbered circle whose tooltip lists them, and the labels of the headline dates are staggered so that two dates of the same day stay readable. The axis is graduated in UTC on round dates (whole hours, midnights, Mondays or first days of the month, depending on the span), and its labels never write over each other.
 
 What an export contains and how it is marked:
 

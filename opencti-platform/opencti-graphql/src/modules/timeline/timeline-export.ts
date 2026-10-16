@@ -159,13 +159,54 @@ const LABEL_CHAR_WIDTH = 6;
 const ANCHOR_LABEL_CHAR_WIDTH = 5.6;
 const ANCHOR_ROW_HEIGHT = 14;
 const TICK_COUNT = 6;
+const TICK_LABEL_CHAR_WIDTH = 6;
+const TICK_LABEL_GAP = 8;
 
 const truncate = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 3)}...` : value);
 
-const niceTicks = (from: number, to: number, count: number): number[] => {
-  if (to <= from) return [from];
-  const step = (to - from) / count;
-  return Array.from({ length: count + 1 }, (_, index) => from + index * step);
+const MINUTE = 60000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+// Steps aligned on the UTC epoch, so that the ticks fall on whole minutes, hours and midnights; weeks start on Monday
+const FIXED_TICK_STEPS = [MINUTE, 5 * MINUTE, 15 * MINUTE, 30 * MINUTE, HOUR, 3 * HOUR, 6 * HOUR, 12 * HOUR, DAY, 2 * DAY, 7 * DAY, 14 * DAY];
+const FIRST_EPOCH_MONDAY = 4 * DAY;
+const MONTH_TICK_STEPS = [1, 2, 3, 6, 12, 24, 60, 120];
+
+/** At most `count` intervals between ticks on round UTC dates; from a day up, the ticks are midnights or first days of months. */
+export const exportAxisTicks = (from: number, to: number, count: number): { ticks: number[]; dateOnly: boolean } => {
+  if (to <= from) return { ticks: [from], dateOnly: false };
+  const span = to - from;
+  const fixed = FIXED_TICK_STEPS.find((step) => span / step <= count);
+  const ticks: number[] = [];
+  if (fixed) {
+    const offset = fixed >= 7 * DAY ? FIRST_EPOCH_MONDAY : 0;
+    for (let tick = Math.ceil((from - offset) / fixed) * fixed + offset; tick <= to; tick += fixed) ticks.push(tick);
+    return { ticks, dateOnly: fixed >= DAY };
+  }
+  const months = MONTH_TICK_STEPS.find((step) => span / (step * 30 * DAY) <= count) ?? MONTH_TICK_STEPS[MONTH_TICK_STEPS.length - 1];
+  const start = new Date(from);
+  let index = Math.ceil((start.getUTCFullYear() * 12 + start.getUTCMonth()) / months) * months;
+  let tick = Date.UTC(Math.floor(index / 12), index % 12, 1);
+  while (tick <= to) {
+    if (tick >= from) ticks.push(tick);
+    index += months;
+    tick = Date.UTC(Math.floor(index / 12), index % 12, 1);
+  }
+  return { ticks, dateOnly: true };
+};
+
+/** The labels of the ticks, kept inside the image, a label that would write over the previous one left out. */
+export const layoutExportAxisLabels = (ticks: Array<{ x: number; label: string }>, left: number, right: number): Array<{ x: number; label: string }> => {
+  const kept: Array<{ x: number; label: string }> = [];
+  let previousEnd = -Infinity;
+  ticks.forEach((tick) => {
+    const halfWidth = (tick.label.length * TICK_LABEL_CHAR_WIDTH) / 2;
+    const labelX = Math.min(Math.max(tick.x, left + halfWidth), right - halfWidth);
+    if (labelX - halfWidth < previousEnd + TICK_LABEL_GAP) return;
+    kept.push({ x: labelX, label: tick.label });
+    previousEnd = labelX + halfWidth;
+  });
+  return kept;
 };
 
 // The lanes from top to bottom, as the timeline view draws them
@@ -373,17 +414,20 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
   const height = legendTop + (hasContextWindows ? LEGEND_HEIGHT : 0) + PADDING;
   open(height);
   drawLanes(positioned);
-  // Axis: the first and last dates are aligned on the edges of the plot, never cut by the edges of the image
+  // Axis: ticks on round dates, their labels never cut by the edges of the image nor written over each other
   const axisY = lanesTop - 8;
   parts.push(`<line x1="${plotLeft}" y1="${axisY}" x2="${plotRight}" y2="${axisY}" stroke="#9aa5b1"/>`);
-  const ticks = niceTicks(min, max, TICK_COUNT);
-  ticks.forEach((tick, index) => {
+  const { ticks, dateOnly } = exportAxisTicks(min, max, TICK_COUNT);
+  ticks.forEach((tick) => {
     const tickX = x(tick).toFixed(1);
-    let anchor = 'middle';
-    if (index === 0) anchor = 'start';
-    else if (index === ticks.length - 1) anchor = 'end';
     parts.push(`<line x1="${tickX}" y1="${axisY - 4}" x2="${tickX}" y2="${lanesBottom}" stroke="#e4e7eb"/>`);
-    parts.push(`<text x="${tickX}" y="${axisY - 8}" fill="${TEXT_SECONDARY_COLOR}" text-anchor="${anchor}">${escapeXml(formatExportDate(new Date(tick).toISOString()))}</text>`);
+  });
+  const tickLabels = ticks.map((tick) => {
+    const iso = new Date(tick).toISOString();
+    return { x: x(tick), label: dateOnly ? iso.slice(0, 10) : formatExportDate(iso) };
+  });
+  layoutExportAxisLabels(tickLabels, PADDING, SVG_WIDTH - PADDING).forEach((tick) => {
+    parts.push(`<text x="${tick.x.toFixed(1)}" y="${axisY - 8}" fill="${TEXT_SECONDARY_COLOR}" text-anchor="middle">${escapeXml(tick.label)}</text>`);
   });
   // Events
   positioned.forEach((layout) => {
@@ -420,11 +464,16 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
       }
     });
   });
-  // Anchors: a dashed line across the lanes, the labels below them on as many rows as needed to stay readable
+  // Anchors: a dashed line across the lanes, the labels below them on as many rows as needed to stay readable; each
+  // label masks the lines of the dates labelled on the rows below it
   anchorLabels.forEach((anchor) => {
     const anchorX = anchor.anchorX.toFixed(1);
-    const labelY = lanesBottom + (anchor.row + 1) * ANCHOR_ROW_HEIGHT - 3;
     parts.push(`<line x1="${anchorX}" y1="${lanesTop}" x2="${anchorX}" y2="${lanesBottom + anchor.row * ANCHOR_ROW_HEIGHT + 3}" stroke="${TEXT_COLOR}" stroke-dasharray="4 3"/>`);
+  });
+  anchorLabels.forEach((anchor) => {
+    const labelY = lanesBottom + (anchor.row + 1) * ANCHOR_ROW_HEIGHT - 3;
+    const width = anchor.label.length * ANCHOR_LABEL_CHAR_WIDTH + 4;
+    parts.push(`<rect x="${(anchor.x - width / 2).toFixed(1)}" y="${labelY - 9}" width="${width.toFixed(1)}" height="12" fill="#ffffff"/>`);
     parts.push(`<text x="${anchor.x.toFixed(1)}" y="${labelY}" fill="${TEXT_COLOR}" text-anchor="middle" font-size="10">${escapeXml(anchor.label)}</text>`);
   });
   if (hasContextWindows) {

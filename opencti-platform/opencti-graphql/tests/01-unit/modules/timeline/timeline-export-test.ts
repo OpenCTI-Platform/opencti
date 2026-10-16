@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   csvCell,
   escapeXml,
+  exportAxisTicks,
   formatExportDate,
   layoutExportAnchorLabels,
+  layoutExportAxisLabels,
   layoutExportLane,
   layoutExportRows,
   renderTimelineCsv,
@@ -266,11 +268,43 @@ describe('Timeline export layout', () => {
     const single = renderTimelineSvg({ ...input, anchors: null, events: [event('alone', 0)], lanes: ['adversary'] });
     const heightOf = (svg: string) => Number(/height="(\d+(\.\d+)?)"/.exec(svg)?.[1]);
     expect(heightOf(crowded)).toBeGreaterThan(heightOf(single) + 3 * 18);
-    const tickAnchors = Array.from(crowded.matchAll(/fill="#494a50" text-anchor="(start|middle|end)"/g)).map((match) => match[1]);
-    expect(tickAnchors[0]).toEqual('start');
-    expect(tickAnchors[tickAnchors.length - 1]).toEqual('end');
+    // The labels of the ticks stay inside the image and never write over each other
+    const tickLabels = Array.from(crowded.matchAll(/<text x="([\d.]+)" y="[\d.]+" fill="#494a50" text-anchor="middle">([^<]+)<\/text>/g))
+      .map((match) => ({ x1: Number(match[1]) - (match[2].length * 6) / 2, x2: Number(match[1]) + (match[2].length * 6) / 2 }));
+    expect(tickLabels.length).toBeGreaterThan(1);
+    tickLabels.forEach((tick, index) => {
+      expect(tick.x1).toBeGreaterThanOrEqual(16);
+      expect(tick.x2).toBeLessThanOrEqual(1184);
+      if (index > 0) expect(tick.x1).toBeGreaterThan(tickLabels[index - 1].x2);
+    });
     // Five headline dates within four hours: their labels sit on more than one row
     const labelRows = new Set(Array.from(crowded.matchAll(/<text x="[\d.]+" y="([\d.]+)" fill="#18191b" text-anchor="middle" font-size="10">/g)).map((match) => match[1]));
     expect(labelRows.size).toBeGreaterThan(1);
+    // Each label is drawn over the lines of the dates labelled on the rows below it
+    expect(crowded.match(/height="12" fill="#ffffff"\/>/g)).toHaveLength(5);
+    expect(crowded.indexOf('height="12" fill="#ffffff"/>')).toBeGreaterThan(crowded.lastIndexOf('stroke-dasharray="4 3"/>'));
+  });
+
+  it('should put the ticks of the axis on round UTC dates', () => {
+    const iso = (ticks: number[]) => ticks.map((tick) => new Date(tick).toISOString());
+    const hours = exportAxisTicks(Date.parse('2026-10-12T07:20:00.000Z'), Date.parse('2026-10-12T19:50:00.000Z'), 6);
+    expect(hours.dateOnly).toBe(false);
+    expect(iso(hours.ticks)).toEqual(['2026-10-12T09:00:00.000Z', '2026-10-12T12:00:00.000Z', '2026-10-12T15:00:00.000Z', '2026-10-12T18:00:00.000Z']);
+    // Weeks start on Monday
+    const weeks = exportAxisTicks(Date.parse('2026-10-09T17:04:00.000Z'), Date.parse('2026-11-02T03:29:00.000Z'), 6);
+    expect(weeks.dateOnly).toBe(true);
+    expect(iso(weeks.ticks)).toEqual(['2026-10-12T00:00:00.000Z', '2026-10-19T00:00:00.000Z', '2026-10-26T00:00:00.000Z', '2026-11-02T00:00:00.000Z']);
+    const months = exportAxisTicks(Date.parse('2026-01-15T00:00:00.000Z'), Date.parse('2026-12-20T00:00:00.000Z'), 6);
+    expect(iso(months.ticks)).toEqual(['2026-03-01', '2026-05-01', '2026-07-01', '2026-09-01', '2026-11-01'].map((day) => `${day}T00:00:00.000Z`));
+  });
+
+  it('should keep the labels of the ticks inside the image and leave out a label that would write over the previous one', () => {
+    const labels = layoutExportAxisLabels([
+      { x: 20, label: '2026-10-12' },
+      { x: 60, label: '2026-10-13' },
+      { x: 300, label: '2026-10-19' },
+      { x: 1190, label: '2026-10-26' },
+    ], 16, 1184);
+    expect(labels).toEqual([{ x: 46, label: '2026-10-12' }, { x: 300, label: '2026-10-19' }, { x: 1154, label: '2026-10-26' }]);
   });
 });
