@@ -37,8 +37,12 @@ export default class SecurityCoverageResultFormPage {
     return this.getEntityFromList(name).click();
   }
 
+  getNextButton() {
+    return this.formLocator.getByRole('button', { name: 'Next', exact: true });
+  }
+
   goToNextStep() {
-    return this.formLocator.getByRole('button', { name: 'Next', exact: true }).click();
+    return this.getNextButton().click();
   }
 
   getCreateButton() {
