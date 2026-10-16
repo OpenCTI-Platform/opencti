@@ -29,6 +29,8 @@ const ignoredAttributes = [
   'creator_id',
   'opinions_metrics',
   'metrics',
+  'x_opencti_hunted_at',
+  'x_opencti_hunt_matched_at',
 ];
 
 const workbenchAttributes = [
