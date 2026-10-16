@@ -22,7 +22,6 @@ jobs:
       - uses: ./.github/actions/docker-build-builder
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           # app-sbom (below) always bind-mounts the checkout over this image's build path and
           # runs its own fresh "yarn install --immutable && yarn build:prod" regardless of what
           # this image contains, so building builder-back here would only add a redundant
@@ -47,18 +46,13 @@ jobs:
       - name: Load builder image
         run: docker load --input /tmp/opencti-builder.tar
 
-      - name: Use client-python in OpenCTI from same branch
-        env:
-          CHECKOUT_REF: ${{ github.sha }}
-        run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@'"$CHECKOUT_REF"'#subdirectory=client-python|' ./opencti-platform/opencti-graphql/src/python/requirements.txt
-
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
             -w /opt/opencti/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+            sh -c "yarn install --immutable && yarn build:prod && yarn workspaces focus --production"
 
       - name: Build front production and prune devDependencies
         run: |
@@ -163,7 +157,6 @@ jobs:
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
@@ -187,7 +180,6 @@ jobs:
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
@@ -201,7 +193,6 @@ jobs:
       - uses: ./.github/actions/tar-platform
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
 
   build-tar-platform-musl:
     name: Build platform tarball (musl)
@@ -211,7 +202,6 @@ jobs:
       - uses: ./.github/actions/tar-platform-musl
         with:
           checkout_ref: ${{ github.sha }}
-          client_python_local: true
 
   # -----------------------
   # Generate SBOMs

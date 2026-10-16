@@ -7,8 +7,8 @@
     "install": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "docs",
-        "command": "pip install -r requirements.txt"
+        "cwd": ".",
+        "command": "uv sync --locked --only-group docs"
       },
       "metadata": {
         "description": "Install the OpenCTI Documentation dependencies"
