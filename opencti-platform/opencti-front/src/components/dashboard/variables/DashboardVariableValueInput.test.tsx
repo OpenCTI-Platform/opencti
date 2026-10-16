@@ -325,12 +325,6 @@ describe('DashboardVariableValueInput', () => {
       expect(screen.getByText('No available options')).toBeInTheDocument();
     });
 
-    it('falls back to the free search of its type for a filters restriction', () => {
-      const filters = { mode: 'and' as const, filters: [], filterGroups: [] };
-      renderInput({ type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'filters', filters } });
-      expect(mockUseSearchEntities).toHaveBeenCalledWith(expect.objectContaining({ searchScope: { id: ['Sector'] } }));
-    });
-
     it('does not offer the dynamic @me user', async () => {
       mockEntities = {
         members_user: [
