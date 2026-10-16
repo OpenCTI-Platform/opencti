@@ -63,7 +63,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
 
   return (
     <>
-      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth />
+      <Field component={TextField} variant="outlined" name="event" label={t_i18n('Transition name')} fullWidth inputProps={{ 'data-testid': 'workflow-transition-name-field' }} />
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
         <Typography variant="h6">
@@ -87,6 +87,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={hasShare}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.shareWithOrganizations, e.target.checked)}
+                data-testid="workflow-transition-share-with-organizations-toggle"
               />
             )}
             label={t_i18n('Share with organizations')}
@@ -110,6 +111,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={hasUnshare}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleAsyncAction(WorkflowActionType.unshareFromOrganizations, e.target.checked)}
+                data-testid="workflow-transition-unshare-from-organizations-toggle"
               />
             )}
             label={t_i18n('Unshare from organizations')}
@@ -131,7 +133,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
       </Box>
 
       {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Box data-testid="workflow-transition-authorized-members-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('Authorized members')} <EEChip feature={t_i18n(FEATURE_NAME)} />
           </Typography>
@@ -142,6 +144,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                   checked={hasUpdateAuthorizedMembers}
                   disabled={!isEnterpriseEdition}
                   onChange={(e) => handleToggleAction(WorkflowActionType.updateAuthorizedMembers, e.target.checked)}
+                  data-testid="workflow-transition-update-authorized-members-toggle"
                 />
               )}
               label={t_i18n('Update authorized members')}
@@ -169,6 +172,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 checked={enableComments}
                 onChange={(e) => handleToggleEnableComments(e.target.checked)}
                 disabled={!isEnterpriseEdition}
+                data-testid="workflow-transition-enable-comment-toggle"
               />
             )}
             label={t_i18n('Enable comment')}
@@ -180,6 +184,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                   checked={requireComments}
                   disabled={!enableComments}
                   onChange={(e) => handleToggleRequireComments(e.target.checked)}
+                  data-testid="workflow-transition-required-comment-toggle"
                 />
               )}
               label={t_i18n('Required')}
@@ -199,6 +204,7 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
                 <Switch
                   checked={hasValidateDraft}
                   onChange={(e) => handleToggleAction(WorkflowActionType.validateDraft, e.target.checked)}
+                  data-testid="workflow-transition-validate-draft-toggle"
                 />
               )}
               label={(
