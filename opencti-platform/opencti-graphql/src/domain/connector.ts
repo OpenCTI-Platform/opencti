@@ -74,6 +74,10 @@ interface ConnectorIngestionInput {
   connector_priority_group?: ConnectorPriorityGroup;
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
+
+// Only a sync explicitly started is consumed by the sync manager
+export const isSyncRunning = (sync: Pick<Partial<BasicStoreEntitySynchronizer>, 'running'>) => sync.running === true;
+
 export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {
   // Create the representing connector
   await registerConnector(context, SYSTEM_USER, {

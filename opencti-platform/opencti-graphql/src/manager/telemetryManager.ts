@@ -59,6 +59,7 @@ import {
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { FilterMode } from '../generated/graphql';
+import { booleanTrueFilter } from '../utils/filtering/filtering-utils';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
