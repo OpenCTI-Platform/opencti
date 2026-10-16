@@ -173,9 +173,19 @@ const transformToWorkflowDefinition = (
   // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
   // skips state-existence checks for it. This also keeps this function's output aligned
   // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
-  const initialState = statusNodes.length === 0
-    ? '*'
-    : (nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || workflowDefinition?.initialState);
+  // Keep the saved initial state while its status is still on the canvas: deleting an unrelated
+  // connection must not move it to whichever status is left without an incoming edge. Only when
+  // that status is gone does the first status without an incoming edge take over.
+  const savedInitialState = workflowDefinition?.initialState;
+  const savedStillPresent = !!savedInitialState && statusNodes.some((n) => n.data.statusTemplate?.id === savedInitialState);
+  let initialState: string | null | undefined;
+  if (statusNodes.length === 0) {
+    initialState = '*';
+  } else if (savedStillPresent) {
+    initialState = savedInitialState;
+  } else {
+    initialState = nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || savedInitialState;
+  }
 
   return {
     id: workflowDefinition?.id,
