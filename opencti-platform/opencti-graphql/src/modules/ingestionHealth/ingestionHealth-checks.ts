@@ -7,23 +7,25 @@ import {
   type HealthCheckCode,
   type HealthCheckDefinition,
   type HealthCheckMetadata,
-  type HealthChecksContext,
   type HealthCheckIngestor,
-  type HealthContext,
+  type SourceIngestionHealthContext,
   isHeartbeatAlive,
 } from './ingestionHealth-registry';
 
 // region evaluation (pure, no I/O)
-const getFailure = (definition: HealthCheckDefinition, ingestor: HealthCheckIngestor, context: HealthChecksContext): HealthCheckMetadata | null => {
+const getFailure = (definition: HealthCheckDefinition, ingestor: HealthCheckIngestor, context: SourceIngestionHealthContext): HealthCheckMetadata | null => {
   if (definition.kind === IngestionHealthCheckKind.Runtime) {
     // The value type depends on the runtime data of each check, which a loop over all the checks cannot express: it is checked where the check is declared
-    const getRuntimeFailure = definition.getFailure as (value: unknown, context: HealthChecksContext) => HealthCheckMetadata | null;
+    const getRuntimeFailure = definition.getFailure as (value: unknown, context: SourceIngestionHealthContext) => HealthCheckMetadata | null;
     return getRuntimeFailure(context.runtimeData?.[definition.runtimeData], context);
   }
   return definition.getFailure(ingestor, context);
 };
 
-export const computeIngestionHealthChecks = (ingestor: HealthCheckIngestor, context: HealthChecksContext): StoredHealthCheck[] => {
+export const computeIngestionHealthChecks = (
+  ingestor: HealthCheckIngestor,
+  context: SourceIngestionHealthContext,
+): StoredHealthCheck[] => {
   return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
     const metadata = definition.isEnabled(ingestor, context) ? getFailure(definition, ingestor, context) : null;
     return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
@@ -32,7 +34,7 @@ export const computeIngestionHealthChecks = (ingestor: HealthCheckIngestor, cont
 
 // Priority: stopped > critical > degraded > healthy. A stopped ingestion keeps its configuration checks, they do not change its status.
 // Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {}, isStopped }: HealthContext): IngestionHealthStatus | null => {
+export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {}, isStopped }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
   if (isStopped) {
     return IngestionHealthStatus.Stopped;
   }
@@ -68,7 +70,7 @@ const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[]
 export const computeIngestionHealthPatch = (
   current: IngestionHealthFields,
   checks: StoredHealthCheck[],
-  context: HealthContext,
+  context: SourceIngestionHealthContext,
 ): IngestionHealthFields | null => {
   const { evaluatedAt } = context;
   const currentHealth = current.ingestion_health;
@@ -137,7 +139,7 @@ export const buildHealthTransitionMessage = (element: { name: string; entity_typ
 // region api
 export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
-    const definition = HEALTH_CHECK_REGISTRY[check.health_check_code];
+    const definition = getHealthCheckDefinition(check.health_check_code);
     if (!definition) {
       // Code unknown to this platform version: nothing reliable to show
       return [];
