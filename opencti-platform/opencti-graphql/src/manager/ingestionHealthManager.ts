@@ -30,6 +30,8 @@ import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';
 import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/connector/connector-domain';
+import { isSyncRunning } from '../domain/connector';
+import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
@@ -43,14 +45,12 @@ type PeriodContext = Pick<HealthChecksContext, 'isExistingUser' | 'pingingConnec
 interface IngestionSource<T extends IngestionElement> {
   entityType: string;
   load: (context: AuthContext) => Promise<T[]>;
-  isStopped?: (element: T) => boolean;
 }
 
 const connectorSource: IngestionSource<CachedConnector> = {
   entityType: ENTITY_TYPE_CONNECTOR,
   // Cached on every node, and refreshed cache after each health write
   load: (context) => getEntitiesListFromCache<CachedConnector>(context, INGESTION_HEALTH_MANAGER_USER, ENTITY_TYPE_CONNECTOR),
-  isStopped: isConnectorStopped,
 };
 
 const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement & { user_id?: string | null }> => ({
@@ -69,6 +69,19 @@ const INGESTION_SOURCES = [
   feedOrSyncSource(ENTITY_TYPE_SYNC),
 ] as IngestionSource<IngestionElement>[];
 
+// Stopped on purpose, each type with the rule of the process running it
+const isIngestionStopped = (element: IngestionElement & { ingestion_running?: boolean; running?: boolean }) => {
+  switch (element.entity_type) {
+    case ENTITY_TYPE_CONNECTOR:
+      return isConnectorStopped(element);
+    case ENTITY_TYPE_SYNC:
+      return !isSyncRunning(element);
+    default:
+      // Feeds
+      return !isIngestionRunning(element);
+  }
+};
+
 const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
@@ -76,11 +89,11 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   periodContext: PeriodContext,
   runtimeData: RuntimeData,
 ) => {
-  // Stopped on purpose: not monitored, nothing is read nor checked.
-  // No status can be computed then, so a health stored before the stop is removed, without activity event.
-  const isStopped = source.isStopped?.(element) ?? false;
-  const healthContext = { evaluatedAt: now(), runtimeData: isStopped ? {} : runtimeData };
-  const checks = isStopped ? [] : computeIngestionHealthChecks(element, { ...healthContext, ...periodContext });
+  // Stopped on purpose: the status is stopped, the runtime is not monitored (no runtime data read, no runtime check),
+  // the configuration checks still are
+  const isStopped = isIngestionStopped(element);
+  const healthContext = { evaluatedAt: now(), runtimeData: isStopped ? {} : runtimeData, isStopped };
+  const checks = computeIngestionHealthChecks(element, { ...healthContext, ...periodContext });
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
     return;
@@ -94,14 +107,14 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   // Published a health activity event after the write
   // a failed write is retried at the next period and reports the transition then
   const nextHealth = patch.ingestion_health;
-  const transition = isStopped ? null : computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
+  const transition = computeHealthTransition(element.ingestion_health?.status, nextHealth?.status);
   if (transition) {
     await publishUserAction({
       user: INGESTION_HEALTH_MANAGER_USER,
       event_type: 'health',
       event_scope: transition,
       event_access: 'administration',
-      status: transition === HealthTransition.Recovered ? 'success' : 'error',
+      status: transition === HealthTransition.Recovered || transition === HealthTransition.Stopped ? 'success' : 'error',
       message: buildHealthTransitionMessage(element, transition, nextHealth?.health_checks ?? []),
       context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
     });
@@ -127,7 +140,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     // Without it a missing heartbeat could not be told from an unreachable storage: the source is skipped until the next period
     let runtimeDataByIngestion: Map<string, RuntimeData>;
     try {
-      const monitoredIds = elements.filter((element) => !source.isStopped?.(element)).map((element) => element.internal_id);
+      const monitoredIds = elements.filter((element) => !isIngestionStopped(element)).map((element) => element.internal_id);
       runtimeDataByIngestion = await getRuntimeDataMany(monitoredIds);
     } catch (e) {
       logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });

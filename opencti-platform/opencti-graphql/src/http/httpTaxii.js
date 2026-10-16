@@ -19,6 +19,7 @@ import { handleConfidenceToScoreTransformation } from '../manager/ingestionManag
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
+import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 import { TAXIIAPI } from '../modules/user/user-domain';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
@@ -152,7 +153,7 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const { collection } = await extractUserAndCollection(req, res, id);
-      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && collection.ingestion_running !== true) {
+      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && !isIngestionRunning(collection)) {
         throw TaxiiError('Collection not found', 404);
       }
       sendJsonResponse(res, restBuildCollection(collection));
@@ -253,7 +254,7 @@ const initTaxiiApi = (app) => {
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
       }
-      if (ingestion.ingestion_running !== true) {
+      if (!isIngestionRunning(ingestion)) {
         throw TaxiiError('Collection not found', 404);
       }
 

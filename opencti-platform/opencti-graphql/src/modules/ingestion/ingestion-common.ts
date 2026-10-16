@@ -5,6 +5,15 @@ import { memoize } from '../../utils/memoize';
 import { verifyUriWithDenyList } from '../../utils/uriDenyList';
 import { uriDenyList } from '../../config/uriDenyList';
 import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
+// Only a feed explicitly started is processed: polled by the ingestion manager, accepting pushes on the TAXII endpoint
+export const isIngestionRunning = (ingestion: { ingestion_running?: boolean | null }) => ingestion.ingestion_running === true;
+
+// Same rule as isIngestionRunning, as filters for the queries of the ingestion manager
+export const runningIngestionsFilters = () => ({
+  mode: 'and',
+  filters: [{ key: 'ingestion_running', values: [true] }],
+  filterGroups: [],
+});
 
 export const verifyIngestionUri = (uri: string): void => {
   verifyUriWithDenyList(uri, uriDenyList(), 'This URI is not allowed for ingestion.');
