@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { EdgeProps, getSmoothStepPath, type XYPosition } from 'reactflow';
 import { useTheme } from '@mui/styles';
-import { Icon, IconButton, Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from '@filigran/design-system';
+import { Icon, IconButton, Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
 import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
 import { getRoutePath } from '../layout/route';
