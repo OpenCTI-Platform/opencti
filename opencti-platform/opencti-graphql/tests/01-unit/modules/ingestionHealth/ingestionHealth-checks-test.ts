@@ -1,14 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   buildHealthTransitionMessage,
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
-  HEALTH_CHECK_HEARTBEAT_MISSING,
-  HEALTH_CHECK_USER_MISSING,
   HealthTransition,
+  toGraphqlHealthChecks,
   toGraphqlIngestionHealth,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-checks';
+import { HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_REGISTRY, HEALTH_CHECK_USER_MISSING } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../../../../src/modules/connector/connector-types';
 import { utcDate } from '../../../../src/utils/format';
 import { IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../../../src/generated/graphql';
@@ -153,7 +153,8 @@ describe('heartbeat check', () => {
 
   it('should flag a heartbeat older than the max age as missing', () => {
     const heartbeat = utcDate(EVALUATED_AT).subtract(CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, 'ms').toISOString();
-    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData: { heartbeat }, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
+    const runtimeData = { heartbeat };
+    expect(computeIngestionHealthChecks(input, { ...CONTEXT, ...PINGING, runtimeData, isExistingUser })).toEqual([HEARTBEAT_MISSING]);
   });
 
   it('should not flag a heartbeat in the future, clock skew between nodes', () => {
@@ -182,6 +183,37 @@ describe('heartbeat check', () => {
       health_check_kind: IngestionHealthCheckKind.Runtime,
       health_check_severity: IngestionHealthCheckSeverity.Blocking,
     }]);
+  });
+});
+
+describe('check metadata', () => {
+  const TEST_CODE = 'TEST_CHECK';
+  const registry = HEALTH_CHECK_REGISTRY as Record<string, unknown>;
+  const checksContext = { ...CONTEXT, ...NOT_PINGING, isExistingUser: () => true };
+  const failWith = (metadata: Record<string, unknown> | null) => {
+    registry[TEST_CODE] = {
+      kind: IngestionHealthCheckKind.Configuration,
+      severity: IngestionHealthCheckSeverity.Advisory,
+      message: (data: Record<string, unknown>) => `Failing for ${data.reason}`,
+      isEnabled: () => true,
+      getFailure: () => metadata,
+    };
+  };
+
+  afterEach(() => {
+    delete registry[TEST_CODE];
+  });
+
+  it('should store the metadata of a failing check, and give it to its message', () => {
+    failWith({ reason: 'test' });
+    const checks = computeIngestionHealthChecks(CONNECTOR, checksContext);
+    expect(checks).toContainEqual({ health_check_code: TEST_CODE, health_check_metadata: { reason: 'test' } });
+    expect(toGraphqlHealthChecks(checks).find((check) => check.health_check_code === TEST_CODE)?.health_check_message).toBe('Failing for test');
+  });
+
+  it('should not store a check that passes', () => {
+    failWith(null);
+    expect(computeIngestionHealthChecks(CONNECTOR, checksContext).map((check) => check.health_check_code)).not.toContain(TEST_CODE);
   });
 });
 

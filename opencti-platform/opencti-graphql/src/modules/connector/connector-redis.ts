@@ -56,7 +56,7 @@ export const redisSetManagedConnectorAutoUpgradeStatus = async (status: ManagedC
 // Connector liveness is kept out of Elasticsearch so that no entity write (migration, auto-upgrade, edition...)
 // can make a connector look alive: only a connector ping or registration records a heartbeat.
 // The heartbeat is a runtime data of the ingestion health, its storage (a single sorted set) is declared
-// in ingestionHealthRuntimeData. It is the last heartbeat as recorded, the connector is not judged alive or not here.
+// in RUNTIME_DATA (ingestionHealth-registry). It is the last heartbeat as recorded, the connector is not judged alive or not here.
 export const redisSetConnectorHeartbeat = async (connectorId: string, lastSeenAt: string) => {
   await setRuntimeData(connectorId, 'heartbeat', lastSeenAt);
 };

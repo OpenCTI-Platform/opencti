@@ -20,7 +20,7 @@ vi.mock('../../../../src/database/redis', () => ({
 }));
 
 import { getRuntimeData, getRuntimeDataMany, removeRuntimeData, setRuntimeData } from '../../../../src/modules/ingestionHealth/ingestionHealthRuntimeData';
-import { redisString } from '../../../../src/modules/ingestionHealth/ingestionHealthRuntimeData-storage';
+import { createStorage } from '../../../../src/modules/ingestionHealth/ingestionHealthRuntimeData-storage';
 
 const HEARTBEAT = '2026-10-13T12:00:00.000Z';
 const HEARTBEAT_MS = new Date(HEARTBEAT).getTime();
@@ -93,7 +93,7 @@ describe('removeRuntimeData', () => {
 });
 
 describe('redisString storage', () => {
-  const storage = redisString<{ a: number }>({ key: (id) => `test:{${id}}:data`, ttlSec: 60 });
+  const storage = createStorage({ type: 'redis_string', key: (id) => `test:{${id}}:data`, ttlSec: 60 });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -106,7 +106,7 @@ describe('redisString storage', () => {
   });
 
   it('should store the value without expiration when there is no ttl', async () => {
-    await redisString<number>({ key: (id) => `test:${id}` }).set('id-1', 1);
+    await createStorage({ type: 'redis_string', key: (id) => `test:${id}` }).set('id-1', 1);
 
     expect(mockSet).toHaveBeenCalledWith('test:id-1', '1');
   });

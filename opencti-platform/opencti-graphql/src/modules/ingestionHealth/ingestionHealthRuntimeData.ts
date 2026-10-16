@@ -1,39 +1,24 @@
-import { z } from 'zod';
 import { logApp } from '../../config/conf';
-import { type RuntimeDataStorage, redisSortedSet } from './ingestionHealthRuntimeData-storage';
+import { RUNTIME_DATA, RUNTIME_DATA_TYPES, type RuntimeData, type RuntimeDataType, type RuntimeDataValue } from './ingestionHealth-registry';
+import { createStorage, type RuntimeDataStorage } from './ingestionHealthRuntimeData-storage';
 
-// Runtime data feeding the ingestion health checks, written by several sources and read by the ingestion health manager.
-// The registry is the only place declaring a type: its value format and where it is stored.
-// Changing the storage of a type is changing its `storage` line, see ingestionHealthRuntimeData-storage.
+export type { RuntimeData, RuntimeDataType };
+
+// Runtime data feeding the runtime health checks, written by several sources and read by the ingestion health manager.
+// RUNTIME_DATA, in the registry, is the only place declaring a type: its value format and where it is stored.
 // This module only stores and returns what was reported, it does not judge it: what is stale or missing
 // is up to the ingestion health manager.
-const RUNTIME_DATA = {
-  // Last time a connector pinged or registered (ISO date).
-  // Kept in the sorted set of the connector liveness: it has no expiration, the age of the value is judged by the manager.
-  heartbeat: {
-    schema: z.iso.datetime(),
-    storage: redisSortedSet<string>({
-      key: 'connector_heartbeats',
-      toScore: (iso) => new Date(iso).getTime(),
-      fromScore: (epochMs) => new Date(epochMs).toISOString(),
-    }),
-  },
-} as const satisfies Record<string, { schema: z.ZodType; storage: RuntimeDataStorage<any> }>;
-
-export type RuntimeDataType = keyof typeof RUNTIME_DATA;
-export type RuntimeDataValue<T extends RuntimeDataType> = z.infer<(typeof RUNTIME_DATA)[T]['schema']>;
-export type RuntimeData = { [T in RuntimeDataType]?: RuntimeDataValue<T> };
-
-const RUNTIME_DATA_TYPES = Object.keys(RUNTIME_DATA) as RuntimeDataType[];
+const STORAGES = Object.fromEntries(
+  RUNTIME_DATA_TYPES.map((type) => [type, createStorage(RUNTIME_DATA[type].storage)]),
+) as Record<RuntimeDataType, RuntimeDataStorage>;
 
 // Throws if the value does not match the format of its type
 export const setRuntimeData = async <T extends RuntimeDataType>(ingestionId: string, type: T, value: RuntimeDataValue<T>) => {
-  const { schema, storage } = RUNTIME_DATA[type];
-  await storage.set(ingestionId, schema.parse(value));
+  await STORAGES[type].set(ingestionId, RUNTIME_DATA[type].schema.parse(value));
 };
 
 export const removeRuntimeData = async (ingestionId: string, type: RuntimeDataType) => {
-  await RUNTIME_DATA[type].storage.remove(ingestionId);
+  await STORAGES[type].remove(ingestionId);
 };
 
 // Only valid data is returned. A value that cannot be read in the expected format
@@ -72,7 +57,7 @@ export const getRuntimeDataMany = async (ingestionIds: string[], types: RuntimeD
   if (ingestionIds.length === 0) {
     return result;
   }
-  const valuesByType = await Promise.all(types.map((type) => RUNTIME_DATA[type].storage.getMany(ingestionIds)));
+  const valuesByType = await Promise.all(types.map((type) => STORAGES[type].getMany(ingestionIds)));
   types.forEach((type, index) => {
     valuesByType[index].forEach((raw, ingestionId) => {
       const data = parseRuntimeData(ingestionId, type, raw);
