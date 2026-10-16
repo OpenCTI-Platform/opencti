@@ -98,6 +98,12 @@ export interface HuntHit {
   process: string | null;
 }
 
+// Connection test of a hunt connector: a message of this mode, answered by the connector with one result per check
+export const HUNT_CONNECTION_CHECK_MODE = 'check';
+export const HUNT_CONNECTION_CHECK_PENDING = 'pending';
+export const HUNT_CONNECTION_CHECK_PASSED = 'passed';
+export const HUNT_CONNECTION_CHECK_FAILED = 'failed';
+
 // Verdict of one value of an indicator hunt run
 export const HUNT_IOC_VERDICT_PENDING = 'pending';
 export const HUNT_IOC_VERDICT_SEEN = 'seen';

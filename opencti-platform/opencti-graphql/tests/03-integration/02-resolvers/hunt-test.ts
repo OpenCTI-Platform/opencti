@@ -113,6 +113,9 @@ const LIVE_HUNT_CONNECTORS = gql`
 const PING_CONNECTOR = gql`
   mutation PingConnector($id: ID!, $state: String) { pingConnector(id: $id, state: $state) { id active } }
 `;
+const CONNECTORS_HUNT = gql`
+  query ConnectorsHunt { connectors { id connector_type hunt { platform languages supports_preview securityPlatform { name } } } }
+`;
 const SIGMA_VALIDATE = gql`
   query HuntSigmaValidate($sigma_rule: String!) { huntSigmaValidate(sigma_rule: $sigma_rule) { valid errors title } }
 `;
@@ -275,6 +278,13 @@ describe('Hunt resolvers', () => {
     securityPlatformId = connector.securityPlatform.id;
     const list = await queryAsAdminWithSuccess({ query: HUNT_CONNECTORS });
     expect(list.data?.huntConnectors.map((c: { id: string }) => c.id)).toContain(CONNECTOR_ID);
+    // The connector page reads the hunted platform from the connector itself, null for every other type
+    const connectors = await queryAsAdminWithSuccess({ query: CONNECTORS_HUNT });
+    type ConnectorHunt = { platform: string; languages: string[]; supports_preview: boolean; securityPlatform: { name: string } };
+    const all = connectors.data?.connectors as { id: string; connector_type: string; hunt: ConnectorHunt | null }[];
+    const huntConnector = all.find((c) => c.id === CONNECTOR_ID);
+    expect(huntConnector?.hunt).toEqual({ platform: 'splunk', languages: ['spl'], supports_preview: true, securityPlatform: { name: SECURITY_PLATFORM_NAME } });
+    expect(all.filter((c) => c.connector_type !== 'INTERNAL_HUNT').every((c) => c.hunt === null)).toBe(true);
   });
 
   it('should keep a pinging hunt connector live while its cached copy is stale', async () => {

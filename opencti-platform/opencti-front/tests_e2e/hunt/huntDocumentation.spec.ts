@@ -13,6 +13,7 @@ import {
   seedHuntWithCompletedRun,
   setHuntRunVerdict,
   startAndReportHuntRun,
+  testHuntConnection,
 } from '../dataForTesting/hunt.data';
 import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
 
@@ -185,6 +186,11 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await capture(page, 'hunt-schedule-field.png', scheduleField);
   });
 
+  test('Hunted platform on the connector page', async ({ page }) => {
+    await page.goto(`/dashboard/data/ingestion/connectors/${seeded.connectorId}`);
+    await capture(page, 'hunt-connector-page.png', page.getByTestId('connector-hunt-card'), page.getByTestId('connector-hunt-runs'));
+  });
+
   test('Draft banner of a hunt proposed by an agent', async ({ page, request }) => {
     const draftHuntId = await seedAgentDraftHunt(request, 'Encoded PowerShell proposed by the Hunt Planner');
     try {
@@ -231,18 +237,34 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     }
   });
 
-  // Setup clarity: the permissions a hunt connector needs, a run refused by the platform and the help of the hunt form.
-  // Each theme registers its own connector.
+  // Setup clarity: the permissions a hunt connector needs, its connection test failed then passed, a run refused by the
+  // platform and the help of the hunt form. Each theme registers its own connector, so each starts untested.
   let accessDeniedRunId: string | undefined;
   const captureSetupSurfaces = async (page: Page, request: APIRequestContext, suffix: string) => {
     const setup = await seedHuntConnectorWithSetup(request, 'Splunk hunt - EU SOC', 'Splunk Enterprise - EU SOC');
     try {
-      // The setup checklist of Defense > Hunts lists the permissions each deployed hunt connector declares
-      const huntsPage = new HuntsPage(page);
-      await huntsPage.goto();
-      const checklist = page.getByTestId('hunts-setup-checklist').first();
-      await checklist.getByRole('button', { name: 'Required permissions of Splunk hunt - EU SOC' }).click();
-      await capture(page, `hunt-connector-permissions${suffix}.png`, checklist, checklist.getByText('srchIndexesAllowed'));
+      await page.goto(`/dashboard/data/ingestion/connectors/${setup.connectorId}`);
+      const card = page.getByTestId('connector-hunt-card');
+      const permissions = card.getByTestId('connector-hunt-permissions');
+      // Untested: the permissions are open, next to the connection test
+      await expect(permissions).toHaveAttribute('data-open', 'true');
+      await capture(page, `hunt-connector-permissions${suffix}.png`, card, permissions.getByText('srchIndexesAllowed'));
+      await testHuntConnection(request, setup.connectorId, [
+        { name: 'Authentication', ok: true, message: 'Splunk accepted the credentials of the connector.' },
+        { name: 'search', ok: false, message: 'Access denied: the roles of svc_opencti_hunt lack the search capability: add it to one of its roles in Settings > Roles.' },
+      ]);
+      await page.reload();
+      await capture(page, `hunt-connection-test-failed${suffix}.png`, card, card.locator('[data-testid="connector-hunt-check-status"][data-status="failed"]'));
+      await expect(permissions).toHaveAttribute('data-open', 'true');
+      await testHuntConnection(request, setup.connectorId, [
+        { name: 'Authentication', ok: true, message: 'Splunk accepted the credentials of the connector.' },
+        { name: 'search', ok: true, message: 'The roles of svc_opencti_hunt hold the search capability.' },
+        { name: 'Search', ok: true, message: 'The account can run searches on the platform.' },
+      ]);
+      await page.reload();
+      await capture(page, `hunt-connection-test-passed${suffix}.png`, card, card.locator('[data-testid="connector-hunt-check-status"][data-status="passed"]'));
+      // Once a test passed, the permissions fold
+      await expect(permissions).toHaveAttribute('data-open', 'false');
     } finally {
       await deleteSeededHuntPlatform(request, setup);
     }
@@ -250,7 +272,7 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.setViewportSize({ width: 1440, height: 1600 });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, accessDeniedRunId);
     const failure = page.locator('[data-testid="hunt-run-failure"][data-kind="access"]');
-    await capture(page, `hunt-run-access-denied${suffix}.png`, page.getByTestId('hunt-run-page'), failure.getByTestId('hunt-run-check-connector'));
+    await capture(page, `hunt-run-access-denied${suffix}.png`, page.getByTestId('hunt-run-page'), failure.getByTestId('hunt-run-test-connection'));
     // The whole creation form, each field with its help; the Learn more of the documentation is in the drawer header
     await page.setViewportSize({ width: 1440, height: 2200 });
     const huntsPage = new HuntsPage(page);
@@ -261,11 +283,11 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.setViewportSize({ width: 1440, height: 900 });
   };
 
-  test('Required permissions, access denied and form help', async ({ page, request }) => {
+  test('Required permissions, connection test, access denied and form help', async ({ page, request }) => {
     await captureSetupSurfaces(page, request, '');
   });
 
-  test('Required permissions, access denied and form help in the light theme', async ({ page, request }) => {
+  test('Required permissions, connection test, access denied and form help in the light theme', async ({ page, request }) => {
     const settings = await getSettings(request);
     const initialThemeId = settings.platform_theme?.id ?? await getThemeIdByName(request, 'Filigran Dark');
     await patchSettings(request, settings.id, 'platform_theme', await getThemeIdByName(request, 'Filigran Light'));

@@ -4610,6 +4610,8 @@ export type Connector = BasicObject & InternalObject & {
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   has_newer_incompatible_version?: Maybe<Scalars['Boolean']['output']>;
+  /** Hunted platform of an INTERNAL_HUNT connector, null for every other connector type */
+  hunt?: Maybe<HuntConnector>;
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
@@ -11665,9 +11667,40 @@ export type HuntConnection = {
   pageInfo: PageInfo;
 };
 
+/** The last connection test of a hunt connector */
+export type HuntConnectionCheck = {
+  __typename?: 'HuntConnectionCheck';
+  checked_at?: Maybe<Scalars['DateTime']['output']>;
+  checks: Array<HuntConnectionCheckItem>;
+  id: Scalars['String']['output'];
+  requested_at?: Maybe<Scalars['DateTime']['output']>;
+  status: HuntConnectionCheckStatus;
+};
+
+export type HuntConnectionCheckItem = {
+  __typename?: 'HuntConnectionCheckItem';
+  /** What the connector found, in plain words */
+  message: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  ok: Scalars['Boolean']['output'];
+};
+
+export type HuntConnectionCheckItemInput = {
+  message: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  ok: Scalars['Boolean']['input'];
+};
+
+export enum HuntConnectionCheckStatus {
+  Failed = 'failed',
+  Passed = 'passed',
+  Pending = 'pending'
+}
+
 export type HuntConnector = {
   __typename?: 'HuntConnector';
   active: Scalars['Boolean']['output'];
+  connection_check?: Maybe<HuntConnectionCheck>;
   /** Where the setup of the connector (account, permissions, configuration) is documented */
   documentation_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -11681,6 +11714,13 @@ export type HuntConnector = {
   supports_indicators: Scalars['Boolean']['output'];
   supports_preview: Scalars['Boolean']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type HuntConnectorCheckReportInput = {
+  check_id: Scalars['String']['input'];
+  checks: Array<HuntConnectionCheckItemInput>;
+  connector_id: Scalars['ID']['input'];
+  work_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type HuntConnectorRegisterInput = {
@@ -18795,7 +18835,10 @@ export type Mutation = {
   groupingRelationDelete?: Maybe<Grouping>;
   huntAdd?: Maybe<Hunt>;
   huntAssist: HuntAssistance;
+  huntConnectorCheckReport?: Maybe<HuntConnector>;
   huntConnectorRegister?: Maybe<HuntConnector>;
+  /** Asks a hunt connector to test its connection and its permissions on its platform */
+  huntConnectorTestConnection?: Maybe<HuntConnector>;
   huntContextClean?: Maybe<Hunt>;
   huntContextPatch?: Maybe<Hunt>;
   huntDelete?: Maybe<Scalars['ID']['output']>;
@@ -20135,8 +20178,18 @@ export type MutationHuntAssistArgs = {
 };
 
 
+export type MutationHuntConnectorCheckReportArgs = {
+  input: HuntConnectorCheckReportInput;
+};
+
+
 export type MutationHuntConnectorRegisterArgs = {
   input: HuntConnectorRegisterInput;
+};
+
+
+export type MutationHuntConnectorTestConnectionArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -42688,7 +42741,12 @@ export type ResolversTypes = ResolversObject<{
   HuntAssistance: ResolverTypeWrapper<Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversTypes['HuntSigmaValidation']> }>;
   HuntConfiguration: ResolverTypeWrapper<HuntConfiguration>;
   HuntConnection: ResolverTypeWrapper<Omit<HuntConnection, 'edges'> & { edges: Array<ResolversTypes['HuntEdge']> }>;
+  HuntConnectionCheck: ResolverTypeWrapper<HuntConnectionCheck>;
+  HuntConnectionCheckItem: ResolverTypeWrapper<HuntConnectionCheckItem>;
+  HuntConnectionCheckItemInput: HuntConnectionCheckItemInput;
+  HuntConnectionCheckStatus: HuntConnectionCheckStatus;
   HuntConnector: ResolverTypeWrapper<HuntConnectorView>;
+  HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
   HuntDerivedContent: ResolverTypeWrapper<HuntDerivedContent>;
   HuntDerivedElement: ResolverTypeWrapper<HuntDerivedElement>;
@@ -43899,7 +43957,11 @@ export type ResolversParentTypes = ResolversObject<{
   HuntAssistance: Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversParentTypes['HuntSigmaValidation']> };
   HuntConfiguration: HuntConfiguration;
   HuntConnection: Omit<HuntConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntEdge']> };
+  HuntConnectionCheck: HuntConnectionCheck;
+  HuntConnectionCheckItem: HuntConnectionCheckItem;
+  HuntConnectionCheckItemInput: HuntConnectionCheckItemInput;
   HuntConnector: HuntConnectorView;
+  HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
   HuntDerivedContent: HuntDerivedContent;
   HuntDerivedElement: HuntDerivedElement;
@@ -46104,6 +46166,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   has_newer_incompatible_version?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hunt?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -48588,8 +48651,23 @@ export type HuntConnectionResolvers<ContextType = any, ParentType extends Resolv
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
 }>;
 
+export type HuntConnectionCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnectionCheck'] = ResolversParentTypes['HuntConnectionCheck']> = ResolversObject<{
+  checked_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  checks?: Resolver<Array<ResolversTypes['HuntConnectionCheckItem']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntConnectionCheckStatus'], ParentType, ContextType>;
+}>;
+
+export type HuntConnectionCheckItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnectionCheckItem'] = ResolversParentTypes['HuntConnectionCheckItem']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ok?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type HuntConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnector'] = ResolversParentTypes['HuntConnector']> = ResolversObject<{
   active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  connection_check?: Resolver<Maybe<ResolversTypes['HuntConnectionCheck']>, ParentType, ContextType>;
   documentation_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   languages?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51315,7 +51393,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   huntAdd?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntAddArgs, 'input'>>;
   huntAssist?: Resolver<ResolversTypes['HuntAssistance'], ParentType, ContextType, RequireFields<MutationHuntAssistArgs, 'input'>>;
+  huntConnectorCheckReport?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorCheckReportArgs, 'input'>>;
   huntConnectorRegister?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorRegisterArgs, 'input'>>;
+  huntConnectorTestConnection?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorTestConnectionArgs, 'id'>>;
   huntContextClean?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntContextCleanArgs, 'id'>>;
   huntContextPatch?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntContextPatchArgs, 'id' | 'input'>>;
   huntDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationHuntDeleteArgs, 'id'>>;
@@ -57645,6 +57725,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntAssistance?: HuntAssistanceResolvers<ContextType>;
   HuntConfiguration?: HuntConfigurationResolvers<ContextType>;
   HuntConnection?: HuntConnectionResolvers<ContextType>;
+  HuntConnectionCheck?: HuntConnectionCheckResolvers<ContextType>;
+  HuntConnectionCheckItem?: HuntConnectionCheckItemResolvers<ContextType>;
   HuntConnector?: HuntConnectorResolvers<ContextType>;
   HuntDerivedContent?: HuntDerivedContentResolvers<ContextType>;
   HuntDerivedElement?: HuntDerivedElementResolvers<ContextType>;

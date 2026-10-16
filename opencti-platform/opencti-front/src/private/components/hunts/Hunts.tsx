@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import Button from '@common/button/Button';
 import { BarChartOutlined } from '@mui/icons-material';
 import { Text } from '@filigran/design-system';
-import HuntsFirstUse, { HuntsSetupButton } from './HuntsFirstUse';
+import HuntsFirstUse from './HuntsFirstUse';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { Hunts_HuntFragment$data } from './__generated__/Hunts_HuntFragment.graphql';
 import { Hunts_HuntsFragment$data } from './__generated__/Hunts_HuntsFragment.graphql';
@@ -326,7 +326,6 @@ const Hunts = () => {
                 availableEntityTypes={[HUNT_ENTITY_TYPE]}
                 emptyStateMessage={t_i18n('No hunt matches these filters')}
                 additionalHeaderButtons={[
-                  <HuntsSetupButton key="hunts-setup" />,
                   <Security key="hunt-quick-start" needs={[KNOWLEDGE_KNUPDATE]}>
                     <HuntQuickStartMenu />
                   </Security>,

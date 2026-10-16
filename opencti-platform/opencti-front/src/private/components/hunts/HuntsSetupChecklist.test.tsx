@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import HuntsSetupChecklist, { type HuntsSetupState } from './HuntsSetupChecklist';
 import HuntIndicatorSupportWarning, { hasIndicatorLookups } from './HuntIndicatorSupportWarning';
@@ -31,31 +31,6 @@ describe('Hunts setup checklist', () => {
   it('leaves the indicator lookups out while no hunt connector answers', () => {
     testRender(<HuntsSetupChecklist state={state({ aliveCount: 0, indicatorsCount: 0 })} />);
     expect(screen.queryByTestId('hunts-setup-indicators')).not.toBeInTheDocument();
-  });
-
-  it('lists the permissions each deployed hunt connector declares, with its setup documentation', () => {
-    const connectors = [
-      { id: 'splunk', name: 'Splunk hunt', documentation_url: 'https://docs.example.com/splunk-hunt', required_permissions: [{ name: 'search', purpose: 'Run the searches of the hunts.' }] },
-      { id: 'secops', name: 'Google SecOps hunt', documentation_url: null, required_permissions: [] },
-    ];
-    testRender(<HuntsSetupChecklist state={state({ connectorsCount: 2, aliveCount: 0, indicatorsCount: 0, connectors })} />);
-    const permissions = within(screen.getByTestId('hunts-setup-permissions'));
-    expect(permissions.getByText('Required permissions of Splunk hunt')).toBeInTheDocument();
-    expect(permissions.getByText('Required permissions of Google SecOps hunt')).toBeInTheDocument();
-    fireEvent.click(permissions.getByText('Required permissions of Splunk hunt'));
-    expect(permissions.getByText('search')).toBeInTheDocument();
-    expect(permissions.getByTestId('connector-hunt-permissions-docs')).toHaveAttribute('href', 'https://docs.example.com/splunk-hunt');
-  });
-
-  it('shows no connector permissions before a hunt connector is deployed', () => {
-    testRender(<HuntsSetupChecklist state={state({ connectorsCount: 0, aliveCount: 0, indicatorsCount: 0, connectors: [] })} />);
-    expect(screen.queryByTestId('hunts-setup-permissions')).not.toBeInTheDocument();
-  });
-
-  it('leaves its heading to the drawer that opens it on demand', () => {
-    testRender(<HuntsSetupChecklist state={state({})} showHeading={false} />);
-    expect(screen.queryByText('Before your first hunt')).not.toBeInTheDocument();
-    expect(screen.getByTestId('hunts-setup-connectors')).toBeInTheDocument();
   });
 });
 

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext, USER_CONNECTOR } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
 import { fullEntitiesList, internalLoadById } from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
@@ -279,7 +279,7 @@ describe('Hunt readiness and indicator hunts', () => {
     await patchAttribute(testContext, ADMIN_USER, indicatorHuntId, 'Hunt', { hunt_status: 'paused' });
   });
 
-  it('should show the permissions a connector declares', async () => {
+  it('should show the permissions a connector declares and record its connection test, check by check', async () => {
     const registration = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: gql`mutation HuntConnectorSetup($input: HuntConnectorRegisterInput!) {
         huntConnectorRegister(input: $input) { required_permissions { name purpose } documentation_url }
@@ -299,5 +299,33 @@ describe('Hunt readiness and indicator hunts', () => {
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     expect(registration.data?.huntConnectorRegister.required_permissions).toEqual([{ name: 'search', purpose: 'Run the hunt searches' }]);
     expect(registration.data?.huntConnectorRegister.documentation_url).toBeNull();
+    const CHECK_READ = gql`query HuntConnectorCheck($id: String!) { connector(id: $id) { hunt { connection_check { id status checks { name ok message } } } } }`;
+    const requested = await queryAsAdminWithSuccess({
+      query: gql`mutation HuntConnectorTest($id: ID!) { huntConnectorTestConnection(id: $id) { connection_check { id status } } }`,
+      variables: { id: CONNECTOR_ID },
+    });
+    const check = requested.data?.huntConnectorTestConnection.connection_check;
+    expect(check.status).toEqual('pending');
+    const CHECK_REPORT = gql`mutation HuntConnectorCheckReport($input: HuntConnectorCheckReportInput!) {
+      huntConnectorCheckReport(input: $input) { connection_check { status } }
+    }`;
+    const checks = [
+      { name: 'Authentication', ok: true, message: 'The token is valid' },
+      { name: 'search', ok: false, message: 'Access denied: the account lacks the search capability' },
+    ];
+    type StoredConnector = BasicStoreEntity & { hunt_connection_check?: { work_id?: string } };
+    const stored = await internalLoadById<StoredConnector>(testContext, ADMIN_USER, CONNECTOR_ID, { type: ENTITY_TYPE_CONNECTOR });
+    const workId = stored.hunt_connection_check?.work_id;
+    expect(workId).toBeTruthy();
+    const stale = await queryAsUser(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: 'another-test', work_id: workId, checks } } });
+    expect(stale.errors?.[0].message).toContain('not the last one requested');
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: check.id, work_id: 'another-work', checks } } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: CHECK_REPORT, variables: { input: { connector_id: CONNECTOR_ID, check_id: check.id, work_id: workId, checks } } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const read = await queryAsAdminWithSuccess({ query: CHECK_READ, variables: { id: CONNECTOR_ID } });
+    expect(read.data?.connector.hunt.connection_check.status).toEqual('failed');
+    expect(read.data?.connector.hunt.connection_check.checks[1].message).toEqual('Access denied: the account lacks the search capability');
   });
 });

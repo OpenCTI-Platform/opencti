@@ -482,6 +482,7 @@
   "Hunt armed by a PIR": "Hunt durch ein PIR scharf geschaltet",
   "Hunt benign patterns": "Harmlose Muster der Hunt",
   "Hunt concurrent runs": "Gleichzeitige Hunt-Ausführungen",
+  "Hunt connection test": "Verbindungstest der Jagd",
   "Hunt connector setup": "Einrichtung des Jagd-Konnektors",
   "Hunt escalation threshold": "Eskalationsschwelle der Hunt",
   "Hunt expected observables": "Erwartete Observables der Hunt",

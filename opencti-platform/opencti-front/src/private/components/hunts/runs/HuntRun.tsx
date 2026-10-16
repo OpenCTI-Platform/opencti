@@ -364,9 +364,13 @@ const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
       );
       break;
     case 'access':
-      // The sentence of the connector names the missing permission
+      // The sentence of the connector names the missing permission, as its connection test does
       title = t_i18n('Access denied on {platform}', { values: { platform } });
-      action = checkConnector;
+      action = run.connector_id ? (
+        <Button variant="secondary" size="small" component={Link} to={`/dashboard/data/ingestion/connectors/${run.connector_id}`} data-testid="hunt-run-test-connection">
+          {t_i18n('Test the connection of the connector')}
+        </Button>
+      ) : undefined;
       break;
     case 'refused':
     case 'request':
