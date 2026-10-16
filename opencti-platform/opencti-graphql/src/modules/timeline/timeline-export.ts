@@ -487,6 +487,9 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
 // endregion
 
 // region HTML (consumed by the built-in HTML to PDF export of the front end)
+// The fonts of the PDF have no emoji, so the arrow that joins the ends of a relationship in its name is written in text
+const EMOJI_ARROW = /\u27a1\ufe0f?/g;
+
 /**
  * The drawing comes first, alone on its page; the headline dates and the events start on the next page, where the
  * `pdf-pagebreak-before` class asks the PDF export to break.
@@ -505,7 +508,7 @@ export const renderTimelineHtml = (input: TimelineExportInput): string => {
     event.title,
     event.element_name ?? '',
     event.annotation ?? '',
-  ].map((cell) => `<td>${escapeXml(cell)}</td>`).join('')).map((cells) => `<tr>${cells}</tr>`).join('');
+  ].map((cell) => `<td>${escapeXml(cell.replace(EMOJI_ARROW, '->'))}</td>`).join('')).map((cells) => `<tr>${cells}</tr>`).join('');
   const headers = ['time', 'end_time', 'lane', 'kind', 'precision', 'title', 'element', 'annotation']
     .map((key) => `<th>${escapeXml(label(input, `column.${key}`))}</th>`).join('');
   return [

@@ -127,7 +127,7 @@ export const indicatorRevocationTime = (element: AnyStoreElement): string | null
 const NOTE_NAME_LENGTH = 80;
 
 // A note is named by its abstract, which is optional: without one, the start of its content names it
-const timelineElementName = (element: AnyStoreElement): string => {
+export const timelineElementName = (element: AnyStoreElement): string => {
   const content = typeof element.content === 'string' ? element.content.replace(/\s+/g, ' ').trim() : '';
   if (element.entity_type === ENTITY_TYPE_CONTAINER_NOTE && !element.attribute_abstract && content) {
     return truncate(content, NOTE_NAME_LENGTH);

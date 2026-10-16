@@ -89,7 +89,7 @@ import {
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { computeTimelineAnchors } from './timeline-anchors';
 import { loadTimelineHeadlineDates } from './timeline-headline-dates';
-import { isContainerClosed } from './timeline-loader';
+import { isContainerClosed, timelineElementName } from './timeline-loader';
 import { RULE_ENTITY_SEEN } from './timeline-rules';
 import { notifyTimelineMilestoneAdded, notifyTimelineMilestonesAdded } from './timeline-notification';
 import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
@@ -660,7 +660,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
       precision: event.time_precision,
       title: event.name,
       description: event.description,
-      element_name: element ? extractEntityRepresentativeName(element) : null,
+      element_name: element ? timelineElementName(element) : null,
       element_type: element?.entity_type ?? null,
       source: event.event_source,
       pinned: event.pinned,

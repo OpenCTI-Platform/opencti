@@ -105,6 +105,13 @@ describe('Timeline exports', () => {
     expect(html).not.toContain('<case>');
   });
 
+  it('should write the arrow of the name of a relationship in text in the PDF, its fonts having no emoji', () => {
+    const sighting = { ...input.events[0], element_name: '198.51.100.23 \u27a1\ufe0f Finance SIEM' };
+    const html = renderTimelineHtml({ ...input, events: [sighting] });
+    expect(html).toContain('<td>198.51.100.23 -&gt; Finance SIEM</td>');
+    expect(html).not.toContain('\u27a1');
+  });
+
   it('should show the headline dates of the type of the container only', () => {
     // The default headline dates leave the eradication out, even when it is dated
     expect(renderTimelineSvg(input)).not.toContain('>Eradication</text>');
