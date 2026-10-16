@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConnectorContractConfiguration, ConnectorInfoErrorCriticity, ConnectorPriorityGroup } from '../../generated/graphql';
+import type { ConnectorContractConfiguration, ConnectorPriorityGroup } from '../../generated/graphql';
 import type { BasicStoreEntityCsvMapper } from '../internal/csvMapper/csvMapper-types';
 import type { CatalogContractEntityFields } from '../catalog/catalog-types';
 import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
@@ -8,7 +8,7 @@ import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-t
 export interface ConnectorInfoError {
   code: string;
   message: string;
-  criticity: ConnectorInfoErrorCriticity;
+  criticity: number;
 }
 
 export interface ConnectorInfo {

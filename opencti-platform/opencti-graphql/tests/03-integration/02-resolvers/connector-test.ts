@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { type ConnectorInfo, type ConnectorInfoError, ConnectorInfoErrorCriticity, type Connector } from '../../../src/generated/graphql';
+import { type ConnectorInfo, type ConnectorInfoError, type Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { patchAttribute } from '../../../src/database/middleware';
@@ -525,8 +525,8 @@ describe('Connector resolver standard behaviour', () => {
       run_and_terminate: false,
     };
     const errors: ConnectorInfoError[] = [
-      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: ConnectorInfoErrorCriticity.High },
-      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: ConnectorInfoErrorCriticity.Low },
+      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 },
+      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: 0 },
     ];
 
     it('should store errors sent with ping', async () => {
@@ -556,22 +556,22 @@ describe('Connector resolver standard behaviour', () => {
     });
 
     it('should truncate an error message too long to be indexed', async () => {
-      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: 'STACK_TRACE', message: 'M'.repeat(40000), criticity: ConnectorInfoErrorCriticity.Medium }] };
+      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: 'STACK_TRACE', message: 'M'.repeat(40000), criticity: 1 }] };
       const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR_WITH_ERRORS_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
       expect(queryResult.data.pingConnector.connector_info.errors).toEqual([
-        { code: 'STACK_TRACE', message: 'M'.repeat(CONNECTOR_ERROR_MESSAGE_MAX_LENGTH), criticity: ConnectorInfoErrorCriticity.Medium },
+        { code: 'STACK_TRACE', message: 'M'.repeat(CONNECTOR_ERROR_MESSAGE_MAX_LENGTH), criticity: 1 },
       ]);
     });
 
     it('should drop errors with a blank code without failing the ping', async () => {
-      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: '   ', message: 'blank code', criticity: ConnectorInfoErrorCriticity.Critical }, ...errors] };
+      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: '   ', message: 'blank code', criticity: 3 }, ...errors] };
       const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR_WITH_ERRORS_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
       expect(queryResult.data.pingConnector.connector_info.errors).toEqual(errors);
     });
 
     it('should keep only the most critical errors', async () => {
-      const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: ConnectorInfoErrorCriticity.Low }));
-      const criticalError = { code: 'CRITICAL', message: '', criticity: ConnectorInfoErrorCriticity.Critical };
+      const lowErrors = Array.from({ length: CONNECTOR_ERRORS_MAX_COUNT }, (_, index) => ({ code: `LOW_${index}`, message: '', criticity: 0 }));
+      const criticalError = { code: 'CRITICAL', message: '', criticity: 3 };
       const connectorInfo = { ...baseConnectorInfo, errors: [...lowErrors, criticalError] };
       const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR_WITH_ERRORS_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
       const storedErrors: ConnectorInfoError[] = queryResult.data.pingConnector.connector_info.errors;
@@ -584,8 +584,8 @@ describe('Connector resolver standard behaviour', () => {
       await queryAsUserIsExpectedError(USER_CONNECTOR, { query: PING_CONNECTOR_WITH_ERRORS_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
     });
 
-    it('should reject an unknown criticity', async () => {
-      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 3 }] };
+    it('should reject a non-integer criticity', async () => {
+      const connectorInfo = { ...baseConnectorInfo, errors: [{ code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 'HIGH' }] };
       await queryAsUserIsExpectedError(USER_CONNECTOR, { query: PING_CONNECTOR_WITH_ERRORS_QUERY, variables: { id: TEST_CN_ID, state, connectorInfo } });
     });
   });
