@@ -73,6 +73,58 @@ class TestHuntHelpers(TestCase):
         self.assertEqual(kwargs["required_permissions"], permissions)
         self.assertEqual(kwargs["documentation_url"], "https://docs.example.com/splunk")
 
+    def test_report_hunt_connection_check_forwards_the_checks(self):
+        helper = _helper()
+        checks = [{"name": "search", "ok": True, "message": "Allowed"}]
+        helper.report_hunt_connection_check("check-1", checks)
+        helper.api.hunt_run.report_connection_check.assert_called_once_with(
+            connector_id="connector-1",
+            check_id="check-1",
+            checks=checks,
+            work_id="work-1",
+        )
+
+    def test_report_hunt_connection_check_names_the_work_it_was_given(self):
+        helper = _helper()
+        helper.report_hunt_connection_check("check-1", [], work_id="work-2")
+        self.assertEqual(
+            helper.api.hunt_run.report_connection_check.call_args.kwargs["work_id"],
+            "work-2",
+        )
+
+    def test_listen_hunt_answers_a_connection_test_without_a_run(self):
+        helper = _helper()
+        message_callback = MagicMock(return_value="checked")
+        callback = _hunt_callback(helper, message_callback)
+        event = _event(mode="check", hunt_run=None, connection_check={"id": "check-1"})
+        self.assertEqual(callback(event), "checked")
+        helper.api.hunt_run.report.assert_not_called()
+
+    def test_listen_hunt_reports_a_failed_connection_test(self):
+        helper = _helper()
+        callback = _hunt_callback(helper, MagicMock(side_effect=RuntimeError("down")))
+        event = _event(mode="check", hunt_run=None, connection_check={"id": "check-1"})
+        with self.assertRaises(RuntimeError):
+            callback(event)
+        kwargs = helper.api.hunt_run.report_connection_check.call_args.kwargs
+        checks = kwargs["checks"]
+        self.assertEqual(kwargs["work_id"], "work-1")
+        self.assertEqual(checks[0]["message"], "down")
+        self.assertFalse(checks[0]["ok"])
+        with self.assertRaises(ValueError):
+            callback(_event(mode="check", connection_check={}))
+
+    def test_listen_hunt_raises_the_connection_test_error_when_its_report_fails(self):
+        helper = _helper()
+        helper.api.hunt_run.report_connection_check.side_effect = ConnectionError(
+            "OpenCTI unreachable"
+        )
+        callback = _hunt_callback(helper, MagicMock(side_effect=RuntimeError("down")))
+        event = _event(mode="check", hunt_run=None, connection_check={"id": "check-1"})
+        with self.assertRaisesRegex(RuntimeError, "down"):
+            callback(event)
+        helper.connector_logger.warning.assert_called_once()
+
     def test_register_hunt_platform_declares_indicator_lookups(self):
         helper = _helper()
         helper.register_hunt_platform(

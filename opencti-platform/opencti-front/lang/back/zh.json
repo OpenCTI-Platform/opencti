@@ -481,6 +481,7 @@
   "Hunt analyst feedback": "狩猎分析师反馈",
   "Hunt benign patterns": "狩猎良性模式",
   "Hunt concurrent runs": "狩猎并发运行",
+  "Hunt connection test": "狩猎连接测试",
   "Hunt connector setup": "狩猎连接器设置",
   "Hunt escalation threshold": "狩猎升级阈值",
   "Hunt expected observables": "狩猎预期可观察对象",

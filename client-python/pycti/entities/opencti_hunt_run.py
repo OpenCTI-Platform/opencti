@@ -467,6 +467,50 @@ class HuntRun:
         result = self.opencti.query(query, {"input": register_input})
         return result["data"]["huntConnectorRegister"]
 
+    def report_connection_check(self, **kwargs):
+        """Report the answer of a hunt connector to a connection test (huntConnectorCheckReport).
+
+        :param connector_id: the connector id
+        :type connector_id: str
+        :param check_id: the id of the connection test, from the check message
+        :type check_id: str
+        :param checks: list of {name, ok, message}, one per check, the message in plain words
+        :type checks: list
+        :param work_id: (optional) the work the test was dispatched with
+        :type work_id: str
+        :return: the hunt connector
+        :rtype: dict or None
+        """
+        connector_id = kwargs.get("connector_id", None)
+        check_id = kwargs.get("check_id", None)
+        checks = kwargs.get("checks", None)
+        work_id = kwargs.get("work_id", None)
+        if connector_id is None or check_id is None or checks is None:
+            self.opencti.app_logger.error(
+                "[opencti_hunt_run] Missing parameters: connector_id, check_id or checks"
+            )
+            return None
+        query = """
+            mutation HuntConnectorCheckReport($input: HuntConnectorCheckReportInput!) {
+                huntConnectorCheckReport(input: $input) {
+                    id
+                    connection_check {
+                        id
+                        status
+                    }
+                }
+            }
+        """
+        check_input = {
+            "connector_id": connector_id,
+            "check_id": check_id,
+            "checks": checks,
+        }
+        if work_id is not None:
+            check_input["work_id"] = work_id
+        result = self.opencti.query(query, {"input": check_input})
+        return result["data"]["huntConnectorCheckReport"]
+
     def list_connectors(self, **kwargs):
         """List the hunt connectors (huntConnectors).
 

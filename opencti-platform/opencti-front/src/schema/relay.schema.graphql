@@ -10151,6 +10151,12 @@ type Mutation {
   huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun
   huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun
   huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector
+
+  """
+  Asks a hunt connector to test its connection and its permissions on its platform
+  """
+  huntConnectorTestConnection(id: ID!): HuntConnector
+  huntConnectorCheckReport(input: HuntConnectorCheckReportInput!): HuntConnector
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -10837,6 +10843,11 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+
+  """
+  Hunted platform of an INTERNAL_HUNT connector, null for every other connector type
+  """
+  hunt: HuntConnector
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -17509,6 +17520,29 @@ type HuntRequiredPermission {
   purpose: String!
 }
 
+enum HuntConnectionCheckStatus {
+  pending
+  passed
+  failed
+}
+
+type HuntConnectionCheckItem {
+  name: String!
+  ok: Boolean!
+
+  """What the connector found, in plain words"""
+  message: String!
+}
+
+"""The last connection test of a hunt connector"""
+type HuntConnectionCheck {
+  id: String!
+  status: HuntConnectionCheckStatus!
+  requested_at: DateTime
+  checked_at: DateTime
+  checks: [HuntConnectionCheckItem!]!
+}
+
 type HuntConnector {
   id: ID!
   name: String!
@@ -17519,6 +17553,7 @@ type HuntConnector {
   Where the setup of the connector (account, permissions, configuration) is documented
   """
   documentation_url: String
+  connection_check: HuntConnectionCheck
   platform: String!
   languages: [String!]!
   supports_preview: Boolean!
@@ -17738,6 +17773,26 @@ input HuntConnectorRegisterInput {
 
   "*Constraints:*\n* Maximal length: `2048`\n"
   documentation_url: String
+}
+
+input HuntConnectionCheckItemInput {
+  "*Constraints:*\n* Maximal length: `256`\n"
+  name: String!
+  ok: Boolean!
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  message: String!
+}
+
+input HuntConnectorCheckReportInput {
+  connector_id: ID!
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  check_id: String!
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  work_id: String
+  checks: [HuntConnectionCheckItemInput!]!
 }
 
 input AskSendOtpInput {

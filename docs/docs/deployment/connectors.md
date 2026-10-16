@@ -33,7 +33,7 @@ Information stored in OpenCTI can be extracted into different file formats like 
 
 ### Internal hunt
 
-These connectors (type `INTERNAL_HUNT`) execute [hunts](../usage/hunts.md) against exactly one hunted platform: a SIEM, an EDR, an XDR or a data lake. Like enrichment connectors, they only act on the runs OpenCTI puts on their queue. They translate the Sigma rule of a hunt with pySigma (or run its native query), execute it on the platform within the run limits, and send back the observables and observed data found in the hits; OpenCTI then creates and updates the sightings of the hunt itself. Raw events never leave the hunted platform. They need read-only search access to the platform; the permissions each one needs are listed in the setup checklist of Defense > Hunts. See [Hunt connectors](../usage/hunt-connectors.md).
+These connectors (type `INTERNAL_HUNT`) execute [hunts](../usage/hunts.md) against exactly one hunted platform: a SIEM, an EDR, an XDR or a data lake. Like enrichment connectors, they only act on the runs OpenCTI puts on their queue. They translate the Sigma rule of a hunt with pySigma (or run its native query), execute it on the platform within the run limits, and send back the observables and observed data found in the hits; OpenCTI then creates and updates the sightings of the hunt itself. Raw events never leave the hunted platform. They need read-only search access to the platform. The permissions each one needs are listed in the setup checklist of Defense > Hunts, and the **Connection test** card of its connector page tests them. See [Hunt connectors](../usage/hunt-connectors.md).
 
 ## Connector configuration
 

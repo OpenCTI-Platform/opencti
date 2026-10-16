@@ -263,6 +263,26 @@ type HuntRequiredPermission {
   name: String!
   purpose: String!
 }
+enum HuntConnectionCheckStatus {
+  pending
+  passed
+  failed
+}
+type HuntConnectionCheckItem {
+  name: String!
+  ok: Boolean!
+  "What the connector found, in plain words"
+  message: String!
+}
+"The last connection test of a hunt connector"
+type HuntConnectionCheck {
+  id: String!
+  status: HuntConnectionCheckStatus!
+  requested_at: DateTime
+  checked_at: DateTime
+  checks: [HuntConnectionCheckItem!]!
+}
+
 type HuntConnector {
   id: ID!
   name: String!
@@ -270,6 +290,7 @@ type HuntConnector {
   required_permissions: [HuntRequiredPermission!]!
   "Where the setup of the connector (account, permissions, configuration) is documented"
   documentation_url: String
+  connection_check: HuntConnectionCheck
   platform: String!
   languages: [String!]!
   supports_preview: Boolean!
@@ -278,6 +299,11 @@ type HuntConnector {
   max_concurrent_runs: Int
   securityPlatform: SecurityPlatform
   updated_at: DateTime
+}
+
+extend type Connector {
+  "Hunted platform of an INTERNAL_HUNT connector, null for every other connector type"
+  hunt: HuntConnector
 }
 
 # Queries
@@ -444,6 +470,20 @@ input HuntConnectorRegisterInput {
   documentation_url: String @constraint(maxLength: 2048)
 }
 
+input HuntConnectionCheckItemInput {
+  name: String! @constraint(maxLength: 256)
+  ok: Boolean!
+  message: String! @constraint(maxLength: 2048)
+}
+
+input HuntConnectorCheckReportInput {
+  connector_id: ID!
+  check_id: String! @constraint(maxLength: 64)
+  # The work the test was dispatched with: only the connector that received the test knows it
+  work_id: String @constraint(maxLength: 64)
+  checks: [HuntConnectionCheckItemInput!]!
+}
+
 type Mutation {
   huntRunRetry(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
   huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
@@ -451,4 +491,7 @@ type Mutation {
   huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun @auth(for: [CONNECTORAPI])
   huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
   huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector @auth(for: [CONNECTORAPI])
+  "Asks a hunt connector to test its connection and its permissions on its platform"
+  huntConnectorTestConnection(id: ID!): HuntConnector @auth(for: [MODULES_MODMANAGE])
+  huntConnectorCheckReport(input: HuntConnectorCheckReportInput!): HuntConnector @auth(for: [CONNECTORAPI])
 }
