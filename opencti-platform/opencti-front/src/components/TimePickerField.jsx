@@ -86,7 +86,6 @@ const TimePickerField = (props) => {
     : (timeFormatsMap[intl.locale] || 'hh:mm a');
   return (
     <TimePicker
-      enableAccessibleFieldDOMStructure={false}
       {...fieldToTimePicker(props)}
       value={parsedValue}
       disableToolbar={false}

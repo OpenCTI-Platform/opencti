@@ -100,7 +100,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   if (withSeconds) {
     return (
       <DateTimePicker
-        enableAccessibleFieldDOMStructure={false}
         {...fieldToDateTimePicker(props)}
         value={parsedValue}
         variant="inline"
@@ -130,7 +129,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   }
   return (
     <DateTimePicker
-      enableAccessibleFieldDOMStructure={false}
       {...fieldToDateTimePicker(props)}
       value={parsedValue} // Ensuring Date type
       variant="inline"

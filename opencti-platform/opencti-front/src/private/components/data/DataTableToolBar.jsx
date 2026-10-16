@@ -2230,7 +2230,6 @@ class DataTableToolBar extends Component {
       case 'account_lock_after_date':
         return (
           <DateTimePicker
-            enableAccessibleFieldDOMStructure={false}
             disabled={disabled}
             variant="inline"
             disableToolbar={false}
@@ -2246,7 +2245,6 @@ class DataTableToolBar extends Component {
       case 'stop_time':
         return (
           <DateTimePicker
-            enableAccessibleFieldDOMStructure={false}
             disabled={disabled || (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(selectedField))}
             variant="inline"
             disableToolbar={false}
@@ -2262,7 +2260,6 @@ class DataTableToolBar extends Component {
         return (
           <>
             <DateTimePicker
-              enableAccessibleFieldDOMStructure={false}
               variant="inline"
               disableToolbar={false}
               autoOk={true}

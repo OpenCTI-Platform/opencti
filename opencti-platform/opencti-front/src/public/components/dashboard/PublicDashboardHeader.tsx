@@ -52,7 +52,6 @@ const PublicDashboardHeader = ({
           disabled
         />
         <DatePicker
-          enableAccessibleFieldDOMStructure={false}
           disabled
           value={buildDate(startDate)}
           label={t_i18n('Start date')}
@@ -73,7 +72,6 @@ const PublicDashboardHeader = ({
           }}
         />
         <DatePicker
-          enableAccessibleFieldDOMStructure={false}
           disabled
           value={buildDate(endDate)}
           label={t_i18n('End date')}

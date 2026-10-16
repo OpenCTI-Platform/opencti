@@ -229,7 +229,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await reportForm.publicationDateField.getClearButton().click();
   // The mask coming back is the proof the field is empty AND still a working
   // date field; matched as a pattern because the mask follows the locale.
-  await expect(reportForm.publicationDateField.getInput()).toHaveValue(/Y{4}.*M{2}.*D{2}/);
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/Y{4}.*M{2}.*D{2}/);
   // Re-picking on a cleared field: the calendar opens on the frozen clock's
   // month (April 2024), so this is deterministic and leaves a valid value.
   await reportForm.publicationDateField.pickDay('25');

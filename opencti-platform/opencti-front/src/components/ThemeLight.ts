@@ -543,6 +543,64 @@ const ThemeLight = (
         },
       },
     },
+    // The date pickers render their own field, not MuiTextField / MuiOutlinedInput:
+    // the same paint and geometry as those two, so a date reads as one more
+    // outlined field.
+    MuiPickersTextField: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+          '& .MuiFormLabel-root:not(.MuiInputLabel-shrink):not(.Mui-error)': {
+            color: '#494A50',
+          },
+        },
+      },
+    },
+    MuiPickersInputBase: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: text_color,
+          '&.Mui-disabled': {
+            color: theme.palette.text.disabled,
+          },
+        }),
+      },
+    },
+    MuiPickersOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
+          minHeight: 36,
+          // The sections carry the left padding, as the <input> did.
+          paddingLeft: 0,
+          '& .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+          '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-hover)',
+          },
+          // Matches the picker's own focused rule, which a plain `.Mui-focused` would not outrank.
+          '&.Mui-focused:not(.Mui-error) .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-focus)',
+          },
+          '&.Mui-error .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-error)',
+          },
+          '&.Mui-disabled': {
+            backgroundColor: 'transparent',
+            '& .MuiPickersOutlinedInput-notchedOutline': {
+              borderColor: 'var(--border-elevation-disabled)',
+            },
+          },
+        },
+        sectionsContainer: {
+          padding: '8px 8px 8px 12px',
+          // The width of the <input> it replaces; MUI's own 182px widens every date field.
+          width: 150,
+        },
+      },
+    },
     MuiSelect: {
       defaultProps: {
         // Every remaining MUI field is outlined, so it can carry the library
@@ -767,6 +825,15 @@ const ThemeLight = (
       styleOverrides: {
         root: {
           color: text_color,
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          // Material UI 9 lowered it to 36px; the lists are laid out on the former 56px.
+          // MenuItem keeps its own 36px, which outranks this rule.
+          minWidth: 56,
         },
       },
     },
