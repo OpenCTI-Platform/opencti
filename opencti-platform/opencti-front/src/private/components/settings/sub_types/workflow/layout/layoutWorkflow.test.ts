@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { layoutWorkflow } from './layoutWorkflow';
 import { getRoutePath } from './route';
-import { boxesOverlap, buildElements, countBends, isAxisAligned, randomWorkflow, SAMPLES, segmentHitsBox, transitionId } from './layoutFixtures';
+import { boxesOverlap, buildElements, countBends, isAxisAligned, isOnHexagonOutline, randomWorkflow, SAMPLES, segmentHitsBox, transitionId } from './layoutFixtures';
 import type { Box, WorkflowFixture } from './layoutFixtures';
 
 const OPTIONS = { spacing: [50, 50] as [number, number] };
@@ -47,6 +47,21 @@ describe('layoutWorkflow – invariants (4 samples + 300 random workflows)', () 
         boxes.filter((b) => b.id !== e.source && b.id !== e.target).forEach((b) => {
           points.slice(1).forEach((q, i) => expect(segmentHitsBox(points[i], q, b)).toBe(false));
         });
+      });
+    });
+  });
+
+  it('starts and ends edges on the outline of the transition hexagon', () => {
+    fixtures.forEach((fixture) => {
+      const { nodes, edges, result, boxes } = run(fixture);
+      const transitionIds = new Set(nodes.filter((n) => n.type === 'transition').map((n) => n.id));
+      const transitions = new Map(boxes.filter((b) => transitionIds.has(b.id)).map((b) => [b.id, b]));
+      edges.forEach((e) => {
+        const points = result.routes.get(e.id)!;
+        const source = transitions.get(e.source);
+        const target = transitions.get(e.target);
+        if (source) expect(isOnHexagonOutline(points[0], source)).toBe(true);
+        if (target) expect(isOnHexagonOutline(points[points.length - 1], target)).toBe(true);
       });
     });
   });
@@ -118,6 +133,7 @@ describe('layoutWorkflow – hints and edge cases', () => {
     expect(result.nodeHints.get('C')!.rank).toBeGreaterThan(result.nodeHints.get('t')!.rank);
     const back = result.routes.get('e')!;
     expect(back[back.length - 1].y).toBeCloseTo(result.positions.get('A')!.y);
+    expect(isOnHexagonOutline(back[0], { id: 't', ...result.positions.get('t')!, w: 160, h: 50 })).toBe(true);
   });
 
   it('routes every target of a backward transition that goes back to several statuses', () => {

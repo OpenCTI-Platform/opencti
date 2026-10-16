@@ -1,4 +1,5 @@
 import type { XYPosition } from 'reactflow';
+import { WorkflowNodeType } from '../utils';
 import type { Graph, LaneItem, Placement, RankedGraph } from './types';
 
 const GUIDE = 14; // stub out of a side port before turning into a channel
@@ -128,7 +129,12 @@ export const routeEdges = ({ graph, ranked, x, place, items, pitch }: RouteConte
   const isClear = (y: number, xa: number, xb: number, ignore: string[]) => !boxes.some(([id, b]) => !ignore.includes(id)
     && Math.abs(y - b.cy) < b.h / 2 + 1
     && Math.min(xa, xb) < b.cx + b.w / 2 && Math.max(xa, xb) > b.cx - b.w / 2);
-  const port = (id: string, sign: number, dy: number): XYPosition => ({ x: P(id).cx + sign * (P(id).w / 2), y: P(id).cy + dy });
+  // A status takes side ports at its quarters; a transition hexagon only touches its box sides
+  // at its tips, at mid-height (see NodeTypes/TransitionNode.tsx).
+  const port = (id: string, sign: number, dy: number): XYPosition => ({
+    x: P(id).cx + sign * (P(id).w / 2),
+    y: P(id).cy + (graph.nodes.get(id)!.type === WorkflowNodeType.transition ? 0 : dy),
+  });
   // Leave a status by its side (lower quarter) towards lane x `lx`.
   const exitTo = (id: string, lx: number, sign: number, key: string, ignore: string[]): RawPoint[] => {
     const p = port(id, sign, P(id).h / 4);
@@ -186,11 +192,13 @@ export const routeEdges = ({ graph, ranked, x, place, items, pitch }: RouteConte
       const source = e.source;
       const key = `e:${e.id}`;
       if (item.selfLoop) {
-        const p = port(source, sign, P(source).h / 4);
-        const near = t.cx - sign * (t.w / 2);
-        if (isClear(p.y, p.x, near, [source, item.id])) {
-          raw.set(e.id, [p, { x: near, y: p.y }]);
+        // Straight from the status side to the hexagon tip beside it, both at mid-height.
+        const start = port(source, sign, 0);
+        const tip = { x: t.cx - sign * (t.w / 2), y: t.cy };
+        if (isClear(t.cy, start.x, tip.x, [source, item.id])) {
+          raw.set(e.id, [start, tip]);
         } else {
+          const p = port(source, sign, P(source).h / 4);
           const gx = p.x + sign * GUIDE;
           const ref = channel(P(source).rank, key, gx, t.cx);
           raw.set(e.id, [p, { x: gx, y: p.y }, { x: gx, y: ref }, { x: t.cx, y: ref }, { x: t.cx, y: t.cy + t.h / 2 }]);

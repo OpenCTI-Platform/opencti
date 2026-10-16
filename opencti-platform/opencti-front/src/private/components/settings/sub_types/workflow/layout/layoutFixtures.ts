@@ -149,3 +149,24 @@ export const isAxisAligned = (points: XYPosition[]) => points.slice(1)
   .every((q, i) => Math.abs(q.x - points[i].x) < 0.01 || Math.abs(q.y - points[i].y) < 0.01);
 
 export const countBends = (routes: Map<string, XYPosition[]>) => [...routes.values()].reduce((sum, r) => sum + Math.max(0, r.length - 2), 0);
+
+// TransitionNode draws a hexagon: its left and right tips sit at mid-height, and its slanted
+// sides cut the box corners by 20% of the height (see NodeTypes/TransitionNode.tsx).
+export const isOnHexagonOutline = (p: XYPosition, b: Box, tolerance = 1) => {
+  const skew = b.h * 0.2;
+  const corners: XYPosition[] = [
+    { x: b.x, y: b.y + b.h / 2 },
+    { x: b.x + skew, y: b.y },
+    { x: b.x + b.w - skew, y: b.y },
+    { x: b.x + b.w, y: b.y + b.h / 2 },
+    { x: b.x + b.w - skew, y: b.y + b.h },
+    { x: b.x + skew, y: b.y + b.h },
+  ];
+  return corners.some((a, i) => {
+    const c = corners[(i + 1) % corners.length];
+    const dx = c.x - a.x;
+    const dy = c.y - a.y;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)) <= tolerance;
+  });
+};
