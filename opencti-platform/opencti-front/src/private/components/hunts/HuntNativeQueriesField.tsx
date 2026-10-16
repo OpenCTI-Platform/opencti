@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Field, FieldArray, useFormikContext } from 'formik';
+import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { IconButton, Text } from '@filigran/design-system';
@@ -13,11 +14,10 @@ import { HuntAIAction } from './HuntAIAssist';
 import {
   HUNT_DOCS,
   HUNT_FIRST_RULE,
-  HUNT_INFRASTRUCTURE_PLATFORMS,
   HUNT_LANGUAGE_FINGERPRINT,
   HUNT_PLATFORM_DEFAULT_LANGUAGE,
-  HUNT_PLATFORMS,
   HUNT_QUERY_LANGUAGES,
+  huntNativeQueryPlatforms,
   huntPlatformLabel,
   huntQueryLanguageLabel,
   type HuntNativeQueryFormValue,
@@ -41,6 +41,21 @@ interface NativeQueriesValues {
 
 const emptyRow = (): HuntNativeQueryFormValue => ({ platform: '', language: '', query: '', pipeline: '' });
 
+/** The rows of the field, each written for a platform its hunt type runs on: a row kept from another type is flagged, not saved */
+export const huntNativeQueriesSchema = (huntType: string | null | undefined, t_i18n: (message: string) => string) => {
+  const platforms = huntNativeQueryPlatforms(huntType);
+  return Yup.array().of(Yup.object().shape({
+    platform: Yup.string().required(t_i18n('This field is required')).test(
+      'hunt-platform',
+      huntType === 'infrastructure' ? t_i18n('Choose an internet scanning service') : t_i18n('Choose a security platform'),
+      (platform) => !platform || platforms.includes(platform),
+    ),
+    language: Yup.string().required(t_i18n('This field is required')),
+    query: Yup.string().trim().required(t_i18n('This field is required')),
+    pipeline: Yup.string().nullable(),
+  }));
+};
+
 /**
  * Per-platform native query overrides: when a row matches the platform of a hunt connector,
  * the connector executes this query verbatim instead of translating the Sigma rule.
@@ -48,10 +63,18 @@ const emptyRow = (): HuntNativeQueryFormValue => ({ platform: '', language: '', 
 const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false, ruleOptions = [], infrastructure = false }: HuntNativeQueriesFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { values, setFieldValue } = useFormikContext<NativeQueriesValues>();
+  const { values, setFieldValue, setFieldTouched } = useFormikContext<NativeQueriesValues>();
   const rows = (values[name] ?? []) as HuntNativeQueryFormValue[];
-  const platforms: ReadonlyArray<string> = infrastructure ? HUNT_INFRASTRUCTURE_PLATFORMS : HUNT_PLATFORMS;
+  const platforms = huntNativeQueryPlatforms(infrastructure ? 'infrastructure' : 'telemetry');
   const languages: ReadonlyArray<string> = infrastructure ? [HUNT_LANGUAGE_FINGERPRINT] : HUNT_QUERY_LANGUAGES;
+  // The platform of a row kept from another hunt type is not in the list, so its field looks empty: the error shows at once
+  useEffect(() => {
+    rows.forEach((row, index) => {
+      if (row.platform && !platforms.includes(row.platform)) {
+        setFieldTouched(`${name}.${index}.platform`, true, true);
+      }
+    });
+  }, [infrastructure]);
   const helper = (
     <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
       {infrastructure
@@ -101,7 +124,8 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                     ? <HuntHelp text={t_i18n('The internet scanning service this document is written for')} href={`${HUNT_DOCS.connectors}#internet-scanning-services`} />
                     : <HuntHelp text={t_i18n('Its hunt connector runs this query instead of translating the Sigma rule')} href={HUNT_DOCS.createHunt} />}
                   onChange={(_: string, platform: string) => {
-                    if (!row.language && HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]) {
+                    // A language kept from another hunt type is not in the list either: the platform picks its own
+                    if ((!row.language || !languages.includes(row.language)) && HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]) {
                       setFieldValue(`${name}.${index}.language`, HUNT_PLATFORM_DEFAULT_LANGUAGE[platform]);
                     }
                   }}

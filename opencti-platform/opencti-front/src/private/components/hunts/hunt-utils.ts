@@ -58,8 +58,11 @@ export const HUNT_PLATFORMS = [
   'clickhouse',
   's3-ocsf',
   'sentinelone',
-  ...HUNT_INFRASTRUCTURE_PLATFORMS,
 ] as const;
+/** The platforms the native queries of a hunt are written for: the internet scanning services for an infrastructure hunt, the security platforms otherwise */
+export const huntNativeQueryPlatforms = (huntType: string | null | undefined): ReadonlyArray<string> => {
+  return huntType === 'infrastructure' ? HUNT_INFRASTRUCTURE_PLATFORMS : HUNT_PLATFORMS;
+};
 export const HUNT_QUERY_LANGUAGES = [
   'spl',
   'kql',
@@ -73,7 +76,6 @@ export const HUNT_QUERY_LANGUAGES = [
   'opensearch-lucene',
   'sql',
   'powerquery',
-  HUNT_LANGUAGE_FINGERPRINT,
 ] as const;
 /** Default query language of each platform, offered first when a native query row is added */
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {

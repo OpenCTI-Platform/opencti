@@ -39,7 +39,7 @@ import HuntSigmaRulesField from './HuntSigmaRulesField';
 import HuntBenignPatternsField from './HuntBenignPatternsField';
 import HuntIncidentModeField from './HuntIncidentModeField';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
-import HuntNativeQueriesField from './HuntNativeQueriesField';
+import HuntNativeQueriesField, { huntNativeQueriesSchema } from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
@@ -127,12 +127,8 @@ export const useHuntFormValidation = (iocFilters: string | null = null) => {
         return this.createError({ message: t_i18n('An active hunt cannot run: {sentence}', { values: { sentence: t_i18n(sentence) } }) });
       }),
     sigma_rule: Yup.string().nullable(),
-    native_queries: Yup.array().of(Yup.object().shape({
-      platform: Yup.string().required(t_i18n('This field is required')),
-      language: Yup.string().required(t_i18n('This field is required')),
-      query: Yup.string().trim().required(t_i18n('This field is required')),
-      pipeline: Yup.string().nullable(),
-    })),
+    // An indicator hunt drops its native queries
+    native_queries: Yup.array().when('hunt_type', ([huntType], schema) => (huntType === 'indicators' ? schema : huntNativeQueriesSchema(huntType, t_i18n))),
     schedule_mode: Yup.string().oneOf(['manual', 'standing', 'cron']),
     schedule_cron: Yup.string().when('schedule_mode', {
       is: 'cron',

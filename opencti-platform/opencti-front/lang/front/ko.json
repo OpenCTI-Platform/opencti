@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "인터넷 스캔 서비스용 핑거프린트 문서를 추가하세요",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "인터넷 인프라 헌트는 이 지표나 규칙을 사용하지 않습니다. 로직 섹션에 핑거프린트 문서를 작성하세요.",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "헌트를 변경하고 실행하려면 '보안 플랫폼에서 헌트 실행' 권한이 필요합니다.",
+  "Choose a security platform": "보안 플랫폼을 선택하세요",
+  "Choose an internet scanning service": "인터넷 스캔 서비스를 선택하세요",
   "Create the incident directly": "인시던트를 바로 생성",
   "Deleted hunt": "삭제된 헌트",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "각 인터넷 스캔 서비스는 해당 서비스용으로 작성된 핑거프린트 문서를 실행하며, 없으면 첫 번째 문서를 실행합니다.",

@@ -79,7 +79,8 @@ From **Defense > Hunts**, click the creation button. The form has four steps, **
 
 - **What to hunt**: the hunt type, then its logic:
     - the **Sigma rules**: each is validated while you type, the platform reports the parsing errors, the detection fields and the ATT&CK techniques found in its tags. Techniques found in the tags are linked to the hunt automatically. **Generate with AI**, next to the label of the first rule, proposes the rule with XTM One (see [Generate with AI](#generate-with-ai)). **Add a Sigma rule** adds another rule, up to 100, each translated and run on its own,
-    - optional **native queries**, one per platform and rule, executed verbatim instead of the translated Sigma rule (**Add a native query**, next to the label). With several Sigma rules, **Replaces the Sigma rule** picks the rule a native query replaces,
+    - optional **native queries**, one per security platform and rule, executed verbatim instead of the translated Sigma rule (**Add a native query**, next to the label). With several Sigma rules, **Replaces the Sigma rule** picks the rule a native query replaces,
+    - for an internet infrastructure hunt, its **Fingerprint documents**, written for the internet scanning services (**Add a fingerprint document**). A native query or a fingerprint document kept across a change of the hunt type keeps its query, and its **Platform** says "Choose a security platform" or "Choose an internet scanning service" until a platform of the new type is picked, which gives it the language of that platform,
     - for an indicator hunt, the indicators and observables to look for (see [Indicator hunts](hunt-indicators.md)),
 - **Context**: the name, the **hypothesis**, the description and the status,
 - **Execution**: the scope, the schedule, the **Time window** searched by each run (24 hours by default), the escalation and the observables to extract described below,

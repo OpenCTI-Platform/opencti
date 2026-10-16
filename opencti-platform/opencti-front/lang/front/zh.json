@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "请为互联网扫描服务添加指纹文档",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "互联网基础设施狩猎既不使用这些指标也不使用这些规则：请在“逻辑”部分编写其指纹文档。",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "更改和运行狩猎需要“在安全平台上发起狩猎”权限。",
+  "Choose a security platform": "请选择安全平台",
+  "Choose an internet scanning service": "请选择互联网扫描服务",
   "Create the incident directly": "直接创建安全事件",
   "Deleted hunt": "已删除的狩猎",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "每个互联网扫描服务运行为其编写的指纹文档，否则运行第一个。",

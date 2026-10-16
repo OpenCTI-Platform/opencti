@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "インターネットスキャンサービス用のフィンガープリントドキュメントを追加してください",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "インターネットインフラのハントは、これらのインジケーターもルールも使用しません。ロジックセクションにフィンガープリントドキュメントを記述してください。",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "ハントの変更と実行には「セキュリティ・プラットフォームでハントを実行」権限が必要です。",
+  "Choose a security platform": "セキュリティ・プラットフォームを選択してください",
+  "Choose an internet scanning service": "インターネットスキャンサービスを選択してください",
   "Create the incident directly": "インシデントを直接作成する",
   "Deleted hunt": "削除されたハント",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "各インターネットスキャンサービスは、そのサービス用に書かれたフィンガープリントドキュメントを実行し、なければ最初のものを実行します。",

@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "Ajoutez un document d'empreintes pour un service de scan d'internet",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "Une chasse d’infrastructure sur internet n’utilise ni ces indicateurs ni ces règles : écrivez son document d’empreintes dans la section Logique.",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "Modifier et exécuter des chasses nécessite la capacité « Lancer des chasses sur les plateformes de sécurité ».",
+  "Choose a security platform": "Choisissez une plateforme de sécurité",
+  "Choose an internet scanning service": "Choisissez un service de scan d'internet",
   "Create the incident directly": "Créer l'incident directement",
   "Deleted hunt": "Chasse supprimée",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "Chaque service de scan d'internet exécute le document d'empreintes écrit pour lui, sinon le premier.",

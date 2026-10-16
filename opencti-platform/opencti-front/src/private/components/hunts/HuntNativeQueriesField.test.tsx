@@ -22,6 +22,21 @@ describe('Native queries of a hunt', () => {
     expect(screen.getByLabelText('pySigma pipeline (optional)')).toBeInTheDocument();
   });
 
+  it('should offer the native queries of a hunt on the detection stack the security platforms only, never an internet scanning service', async () => {
+    const { user } = renderField(false);
+    await user.click(screen.getByRole('combobox', { name: /Platform/ }));
+    const platforms = screen.getAllByRole('option').map((option) => option.textContent);
+    expect(platforms).toHaveLength(10);
+    expect(platforms).toContain('Splunk');
+    expect(platforms).toContain('SentinelOne Singularity');
+    ['Censys Platform', 'Silent Push', 'urlscan.io', 'Team Cymru Scout', 'Shodan'].forEach((service) => expect(platforms).not.toContain(service));
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('combobox', { name: /Query language/ }));
+    const languages = screen.getAllByRole('option').map((option) => option.textContent);
+    expect(languages).toContain('SPL');
+    expect(languages).not.toContain('Internet fingerprints');
+  });
+
   it('should word the logic of an infrastructure hunt as fingerprint documents, without a Sigma pipeline', () => {
     renderField(true);
     expect(screen.getByText('Each internet scanning service runs the fingerprint document written for it, or else the first one.')).toBeInTheDocument();

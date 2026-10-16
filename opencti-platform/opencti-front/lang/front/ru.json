@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "Добавьте документ отпечатков для сервиса сканирования интернета",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "Охота за инфраструктурой в интернете не использует ни эти индикаторы, ни эти правила: напишите её документ отпечатков в разделе «Логика».",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "Чтобы изменять и запускать охоты, нужно право «Запускать охоты на платформах безопасности».",
+  "Choose a security platform": "Выберите платформу безопасности",
+  "Choose an internet scanning service": "Выберите сервис сканирования интернета",
   "Create the incident directly": "Создавать инцидент сразу",
   "Deleted hunt": "Удалённая охота",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "Каждый сервис сканирования интернета выполняет документ отпечатков, написанный для него, иначе первый.",

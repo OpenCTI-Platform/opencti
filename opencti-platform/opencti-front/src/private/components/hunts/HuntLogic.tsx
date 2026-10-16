@@ -22,7 +22,7 @@ import useFiltersState from '../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
-import HuntNativeQueriesField from './HuntNativeQueriesField';
+import HuntNativeQueriesField, { huntNativeQueriesSchema } from './HuntNativeQueriesField';
 import HuntSigmaRulesField from './HuntSigmaRulesField';
 import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
@@ -335,11 +335,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
   // A native query replaces one saved rule on its platform: the rules are named by their title
   const ruleOptions = hunt.sigma_rules.map((rule, index) => ({ value: index === 0 ? HUNT_FIRST_RULE : hunt.sigma_rule_keys[index], label: sigmaRuleTitle(rule) }));
   const validation = Yup.object().shape({
-    native_queries: Yup.array().of(Yup.object().shape({
-      platform: Yup.string().required(t_i18n('This field is required')),
-      language: Yup.string().required(t_i18n('This field is required')),
-      query: Yup.string().trim().required(t_i18n('This field is required')),
-    })),
+    native_queries: huntNativeQueriesSchema(hunt.hunt_type, t_i18n),
   });
   const onSubmit = (values: LogicValues, { setSubmitting, resetForm }: { setSubmitting: (submitting: boolean) => void; resetForm: (next: { values: LogicValues }) => void }) => {
     const input: { key: string; value: unknown[] }[] = [

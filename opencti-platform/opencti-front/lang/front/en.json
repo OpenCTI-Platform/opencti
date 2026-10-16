@@ -12,6 +12,8 @@
   "Add a fingerprint document for an internet scanning service": "Add a fingerprint document for an internet scanning service",
   "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.": "An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.",
   "Changing and running hunts needs the Launch hunts on security platforms capability.": "Changing and running hunts needs the Launch hunts on security platforms capability.",
+  "Choose a security platform": "Choose a security platform",
+  "Choose an internet scanning service": "Choose an internet scanning service",
   "Create the incident directly": "Create the incident directly",
   "Deleted hunt": "Deleted hunt",
   "Each internet scanning service runs the fingerprint document written for it, or else the first one.": "Each internet scanning service runs the fingerprint document written for it, or else the first one.",
