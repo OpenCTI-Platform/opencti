@@ -21,7 +21,7 @@
         <link rel="next" href="../organization-segregation/">
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
@@ -144,7 +144,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -514,7 +514,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -5137,7 +5137,7 @@
 <p>Marking Definition objects are unique among STIX objects in the <a href="https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html">STIX 2.1 standard</a> in that they cannot be versioned. This restriction is in place to prevent the possibility of indirect alterations to the markings associated with a STIX Object.</p>
 <p>Multiple markings can be added to the same object. Certain categories of marking definitions or trust groups may enforce rules that specify which markings take precedence over others or how some markings can be added to complement existing ones.</p>
 <p>In OpenCTI, data is segregated based on knowledge marking. The diagram provided below illustrates the manner in which OpenCTI establishes connections between pieces of information to authorize data access for a user:</p>
-<p><a class="glightbox" href="../assets/data-access-diagram.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data access diagram" src="../assets/data-access-diagram.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/data-access-diagram-3222f06d4d.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data access diagram" src="/shared-assets/data-access-diagram-3222f06d4d.png" /></a></p>
 <h2 id="manage-markings">Manage markings</h2>
 <h3 id="create-new-markings">Create new markings</h3>
 <p>To create a marking, you must first possess the capability <code>Manage marking definitions</code>. For further information on user administration, please refer to the <a href="../users/">Users and Role Based Access Control page</a>.</p>
@@ -5149,7 +5149,7 @@
 <li>Color: The color associated with the marking.</li>
 <li>Order: Determines the hierarchical order among markings of the same type.</li>
 </ul>
-<p><a class="glightbox" href="../assets/create-marking.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a marking animation" src="../assets/create-marking.gif" /></a></p>
+<p><a class="glightbox" href="/shared-assets/create-marking-9dfff6f40c.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a marking animation" src="/shared-assets/create-marking-9dfff6f40c.gif" /></a></p>
 <h3 id="allowed-marking">Allowed marking</h3>
 <p>The configuration of authorized markings for a user is determined at the <a href="../users/#group-section">Group</a> level. To access entities and relationships associated with specific markings, the user must belong to a group that has been granted access to those markings.</p>
 <p>There are two ways in which markings can be accessed:</p>
@@ -5167,7 +5167,7 @@
 </div>
 <h3 id="default-marking-definitions">Default marking definitions</h3>
 <p>To apply a default marking when creating a new entity or relationship, you can choose which marking to add by default from the list of allowed markings. You can add <em>only one marking per type</em>, but you can have multiple types. This configuration is also done at the <a href="../users/#group-section">Group</a> level.</p>
-<p><a class="glightbox" href="../assets/default-marking.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Add default marking" src="../assets/default-marking.gif" /></a></p>
+<p><a class="glightbox" href="/shared-assets/default-marking-59a444a086.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Add default marking" src="/shared-assets/default-marking-59a444a086.gif" /></a></p>
 <div class="admonition note">
 <p class="admonition-title">Need a configuration change</p>
 <p>Simply adding markings as default markings is insufficient to display the markings when creating an entity or relationship. You also need to enable default markings in the customization settings of an entity or relationship. For example, to enable default markings for a new report, navigate to "Settings &gt; Customization &gt; Report &gt; Markings" and toggle the option to <code>Activate/Desactivate default values</code>.</p>
@@ -5185,7 +5185,7 @@ we allow to share data externally (via Public dashboard or file export).</p>
 <p>For example in the capture below, for the type of marking <code>TLP</code>, only data  with a marking
 definition that is allowed and has a level equal or below <code>GREEN</code> will be shareable. And no data with marking
 definition <code>statement</code> will be shared at all.</p>
-<p><a class="glightbox" href="../assets/max-marking-shareable.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Maximum marking definitions shareable" src="../assets/max-marking-shareable.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/max-marking-shareable-6fcb19bb0d.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Maximum marking definitions shareable" src="/shared-assets/max-marking-shareable-6fcb19bb0d.png" /></a></p>
 <h3 id="management-of-multiple-markings">Management of multiple markings</h3>
 <p>In scenarios where multiple markings of the same type but different orders are added, the platform will retain only the marking with the highest order for each type. This consolidation can occurs in various instances:</p>
 <ul>
@@ -5195,9 +5195,9 @@ definition <code>statement</code> will be shared at all.</p>
 </ul>
 <p>For example:</p>
 <p>Create a new report and add markings <code>PAP:AMBER</code>,<code>PAP:RED</code>,<code>TLP:AMBER+STRICT</code>,<code>TLP:CLEAR</code> and a statement <code>CC-BY-SA-4.0 DISARM Foundation</code></p>
-<p><a class="glightbox" href="../assets/create-entity-markings.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-markings.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/create-entity-markings-26ffbb1261.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="/shared-assets/create-entity-markings-26ffbb1261.png" /></a></p>
 <p>The final markings kept are: <code>PAP:RED</code>, <code>TLP:AMBER+STRICT</code> and <code>CC-BY-SA-4.0 DISARM Foundation</code></p>
-<p><a class="glightbox" href="../assets/create-entity-marking-filter.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="../assets/create-entity-marking-filter.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/create-entity-marking-filter-bade4a4b70.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create entity with markings" src="/shared-assets/create-entity-marking-filter-bade4a4b70.png" /></a></p>
 <h3 id="update-an-object-manually">Update an object manually</h3>
 <p>When update an entity or a relationship:</p>
 <ul>
@@ -5205,14 +5205,14 @@ definition <code>statement</code> will be shared at all.</p>
 <li>add a marking with the <em>same type and the same order</em>, the marking will be added,</li>
 <li>add a marking with <em>different types</em>, the marking will be added.</li>
 </ul>
-<p><a class="glightbox" href="../assets/marking-pop.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update entity with markings, popup dialog" src="../assets/marking-pop.gif" /></a></p>
+<p><a class="glightbox" href="/shared-assets/marking-pop-a6e988c0b7.gif" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update entity with markings, popup dialog" src="/shared-assets/marking-pop-a6e988c0b7.gif" /></a></p>
 <h3 id="import-data-from-a-connector">Import data from a connector</h3>
 <p>As a result of this mechanism, when importing data from a connector, the connector is unable to downgrade a marking for an entity if a marking of the same type is already present on it.</p>
 <h2 id="additional-information">Additional information</h2>
 <p>The Traffic Light Protocol is implemented by default as marking definitions in OpenCTI. It allows you to segregate information by TLP levels in your platform and restrict access to marked data if users are not authorized to see the corresponding marking.</p>
 <p>The Traffic Light Protocol (TLP) was designed by the Forum of Incident Response and Security Teams (<a href="https://www.first.org/tlp/">FIRST</a>) to provide a standardized method for classifying and handling sensitive information, based on four categories of sensitivity.</p>
 <p>For more details, the diagram provided below illustrates how are categorized the marking definitions:</p>
-<p><a class="glightbox" href="../assets/tlp-diagram.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TLP diagram" src="../assets/tlp-diagram.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/tlp-diagram-b50d4df897.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TLP diagram" src="/shared-assets/tlp-diagram-b50d4df897.png" /></a></p>
 
 
 

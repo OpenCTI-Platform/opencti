@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7428,7 +7428,7 @@
 <li>Use ‘delete’ events when you want to trigger the playbook when an entity or relationship is removed from OpenCTI. For example you can use this to notify a user when an entity they created is deleted or to trigger a data review if a relationship is deleted.</li>
 </ul>
 <p>To make this playbook available for manual enrollment, activate the <em>*</em><em>Available for manual enrollment</em><em>*</em> toggle. The playbook then appears as an option when you select an entity that matches the event source filter criteria. Deactivate this toggle to hide the playbook from manual enrollment.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/playbook_listen.png" data-desc-position="bottom"><img alt="Playbook listening for creation events on TLP:GREEN IP addresses and domain names" src="../assets/playbook_listen.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/playbook_listen-682208f052.png" data-desc-position="bottom"><img alt="Playbook listening for creation events on TLP:GREEN IP addresses and domain names" src="/shared-assets/playbook_listen-682208f052.png"></a></p>
 <h3 id="listen-pir-events">Listen PIR events</h3>
 <p>This event source listens to Priority Intelligence Requirement (PIR) events. You select the PIRs to monitor and choose the cases in which the playbook triggers by using the corresponding toggles:</p>
 <ul>
@@ -7440,17 +7440,17 @@
 <blockquote>
 <p>Note: By default, if no PIR is selected, all available PIR events will be processed by the playbook.</p>
 </blockquote>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/listen-pir-events-in-playbook.png" data-desc-position="bottom"><img alt="Playbook configuration panel for listening to PIR events" src="../assets/listen-pir-events-in-playbook.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/listen-pir-events-in-playbook-2421be2056.png" data-desc-position="bottom"><img alt="Playbook configuration panel for listening to PIR events" src="/shared-assets/listen-pir-events-in-playbook-2421be2056.png"></a></p>
 <p>The filter allows you to monitor events only for entities that meet the filter criteria, for example you can set a <strong>PIR score</strong> so that the playbook is triggered when an entity in your PIR is added with a high PIR score.</p>
 <h3 id="query-knowledge-on-a-regular-basis">Query knowledge on a regular basis</h3>
 <p>With this event source, the playbook queries knowledge on an hourly, daily, weekly, or monthly basis, according to the filters you configure.</p>
 <p>If you activate the <em>*</em><em>Only last modified entities after the last run</em><em>*</em> option, the playbook excludes entities that have not changed since the previous run.</p>
 <p><strong><em>Component-specific options</em></strong>
 <strong><em>Include all entities in a single bundle</em></strong>: This option adds all matching entities to a single bundle. For example use this when you want to send a single notification (for example, one email) that contains multiple entities.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/Playbook_query_knowledge.png" data-desc-position="bottom"><img alt="Playbook query knowledge component configured to retrieve recent incidents" src="../assets/Playbook_query_knowledge.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/Playbook_query_knowledge-03f768b056.png" data-desc-position="bottom"><img alt="Playbook query knowledge component configured to retrieve recent incidents" src="/shared-assets/Playbook_query_knowledge-03f768b056.png"></a></p>
 <h3 id="available-for-manual-enrollment">Available for manual enrollment</h3>
 <p>Use this event source to create a playbook that you trigger manually on specific entities. You can configure filters in the component so that the playbook appears as a suggestion only for entities that match the filter criteria.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/playbook_manual_source.png" data-desc-position="bottom"><img alt="Manual enrollment component configured to match important incidents" src="../assets/playbook_manual_source.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/playbook_manual_source-d4618b4dca.png" data-desc-position="bottom"><img alt="Manual enrollment component configured to match important incidents" src="/shared-assets/playbook_manual_source-d4618b4dca.png"></a></p>
 <h2 id="playbook-body-components">Playbook body components</h2>
 <p>These components define how the bundle is filtered, enriched and updated by the playbook.</p>
 <h3 id="match-knowledge">Match knowledge</h3>

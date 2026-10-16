@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -419,7 +419,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7497,7 +7497,7 @@
 <p>You are looking for the available connectors? The list is in the <a href="https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations">XTM Hub Integrations Library</a>.</p>
 </div>
 <p>Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data. According to their functionality and use case, they are categorized in the following classes.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/connectors.png" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/connectors-6fc96b2749.png" data-desc-position="bottom"><img alt="Connectors" src="/shared-assets/connectors-6fc96b2749.png"></a></p>
 <h3 id="import">Import</h3>
 <p>These connectors automatically retrieve information from an external organization, application, or service, and convert it to STIX 2.1 bundles. Then, they import it into OpenCTI using the workers.</p>
 <h3 id="enrichment">Enrichment</h3>
@@ -7745,13 +7745,13 @@
 <h3 id="create-the-user">Create the user</h3>
 <p>As mentioned previously, it is strongly recommended to run each connector with its own user. The <code>Internal Export File</code> connectors <strong>should be launched with a user that belongs to a group which has an “Administrator” role</strong> (with bypass all capabilities enabled).</p>
 <p>By default, in platform, a group named "Connectors" already exists. So just create a new user with the name <code>[C] Name of the connector</code> in Settings &gt; Security &gt; Users.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/create-user.png" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/create-user-f0a8f62632.png" data-desc-position="bottom"><img alt="Create user" src="/shared-assets/create-user-f0a8f62632.png"></a></p>
 <h3 id="put-the-user-in-the-group">Put the user in the group</h3>
 <p>Just go to the user you have just created and add it to the <code>Connectors</code> group.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/user-groups.png" data-desc-position="bottom"><img alt="User groups" src="../assets/user-groups.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/user-groups-527a32d8da.png" data-desc-position="bottom"><img alt="User groups" src="/shared-assets/user-groups-527a32d8da.png"></a></p>
 <p>Then create a user token in the interface.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/user-token.png" data-desc-position="bottom"><img alt="User token" src="../assets/user-token.png"></a>
-<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/user-token-generated.png" data-desc-position="bottom"><img alt="User token" src="../assets/user-token-generated.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/user-token-0ffc619e3a.png" data-desc-position="bottom"><img alt="User token" src="/shared-assets/user-token-0ffc619e3a.png"></a>
+<a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/user-token-generated-498d01cad1.png" data-desc-position="bottom"><img alt="User token" src="/shared-assets/user-token-generated-498d01cad1.png"></a></p>
 <div class="admonition info">
 <p class="admonition-title">Stateless connections</p>
 <p>The user associated with the connector will be used to authenticate to the platform GraphQL API using a dedicated short time period JWT token.
@@ -7809,7 +7809,7 @@ This is no longer an option "stateless mode" that can be set manually from the u
 </span></code></pre></div>
 <h2 id="connectors-status">Connectors status</h2>
 <p>The connector status can be displayed in the dedicated section of the platform available in Data &gt; Ingestion &gt; Connectors. You will be able to see the statistics of the RabbitMQ queue of the connector:</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/connectors-status.png" data-desc-position="bottom"><img alt="Connectors" src="../assets/connectors-status.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/connectors-status-a4d029ea36.png" data-desc-position="bottom"><img alt="Connectors" src="/shared-assets/connectors-status-a4d029ea36.png"></a></p>
 <div class="admonition bug">
 <p class="admonition-title">Problem</p>
 <p>If you encounter problems deploying OpenCTI or connectors, you can consult the <a href="../advanced/troubleshooting/">troubleshooting page</a>.</p>

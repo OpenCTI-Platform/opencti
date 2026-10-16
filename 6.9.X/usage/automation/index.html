@@ -24,7 +24,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.8+insiders-4.53.16">
     
     
@@ -146,7 +146,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7413,10 +7413,10 @@
 <h2 id="create-a-playbook">Create a playbook</h2>
 <h3 id="manual-creation">Manual creation</h3>
 <p>It is possible to create as many playbooks as needed, which run independently. You can give a name and description to each playbook.</p>
-<p><a class="glightbox" href="../assets/playbook_create.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a new playbook" src="../assets/playbook_create.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_create-53089efc87.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create a new playbook" src="/shared-assets/playbook_create-53089efc87.png" /></a></p>
 <p>The first step to define in the playbook is your event source.
 To do so, click on the grey rectangle in the center of the workspace and select the input component that suits your needs.</p>
-<p><a class="glightbox" href="../assets/playbook_input.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Choose input component" src="../assets/playbook_input.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_input-7bc9387f1c.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Choose input component" src="/shared-assets/playbook_input-7bc9387f1c.png" /></a></p>
 <h3 id="duplicate-a-playbook">Duplicate a playbook</h3>
 <p>It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.</p>
 <h3 id="importexport-a-playbook">Import/Export a playbook</h3>
@@ -7492,7 +7492,7 @@ To do so, click on the grey rectangle in the center of the workspace and select 
 <h3 id="listen-knowledge-events">Listen knowledge events</h3>
 <p>With this event source, the playbook will be triggered on any knowledge event (create, update or delete) that matches the selected filters.
 Note that you are limited to a subset of filters available for stream events that contain STIX data objects.</p>
-<p><a class="glightbox" href="../assets/playbook_listen.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Listening creation event for TLP:GREEN IPs and domain names" src="../assets/playbook_listen.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_listen-569f955e1f.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Listening creation event for TLP:GREEN IPs and domain names" src="/shared-assets/playbook_listen-569f955e1f.png" /></a></p>
 <h3 id="listen-pir-events">Listen PIR events</h3>
 <p>This event source is focused on listening to PIR events. It allows you to select the PIRs you want to monitor and choose the specific cases in which the playbook will be triggered using the corresponding toggles:</p>
 <ul>
@@ -7504,7 +7504,7 @@ Note that you are limited to a subset of filters available for stream events tha
 <blockquote>
 <p>Note: By default, if no PIR is selected, all available PIRs will be applied.</p>
 </blockquote>
-<p><a class="glightbox" href="../assets/listen-pir-events-in-playbook.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Listening PIR events" src="../assets/listen-pir-events-in-playbook.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/listen-pir-events-in-playbook-2421be2056.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Listening PIR events" src="/shared-assets/listen-pir-events-in-playbook-2421be2056.png" /></a></p>
 <p>The PIR Score filter allows you to monitor events only for entities with a PIR score matching at least one of your selected PIRs.</p>
 <h4 id="a-new-entity-is-added-to-a-selected-pir">A new entity is added to a selected PIR</h4>
 <p>Enable this toggle to trigger the playbook when an entity becomes of interest for at least one of the selected PIRs.</p>
@@ -7531,12 +7531,12 @@ Note that you are limited to a subset of filters available for stream events tha
 <p>If you check the option "Only last modified entities after the last run', then the playbook will exclude from each run the entities that have not changed since last run.</p>
 <h5 id="specificities-of-the-component">Specificities of the component</h5>
 <p><strong>Include all entities in a single bundle</strong>: this options allows you to add all entities found in a single bundle. This is useful if you want for instance to send a single email containing multiple entities at once.</p>
-<p><a class="glightbox" href="../assets/Playbook_query_knowledge.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Querying last incidents" src="../assets/Playbook_query_knowledge.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/Playbook_query_knowledge-03f768b056.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Querying last incidents" src="/shared-assets/Playbook_query_knowledge-03f768b056.png" /></a></p>
 <h3 id="available-for-manual-enrollment-trigger">Available for manual enrollment / trigger</h3>
 <p>Use this event source for setting up a playbook that will be triggered manually on specific entities.
 You can configure filters in the component so that this playbook will be suggested for certain entities during the manual enrollment.
 For more details about manual enrollment, see dedicated section below.</p>
-<p><a class="glightbox" href="../assets/playbook_manual_source.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Manual enroll important incidents" src="../assets/playbook_manual_source.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_manual_source-d4618b4dca.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Manual enroll important incidents" src="/shared-assets/playbook_manual_source-d4618b4dca.png" /></a></p>
 <h2 id="design-your-workflow">Design your workflow</h2>
 <p>Then you have flexible choices for the next steps to:</p>
 <ul>
@@ -7552,8 +7552,8 @@ For more details about manual enrollment, see dedicated section below.</p>
 <p>By clicking the "+" button on a link between components, you can insert a component between the two.</p>
 <p>Do not forget to start your Playbook when ready, with the Start option of the burger button placed near the name of your Playbook.</p>
 <h2 id="components-of-playbooks">Components of playbooks</h2>
-<p><a class="glightbox" href="../assets/playbook_list_of_components.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="List of current components(1/2)" src="../assets/playbook_list_of_components.png" /></a></p>
-<p><a class="glightbox" href="../assets/playbook_list_of_components2.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="List of current components(2/2)" src="../assets/playbook_list_of_components2.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_list_of_components-6fa6384399.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="List of current components(1/2)" src="/shared-assets/playbook_list_of_components-6fa6384399.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_list_of_components2-ff630335ac.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="List of current components(2/2)" src="/shared-assets/playbook_list_of_components2-ff630335ac.png" /></a></p>
 <h3 id="log-data-in-standard-output">Log data in standard output</h3>
 <p>Will write the received STIX 2.1 bundle in platform logs with configurable log level and then send out the STIX 2.1 bundle unmodified.</p>
 <h3 id="send-for-ingestion">Send for ingestion</h3>
@@ -7749,9 +7749,9 @@ With a first step listening on: entity type = IPV4 OR Report AND label = test. A
 </ul>
 <h2 id="enroll-manually-an-entity-into-a-playbook">Enroll manually an entity into a playbook</h2>
 <p>You can enroll individual entities in playbooks by using the action "Enroll in playbook" from the entity details view.</p>
-<p><a class="glightbox" href="../assets/playbook_enroll_entity.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Enroll entity in playbook" src="../assets/playbook_enroll_entity.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_enroll_entity-60b2962850.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Enroll entity in playbook" src="/shared-assets/playbook_enroll_entity-60b2962850.png" /></a></p>
 <p>This will open a drawer where you can choose the playbook you want to trigger on this entity.</p>
-<p><a class="glightbox" href="../assets/playbook_enroll_select.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Enroll entity in playbook" src="../assets/playbook_enroll_select.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_enroll_select-d9614f3a30.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Enroll entity in playbook" src="/shared-assets/playbook_enroll_select-d9614f3a30.png" /></a></p>
 <p>In this list, you will find:</p>
 <ul>
 <li>active playbooks that have set an "Available for manual enrollment / trigger" event source</li>
@@ -7765,7 +7765,7 @@ With a first step listening on: entity type = IPV4 OR Report AND label = test. A
 <li>Data created/ingested by the playbook does not contain the right modifications applied in the manipulate step: verify that your step is present, and that the operations you wanted to apply are well applied (you need to see the operation type, the field &amp; the value)</li>
 <li>Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves mutliple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.</li>
 </ul>
-<p><a class="glightbox" href="../assets/playbook_traces.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Steps monitoring" src="../assets/playbook_traces.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/playbook_traces-f436da8ac9.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Steps monitoring" src="/shared-assets/playbook_traces-f436da8ac9.png" /></a></p>
 
 
 

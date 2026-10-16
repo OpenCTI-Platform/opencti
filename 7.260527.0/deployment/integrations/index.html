@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -419,7 +419,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7130,7 +7130,7 @@
 <h3 id="csv-feeds">CSV Feeds</h3>
 <p>It is possible to create as many CSV feeds as needed, based on filters and accessible in HTTP. CSV feeds are available in Data &gt; Data sharing &gt; CSV deeds.</p>
 <p>When creating a CSV feed, you need to select one or multiple types of entities to make available. Then, you must assign a field (of an entity type) to each column in the CSV:</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/csv.png" data-desc-position="bottom"><img alt="CSV Feeds" src="../assets/csv.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/csv-b9beea6e07.png" data-desc-position="bottom"><img alt="CSV Feeds" src="/shared-assets/csv-b9beea6e07.png"></a></p>
 <div class="admonition note">
 <p class="admonition-title">Details</p>
 <p>For more information about CSV feeds, filters and configuration, please check the <a href="../../usage/feeds/#csv-feeds-section">Native feeds</a> page.</p>
@@ -7138,7 +7138,7 @@
 <h3 id="taxii-collections">TAXII collections</h3>
 <p>Most of the modern cybersecurity systems such as SIEMs, EDRs, XDRs and even firewalls support the <a href="https://oasis-open.github.io/cti-documentation/taxii/intro.html">TAXII protocol</a> which is basically a paginated HTTP STIX feed. OpenCTI implements a <a href="https://docs.oasis-open.org/cti/taxii/v2.1/os/taxii-v2.1-os.html">TAXII 2.1</a> server with the ability to create as many TAXII collections as needed in Data &gt; Data sharing &gt; TAXII Collections.</p>
 <p>TAXII collections are a sub-selection of the knowledge available in the platform and rely on filters. For instance, it is possible to create TAXII collections for pieces of malware with a given label, for indicators with a score greater than <em>n</em>, etc.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/taxii.png" data-desc-position="bottom"><img alt="TAXII Feeds" src="../assets/taxii.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/taxii-7ec9e9ac6a.png" data-desc-position="bottom"><img alt="TAXII Feeds" src="/shared-assets/taxii-7ec9e9ac6a.png"></a></p>
 <h3 id="live-streams">Live Streams</h3>
 <p>After implementing CSV feeds and TAXII collections, we figured out that those 2 stateless APIs are definitely not enough when it comes to tackle advanced information sharing challenges such as:</p>
 <ul>
@@ -7148,7 +7148,7 @@
 <li>Delete events when necessary (i.e. to handle indicators expiration in third party systems for instance).</li>
 </ul>
 <p>That's why we've developed the live streams. They are available in Data &gt; Data sharing &gt; Live streams. As with TAXII collections, it is possible to create as many streams as needed using filters.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/streams.png" data-desc-position="bottom"><img alt="Streams" src="../assets/streams.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/streams-44a24ffff0.png" data-desc-position="bottom"><img alt="Streams" src="/shared-assets/streams-44a24ffff0.png"></a></p>
 <p>Streams implement the <a href="https://en.wikipedia.org/wiki/Server-sent_events">HTTP SSE (Server-sent events)</a> protocol and give applications the possibility to consume a real time pure STIX 2.1 stream. Stream connectors in the <a href="https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations">XTM Hub Integrations Library</a> are using live streams to consume data and <em>do</em> something such as create / update / delete information in SIEMs, XDRs, etc.</p>
 <h3 id="authentication">Authentication</h3>
 <p>For all previously explained capabilities, as they are over the HTTP protocol, 3 authentication mechanisms are available to consume them.</p>
@@ -7185,12 +7185,12 @@
 </span></code></pre></div>
 <h4 id="playground">Playground</h4>
 <p>The playground is available on the <code>/public/graphql</code> endpoint. A link button is also available in the profile of your user.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/playground.png" data-desc-position="bottom"><img alt="Playground" src="../assets/playground.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/playground-9c14d02740.png" data-desc-position="bottom"><img alt="Playground" src="/shared-assets/playground-9c14d02740.png"></a></p>
 <p>All the schema documentation is directly available in the playground.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/playground-schema.png" data-desc-position="bottom"><img alt="Schema" src="../assets/playground-schema.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/playground-schema-1b374b40b8.png" data-desc-position="bottom"><img alt="Schema" src="/shared-assets/playground-schema-1b374b40b8.png"></a></p>
 <p>If you already logged to OpenCTI with the same browser you should be able to directly do some requests. If you are not authenticated or want to authenticate only through the playground you can use a header configuration using your profile token</p>
 <p>Example of configuration (bottom left of the playground):</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/playground-auth.png" data-desc-position="bottom"><img alt="Playground authentication" src="../assets/playground-auth.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/playground-auth-6cebc32771.png" data-desc-position="bottom"><img alt="Playground authentication" src="/shared-assets/playground-auth-6cebc32771.png"></a></p>
 <div class="admonition note">
 <p class="admonition-title">Additional GraphQL documentation</p>
 <p>To find out more about GraphQL and the playground, you can find two additional documentation pages: the <a href="../../reference/api/">GraphQL API</a> page and the <a href="../../development/api-usage/">GraphQL playground</a> page.</p>

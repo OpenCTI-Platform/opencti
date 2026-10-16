@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0+insiders-4.53.18">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -6786,7 +6786,7 @@
 <li>Filter setup: The feed can have specific filters to publish only a subset of the platform overall knowledge. Any data that meets the criteria established by the user's feed filters will be shared (e.g. specific types of entities, labels, marking definitions, etc.).</li>
 <li>Access control: A feed can be either public, i.e. accessible without authentication, or restricted. By default, it's accessible to any user with the "Access data sharing" capability, but it's possible to increase restrictions by limiting access to a specific user, group, or organization.</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/feed-access-restriction.png" data-desc-position="bottom"><img alt="Feed access restriction" src="../assets/feed-access-restriction.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/feed-access-restriction-7a94c6cbe2.png" data-desc-position="bottom"><img alt="Feed access restriction" src="/shared-assets/feed-access-restriction-7a94c6cbe2.png"></a></p>
 <p>By carefully configuring filters and access controls, you can tailor the behavior of Live streams, TAXII collections, and CSV feeds to align with your specific data-sharing needs.</p>
 <p><a id="live-stream-section"></a></p>
 <h2 id="live-streams">Live streams</h2>
@@ -6799,7 +6799,7 @@
 <li>resolving relationships and dependencies even out of the filters,</li>
 <li>can be public (without authentication).</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/live-stream.png" data-desc-position="bottom"><img alt="Live stream" src="../assets/live-stream.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/live-stream-302ce15a34.png" data-desc-position="bottom"><img alt="Live stream" src="/shared-assets/live-stream-302ce15a34.png"></a></p>
 <div class="admonition warning">
 <p class="admonition-title">Resolve relationships and dependencies</p>
 <p>Dependencies and relationships of entities shared via Live streams, as determined by specified filters, are automatically shared even beyond the confines of these filters. This means that interconnected data, which may not directly meet the filter criteria, is still included in the Live stream. However, OpenCTI data segregation mechanisms are still applied. They allow restricting access to shared data based on factors such as markings or organization. It's imperative to carefully configure and manage these access controls to ensure that no confidential data is shared.</p>
@@ -6852,7 +6852,7 @@
 <h2 id="taxii-collections">TAXII Collections</h2>
 <p>OpenCTI has an embedded TAXII API endpoint which provides valid STIX 2.1 bundles. If you wish to know more about the TAXII standard, <a href="https://oasis-open.github.io/cti-documentation/taxii/intro.html">please read the official introduction</a>.</p>
 <p>In OpenCTI you can create as many TAXII 2.1 collections as needed. </p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/taxii-collection.png" data-desc-position="bottom"><img alt="TAXII Collection" src="../assets/taxii-collection.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/taxii-collection-ae553b2e10.png" data-desc-position="bottom"><img alt="TAXII Collection" src="/shared-assets/taxii-collection-ae553b2e10.png"></a></p>
 <p>After creating a new collection, every system with a proper access token can consume the collection using different kinds of authentication (basic, bearer, etc.). </p>
 <p>As when using the GraphQL API, TAXII 2.1 collections have a classic pagination system that should be handled by the consumer. Also, it's important to understand that element dependencies (nested IDs) inside the collection are not always contained/resolved in the bundle, so consistency needs to be handled at the client level.</p>
 <p><a id="csv-feeds-section"></a></p>
@@ -6861,7 +6861,7 @@
 <p>The CSV feed facilitates the automatic generation of a CSV file, accessible via a URL. 
 The CSV file is regenerated and updated at user-defined intervals, providing flexibility. 
 The entries in the file correspond to the information that matches the filters applied and that were created or modified in the platform during the time interval (between the last generation of the CSV and the new one).</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/csv-feed.png" data-desc-position="bottom"><img alt="CSV feed" src="../assets/csv-feed.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/csv-feed-553ee0f95d.png" data-desc-position="bottom"><img alt="CSV feed" src="/shared-assets/csv-feed-553ee0f95d.png"></a></p>
 <h3 id="rolling-time-base-attribute">Rolling Time &amp; Base Attribute</h3>
 <p>The <em>Rolling Time</em> value (represented in minutes) determines how far back in time OpenCTI should look for data that matches your filters since the last fetch. The <em>Base Attribute</em> value determines whether OpenCTI should look for data <ins>created</ins> within the <em>Rolling Time</em> period, or data <ins>updated</ins> within the <em>Rolling Time</em> period.</p>
 <h3 id="relationship-based-columns-neighbor-resolution">Relationship-based columns (neighbor resolution)</h3>
@@ -6912,10 +6912,10 @@ The entries in the file correspond to the information that matches the filters a
 <h3 id="duplication">Duplication</h3>
 <p>To easily configure a new CSV feed, you can choose to start from an existing feed configuration and duplicate it.
 The "duplicate" action is accessible from the feed burger menu. </p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/feeds-duplicate.png" data-desc-position="bottom"><img alt="CSV feed duplication button" src="../assets/feeds-duplicate.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/feeds-duplicate-fdbbbe1725.png" data-desc-position="bottom"><img alt="CSV feed duplication button" src="/shared-assets/feeds-duplicate-fdbbbe1725.png"></a></p>
 <p>When you duplicate the CSV feed, all fields are copied to the creation form and can be edited.
 The new feed is named with a "-copy" suffix.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/feeds-duplication-form.png" data-desc-position="bottom"><img alt="CSV feed duplication form" src="../assets/feeds-duplication-form.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/feeds-duplication-form-184f4543bf.png" data-desc-position="bottom"><img alt="CSV feed duplication form" src="/shared-assets/feeds-duplication-form-184f4543bf.png"></a></p>
 <h3 id="csv-size-limit">CSV size limit</h3>
 <p>The CSV data generated from a CSV feed has a limit of 5 000 entries by default. 
 If more than 5 000 entities are retrieved by the platform, only the most recent 5 000 will be shared in the file.</p>

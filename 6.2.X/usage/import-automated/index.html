@@ -24,7 +24,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.22+insiders-4.53.8">
     
     
@@ -146,7 +146,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -412,7 +412,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -5017,7 +5017,7 @@
 Additionally, resetting the connector state will purge the RabbitMQ queue for this specific connector. </p>
 <p>However, this action requires the "Manage connector state" capability (more details about capabilities: <a href="../../administration/users/#list-of-capabilities">List of capabilities</a>). Without this specific capability, you will not be able to reset the connector state.</p>
 <p>When the action is performed, a message is displayed confirming the reset and inform you about the number of messages that will be purged</p>
-<p><a class="glightbox" href="../assets/reset-state-msg.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Reset state message pop-up" src="../assets/reset-state-msg.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/reset-state-msg-49b9592f6c.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Reset state message pop-up" src="/shared-assets/reset-state-msg-49b9592f6c.png" /></a></p>
 <p>Purging a message queue is necessary to remove any accumulated messages that may be outdated or redundant. It helps to avoid reprocessing messages that have already been ingested.</p>
 <p>By purging the queue, you ensure that the connector starts with a clean slate, processing only the new data.</p>
 <h3 id="connector-ecosystem">Connector Ecosystem</h3>
@@ -5033,7 +5033,7 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 <li>After filling in the URL and user token, validate the configuration.</li>
 <li>Once validated, select a live stream to which you have access.</li>
 </ol>
-<p><a class="glightbox" href="../assets/live-stream-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream configuration" src="../assets/live-stream-configuration.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/live-stream-configuration-171c7cb0bc.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream configuration" src="/shared-assets/live-stream-configuration-171c7cb0bc.png" /></a></p>
 <p>Additional configuration options:</p>
 <ul>
 <li>User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please <a href="./#best-practices-section">see the section "Best practices" below</a> for more information.</li>
@@ -5043,7 +5043,7 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 <li>Avoid dependencies resolution: Import only entities without their relationships. For instance, if the stream shares malware, all the malware's relationships will be retrieved by default. This option enables you to choose not to recover them.</li>
 <li>Use perfect synchronization: This option is specifically for synchronizing two platforms. If an imported entity already exists on the platform, the one from the stream will overwrite it.</li>
 </ul>
-<p><a class="glightbox" href="../assets/live-stream-additional-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream additional configuration" src="../assets/live-stream-additional-configuration.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/live-stream-additional-configuration-d2e0df2a2d.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Live stream additional configuration" src="/shared-assets/live-stream-additional-configuration-d2e0df2a2d.png" /></a></p>
 <h3 id="taxii-feeds">TAXII feeds</h3>
 <p>TAXII Feeds in OpenCTI provide a robust mechanism for ingesting TAXII collections from TAXII servers or other OpenCTI instances. Configuring TAXII ingester involves specifying essential details to seamlessly integrate threat intelligence data. Here's a step-by-step guide to configure TAXII ingesters:</p>
 <ol>
@@ -5060,7 +5060,7 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 <li>User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please <a href="./#best-practices-section">see the section "Best practices" below</a> for more information.</li>
 <li>Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.</li>
 </ul>
-<p><a class="glightbox" href="../assets/taxii-feed-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TAXII feed configuration" src="../assets/taxii-feed-configuration.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/taxii-feed-configuration-68ed7a1aff.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="TAXII feed configuration" src="/shared-assets/taxii-feed-configuration-68ed7a1aff.png" /></a></p>
 <h3 id="rss-feeds">RSS feeds</h3>
 <p>RSS Feeds functionality enables users to seamlessly ingest items in report form from specified RSS feeds. Configuring RSS Feeds involves providing essential details and selecting preferences to tailor the import process. Here's a step-by-step guide to configure RSS ingesters:</p>
 <ol>
@@ -5074,7 +5074,7 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 <li>Default author: Indicate the default author to be applied to the imported report. Please <a href="./#best-practices-section">see the section "Best practices" below</a> for more information.</li>
 <li>Default marking definitions: Indicate the default markings to be applied to the imported reports.</li>
 </ul>
-<p><a class="glightbox" href="../assets/rss-feed-configuration.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="RSS feed configuration" src="../assets/rss-feed-configuration.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/rss-feed-configuration-1f81dfe983.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="RSS feed configuration" src="/shared-assets/rss-feed-configuration-1f81dfe983.png" /></a></p>
 <h3 id="csv-feeds">CSV feeds</h3>
 <p>CSV feed ingester enables users to import CSV files exposed on URLs. Here's a step-by-step guide to configure TAXII ingesters:</p>
 <ol>
@@ -5091,7 +5091,7 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 <li>User responsible for data creation: Define the user responsible for creating data received from this CSV feed. Best practice is to dedicate one user per source for organizational clarity. Please <a href="./#best-practices-section">see the section "Best practices" below</a> for more information.</li>
 <li>Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.</li>
 </ul>
-<p><a class="glightbox" href="../assets/csv-feeds-creation-prior-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: prior CSV mapper test" src="../assets/csv-feeds-creation-prior-test.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-creation-prior-test-af964414f1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: prior CSV mapper test" src="/shared-assets/csv-feeds-creation-prior-test-af964414f1.png" /></a></p>
 <p>in CSV Mappers, if you created a representative for Marking definition, you could have chosen between 2 options:</p>
 <ul>
 <li>let the user choose  marking definitions</li>
@@ -5099,13 +5099,13 @@ Additionally, resetting the connector state will purge the RabbitMQ queue for th
 </ul>
 <p>This configuration applies when using a CSV Mapper for a CSV Ingester. If you select a CSV Mapper containing the option "Use default marking definitions of the user", the default marking definitions of the user you chose to be responsible for the data creation will be applied to all data imported. If you select a CSV Mapper containing the option "let the user choose  marking definitions", you will be presented with the list of all the marking definitions of the user you chose to be responsible for the data creation (and not yours!)</p>
 <p>To finalize the creation, click on "Verify" to run a check on the submitted URL with the selected CSV mapper. A valid URL-CSV mapper combination results in the identification of up to 50 entities.</p>
-<p><a class="glightbox" href="../assets/csv-feeds-creation-after-test.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper test" src="../assets/csv-feeds-creation-after-test.png" /></a></p>
-<p><a class="glightbox" href="../assets/csv-feeds-creation-list.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: list" src="../assets/csv-feeds-creation-list.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-creation-after-test-1820f62f1e.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: CSV mapper test" src="/shared-assets/csv-feeds-creation-after-test-1820f62f1e.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-creation-list-7eac0eb217.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: list" src="/shared-assets/csv-feeds-creation-list-7eac0eb217.png" /></a></p>
 <p>To start your new ingester, click on "Start", in the burger menu.</p>
-<p><a class="glightbox" href="../assets/csv-feeds-creation-start.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="../assets/csv-feeds-creation-start.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-creation-start-b65ac14f88.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: start" src="/shared-assets/csv-feeds-creation-start-b65ac14f88.png" /></a></p>
 <p>CSV feed ingestion is made possible thanks to the connector "ImportCSV". So you can track the progress in "Data &gt; Ingestion &gt; Connectors". On a regular basis, the ingestion is updated when new data is added to the CSV feed.</p>
-<p><a class="glightbox" href="../assets/csv-feeds-connectors.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: connectors" src="../assets/csv-feeds-connectors.png" /></a></p>
-<p><a class="glightbox" href="../assets/csv-feeds-importCSV-connector-tracking.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: tracking" src="../assets/csv-feeds-importCSV-connector-tracking.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-connectors-0e2bbb428f.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: connectors" src="/shared-assets/csv-feeds-connectors-0e2bbb428f.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/csv-feeds-importCSV-connector-tracking-9a666c88a1.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="CSV feeds creation: tracking" src="/shared-assets/csv-feeds-importCSV-connector-tracking-9a666c88a1.png" /></a></p>
 <p><a id="best-practices-section"></a></p>
 <h3 id="best-practices-for-feed-import">Best practices for feed import</h3>
 <p>Ensuring a secure and well-organized environment is paramount in OpenCTI. Here are two recommended best practices to enhance security, traceability, and overall organizational clarity:</p>

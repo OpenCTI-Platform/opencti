@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7337,7 +7337,7 @@
 <h2 id="configuration">Configuration</h2>
 <p>Decay exclusion rules can be configured in the "Settings &gt; Customization &gt; Decay rule" menu. This screen contains two tabs: decay rules &amp; decay exclusion rules.</p>
 <p>To create a new decay exclusion rule, click on the decay exclusion rule tab. Here you can find all your decay exclusion rules. You can create a new one by clicking on create. </p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/decay-exclusion-rule-overview.png" data-desc-position="bottom"><img alt="Decay exclusion rule screen" src="../assets/decay-exclusion-rule-overview.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/decay-exclusion-rule-overview-70433642d6.png" data-desc-position="bottom"><img alt="Decay exclusion rule screen" src="/shared-assets/decay-exclusion-rule-overview-70433642d6.png"></a></p>
 <p>By <strong>default</strong>, a decay exclusion rule will be created as <strong>Disabled</strong>, unless you change this in the creation drawer.</p>
 <h3 id="filters-available">Filters available</h3>
 <p>Decay exclusion rules offer some filters, to allow you to be precise in the definition of indicators that should be prevented from Decaying.</p>
@@ -7353,7 +7353,7 @@
 <p class="admonition-title">Always add a filter with a value before enabling the decay exclusion rule</p>
 <p>Creating a decay exclusion rule without any filter will by default match any IOC created in the platform. As a result, all IOCs will not revoke automatically.</p>
 </div>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/decay-exclusion-rule-create.png" data-desc-position="bottom"><img alt="Decay exclusion rule creation" src="../assets/decay-exclusion-rule-create.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/decay-exclusion-rule-create-ce0fd5cc81.png" data-desc-position="bottom"><img alt="Decay exclusion rule creation" src="/shared-assets/decay-exclusion-rule-create-ce0fd5cc81.png"></a></p>
 <h2 id="events-when-decay-exclusion-rule-are-triggered">Events when decay exclusion rule are triggered</h2>
 <h3 id="creation">Creation</h3>
 <p>Both decay and decay exclusion rules evaluate IOCs when they are created. In other words, creating an IOC will trigger either a decay rule or a decay exclusion rule (assuming your manager is enabled). </p>
@@ -7383,9 +7383,9 @@ If an IOC is created by a source and upserted with a a new label Test, this IOC 
 To be clear: assuming an IOC is under a specific Decay rule, if the update of this IOC would make it match a Decay exclusion rule,** the IOC would remain only impacted by the Decay rule.**</p>
 <h2 id="how-to-differentiate-whether-an-ioc-is-under-a-decay-rule-or-a-decay-exclusion-rule">How to differentiate whether an IOC is under a Decay Rule or a Decay Exclusion Rule</h2>
 <p>If your IOC is under a decay exclusion rule, you will notice that the lifecycle button next to the IOC overview differs whether your IOC is impacted by a Decay rule or by a Decay exclusion rule.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/decay-exclusion-rule-ioc-impact.png" data-desc-position="bottom"><img alt="IOC impacted by a Decay exclusion rule" src="../assets/decay-exclusion-rule-ioc-impact.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/decay-exclusion-rule-ioc-impact-014658d8b5.png" data-desc-position="bottom"><img alt="IOC impacted by a Decay exclusion rule" src="/shared-assets/decay-exclusion-rule-ioc-impact-014658d8b5.png"></a></p>
 <p>If you have the right, you can even view the rule name &amp; be redirected to the screen of decay exclusion rule, to help you understand (and manage) which rule is impacting which IOC.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/decay-exclusion-rule-popup.png" data-desc-position="bottom"><img alt="IOC impacted by a Decay exclusion rule popup" src="../assets/decay-exclusion-rule-popup.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/decay-exclusion-rule-popup-023da0f0f8.png" data-desc-position="bottom"><img alt="IOC impacted by a Decay exclusion rule popup" src="/shared-assets/decay-exclusion-rule-popup-023da0f0f8.png"></a></p>
 <h2 id="how-do-the-various-exclusion-rules-work-all-together">How do the various exclusion rules work all together</h2>
 <p>You can create multiple decay exclusion rules: there is no notion of order, like the decay rules. Instead, you can consider each rule as a set a filter and each new rule added would correspond to have a "OR" operator between all your filters.
 As a result, you can create multiple decay exclusion rules to create complex filtering group.</p>

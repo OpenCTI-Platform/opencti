@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7342,7 +7342,7 @@
 <p>Priority Intelligence Requirements (PIRs) refer to the most critical information necessary to make informed intelligence-based decisions, achieve key objectives, and assess potential risks. PIRs help focus resources and efforts on gathering and analysing the most relevant and crucial information.</p>
 <p>PIRs prioritize the most relevant information based on the user's focus, enabling them to gather and analyze key insights necessary for effective decision-making and risk assessment.</p>
 <p>Note that this feature is under Enterprise Edition and requires capabilities (a capability to access and view PIRs, another to create/update/delete PIRs).</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pirs.png" data-desc-position="bottom"><img alt="PIRs" src="../assets/pirs.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pirs-e8914a6b37.png" data-desc-position="bottom"><img alt="PIRs" src="/shared-assets/pirs-e8914a6b37.png"></a></p>
 <h2 id="pir-general-behavior">PIR general behavior</h2>
 <p>A PIR is focused on some entities of interest and gives relevant information about them. You can:</p>
 <ul>
@@ -7361,8 +7361,8 @@
 <li>a rescan period (1 month by default),</li>
 <li>some criteria and filters to respect to be an entity of interest (for instance: should target the Energy sector or the Europe region with a confidence superior or equal to 60).</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-creation-1.png" data-desc-position="bottom"><img alt="PIR Creation: General settings" src="../assets/pir-creation-1.png"></a></p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-creation-2.png" data-desc-position="bottom"><img alt="PIR Creation: Entities selection" src="../assets/pir-creation-2.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-creation-1-1ef2addb56.png" data-desc-position="bottom"><img alt="PIR Creation: General settings" src="/shared-assets/pir-creation-1-1ef2addb56.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-creation-2-66906ca732.png" data-desc-position="bottom"><img alt="PIR Creation: Entities selection" src="/shared-assets/pir-creation-2-66906ca732.png"></a></p>
 <p>The PIR manager is listening to the stream events. If a rescan period has been given, it listens to the stream from the date corresponding to the rescan (for instance: 1 month before now).</p>
 <p>For each event, the entity involved is marked as of interest for the PIR, if there is a creation of a relationship:</p>
 <ul>
@@ -7382,7 +7382,7 @@ For instance, if a malware has a relationship with Energy that was created 3 mon
 </ul>
 <p>The processing delay is the difference between the last stream event and the last event processed by the PIR. It indicates the late compared to the stream.
 The number of messages in the queue shows the tasks not yet processed by the worker.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-overview-details.png" data-desc-position="bottom"><img alt="PIR Overview: PIR details" src="../assets/pir-overview-details.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-overview-details-6992dd01eb.png" data-desc-position="bottom"><img alt="PIR Overview: PIR details" src="/shared-assets/pir-overview-details-6992dd01eb.png"></a></p>
 <ul>
 <li>the Number of threats (number of entities of interest for the PIR) by entity type.</li>
 <li>the News feed: the last historic events of interest give an insight into the last important news in your context (see the 'PIR Activities' section for more information on the events displayed there).</li>
@@ -7390,16 +7390,16 @@ The number of messages in the queue shows the tasks not yet processed by the wor
 <li>the Top Authors of relationships from Threats: repartition of the authors of the relationships that have caused a marking of entities of interest (ie the 'targets Energy/Europe' relationships in our example).</li>
 <li>the Number of threats over time: the number of entities marked as of interest over time.</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-overview-widgets.png" data-desc-position="bottom"><img alt="PIR Overview: Widgets and news feed" src="../assets/pir-overview-widgets.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-overview-widgets-ff5ed7f8ab.png" data-desc-position="bottom"><img alt="PIR Overview: Widgets and news feed" src="/shared-assets/pir-overview-widgets-ff5ed7f8ab.png"></a></p>
 <h2 id="pir-threats">PIR threats</h2>
 <p>In the threats tab, the list of entities of interest for this PIR is displayed.
 In particular, it is possible to order and filter them by score or by the last score evolution date, to highlight the most relevant entities.</p>
 <p>On hovering the score, the targets of the entity are displayed, indicating why it is present in the PIR (for instance: because it targets both Europe and Energy).</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-threats.png" data-desc-position="bottom"><img alt="PIR Threats" src="../assets/pir-threats.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-threats-cfc07d3d59.png" data-desc-position="bottom"><img alt="PIR Threats" src="/shared-assets/pir-threats-cfc07d3d59.png"></a></p>
 <h2 id="pir-analyses">PIR Analyses</h2>
 <p>The Analyses tab gathers the containers containing a threat of interest or an entity in the criteria of the PIR.</p>
 <p>Due to technical limitations, only the first 5000 flagged entities are used to retrieve Containers. So, in case of consequent PIRs, this screen may miss some containers.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-analyses.png" data-desc-position="bottom"><img alt="PIR Analyses" src="../assets/pir-analyses.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-analyses-698ce486d8.png" data-desc-position="bottom"><img alt="PIR Analyses" src="/shared-assets/pir-analyses-698ce486d8.png"></a></p>
 <h2 id="pir-activities">PIR Activities</h2>
 <p>The Activities tab lists the events of interest for the PIR:</p>
 <ul>
@@ -7408,7 +7408,7 @@ In particular, it is possible to order and filter them by score or by the last s
 <li>Creation or deletion of a relationship involving a threat of interest (except for 'indicates' relationships that are not taken into account because they can be numerous and pollute the activities logs),</li>
 <li>Addition or removal of a threat of interest in a container.</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/pir-activities.png" data-desc-position="bottom"><img alt="PIR Activities" src="../assets/pir-activities.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/pir-activities-e2f994b29c.png" data-desc-position="bottom"><img alt="PIR Activities" src="/shared-assets/pir-activities-e2f994b29c.png"></a></p>
 
 
 

@@ -21,7 +21,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
@@ -135,7 +135,7 @@
     <!-- Link to home -->
     <a href="../.." title="OpenCTI Documentation" class="md-header__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -7744,7 +7744,7 @@
 <h2 id="introduction">Introduction</h2>
 <p>In OpenCTI, the RBAC system not only related to what users can do or cannot do in the platform (aka. <code>Capabilities</code>) but also to the system of <a href="../segregation/">data segregation</a>. Also, platform behavior such as default home dashboards, default triggers and digests as well as default hidden menus or entities can be defined across groups and organizations.</p>
 <h2 id="high-level-design">High level design</h2>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/rbac.png" data-desc-position="bottom"><img alt="RBAC" src="../assets/rbac.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/rbac-a6d5f53bc1.png" data-desc-position="bottom"><img alt="RBAC" src="/shared-assets/rbac-a6d5f53bc1.png"></a></p>
 <h2 id="roles">Roles</h2>
 <p>Roles are used in the platform to grant the given groups with some <strong>capabilities</strong> to define what users in those groups can do or cannot do.</p>
 <h3 id="list-of-capabilities">List of Capabilities</h3>
@@ -8041,7 +8041,7 @@
 </tr>
 </tbody>
 </table>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/draft_override.png" data-desc-position="bottom"><img alt="New tab to manage draft capabilities" src="../assets/draft_override.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/draft_override-57205533cc.png" data-desc-position="bottom"><img alt="New tab to manage draft capabilities" src="/shared-assets/draft_override-57205533cc.png"></a></p>
 <h4 id="examples">Examples</h4>
 <p>To clarify these two layers of capabilities, the table below provides an example of a set of actions that you can perform based on the capabilities set.</p>
 <table>
@@ -8102,13 +8102,13 @@
 <h3 id="manage-roles">Manage roles</h3>
 <p>You can manage the roles in <code>Settings &gt; Security &gt; Roles</code>.</p>
 <p>To create a role, just click on the <code>+</code> button:</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/create-role.png" data-desc-position="bottom"><img alt="Create role" src="../assets/create-role.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/create-role-2a848904a7.png" data-desc-position="bottom"><img alt="Create role" src="/shared-assets/create-role-2a848904a7.png"></a></p>
 <p>Then you will be able to define the capabilities of the role:</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/capabilities_new.png" data-desc-position="bottom"><img alt="Update role" src="../assets/capabilities_new.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/capabilities_new-c2c18957e0.png" data-desc-position="bottom"><img alt="Update role" src="/shared-assets/capabilities_new-c2c18957e0.png"></a></p>
 <h2 id="users">Users</h2>
 <p>You can manage the users in <code>Settings &gt; Security &gt; Users</code>. If you are using <a href="../../deployment/authentication/">Single-Sign-On (SSO)</a>, the users in OpenCTI are automatically created upon login.</p>
 <p>To create a user, just click on the <code>+</code> button:</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/create_user.png" data-desc-position="bottom"><img alt="Create user" src="../assets/create_user.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/create_user-5f209fba04.png" data-desc-position="bottom"><img alt="Create user" src="/shared-assets/create_user-5f209fba04.png"></a></p>
 <h3 id="service-account">Service Account</h3>
 <p>Service Account aims administrators to create technical users. Service accounts do not have any password which therefore prevent them from logging in via UI.</p>
 <h4 id="create-a-service-account">Create a Service Account</h4>
@@ -8126,7 +8126,7 @@ Although these accounts generally do not receive emails, it is possible to add a
 Two options are possible:
 - through massive operations.
 - directly in the user/service account overview.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/convert_user.png" data-desc-position="bottom"><img alt="Convert User" src="../assets/convert_user.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/convert_user-e18a78dcac.png" data-desc-position="bottom"><img alt="Convert User" src="/shared-assets/convert_user-e18a78dcac.png"></a></p>
 <p>Converting a user into a service account will simply remove its password from our Database. The "new" service account will still have the same ID &amp; same Token than the user, to preserve data consistency.</p>
 <p>Converting back a service account into a user will also be possible. However, if the service account has directly been created as a service account without adding a specific email address, the "new" user won't be able to trigger a password reset flow to get a new password. We therefore advise you to first provide a valid email address to your "new" user, so that the "new" user can trigger the reset password flow by himself/herself.</p>
 <h3 id="manage-a-user">Manage a user</h3>
@@ -8140,7 +8140,7 @@ Two options are possible:
 <li>Manage its max confidence levels</li>
 <li>Manage its status</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/user-overveiw-new.png" data-desc-position="bottom"><img alt="User overview" src="../assets/user-overveiw-new.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/user-overveiw-new-059a96fb2a.png" data-desc-position="bottom"><img alt="User overview" src="/shared-assets/user-overveiw-new-059a96fb2a.png"></a></p>
 <p>From this view you can edit the user's information by clicking the "Update" button, which opens a panel with several tabs.</p>
 <ul>
 <li>Overview tab: edit all basic information such as the name or language</li>
@@ -8149,7 +8149,7 @@ Two options are possible:
 <li>Organization Admin tab: see <a href="./#organization-administration">Organization administration</a></li>
 <li>Confidences tab: manage the user's maximum confidence level and overrides per entity type</li>
 </ul>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/user-manage.png" data-desc-position="bottom"><img alt="manage user" src="../assets/user-manage.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/user-manage-68189f1d8c.png" data-desc-position="bottom"><img alt="manage user" src="/shared-assets/user-manage-68189f1d8c.png"></a></p>
 <div class="admonition warning">
 <p class="admonition-title">Mandatory max confidence level</p>
 <p>A user without Max confidence level won't have the ability to create, delete or update any data in our platform. Please be sure that your users are always either assigned to group that have a confidence level defined or that have an override of this group confidence level.</p>
@@ -8213,7 +8213,7 @@ Two options are possible:
 </tr>
 </tbody>
 </table>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/group-overview-new.png" data-desc-position="bottom"><img alt="Group overview" src="../assets/group-overview-new.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/group-overview-new-4e29f56b96.png" data-desc-position="bottom"><img alt="Group overview" src="/shared-assets/group-overview-new-4e29f56b96.png"></a></p>
 <div class="admonition information">
 <p class="admonition-title">Max confidence level when a user has multiple groups</p>
 <p>A user with multiple groups will have the <strong>the highest confidence level</strong> of all its groups. 
@@ -8221,15 +8221,15 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
 </div>
 <h3 id="manage-a-group">Manage a group</h3>
 <p>When managing a group, you can define the members and all above configurations.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/update-group-new.png" data-desc-position="bottom"><img alt="Update a group" src="../assets/update-group-new.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/update-group-new-3466dc4939.png" data-desc-position="bottom"><img alt="Update a group" src="/shared-assets/update-group-new-3466dc4939.png"></a></p>
 <p><a id="organizations-section"></a></p>
 <h2 id="organizations">Organizations</h2>
 <p>Users can belong to organizations, which is an additional layer of <a href="../segregation/">data segregation</a> and customization. To find out more about this part, please refer to the page on <a href="../organization-segregation/">organization segregation</a>.</p>
 <h3 id="organization-administration">Organization administration</h3>
 <p>Platform administrators can promote members of an organization as "Organization administrator". This elevated role grants them the necessary capabilities to create, edit and delete users from the corresponding Organization. Additionally, administrators have the flexibility to define a list of groups that can be granted to newly created members by the organization administrators. This feature simplifies the process of granting appropriate access and privileges to individuals joining the organization.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/organization_admin_view.png" data-desc-position="bottom"><img alt="Organization admin Settings view" src="../assets/organization_admin_view.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/organization_admin_view-fd84d3e84b.png" data-desc-position="bottom"><img alt="Organization admin Settings view" src="/shared-assets/organization_admin_view-fd84d3e84b.png"></a></p>
 <p>The platform administrator can promote/demote an organization admin through its user edition form.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/define_organization_admin.png" data-desc-position="bottom"><img alt="Organization admin promoting/demoting" src="../assets/define_organization_admin.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/define_organization_admin-7a3b39d232.png" data-desc-position="bottom"><img alt="Organization admin promoting/demoting" src="/shared-assets/define_organization_admin-7a3b39d232.png"></a></p>
 <div class="admonition info">
 <p class="admonition-title">Organization admin rights</p>
 <p>The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".</p>
@@ -8248,7 +8248,7 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
 - Organization sharing is not activated.
 - The policies option 'allow users to view users of other organizations' is activated.
   Note that this option can be modified in Settings &gt; Policies.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../assets/view-all-users-option.png" data-desc-position="bottom"><img alt="Policies: View all users option" src="../assets/view-all-users-option.png"></a></p>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="/shared-assets/view-all-users-option-8c67c9a688.png" data-desc-position="bottom"><img alt="Policies: View all users option" src="/shared-assets/view-all-users-option-8c67c9a688.png"></a></p>
 <p>Else, we are in the case where the user hasn't one of the mentioned capabilities, and organization sharing is activated, and the option 'allow users to view users of other organizations' is not activated. In this case, the user will only see the following users:</p>
 <ul>
 <li>the users in no organization,</li>

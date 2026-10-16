@@ -24,7 +24,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-3062fead9a.png">
       <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
     
     
@@ -147,7 +147,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-cc2c5ed0d4.png" alt="logo">
 
     </a>
 
@@ -410,7 +410,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-cc2c5ed0d4.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -4081,7 +4081,7 @@
 </div>
 <h2 id="introduction">Introduction</h2>
 <p>ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so support very well index lifeycle policies. Thus, by default OpenCTI initialized indices with a suffix <code>-00001</code> and use wildcard to query indices. When rollover policies are implemented (default starting OCTI 5.9.X if you initialized your platform at this version), indices are splitted to keep a reasonable volume of data in shards.</p>
-<p><a class="glightbox" href="../assets/indices.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Indices" src="../assets/indices.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/indices-f6f3a99d97.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Indices" src="/shared-assets/indices-f6f3a99d97.png" /></a></p>
 <h2 id="elasticsearch-configuration">ElasticSearch configuration</h2>
 <h3 id="indices">Indices</h3>
 <p>By default, a rollover policy is applied on all indices used by OpenCTI.</p>
@@ -4130,10 +4130,10 @@
 <li>Maximum age: <code>365 days</code></li>
 <li>Maximum documents: <code>75,000,000</code></li>
 </ul>
-<p><a class="glightbox" href="../assets/ilm-policy.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="ILM Policy" src="../assets/ilm-policy.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/ilm-policy-63046888dc.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="ILM Policy" src="/shared-assets/ilm-policy-63046888dc.png" /></a></p>
 <h4 id="create-index-templates">Create index templates</h4>
 <p>In Kibana, clone the <code>opencti-index-template</code> to have one index template by OpenCTI index with the appropriate rollover policy, index pattern and rollover alias (in Kibana, <code>Management &gt; Index Management &gt; Index Templates</code>).</p>
-<p><a class="glightbox" href="../assets/index-template.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Index template" src="../assets/index-template.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/index-template-c062315ec7.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Index template" src="/shared-assets/index-template-c062315ec7.png" /></a></p>
 <p>Create the following index templates:</p>
 <ul>
 <li><code>octi_history</code></li>
@@ -4150,10 +4150,10 @@
 <li><code>octi_stix_sighting_relationships</code></li>
 </ul>
 <p>Here is the overview of all templates (you should have something with <code>octi_</code> instead of <code>opencti_</code>).</p>
-<p><a class="glightbox" href="../assets/templates.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Index templates" src="../assets/templates.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/templates-f11a604802.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Index templates" src="/shared-assets/templates-f11a604802.png" /></a></p>
 <h4 id="apply-rollover-policy-on-all-index-templates">Apply rollover policy on all index templates</h4>
 <p>Then, going back in the index lifecycle policies screen, you can click on the "+" button of the <code>octi-ilm-policy</code> to <code>Add the policy to index template</code>, then add the policy to add previously created template with the proper "Alias for rollover index".</p>
-<p><a class="glightbox" href="../assets/add-policy.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Add policy to template" src="../assets/add-policy.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/add-policy-656b84d072.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Add policy to template" src="/shared-assets/add-policy-656b84d072.png" /></a></p>
 <h4 id="re-index-all-indices">Re-index all indices</h4>
 <p>Using the <code>reindex</code> API, re-index all indices one by one:</p>
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl -X POST &quot;localhost:9200/_reindex?pretty&quot; -H &#39;Content-Type: application/json&#39; -d&#39;

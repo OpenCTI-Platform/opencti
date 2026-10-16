@@ -24,7 +24,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-3062fead9a.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
@@ -147,7 +147,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-cc2c5ed0d4.png" alt="logo">
 
     </a>
 
@@ -410,7 +410,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-cc2c5ed0d4.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -3420,7 +3420,7 @@
 <h2 id="introduction">Introduction</h2>
 <p>ElasticSearch and OpenSearch both support rollover on indices. OpenCTI has been designed to be able to use aliases for indices and so support very well index lifeycle policies.</p>
 <p>Thus, by default OpenCTI initialized indices with a suffix <code>-00001</code> and use wildcard to query indices. When rollover policies are implemented, indices are splitted to keep a reasonable volume of data in shards.</p>
-<p><a class="glightbox" href="../assets/indices.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Indices" src="../assets/indices.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/indices-f6f3a99d97.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Indices" src="/shared-assets/indices-f6f3a99d97.png" /></a></p>
 <h2 id="elasticsearch-configuration">ElasticSearch configuration</h2>
 <h3 id="indices">Indices</h3>
 <p>We advise to put a rollover policy on all indices used by OpenCTI, here is the list:</p>
@@ -3452,7 +3452,7 @@
 <li>Maximum age: <code>365 days</code></li>
 <li>Maximum documents: <code>50,000,000</code></li>
 </ul>
-<p><a class="glightbox" href="../assets/rollover.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Rollover" src="../assets/rollover.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/rollover-b6c9ca89f6.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Rollover" src="/shared-assets/rollover-b6c9ca89f6.png" /></a></p>
 <p>Then, apply this policy automatically to all <code>opencti_*</code> indices.</p>
 <div class="admonition note">
 <p class="admonition-title">Rollover documentation</p>

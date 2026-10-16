@@ -24,7 +24,7 @@
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="/shared-assets/favicon-e0e080f0d5.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.8+insiders-4.53.16">
     
     
@@ -146,7 +146,7 @@
       data-md-component="logo"
     >
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
 
@@ -417,7 +417,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
       
-  <img src="../../assets/logo.png" alt="logo">
+  <img src="/shared-assets/logo-fc4af7b550.png" alt="logo">
 
     </a>
     OpenCTI Documentation
@@ -6349,21 +6349,21 @@ When an object is deleted, all its relationships and references to other objects
 <p>Since OpenCTI 6.1, a record of the deleted objects is kept for a given period of a time, allowing to restore them on demand. This does not impact the stream events or other side effect of the deletion: the object is still <em>deleted</em>.</p>
 <h2 id="trash">Trash</h2>
 <p>A view called "Trash" displays all "delete" operations, entities and relationships alike.</p>
-<p><a class="glightbox" href="../assets/trash.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash" src="../assets/trash.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-c120b4c23c.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash" src="/shared-assets/trash-c120b4c23c.png" /></a></p>
 <p>A delete operation contains not only the entity or relationship that has been deleted, but also all the relationships and references from (to) this main object to (from) other elements in the platform.</p>
 <p>You can sort, filter or search this table using the usual UI controls. You are limited to the type of object, their representation (most of the time, the <em>name</em> of the object), the user who deleted the object, the date and time of deletion and the marking of the object.</p>
 <p>Note that the delete operations (i.e. the entries in this table view) inherit the marking of the main entity that was deleted, and thus follow the same access restriction as the object that was deleted.</p>
 <p>You can individually restore or permanently delete an object from the trash view using the burger menu at the end of the line.</p>
-<p><a class="glightbox" href="../assets/trash-actions.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash actions" src="../assets/trash-actions.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-actions-02ad601b9f.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash actions" src="/shared-assets/trash-actions-02ad601b9f.png" /></a></p>
 <p>Alternatively, you can use the checkboxes at the start of the line to select a subset of deleted objects, and trigger a background task to restore or permanently delete them by batch.</p>
 <h2 id="restore">Restore</h2>
 <p>Restoring an element creates it again in the platform with the same information it had before its deletion.
 It also restores all the relationships from or to this object, that have been also deleted during the deletion operation.
 If the object had attached files (uploaded or exported), they are also restored.</p>
-<p><a class="glightbox" href="../assets/trash-restore-confirm.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash restore confirm" src="../assets/trash-restore-confirm.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-restore-confirm-059dc56a88.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash restore confirm" src="/shared-assets/trash-restore-confirm-059dc56a88.png" /></a></p>
 <h2 id="permanent-delete">Permanent delete</h2>
 <p>From the Trash panel, it is also possible to delete permanently the object, its relationships, and attached files.</p>
-<p><a class="glightbox" href="../assets/trash-delete-confirm.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash delete confirm" src="../assets/trash-delete-confirm.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-delete-confirm-2a7d995741.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Trash delete confirm" src="/shared-assets/trash-delete-confirm-2a7d995741.png" /></a></p>
 <h2 id="trash-retention">Trash retention</h2>
 <p>Deleted objects are kept in trash during a fixed period of time (7 days by default), then they are permanently deleted by the <a href="../../deployment/managers/#trash-manager">trash manager</a>.</p>
 <h2 id="configuration">Configuration</h2>
@@ -6372,10 +6372,10 @@ If the object had attached files (uploaded or exported), they are also restored.
 <h2 id="limitations">Limitations</h2>
 <p>When it comes to restoring a deleted object from the trash, the current implementation shows several limitations. 
 First and foremost, if an object in the trash has lost a relationship dependency (i.e. the other side of a relationship from or to this object is no longer in live database), you will not be able to restore the object.</p>
-<p><a class="glightbox" href="../assets/trash-error-dependency-in-trash.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="restore error: a dependency is in the trash" src="../assets/trash-error-dependency-in-trash.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-error-dependency-in-trash-eea5e4d9e4.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="restore error: a dependency is in the trash" src="/shared-assets/trash-error-dependency-in-trash-eea5e4d9e4.png" /></a></p>
 <p>In such case, if the missing dependency is in the trash too, you can manually restore this dependency first and then retry.</p>
 <p>If the missing dependency has been permanently deleted, the object cannot be recovered.</p>
-<p><a class="glightbox" href="../assets/trash-error-dependency-missing.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="restore error: a dependency is in the trash" src="../assets/trash-error-dependency-missing.png" /></a></p>
+<p><a class="glightbox" href="/shared-assets/trash-error-dependency-missing-1c03dfb3cb.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="restore error: a dependency is in the trash" src="/shared-assets/trash-error-dependency-missing-1c03dfb3cb.png" /></a></p>
 <p>In other words:</p>
 <ul>
 <li><strong>no partial restore</strong>: the object and <em>all</em> its relationships must be restored in one pass</li>
