@@ -67,9 +67,8 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
-// The window is capped to 24h and locks to 3h by the specification: both can only be lowered
-export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window;
-export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration;
+export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
+export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = 180; // minutes, locks are capped to 3h by the specification
 
 const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
@@ -99,10 +98,10 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   const duration = effectiveValue('local_auth_lockout_duration');
   const maxDuration = effectiveValue('local_auth_lockout_max_duration');
   if (maxAttempts < 1) {
-    throw FunctionalError('Lockout max attempts must be greater or equal to 1', { local_auth_lockout_max_attempts: maxAttempts });
+    throw FunctionalError('Lockout max attempts must be greater than or equal to 1', { local_auth_lockout_max_attempts: maxAttempts });
   }
   if (maxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
-    throw FunctionalError(`Lockout max attempts must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
+    throw FunctionalError(`Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
   }
   if (lockoutWindow <= 0) {
     throw FunctionalError('Lockout window must be greater than 0', { local_auth_lockout_window: lockoutWindow });
@@ -114,14 +113,14 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
     throw FunctionalError('Lockout max duration must be greater than 0', { local_auth_lockout_max_duration: maxDuration });
   }
   if (lockoutWindow > LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT) {
-    throw FunctionalError(`Lockout window must be lower or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`, { local_auth_lockout_window: lockoutWindow });
+    throw FunctionalError(`Lockout window must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`, { local_auth_lockout_window: lockoutWindow });
   }
   // The duration is capped too, as it cannot exceed the max duration
   if (maxDuration > LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT) {
-    throw FunctionalError(`Lockout max duration must be lower or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`, { local_auth_lockout_max_duration: maxDuration });
+    throw FunctionalError(`Lockout max duration must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`, { local_auth_lockout_max_duration: maxDuration });
   }
   if (duration > maxDuration) {
-    throw FunctionalError('Lockout duration must be lower or equal to lockout max duration', {
+    throw FunctionalError('Lockout duration must be lower than or equal to lockout max duration', {
       local_auth_lockout_duration: duration,
       local_auth_lockout_max_duration: maxDuration,
     });
