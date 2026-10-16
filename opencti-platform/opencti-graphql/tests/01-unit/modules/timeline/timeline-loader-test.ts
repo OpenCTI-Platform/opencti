@@ -45,6 +45,15 @@ describe('Timeline element refs', () => {
     expect(toTimelineElement({ ...technique, 'rel_kill-chain-phase.internal_id': ['phase-1'] } as any).kill_chain_phase_ids).toEqual(['phase-1']);
     expect(toTimelineElement(technique as any).kill_chain_phase_ids).toEqual([]);
   });
+
+  it('should name a note without an abstract by the start of its content', () => {
+    const note = { internal_id: 'note-1', standard_id: 'note--1', entity_type: 'Note' };
+    expect(toTimelineElement({ ...note, attribute_abstract: 'Initial triage', content: 'The shares are encrypted' } as any).name).toEqual('Initial triage');
+    expect(toTimelineElement({ ...note, content: 'The encrypted shares are\n\nmounted from FS-FIN-02 only' } as any).name)
+      .toEqual('The encrypted shares are mounted from FS-FIN-02 only');
+    expect(toTimelineElement({ ...note, content: 'word '.repeat(40) } as any).name).toMatch(/^(word ){15}word\.\.\.$/);
+    expect(toTimelineElement({ ...note, content: '  ' } as any).name).toEqual('Unknown');
+  });
 });
 
 describe('Timeline indicator revocation', () => {

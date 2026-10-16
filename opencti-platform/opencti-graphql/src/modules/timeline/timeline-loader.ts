@@ -6,6 +6,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
+import { truncate } from '../../utils/format';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, BASE_TYPE_RELATION, buildRefRelationKey } from '../../schema/general';
 import {
   RELATION_CREATED_BY,
@@ -123,6 +124,17 @@ export const indicatorRevocationTime = (element: AnyStoreElement): string | null
   return revokedAt ?? dateString(element.updated_at);
 };
 
+const NOTE_NAME_LENGTH = 80;
+
+// A note is named by its abstract, which is optional: without one, the start of its content names it
+const timelineElementName = (element: AnyStoreElement): string => {
+  const content = typeof element.content === 'string' ? element.content.replace(/\s+/g, ' ').trim() : '';
+  if (element.entity_type === ENTITY_TYPE_CONTAINER_NOTE && !element.attribute_abstract && content) {
+    return truncate(content, NOTE_NAME_LENGTH);
+  }
+  return extractEntityRepresentativeName(element);
+};
+
 export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map<string, string> } = {}): TimelineElementData => {
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   const relation = element as unknown as BasicStoreRelation;
@@ -135,7 +147,7 @@ export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map
     id: element.internal_id,
     standard_id: element.standard_id,
     entity_type: element.entity_type,
-    name: extractEntityRepresentativeName(element),
+    name: timelineElementName(element),
     markings: timelineRefIds(element, RELATION_OBJECT_MARKING),
     labels: opts.labels ? labelIds.map((id) => opts.labels?.get(id)).filter((v): v is string => !!v) : undefined,
     created: dateString(element.created),
