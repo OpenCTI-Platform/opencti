@@ -71,8 +71,6 @@ class HuntRun:
             incident_proposal
             incident_id
             draft_id
-            aev_inject_id
-            technique_id
             attempt
             next_retry_at
             started_at
@@ -405,11 +403,11 @@ class HuntRun:
 
         :param connector_id: the connector id
         :type connector_id: str
-        :param platform: the platform slug (splunk, microsoft-sentinel, ..., internet)
+        :param platform: the platform slug (splunk, microsoft-sentinel, ...)
         :type platform: str
         :param languages: the query languages the connector executes
         :type languages: list
-        :param security_platform_name: (optional) the Security Platform it executes against (created when missing, none for internet)
+        :param security_platform_name: (optional) the Security Platform it executes against (created when missing)
         :param security_platform_type: (optional) SIEM (default), EDR, XDR, SOAR, NDR or ISPM
         :param supports_preview: (optional) whether translation previews are supported (default True)
         :param supports_indicators: (optional) whether the connector looks up the values of indicator hunts

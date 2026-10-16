@@ -1,4 +1,4 @@
-import React, { Suspense, useContext, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { AutoAwesomeOutlined, MenuBookOutlined, PolicyOutlined, RuleOutlined } from '@mui/icons-material';
@@ -10,8 +10,6 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
-import { isNotEmptyField } from '../../../utils/utils';
 import { HuntCreationDrawer, insertCreatedHunt } from './HuntCreation';
 import HuntGuidedCreation, { type HuntGuidedKind } from './HuntGuidedCreation';
 import HuntPlanDialog from './HuntPlanDialog';
@@ -69,16 +67,12 @@ interface HuntsFirstUseHeroProps {
 export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFirstUseHeroProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const planDisabledReason = useHuntPlanDisabledReason();
   const setupState = useHuntsSetupState();
   const indicatorsUnsupported = setupState.aliveCount > 0 && setupState.indicatorsCount === 0;
   const [creating, setCreating] = useState(false);
   const [planning, setPlanning] = useState(false);
   const [guided, setGuided] = useState<HuntGuidedKind | null>(null);
-  const hubUrl = isXTMHubAccessible && isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings?.platform_xtmhub_url}/redirect/opencti_hunt_packs?platform_id=${settings?.id}`
-    : null;
   return (
     <div data-testid="hunts-first-use" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
       <Hero>
@@ -147,11 +141,6 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
               {t_i18n('Plan a hunt with AI')}
             </Button>
             <HuntPackImportButton paginationOptions={paginationOptions} />
-            {hubUrl && (
-              <Button variant="tertiary" href={hubUrl} target="_blank" rel="noopener noreferrer" data-testid="hunts-first-use-hub">
-                {t_i18n('Browse XTM Hub')}
-              </Button>
-            )}
             {planDisabledReason && (
               <Text id="hunts-first-use-plan-reason" variant="content-caption" style={{ display: 'block', width: '100%', color: theme.palette.text.secondary }} data-testid="hunts-first-use-plan-reason">
                 {planDisabledReason}

@@ -75,7 +75,7 @@ const PreviewFailure = ({ run }: { run: PreviewRun }) => {
   const [showDetails, setShowDetails] = useState(false);
   const failure = huntRunFailure(run.hunt_run_status, run.error_message);
   if (!failure) return null;
-  const platform = run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+  const platform = run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown');
   let title: string;
   switch (failure.kind) {
     case 'timeout':
@@ -286,7 +286,7 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
       <>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
           <HuntRunStatusChip value={run.hunt_run_status} />
-          <Text variant="content-caption">{[run.connector_name, huntQueryLanguageLabel(run.query_language, t_i18n)].filter(Boolean).join(' - ')}</Text>
+          <Text variant="content-caption">{[run.connector_name, huntQueryLanguageLabel(run.query_language)].filter(Boolean).join(' - ')}</Text>
         </div>
         <PreviewFailure run={run} />
         {run.hunt_run_status === 'cancelled' && (

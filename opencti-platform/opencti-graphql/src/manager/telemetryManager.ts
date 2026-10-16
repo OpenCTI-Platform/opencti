@@ -204,7 +204,7 @@ export const XTM_AGENT_CHANNELS = ['direct', 'direct_files'] as const;
 export type XtmAgentChannel = typeof XTM_AGENT_CHANNELS[number];
 export const NOTIFICATION_CHANNELS = ['email', 'webhook', 'ui'] as const;
 export type NotificationChannel = typeof NOTIFICATION_CHANNELS[number];
-// Hunt runs are counted by trigger (manual, schedule, standing, playbook, emulation, preview, retry)
+// Hunt runs are counted by trigger (manual, schedule, standing, pir, playbook, preview, retry)
 // and hunt verdicts by value, both bounded by the hunt run enumerations.
 export const HUNT_RUN_TELEMETRY_TRIGGERS = HUNT_RUN_TRIGGERS;
 export const HUNT_VERDICT_TELEMETRY_VALUES = [HUNT_VERDICT_TRUE_POSITIVE, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE];

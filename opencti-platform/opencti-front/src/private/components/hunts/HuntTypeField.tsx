@@ -53,7 +53,7 @@ const HuntTypeField = ({ name = 'hunt_type', style, action, lockedReason, onChan
       </RadioGroup>
       <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }}>
         {lockedReason ? <span data-testid="hunt-type-locked">{lockedReason}</span> : (
-          <HuntHelp text={t_i18n('Pick the type from what you have: indicators, a detection rule or an internet fingerprint.')} href={HUNT_DOCS.types} />
+          <HuntHelp text={t_i18n('Pick the type from what you have: indicators or a detection rule.')} href={HUNT_DOCS.types} />
         )}
       </Text>
     </div>

@@ -6,7 +6,7 @@ import { AUTOMATION_MANAGER_USER } from '../../utils/access';
 import xtmOneClient, { type XtmCallFailure } from '../xtm/one/xtm-one-client';
 import { type AgentJwtUser, buildPlaybookAutomationContext, callXtmAgent, isXtmOneConfigured } from '../playbook/components/ai-agent-shared';
 import { type SigmaValidation, validateSigmaRule } from './hunt-sigma';
-import { HUNT_PLATFORMS, HUNT_TYPE_INFRASTRUCTURE, HUNT_TYPE_TELEMETRY, type HuntNativeQuery } from './hunt-types';
+import { HUNT_PLATFORMS, HUNT_TYPE_TELEMETRY, type HuntNativeQuery } from './hunt-types';
 import { huntLogicError } from './hunt-validators';
 import {
   clampInteger,
@@ -86,7 +86,7 @@ const xtmCallError = (failure: XtmCallFailure, data: Record<string, unknown>) =>
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/;
 // The planner writes detection logic; an indicator hunt is built from the indicators themselves, never planned
-const PLANNABLE_HUNT_TYPES = [HUNT_TYPE_TELEMETRY, HUNT_TYPE_INFRASTRUCTURE];
+const PLANNABLE_HUNT_TYPES = [HUNT_TYPE_TELEMETRY];
 const ajv = new Ajv({ allErrors: true, coerceTypes: false });
 
 // region planner

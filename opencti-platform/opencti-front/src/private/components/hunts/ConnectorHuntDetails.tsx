@@ -157,7 +157,7 @@ const ConnectorHuntDetails = ({ connectorId, data }: ConnectorHuntDetailsProps) 
   const hiddenEntities = useHiddenEntities();
   const hunt = useFragment(connectorHuntDetailsFragment, data);
   const canSeeHunts = isGrantedTo(me, [KNOWLEDGE]) && !hiddenEntities.includes(HUNT_ENTITY_TYPE);
-  const languages = hunt.languages.map((language) => huntQueryLanguageLabel(language, t_i18n)).filter((label) => label.length > 0);
+  const languages = hunt.languages.map((language) => huntQueryLanguageLabel(language)).filter((label) => label.length > 0);
   return (
     <Card
       title={t_i18n('Hunted platform')}
@@ -169,7 +169,7 @@ const ConnectorHuntDetails = ({ connectorId, data }: ConnectorHuntDetailsProps) 
       >
         <div>
           <Label>{t_i18n('Platform')}</Label>
-          <Text variant="content-compact">{huntPlatformLabel(hunt.platform, t_i18n)}</Text>
+          <Text variant="content-compact">{huntPlatformLabel(hunt.platform)}</Text>
         </div>
         <div>
           <Label>{t_i18n('Security platform')}</Label>

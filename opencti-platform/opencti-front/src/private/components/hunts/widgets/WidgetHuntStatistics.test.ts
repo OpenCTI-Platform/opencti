@@ -6,13 +6,13 @@ import type { Theme } from '../../../../components/Theme';
 describe('hunt statistics series', () => {
   const t = (key: string) => `t:${key}`;
   const statistics = {
-    runs_per_platform: [{ label: 'Splunk prod', value: 3 }, { label: 'internet', value: 2 }, { label: '', value: 1 }],
+    runs_per_platform: [{ label: 'Splunk prod', value: 3 }, { label: '', value: 1 }],
     verdict_distribution: [{ label: 'true_positive', value: 1 }, { label: 'benign', value: 4 }, { label: 'pending', value: 2 }, { label: 'inconclusive', value: 0 }],
   } as unknown as Parameters<typeof huntPlatformSeries>[0];
 
-  it('should name the internet and the platforms the reader cannot see instead of showing a slug or an identifier', () => {
+  it('should name the platforms the reader cannot see instead of showing an identifier', () => {
     const [series] = huntPlatformSeries(statistics, t) as unknown as { data: { x: string; y: number }[] }[];
-    expect(series.data.map((point) => point.x)).toEqual(['Splunk prod', 't:Internet', 't:Unavailable security platform']);
+    expect(series.data.map((point) => point.x)).toEqual(['Splunk prod', 't:Unavailable security platform']);
   });
 
   it('should colour each verdict slice with the tone of its chip', () => {

@@ -24,7 +24,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT, PATH_SECURITY_COVERAGE } from '../../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT } from '../../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
 import { prismLanguageOf } from '../HuntCodeEditor';
 import useHuntAI from '../useHuntAI';
@@ -137,8 +137,6 @@ const huntRunFragment = graphql`
     incident_proposal
     incident_id
     draft_id
-    security_coverage_id
-    technique_id
     triggeredBy {
       id
       name
@@ -218,7 +216,7 @@ const HuntEditContext = createContext(false);
 /** The controls that change the hunt or its runs, which the platform refuses to a user who can only view the hunt. */
 const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useContext(HuntEditContext) ? <>{children}</> : null);
 
-const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown');
 
 /** A date shown relative to now, the absolute date in its tooltip. */
 const RelativeDate = ({ date, label }: { date: string; label?: (relative: string) => string }) => {
@@ -677,9 +675,6 @@ const runLinks = (run: Run, t_i18n: (message: string) => string) => {
   if (run.playbook_id) {
     links.push({ key: 'playbook', to: `/dashboard/data/processing/automation/${run.playbook_id}`, label: t_i18n('Open the playbook') });
   }
-  if (run.security_coverage_id) {
-    links.push({ key: 'coverage', to: PATH_SECURITY_COVERAGE(run.security_coverage_id), label: t_i18n('Open the security coverage') });
-  }
   return links;
 };
 
@@ -1035,7 +1030,7 @@ const HuntRun = ({ data, results, huntId, huntName, title, canEdit }: HuntRunPro
         {run.translated_query && (
           <Card title={t_i18n('Translated query')}>
             <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
-              <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
+              <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language)}</Text>
               <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
             </Disclosure>
           </Card>

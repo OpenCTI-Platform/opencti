@@ -13,10 +13,8 @@ import {
   sanitizeEvidence,
   sha256,
   sharedOrganizations,
-  techniqueValidationStatus,
   truncate,
 } from '../../../../src/modules/hunt/hunt-utils';
-import { mergeHuntDetectedCoverage, preservePlatformCoverage } from '../../../../src/modules/hunt/hunt-coverage-utils';
 import { parseIncidentProposal } from '../../../../src/modules/hunt/hunt-incident';
 
 const HASH = 'a'.repeat(64);
@@ -137,11 +135,11 @@ describe('Hunt native queries', () => {
   it('should normalize native queries, JSON strings included', () => {
     const queries = normalizeNativeQueries([
       { platform: ' splunk ', language: ' spl ', query: ' index=main | head 10 ', pipeline: ' ' },
-      JSON.stringify({ platform: 'internet', language: 'internet', query: 'jarm:abc', pipeline: 'censys' }),
+      JSON.stringify({ platform: 'elastic-security', language: 'esql', query: 'FROM logs-* | LIMIT 10', pipeline: 'ecs_windows' }),
     ]);
     expect(queries).toEqual([
       { platform: 'splunk', language: 'spl', query: 'index=main | head 10', pipeline: null },
-      { platform: 'internet', language: 'internet', query: 'jarm:abc', pipeline: 'censys' },
+      { platform: 'elastic-security', language: 'esql', query: 'FROM logs-* | LIMIT 10', pipeline: 'ecs_windows' },
     ]);
     expect(normalizeNativeQueries(null)).toEqual([]);
     expect(normalizeNativeQueries('')).toEqual([]);
@@ -230,33 +228,6 @@ describe('Hunt helpers', () => {
     expect(huntCountSetting(-1, 2, 0)).toBe(2);
     expect(huntCountSetting('', 2, 0)).toBe(2);
     expect(huntCountSetting(null, 2, 0)).toBe(2);
-  });
-
-  it('should derive the validation of a technique from the counts of all its emulation runs', () => {
-    expect(techniqueValidationStatus({ runs: 0, detected: 0, active: 0, completed: 0 })).toBe('not_validated');
-    expect(techniqueValidationStatus({ runs: 250, detected: 1, active: 3, completed: 240 })).toBe('validated');
-    expect(techniqueValidationStatus({ runs: 4, detected: 0, active: 1, completed: 3 })).toBe('in_progress');
-    expect(techniqueValidationStatus({ runs: 3, detected: 0, active: 0, completed: 3 })).toBe('not_detected');
-    expect(techniqueValidationStatus({ runs: 2, detected: 0, active: 0, completed: 0 })).toBe('not_validated');
-  });
-});
-
-describe('Hunt coverage entries', () => {
-  it('should keep platform owned entries through a full replacement by an integration', () => {
-    const current = [{ coverage_name: 'detection', coverage_score: 50 }, { coverage_name: 'hunt_detected', coverage_score: 100 }];
-    const incoming = [{ coverage_name: 'detection', coverage_score: 80 }, { coverage_name: 'prevention', coverage_score: 20 }];
-    expect(preservePlatformCoverage(current, incoming)).toEqual([...incoming, { coverage_name: 'hunt_detected', coverage_score: 100 }]);
-    // An integration sending hunt_detected never replaces the score computed from hunt runs, nor creates one
-    const explicit = [{ coverage_name: 'detection', coverage_score: 80 }, { coverage_name: 'hunt_detected', coverage_score: 0 }];
-    expect(preservePlatformCoverage(current, explicit)).toEqual([{ coverage_name: 'detection', coverage_score: 80 }, { coverage_name: 'hunt_detected', coverage_score: 100 }]);
-    expect(preservePlatformCoverage([{ coverage_name: 'detection', coverage_score: 50 }], explicit)).toEqual([{ coverage_name: 'detection', coverage_score: 80 }]);
-    expect(preservePlatformCoverage(null, null)).toEqual([]);
-  });
-
-  it('should write a single hunt_detected entry', () => {
-    const merged = mergeHuntDetectedCoverage([{ coverage_name: 'detection', coverage_score: 50 }, { coverage_name: 'hunt_detected', coverage_score: 0 }], true);
-    expect(merged).toEqual([{ coverage_name: 'detection', coverage_score: 50 }, { coverage_name: 'hunt_detected', coverage_score: 100 }]);
-    expect(mergeHuntDetectedCoverage(undefined, false)).toEqual([{ coverage_name: 'hunt_detected', coverage_score: 0 }]);
   });
 });
 

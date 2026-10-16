@@ -11,7 +11,6 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 | `crowdstrike-logscale` | CrowdStrike Falcon LogScale | LogScale query language |
 | `google-secops` | Google SecOps | UDM search, YARA-L |
 | `opensearch` | OpenSearch (OCSF data) | PPL, Lucene |
-| `internet` | Infrastructure tracking on the Internet | Internet fingerprints |
 
 ## Before you start
 
@@ -313,53 +312,11 @@ Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) 
 
 Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/opensearch-ocsf-hunt/README.md).
 
-### Infrastructure tracker
-
-| | |
-|---|---|
-| Credential | An API key (or token) per internet scanning source you subscribe to; Shodan InternetDB needs none. |
-| Console | The API key page of each source account. |
-| Network | The API of each configured source reachable from the connector. |
-
-Step by step:
-
-1. Censys Platform: create a personal access token with access to the Global Search API, and copy the organization ID of an organization account; set `INFRASTRUCTURE_TRACKER_CENSYS_TOKEN` (and `INFRASTRUCTURE_TRACKER_CENSYS_ORGANISATION_ID`).
-2. Silent Push: copy an API key whose plan includes the Explore web scan data API into `INFRASTRUCTURE_TRACKER_SILENTPUSH_API_KEY`.
-3. urlscan.io: create an API key with search access (**Settings & API**) and set `INFRASTRUCTURE_TRACKER_URLSCAN_API_KEY`.
-4. Team Cymru Scout: copy an API key with search queries into `INFRASTRUCTURE_TRACKER_CYMRU_SCOUT_API_KEY`.
-
-Least-privilege permissions:
-
-| Permission | Why |
-|---|---|
-| Censys Platform: personal access token with the Global Search API (and the organization ID of an organization account) | Hosts and web properties (CenQL) on every fingerprint kind. |
-| Silent Push: API key with the Explore web scan data API | Web scans (SPQL) on JARM, certificate SHA-256, HTTP title, body hash and `Server` header. |
-| urlscan.io: API key with search access | Scans of the run window on HTTP title, `Server` header, TLS issuer, body hash and ASN. |
-| Team Cymru Scout: API key with search queries | IP addresses of the last 90 days on JARM, JA4X, JA4S and certificate SHA-256. |
-| Shodan InternetDB: none (free service, subject to its terms of use) | Enrichment only: host names, open ports and tags of the IP addresses found. |
-
-A source without a key is disabled. Each source answers with the data its plan includes, and each search counts against the quota of your account.
-
-Copy-ready configuration (`.env` of the `docker-compose.yml`):
-
-```env
-OPENCTI_URL=https://opencti.example.com
-OPENCTI_TOKEN=ChangeMe
-CONNECTOR_ID=ChangeMe-UUIDv4
-INFRASTRUCTURE_TRACKER_CENSYS_TOKEN=ChangeMe
-INFRASTRUCTURE_TRACKER_URLSCAN_API_KEY=ChangeMe
-INFRASTRUCTURE_TRACKER_INTERNETDB_ENABLED=true
-```
-
-Once the connector runs, open it in OpenCTI (**Data > Ingestion > Connectors**) and click **Test connection** on its **Hunted platform** card. It runs one search per source with a key, unlikely to match, which counts against the quota of the source. A missing permission is named in plain words, with what to grant; a hunt run refused by the platform reports the same sentence.
-
-Full configuration: [connector README](https://github.com/OpenCTI-Platform/connectors/blob/master/internal-hunt/infrastructure-tracker/README.md).
-
 ## Registration
 
 At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created, with the declared type, when missing and once the registration is accepted. A registration never changes an existing security platform: its type and the rest are left to its editors. Hunts are scoped on security platforms, and the sightings OpenCTI keeps for the hunts are sighted on them.
 
-Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The `internet` platform has no security platform.
+Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. A hunt connector that names no security platform is refused.
 
 Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**.
 
@@ -422,7 +379,7 @@ OpenCTI only accepts the report of a run from the connector it was dispatched to
 The Python library `pycti` provides the helpers of the hunt connector contract:
 
 - `ConnectorType.INTERNAL_HUNT`, the connector type,
-- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown on the Hunted platform card. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform (or the internet) no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
+- `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown on the Hunted platform card of its connector page and in the setup checklist of Defense > Hunts. A security platform is one product: several connectors of the same kind can execute against it, a connector of another kind naming it is refused, even when both register at the same time. A connector registered again against another security platform no longer receives the runs created for the former one: they are cancelled, and its reports on them are refused,
 - `helper.listen_hunt(callback)`, the consumption of the runs (the callback receives the run message) and of the connection tests (`mode` `check`, no run),
 - `helper.report_hunt_connection_check(check_id, checks)`, the answer to a connection test: one `{name, ok, message}` per check. Like the run report, it carries the work the test was dispatched with (by default the work of the message being processed), so that hunt connectors sharing a user cannot answer each other's tests,
 - `helper.report_hunt_run(run_id, status, ...)`, the run report, `hit_keys`, `first_hit_at`, `last_hit_at`, `rule_results` and `observations` included. It carries the work the run was dispatched with (by default the work of the message being processed): OpenCTI accepts the report of a dispatched run only with it, so that hunt connectors sharing a user cannot report each other's runs,

@@ -54,7 +54,6 @@ import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
 import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
-  HUNT_PLATFORM_INTERNET,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
@@ -82,7 +81,6 @@ import {
   sanitizeRuleResults,
   shareAccessDecision,
   splitHitsByKeys,
-  techniqueValidationStatus,
   truncate,
 } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
@@ -99,7 +97,6 @@ import {
 import { isReadableByReadersOf, resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
 import { type HuntRunInformationPatch, updateHuntLastRunStatusIfStill, updateHuntRunInformation } from '../hunt-stats';
-import { writeHuntCoverageResult } from '../hunt-coverage';
 import {
   continueHuntIncident,
   createHuntIncidentInWorkspace,
@@ -132,7 +129,6 @@ import {
   HUNT_RUN_STATUS_RUNNING,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TERMINAL_STATUSES,
-  HUNT_RUN_TRIGGER_EMULATION,
   HUNT_RUN_TRIGGER_PREVIEW,
   HUNT_RUN_TRIGGER_RETRY,
   HUNT_VERDICT_BENIGN,
@@ -343,9 +339,6 @@ export interface HuntRunRequest {
   timeWindowHours?: number | null;
   windowStart?: string | null;
   windowEnd?: string | null;
-  aevInjectId?: string | null;
-  securityCoverageId?: string | null;
-  techniqueId?: string | null;
   triggeredBy?: string | null;
   // The user starting a manual run, a preview or a manual retry: only the security platforms this user can read are targeted
   requester?: AuthUser | null;
@@ -394,7 +387,7 @@ export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: 
 };
 
 /**
- * The completed run of a hunt on a security platform (null: on the internet) whose time window ends last, among the runs
+ * The completed run of a hunt on a security platform (null: without one) whose time window ends last, among the runs
  * of the current logic of the hunt: a run of an earlier rule or query never searched for what the current one matches.
  */
 export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null, logicFingerprint: string) => {
@@ -462,7 +455,7 @@ export const recordHuntRunSummary = async (context: AuthContext, hunt: BasicStor
 
 interface HuntRunCreation {
   runs: BasicStoreEntityHuntRun[];
-  // The security platforms (or connectors, on the internet) left without a run when the creation was interrupted
+  // The security platforms left without a run when the creation was interrupted
   notCreatedOn: string[];
 }
 
@@ -567,9 +560,6 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
       hunt_logic_fingerprint: logicFingerprint,
       auto_escalation: autoEscalation,
       unresolved_techniques: unresolvedTechniques,
-      aev_inject_id: request.aevInjectId ?? null,
-      security_coverage_id: request.securityCoverageId ?? null,
-      technique_id: request.techniqueId ?? null,
       triggered_by: request.triggeredBy ?? request.requester?.id ?? HUNT_MANAGER_USER.id,
       objectMarking: restrictions.objectMarking,
       objectOrganization: restrictions.objectOrganization,
@@ -672,17 +662,13 @@ export const startHuntRuns = async (
   await checkHuntEditAccess(context, user, hunt);
   // A logic its translation preview or a run already failed to translate for good on a platform fails again there: the
   // platform is left out before any connector slot or daily run is spent on it, and the start is refused when no other
-  // platform is left (the internet being the only target of the hunts that run on it)
+  // platform is left
   const failedOn = (await findHuntTranslations(context, user, hunt, input?.security_platform_ids ?? []))
     .filter((translation) => translation.state === 'failed');
   const translationRefusal = (translation: HuntTranslation) => {
     const { template, values } = huntTranslationMessage(translation);
     return FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
   };
-  const failedOnInternet = failedOn.find((translation) => !translation.run.security_platform_id);
-  if (failedOnInternet) {
-    throw translationRefusal(failedOnInternet);
-  }
   const creation = await createHuntRunsOnTargets(context, hunt, {
     trigger: 'manual',
     securityPlatformIds: input?.security_platform_ids ?? [],
@@ -719,10 +705,6 @@ export const startHuntRuns = async (
 const previewUnknownTranslations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, securityPlatformIds: string[]) => {
   const known = await findHuntTranslations(context, user, hunt, securityPlatformIds);
   const knownPlatformIds = known.map((translation) => translation.run.security_platform_id).filter((id): id is string => !!id);
-  // Internet infrastructure hunts run on no security platform: one known translation answers for all their connectors
-  if (known.some((translation) => !translation.run.security_platform_id)) {
-    return { created: [], known };
-  }
   const created = await createHuntRuns(context, hunt, {
     trigger: HUNT_RUN_TRIGGER_PREVIEW,
     mode: HUNT_RUN_MODE_PREVIEW,
@@ -801,7 +783,7 @@ export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatf
   // Partial (true), complete (false) or unknown (null): only complete results let a run without hits be benign
   results_truncated: run.results_truncated ?? null,
   time_window: { start: run.time_window_start, end: run.time_window_end },
-  security_platform: securityPlatformName ?? HUNT_PLATFORM_INTERNET,
+  security_platform: securityPlatformName ?? run.connector_name ?? '',
   translated_query: run.translated_query ?? '',
   evidence_sample: run.evidence_sample ?? [],
   hits_sample: run.hits_sample ?? [],
@@ -893,7 +875,7 @@ const HUNT_INCIDENT_LOCK = 'hunt_incident';
 // Each run escalates under its own transition lock: the runs of a hunt on a platform find or open their incident, and
 // record it, one at a time, so that runs escalated together continue the incident the first one opens
 const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Promise<T>): Promise<T> => {
-  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? HUNT_PLATFORM_INTERNET}`, action);
+  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? 'none'}`, action);
 };
 
 /**
@@ -919,10 +901,9 @@ const escalateHuntRun = async (
 
 /**
  * Post-completion of a run: the sightings of the hunt, the incident above the escalation threshold of new hits (a new
- * draft, or the incident still open from a previous run), hunt statistics, Security Coverage
- * write-back for emulation runs, then the automatic verdict, which marks the run finalized. Every step is idempotent
- * (the draft and incident ids are recorded as soon as they exist, older runs never overwrite the statistics of a newer
- * one, the coverage write-back merges): when one fails, the run stays unfinalized and a later attempt completes it.
+ * draft, or the incident still open from a previous run), hunt statistics, then the automatic verdict, which marks the
+ * run finalized. Every step is idempotent (the draft and incident ids are recorded as soon as they exist, older runs
+ * never overwrite the statistics of a newer one): when one fails, the run stays unfinalized and a later attempt completes it.
  * `force` records the verdict whatever failed, for a run whose finalization keeps failing.
  */
 const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt, force = false) => {
@@ -985,13 +966,6 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     });
   } catch (error) {
     stepFailed('[OPENCTI-MODULE] Hunt statistics update failed', error);
-  }
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
-    try {
-      await writeHuntCoverageResult(context, current);
-    } catch (error) {
-      stepFailed('[OPENCTI-MODULE] Hunt coverage write-back failed', error);
-    }
   }
   if (!complete && !force) {
     return current;
@@ -1150,7 +1124,7 @@ export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, conne
 };
 
 /**
- * Cancels the runs of a hunt connector registered again against another security platform (or the internet): created for
+ * Cancels the runs of a hunt connector registered again against another security platform: created for
  * the former one, they would execute on the new one with their hits attributed to the former. Never fails the registration.
  */
 const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId: string, securityPlatformId: string | null) => {
@@ -1167,7 +1141,7 @@ const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId:
 
 /**
  * The next attempt already created for a terminated run: the retry that names it in retry_of. Two runs sharing their
- * hunt, connector, window and attempt (two playbook executions, two emulations) each get their own replacement.
+ * hunt, connector, window and attempt (two playbook executions) each get their own replacement.
  */
 const findHuntRunReplacement = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
   const filters = [
@@ -1219,9 +1193,6 @@ export const replaceHuntRun = async (context: AuthContext, hunt: BasicStoreEntit
       connectorIds: run.connector_id ? [run.connector_id] : [],
       windowStart: run.time_window_start,
       windowEnd: run.time_window_end,
-      aevInjectId: run.aev_inject_id,
-      securityCoverageId: run.security_coverage_id,
-      techniqueId: run.technique_id,
       triggeredBy: options.triggeredBy ?? run.triggered_by,
       requester: options.requester,
       attempt: (run.attempt ?? 1) + 1,
@@ -1608,8 +1579,8 @@ const EVIDENCE_SOURCE_MAX_LENGTH = 128;
 const EVIDENCE_SOURCES_MAX = 20;
 
 /**
- * Statistics and coverage of a finalized completed run whose verdict an analyst or an agent set: they follow its hit
- * count, the verdict stays. Both steps are idempotent; a failure is logged and the next evidence refreshes them again.
+ * Statistics of a finalized completed run whose verdict an analyst or an agent set: they follow its hit count, the
+ * verdict stays. The step is idempotent; a failure is logged and the next evidence refreshes them again.
  */
 const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
   try {
@@ -1619,7 +1590,6 @@ const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntity
       last_hits_count: run.hits_count ?? 0,
       last_new_hits_count: huntRunNewHits(run),
     });
-    await writeHuntCoverageResult(context, run);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Hunt run outcome refresh after late evidence failed', { cause: error, runId: run.internal_id });
   }
@@ -1629,9 +1599,9 @@ const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntity
  * Evidence found outside the dispatch of a run (a SIEM alert action, a follow-up search, a late result), on any run
  * status: result objects are merged, hits are added, the evidence sample is merged under the platform caps. The status
  * never changes. When hits reach a completed run already finalized, its outcome follows: an automatic verdict is
- * finalized again (verdict, Incident draft above the escalation threshold, hunt statistics, coverage write-back of an
- * emulation run; the hunt manager completes a finalization interrupted by a failing step), while a verdict set by an
- * analyst or an agent is kept and only the statistics and the coverage follow.
+ * finalized again (verdict, Incident draft above the escalation threshold, hunt statistics; the hunt manager completes
+ * a finalization interrupted by a failing step), while a verdict set by an analyst or an agent is kept and only the
+ * statistics follow.
  */
 export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunEvidenceAddInput) => {
   const run = await findHuntRunById(context, user, runId);
@@ -1660,7 +1630,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     if (!platform) {
       throw ResourceNotFoundError('The security platform of the evidence cannot be found', { securityPlatformId: input.security_platform_id });
     }
-    // Evidence of a security platform never goes to a run of the internet, whose hits are known for the internet only
+    // Evidence of a security platform never goes to a run of another one, whose hits are known for that one only
     if ((run.security_platform_id ?? null) !== platform.internal_id) {
       throw FunctionalError('The evidence was observed on another security platform than the one of the run', { runId });
     }
@@ -1795,7 +1765,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     // that keeps failing refuses the verdict, so that the hunt manager keeps retrying it until it closes the run
     const current = isHuntRunFinalized(read) ? read : await completeHuntRunFinalization(context, read);
     if (!isHuntRunFinalized(current)) {
-      throw FunctionalError('The run is still being finalized (statistics, incident or coverage), set its verdict again in a few minutes', { runId });
+      throw FunctionalError('The run is still being finalized (statistics or incident), set its verdict again in a few minutes', { runId });
     }
     // The platform decides the provenance, not the client: a verdict is the agent's only when it applies the verdict the
     // agent proposed for this run, any other verdict is the decision of the analyst who sets it
@@ -1915,7 +1885,7 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
 });
 
 /**
- * The hunt connectors a user sees: those of the internet, and those bound to a security platform the user can read.
+ * The hunt connectors a user sees: those bound to a security platform the user can read.
  * The dispatch reads every connector (listHuntConnectors), whoever the hunt belongs to.
  */
 export const findHuntConnectors = async (context: AuthContext, user: AuthUser, onlyAlive = false) => {
@@ -1926,7 +1896,7 @@ export const findHuntConnectors = async (context: AuthContext, user: AuthUser, o
     : [];
   const readableIds = new Set(readable.map((platform) => platform.internal_id));
   return connectors
-    .filter((connector) => !connector.hunt_security_platform_id || readableIds.has(connector.hunt_security_platform_id))
+    .filter((connector) => !!connector.hunt_security_platform_id && readableIds.has(connector.hunt_security_platform_id))
     .map(toHuntConnectorView);
 };
 
@@ -1958,19 +1928,15 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
     throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
   }
   const name = input.security_platform_name?.trim();
-  if (platform !== HUNT_PLATFORM_INTERNET && !name) {
-    throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
+  if (!name) {
+    throw FunctionalError('A hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
   }
   // The security platform is the one of its deterministic identity (name and identity class), found without writing:
   // a registration never changes an existing platform, and creates a missing one only once it is accepted
-  const platformStandardId = platform !== HUNT_PLATFORM_INTERNET && name
-    ? generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string
-    : null;
+  const platformStandardId = generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string;
   const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
   const bind = async () => {
-    const existing = platformStandardId
-      ? await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, platformStandardId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
-      : null;
+    const existing = await storeLoadById<BasicStoreEntitySecurityPlatform>(context, user, platformStandardId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
     // A security platform is one product: connectors of the same kind share it, a connector of another kind never
     // executes its own query language against it
     const otherKind = existing ? (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
@@ -1989,8 +1955,8 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
       }
       let securityPlatformId: string | null = existing?.internal_id ?? null;
-      if (platformStandardId && !existing) {
-        const created = await addSecurityPlatform(context, user, { name: name as string, security_platform_type: input.security_platform_type ?? 'SIEM' });
+      if (!existing) {
+        const created = await addSecurityPlatform(context, user, { name, security_platform_type: input.security_platform_type ?? 'SIEM' });
         securityPlatformId = (created as BasicStoreEntitySecurityPlatform).internal_id;
       }
       const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
@@ -1999,7 +1965,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         hunt_security_platform_id: securityPlatformId,
         hunt_supports_preview: input.supports_preview !== false,
         // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
-        hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
+        hunt_supports_indicators: input.supports_indicators === true,
         hunt_max_concurrent_runs: maxConcurrent,
         hunt_setup: {
           documentation_url: sanitizeDocumentationUrl(input.documentation_url),
@@ -2011,7 +1977,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   };
   // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
   // both bind to it
-  const { element, securityPlatformId } = platformStandardId ? await withHuntLock(huntConnectorPlatformLockKey(platformStandardId), bind) : await bind();
+  const { element, securityPlatformId } = await withHuntLock(huntConnectorPlatformLockKey(platformStandardId), bind);
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   if ((connector.hunt_security_platform_id ?? null) !== securityPlatformId) {
@@ -2133,62 +2099,6 @@ interface HuntStatisticsArgs {
 const HUNT_STATISTICS_DEFAULT_DAYS = 30;
 const HUNT_STATISTICS_INTERVALS = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
 
-// Terms aggregations return at most this many buckets (MAX_AGGREGATION_SIZE of the engine)
-const TECHNIQUE_VALIDATION_BATCH = 100;
-
-/**
- * Validation of each technique of a hunt by the OpenAEV emulations, counted over every emulation run of the hunt the
- * user can read: four aggregations by technique per batch of techniques, whatever the number of runs.
- */
-export const computeHuntTechniqueValidations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
-  const countByTechnique = async (techniqueIds: string[], extra: { key: string; values: string[]; operator?: FilterOperator }[]) => {
-    const buckets = await elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-      types: [ENTITY_TYPE_HUNT_RUN],
-      field: 'technique_id',
-      normalizeLabel: false,
-      noFiltersChecking: true,
-      filters: {
-        mode: FilterMode.And,
-        filters: [
-          { key: ['hunt_id'], values: [hunt.internal_id] },
-          { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_EMULATION] },
-          { key: ['technique_id'], values: techniqueIds },
-          ...extra.map((filter) => ({ key: [filter.key], values: filter.values, operator: filter.operator ?? FilterOperator.Eq })),
-        ],
-        filterGroups: [],
-      },
-    });
-    return new Map(buckets.map((bucket) => [String(bucket.label), bucket.count]));
-  };
-  const techniqueIds = hunt[RELATION_HUNT_TECHNIQUES] ?? [];
-  const completedFilter = { key: 'hunt_run_status', values: [HUNT_RUN_STATUS_COMPLETED] };
-  const validations: { technique_id: string; status: ReturnType<typeof techniqueValidationStatus>; emulation_runs_count: number; detected_runs_count: number }[] = [];
-  for (let start = 0; start < techniqueIds.length; start += TECHNIQUE_VALIDATION_BATCH) {
-    const batch = techniqueIds.slice(start, start + TECHNIQUE_VALIDATION_BATCH);
-    const [runs, detected, active, completed] = await Promise.all([
-      countByTechnique(batch, []),
-      countByTechnique(batch, [completedFilter, { key: 'hits_count', values: ['0'], operator: FilterOperator.Gt }]),
-      countByTechnique(batch, [{ key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES }]),
-      countByTechnique(batch, [completedFilter]),
-    ]);
-    batch.forEach((techniqueId) => {
-      const counts = {
-        runs: runs.get(techniqueId) ?? 0,
-        detected: detected.get(techniqueId) ?? 0,
-        active: active.get(techniqueId) ?? 0,
-        completed: completed.get(techniqueId) ?? 0,
-      };
-      validations.push({
-        technique_id: techniqueId,
-        status: techniqueValidationStatus(counts),
-        emulation_runs_count: counts.runs,
-        detected_runs_count: counts.detected,
-      });
-    });
-  }
-  return validations;
-};
-
 /**
  * Marks the runs of a hunt as the runs of a deleted hunt, or of a hunt that exists again, in one update: the statistics
  * leave the runs of deleted hunts out with this flag, never by listing every hunt that exists.
@@ -2275,7 +2185,7 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     runs_over_time: runsSeries,
     // A platform the reader cannot load (deleted or restricted) has an empty label, never its identifier
     runs_per_platform: platforms.map((bucket) => ({
-      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? ''),
+      label: String(platformNames.get(bucket.label) ?? ''),
       value: bucket.count,
     })),
     verdict_distribution: verdicts.map((bucket) => ({ label: String(bucket.label), value: bucket.count })),

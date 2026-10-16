@@ -6,11 +6,11 @@ import { parseIocText } from './hunt-ioc-utils';
 export const HUNT_ENTITY_TYPE = 'Hunt';
 export const HUNT_RUN_ENTITY_TYPE = 'Hunt-Run';
 
-export const HUNT_TYPES = ['indicators', 'telemetry', 'infrastructure'] as const;
+export const HUNT_TYPES = ['indicators', 'telemetry'] as const;
 export const HUNT_STATUSES = ['draft', 'active', 'paused', 'retired'] as const;
 export const HUNT_SOURCE_KINDS = ['analyst', 'agent', 'hub'] as const;
 export const HUNT_RUN_STATUSES = ['queued', 'running', 'completed', 'failed', 'timeout', 'cancelled'] as const;
-export const HUNT_RUN_TRIGGERS = ['manual', 'schedule', 'standing', 'pir', 'playbook', 'emulation', 'preview', 'retry'] as const;
+export const HUNT_RUN_TRIGGERS = ['manual', 'schedule', 'standing', 'pir', 'playbook', 'preview', 'retry'] as const;
 export const HUNT_RUN_VERDICTS = ['pending', 'true_positive', 'benign', 'inconclusive'] as const;
 export const HUNT_ANALYST_VERDICTS = ['true_positive', 'benign', 'inconclusive'] as const;
 
@@ -21,21 +21,16 @@ export type HuntRunStatusValue = typeof HUNT_RUN_STATUSES[number];
 export type HuntRunTriggerValue = typeof HUNT_RUN_TRIGGERS[number];
 export type HuntRunVerdictValue = typeof HUNT_RUN_VERDICTS[number];
 
-export const HUNT_PLATFORM_INTERNET = 'internet';
-
 /**
- * Whether a hunt connector can run a translation preview of a hunt, as the dispatch picks connectors: the internet
- * platform for an infrastructure hunt, otherwise a security platform of the hunt scope, every one of them for an
- * unscoped hunt.
+ * Whether a hunt connector can run a translation preview of a hunt, as the dispatch picks connectors: a security platform
+ * of the hunt scope, every one of them for an unscoped hunt.
  */
 export const isHuntPreviewConnector = (
   connector: { supports_preview?: boolean | null; supports_indicators?: boolean | null; platform?: string | null; securityPlatform?: { id: string } | null },
   huntType: string | null | undefined,
   scopePlatformIds: ReadonlyArray<string>,
 ) => {
-  if (!connector.supports_preview) return false;
-  if (huntType === 'infrastructure') return connector.platform === HUNT_PLATFORM_INTERNET;
-  if (connector.platform === HUNT_PLATFORM_INTERNET || !connector.securityPlatform) return false;
+  if (!connector.supports_preview || !connector.securityPlatform) return false;
   if (huntType === 'indicators' && !connector.supports_indicators) return false;
   return scopePlatformIds.length === 0 || scopePlatformIds.includes(connector.securityPlatform.id);
 };
@@ -50,7 +45,6 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
-  HUNT_PLATFORM_INTERNET,
 ] as const;
 export const HUNT_QUERY_LANGUAGES = [
   'spl',
@@ -64,7 +58,6 @@ export const HUNT_QUERY_LANGUAGES = [
   'ppl',
   'opensearch-lucene',
   'sql',
-  'internet',
 ] as const;
 /** Default query language of each platform, offered first when a native query row is added */
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
@@ -77,10 +70,9 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   opensearch: 'ppl',
   clickhouse: 'sql',
   's3-ocsf': 'sql',
-  internet: 'internet',
 };
 
-// Product and language names are proper nouns, only the internet entries are translated
+// Product and language names are proper nouns, never translated
 const HUNT_PLATFORM_NAMES: Record<string, string> = {
   splunk: 'Splunk',
   'microsoft-sentinel': 'Microsoft Sentinel',
@@ -106,15 +98,13 @@ const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   sql: 'SQL',
 };
 
-export const huntPlatformLabel = (platform: string | null | undefined, t_i18n: (key: string) => string) => {
+export const huntPlatformLabel = (platform: string | null | undefined) => {
   if (!platform) return '';
-  if (platform === HUNT_PLATFORM_INTERNET) return t_i18n('Internet');
   return HUNT_PLATFORM_NAMES[platform] ?? platform;
 };
 
-export const huntQueryLanguageLabel = (language: string | null | undefined, t_i18n: (key: string) => string) => {
+export const huntQueryLanguageLabel = (language: string | null | undefined) => {
   if (!language) return '';
-  if (language === 'internet') return t_i18n('Internet fingerprints');
   return HUNT_QUERY_LANGUAGE_NAMES[language] ?? language;
 };
 
@@ -316,7 +306,6 @@ const HUNT_CONNECTOR_SETUP_SECTIONS: Record<string, string> = {
   'crowdstrike-logscale-hunt': 'crowdstrike-logscale',
   'google-secops-hunt': 'google-secops',
   'opensearch-ocsf-hunt': 'opensearch-ocsf',
-  'infrastructure-tracker': 'infrastructure-tracker',
 };
 
 export const huntConnectorSetupDocumentation = (slug: string | null | undefined) => {
@@ -349,7 +338,6 @@ export const huntStatusSeverity = (status?: string | null): ChipSeverity => {
 export const huntTypeLabel = (huntType?: string | null) => {
   switch (huntType) {
     case 'indicators': return 'Indicators';
-    case 'infrastructure': return 'Internet infrastructure (outside-in)';
     default: return 'Detection rule (Sigma or native query)';
   }
 };
@@ -358,7 +346,6 @@ export const huntTypeLabel = (huntType?: string | null) => {
 export const huntTypeDescription = (huntType?: string | null) => {
   switch (huntType) {
     case 'indicators': return 'Needs indicators or observables (IP addresses, domains, URLs, hashes): looks them up in the telemetry of your security platforms, no query language needed.';
-    case 'infrastructure': return 'Needs an internet fingerprint query (certificate, JARM, HTTP title), not a Sigma rule or indicators: searches internet scan data for the servers of a threat with the infrastructure tracker connector, never your telemetry.';
     default: return 'Needs a Sigma rule or a native query: runs it on the logs and events of your SIEM, EDR or data lake.';
   }
 };
@@ -370,7 +357,6 @@ export const huntExtractsObservables = (huntType?: string | null) => huntType !=
 export const huntRunProducesDescription = (huntType?: string | null) => {
   switch (huntType) {
     case 'indicators': return 'A run records a sighting of each indicator or observable whose value it finds, and observed data of its hits.';
-    case 'infrastructure': return 'A run turns the internet hosts it finds into infrastructure of the targeted threats, with observables and indicators.';
     default: return 'A run with hits records sightings of the techniques and indicators of the hunt, observables and observed data.';
   }
 };
@@ -402,7 +388,6 @@ export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
 export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
   'Manual: it runs when you click Run now': 'Manual: it runs when a user who can edit the hunt runs it',
   'Add a Sigma rule or a native query': 'No Sigma rule or native query yet; a user who can edit the hunt can add one',
-  'Add a native query for the internet platform': 'No native query for the internet platform yet; a user who can edit the hunt can add one',
   'Add the indicators or observables to look for': 'No indicators or observables to look for yet; a user who can edit the hunt can add them',
   'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators':
     'None of the indicators and observables of this hunt has a value a lookup can search; a user who can edit the hunt can add values or other indicators',
@@ -413,8 +398,6 @@ export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
     'No hunt connector can run it on the platforms of its scope yet; a user who can edit the hunt can widen the scope',
   'No hunt connector of its scope supports indicator lookups: deploy one that does, such as the Splunk hunt connector':
     'No hunt connector of its scope supports indicator lookups yet; it runs once one that does is deployed, such as the Splunk hunt connector',
-  'No internet hunt connector is deployed: deploy the infrastructure tracker connector':
-    'No internet hunt connector is deployed yet; it runs once the infrastructure tracker connector is deployed',
   'Scheduled, standing and PIR-activated hunts need the Enterprise Edition: set the schedule to manual':
     'Scheduled, standing and PIR-activated hunts need the Enterprise Edition; a user who can edit the hunt can set its schedule to manual',
   'The scope matches no security platform: edit the scope': 'The scope matches no security platform yet; a user who can edit the hunt can change it',
@@ -458,7 +441,6 @@ export const huntRunTriggerLabel = (trigger?: string | null) => {
     case 'standing': return 'Standing hunt';
     case 'pir': return 'PIR activation';
     case 'playbook': return 'Playbook';
-    case 'emulation': return 'Emulation';
     case 'preview': return 'Preview';
     case 'retry': return 'Retry';
     default: return 'Unknown';
@@ -577,15 +559,11 @@ export const hasHuntLogic = (hunt: {
   hunt_ioc_filters?: string | null;
   huntSources?: ReadonlyArray<unknown> | null;
 }) => {
-  const nativeQueries = hunt.native_queries ?? [];
-  if (hunt.hunt_type === 'infrastructure') {
-    return nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET);
-  }
   if (hunt.hunt_type === 'indicators') {
     return (hunt.hunt_ioc_values ?? []).length > 0 || (hunt.huntSources ?? []).length > 0 || !isFilterGroupJsonEmpty(hunt.hunt_ioc_filters);
   }
   return [hunt.sigma_rule, ...(hunt.sigma_rules ?? [])].some((rule) => (rule ?? '').trim().length > 0)
-    || nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
+    || (hunt.native_queries ?? []).length > 0;
 };
 
 /** Hunts proposed by an agent or imported from XTM Hub stay drafts until an analyst reviews them. */
@@ -843,7 +821,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     sigma_rules: values.hunt_type === 'telemetry' ? formSigmaRules(values) : [],
     native_queries: isIndicators ? [] : normalizeNativeQueries(values.native_queries),
     ...(isIndicators ? { hunt_ioc_values: parseIocText(values.ioc_values_text).values, hunt_ioc_filters: iocFilters } : {}),
-    hunt_scope: values.hunt_type !== 'infrastructure' ? buildHuntScope(optionValues(values.scopePlatforms)) : '',
+    hunt_scope: buildHuntScope(optionValues(values.scopePlatforms)),
     hunt_schedule: schedule,
     trigger_filters: schedule === HUNT_SCHEDULE_STANDING ? triggerFilters : '',
     hunt_pir_activation: values.hunt_pir_activation,
@@ -1204,7 +1182,7 @@ interface HuntConnectorPlatform {
 
 /** Security platforms a live hunt connector can run a hunt of the type on (an indicator hunt needs indicator lookups). */
 export const countHuntPlatforms = (connectors: ReadonlyArray<HuntConnectorPlatform>, huntType: string) => new Set(connectors
-  .filter((connector) => connector.platform !== HUNT_PLATFORM_INTERNET && !!connector.securityPlatform)
+  .filter((connector) => !!connector.securityPlatform)
   .filter((connector) => huntType !== 'indicators' || !!connector.supports_indicators)
   .map((connector) => connector.securityPlatform?.id)).size;
 
@@ -1232,12 +1210,6 @@ export const formatHuntWindow = (hours: number, t_i18n: HuntTranslate) => (hours
  */
 export const buildHuntSummary = (input: HuntSummaryInput, t_i18n: HuntTranslate): string[] => {
   const name = input.name;
-  if (input.huntType === 'infrastructure') {
-    return [
-      t_i18n('You are hunting the infrastructure of {name} on the internet: the hunt runs its fingerprint queries on internet scan data through the infrastructure tracker connector, never on your telemetry.', { values: { name } }),
-      t_i18n('From {count, plural, one {# hit} other {# hits}}, a run proposes an incident.', { values: { count: input.escalationThreshold } }),
-    ];
-  }
   let platforms: string;
   if (input.scopePlatforms.length === 1) {
     platforms = String(input.scopePlatforms[0].label);
@@ -1293,27 +1265,4 @@ const HUNTABLE_ENTITY_PATHS: RegExp[] = [
  * Malware, Tool, Report, Indicator, Observable, Grouping, Incident, Case-Incident and PIR.
  */
 export const isHuntableEntityPath = (pathname: string) => HUNTABLE_ENTITY_PATHS.some((pattern) => pattern.test(pathname));
-// endregion
-
-// region coverage
-// Computed by the platform over every emulation run of the hunt (Hunt.techniqueValidations)
-export type HuntTechniqueValidationStatus = 'validated' | 'not_detected' | 'in_progress' | 'not_validated';
-
-export const huntTechniqueValidationLabel = (status: HuntTechniqueValidationStatus) => {
-  switch (status) {
-    case 'validated': return 'Detection proven';
-    case 'not_detected': return 'Not detected';
-    case 'in_progress': return 'Validation in progress';
-    default: return 'Not validated';
-  }
-};
-
-export const huntTechniqueValidationSeverity = (status: HuntTechniqueValidationStatus): ChipSeverity => {
-  switch (status) {
-    case 'validated': return 'low';
-    case 'not_detected': return 'high';
-    case 'in_progress': return 'info';
-    default: return 'neutral';
-  }
-};
 // endregion

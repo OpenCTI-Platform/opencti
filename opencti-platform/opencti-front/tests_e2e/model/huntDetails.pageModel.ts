@@ -71,10 +71,6 @@ export default class HuntDetailsPage {
     return this.page.getByTestId('hunt-evidence-page');
   }
 
-  getCoveragePage() {
-    return this.page.getByTestId('hunt-coverage-page');
-  }
-
   getRunVerdictForm() {
     return this.page.getByTestId('hunt-run-verdict-form');
   }

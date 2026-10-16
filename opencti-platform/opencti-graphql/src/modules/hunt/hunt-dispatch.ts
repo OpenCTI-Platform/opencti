@@ -23,15 +23,7 @@ import { now } from '../../utils/format';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import {
-  type BasicStoreEntityHunt,
-  HUNT_PLATFORM_INTERNET,
-  HUNT_TYPE_INDICATORS,
-  HUNT_TYPE_INFRASTRUCTURE,
-  RELATION_HUNT_SOURCES,
-  RELATION_HUNT_TARGETS,
-  RELATION_HUNT_TECHNIQUES,
-} from './hunt-types';
+import { type BasicStoreEntityHunt, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type HuntIoc, isDisclosableByHunt, resolveHuntIocSet } from './hunt-iocs';
 import {
   type BasicStoreEntityHuntRun,
@@ -87,7 +79,7 @@ export const huntConnectorPlatform = (connector: BasicStoreEntityConnector): str
 };
 
 /**
- * Whether a connector still executes against the security platform of a run (none for the internet): a connector
+ * Whether a connector still executes against the security platform of a run: a connector
  * registered again against another platform no longer executes the runs created for the former one.
  */
 export const isHuntConnectorBoundToRun = (connector: BasicStoreEntityConnector, run: Pick<BasicStoreEntityHuntRun, 'security_platform_id'>) => {
@@ -111,7 +103,6 @@ export const resolveHuntScopePlatforms = async (
 
 /**
  * Hunt connectors that must execute the hunt.
- * - infrastructure hunts: every live connector of the internet platform
  * - telemetry hunts: every live connector bound to a security platform of the hunt scope
  *   (restricted to the requested platforms when given)
  * - indicator hunts: the same, among the connectors that look up indicator values
@@ -126,16 +117,10 @@ export const resolveHuntConnectorTargets = async (
   options: { includeOffline?: boolean } = {},
 ): Promise<HuntConnectorTarget[]> => {
   const connectors = await listHuntConnectors(context, options.includeOffline !== true);
-  if (hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
-    return connectors
-      .filter((connector) => huntConnectorPlatform(connector) === HUNT_PLATFORM_INTERNET)
-      .map((connector) => ({ connector, securityPlatform: null }));
-  }
   const scopePlatforms = await resolveHuntScopePlatforms(context, user, hunt);
   const scopeById = new Map(scopePlatforms.map((platform) => [platform.internal_id, platform]));
   const requested = new Set(requestedPlatformIds);
   return connectors
-    .filter((connector) => huntConnectorPlatform(connector) !== HUNT_PLATFORM_INTERNET)
     .filter((connector) => hunt.hunt_type !== HUNT_TYPE_INDICATORS || connector.hunt_supports_indicators === true)
     .filter((connector) => !!connector.hunt_security_platform_id && scopeById.has(connector.hunt_security_platform_id))
     .filter((connector) => requested.size === 0 || requested.has(connector.hunt_security_platform_id as string))
