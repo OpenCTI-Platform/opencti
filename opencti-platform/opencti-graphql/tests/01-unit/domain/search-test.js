@@ -158,7 +158,8 @@ it('should only search the allowed connections', () => {
 
   const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: [] });
   expect(connectionsSearches(withoutConnections).length).toBe(0);
-  expect(withoutConnections.length).toBe(3);
+  // Attributes of the entity and its custom field values, for the exact and the partial terms
+  expect(withoutConnections.length).toBe(5);
 });
 
 it('should resolve connections restrictions unless only objects are searched', () => {
@@ -195,4 +196,18 @@ it('should not throw when a percent-encoded sequence straddles the search length
   // Place a percent-encoded byte so it gets cut mid-sequence by the length bound.
   const searchWithSplitEncoding = `${'a'.repeat(MAX_SEARCH_LENGTH - 1)}%E0%A4%A`;
   expect(() => elGenerateFullTextSearchShould(searchWithSplitEncoding)).not.toThrow();
+});
+
+it('should search the text and select values of the custom fields', () => {
+  const customFieldSearches = (search) => elGenerateFullTextSearchShould(search)
+    .filter((clause) => clause?.nested?.path === 'custom_field_values')
+    .map((clause) => clause.nested);
+  const fields = ['custom_field_values.string_value', 'custom_field_values.select_value', 'custom_field_values.select_values'];
+
+  const [wordSearch] = customFieldSearches('bravo');
+  expect(wordSearch.ignore_unmapped).toBe(true);
+  expect(wordSearch.query.bool.must[0].query_string).toMatchObject({ query: 'bravo*', fields });
+
+  const [exactSearch] = customFieldSearches('"closing note"');
+  expect(exactSearch.query.bool.must[0].multi_match).toMatchObject({ type: 'phrase', query: 'closing note', fields });
 });
