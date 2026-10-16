@@ -5,7 +5,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Checkbox } from '@filigran/design-system';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';

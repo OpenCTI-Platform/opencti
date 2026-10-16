@@ -6,7 +6,7 @@ import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart'
 import { SxProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';

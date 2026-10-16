@@ -1,5 +1,5 @@
 import Dialog from '@common/dialog/Dialog';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Stack } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';

@@ -5,7 +5,7 @@ import StixDomainObjectsExports from '@components/common/stix_domain_objects/Sti
 import StixCyberObservablesExports from '@components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import { Stack, ToggleButtonGroup } from '@mui/material';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import useEmailTemplateEdit from '@components/settings/email_template/useEmailTemplateEdit';
 import { useEmailTemplateContext } from '@components/settings/email_template/EmailTemplateContext';

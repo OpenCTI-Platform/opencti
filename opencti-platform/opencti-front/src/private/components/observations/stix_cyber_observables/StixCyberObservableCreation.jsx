@@ -4,7 +4,7 @@ import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { ListItemButton, Stack } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';

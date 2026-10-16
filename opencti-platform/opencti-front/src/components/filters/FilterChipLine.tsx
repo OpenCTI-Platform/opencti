@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';

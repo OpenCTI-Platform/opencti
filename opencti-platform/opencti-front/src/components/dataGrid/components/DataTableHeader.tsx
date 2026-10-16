@@ -4,7 +4,7 @@ import IconButton from '@common/button/IconButton';
 import SimpleDraggable from 'react-draggable';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
-import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
+import { Theme as MuiTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant } from '../dataTableTypes';
 import { useDataTableContext } from './DataTableContext';

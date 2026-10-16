@@ -3,7 +3,7 @@ import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import moment from 'moment';
 import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 
 export interface DecayHistory {
