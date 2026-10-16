@@ -23,17 +23,20 @@ const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: Dra
         paddingY: 2,
         alignItems: 'center',
         justifyContent: 'space-between',
+        gap: 2,
       }}
     >
+      {/* minWidth 0 lets a long title shrink and be cut, instead of pushing the actions out of the drawer */}
       <Typography
         id="drawer-title"
         variant="h5"
-        style={{ textWrap: 'nowrap' }}
+        title={title}
+        style={{ textWrap: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}
       >
         {title}
       </Typography>
 
-      <Stack direction="row" alignItems="center" gap={1}>
+      <Stack direction="row" alignItems="center" gap={1} sx={{ flexShrink: 0 }}>
         {endContent}
         <IconButton
           aria-label="Close"

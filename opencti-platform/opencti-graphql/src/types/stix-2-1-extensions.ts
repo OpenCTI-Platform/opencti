@@ -12,6 +12,11 @@ export const STIX_EXT_OCTI = 'extension-definition--ea279b3e-5c71-4632-ac08-831c
 // Artifact = score - additional_names
 export const STIX_EXT_OCTI_SCO = 'extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82';
 
+// Incident and case timeline (named "opencti-timeline")
+// Attributes extensions
+// Analyst contributions to the timeline: manual events and annotations of derived events
+export const STIX_EXT_OCTI_TIMELINE = 'extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb';
+
 // Extensions from MITRE
 // Attributes extensions
 // mitre_id

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getBase64ImageFromURL } from '../Image';
-import { resolvePdfMakeEmbeddedImages, resolvePdfPageGeometry } from './htmlToPdf';
+import { buildTimelinePdfDefinition, resolvePdfMakeEmbeddedImages, resolvePdfPageGeometry } from './htmlToPdf';
 
 vi.mock('../Image', () => ({
   getBase64ImageFromURL: vi.fn(),
@@ -97,5 +97,45 @@ describe('resolvePdfMakeEmbeddedImages', () => {
     await resolvePdfMakeEmbeddedImages(images, BASE_URL);
 
     expect(images).toEqual(original);
+  });
+});
+
+describe('buildTimelinePdfDefinition', () => {
+  // Same layout as the HTML export of the server: a drawing wider than any page, then the headline dates and the events
+  const html = [
+    '<div><h1>Timeline - Incident Demo</h1><p>Incident response - Generated at 2026-10-13 08:00 UTC</p>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900"><rect x="0" y="0" width="1200" height="900" fill="#ffffff"/></svg>',
+    '<h2 class="pdf-pagebreak-before">Headline dates</h2><table><tbody><tr><td>Closure</td><td>Not reached</td></tr></tbody></table>',
+    '<h2>Events</h2><table><thead><tr><th>Time</th><th>Title</th></tr></thead><tbody><tr><td>2026-03-01 00:00 UTC</td><td>Phishing</td></tr></tbody></table>',
+    '</div>',
+  ].join('');
+
+  const findNodes = (node: unknown, match: (candidate: Record<string, unknown>) => boolean): Record<string, unknown>[] => {
+    if (Array.isArray(node)) return node.flatMap((child) => findNodes(child, match));
+    if (!node || typeof node !== 'object') return [];
+    const record = node as Record<string, unknown>;
+    return [...(match(record) ? [record] : []), ...Object.values(record).flatMap((value) => findNodes(value, match))];
+  };
+
+  it('lays the timeline out on an A4 landscape page, the drawing scaled to fit the first page whole', () => {
+    const definition = buildTimelinePdfDefinition(html);
+    expect(definition.pageSize).toBe('A4');
+    expect(definition.pageOrientation).toBe('landscape');
+    const { pageWidth, pageHeight } = resolvePdfPageGeometry('A4', 'landscape');
+    const [margin] = definition.pageMargins as [number, number];
+    const [drawing] = findNodes(definition.content, (node) => typeof node.svg === 'string');
+    const [fitWidth, fitHeight] = drawing.fit as [number, number];
+    expect(fitWidth).toBeCloseTo(pageWidth - 2 * margin);
+    // Room is left above the drawing for the title of the export
+    expect(fitHeight).toBeLessThan(pageHeight - 2 * margin - 40);
+  });
+
+  it('starts the headline dates and the events on the page after the drawing', () => {
+    const definition = buildTimelinePdfDefinition(html);
+    const pageBreakBefore = definition.pageBreakBefore as unknown as (node: unknown) => boolean;
+    const ordered = findNodes(definition.content, (node) => typeof node.svg === 'string' || node.nodeName === 'H2');
+    expect(ordered.map((node) => (typeof node.svg === 'string' ? 'drawing' : node.nodeName))).toEqual(['drawing', 'H2', 'H2']);
+    expect(pageBreakBefore(ordered[1])).toBe(true);
+    expect(pageBreakBefore(ordered[2])).toBe(false);
   });
 });

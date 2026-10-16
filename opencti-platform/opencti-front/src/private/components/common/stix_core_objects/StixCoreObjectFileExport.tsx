@@ -28,6 +28,10 @@ import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFi
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { insertOngoingExports } from '../../../../utils/store';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { TIMELINE_EXPORT_MIME_TYPE_LIST, timelineExportErrorMessage, timelineFormatOfMimeType, useTimelineFileRenderer } from '../timeline/useContainerTimelineExport';
+import { TIMELINE_CONTAINER_TYPES } from '../timeline/timelineUtils';
+import { timelineExportFileAddMutation } from '../timeline/ContainerTimelineMutations';
+import type { ContainerTimelineMutationsExportFileAddMutation } from '../timeline/__generated__/ContainerTimelineMutationsExportFileAddMutation.graphql';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -36,6 +40,10 @@ export const BUILT_IN_HTML_TO_PDF = {
 export const BUILT_IN_FROM_TEMPLATE = {
   value: 'fromTemplate',
   connectorScope: ['text/html', 'application/pdf'],
+};
+export const BUILT_IN_TIMELINE = {
+  value: 'builtInTimeline',
+  connectorScope: TIMELINE_EXPORT_MIME_TYPE_LIST,
 };
 
 const stixCoreObjectFileExportQuery = graphql`
@@ -182,6 +190,7 @@ const StixCoreObjectFileExportComponent = ({
     setAskAiOpen(false);
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
+  const { renderStoredTimelineFile } = useTimelineFileRenderer();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
 
   const {
@@ -255,6 +264,12 @@ const StixCoreObjectFileExportComponent = ({
         label: t_i18n('Generate FINTEL from template'),
       });
     }
+    if (TIMELINE_CONTAINER_TYPES.includes(scoEntityType)) {
+      activeConnectors.push({
+        ...BUILT_IN_TIMELINE,
+        label: t_i18n('Incident and case timeline'),
+      });
+    }
   }
 
   const close = () => {
@@ -270,6 +285,12 @@ const StixCoreObjectFileExportComponent = ({
   );
   const [commitUploadFintelFile] = useMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+  );
+  // A transport failure carries no GraphQL error to show: the timeline export reports it with its own message
+  const [commitTimelineExportFile] = useApiMutation<ContainerTimelineMutationsExportFileAddMutation>(
+    timelineExportFileAddMutation,
+    undefined,
+    { errorMessage: t_i18n('The timeline export failed') },
   );
   const buildFintelDesignOptions = (values: StixCoreObjectFileExportFormInputs): FintelDesign => ({
     file_id: values.fintelDesign?.value.file_id ?? null,
@@ -477,10 +498,61 @@ const StixCoreObjectFileExportComponent = ({
     });
   };
 
+  /**
+   * Timeline export: the timeline of the incident or case, as the current user sees it, stored in the exported files of
+   * the entity like the other exports.
+   *
+   * @param values Form filled values.
+   * @param helpers Formik helpers to manage form.
+   */
+  const submitExportTimeline: typeof onSubmitExport = async (values, helpers) => {
+    const { setSubmitting, resetForm } = helpers;
+    const format = timelineFormatOfMimeType(values.format);
+    if (!format || !values.exportFileName) {
+      setSubmitting(false);
+      MESSAGING$.notifyError(t_i18n('The timeline export failed'));
+      return;
+    }
+    try {
+      const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
+      const selectedFileMarkings = values.fileMarkings.map(({ value }) => value);
+      const { blob, fileMarkings } = await renderStoredTimelineFile(scoId, format, contentMaxMarkings, selectedFileMarkings);
+      const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
+      commitTimelineExportFile({
+        variables: { containerId: scoId, file, contentMaxMarkings, fileMarkings: fileMarkings.ids },
+        onCompleted: (result, errors) => {
+          setSubmitting(false);
+          if (errors?.length) {
+            MESSAGING$.notifyError(t_i18n('The timeline export failed'));
+            return;
+          }
+          if (result.timelineExportFileAdd) {
+            onExportCompleted?.(result.timelineExportFileAdd.id);
+          }
+          MESSAGING$.notifySuccess(fileMarkings.raised.length > 0
+            ? t_i18n('The timeline export has been saved in the exported files of the entity, marked {markings} to cover its events', {
+                values: { markings: fileMarkings.raised.join(', ') },
+              })
+            : t_i18n('The timeline export has been saved in the exported files of the entity'));
+          resetForm();
+          close();
+        },
+        onError: () => setSubmitting(false),
+      });
+    } catch (error) {
+      setSubmitting(false);
+      MESSAGING$.notifyError(timelineExportErrorMessage(error, t_i18n));
+    }
+  };
+
   const onSubmitExport = async (
     values: StixCoreObjectFileExportFormInputs,
     helpers: FormikHelpers<StixCoreObjectFileExportFormInputs>,
   ) => {
+    if (values.connector?.value === BUILT_IN_TIMELINE.value) {
+      await submitExportTimeline(values, helpers);
+      return;
+    }
     const isBuiltInConnector = [
       BUILT_IN_FROM_TEMPLATE.value,
       BUILT_IN_HTML_TO_PDF.value,

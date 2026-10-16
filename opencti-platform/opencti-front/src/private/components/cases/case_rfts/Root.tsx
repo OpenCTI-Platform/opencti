@@ -12,6 +12,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import CaseRft from './CaseRft';
+import ContainerTimeline from '../../common/timeline/ContainerTimeline';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixCoreRelationships from '../../common/containers/ContainerStixCoreRelationships';
@@ -157,6 +158,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }: RootCaseRftComponentProps) =
               isContainer={true}
             />
           ),
+          timeline: <ContainerTimeline containerId={caseData.id} containerName={caseData.name} entityType={caseData.entity_type} />,
           entities: (
             <ContainerStixDomainObjects
               container={caseData}

@@ -35,6 +35,8 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask, Stix2Tas
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'due_date', label: 'Due date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'content_mapping', label: 'Content mapping', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    // Read by the timeline of the case: the completion of the task records the containment
+    { name: 'completes_containment', label: 'Completes the containment', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     workflowId,
   ],
   relations: [],

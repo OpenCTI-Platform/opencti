@@ -42,6 +42,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  timeline_headline_dates?: string[];
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {
