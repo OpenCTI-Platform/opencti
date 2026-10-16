@@ -1,7 +1,6 @@
-import { SyntheticEvent, useState } from 'react';
+import type { SyntheticEvent } from 'react';
 import {
   Combobox,
-  type ComboboxChangeCause,
   ComboboxClear,
   ComboboxContent,
   ComboboxControls,
@@ -13,51 +12,19 @@ import {
 } from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../../i18n';
-import useSearchEntities from '../../../../utils/filters/useSearchEntities';
-import { getOptionsFromEntities } from '../../../../utils/filters/SearchEntitiesUtil';
-import { ME_FILTER_VALUE } from '../../../../utils/filters/filtersUtils';
 import useVariableValueLabels from '../useVariableValueLabels';
-import { VARIABLE_SEARCH_CONTEXT, VARIABLE_TYPE_SEARCH } from '../variableTypeSearch';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
-import useKillChainPhaseSearch from './useKillChainPhaseSearch';
+import useVariableValueOptions from './useVariableValueOptions';
 
 /**
- * Server side search of the value of an entity pool variable (entity, label, marking, user, group, status,
- * kill chain phase) or of an entity type, through the same search as the filters. A kill chain phase is searched among the
- * phases of the kill chain of the variable only, on the server (see useKillChainPhaseSearch).
+ * Server side search of the value of an entity pool variable or of an entity type (see useVariableValueOptions).
  */
 const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn }: ValueInputProps) => {
   const { t_i18n } = useFormatter();
-  const searchKey = VARIABLE_TYPE_SEARCH[variable.type] ?? 'id';
-  const searchScope = variable.type === 'entity' ? { [searchKey]: variable.entityTypes ?? [] } : {};
-  // The shared search drops External-Reference from the scope, which it can only search for a regardingOf filter:
-  // left with no type, it would read the scope as "any entity". Such a variable searches nothing.
-  const entityTypes = variable.type === 'entity' ? variable.entityTypes ?? [] : [];
-  const isSearchable = entityTypes.length === 0 || entityTypes.some((type) => type !== 'External-Reference');
-  const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
-  const [entities, searchEntities] = useSearchEntities({ searchContext: VARIABLE_SEARCH_CONTEXT, searchScope, setInputValues: () => {} });
+  const { options, search, hasListingError } = useVariableValueOptions(variable);
   const { labels } = useVariableValueLabels(variable, value ? [value] : []);
-  const isKillChainPhase = variable.type === 'killChainPhase';
-  const killChainPhases = useKillChainPhaseSearch(variable.killChainName);
-
-  const options = isKillChainPhase
-    ? killChainPhases.options
-    : (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
-        // A variable holds an id: neither the "No label" option nor the dynamic @me user can be a value.
-        .filter((option) => option.value !== null && option.value !== ME_FILTER_VALUE);
-  // Listing the phases needs the knowledge access: without it no default value can be chosen, and the empty list says why.
-  const hasListingError = isKillChainPhase && killChainPhases.error;
   const selected = options.find((option) => option.value === value)
     ?? (value ? { value, label: labels.get(value) ?? '', type: variable.type } : null);
-
-  // The kill chain phases are searched with the typed text only, and from an empty text when the field is focused.
-  // Picking or clearing also writes the text (the label of the pick): the list then goes back to the whole kill chain.
-  const search = (event: SyntheticEvent, text: string, cause: ComboboxChangeCause = 'type') => {
-    if (isKillChainPhase) {
-      if (cause === 'type') killChainPhases.search(text);
-      else killChainPhases.reset();
-    } else if (isSearchable) searchEntities(searchKey, cacheEntities, setCacheEntities, event);
-  };
 
   return (
     <Combobox<FilterOptionValue>
