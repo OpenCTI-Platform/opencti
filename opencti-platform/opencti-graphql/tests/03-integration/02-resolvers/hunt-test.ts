@@ -278,12 +278,12 @@ describe('Hunt resolvers', () => {
   });
 
   it('should keep a pinging hunt connector live while its cached copy is stale', async () => {
-    // The entity cache loads the connector as it was at its last ping 10 minutes ago, and a ping never refreshes the cache
+    // The last heartbeat of the connector dates from 10 minutes ago, and the entity cache holds no liveness at all
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     await redisSetConnectorHeartbeat(CONNECTOR_ID, tenMinutesAgo);
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const cached = await getEntitiesListFromCache<BasicStoreEntityConnector>(testContext, ADMIN_USER, ENTITY_TYPE_CONNECTOR);
-    expect(cached.find((c) => c.internal_id === CONNECTOR_ID)?.active).toBe(false);
+    expect(cached.find((c) => c.internal_id === CONNECTOR_ID)?.active).toBeUndefined();
     const offline = await queryAsAdminWithSuccess({ query: LIVE_HUNT_CONNECTORS });
     expect(offline.data?.huntConnectors.map((c: { id: string }) => c.id)).not.toContain(CONNECTOR_ID);
     await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR, variables: { id: CONNECTOR_ID, state: '{}' } });
