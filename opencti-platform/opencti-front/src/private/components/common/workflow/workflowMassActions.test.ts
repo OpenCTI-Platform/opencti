@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransitionOptions, buildWorkflowTransitionAction, isFieldOptionDisabled, withWorkflowBypassOptions } from './workflowMassActions';
+import { buildTransitionOptions, buildWorkflowStatusOptions, buildWorkflowTransitionAction, isFieldOptionDisabled, withWorkflowBypassOptions } from './workflowMassActions';
 
 describe('buildWorkflowTransitionAction', () => {
   it('should send the selected event as a replace of the workflow status', () => {
@@ -60,5 +60,13 @@ describe('isFieldOptionDisabled', () => {
     const actionsInputs = [{ type: 'REPLACE', field: 'description' }, { type: 'ADD' }];
     expect(isFieldOptionDisabled(actionsInputs, 1, 'description')).toBe(true);
     expect(isFieldOptionDisabled(actionsInputs, 1, 'object-label')).toBe(false);
+  });
+});
+
+describe('buildWorkflowStatusOptions', () => {
+  it('should keep the workflow order and the status to display', () => {
+    const status = { id: 'status-new', order: 0, template: { name: 'New', color: '#ff0000' } };
+
+    expect(buildWorkflowStatusOptions([status])).toEqual([{ label: 'New', value: 'status-new', status }]);
   });
 });
