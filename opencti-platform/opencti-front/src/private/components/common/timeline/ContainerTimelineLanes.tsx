@@ -78,6 +78,8 @@ const LABEL_WIDTH = 116;
 const COMPACT_LABEL_WIDTH = 84;
 const COMPACT_LABEL_CHARS = 12;
 const COMPACT_MAX_TICKS = 5;
+// Upper bound of the width of a character of the 11px axis labels
+const TICK_LABEL_CHAR_WIDTH = 6;
 const AXIS_HEIGHT = 30;
 const ANCHOR_HEIGHT = 18;
 const ROW_HEIGHT = 20;
@@ -237,6 +239,8 @@ const ContainerTimelineLanes = ({
     if (x < plotLeft + 24) return 'start';
     return x > plotRight - 24 ? 'end' : 'middle';
   };
+  // A label of the full axis that would run past the right edge of the drawing is left out, its grid line stays
+  const tickLabelFits = (x: number, label: string) => compact || x + (label.length * TICK_LABEL_CHAR_WIDTH) / 2 <= width;
 
   // region interactions
   const zoomAt = useCallback((factor: number, clientX?: number) => {
@@ -523,10 +527,13 @@ const ContainerTimelineLanes = ({
         <line x1={plotLeft} y1={AXIS_HEIGHT - 6} x2={plotRight} y2={AXIS_HEIGHT - 6} stroke={colors.grid} />
         {ticks.map((tick) => {
           const x = scale(tick);
+          const label = formatTick(tick);
           return (
-            <g key={tick.getTime()}>
+            <g key={tick.getTime()} data-testid="timeline-axis-tick">
               <line x1={x} y1={AXIS_HEIGHT - 10} x2={x} y2={lanesBottom} stroke={colors.grid} strokeDasharray="2 4" />
-              <text x={x} y={AXIS_HEIGHT - 14} fill={colors.textSecondary} textAnchor={tickAnchor(x)}>{formatTick(tick)}</text>
+              {tickLabelFits(x, label) && (
+                <text x={x} y={AXIS_HEIGHT - 14} fill={colors.textSecondary} textAnchor={tickAnchor(x)}>{label}</text>
+              )}
             </g>
           );
         })}

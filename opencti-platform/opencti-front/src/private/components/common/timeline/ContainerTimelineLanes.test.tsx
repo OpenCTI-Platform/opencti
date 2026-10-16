@@ -253,3 +253,18 @@ describe('ContainerTimelineLanes numbered circles', () => {
     expect(await screen.findAllByRole('menuitem')).toHaveLength(2);
   });
 });
+
+describe('ContainerTimelineLanes axis', () => {
+  it('leaves out the label of a tick that would run past the right edge, keeping its grid line', () => {
+    // Local midnights, where the ticks of a day axis fall: the last tick is the right edge of the plot
+    const domain: [number, number] = [new Date(2026, 1, 1).getTime(), new Date(2026, 1, 9).getTime()];
+    testRender(
+      <ContainerTimelineLanes events={[event('one', 'derived')]} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" />,
+    );
+    const ticks = screen.getAllByTestId('timeline-axis-tick');
+    expect(ticks[0]).toHaveTextContent('Feb 1');
+    expect(ticks[ticks.length - 1].querySelector('line')).not.toBeNull();
+    expect(ticks[ticks.length - 1].querySelector('text')).toBeNull();
+    expect(ticks.slice(0, -1).every((tick) => tick.querySelector('text'))).toBe(true);
+  });
+});
