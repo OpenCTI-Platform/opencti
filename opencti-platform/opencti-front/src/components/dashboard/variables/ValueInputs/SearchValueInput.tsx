@@ -1,5 +1,15 @@
 import type { SyntheticEvent } from 'react';
-import { Combobox, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxHelperText, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import {
+  Combobox,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxHelperText,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { useFormatter } from '../../../i18n';
 import useVariableValueLabels from '../useVariableValueLabels';
