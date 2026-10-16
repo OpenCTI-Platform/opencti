@@ -1,9 +1,10 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext, USER_CONNECTOR } from '../../utils/testQuery';
+import { v4 as uuid } from 'uuid';
+import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
-import { fullEntitiesList, internalLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { FilterMode } from '../../../src/generated/graphql';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -14,6 +15,14 @@ import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { HUNT_MESSAGES } from '../../../src/modules/hunt/hunt-messages';
+import { type HuntIocSet, resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
+import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace } from '../../../src/modules/hunt/hunt-incident';
+import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../src/modules/hunt/hunt-types';
+import type { BasicStoreEntityHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-types';
+import { findHuntRunResults } from '../../../src/modules/hunt/huntRun/huntRun-domain';
+import { deleteDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { ENTITY_TYPE_INCIDENT } from '../../../src/schema/stixDomainObject';
 
 const CONNECTOR_ID = '7d1f6c2e-3b4a-4e5f-8a9b-0c1d2e3f4a51';
 const SECURITY_PLATFORM_NAME = 'Indicator hunt test Splunk';
@@ -227,6 +236,51 @@ describe('Hunt readiness and indicator hunts', () => {
     expect(refused.errors?.[0].message).toEqual(`This hunt cannot be activated: ${HUNT_MESSAGES.connectorIndicatorsMissing}`);
     const pasted = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: indicatorHuntId, input: [{ key: 'hunt_ioc_values', value: [{ observable_type: 'IPv4-Addr', value: 'not an address' }] }] } });
     expect(pasted.errors?.[0].message).toContain('Pasted value 1 is not a valid IPv4-Addr');
+  });
+
+  it('should hunt with the access the markings of a hunt give, and show a user without TLP:RED no result implying it', async () => {
+    const red = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, MARKING_TLP_RED);
+    const editor = await getAuthUser(USER_EDITOR.id);
+    const values = (set: HuntIocSet) => set.iocs.map((ioc) => ioc.value).sort();
+    // A filter matching both indicators reads them with the access of the readers of the hunt, never as the system
+    const filter = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: ['Indicator hunt test IP', 'Indicator hunt test red IP'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const filterHunt = { internal_id: uuid(), hunt_type: 'indicators', hunt_ioc_filters: filter, [RELATION_HUNT_SOURCES]: [] } as unknown as BasicStoreEntityHunt;
+    const forAdmin = await resolveHuntIocSet(testContext, filterHunt, ADMIN_USER);
+    expect(values(forAdmin)).toEqual(['198.51.100.71']);
+    expect(forAdmin.restricted_count).toEqual(1);
+    // The editor cannot read TLP:RED: he is not even told that an indicator is left out
+    const forEditor = await resolveHuntIocSet(testContext, filterHunt, editor);
+    expect(values(forEditor)).toEqual(['198.51.100.71']);
+    expect(forEditor.restricted_count).toEqual(0);
+    const redHunt = { ...filterHunt, [RELATION_OBJECT_MARKING]: [red.internal_id] } as unknown as BasicStoreEntityHunt;
+    expect(values(await resolveHuntIocSet(testContext, redHunt, ADMIN_USER))).toEqual(['198.51.100.71', '198.51.100.72']);
+    // The results page of a run lists and counts the results the user can read only
+    const run = { internal_id: uuid(), updated_at: new Date().toISOString(), result_ids: [indicatorId, restrictedIndicatorId] } as unknown as BasicStoreEntityHuntRun;
+    const editorResults = await findHuntRunResults(testContext, editor, run);
+    expect(editorResults.edges.map((edge) => edge.node.internal_id)).toEqual([indicatorId]);
+    expect(editorResults.pageInfo.globalCount).toEqual(1);
+    expect((await findHuntRunResults(testContext, ADMIN_USER, run)).pageInfo.globalCount).toEqual(2);
+    // The incident draft of a run restricted to TLP:RED carries the marking, the editor does not read it
+    const redRun = {
+      ...run,
+      security_platform_id: securityPlatformId,
+      hits_count: 3,
+      [RELATION_OBJECT_MARKING]: [red.internal_id],
+      [RELATION_GRANTED_TO]: [],
+    } as unknown as BasicStoreEntityHuntRun;
+    const hunt = { internal_id: indicatorHuntId, name: 'Indicator hunt test', hunt_type: 'indicators' } as unknown as BasicStoreEntityHunt;
+    const draft = await createHuntIncidentWorkspace(testContext, redRun, async (draftId) => ({
+      draftId,
+      ...await createHuntIncidentInWorkspace(testContext, hunt, redRun, null, draftId),
+    }));
+    try {
+      const draftContext = { ...testContext, draft_context: draft.draftId };
+      const incident = await storeLoadById<BasicStoreEntity>(draftContext, ADMIN_USER, draft.incidentId, ENTITY_TYPE_INCIDENT);
+      expect(incident[RELATION_OBJECT_MARKING]).toEqual([red.internal_id]);
+      expect(await storeLoadById(draftContext, editor, draft.incidentId, ENTITY_TYPE_INCIDENT).catch(() => null)).toBeFalsy();
+    } finally {
+      await deleteDraftWorkspace(testContext, ADMIN_USER, draft.draftId);
+    }
   });
 
   it('should run an indicator hunt on a connector that looks up indicators and record a verdict per value', async () => {

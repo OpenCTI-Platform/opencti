@@ -34,6 +34,7 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Download knowledge export`                 | Download the exports generated in the entities (in the `Data` section).                       |
 | &nbsp;&nbsp;&nbsp;&nbsp;`Generate knowledge export`     | Trigger the export of the knowledge of an entity.                                             |
 | &nbsp;&nbsp;`Ask for knowledge enrichment`              | Trigger an enrichment for a given entity.                                                     |
+| &nbsp;&nbsp;`Launch hunts on security platforms`        | Create, change, run and triage hunts, with `Create / Update knowledge` (see [Hunts](../usage/hunts.md#required-capability)). |
 | &nbsp;&nbsp;`Disseminate files by email`                | Ability to send a PDF/HTML generated as a Fintel to a dissemination list.                     |
 | `Access dashboards`                                     | Access to existing custom dashboards.                                                         |
 | &nbsp;&nbsp;`Create / Update dashboards`                | Create and update custom dashboards.                                                          |

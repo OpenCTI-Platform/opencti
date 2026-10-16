@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
-import { pageRegardingEntitiesConnection } from '../../../../src/database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection } from '../../../../src/database/middleware-loader';
 import { resolveHuntIocSet } from '../../../../src/modules/hunt/hunt-iocs';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { type BasicStoreEntityHunt, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from '../../../../src/modules/hunt/hunt-types';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { validateHuntState } from '../../../../src/modules/hunt/hunt-validators';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
+import { isBypassUser, SYSTEM_USER } from '../../../../src/utils/access';
+import type { AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/cache')>(),
@@ -15,6 +18,7 @@ vi.mock('../../../../src/database/cache', async (importOriginal) => ({
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/middleware-loader')>(),
+  pageEntitiesConnection: vi.fn(),
   pageRegardingEntitiesConnection: vi.fn(),
 }));
 
@@ -140,6 +144,55 @@ describe('Values an indicator hunt looks up', () => {
       via: { id: 'report-1', entity_type: 'Report', name: 'LockBit report', relation: 'object' },
     })]);
     expect(byValue.get('pasted.example.com')?.sources).toEqual([]);
+  });
+});
+
+describe('Access a hunt reads its values with', () => {
+  const marking = (id: string, order: number, type = 'TLP') => ({ id, internal_id: id, standard_id: `marking-definition--${id}`, definition_type: type, x_opencti_order: order });
+  const markings = [marking('clear', 1), marking('green', 2), marking('amber', 3), marking('red', 4), marking('pap-red', 4, 'PAP')];
+  const filter = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: ['Hunt test'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  const amberHunt = (sources: string[]) => ({
+    internal_id: 'hunt-1',
+    hunt_type: 'indicators',
+    hunt_ioc_filters: filter,
+    [RELATION_HUNT_SOURCES]: sources,
+    [RELATION_OBJECT_MARKING]: ['amber'],
+  }) as unknown as BasicStoreEntityHunt;
+
+  beforeEach(() => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map(markings.flatMap((item) => [[item.internal_id, item], [item.standard_id, item]])) as never);
+    vi.mocked(findByIds).mockReset();
+    vi.mocked(pageRegardingEntitiesConnection).mockReset();
+    vi.mocked(pageEntitiesConnection).mockReset();
+  });
+
+  it('should read the sources, what they contain and the filter with the markings the hunt covers, never as the system', async () => {
+    vi.mocked(findByIds).mockResolvedValue([address('report-9', 0), report(1)] as never);
+    vi.mocked(pageRegardingEntitiesConnection).mockResolvedValue({ edges: [] } as never);
+    vi.mocked(pageEntitiesConnection).mockResolvedValue({ edges: [] } as never);
+    await resolveHuntIocSet(testContext, amberHunt(['report-9-ip-0', 'report-1']));
+    const readers = [findByIds, pageRegardingEntitiesConnection, pageEntitiesConnection].map((read) => vi.mocked(read).mock.calls[0][1] as AuthUser);
+    readers.forEach((reader) => {
+      expect(reader.id).not.toEqual(SYSTEM_USER.id);
+      expect(isBypassUser(reader)).toBe(false);
+      // The TLP markings up to the amber of the hunt, no red, and no marking of a type the hunt holds none of
+      expect(reader.allowed_marking.map((item) => item.internal_id).sort()).toEqual(['amber', 'clear', 'green']);
+    });
+  });
+
+  it('should count the elements left out for a viewer among those he reads himself, never the others', async () => {
+    const red = { ...address('report-9', 1), [RELATION_OBJECT_MARKING]: ['red'] };
+    const viewer = { ...ADMIN_USER, id: 'viewer' } as AuthUser;
+    vi.mocked(findByIds).mockImplementation(async (_context, user) => (user.id === viewer.id ? [address('report-9', 0), red] : [address('report-9', 0)]) as never);
+    vi.mocked(pageEntitiesConnection).mockResolvedValue({ edges: [] } as never);
+    const hunt = amberHunt(['report-9-ip-0', 'report-9-ip-1']);
+    const forViewer = await resolveHuntIocSet(testContext, hunt, viewer);
+    expect(forViewer.iocs.map((ioc) => ioc.value)).toEqual(['10.9.0.0']);
+    expect(forViewer.restricted_count).toBe(1);
+    // A run, or a viewer who cannot read the red address, is told of nothing the hunt could not read
+    const forRun = await resolveHuntIocSet(testContext, hunt);
+    expect(forRun.iocs.map((ioc) => ioc.value)).toEqual(['10.9.0.0']);
+    expect(forRun.restricted_count).toBe(0);
   });
 });
 

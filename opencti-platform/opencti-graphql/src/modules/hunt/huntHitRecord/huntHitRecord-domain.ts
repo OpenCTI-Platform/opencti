@@ -5,6 +5,8 @@ import { elAggregationCount, elBulk, elCardinalityCount, elCount, elRawDeleteByQ
 import { buildEntityData } from '../../../database/data-builder';
 import { fullEntitiesList, internalFindByIds, topEntitiesList } from '../../../database/middleware-loader';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { buildRefRelationKey } from '../../../schema/general';
+import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { generateStandardId } from '../../../schema/identifier';
 import { FilterMode, FilterOperator, OrderingMode, type Filter, type FilterGroup } from '../../../generated/graphql';
 import { HUNT_MANAGER_USER } from '../../../utils/access';
@@ -29,6 +31,8 @@ const LATE_EVIDENCE_RUNS_WINDOW = COUNTED_RUNS_MAX / 2;
 // The platform part of the ids of a record whose run has no security platform
 const NO_SECURITY_PLATFORM = 'none';
 const RECORD_FIELDS = ['internal_id', 'hit_key', 'first_run_id', 'last_run_id', 'counted_run_ids', 'first_seen', 'times_seen'];
+// The markings a record carries, written like the markings of any object so that reading the records applies them
+const MARKING_KEY = buildRefRelationKey(RELATION_OBJECT_MARKING);
 
 /** The record of a hit of a hunt on a security platform: its ids derive from the three, a run finds it without a search. */
 export const huntHitRecordId = (huntId: string, securityPlatformId: string | null | undefined, hitKey: string) => {
@@ -139,6 +143,10 @@ const RECORD_UPDATE_SCRIPT = `
       ctx._source.sighted_ids = sighted;
     }
   }
+  def markings = ctx._source[params.marking_key] == null ? new ArrayList() : new ArrayList(ctx._source[params.marking_key]);
+  def marked = false;
+  for (id in params.markings) { if (!markings.contains(id)) { markings.add(id); marked = true; } }
+  if (marked) { ctx._source[params.marking_key] = markings; if (ctx.op == 'noop') { ctx.op = 'index'; } }
 `;
 
 export interface HuntHitsRecordInput {
@@ -155,6 +163,8 @@ export interface HuntHitsRecordInput {
   keepKnown?: boolean;
   // Late evidence of a run: the hits the run already counted are not counted again
   uncountedOnly?: boolean;
+  // The markings of the run, those of its hunt and of its security platform
+  objectMarking?: string[];
 }
 
 /**
@@ -195,7 +205,9 @@ export const isHuntRunRemembered = async (context: AuthContext, run: BasicStoreE
 /**
  * Matches the hits of a run against the hits already known for its hunt on its security platform, then records them:
  * new hits get a record, known ones one more run. The records are platform bookkeeping written in bulk, without stream
- * event or history; the runs of a hunt on a platform are matched one at a time. Returns the new and recurring counts.
+ * event or history; the runs of a hunt on a platform are matched one at a time. A record carries the markings of every
+ * run that found it, so that a user who cannot read one of these runs cannot read it either. Returns the new and
+ * recurring counts.
  * beforeRecord acts on the counts under the same lock, before any record is written: when it fails, the records are left
  * as they were.
  */
@@ -212,6 +224,7 @@ export const recordHuntHits = async (
   const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? NO_SECURITY_PLATFORM}`;
   const seenAt = new Date(input.seenAt).toISOString();
   const recordedAt = new Date().toISOString();
+  const markings = Array.from(new Set(input.objectMarking ?? []));
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
     const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown, input.uncountedOnly);
@@ -243,8 +256,18 @@ export const recordHuntHits = async (
         created_at: recordedAt,
         updated_at: recordedAt,
       }), ENTITY_TYPE_HUNT_HIT_RECORD);
-      const { _index: _ignored, ...upsert } = await prepareElementForIndexing(element);
-      const params = { run_id: input.runId, seen_at: seenAt, recorded_at: recordedAt, ioc_keys: iocKeys, sighted_ids: sightedIds, counted_runs_max: COUNTED_RUNS_MAX };
+      const { _index: _ignored, ...prepared } = await prepareElementForIndexing(element);
+      const upsert = { ...prepared, [MARKING_KEY]: markings };
+      const params = {
+        run_id: input.runId,
+        seen_at: seenAt,
+        recorded_at: recordedAt,
+        ioc_keys: iocKeys,
+        sighted_ids: sightedIds,
+        counted_runs_max: COUNTED_RUNS_MAX,
+        marking_key: MARKING_KEY,
+        markings,
+      };
       operations.push(
         { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
         { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params }, upsert },
