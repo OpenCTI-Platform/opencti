@@ -135,7 +135,13 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  await callback(elements);
+  // Awaited so in-process callbacks finish before completion, but a failure keeps the previous
+  // outcome: the task completes instead of being retried from the start and blocking the queue
+  try {
+    await callback(elements);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during list task, completing the task', { cause: error, taskId: task.id });
+  }
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
