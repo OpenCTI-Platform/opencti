@@ -4,9 +4,11 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import { registerSettingsAttribute } from './modules/settings/settings-attributes';
 import channelModule from './modules/channel/channel-module';
 import catalogModule from './modules/catalog/catalog-module';
 import connectorModule from './modules/connector/connector-module';
+import ingestionHealthModule from './modules/ingestionHealth/ingestionHealth-module';
 import languageModule from './modules/language/language-module';
 import eventModule from './modules/event/event-module';
 import groupingModule from './modules/grouping/grouping-module';
@@ -93,6 +95,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   channelModule,
   catalogModule,
   connectorModule,
+  ingestionHealthModule,
   languageModule,
   eventModule,
   groupingModule,
@@ -177,7 +180,7 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 let modulesRegistered = false;
 
 // Each phase runs for every module before the next phase starts: data model (overview layouts,
-// attributes, then definitions), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
+// attributes, definitions, then settings attributes), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
 // registered after the graphql of the modules still registered on import, against the order
 // modules/index documents. That is safe only while nothing reads the model at import time:
 // usageProtection catches an early read of types, attributes or refs, not of converters or validators.
@@ -187,10 +190,11 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
     return;
   }
   modulesRegistered = true;
-  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [] }) => {
+  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [], settingsAttributes = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
     attributes.forEach((definition) => schemaAttributesDefinition.registerAttributes(definition.entityType, definition.attributes));
     dataModel.forEach((definition) => registerDefinition(definition));
+    settingsAttributes.forEach((attribute) => registerSettingsAttribute(attribute));
   });
   descriptors.forEach(({ graphqlSchemas = [] }) => graphqlSchemas.forEach((graphqlSchema) => registerGraphqlSchema(graphqlSchema)));
   descriptors.forEach(({ managers = [] }) => managers.forEach((manager) => registerManager(manager)));

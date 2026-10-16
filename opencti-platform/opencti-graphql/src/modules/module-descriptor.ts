@@ -30,6 +30,8 @@ export interface ModuleDescriptor {
   // Attributes of entity types not defined through dataModel (yet)
   attributes?: AttributesDefinition[];
   dataModel?: ModuleDefinition<any, any>[];
+  // Attributes the module adds to the platform settings, read and written through settings-attributes only
+  settingsAttributes?: AttributeDefinition[];
   graphqlSchemas?: GraphqlSchemaDefinition[];
   managers?: ManagerDefinition[];
   // Runs once every module is registered: the schema is complete and may be read.
