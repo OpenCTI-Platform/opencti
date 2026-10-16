@@ -191,6 +191,8 @@ type HuntRun implements BasicObject & InternalObject {
   last_hit_at: DateTime
   "Indicator hunts: one result per value looked up"
   ioc_results: [HuntIocResult!]
+  "Whether the run matched an entity of its hunt: an indicator or observable it searched when one of its values was seen, a source when the run has hits; null when the run is not completed or did not search the entity"
+  entity_matched(id: String!): Boolean
   "Detection-rule hunts: one result per Sigma rule, null when the connector ran the first rule only"
   rule_results: [HuntRunRuleResult!]
   result_ids: [String!]

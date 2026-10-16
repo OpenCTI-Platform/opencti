@@ -11788,6 +11788,13 @@ export type HuntEdge = {
   node: Hunt;
 };
 
+/** When a hunt last looked up an indicator or observable on a security platform, and last found it there */
+export type HuntEntityActivity = {
+  __typename?: 'HuntEntityActivity';
+  hunted_at?: Maybe<Scalars['DateTime']['output']>;
+  matched_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export type HuntEvidence = {
   __typename?: 'HuntEvidence';
   count: Scalars['Int']['output'];
@@ -12114,6 +12121,8 @@ export type HuntRun = BasicObject & InternalObject & {
   dispatched_at?: Maybe<Scalars['DateTime']['output']>;
   distinct_entities?: Maybe<Scalars['Int']['output']>;
   draft_id?: Maybe<Scalars['String']['output']>;
+  /** Whether the run matched an entity of its hunt: an indicator or observable it searched when one of its values was seen, a source when the run has hits; null when the run is not completed or did not search the entity */
+  entity_matched?: Maybe<Scalars['Boolean']['output']>;
   entity_type: Scalars['String']['output'];
   error_message?: Maybe<Scalars['String']['output']>;
   evidence_sample?: Maybe<Array<HuntEvidence>>;
@@ -12197,6 +12206,11 @@ export type HuntRun = BasicObject & InternalObject & {
   verdict_proposal_rationale?: Maybe<Scalars['String']['output']>;
   verdict_rationale?: Maybe<Scalars['String']['output']>;
   verdict_source?: Maybe<HuntVerdictSource>;
+};
+
+
+export type HuntRunEntity_MatchedArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -26479,6 +26493,8 @@ export type Query = {
   huntConnectors: Array<HuntConnector>;
   /** What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules */
   huntDerivedContent?: Maybe<HuntDerivedContent>;
+  /** When a hunt last looked up an indicator or observable, and last found it */
+  huntEntityActivity?: Maybe<HuntEntityActivity>;
   huntPackExport?: Maybe<Scalars['String']['output']>;
   huntRun?: Maybe<HuntRun>;
   huntRuns?: Maybe<HuntRunConnection>;
@@ -27784,6 +27800,11 @@ export type QueryHuntConnectorsArgs = {
 
 export type QueryHuntDerivedContentArgs = {
   entityId: Scalars['ID']['input'];
+};
+
+
+export type QueryHuntEntityActivityArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -42727,6 +42748,7 @@ export type ResolversTypes = ResolversObject<{
   HuntDerivedSourceRelation: HuntDerivedSourceRelation;
   HuntDerivedTechnique: ResolverTypeWrapper<HuntDerivedTechnique>;
   HuntEdge: ResolverTypeWrapper<Omit<HuntEdge, 'node'> & { node: ResolversTypes['Hunt'] }>;
+  HuntEntityActivity: ResolverTypeWrapper<HuntEntityActivity>;
   HuntEvidence: ResolverTypeWrapper<HuntEvidence>;
   HuntEvidenceInput: HuntEvidenceInput;
   HuntHit: ResolverTypeWrapper<HuntHit>;
@@ -43939,6 +43961,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntDerivedSource: HuntDerivedSource;
   HuntDerivedTechnique: HuntDerivedTechnique;
   HuntEdge: Omit<HuntEdge, 'node'> & { node: ResolversParentTypes['Hunt'] };
+  HuntEntityActivity: HuntEntityActivity;
   HuntEvidence: HuntEvidence;
   HuntEvidenceInput: HuntEvidenceInput;
   HuntHit: HuntHit;
@@ -48689,6 +48712,11 @@ export type HuntEdgeResolvers<ContextType = any, ParentType extends ResolversPar
   node?: Resolver<ResolversTypes['Hunt'], ParentType, ContextType>;
 }>;
 
+export type HuntEntityActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEntityActivity'] = ResolversParentTypes['HuntEntityActivity']> = ResolversObject<{
+  hunted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  matched_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
 export type HuntEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEvidence'] = ResolversParentTypes['HuntEvidence']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48848,6 +48876,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   dispatched_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   distinct_entities?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   draft_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_matched?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<HuntRunEntity_MatchedArgs, 'id'>>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   evidence_sample?: Resolver<Maybe<Array<ResolversTypes['HuntEvidence']>>, ParentType, ContextType>;
@@ -53275,6 +53304,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   huntConfiguration?: Resolver<ResolversTypes['HuntConfiguration'], ParentType, ContextType>;
   huntConnectors?: Resolver<Array<ResolversTypes['HuntConnector']>, ParentType, ContextType, Partial<QueryHuntConnectorsArgs>>;
   huntDerivedContent?: Resolver<Maybe<ResolversTypes['HuntDerivedContent']>, ParentType, ContextType, RequireFields<QueryHuntDerivedContentArgs, 'entityId'>>;
+  huntEntityActivity?: Resolver<Maybe<ResolversTypes['HuntEntityActivity']>, ParentType, ContextType, RequireFields<QueryHuntEntityActivityArgs, 'id'>>;
   huntPackExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryHuntPackExportArgs, 'ids'>>;
   huntRun?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<QueryHuntRunArgs, 'id'>>;
   huntRuns?: Resolver<Maybe<ResolversTypes['HuntRunConnection']>, ParentType, ContextType, Partial<QueryHuntRunsArgs>>;
@@ -57693,6 +57723,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntDerivedSource?: HuntDerivedSourceResolvers<ContextType>;
   HuntDerivedTechnique?: HuntDerivedTechniqueResolvers<ContextType>;
   HuntEdge?: HuntEdgeResolvers<ContextType>;
+  HuntEntityActivity?: HuntEntityActivityResolvers<ContextType>;
   HuntEvidence?: HuntEvidenceResolvers<ContextType>;
   HuntHit?: HuntHitResolvers<ContextType>;
   HuntHitField?: HuntHitFieldResolvers<ContextType>;
