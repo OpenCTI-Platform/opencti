@@ -34,6 +34,10 @@ export const HUNT_SOURCE_AGENT = 'agent';
 export const HUNT_SOURCE_HUB = 'hub';
 export const HUNT_SOURCE_KINDS = [HUNT_SOURCE_ANALYST, HUNT_SOURCE_AGENT, HUNT_SOURCE_HUB];
 
+// The order an indicator hunt takes the indicators and observables matching its filter in
+export const HUNT_IOC_SORT_CREATED_DESC = 'created_at_desc';
+export const HUNT_IOC_SORTS = [HUNT_IOC_SORT_CREATED_DESC, 'created_at_asc', 'updated_at_desc', 'updated_at_asc'];
+
 export const HUNT_SCHEDULE_MANUAL = 'manual';
 export const HUNT_SCHEDULE_STANDING = 'standing';
 
@@ -75,6 +79,7 @@ interface HuntAttributes {
   sigma_rules?: string[];
   native_queries?: HuntNativeQuery[];
   hunt_ioc_filters?: string;
+  hunt_ioc_sort?: string;
   hunt_ioc_values?: HuntIocValue[];
   hunt_scope?: string;
   hunt_schedule: string;
@@ -119,6 +124,7 @@ export interface StixHunt extends StixDomainObject {
   sigma_rules?: string[];
   native_queries: HuntNativeQuery[];
   hunt_ioc_filters?: string;
+  hunt_ioc_sort?: string;
   hunt_ioc_values?: HuntIocValue[];
   hunt_scope: string;
   hunt_schedule: string;

@@ -486,6 +486,7 @@
   "Hunt escalation threshold": "ハントのエスカレーションしきい値",
   "Hunt expected observables": "ハントの想定オブザーバブル",
   "Hunt hypothesis": "ハントの仮説",
+  "Hunt indicator filter order": "ハントのインジケーターフィルターの順序",
   "Hunt indicator filters": "ハントのインジケーターフィルター",
   "Hunt indicator lookups": "ハントのインジケーター検索",
   "Hunt last run date": "ハントの最終実行日",

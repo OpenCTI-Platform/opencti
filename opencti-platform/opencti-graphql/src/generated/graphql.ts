@@ -11265,6 +11265,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   huntTechniques?: Maybe<Array<AttackPattern>>;
   /** Indicator hunts: the filter over indicators and observables */
   hunt_ioc_filters?: Maybe<Scalars['String']['output']>;
+  /** Indicator hunts: the order a run takes what the filter matches in, newest created first when not set */
+  hunt_ioc_sort?: Maybe<HuntIocSort>;
   /** Indicator hunts: the values pasted as text */
   hunt_ioc_values?: Maybe<Array<HuntIocValue>>;
   hunt_max_results?: Maybe<Scalars['Int']['output']>;
@@ -11279,6 +11281,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   hypothesis?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
+  /** Indicator hunts: what the filter, the stored one or the one given, takes at the next run */
+  iocFilterPreview?: Maybe<HuntIocFilterPreview>;
   /** Indicator hunts: the values the next run looks up */
   iocSet?: Maybe<HuntIocSet>;
   is_inferred: Scalars['Boolean']['output'];
@@ -11398,6 +11402,12 @@ export type HuntImportFilesArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   prefixMimeType?: InputMaybe<Scalars['String']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type HuntIocFilterPreviewArgs = {
+  filters?: InputMaybe<Scalars['String']['input']>;
+  sort?: InputMaybe<HuntIocSort>;
 };
 
 
@@ -11549,6 +11559,7 @@ export type HuntAddInput = {
   huntTargets?: InputMaybe<Array<Scalars['String']['input']>>;
   huntTechniques?: InputMaybe<Array<Scalars['String']['input']>>;
   hunt_ioc_filters?: InputMaybe<Scalars['String']['input']>;
+  hunt_ioc_sort?: InputMaybe<HuntIocSort>;
   hunt_ioc_values?: InputMaybe<Array<HuntIocValueInput>>;
   hunt_max_results?: InputMaybe<Scalars['Int']['input']>;
   hunt_pir_activation?: InputMaybe<Scalars['Boolean']['input']>;
@@ -11644,6 +11655,8 @@ export type HuntConfiguration = {
   __typename?: 'HuntConfiguration';
   /** The observable types a run extracts from its hits when its hunt names none */
   default_expected_observables: Array<Scalars['String']['output']>;
+  /** The most indicators and observables a run takes from the filter of an indicator hunt */
+  max_filter_entities_per_run: Scalars['Int']['output'];
   /** The most values an indicator hunt run looks up */
   max_iocs_per_run: Scalars['Int']['output'];
   /** The malware and tools a threat uses, and the threats attributed to it, followed by a hunt started from it (each list) */
@@ -11862,6 +11875,15 @@ export type HuntIoc = {
   value: Scalars['String']['output'];
 };
 
+/** What the filter of an indicator hunt takes at the next run */
+export type HuntIocFilterPreview = {
+  __typename?: 'HuntIocFilterPreview';
+  /** Indicators and observables matching the filter that the hunt can take */
+  matching_count: Scalars['Int']['output'];
+  /** How many of them the next run takes, in the order of the hunt */
+  taken_count: Scalars['Int']['output'];
+};
+
 /** One value an indicator hunt run looked up, and what the hunted platform reported for it */
 export type HuntIocResult = {
   __typename?: 'HuntIocResult';
@@ -11911,6 +11933,14 @@ export type HuntIocSet = {
   /** Indicators without a value a lookup can search */
   unsupported_count: Scalars['Int']['output'];
 };
+
+/** The order an indicator hunt takes the indicators and observables matching its filter in */
+export enum HuntIocSort {
+  CreatedAtAsc = 'created_at_asc',
+  CreatedAtDesc = 'created_at_desc',
+  UpdatedAtAsc = 'updated_at_asc',
+  UpdatedAtDesc = 'updated_at_desc'
+}
 
 export type HuntIocSource = {
   __typename?: 'HuntIocSource';
@@ -42661,9 +42691,11 @@ export type ResolversTypes = ResolversObject<{
   HuntHitFieldInput: HuntHitFieldInput;
   HuntHitInput: HuntHitInput;
   HuntIoc: ResolverTypeWrapper<HuntIoc>;
+  HuntIocFilterPreview: ResolverTypeWrapper<HuntIocFilterPreview>;
   HuntIocResult: ResolverTypeWrapper<Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversTypes['StixCoreObject']> }>;
   HuntIocResultInput: HuntIocResultInput;
   HuntIocSet: ResolverTypeWrapper<HuntIocSet>;
+  HuntIocSort: HuntIocSort;
   HuntIocSource: ResolverTypeWrapper<HuntIocSource>;
   HuntIocValue: ResolverTypeWrapper<HuntIocValue>;
   HuntIocValueInput: HuntIocValueInput;
@@ -43867,6 +43899,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntHitFieldInput: HuntHitFieldInput;
   HuntHitInput: HuntHitInput;
   HuntIoc: HuntIoc;
+  HuntIocFilterPreview: HuntIocFilterPreview;
   HuntIocResult: Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversParentTypes['StixCoreObject']> };
   HuntIocResultInput: HuntIocResultInput;
   HuntIocSet: HuntIocSet;
@@ -48426,6 +48459,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   huntTargets?: Resolver<Maybe<Array<ResolversTypes['StixDomainObject']>>, ParentType, ContextType>;
   huntTechniques?: Resolver<Maybe<Array<ResolversTypes['AttackPattern']>>, ParentType, ContextType>;
   hunt_ioc_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hunt_ioc_sort?: Resolver<Maybe<ResolversTypes['HuntIocSort']>, ParentType, ContextType>;
   hunt_ioc_values?: Resolver<Maybe<Array<ResolversTypes['HuntIocValue']>>, ParentType, ContextType>;
   hunt_max_results?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hunt_pir_activation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -48439,6 +48473,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   hypothesis?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntImportFilesArgs>>;
+  iocFilterPreview?: Resolver<Maybe<ResolversTypes['HuntIocFilterPreview']>, ParentType, ContextType, Partial<HuntIocFilterPreviewArgs>>;
   iocSet?: Resolver<Maybe<ResolversTypes['HuntIocSet']>, ParentType, ContextType, Partial<HuntIocSetArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HuntJobsArgs>>;
@@ -48523,6 +48558,7 @@ export type HuntAssistanceResolvers<ContextType = any, ParentType extends Resolv
 
 export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
   default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  max_filter_entities_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_iocs_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_related_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_results_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -48642,6 +48678,11 @@ export type HuntIocResolvers<ContextType = any, ParentType extends ResolversPare
   observable_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   sources?: Resolver<Array<ResolversTypes['HuntIocSource']>, ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntIocFilterPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocFilterPreview'] = ResolversParentTypes['HuntIocFilterPreview']> = ResolversObject<{
+  matching_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  taken_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type HuntIocResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocResult'] = ResolversParentTypes['HuntIocResult']> = ResolversObject<{
@@ -57588,6 +57629,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntHit?: HuntHitResolvers<ContextType>;
   HuntHitField?: HuntHitFieldResolvers<ContextType>;
   HuntIoc?: HuntIocResolvers<ContextType>;
+  HuntIocFilterPreview?: HuntIocFilterPreviewResolvers<ContextType>;
   HuntIocResult?: HuntIocResultResolvers<ContextType>;
   HuntIocSet?: HuntIocSetResolvers<ContextType>;
   HuntIocSource?: HuntIocSourceResolvers<ContextType>;
