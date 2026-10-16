@@ -640,10 +640,11 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete (a kill chain phase by its own query, scoped to the kill chain); and, in the variable dialog, the kill chain of a kill chain phase variable, picked among the kill chains of the platform.",
+      "reason": "dashboard variables: the server-side search of the value of an entity, label, marking, user, group, status, kill chain phase or entity type variable, fed by useSearchEntities like the filter value autocomplete (a kill chain phase by its own query, scoped to the kill chain); and, in the variable dialog, the kill chain of a kill chain phase variable, picked among the kill chains of the platform. The values of a selection restriction use the same search in a multiple Combobox (ComboboxChips, ComboboxHelperText for the error).",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SearchValueInput.tsx",
-        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/variables/ValueInputs/SelectionValuesInput.tsx"
       ]
     },
     {
@@ -696,7 +697,7 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables dialog: the restriction mode step, which only offers No restriction in PR 2 (and shows a restriction set elsewhere as a checked, disabled option).",
+      "reason": "dashboard variables dialog: the restriction mode step, No restriction, Manual selection and, for an entity variable (or one already holding it), By filter.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
       ]
@@ -732,6 +733,17 @@
       "reason": "dashboard variables deletion dialog: the confirmation question, the warning about the impacted widgets and their list (content-base), replacing MUI Typography and a bare <ul>.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard variables dialog: the label and the error of the rule editor of a variable restricted by filters (content-compact), around the shared filter editor.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/RestrictionFiltersField.tsx"
       ]
     },
     {
