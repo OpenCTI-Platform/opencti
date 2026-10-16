@@ -1,9 +1,10 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { pageRegardingEntitiesConnection, storeLoadById, topRelationsList } from '../../database/middleware-loader';
+import { type EntityOptions, pageRegardingEntitiesConnection, storeLoadById, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { RELATION_ATTRIBUTED_TO, RELATION_INDICATES, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -18,9 +19,8 @@ import { findByIds } from './hunt-loaders';
 import { HUNT_IOC_CONTAINER_TYPES, HUNT_IOC_OBSERVABLE_TYPES, HUNT_IOC_SUBJECT_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { type IocElement, iocElementName, iocValuesOfElement, listContainedIocElements, listRelatedElements, listSubjectIocElements } from './hunt-iocs';
 import { HUNT_CONFIG, HUNT_MAX_SIGMA_RULES } from './hunt-utils';
-import { type HuntAddInput, HuntDerivedSourceRelation, HuntType, OrderingMode, PirRelationshipOrdering } from '../../generated/graphql';
+import { FilterMode, type HuntAddInput, HuntDerivedSourceRelation, HuntType, OrderingMode } from '../../generated/graphql';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
-import { findPirRelationPaginated } from '../pir/pir-domain';
 
 /** Pattern types of the indicators a detection-rule hunt runs: the Sigma rule, or a native query of its language. */
 export const HUNT_RULE_PATTERN_TYPES = ['sigma', 'spl', 'kql', 'eql', 'esql'];
@@ -175,6 +175,25 @@ const deriveElements = async (context: AuthContext, user: AuthUser, entity: IocE
 };
 
 /**
+ * The entities of the given types a PIR flags, the most relevant first (by their score in the PIR), read with the access
+ * of the user. The score is held by each flagged entity for each PIR that flags it, not by its in-pir relationship.
+ */
+export const listPirFlaggedEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, pirId: string, types: string[], first: number) => {
+  const args = {
+    first,
+    pirId,
+    orderBy: 'pir_score',
+    orderMode: OrderingMode.Desc,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['regardingOf'], values: [{ key: 'relationship_type', values: [RELATION_IN_PIR] }, { key: 'id', values: [pirId] }] }],
+      filterGroups: [],
+    },
+  };
+  return topEntitiesList<T>(context, user, types, args as EntityOptions<T>);
+};
+
+/**
  * The entity a hunt starts from: a STIX core object, or a PIR, whose most relevant flagged threats (by PIR score) the
  * hunt then follows, read with the access of the user.
  */
@@ -187,15 +206,8 @@ const loadDerivationEntity = async (context: AuthContext, user: AuthUser, entity
   if (!pir) {
     return null;
   }
-  const flagged = await findPirRelationPaginated(context, user, {
-    pirId: pir.internal_id,
-    first: MAX_PIR_THREATS,
-    orderBy: PirRelationshipOrdering.PirScore,
-    orderMode: OrderingMode.Desc,
-  });
-  const threatIds: string[] = flagged.edges.map((edge: { node: { fromId: string } }) => edge.node.fromId);
-  const threats = threatIds.length > 0 ? await findByIds<IocElement>(context, user, threatIds) : [];
-  return { entity: pir, flaggedThreats: threats.filter((threat) => HUNT_TARGET_TYPES.includes(threat.entity_type)) };
+  const flaggedThreats = await listPirFlaggedEntities<IocElement>(context, user, pir.internal_id, HUNT_TARGET_TYPES, MAX_PIR_THREATS);
+  return { entity: pir, flaggedThreats };
 };
 
 /** The sources of the threats a PIR flags: each threat, the malware and tools it uses and the threats attributed to it. */
