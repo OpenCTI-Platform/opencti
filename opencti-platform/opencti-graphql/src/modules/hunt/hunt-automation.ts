@@ -95,7 +95,7 @@ const scanCursors = new Map<string, string | undefined>();
 
 /**
  * Every element of a type matching the filters, page by page. For phases whose filters do not drop the elements they
- * process (PIR arming, due scheduled hunts that started no run, standing hunts, the check of orphan runs), a bounded
+ * process (due scheduled hunts that started no run, standing hunts, the check of orphan runs), a bounded
  * first page would read the same oldest elements at every tick and never reach the others. With a scan name, a tick
  * reads at most `automationMaxPagesPerTick` pages and the next tick resumes after the last element read, starting over
  * once the last one was reached: every element is visited within a bounded number of ticks. A page handler returning how many elements it processed, fewer than the
