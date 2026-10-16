@@ -35,6 +35,16 @@ const countriesFile = (): CountriesCollection => ({
   ],
 });
 
+const withTinyCountry = (): CountriesCollection => {
+  const file = countriesFile();
+  file.features.push({
+    type: 'Feature',
+    properties: { ISO2: 'TN', ISO3: 'TNY', NAME: 'Tiny', LON: 2.35, LAT: 48.2 },
+    geometry: { type: 'Polygon', coordinates: [square(2.3, 48.15, 0.1)] },
+  });
+  return file;
+};
+
 const HIGHLIGHT = '#ff0000';
 
 class TrackingResizeObserver {
@@ -85,6 +95,19 @@ describe('GeoMapFallback', () => {
     expect(container.querySelector('img.leaflet-marker-icon[src="city.png"]')).not.toBeNull();
     expect(await findByText('France')).toBeTruthy();
     expect(await findByText('Germany')).toBeTruthy();
+  });
+
+  it('names every country, however small, once the view is less than 2000 km wide', async () => {
+    vi.mocked(loadCountries).mockResolvedValue(withTinyCountry());
+    const { findByText } = testRender(<GeoMapFallback zoom={7} center={{ latitude: 48, longitude: 2.4 }} />);
+    expect(await findByText('Tiny')).toBeTruthy();
+  });
+
+  it('only names countries large enough on screen when the view is wider', async () => {
+    vi.mocked(loadCountries).mockResolvedValue(withTinyCountry());
+    const { findByText, queryByText } = testRender(<GeoMapFallback zoom={4} center={{ latitude: 48, longitude: 2.4 }} />);
+    expect(await findByText('France')).toBeTruthy();
+    expect(queryByText('Tiny')).toBeNull();
   });
 
   it('shows an error when the countries cannot be loaded and draws the map on retry', async () => {
