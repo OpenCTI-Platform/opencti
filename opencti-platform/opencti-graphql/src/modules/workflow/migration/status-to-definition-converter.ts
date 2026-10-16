@@ -69,14 +69,28 @@ const synthesizeFullyConnectedTransitions = (
 ): WorkflowSerializedTransition[] => {
   const stateIds = states.map((state) => state.statusId);
   if (stateIds.length < 2) return [];
-  return stateIds.map((to) => {
-    const name = resolveDisplayName(to, templatesById);
-    return {
-      from: stateIds.filter((id) => id !== to),
-      to,
-      event: `MOVE_TO_${toEventSegment(name)}`,
-    };
+  // Different names can normalize to the same segment ("In Progress" / "in-progress"), which would
+  // fail validation with DUPLICATE_TRANSITION_EVENT. The first state keeps the natural segment; a
+  // later one gets the first free `_2`, `_3`... suffix, skipping segments other states use naturally.
+  const segments = stateIds.map((id) => toEventSegment(resolveDisplayName(id, templatesById)));
+  const taken = new Set(segments);
+  const claimed = new Set<string>();
+  const uniqueSegments = segments.map((segment) => {
+    if (!claimed.has(segment)) {
+      claimed.add(segment);
+      return segment;
+    }
+    let suffix = 2;
+    while (taken.has(`${segment}_${suffix}`)) suffix += 1;
+    const unique = `${segment}_${suffix}`;
+    taken.add(unique);
+    return unique;
   });
+  return stateIds.map((to, index) => ({
+    from: stateIds.filter((id) => id !== to),
+    to,
+    event: `MOVE_TO_${uniqueSegments[index]}`,
+  }));
 };
 
 const hasOrder = (status: BasicWorkflowStatus): boolean => status.order !== undefined && status.order !== null;
