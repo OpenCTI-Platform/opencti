@@ -3531,6 +3531,14 @@ describe('getMassWorkflowTransitions', () => {
     expect(result).toEqual([]);
   });
 
+  it('should offer nothing when ENTITIES_WORKFLOW is disabled', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+
+    expect(result).toEqual([]);
+  });
+
   it('should offer nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
 
