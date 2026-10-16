@@ -3,6 +3,7 @@ declare namespace Express {
     session?: {
       nonce?: string;
       referer?: string;
+      regenerate: (callback: (err: unknown) => void) => void;
     };
   }
 }
