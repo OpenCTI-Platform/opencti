@@ -30,7 +30,6 @@ const HUNT_INSTANCE = {
   hunt_scope: '{"mode":"and","filters":[],"filterGroups":[]}',
   hunt_schedule: '1d',
   trigger_filters: '',
-  hunt_pir_activation: true,
   time_window_hours: 24,
   expected_observables: ['Process'],
   benign_patterns: ['Software deployment'],

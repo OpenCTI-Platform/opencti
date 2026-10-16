@@ -17,6 +17,16 @@ The values are read again at **every run**: a hunt taken from a report or a thre
 
 Supported types: IPv4 and IPv6 addresses, domain names, host names, URLs, email addresses, MAC addresses and file hashes (MD5, SHA-1, SHA-256, SHA-512). Domains, host names, email addresses and hashes are compared without case; URLs keep their case.
 
+### At most 100 entities from the filter
+
+A filter can match far more indicators and observables than a run should look up. Each run takes at most **100** of them, in the order chosen under the filter, in the creation form as on the **Logic** tab, and saved with it: **Newest created first** (the default), **Oldest created first**, **Recently updated first** or **Least recently updated first**. As you edit the filter on the **Logic** tab, the card tells how many indicators and observables match it and how many the next run takes, for example "2,340 indicators and observables match the filter: the next run takes 100 of them, in the order above"; the creation form shows no count, since the hunt it counts for does not exist yet. The count covers what the hunt can take only: an indicator more restricted than the hunt is neither counted nor taken (see [Markings and access](hunts.md#markings-and-access)). The values chosen, taken from sources or pasted are not limited by this rule, only by the limit of values of a run below.
+
+### Entities already hunted
+
+When a run completes, every indicator and observable whose values it searched records the date: **Last hunted** (`x_opencti_hunted_at`), and **Last matched by a hunt** (`x_opencti_hunt_matched_at`) when one of its values was seen. A value the platform could not search dates nothing. The dates are written by the platform for every hunt, never by a user, and only move forward; they are not knowledge sent to other platforms, nor recorded in the history of the entity. They are shown on the **Hunts** card of the indicator or observable, and they are filters like the others: in lists, dashboards and the filter of a hunt.
+
+When the filter matches more than a run takes, and the hunt ran before, the card offers **Exclude the entities hunted since** the date of its latest run. It adds to the filter a group keeping the entities hunted before that date or never hunted, so that the next runs go through the entities not looked up yet instead of the same newest ones. The group is an ordinary part of the filter: change its date or remove it like any other.
+
 ### What is left out
 
 | Case | Shown as |

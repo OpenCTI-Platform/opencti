@@ -27,7 +27,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 
 export const huntsLineFragment = graphql`
   fragment Hunts_HuntFragment on Hunt {
@@ -326,16 +326,16 @@ const Hunts = () => {
                 availableEntityTypes={[HUNT_ENTITY_TYPE]}
                 emptyStateMessage={t_i18n('No hunt matches these filters')}
                 additionalHeaderButtons={[
-                  <Security key="hunt-quick-start" needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Security key="hunt-quick-start" needs={HUNT_CAPABILITIES} matchAll>
                     <HuntQuickStartMenu />
                   </Security>,
                   <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
-                  <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Security key="hunt-pack-import" needs={HUNT_CAPABILITIES} matchAll>
                     <HuntPackImportButton paginationOptions={queryPaginationOptions} />
                   </Security>,
                 ]}
                 createButton={(
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Security needs={HUNT_CAPABILITIES} matchAll>
                     <HuntCreation paginationOptions={queryPaginationOptions} />
                   </Security>
                 )}

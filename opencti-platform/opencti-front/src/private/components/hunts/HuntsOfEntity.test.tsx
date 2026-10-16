@@ -16,24 +16,35 @@ const huntNode = (
   id: string,
   verdict: string | null,
   run: 'none' | 'visible' | 'hidden' = verdict ? 'visible' : 'none',
-  latest: { hunt_run_status: string; completed_at: string | null; hits_count: number } = { hunt_run_status: 'completed', completed_at: '2026-10-05T10:00:00.000Z', hits_count: 1 },
+  latest: { hunt_run_status: string; completed_at: string | null; hits_count: number; entity_matched?: boolean | null } = {
+    hunt_run_status: 'completed',
+    completed_at: '2026-10-05T10:00:00.000Z',
+    hits_count: 1,
+  },
 ) => ({
   id,
   name: `Hunt ${id}`,
   hunt_status: 'active',
   last_run_at: run === 'none' ? null : '2026-10-05T10:00:00.000Z',
   last_hits_count: run === 'none' ? null : 1,
-  runs: { edges: run === 'visible' ? [{ node: { id: `${id}-run`, verdict, ...latest } }] : [] },
+  runs: { edges: run === 'visible' ? [{ node: { id: `${id}-run`, verdict, entity_matched: null, ...latest } }] : [] },
 });
 
-const resolveHunts = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], nodes: ReturnType<typeof huntNode>[], globalCount = nodes.length) => {
+type HuntActivity = { hunted_at: string | null; matched_at: string | null } | null;
+
+const resolveHunts = async (
+  relayEnv: ReturnType<typeof testRender>['relayEnv'],
+  nodes: ReturnType<typeof huntNode>[],
+  globalCount = nodes.length,
+  activity: HuntActivity = null,
+) => {
   let variables: Record<string, unknown> = {};
   let text = '';
   await act(async () => {
     relayEnv.mock.resolveMostRecentOperation((operation) => {
       variables = operation.request.variables;
       text = JSON.stringify(operation.request.node);
-      return { data: { hunts: { pageInfo: { globalCount }, edges: nodes.map((node) => ({ node })) } } };
+      return { data: { huntEntityActivity: activity, hunts: { pageInfo: { globalCount }, edges: nodes.map((node) => ({ node })) } } };
     });
   });
   return { variables, text };
@@ -58,7 +69,21 @@ describe('Hunts of an entity', () => {
     expect(within(rows[0]).getByTestId('hunt-verdict-chip')).toBeInTheDocument();
     expect(within(rows[0]).getByText(/1 hit$/)).toBeInTheDocument();
     expect(within(rows[1]).getByText('Never run')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '10 more in the hunts list' })).toBeInTheDocument();
+    // Without a Defense tab to lead to, the hunts list filtered on the hunts of the entity
+    const viewAll = screen.getByRole('link', { name: 'View all 12 hunts' });
+    const target = new URL(viewAll.getAttribute('href') ?? '', 'http://localhost');
+    expect(target.pathname).toBe('/dashboard/defense/hunts');
+    expect(JSON.parse(target.searchParams.get('filters') ?? '{}')).toMatchObject({
+      mode: 'or',
+      filters: [{ key: 'huntSources', values: ['malware-id'] }, { key: 'huntTargets', values: ['malware-id'] }],
+    });
+  });
+
+  it('shows the latest five hunts on the overview and leads to all of them in the Defense tab', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" viewAllLink="/dashboard/arsenal/malwares/malware-id/defense" />);
+    const { variables } = await resolveHunts(relayEnv, ['a', 'b', 'c', 'd', 'e'].map((id) => huntNode(id, null)), 6);
+    expect(variables.first).toBe(5);
+    expect(screen.getByRole('link', { name: 'View all 6 hunts' })).toHaveAttribute('href', '/dashboard/arsenal/malwares/malware-id/defense');
   });
 
   it('says never run only for a hunt without any execution, and takes the verdict of the latest execution', async () => {
@@ -104,6 +129,29 @@ describe('Hunts of an entity', () => {
     const { variables } = await resolveHunts(relayEnv, []);
     expect(variables.first).toBe(100);
     expect(screen.getByTestId('hunts-of-entity-empty')).toBeInTheDocument();
+  });
+
+  it('tells when a hunt last looked the entity up and found it, and whether the last run of each hunt matched it', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="indicator-id" />);
+    const { variables } = await resolveHunts(relayEnv, [
+      huntNode('a', 'true_positive', 'visible', { hunt_run_status: 'completed', completed_at: '2026-10-06T10:00:00.000Z', hits_count: 4, entity_matched: true }),
+      huntNode('b', 'benign', 'visible', { hunt_run_status: 'completed', completed_at: '2026-10-07T10:00:00.000Z', hits_count: 0, entity_matched: false }),
+    ], 2, { hunted_at: '2026-10-07T10:00:00.000Z', matched_at: '2026-10-06T10:00:00.000Z' });
+    expect(variables.entityId).toBe('indicator-id');
+    expect(screen.getByTestId('hunts-of-entity-activity')).toHaveTextContent(/^Last hunted .+, last matched .+$/);
+    const rows = screen.getAllByTestId('hunts-of-entity-row');
+    // The dates are relative, the absolute date in the tooltip
+    const matched = within(rows[0]).getByRole('link', { name: /^Matched by the last run .+, 4 hits$/ });
+    expect(matched).toHaveAttribute('href', '/dashboard/defense/hunts/a/runs/a-run');
+    expect(within(rows[1]).getByRole('link', { name: /^Not matched by the last run / })).toHaveAttribute('href', '/dashboard/defense/hunts/b/runs/b-run');
+    expect(matched).not.toHaveTextContent(/ on /);
+  });
+
+  it('dates the entity on the overview even when no hunt names it, a hunt having reached it through its filter', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="observable-id" />);
+    await resolveHunts(relayEnv, [], 0, { hunted_at: '2026-10-07T10:00:00.000Z', matched_at: null });
+    expect(screen.getByTestId('hunts-of-entity-activity')).toHaveTextContent(/^Last hunted .+, never matched by a hunt$/);
+    expect(screen.queryByText('No hunt looks for this entity or takes it as a source yet.')).not.toBeInTheDocument();
   });
 
   it('neither queries nor shows the hunts when the Hunt entity type is hidden', () => {

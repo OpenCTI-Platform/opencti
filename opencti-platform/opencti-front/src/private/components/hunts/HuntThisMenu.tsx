@@ -6,7 +6,7 @@ import { IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipC
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { HuntCreationDrawer } from './HuntCreation';
@@ -147,7 +147,7 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
     : undefined;
 
   return (
-    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+    <Security needs={HUNT_CAPABILITIES} matchAll>
       <>
         <Menu>
           <Tooltip>

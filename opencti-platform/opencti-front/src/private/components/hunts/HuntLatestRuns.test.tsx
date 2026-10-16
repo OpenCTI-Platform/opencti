@@ -13,13 +13,13 @@ const renderWithoutRuns = async (canEdit: boolean) => {
 };
 
 describe('Latest runs of a hunt', () => {
-  it('names the next step to a user who can edit the hunt', async () => {
+  it('names the next step to a user allowed to launch hunts', async () => {
     expect(await renderWithoutRuns(true)).toHaveTextContent('Next step: Run now at the top of the page');
   });
 
   it('tells a user who can only view the hunt who can run it, without naming a control', async () => {
     const empty = await renderWithoutRuns(false);
-    expect(empty).toHaveTextContent('Each run appears here with its verdict once a user who can edit the hunt runs it or activates it.');
+    expect(empty).toHaveTextContent('Each run appears here with its verdict once a user allowed to launch hunts runs it or activates it.');
     expect(empty).not.toHaveTextContent('Run now');
   });
 });

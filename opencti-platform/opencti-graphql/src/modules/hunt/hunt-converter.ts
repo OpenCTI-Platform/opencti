@@ -32,7 +32,6 @@ const convertHuntToStix = (instance: StoreEntityHunt): StixHunt => {
     hunt_scope: instance.hunt_scope ?? '',
     hunt_schedule: instance.hunt_schedule,
     trigger_filters: instance.trigger_filters ?? '',
-    hunt_pir_activation: instance.hunt_pir_activation ?? false,
     time_window_hours: instance.time_window_hours,
     expected_observables: instance.expected_observables ?? [],
     benign_patterns: instance.benign_patterns ?? [],

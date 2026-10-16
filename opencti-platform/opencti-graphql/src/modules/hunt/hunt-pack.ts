@@ -83,7 +83,6 @@ export const toPackHunt = (stixHunt: StixHunt): StixHunt => ({
   hunt_source_kind: HUNT_SOURCE_HUB,
   hunt_scope: '',
   trigger_filters: '',
-  hunt_pir_activation: false,
 });
 
 /**

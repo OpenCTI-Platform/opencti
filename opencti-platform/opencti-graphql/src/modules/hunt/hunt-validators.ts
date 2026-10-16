@@ -42,7 +42,6 @@ export interface HuntValidationState {
   [RELATION_HUNT_SOURCES]?: unknown;
   [INPUT_HUNT_SOURCES]?: unknown;
   hunt_schedule?: string | null;
-  hunt_pir_activation?: boolean | null;
   hunt_scope?: string | null;
   trigger_filters?: string | null;
   time_window_hours?: number | null;
@@ -139,8 +138,8 @@ export const validateHuntState = async (context: AuthContext, user: AuthUser, st
     // Trigger filters are evaluated on stream events, only the keys supported by the stix matching are accepted
     await validateFilterGroupForStixMatch(context, user, triggerFilters);
   }
-  // Autonomous execution (schedule, standing, PIR activation) is an Enterprise Edition capability
-  if (state.hunt_status === HUNT_STATUS_ACTIVE && isAutonomousHunt({ hunt_schedule: schedule, hunt_pir_activation: state.hunt_pir_activation })) {
+  // Autonomous execution (schedule, standing) is an Enterprise Edition capability
+  if (state.hunt_status === HUNT_STATUS_ACTIVE && isAutonomousHunt({ hunt_schedule: schedule })) {
     await checkEnterpriseEdition(context);
   }
 };

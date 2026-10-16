@@ -125,11 +125,9 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     await capture(page, `hunt-drawer-header${suffix}.png`, [drawerHeader(page), form.getByTestId('hunt-creation-steps')]);
     await capture(page, `hunt-drawer-logic${suffix}.png`, [page.getByTestId('hunt-sigma-editor'), page.getByTestId('hunt-native-queries')]);
     await expect(page.getByTestId('hunt-native-query-add')).toBeVisible();
-    // The schedule and the PIR activation are in the execution step
+    // The schedule is in the execution step
     await form.getByTestId('hunt-creation-step-2').click();
-    const schedule = page.getByTestId('hunt-schedule-field');
-    const pir = form.getByText('Activate when a PIR flags one of its targets');
-    await capture(page, `hunt-drawer-ee-chips${suffix}.png`, [schedule, pir]);
+    await capture(page, `hunt-drawer-ee-chips${suffix}.png`, [page.getByTestId('hunt-schedule-field')]);
   };
 
   const captureGeneration = async (page: Page, suffix: string) => {

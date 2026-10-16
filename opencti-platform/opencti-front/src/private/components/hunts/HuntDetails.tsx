@@ -33,9 +33,6 @@ const huntDetailsFragment = graphql`
       entity_type
     }
     hunt_schedule
-    hunt_pir_activation
-    hunt_pir_armed
-    hunt_pir_armed_at
     time_window_hours
     escalation_threshold
     hunt_max_results
@@ -122,15 +119,6 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
       </div>
     </FieldOrEmpty>
   );
-  let pirState: string;
-  if (!hunt.hunt_pir_activation) {
-    pirState = t_i18n('Disabled');
-  } else if (hunt.hunt_pir_armed) {
-    pirState = t_i18n('Armed by a PIR since {date}', { values: { date: fldt(hunt.hunt_pir_armed_at) } });
-  } else {
-    pirState = t_i18n('Waiting for a PIR to flag one of its targets');
-  }
-
   return (
     <div style={{ height: '100%' }} data-testid="hunt-details">
       <Card title={t_i18n('Details')}>
@@ -152,8 +140,6 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <HuntSourceKindChip value={hunt.hunt_source_kind} />
             <Label sx={{ marginTop: 2 }}>{t_i18n('Schedule')}</Label>
             <Text variant="content-compact">{scheduleText(hunt.hunt_schedule)}</Text>
-            <Label sx={{ marginTop: 2 }}>{t_i18n('Activation by PIR')}</Label>
-            <Text variant="content-compact" data-testid="hunt-pir-state">{pirState}</Text>
           </Grid>
           <Grid item xs={6}>
             <Label>{t_i18n('Last run')}</Label>
