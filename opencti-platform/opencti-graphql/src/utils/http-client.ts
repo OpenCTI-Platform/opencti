@@ -476,7 +476,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
       headers: toHeaderRecord(currentMethod, finalResponse),
       data: await transport(() => {
         watchdog?.arm();
-        return readData(finalResponse, ok ? responseType : 'json', {
+        return readData(finalResponse, ok || responseType === 'stream' ? responseType : 'json', {
           onProgress: () => watchdog?.arm(),
           onEnd: () => watchdog?.disarm(),
           toError: (error) => toTransportError(error, requestTimeout, watchdog?.signal, config.signal),

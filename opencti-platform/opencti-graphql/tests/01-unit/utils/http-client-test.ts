@@ -1,4 +1,5 @@
 import { generateKeyPairSync } from 'node:crypto';
+import { once } from 'node:events';
 import http from 'node:http';
 import https from 'node:https';
 import type { AddressInfo } from 'node:net';
@@ -52,6 +53,10 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
     res.write('a');
     setTimeout(() => res.end('b'), 400);
   },
+  '/error-never-ends': (_req, res) => {
+    res.writeHead(503, { 'Content-Type': 'application/json' });
+    res.write('{"detail":"unavailable"}');
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -101,6 +106,7 @@ const startServer = async (tls?: { key: string; cert: string }) => {
 
 const closeServer = (server: http.Server) => new Promise((resolve) => {
   server.close(resolve);
+  server.closeAllConnections();
 });
 
 beforeAll(async () => {
@@ -199,10 +205,21 @@ describe('getHttpClient', () => {
   });
 
   it('should reject a server error with the bad response code', async () => {
-    const error = await getHttpClient({ baseURL, responseType: 'stream' }).get('/server-error').catch((e) => e);
+    const error = await getHttpClient({ baseURL, responseType: 'text' }).get('/server-error').catch((e) => e);
 
     expect(error.code).toBe('ERR_BAD_RESPONSE');
     expect(error.response.data).toBe('down');
+  });
+
+  it('should reject an error response without waiting for a streamed body that never ends', async () => {
+    const error = await getHttpClient({ baseURL, responseType: 'stream' }).get('/error-never-ends').catch((e) => e);
+
+    expect(error).toBeInstanceOf(HttpClientError);
+    expect(error.status).toBe(503);
+    expect(error.response.data).toBeInstanceOf(Readable);
+    const [chunk] = await once(error.response.data, 'data');
+    expect(chunk.toString()).toBe('{"detail":"unavailable"}');
+    error.response.data.destroy();
   });
 
   it('should reject with a timeout error when the response is too slow', async () => {
