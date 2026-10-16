@@ -7,7 +7,7 @@ import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboardVizUtils';
 import type { WidgetRenderGuards } from './WidgetRenderContent';
-import { useDashboardVariableValues } from './DashboardVariableValuesContext';
+import { useDashboardDateVariableIds, useDashboardVariableValues } from './DashboardVariableValuesContext';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -43,6 +43,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
   const [hasUnresolvedVariables, setHasUnresolvedVariables] = useState(false);
   const variableValues = useDashboardVariableValues();
+  const dateVariableIds = useDashboardDateVariableIds();
   // A widget that cannot be resolved safely never runs its query.
   const isBlocked = isMissingHostEntity || isMissingSavedFilters || hasUnresolvedVariables;
 
@@ -77,6 +78,7 @@ const useDashboardViz = <TQuery extends OperationType>({
       perspective,
       host,
       variableValues,
+      dateVariableIds,
     }).then((result) => {
       if (!cancelled) {
         setResolvedDataSelection(result.resolvedDataSelection);
@@ -90,7 +92,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     return () => {
       cancelled = true;
     };
-  }, [filterKeysSchema, dataSelectionSignature, perspective, host, variableValues]);
+  }, [filterKeysSchema, dataSelectionSignature, perspective, host, variableValues, dateVariableIds]);
 
   // Re-resolve selection inputs when schema, selection content, perspective, or host changes
   // Because those changes make the result change

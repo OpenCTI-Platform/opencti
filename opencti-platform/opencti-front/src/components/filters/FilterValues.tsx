@@ -18,6 +18,8 @@ import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
 import Button from '@common/button/Button';
+import { useOptionalDashboardVariableDefinitions } from '../dashboard/DashboardVariablesContext';
+import { getVariableTokenLabel } from '../dashboard/dashboardVariableTokenLabel';
 
 // The prop only ever arrives as 'warning' or 'success' (WidgetFilters, 4 call
 // sites), so it maps to two tones; absent keeps the library default.
@@ -63,6 +65,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema: { scos } } = useSchema();
+  // Only in a dashboard providing its variables: anywhere else a token-looking value stays a literal.
+  const variables = useOptionalDashboardVariableDefinitions();
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -183,21 +187,37 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
+    // A variable token is shown under the variable name, never through the representatives (that cannot resolve it).
+    const tokenLabel = getVariableTokenLabel(id, variables, t_i18n);
+    const variableToken = tokenLabel !== null && (
+      <span
+        data-variable-token={tokenLabel.variableId}
+        style={{
+          fontStyle: 'italic',
+          color: tokenLabel.isDeleted ? theme.palette.error.main : theme.palette.primary.main,
+          ...(tooltip && { whiteSpace: 'normal', overflowWrap: 'anywhere', wordBreak: 'break-word' }),
+        }}
+      >
+        {tooltip ? tokenLabel.label : truncate(tokenLabel.label, 20)}
+      </span>
+    );
     return (
       <Fragment key={id}>
         {filterOperator === 'within'
           ? (
               <>
                 {filterValues[0] === id && <span>[</span>}
-                <FilterValuesContent
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
+                {variableToken || (
+                  <FilterValuesContent
+                    isFilterTooltip={!!tooltip}
+                    filterKey={filterKey}
+                    id={id}
+                    value={value}
+                    filterDefinition={filterDefinition}
+                    filterOperator={filterOperator}
+                    host={host}
+                  />
+                )}
                 <span>
                   {last(filterValues) === id ? ']' : ', '}
                 </span>
@@ -205,16 +225,18 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             )
           : (
               <>
-                <FilterValuesContent
-                  redirection={tooltip ? false : redirection}
-                  isFilterTooltip={!!tooltip}
-                  filterKey={filterKey}
-                  id={id}
-                  value={value}
-                  filterDefinition={filterDefinition}
-                  filterOperator={filterOperator}
-                  host={host}
-                />
+                {variableToken || (
+                  <FilterValuesContent
+                    redirection={tooltip ? false : redirection}
+                    isFilterTooltip={!!tooltip}
+                    filterKey={filterKey}
+                    id={id}
+                    value={value}
+                    filterDefinition={filterDefinition}
+                    filterOperator={filterOperator}
+                    host={host}
+                  />
+                )}
                 {last(filterValues) !== id && isRegardingOfFilter
                   && <span style={{ marginRight: 2 }}>,</span>
                 }

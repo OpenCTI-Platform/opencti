@@ -328,4 +328,13 @@ describe('useDashboardViz', () => {
     });
     expect(vi.mocked(resolveDataSelection)).toHaveBeenLastCalledWith(expect.objectContaining({ variableValues: values }));
   });
+
+  it('passes the context date variable ids to the resolution, for the day shift of lte and gt', () => {
+    const values = new Map([['11111111-1111-4111-8111-111111111111', '2024-01-15T00:00:00.000Z']]);
+    const dateVariableIds = new Set(['11111111-1111-4111-8111-111111111111']);
+    renderHook(() => useDashboardViz({ dataSelection: EMPTY_DATA_SELECTION, perspective: 'entities', query: {} as never }), {
+      wrapper: ({ children }) => createElement(DashboardVariableValuesProvider, { values, dateVariableIds }, children),
+    });
+    expect(vi.mocked(resolveDataSelection)).toHaveBeenLastCalledWith(expect.objectContaining({ variableValues: values, dateVariableIds }));
+  });
 });
