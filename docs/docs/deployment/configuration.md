@@ -97,7 +97,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:app_logs:logs_console         | APP__APP_LOGS__LOGS_CONSOLE         | `true`                                                                                   | If application logs is logged to console (useful for containers)   |
 | app:app_logs:logs_max_files       | APP__APP_LOGS__LOGS_MAX_FILES       | 7                                                                                        | Maximum number of daily files in logs                              |
 | app:app_logs:logs_directory       | APP__APP_LOGS__LOGS_DIRECTORY       | ./logs                                                                                   | File logs directory                                                |
-| app:app_logs:logs_redacted_inputs | APP__APP_LOGS__LOGS_REDACTED_INPUTS | `["password","password_history","newPassword","otp","secret","token","api_tokens","authentication_value","enterprise_license"]` | List of GraphQL input fields to redact from logs (e.g. `password`) |
+| app:app_logs:logs_redacted_inputs | APP__APP_LOGS__LOGS_REDACTED_INPUTS | `["password","secret","token","api_tokens","authentication_value","enterprise_license"]` | List of GraphQL input fields to redact from logs (e.g. `password`) |
 
 ##### Audit
 

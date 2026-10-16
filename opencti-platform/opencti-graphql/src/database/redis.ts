@@ -19,7 +19,7 @@ import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
-import { withoutUserSecrets } from '../utils/redaction';
+import { withoutUserSecrets } from '../modules/user/user-secrets';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
