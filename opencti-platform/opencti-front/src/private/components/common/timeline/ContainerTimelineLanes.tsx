@@ -449,16 +449,24 @@ const ContainerTimelineLanes = ({
         <MenuTrigger asChild>{marker}</MenuTrigger>
         <MenuContent aria-label={label} style={{ maxHeight: 360, overflowY: 'auto' }} data-testid="timeline-cluster-events">
           <MenuLabel>{label}</MenuLabel>
-          {listed.map((listedEvent) => (
-            <MenuItem key={listedEvent.id} onSelect={() => onSelect?.(listedEvent.id)} data-testid={`timeline-cluster-event-${listedEvent.id}`}>
-              <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <Text variant="content-compact-medium" as="span">{truncate(cropLongTokens(listedEvent.title, CLUSTER_TOKEN_CHARS), CLUSTER_TITLE_CHARS)}</Text>
-                <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>
-                  {`${fldt(listedEvent.event_time)} - ${t_i18n(TIMELINE_KIND_LABELS[listedEvent.kind] ?? listedEvent.kind)}`}
-                </Text>
-              </span>
-            </MenuItem>
-          ))}
+          {listed.map((listedEvent) => {
+            const time = fldt(listedEvent.event_time);
+            const kind = t_i18n(TIMELINE_KIND_LABELS[listedEvent.kind] ?? listedEvent.kind);
+            return (
+              <MenuItem
+                key={listedEvent.id}
+                title={listedEvent.title}
+                aria-label={`${listedEvent.title}, ${time}, ${kind}`}
+                onSelect={() => onSelect?.(listedEvent.id)}
+                data-testid={`timeline-cluster-event-${listedEvent.id}`}
+              >
+                <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                  <Text variant="content-compact-medium" as="span">{truncate(cropLongTokens(listedEvent.title, CLUSTER_TOKEN_CHARS), CLUSTER_TITLE_CHARS)}</Text>
+                  <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{`${time} - ${kind}`}</Text>
+                </span>
+              </MenuItem>
+            );
+          })}
           {onClusterSelect && <MenuSeparator />}
           {onClusterSelect && (
             <MenuItem startIcon={<ZoomInOutlined fontSize="small" />} onSelect={zoom} data-testid="timeline-cluster-zoom">

@@ -271,6 +271,18 @@ describe('ContainerTimelineLanes numbered circles', () => {
     expect(screen.getByTestId('timeline-cluster-event-late')).toHaveTextContent(/^Indicator validity: 5d41402a\.\.\.1017c592/);
   });
 
+  it('gives a listed event its full title as tooltip and accessible name, with its date and event type', async () => {
+    const title = 'Sighting of the domain login-microsoftonline-secure.com by the Finance SIEM of the headquarters';
+    const { user } = testRender(
+      <ContainerTimelineLanes events={[{ ...events[0], title }, events[1]]} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^2 events - / }));
+    const item = screen.getByTestId('timeline-cluster-event-late');
+    expect(item).toHaveAttribute('title', title);
+    expect(item).toHaveAccessibleName(new RegExp(`^${title}, .+, Sighting$`));
+    expect(item).not.toHaveTextContent(title);
+  });
+
   it('opens the list from the keyboard', async () => {
     const { user } = testRender(
       <ContainerTimelineLanes events={events} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} />,
