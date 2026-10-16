@@ -4,7 +4,7 @@ import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, resetCa
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { FilterMode, OrderingMode } from '../generated/graphql';
+import { OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
@@ -51,7 +51,7 @@ import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-d
 import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
+import { booleanTrueFilter, emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { fromB64 } from '../utils/base64';
@@ -214,12 +214,7 @@ const platformTriggers = (context: AuthContext) => {
 };
 const platformRunningPlaybooks = (context: AuthContext) => {
   const reloadPlaybooks = () => {
-    const filters = {
-      mode: FilterMode.And,
-      filters: [{ key: ['playbook_running'], values: ['true'] }],
-      filterGroups: [],
-    };
-    const opts = { filters, noFiltersChecking: true };
+    const opts = { filters: booleanTrueFilter('playbook_running'), noFiltersChecking: true };
     return fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], opts);
   };
   return { values: null, fn: reloadPlaybooks };
