@@ -27,6 +27,7 @@ import {
   type HuntAssistField,
   type HuntAssistInput,
   type HuntPlanInput,
+  HuntIncidentMode,
   HuntSourceKind,
   HuntStatus,
   HuntType,
@@ -201,6 +202,7 @@ export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, i
     time_window_hours: input.time_window_hours ?? HUNT_DEFAULT_TIME_WINDOW_HOURS,
     escalation_threshold: input.escalation_threshold ?? HUNT_DEFAULT_ESCALATION_THRESHOLD,
     escalate_manual_runs: input.escalate_manual_runs ?? false,
+    hunt_incident_mode: input.hunt_incident_mode ?? HuntIncidentMode.Draft,
     native_queries: normalizeNativeQueries(input.native_queries),
     hunt_ioc_values: normalizeHuntIocValues(input.hunt_ioc_values),
   };

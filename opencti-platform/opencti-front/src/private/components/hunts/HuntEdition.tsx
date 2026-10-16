@@ -46,6 +46,7 @@ import {
   HUNT_TARGET_TYPES,
   HUNT_TECHNIQUE_TYPES,
   HUNT_TYPES,
+  huntIncidentModeValue,
   huntScheduleFormValues,
   huntTypeDescription,
   huntTypeLabel,
@@ -54,6 +55,7 @@ import {
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
 import HuntBenignPatternsField from './HuntBenignPatternsField';
+import HuntIncidentModeField from './HuntIncidentModeField';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
 import type { HuntAIFormValues } from './hunt-ai-utils';
 import { HuntEdition_hunt$data, HuntEdition_hunt$key } from './__generated__/HuntEdition_hunt.graphql';
@@ -80,6 +82,7 @@ const huntEditionFragment = graphql`
     time_window_hours
     escalation_threshold
     escalate_manual_runs
+    hunt_incident_mode
     hunt_max_results
     expected_observables
     benign_patterns
@@ -168,6 +171,7 @@ const toFormValues = (hunt: HuntEdition_hunt$data): HuntFormValues => ({
   time_window_hours: hunt.time_window_hours,
   escalation_threshold: hunt.escalation_threshold,
   escalate_manual_runs: hunt.escalate_manual_runs === true,
+  hunt_incident_mode: huntIncidentModeValue(hunt.hunt_incident_mode),
   hunt_max_results: hunt.hunt_max_results ?? '',
   expected_observables: [...(hunt.expected_observables ?? [])],
   benign_patterns: (hunt.benign_patterns ?? []).join('\n'),
@@ -352,6 +356,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
                 helpertext={<HuntHelp text={t_i18n('On, a run started by hand proposes an incident from the escalation threshold. Off, the incident is offered with a true positive verdict.')} href={HUNT_DOCS.runs} />}
               />
             </div>
+            <HuntIncidentModeField mode={values.hunt_incident_mode} />
             <HuntRunProducesSection huntType={values.hunt_type} />
             <HuntBenignPatternsField style={fieldSpacingContainerStyle} />
             <HuntFormSectionTitle>{t_i18n('Knowledge')}</HuntFormSectionTitle>

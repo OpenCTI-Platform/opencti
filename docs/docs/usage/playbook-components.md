@@ -225,7 +225,7 @@ This component routes the bundle on the outcome of the hunts run earlier in the 
 - ***Verdicts***: the bundle matches when a run has one of the selected verdicts (any verdict when empty).
 - ***Use the verdicts proposed by the triage agent***: for the runs still pending, the verdict proposed by the triage agent is used.
 - ***Minimum number of hits***: over the runs of the execution.
-- ***Only when an incident draft was opened***.
+- ***Only when an incident was opened***, as a draft or directly, as the hunt sets it.
 
 ***Routes:***
 

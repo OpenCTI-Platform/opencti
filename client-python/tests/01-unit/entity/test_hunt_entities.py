@@ -93,6 +93,12 @@ class TestHunt(TestCase):
         properties = Hunt(_opencti({})).properties
         self.assertIn("escalation_threshold", properties)
         self.assertIn("escalate_manual_runs", properties)
+        self.assertIn("hunt_incident_mode", properties)
+
+    def test_create_sends_the_incident_mode(self):
+        opencti = _opencti({"huntAdd": {"id": "hunt-1"}})
+        Hunt(opencti).create(name="Hunt", hunt_incident_mode="incident")
+        self.assertEqual(_variables(opencti)["input"]["hunt_incident_mode"], "incident")
 
     def test_default_fields_read_the_hits_of_the_last_run(self):
         properties = Hunt(_opencti({})).properties
@@ -130,6 +136,7 @@ class TestHunt(TestCase):
                 "sigma_rule": "title: t",
                 "escalation_threshold": 5,
                 "escalate_manual_runs": True,
+                "hunt_incident_mode": "incident",
                 "target_refs": ["intrusion-set--1"],
                 "technique_refs": ["attack-pattern--1"],
                 "source_refs": ["indicator--1"],
@@ -144,6 +151,7 @@ class TestHunt(TestCase):
         self.assertEqual(hunt_input["hunt_source_kind"], "hub")
         self.assertEqual(hunt_input["escalation_threshold"], 5)
         self.assertTrue(hunt_input["escalate_manual_runs"])
+        self.assertEqual(hunt_input["hunt_incident_mode"], "incident")
         self.assertEqual(hunt_input["huntTargets"], ["intrusion-set--1"])
         self.assertEqual(hunt_input["huntTechniques"], ["attack-pattern--1"])
         self.assertEqual(hunt_input["huntSources"], ["indicator--1"])

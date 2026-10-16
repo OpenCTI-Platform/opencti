@@ -50,6 +50,7 @@ import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
 import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
+  HUNT_INCIDENT_MODE_INCIDENT,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
@@ -62,6 +63,7 @@ import {
   clampInteger,
   HUNT_CONFIG,
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
+  huntIncidentMode,
   huntRunRestrictions,
   huntHitDates,
   huntSigmaRules,
@@ -875,8 +877,9 @@ const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Pro
 
 /**
  * The incident of a run: the hits go to the incident still open from a previous run of the hunt on the same platform
- * (in its draft when not validated yet), else a new incident draft is opened. A draft recorded by an interrupted
- * finalization is reused rather than doubled. The run records the incident, and whether it continued an open one.
+ * (in its draft when not validated yet), else a new incident draft is opened, or the incident itself when the hunt opens
+ * its incidents directly. A draft recorded by an interrupted finalization is reused rather than doubled. The run records
+ * the incident, and whether it continued an open one.
  */
 const escalateHuntRun = async (
   context: AuthContext,
@@ -888,6 +891,10 @@ const escalateHuntRun = async (
   if (open) {
     await continueHuntIncident(context, hunt, run, open);
     return patchHuntRun(context, run, { incident_id: open.incidentId, incident_stix_id: open.incidentStixId, draft_id: open.draftId, incident_continued: true });
+  }
+  if (!run.draft_id && huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT) {
+    const { incidentId, incidentStixId } = await createHuntIncidentInWorkspace(context, hunt, run, proposal, null);
+    return patchHuntRun(context, run, { incident_id: incidentId, incident_stix_id: incidentStixId, incident_continued: false });
   }
   const current = run.draft_id ? run : await createHuntIncidentWorkspace(context, run, (draftId) => patchHuntRun(context, run, { draft_id: draftId }));
   const { incidentId, incidentStixId } = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
@@ -1795,6 +1802,11 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
           patch.incident_id = open.incidentId;
           patch.incident_stix_id = open.incidentStixId;
           patch.incident_continued = true;
+        } else if (!current.draft_id && huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT) {
+          const created = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), null);
+          patch.incident_id = created.incidentId;
+          patch.incident_stix_id = created.incidentStixId;
+          patch.incident_continued = false;
         } else {
           // A draft recorded by an interrupted finalization or verdict is reused rather than doubled
           const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current, async (opened) => {

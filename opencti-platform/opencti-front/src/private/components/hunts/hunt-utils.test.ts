@@ -27,6 +27,7 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntFormHasLogic,
+  huntIncidentModeValue,
   huntIncidentSeverityLabel,
   huntMessageText,
   huntVerdictOffersIncident,
@@ -250,6 +251,7 @@ describe('Hunt utils', () => {
         benign_patterns: ['svc_backup', 'sccm'],
         escalation_threshold: 5,
         escalate_manual_runs: false,
+        hunt_incident_mode: 'draft',
         hunt_max_results: null,
         huntTargets: ['is-1'],
         huntTechniques: ['ap-1'],
@@ -297,6 +299,15 @@ describe('Hunt utils', () => {
       expect(buildHuntEditPatch(initial, '', { ...initial, escalate_manual_runs: true }, '')).toEqual([{ key: 'escalate_manual_runs', value: [true] }]);
       expect(buildHuntEditPatch({ ...initial, escalate_manual_runs: true }, '', { ...initial, escalate_manual_runs: false }, '')).toEqual([{ key: 'escalate_manual_runs', value: [false] }]);
       expect(buildHuntEditPatch(initial, '', { ...initial }, '')).toEqual([]);
+    });
+
+    it('should open the incidents of a hunt as drafts unless it creates them directly', () => {
+      expect(toHuntAddInput(emptyHuntFormValues(), '').hunt_incident_mode).toEqual('draft');
+      const initial = { ...emptyHuntFormValues(), name: 'APT28 PowerShell' };
+      expect(buildHuntEditPatch(initial, '', { ...initial, hunt_incident_mode: 'incident' }, '')).toEqual([{ key: 'hunt_incident_mode', value: ['incident'] }]);
+      // A hunt stored before the setting existed reads as a draft one
+      expect(huntIncidentModeValue(null)).toEqual('draft');
+      expect(huntIncidentModeValue('incident')).toEqual('incident');
     });
   });
 

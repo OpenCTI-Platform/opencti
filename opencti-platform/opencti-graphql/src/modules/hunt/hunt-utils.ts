@@ -4,7 +4,7 @@ import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
+import { HUNT_INCIDENT_MODE_DRAFT, HUNT_INCIDENT_MODE_INCIDENT, HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence, HuntHit, HuntRuleResult } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
@@ -143,6 +143,11 @@ export const shareAccessDecision = <T>(key: string, compute: () => Promise<T>): 
 };
 
 export const sha256 = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
+
+/** How a hunt opens the incident of a run: a draft unless it was set to open the incident itself (hunts created before the choice open drafts). */
+export const huntIncidentMode = (hunt: { hunt_incident_mode?: string | null }) => {
+  return hunt.hunt_incident_mode === HUNT_INCIDENT_MODE_INCIDENT ? HUNT_INCIDENT_MODE_INCIDENT : HUNT_INCIDENT_MODE_DRAFT;
+};
 
 export const truncate = (value: string, maxLength: number) => {
   if (value.length <= maxLength) {

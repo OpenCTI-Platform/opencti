@@ -11251,7 +11251,7 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
-  /** Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set */
+  /** Runs started by hand open an incident above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set */
   escalate_manual_runs: Scalars['Boolean']['output'];
   escalation_threshold: Scalars['Int']['output'];
   expected_observables?: Maybe<Array<Scalars['String']['output']>>;
@@ -11263,6 +11263,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   huntSources?: Maybe<Array<StixCoreObject>>;
   huntTargets?: Maybe<Array<StixDomainObject>>;
   huntTechniques?: Maybe<Array<AttackPattern>>;
+  /** How the incident of a run is opened: a draft an analyst validates (the default, for the hunts created before the choice too), or the incident itself */
+  hunt_incident_mode: HuntIncidentMode;
   /** Indicator hunts: the filter over indicators and observables */
   hunt_ioc_filters?: Maybe<Scalars['String']['output']>;
   /** Indicator hunts: the order a run takes what the filter matches in, newest created first when not set */
@@ -11555,6 +11557,7 @@ export type HuntAddInput = {
   huntSources?: InputMaybe<Array<Scalars['String']['input']>>;
   huntTargets?: InputMaybe<Array<Scalars['String']['input']>>;
   huntTechniques?: InputMaybe<Array<Scalars['String']['input']>>;
+  hunt_incident_mode?: InputMaybe<HuntIncidentMode>;
   hunt_ioc_filters?: InputMaybe<Scalars['String']['input']>;
   hunt_ioc_sort?: InputMaybe<HuntIocSort>;
   hunt_ioc_values?: InputMaybe<Array<HuntIocValueInput>>;
@@ -11868,6 +11871,12 @@ export type HuntHitInput = {
   user?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** How a run above the escalation threshold opens its incident: as a draft an analyst validates, or directly in the knowledge */
+export enum HuntIncidentMode {
+  Draft = 'draft',
+  Incident = 'incident'
+}
+
 /** A value an indicator hunt looks up, with the indicators and observables it comes from */
 export type HuntIoc = {
   __typename?: 'HuntIoc';
@@ -12104,7 +12113,7 @@ export type HuntRequiredPermissionInput = {
 export type HuntRun = BasicObject & InternalObject & {
   __typename?: 'HuntRun';
   attempt: Scalars['Int']['output'];
-  /** The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time */
+  /** The run opens an incident by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time */
   auto_escalation: Scalars['Boolean']['output'];
   completed_at?: Maybe<Scalars['DateTime']['output']>;
   connector_id?: Maybe<Scalars['String']['output']>;
@@ -12357,7 +12366,7 @@ export enum HuntRunVerdict {
 }
 
 export type HuntRunVerdictInput = {
-  /** A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one */
+  /** A true positive verdict opens an incident from the run, as its hunt sets it, unless false; ignored for any other verdict or a run that has one */
   create_incident?: InputMaybe<Scalars['Boolean']['input']>;
   hunt_analyst_feedback?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<HuntVerdictSource>;
@@ -42708,6 +42717,7 @@ export type ResolversTypes = ResolversObject<{
   HuntHitField: ResolverTypeWrapper<HuntHitField>;
   HuntHitFieldInput: HuntHitFieldInput;
   HuntHitInput: HuntHitInput;
+  HuntIncidentMode: HuntIncidentMode;
   HuntIoc: ResolverTypeWrapper<HuntIoc>;
   HuntIocFilterPreview: ResolverTypeWrapper<HuntIocFilterPreview>;
   HuntIocResult: ResolverTypeWrapper<Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversTypes['StixCoreObject']> }>;
@@ -48477,6 +48487,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   huntSources?: Resolver<Maybe<Array<ResolversTypes['StixCoreObject']>>, ParentType, ContextType>;
   huntTargets?: Resolver<Maybe<Array<ResolversTypes['StixDomainObject']>>, ParentType, ContextType>;
   huntTechniques?: Resolver<Maybe<Array<ResolversTypes['AttackPattern']>>, ParentType, ContextType>;
+  hunt_incident_mode?: Resolver<ResolversTypes['HuntIncidentMode'], ParentType, ContextType>;
   hunt_ioc_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hunt_ioc_sort?: Resolver<Maybe<ResolversTypes['HuntIocSort']>, ParentType, ContextType>;
   hunt_ioc_values?: Resolver<Maybe<Array<ResolversTypes['HuntIocValue']>>, ParentType, ContextType>;

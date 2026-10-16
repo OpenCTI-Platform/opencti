@@ -13,7 +13,7 @@ import type { Theme } from '../../../components/Theme';
 import { resolveLink } from '../../../utils/Entity';
 import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { useHuntScheduleText } from './HuntSchedulePreview';
-import { huntExtractsObservables, huntLastRunHits, huntRunsRecur, huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
+import { huntExtractsObservables, huntIncidentModeValue, huntLastRunHits, huntRunsRecur, huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
 import { useHuntDefaultObservableTypeNames } from './HuntRunProducesSection';
 import useHuntConfiguration from './useHuntConfiguration';
 import { HuntDetails_hunt$key } from './__generated__/HuntDetails_hunt.graphql';
@@ -35,6 +35,7 @@ const huntDetailsFragment = graphql`
     hunt_schedule
     time_window_hours
     escalation_threshold
+    hunt_incident_mode
     hunt_max_results
     expected_observables
     benign_patterns
@@ -177,6 +178,9 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             )}
             <Label sx={{ marginTop: 2 }}>{t_i18n('Escalation threshold')}</Label>
             <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hunt.escalation_threshold } })}</Text>
+            <Text variant="content-caption" style={{ display: 'block' }} data-testid="hunt-incident-mode">
+              {huntIncidentModeValue(hunt.hunt_incident_mode) === 'incident' ? t_i18n('Incident created directly') : t_i18n('Incident opened as a draft')}
+            </Text>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Maximum results per run')}</Label>
             <Text variant="content-compact">{hunt.hunt_max_results ? n(hunt.hunt_max_results) : t_i18n('Platform default')}</Text>
           </Grid>

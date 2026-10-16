@@ -23,6 +23,7 @@ import {
   ATTRIBUTE_HUNT_TARGETS,
   ATTRIBUTE_HUNT_TECHNIQUES,
   ENTITY_TYPE_HUNT,
+  HUNT_INCIDENT_MODE_DRAFT,
   HUNT_SOURCE_HUB,
   HUNT_STATUS_DRAFT,
   INPUT_HUNT_SOURCES,
@@ -258,6 +259,8 @@ export const planHuntPackImport = async (
     benign_patterns: stixHunt.benign_patterns ?? [],
     escalation_threshold: stixHunt.escalation_threshold,
     escalate_manual_runs: stixHunt.escalate_manual_runs === true,
+    // A pack never decides to skip the review of the incidents: an imported hunt opens them as drafts
+    hunt_incident_mode: HUNT_INCIDENT_MODE_DRAFT,
     hunt_max_results: stixHunt.hunt_max_results || undefined,
     [INPUT_HUNT_TECHNIQUES]: await resolveTechniques(stixHunt[ATTRIBUTE_HUNT_TECHNIQUES]),
     [INPUT_HUNT_TARGETS]: await resolveIds(stixHunt[ATTRIBUTE_HUNT_TARGETS]),

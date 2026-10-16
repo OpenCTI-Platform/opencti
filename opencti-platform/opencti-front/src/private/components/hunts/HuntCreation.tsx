@@ -37,6 +37,7 @@ import HuntFormSectionTitle from './HuntFormSectionTitle';
 import HuntRunProducesSection from './HuntRunProducesSection';
 import HuntSigmaRulesField from './HuntSigmaRulesField';
 import HuntBenignPatternsField from './HuntBenignPatternsField';
+import HuntIncidentModeField from './HuntIncidentModeField';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
@@ -159,7 +160,7 @@ const HUNT_CREATION_STEPS = ['What to hunt', 'Context', 'Execution', 'Knowledge'
 const HUNT_CREATION_STEP_FIELDS: (keyof HuntFormValues)[][] = [
   ['hunt_type', 'sigma_rule', 'more_sigma_rules', 'native_queries', 'iocElements', 'iocEntities', 'ioc_values_text'],
   ['name', 'hypothesis', 'description', 'hunt_status'],
-  ['scopePlatforms', 'schedule_mode', 'schedule_cron', 'time_window_hours', 'escalation_threshold', 'hunt_max_results', 'escalate_manual_runs', 'expected_observables', 'benign_patterns'],
+  ['scopePlatforms', 'schedule_mode', 'schedule_cron', 'time_window_hours', 'escalation_threshold', 'hunt_max_results', 'escalate_manual_runs', 'hunt_incident_mode', 'expected_observables', 'benign_patterns'],
   ['huntTargets', 'huntTechniques', 'huntSources', 'createdBy', 'objectLabel', 'objectMarking', 'externalReferences'],
 ];
 
@@ -425,6 +426,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
                     helpertext={<HuntHelp text={t_i18n('On, a run started by hand proposes an incident from the escalation threshold. Off, the incident is offered with a true positive verdict.')} href={HUNT_DOCS.runs} />}
                   />
                 </div>
+                <HuntIncidentModeField mode={values.hunt_incident_mode} />
                 <HuntRunProducesSection huntType={values.hunt_type} />
                 <HuntBenignPatternsField style={fieldSpacingContainerStyle} />
               </div>

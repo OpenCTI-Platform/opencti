@@ -221,6 +221,7 @@ export const HUNT_DOCS = {
   indicatorHunts: `${HUNT_DOCS_BASE}/hunt-indicators/`,
   connectors: `${HUNT_DOCS_BASE}/hunt-connectors/`,
   runs: `${HUNT_DOCS_BASE}/hunts/#results-evidence-and-verdicts`,
+  incident: `${HUNT_DOCS_BASE}/hunts/#incidents`,
   produces: `${HUNT_DOCS_BASE}/hunts/#what-a-run-produces`,
   runHunt: `${HUNT_DOCS_BASE}/hunts/#run-a-hunt`,
   activate: `${HUNT_DOCS_BASE}/hunts/#activate-a-hunt`,
@@ -696,6 +697,12 @@ export const HUNT_IOC_SORTS = ['created_at_desc', 'created_at_asc', 'updated_at_
 export type HuntIocSortValue = typeof HUNT_IOC_SORTS[number];
 export const HUNT_IOC_SORT_DEFAULT: HuntIocSortValue = 'created_at_desc';
 
+/** What an escalating run opens: an incident draft an analyst validates, by default, or the incident itself. */
+export const HUNT_INCIDENT_MODES = ['draft', 'incident'] as const;
+export type HuntIncidentModeValue = typeof HUNT_INCIDENT_MODES[number];
+export const HUNT_INCIDENT_MODE_DEFAULT: HuntIncidentModeValue = 'draft';
+export const huntIncidentModeValue = (mode?: string | null): HuntIncidentModeValue => (mode === 'incident' ? 'incident' : HUNT_INCIDENT_MODE_DEFAULT);
+
 export interface HuntFormValues {
   name: string;
   description: string;
@@ -714,6 +721,7 @@ export interface HuntFormValues {
   benign_patterns: string;
   escalation_threshold: number | string;
   escalate_manual_runs: boolean;
+  hunt_incident_mode: HuntIncidentModeValue;
   hunt_max_results: number | string;
   huntTargets: FieldOption[];
   huntTechniques: FieldOption[];
@@ -746,6 +754,7 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   benign_patterns: '',
   escalation_threshold: HUNT_DEFAULT_ESCALATION_THRESHOLD,
   escalate_manual_runs: false,
+  hunt_incident_mode: HUNT_INCIDENT_MODE_DEFAULT,
   hunt_max_results: '',
   huntTargets: [],
   huntTechniques: [],
@@ -833,6 +842,7 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     benign_patterns: parseBenignPatterns(values.benign_patterns),
     escalation_threshold: toInteger(values.escalation_threshold, HUNT_DEFAULT_ESCALATION_THRESHOLD),
     escalate_manual_runs: values.escalate_manual_runs,
+    hunt_incident_mode: values.hunt_incident_mode,
     hunt_max_results: toInteger(values.hunt_max_results, null),
     huntTargets: optionValues(values.huntTargets),
     huntTechniques: optionValues(values.huntTechniques),
@@ -872,6 +882,7 @@ export const HUNT_EDITABLE_KEYS = [
   'benign_patterns',
   'escalation_threshold',
   'escalate_manual_runs',
+  'hunt_incident_mode',
   'hunt_max_results',
   'huntTargets',
   'huntTechniques',
