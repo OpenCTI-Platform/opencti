@@ -36,6 +36,7 @@ import { getConnectorQueueSize } from '../modules/connector/connector-rabbitmq';
 import { loadCreator } from '../database/members';
 import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { findIngestionLogsForFeed } from '../modules/ingestion/ingestion-common';
+import { ingestionHealthFieldResolvers } from '../modules/ingestionHealth/ingestionHealth-checks';
 
 const connectorResolvers = {
   Query: {
@@ -60,6 +61,7 @@ const connectorResolvers = {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
   },
   Synchronizer: {
+    ...ingestionHealthFieldResolvers,
     user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
     toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
