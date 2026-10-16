@@ -102,6 +102,20 @@ describe('SelectEntitiesToCoverStep-utils', () => {
       expect(buildCoveredEntitiesFilters(entity, 'scr-1')).toContainEqual(alreadyCoveredFilter);
     });
 
+    it('should exclude the given entity ids', () => {
+      expect(buildCoveredEntitiesFilters(nonContainerEntity, 'scr-1', ['id1', 'id2'])).toContainEqual({
+        key: 'ids',
+        operator: 'not_eq',
+        mode: 'or',
+        values: ['id1', 'id2'],
+      });
+    });
+
+    it('should not exclude any id when the list is empty', () => {
+      const filters = buildCoveredEntitiesFilters(nonContainerEntity, 'scr-1', []);
+      expect(filters.some((f) => f.key === 'ids')).toBe(false);
+    });
+
     it('should not exclude anything when no result is given', () => {
       const filters = buildCoveredEntitiesFilters(nonContainerEntity);
       expect(filters.some((f) => f.operator === 'not_eq')).toBe(false);
