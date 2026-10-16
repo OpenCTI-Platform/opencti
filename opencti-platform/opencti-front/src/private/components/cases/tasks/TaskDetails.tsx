@@ -119,7 +119,7 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
                 />
               </Security>
               <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }}>
-                {t_i18n('Its completion sets the containment date in the timeline of the case')}
+                {t_i18n('Its completion sets the Containment headline date of the case timeline')}
               </Text>
             </Grid>
           )}

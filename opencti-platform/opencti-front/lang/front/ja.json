@@ -2229,7 +2229,7 @@
   "Indicator validity": "インジケータの有効期間",
   "Infrastructure seen": "インフラストラクチャの観測",
   "Investigation step": "調査ステップ",
-  "Its completion sets the containment date in the timeline of the case": "このタスクの完了日がケースのタイムラインの封じ込め日になります",
+  "Its completion sets the Containment headline date of the case timeline": "このタスクの完了日がケースのタイムラインの主要な日付「封じ込め」になります",
   "Lane": "レーン",
   "Lanes": "レーン",
   "Lanes ({count})": "レーン ({count})",

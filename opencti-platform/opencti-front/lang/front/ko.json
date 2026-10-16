@@ -2229,7 +2229,7 @@
   "Indicator validity": "지표 유효 기간",
   "Infrastructure seen": "인프라 관찰됨",
   "Investigation step": "조사 단계",
-  "Its completion sets the containment date in the timeline of the case": "이 작업의 완료 시점이 케이스 타임라인의 봉쇄 날짜가 됩니다",
+  "Its completion sets the Containment headline date of the case timeline": "이 작업의 완료 시점이 케이스 타임라인의 주요 날짜 '봉쇄'가 됩니다",
   "Lane": "레인",
   "Lanes": "레인",
   "Lanes ({count})": "레인 ({count})",

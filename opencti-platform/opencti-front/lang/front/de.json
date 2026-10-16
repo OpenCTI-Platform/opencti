@@ -2229,7 +2229,7 @@
   "Indicator validity": "Gültigkeit des Indikators",
   "Infrastructure seen": "Infrastruktur gesehen",
   "Investigation step": "Ermittlungsschritt",
-  "Its completion sets the containment date in the timeline of the case": "Ihr Abschluss legt das Eindämmungsdatum in der Zeitleiste des Falls fest",
+  "Its completion sets the Containment headline date of the case timeline": "Ihr Abschluss setzt das Schlüsseldatum Eindämmung der Zeitleiste des Falls",
   "Lane": "Spur",
   "Lanes": "Spuren",
   "Lanes ({count})": "Spuren ({count})",

@@ -2229,7 +2229,7 @@
   "Indicator validity": "Validité de l'indicateur",
   "Infrastructure seen": "Infrastructure observée",
   "Investigation step": "Étape d'investigation",
-  "Its completion sets the containment date in the timeline of the case": "Sa réalisation fixe la date de confinement dans la chronologie du dossier",
+  "Its completion sets the Containment headline date of the case timeline": "Sa réalisation fixe la date clé Confinement de la chronologie du dossier",
   "Lane": "Couloir",
   "Lanes": "Couloirs",
   "Lanes ({count})": "Couloirs ({count})",

@@ -2229,7 +2229,7 @@
   "Indicator validity": "Срок действия индикатора",
   "Infrastructure seen": "Инфраструктура замечена",
   "Investigation step": "Этап расследования",
-  "Its completion sets the containment date in the timeline of the case": "Дата ее выполнения становится датой сдерживания в хронологии дела",
+  "Its completion sets the Containment headline date of the case timeline": "Дата ее выполнения становится ключевой датой «Сдерживание» в хронологии дела",
   "Lane": "Дорожка",
   "Lanes": "Дорожки",
   "Lanes ({count})": "Дорожки ({count})",

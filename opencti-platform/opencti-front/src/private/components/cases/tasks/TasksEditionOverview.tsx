@@ -335,7 +335,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               label={t_i18n('This task completes the containment')}
               containerstyle={fieldSpacingContainerStyle}
               onChange={editor.changeField}
-              helpertext={t_i18n('Its completion sets the containment date in the timeline of the case')}
+              helpertext={t_i18n('Its completion sets the Containment headline date of the case timeline')}
             />
           )}
           <ObjectMarkingField
