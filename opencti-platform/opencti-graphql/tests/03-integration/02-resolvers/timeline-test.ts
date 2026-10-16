@@ -24,6 +24,8 @@ import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
 import { acknowledgeTimelineRegeneration, claimDueTimelineRegenerations, enqueueTimelineRegeneration } from '../../../src/modules/timeline/timeline-queue';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
+import { findHistory } from '../../../src/domain/log';
+import { FilterMode } from '../../../src/generated/graphql';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
@@ -717,6 +719,13 @@ describe('Incident and case timeline', () => {
         await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: containmentTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
         await queryAsAdminWithSuccess({ query: TASK_FIELD_PATCH, variables: { id: switchTaskId, input: [{ key: 'x_opencti_workflow_id', value: [taskStatusIds[1]] }] } });
         await queryAsAdminWithSuccess({ query: INCIDENT_FIELD_PATCH, variables: { id: closedIncidentId, input: [{ key: 'x_opencti_workflow_id', value: [incidentStatusIds[1]] }] } });
+        // The closure is read from the history of the incident, which the history manager writes from the stream asynchronously
+        await awaitUntilCondition(async () => {
+          const logs = await findHistory(testContext, ADMIN_USER, {
+            filters: { mode: FilterMode.And, filterGroups: [], filters: [{ key: ['context_data.id'], values: [closedIncidentId] }, { key: ['event_scope'], values: ['update'] }] },
+          });
+          return logs.edges.some((edge) => (edge?.node.context_data?.history_changes ?? []).some((change) => change?.field?.includes('x_opencti_workflow_id')));
+        }, 30000, { message: 'The closure of the incident was not written to its history in time' });
         await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: containmentCaseId } });
       });
 
