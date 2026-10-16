@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import conf, { booleanConf } from '../../config/conf';
 import { ValidationError } from '../../config/errors';
-import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationStatus } from '../../generated/graphql';
+import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type HuntNativeQuery } from './hunt-types';
@@ -149,20 +149,6 @@ export const truncate = (value: string, maxLength: number) => {
     return value;
   }
   return `${value.substring(0, Math.max(0, maxLength - 3))}...`;
-};
-
-/** Status of a technique from the counts of its emulation runs: one completed run with hits proves the detection. */
-export const techniqueValidationStatus = (counts: { runs: number; detected: number; active: number; completed: number }): HuntTechniqueValidationStatus => {
-  if (counts.runs === 0) {
-    return HuntTechniqueValidationStatus.NotValidated;
-  }
-  if (counts.detected > 0) {
-    return HuntTechniqueValidationStatus.Validated;
-  }
-  if (counts.active > 0) {
-    return HuntTechniqueValidationStatus.InProgress;
-  }
-  return counts.completed > 0 ? HuntTechniqueValidationStatus.NotDetected : HuntTechniqueValidationStatus.NotValidated;
 };
 
 // Secrets and personal data a telemetry value can carry, masked before a preview is stored whatever the connector sent.

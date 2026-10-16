@@ -265,7 +265,7 @@ export class TelemetryMeterManager {
   // Number of playbook AI agent component runs
   playbookAiAgentRunCount = 0;
 
-  // Hunt runs started, broken down by trigger (manual, schedule, standing, playbook, emulation, preview, retry)
+  // Hunt runs started, broken down by trigger (manual, schedule, standing, pir, playbook, preview, retry)
   huntRunItems: DimensionalGaugeItem[] = [];
 
   // Hunt run verdicts set by analysts or agents, broken down by verdict

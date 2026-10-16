@@ -70,6 +70,6 @@ Once active, **Run now** runs the hunt on its platforms, and **Preview the query
 
 - **Generate with AI** (Enterprise Edition, XTM One), in **Create a hunt**: **Plan with AI**, next to the hunt type, proposes the whole hunt from its name - or, on an empty form, from a few words about what to hunt: the hypothesis, the description, the Sigma rule, the observables to extract, benign patterns and techniques. Every field the planner can fill also has its own **Generate with AI**. Each proposal is shown before anything changes: edit it, **Accept** it into the form, or **Dismiss** it. See [Generate with AI](hunts.md#generate-with-ai).
 - **Plan a hunt with AI** (Enterprise Edition, XTM One) writes the hypothesis, the Sigma rule and the observables to extract from hits, based on the threats, techniques, reports or indicators you pick. The proposal lands in a draft workspace you review; validating the draft creates the hunt as a **Draft**, and it runs once you activate it.
-- **Import a hunt pack** creates the hunts of a pack file as drafts; **Browse XTM Hub** opens the hunt packs shared on the XTM Hub.
+- **Import a hunt pack** creates the hunts of a pack file as drafts.
 
 See [Hunts](hunts.md#ai-assistance) and [Hunt packs](hunts.md#hunt-packs).

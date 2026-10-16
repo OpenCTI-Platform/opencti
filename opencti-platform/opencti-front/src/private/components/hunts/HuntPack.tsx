@@ -1,4 +1,4 @@
-import React, { InputHTMLAttributes, useContext, useRef, useState } from 'react';
+import React, { InputHTMLAttributes, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import { FileDownloadOutlined, FileUploadOutlined } from '@mui/icons-material';
@@ -10,8 +10,6 @@ import { useFormatter } from '../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
-import { UserContext } from '../../../utils/hooks/useAuth';
-import { isNotEmptyField } from '../../../utils/utils';
 import { useDataTableContext } from '../../../components/dataGrid/components/DataTableContext';
 import { HuntPackExportQuery$data } from './__generated__/HuntPackExportQuery.graphql';
 import { HuntPackImportMutation, HuntPackImportMutation$data } from './__generated__/HuntPackImportMutation.graphql';
@@ -221,26 +219,14 @@ export const HuntPackExportButton = ({ ids, selectionOptions = {} }: HuntPackExp
   );
 };
 
-/** The hunt packs page of the XTM Hub for this platform, or null when the hub is not reachable. */
-export const useHuntPackHubUrl = (): string | null => {
-  const { settings, isXTMHubAccessible } = useContext(UserContext);
-  if (!isXTMHubAccessible || !isNotEmptyField(settings?.platform_xtmhub_url)) {
-    return null;
-  }
-  return `${settings?.platform_xtmhub_url}/redirect/opencti_hunt_packs?platform_id=${settings?.id}`;
-};
-
 interface HuntPackImportButtonProps {
   paginationOptions: Record<string, unknown>;
-  /** The list of hunts offers the XTM Hub in its Quick start menu instead. */
-  showHubLink?: boolean;
 }
 
-export const HuntPackImportButton = ({ paginationOptions, showHubLink = true }: HuntPackImportButtonProps) => {
+export const HuntPackImportButton = ({ paginationOptions }: HuntPackImportButtonProps) => {
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [commitImport, importing] = useApiMutation<HuntPackImportMutation>(huntPackImportMutation);
-  const importFromHubUrl = useHuntPackHubUrl();
 
   const handleImport: InputHTMLAttributes<HTMLInputElement>['onChange'] = (event) => {
     const importedFile = event.target?.files?.[0];
@@ -285,11 +271,6 @@ export const HuntPackImportButton = ({ paginationOptions, showHubLink = true }: 
         </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
-      {showHubLink && importFromHubUrl && (
-        <Button gradient href={importFromHubUrl} target="_blank" rel="noopener noreferrer" title={t_i18n('Import from XTM Hub')}>
-          {t_i18n('Import from XTM Hub')}
-        </Button>
-      )}
     </>
   );
 };
