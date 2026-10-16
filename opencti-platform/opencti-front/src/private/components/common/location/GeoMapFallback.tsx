@@ -7,6 +7,7 @@ import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { isValidCoordinates } from '../../../../utils/position.utils';
 import { loadCountries, type CountriesCollection } from './countries';
+import { loadCountryNames } from './countryNames';
 import type { Coordinates, MapProps } from './GeoMap';
 import { polygonsOf, simplifyCountries } from './simplifyCountries';
 
@@ -27,7 +28,7 @@ const SHARED_GEOMETRY_OPTIONS: L.PolylineOptions = { smoothFactor: 0 };
 
 interface LabelCandidate {
   iso3: string;
-  name: string;
+  fileName?: string;
   anchor: L.LatLng;
   area: number;
   largestPolygonArea: number;
@@ -58,7 +59,7 @@ const toLabelCandidates = (collection: CountriesCollection): LabelCandidate[] =>
   const cached = labelCandidatesCache.get(collection);
   if (cached) return cached;
   const byIso3 = new Map<string, LabelCandidate>();
-  for (const { geometry, properties } of collection.features.filter((feature) => feature.properties.NAME && feature.properties.ISO2 !== '')) {
+  for (const { geometry, properties } of collection.features.filter((feature) => feature.properties.ISO2 !== '')) {
     const hasLabelPoint = Number.isFinite(properties.LAT) && Number.isFinite(properties.LON);
     for (const [outer, ...holes] of polygonsOf(geometry)) {
       const outerPoints = projectRing(outer);
@@ -66,12 +67,12 @@ const toLabelCandidates = (collection: CountriesCollection): LabelCandidate[] =>
       const anchor = hasLabelPoint ? L.latLng(properties.LAT, properties.LON) : L.CRS.EPSG3857.pointToLatLng(L.bounds(outerPoints).getCenter(), 0);
       const current = byIso3.get(properties.ISO3);
       if (!current) {
-        byIso3.set(properties.ISO3, { iso3: properties.ISO3, name: properties.NAME, anchor, area: polygonArea, largestPolygonArea: polygonArea });
+        byIso3.set(properties.ISO3, { iso3: properties.ISO3, fileName: properties.NAME, anchor, area: polygonArea, largestPolygonArea: polygonArea });
       } else {
         current.area += polygonArea;
         if (polygonArea > current.largestPolygonArea) {
           current.largestPolygonArea = polygonArea;
-          current.name = properties.NAME;
+          current.fileName = properties.NAME;
           current.anchor = anchor;
         }
       }
@@ -167,9 +168,10 @@ const GeoMapFallback = ({
 
     let borderLayer: L.GeoJSON | null = null;
     let candidates: LabelCandidate[] | null = null;
+    let names: Map<string, string> | null | undefined;
 
     const renderLabels = () => {
-      if (!candidates) return;
+      if (!candidates || names === undefined) return;
       const currentZoom = map.getZoom();
       const scale = 2 ** currentZoom;
       const font = `600 ${LABEL_FONT_SIZE}px ${fontFamily}`;
@@ -183,7 +185,9 @@ const GeoMapFallback = ({
         .sort((a, b) => Number(colorByIso3.has(b.iso3)) - Number(colorByIso3.has(a.iso3)) || b.area - a.area);
       labels.clearLayers();
       for (const candidate of ordered) {
-        const { text, width, height } = layoutLabel(candidate.name, font);
+        const name = names ? names.get(candidate.iso3) : candidate.fileName;
+        if (!name) continue;
+        const { text, width, height } = layoutLabel(name, font);
         const point = map.project(candidate.anchor, currentZoom);
         const box = L.bounds(
           [point.x - width / 2 - LABEL_SPACING, point.y - height / 2 - LABEL_SPACING],
@@ -250,6 +254,11 @@ const GeoMapFallback = ({
       .catch(() => {
         if (!released) setIsLoadFailed(true);
       });
+    loadCountryNames().then((loadedNames) => {
+      if (released) return;
+      names = loadedNames;
+      renderLabels();
+    });
     for (const { position, iconUrl } of markers ?? []) {
       L.marker([position.latitude, position.longitude], {
         icon: L.icon({ iconUrl, iconSize: [MARKER_SIZE, MARKER_SIZE], iconAnchor: [MARKER_SIZE / 2, MARKER_SIZE / 2] }),
