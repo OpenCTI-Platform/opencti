@@ -777,35 +777,39 @@ const objectAddedRule: TimelineRule = {
   id: 'object-added',
   label: 'Objects added to the case, read from the history',
   kinds: ['object_added'],
-  derive: (input) => input.history.flatMap((entry): DerivedTimelineEvent[] => {
-    if (entry.entity_id !== input.container.id) return [];
-    const time = toTimelineTime(entry.timestamp);
-    if (time === null) return [];
-    const added = entry.changes
-      .filter((change) => changeField(change) === 'objects')
-      .flatMap((change) => change.added)
-      .filter((a) => !!a.raw);
-    if (added.length === 0) return [];
-    const base = {
-      rule_id: 'object-added',
-      kind: 'object_added' as const,
-      lane: 'knowledge' as const,
-      event_time: iso(time),
-      time_precision: 'exact' as const,
-      markings: mergeMarkings(entry.markings),
-      creator_ids: entry.user_id ? [entry.user_id] : [],
-    };
-    if (added.length > MAX_DETAILED_OBJECT_ADDITIONS) {
-      return [{ ...base, discriminator: entry.id, element_id: null, element_type: null, name: `${added.length} objects added` }];
-    }
-    return added.map((object) => ({
-      ...base,
-      discriminator: `${entry.id}|${object.raw}`,
-      element_id: object.raw,
-      element_type: null,
-      name: `${object.name ?? object.raw} added`,
-    }));
-  }),
+  derive: (input) => {
+    // The history names the added objects by id only: the type comes from the objects still in the case
+    const scopeTypes = new Map([...input.entities, ...input.relationships].map((element) => [element.id, element.entity_type]));
+    return input.history.flatMap((entry): DerivedTimelineEvent[] => {
+      if (entry.entity_id !== input.container.id) return [];
+      const time = toTimelineTime(entry.timestamp);
+      if (time === null) return [];
+      const added = entry.changes
+        .filter((change) => changeField(change) === 'objects')
+        .flatMap((change) => change.added)
+        .filter((a) => !!a.raw);
+      if (added.length === 0) return [];
+      const base = {
+        rule_id: 'object-added',
+        kind: 'object_added' as const,
+        lane: 'knowledge' as const,
+        event_time: iso(time),
+        time_precision: 'exact' as const,
+        markings: mergeMarkings(entry.markings),
+        creator_ids: entry.user_id ? [entry.user_id] : [],
+      };
+      if (added.length > MAX_DETAILED_OBJECT_ADDITIONS) {
+        return [{ ...base, discriminator: entry.id, element_id: null, element_type: null, name: `${added.length} objects added` }];
+      }
+      return added.map((object) => ({
+        ...base,
+        discriminator: `${entry.id}|${object.raw}`,
+        element_id: object.raw,
+        element_type: scopeTypes.get(object.raw) ?? null,
+        name: `${object.name ?? object.raw} added`,
+      }));
+    });
+  },
 };
 
 const relationCreatedRule: TimelineRule = {

@@ -240,6 +240,13 @@ const CONTAINER_TIMELINE = gql`
     }
   }
 `;
+const CONTAINER_TIMELINE_ELEMENTS = gql`
+  query ContainerTimelineElements($id: String!) {
+    containerTimeline(id: $id, includeHidden: true, first: 200) {
+      edges { node { id kind element { ... on BasicObject { id entity_type } ... on StixRelationship { id entity_type } } } }
+    }
+  }
+`;
 const CONTAINER_TIMELINE_BOUNDS = gql`
   query ContainerTimelineBounds($id: String!, $sources: [TimelineEventSource!]) {
     containerTimelineBounds(id: $id, sources: $sources) {
@@ -1368,6 +1375,22 @@ describe('Incident and case timeline', () => {
       const rows = (csv.data.containerTimelineExport as string).split('\r\n').filter((row) => row.length > 0);
       // The element and element_type columns carry the representative name (MITRE id and name) and the type of the attack pattern, never an internal id
       expect(rows.some((row) => row.includes(',[T9991] Timeline spearphishing,Attack-Pattern,'))).toBe(true);
+    });
+
+    it('should resolve the element of an event recorded without its type next to the elements of known types', async () => {
+      // An object added to a case is read from its history by id only: once it left the case, its type is unknown
+      const [malwareEvent] = await listTimeline(caseIncident.id, { kinds: ['malware_seen'], includeHidden: true });
+      const stored = await internalLoadById(testContext, SYSTEM_USER, malwareEvent.id) as unknown as { _index: string; internal_id: string };
+      await elUpdate(testContext, stored._index, stored.internal_id, { doc: { element_type: null } });
+      try {
+        const result = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_ELEMENTS, variables: { id: caseIncident.id } });
+        type ElementNode = { id: string; kind: string; element: { id: string; entity_type: string } | null };
+        const nodes: ElementNode[] = result.data.containerTimeline.edges.map(({ node }: { node: ElementNode }) => node);
+        expect(nodes.find((node) => node.id === malwareEvent.id)?.element).toEqual({ id: malware.id, entity_type: 'Malware' });
+        expect(nodes.find((node) => node.kind === 'technique_used')?.element).toEqual({ id: attackPatternId, entity_type: 'Attack-Pattern' });
+      } finally {
+        await elUpdate(testContext, stored._index, stored.internal_id, { doc: { element_type: 'Malware' } });
+      }
     });
 
     it('should only mark as editable the manual events of users who can update the container', async () => {

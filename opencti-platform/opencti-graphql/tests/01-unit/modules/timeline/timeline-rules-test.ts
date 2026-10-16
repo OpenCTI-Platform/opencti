@@ -490,6 +490,26 @@ describe('Timeline knowledge rules', () => {
       expect.objectContaining({ element_id: 'obj-b', name: 'obj-b added', discriminator: 'h-two|obj-b' }),
     ]);
   });
+
+  it('should give an added object the type it has in the case, none once it left the case', () => {
+    const input = buildInput({
+      entities: [element({ id: 'obj-a', entity_type: 'Indicator' })],
+      relationships: [element({ id: 'rel-b', entity_type: 'uses', relationship_type: 'uses' })],
+      history: [{
+        id: 'h-three',
+        timestamp: '2026-03-10T12:30:00.000Z',
+        event_scope: 'update',
+        entity_id: 'case-1',
+        entity_type: 'Case-Incident',
+        entity_name: 'x',
+        message: 'adds',
+        markings: [],
+        changes: [{ field: 'Case-Incident--objects', added: [{ raw: 'obj-a' }, { raw: 'rel-b' }, { raw: 'obj-gone' }], removed: [] }],
+      }],
+    });
+    const added = derive(input).filter((e) => e.kind === 'object_added');
+    expect(added.map((e) => [e.element_id, e.element_type])).toEqual([['obj-a', 'Indicator'], ['rel-b', 'uses'], ['obj-gone', null]]);
+  });
 });
 
 describe('Timeline open-ended windows', () => {

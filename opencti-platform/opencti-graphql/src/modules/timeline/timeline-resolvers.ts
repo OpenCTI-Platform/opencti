@@ -5,6 +5,7 @@ import { controlUserConfidenceAgainstElement } from '../../utils/confidence-leve
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreators } from '../../database/members';
+import { internalLoadById } from '../../database/middleware-loader';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_CREATED_BY } from '../../schema/general';
 import { isStixObject } from '../../schema/stixCoreObject';
@@ -69,13 +70,20 @@ const timelineResolvers: Resolvers = {
       return canChangeTimelineEvent(context, event);
     },
     annotatable: (event, _, context) => canChangeTimelineEvent(context, event),
-    element: (event, _, context) => {
+    element: async (event, _, context) => {
       // Only STIX elements belong to the element union: internal soft-check sources (hunt or investigation
       // runs) keep their id and type on the event but are not resolved here
-      if (!event.element_id || (event.element_type && !isStixObject(event.element_type) && !isStixRelationship(event.element_type))) {
+      const isStixElement = (type: string) => isStixObject(type) || isStixRelationship(type);
+      if (!event.element_id || (event.element_type && !isStixElement(event.element_type))) {
         return null;
       }
-      return context.batch.idsBatchLoader.load({ id: event.element_id, type: event.element_type ?? undefined });
+      if (event.element_type) {
+        return context.batch.idsBatchLoader.load({ id: event.element_id, type: event.element_type });
+      }
+      // An element without a type (an object no longer in the case, read from its history) stays out of the batch:
+      // the batch infers its indices from the types of all its elements and fails on a missing one
+      const element = await internalLoadById<BasicStoreEntity>(context, context.user as AuthUser, event.element_id);
+      return element && isStixElement(element.entity_type) ? element : null;
     },
     createdBy: (event, _, context) => loadThroughDenormalized(context, context.user, event, INPUT_CREATED_BY),
     objectMarking: (event, _, context) => context.batch.markingsBatchLoader.load(event),
