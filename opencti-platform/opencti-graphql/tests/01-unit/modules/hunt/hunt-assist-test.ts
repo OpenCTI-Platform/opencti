@@ -185,8 +185,9 @@ describe('Assistance of a hunt being written with XTM One', () => {
 
   it('should refuse an answer without the asked field and audit nothing', async () => {
     vi.mocked(callXtmAgent).mockResolvedValue(plannerAnswer({
+      hunt_type: 'infrastructure',
       sigma_rule: '',
-      native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr process=rundll32.exe' }],
+      native_queries: [{ platform: 'censys', language: 'fingerprint', query: 'fingerprints:\n  - kind: jarm\n    value: abc', pipeline: null }],
     }));
     const incomplete = await failureOf(assistHunt(testContext, ADMIN_USER, { fields: [HuntAssistField.SigmaRule], hypothesis: 'If APT-X is active', target_ids: ['threat-1'] }));
     expect(incomplete.message).toContain('answered without: sigma_rule');

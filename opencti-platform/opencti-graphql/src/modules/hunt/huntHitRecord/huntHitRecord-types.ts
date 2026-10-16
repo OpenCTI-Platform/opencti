@@ -9,7 +9,7 @@ interface HuntHitRecordAttributes {
   hunt_type?: string | null;
   hunt_source_kind?: string | null;
   hunt_technique_ids?: string[] | null;
-  // Null for a run without security platform
+  // Null for a hunt on the internet scanning services (no security platform)
   security_platform_id?: string | null;
   hit_key: string;
   // first_seen and last_seen (base attributes): when a run first found the hit, and when a run last found it, dated by

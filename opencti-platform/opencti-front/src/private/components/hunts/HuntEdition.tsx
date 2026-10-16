@@ -299,13 +299,15 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               autoPersistOnBlur={false}
               labelAction={<HuntAIAction request={{ kind: 'description' }} testId="hunt-description-generate" />}
             />
-            <HuntEntitiesField
-              name="scopePlatforms"
-              label={t_i18n('Security platforms (empty for all)')}
-              types={HUNT_SCOPE_TYPES}
-              helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
-              style={fieldSpacingContainerStyle}
-            />
+            {values.hunt_type !== 'infrastructure' && (
+              <HuntEntitiesField
+                name="scopePlatforms"
+                label={t_i18n('Security platforms (empty for all)')}
+                types={HUNT_SCOPE_TYPES}
+                helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
+                style={fieldSpacingContainerStyle}
+              />
+            )}
             <div style={fieldSpacingContainerStyle}>
               <HuntScheduleField />
             </div>
@@ -318,7 +320,14 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
                   type="number"
                   name="time_window_hours"
                   label={t_i18n('Time window (hours)')}
-                  helperText={<HuntHelp text={t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')} href={HUNT_DOCS.runHunt} />}
+                  helperText={(
+                    <HuntHelp
+                      text={values.hunt_type === 'infrastructure'
+                        ? t_i18n('The period of internet scan data each run searches, ending when it starts, for example 168 for 7 days')
+                        : t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')}
+                      href={HUNT_DOCS.runHunt}
+                    />
+                  )}
                   fullWidth
                   required
                 />

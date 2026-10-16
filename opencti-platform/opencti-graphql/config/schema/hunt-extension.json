@@ -18,8 +18,8 @@
     "description": { "type": "string" },
     "hypothesis": { "type": "string", "description": "The falsifiable hypothesis the hunt tests." },
     "hunt_type": {
-      "enum": ["telemetry", "indicators"],
-      "description": "telemetry: a detection rule searched in the telemetry of a security platform; indicators: indicator and observable values looked up."
+      "enum": ["telemetry", "indicators", "infrastructure"],
+      "description": "telemetry: a detection rule searched in the telemetry of a security platform; indicators: indicator and observable values looked up; infrastructure: internet-facing infrastructure searched."
     },
     "hunt_status": { "enum": ["draft", "active", "paused", "retired"] },
     "hunt_source_kind": { "enum": ["analyst", "agent", "hub"], "description": "Who wrote the hunt: an analyst, an agent or the XTM Hub." },

@@ -123,7 +123,7 @@ describe('Hunt readiness sentences', () => {
     expect(renderHuntMessage(HUNT_MESSAGES.iocCount, { count: 12 })).toBe('12 values to look for');
     expect(renderHuntMessage(HUNT_MESSAGES.sigmaInvalid, {})).toBe('Invalid Sigma rule: {errors}');
     expect(huntLogicError({ hunt_type: 'telemetry' })?.message).toBe('Add a Sigma rule or a native query');
-    expect(huntLogicError({ hunt_type: 'telemetry', native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr' }] })).toBeNull();
+    expect(huntLogicError({ hunt_type: 'infrastructure' })?.message).toBe('Add a fingerprint document for an internet scanning service');
   });
 
   it('should list at most three names', () => {

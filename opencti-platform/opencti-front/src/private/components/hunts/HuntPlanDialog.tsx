@@ -176,7 +176,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
               <Text variant="content-compact">{t_i18n('Native queries override the Sigma translation on their platform.')}</Text>
               {(current.hunt.native_queries ?? []).map((nativeQuery) => (
                 <div key={`${nativeQuery.platform}-${nativeQuery.language}`} style={{ marginTop: theme.spacing(1) }}>
-                  <Text variant="content-compact">{`${huntPlatformLabel(nativeQuery.platform)} - ${huntQueryLanguageLabel(nativeQuery.language)}`}</Text>
+                  <Text variant="content-compact">{`${huntPlatformLabel(nativeQuery.platform, t_i18n)} - ${huntQueryLanguageLabel(nativeQuery.language, t_i18n)}`}</Text>
                   <CodeBlock language={prismLanguageOf(nativeQuery.language)} code={nativeQuery.query} customHeight="auto" wrapLongLines showLineNumbers={false} />
                 </div>
               ))}

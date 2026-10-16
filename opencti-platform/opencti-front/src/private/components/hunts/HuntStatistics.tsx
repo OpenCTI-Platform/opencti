@@ -14,7 +14,7 @@ import WidgetDonut from '../../../components/dashboard/WidgetDonut';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import type { Theme } from '../../../components/Theme';
 import { HuntStatisticsQuery } from './__generated__/HuntStatisticsQuery.graphql';
-import { huntVerdictLabel } from './hunt-utils';
+import { HUNT_INFRASTRUCTURE_KEY, huntPlatformLabel, huntVerdictLabel, isHuntInfrastructurePlatform } from './hunt-utils';
 
 export const huntStatisticsQuery = graphql`
   query HuntStatisticsQuery($huntId: ID, $startDate: DateTime, $endDate: DateTime, $interval: String) {
@@ -80,8 +80,12 @@ export const huntHitsSeries = (statistics: HuntStatisticsData, t_i18n: Translate
 
 export const huntHasTimeSeries = (statistics: HuntStatisticsData) => statistics.runs_over_time.some((point) => point.value > 0);
 
-// An empty label is a security platform the reader cannot see anymore (deleted or restricted)
-const huntStatisticsPlatformLabel = (label: string, t_i18n: Translate) => (label.length > 0 ? label : t_i18n('Unavailable security platform'));
+// An empty label is a security platform the reader cannot see anymore (deleted or restricted); the runs of the
+// internet scanning services come labelled with the platform of their service
+const huntStatisticsPlatformLabel = (label: string, t_i18n: Translate) => {
+  if (label === HUNT_INFRASTRUCTURE_KEY || isHuntInfrastructurePlatform(label)) return huntPlatformLabel(label, t_i18n);
+  return label.length > 0 ? label : t_i18n('Unavailable security platform');
+};
 
 export const huntPlatformSeries = (statistics: HuntStatisticsData, t_i18n: Translate) => [{
   name: t_i18n('Runs'),

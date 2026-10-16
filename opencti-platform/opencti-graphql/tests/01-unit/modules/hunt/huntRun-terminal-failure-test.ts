@@ -39,7 +39,6 @@ vi.mock('../../../../src/modules/hunt/hunt-lock', async (importOriginal) => ({
 vi.mock('../../../../src/modules/hunt/hunt-dispatch', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-dispatch')>(),
   listHuntConnectors: vi.fn(async () => []),
-  resolveHuntConnectorTargets: vi.fn(async () => []),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-stats', async (importOriginal) => ({
@@ -195,7 +194,7 @@ describe('Translation of the current logic of a hunt', () => {
 
   it('should refuse Run now for a logic that failed to translate for good, before any run is created', async () => {
     vi.mocked(storeLoadById).mockResolvedValue(hunt as never);
-    vi.mocked(topEntitiesList).mockResolvedValue([{ ...failedPreview, security_platform_id: 'platform-secops' }] as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([failedPreview] as never);
     await expect(startHuntRuns(testContext, ADMIN_USER, 'hunt-1', {}))
       .rejects.toThrow('The hunt cannot run: Google SecOps Hunt cannot translate the hunt logic: HuntTranslationError: Sigma conversion failed: Invalid UDM field');
   });

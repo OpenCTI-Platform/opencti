@@ -64,6 +64,8 @@ import {
   isHuntLogicDerived,
   isHuntLogicLockedEntity,
   normalizeNativeQueries,
+  HUNT_PLATFORM_DEFAULT_LANGUAGE,
+  isHuntInfrastructurePlatform,
 } from './hunt-utils';
 
 describe('Hunt utils', () => {
@@ -82,6 +84,11 @@ describe('Hunt utils', () => {
       expect(huntConnectorSetupDocumentation('crowdstrike-logscale-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#crowdstrike-logscale');
       expect(huntConnectorSetupDocumentation('microsoft-defender-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#microsoft-defender-xdr');
       expect(huntConnectorSetupDocumentation('sentinelone-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#sentinelone');
+      expect(huntConnectorSetupDocumentation('censys-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#censys');
+      expect(huntConnectorSetupDocumentation('silentpush-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#silent-push');
+      expect(huntConnectorSetupDocumentation('urlscan-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#urlscan');
+      expect(huntConnectorSetupDocumentation('cymru-scout-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#team-cymru-scout');
+      expect(huntConnectorSetupDocumentation('shodan-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#shodan');
     });
 
     it('should open Before you start for any other hunt connector', () => {
@@ -91,19 +98,33 @@ describe('Hunt utils', () => {
   });
 
   describe('huntPlatformLabel() and huntQueryLanguageLabel()', () => {
+    const t = (key: string) => `t:${key}`;
     it('should name the platforms and languages instead of showing their slugs', () => {
-      expect(huntPlatformLabel('microsoft-sentinel')).toEqual('Microsoft Sentinel');
-      expect(huntPlatformLabel('microsoft-defender')).toEqual('Microsoft Defender XDR');
-      expect(huntPlatformLabel('crowdstrike-logscale')).toEqual('CrowdStrike Falcon LogScale');
-      expect(huntQueryLanguageLabel('esql')).toEqual('ES|QL');
-      expect(huntQueryLanguageLabel('yara-l')).toEqual('YARA-L');
-      expect(huntPlatformLabel('sentinelone')).toEqual('SentinelOne Singularity');
-      expect(huntQueryLanguageLabel('powerquery')).toEqual('SentinelOne PowerQuery');
+      expect(huntPlatformLabel('microsoft-sentinel', t)).toEqual('Microsoft Sentinel');
+      expect(huntPlatformLabel('microsoft-defender', t)).toEqual('Microsoft Defender XDR');
+      expect(huntPlatformLabel('crowdstrike-logscale', t)).toEqual('CrowdStrike Falcon LogScale');
+      expect(huntQueryLanguageLabel('esql', t)).toEqual('ES|QL');
+      expect(huntQueryLanguageLabel('yara-l', t)).toEqual('YARA-L');
+      expect(huntPlatformLabel('sentinelone', t)).toEqual('SentinelOne Singularity');
+      expect(huntQueryLanguageLabel('powerquery', t)).toEqual('SentinelOne PowerQuery');
+    });
+    it('should name the internet scanning services and translate the fingerprint language only', () => {
+      expect(huntPlatformLabel('censys', t)).toEqual('Censys Platform');
+      expect(huntPlatformLabel('silentpush', t)).toEqual('Silent Push');
+      expect(huntPlatformLabel('urlscan', t)).toEqual('urlscan.io');
+      expect(huntPlatformLabel('cymru-scout', t)).toEqual('Team Cymru Scout');
+      expect(huntPlatformLabel('shodan', t)).toEqual('Shodan');
+      expect(huntPlatformLabel('internet-scanning', t)).toEqual('t:Internet scanning service');
+      expect(huntQueryLanguageLabel('fingerprint', t)).toEqual('t:Internet fingerprints');
+      expect(HUNT_PLATFORM_DEFAULT_LANGUAGE.shodan).toEqual('fingerprint');
+      expect(isHuntInfrastructurePlatform('urlscan')).toBe(true);
+      expect(isHuntInfrastructurePlatform('splunk')).toBe(false);
+      expect(isHuntInfrastructurePlatform(null)).toBe(false);
     });
     it('should keep an unknown slug and return nothing without a value', () => {
-      expect(huntPlatformLabel('new-platform')).toEqual('new-platform');
-      expect(huntQueryLanguageLabel(null)).toEqual('');
-      expect(huntPlatformLabel(undefined)).toEqual('');
+      expect(huntPlatformLabel('new-platform', t)).toEqual('new-platform');
+      expect(huntQueryLanguageLabel(null, t)).toEqual('');
+      expect(huntPlatformLabel(undefined, t)).toEqual('');
     });
   });
 
@@ -131,11 +152,17 @@ describe('Hunt utils', () => {
   });
 
   describe('hasHuntLogic()', () => {
-    it('should require a Sigma rule or a native query for detection rule hunts', () => {
+    it('should require a Sigma rule or a telemetry native query for telemetry hunts', () => {
       expect(hasHuntLogic({ hunt_type: 'telemetry', sigma_rule: ' ' })).toBe(false);
       expect(hasHuntLogic({ hunt_type: 'telemetry', sigma_rule: 'title: x' })).toBe(true);
-      expect(hasHuntLogic({ hunt_type: 'telemetry', native_queries: [] })).toBe(false);
+      expect(hasHuntLogic({ hunt_type: 'telemetry', native_queries: [{ platform: 'censys', language: 'fingerprint' }] })).toBe(false);
       expect(hasHuntLogic({ hunt_type: 'telemetry', native_queries: [{ platform: 'splunk' }] })).toBe(true);
+    });
+
+    it('should require a fingerprint document of an internet scanning service for infrastructure hunts', () => {
+      expect(hasHuntLogic({ hunt_type: 'infrastructure', sigma_rule: 'title: x' })).toBe(false);
+      expect(hasHuntLogic({ hunt_type: 'infrastructure', native_queries: [{ platform: 'splunk', language: 'spl' }] })).toBe(false);
+      expect(hasHuntLogic({ hunt_type: 'infrastructure', native_queries: [{ platform: 'shodan', language: 'fingerprint' }] })).toBe(true);
     });
 
     it('should let the creation form activate an indicator hunt whose only logic is its filter', () => {
@@ -278,18 +305,18 @@ describe('Hunt utils', () => {
       ]);
     });
 
-    it('should keep trigger filters for standing hunts and drop the Sigma rules of indicator hunts', () => {
+    it('should keep trigger filters for standing hunts and drop telemetry fields of infrastructure hunts', () => {
       const input = toHuntAddInput({
         ...emptyHuntFormValues(),
-        name: 'Indicators',
-        hunt_type: 'indicators',
+        name: 'Infra',
+        hunt_type: 'infrastructure',
         sigma_rule: 'title: ignored',
         scopePlatforms: [{ value: 'platform-1', label: 'Splunk' }],
         schedule_mode: 'standing',
       }, '{"mode":"and","filters":[{"key":["entity_type"],"values":["Report"]}],"filterGroups":[]}');
       expect(input.sigma_rule).toEqual('');
       expect(input.sigma_rules).toEqual([]);
-      expect(input.hunt_scope).toContain('platform-1');
+      expect(input.hunt_scope).toEqual('');
       expect(input.hunt_schedule).toEqual('standing');
       expect(input.trigger_filters).toContain('Report');
     });
@@ -456,6 +483,7 @@ describe('Hunt utils', () => {
       expect(isHuntLogicLockedEntity(derived)).toBe(false);
       expect(isHuntLogicDerived(derived, 'telemetry')).toBe(true);
       expect(isHuntLogicDerived(derived, 'indicators')).toBe(true);
+      expect(isHuntLogicDerived(derived, 'infrastructure')).toBe(false);
       expect(isHuntLogicDerived({ ...derived, rules: [] }, 'telemetry')).toBe(false);
     });
 
@@ -476,7 +504,7 @@ describe('Hunt utils', () => {
       const connectors = [
         { platform: 'splunk', supports_indicators: true, securityPlatform: { id: 'sp-1' } },
         { platform: 'elastic-security', supports_indicators: false, securityPlatform: { id: 'sp-2' } },
-        { platform: 'splunk', supports_indicators: true, securityPlatform: null },
+        { platform: 'censys', supports_indicators: false, securityPlatform: null },
       ];
       expect(countHuntPlatforms(connectors, 'telemetry')).toEqual(2);
       expect(countHuntPlatforms(connectors, 'indicators')).toEqual(1);
@@ -492,11 +520,15 @@ describe('Hunt utils', () => {
         .toEqual('You are hunting APT28 on Splunk - SOC: the hunt runs the detection rule "Encoded PowerShell" on your telemetry over the last 36 hours.');
       expect(buildHuntSummary({ ...input, indicatorsCount: 0, availablePlatforms: 0 }, t)[0])
         .toEqual('You are hunting APT28 on your security platforms (no hunt connector can run it yet): the hunt searches your telemetry for the indicators and observables you add below over the last 7 days.');
+      expect(buildHuntSummary({ ...input, huntType: 'infrastructure', escalationThreshold: 1 }, t)).toEqual([
+        'You are hunting the infrastructure of APT28 on the internet: the hunt searches its fingerprints on every internet scanning service you connected, never on your telemetry.',
+        'From 1 hit, a run proposes an incident.',
+      ]);
     });
 
     it('should say what every hunt type needs and where it runs', () => {
-      expect(huntTypeLabel('indicators')).toEqual('Indicators');
-      expect(huntTypeLabel('telemetry')).toEqual('Detection rule (Sigma or native query)');
+      expect(huntTypeLabel('infrastructure')).toEqual('Internet infrastructure (outside-in)');
+      expect(huntTypeDescription('infrastructure')).toContain('not a Sigma rule or indicators');
       expect(huntTypeDescription('indicators')).toContain('no query language needed');
       expect(huntTypeDescription('telemetry')).toContain('Needs a Sigma rule or a native query');
       expect(formatHuntWindow(24, t)).toEqual('24 hours');
@@ -597,16 +629,16 @@ describe('Hunt utils', () => {
 
   it('should pick the preview connectors the dispatch would use', () => {
     const splunk = { supports_preview: true, platform: 'splunk', securityPlatform: { id: 'splunk-prod' } };
-    const unbound = { supports_preview: true, platform: 'splunk', securityPlatform: null };
+    const censys = { supports_preview: true, platform: 'censys', securityPlatform: null };
     // An unscoped telemetry hunt targets every security platform
     expect(isHuntPreviewConnector(splunk, 'telemetry', [])).toBe(true);
     expect(isHuntPreviewConnector(splunk, 'telemetry', ['splunk-prod'])).toBe(true);
     expect(isHuntPreviewConnector(splunk, 'telemetry', ['sentinel-prod'])).toBe(false);
-    expect(isHuntPreviewConnector(unbound, 'telemetry', [])).toBe(false);
+    expect(isHuntPreviewConnector(censys, 'telemetry', [])).toBe(false);
     expect(isHuntPreviewConnector({ ...splunk, supports_preview: false }, 'telemetry', [])).toBe(false);
-    // An indicator hunt needs a connector with indicator lookups
-    expect(isHuntPreviewConnector({ ...splunk, supports_indicators: true }, 'indicators', [])).toBe(true);
-    expect(isHuntPreviewConnector(splunk, 'indicators', [])).toBe(false);
+    // An infrastructure hunt runs on the connectors of the internet scanning services only
+    expect(isHuntPreviewConnector(censys, 'infrastructure', [])).toBe(true);
+    expect(isHuntPreviewConnector(splunk, 'infrastructure', [])).toBe(false);
   });
 
   it('should say why the hit count of a run with partial results is a lower bound', () => {
@@ -646,6 +678,7 @@ describe('Hunt utils', () => {
 describe('Observables to extract from hits', () => {
   it('should let every hunt type but indicator hunts name the observable types to extract', () => {
     expect(huntExtractsObservables('telemetry')).toBe(true);
+    expect(huntExtractsObservables('infrastructure')).toBe(true);
     // A hunt without a type is a detection rule hunt
     expect(huntExtractsObservables(null)).toBe(true);
     expect(huntExtractsObservables('indicators')).toBe(false);

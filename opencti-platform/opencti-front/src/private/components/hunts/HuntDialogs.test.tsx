@@ -185,4 +185,12 @@ describe('Run the hunt now', () => {
     });
     await waitFor(() => expect(screen.getByTestId('hunt-run-start-submit')).toBeEnabled());
   });
+
+  it('lets an infrastructure hunt run without looking up the connectors of a scope', async () => {
+    const { user } = testRender(<HuntRunStart hunt={{ ...hunt, hunt_type: 'infrastructure' }} />);
+    await user.click(screen.getByTestId('hunt-run-start'));
+    expect(screen.getByTestId('hunt-run-start-dialog')).toHaveTextContent('The hunt runs on every connected internet scanning service; each service gets its own run.');
+    expect(screen.getByTestId('hunt-run-start-dialog')).not.toHaveTextContent(/hunt connectors of its scope/);
+    expect(screen.getByTestId('hunt-run-start-submit')).toBeEnabled();
+  });
 });

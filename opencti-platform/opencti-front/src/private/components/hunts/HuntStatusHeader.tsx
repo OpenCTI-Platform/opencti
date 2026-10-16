@@ -292,9 +292,11 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
                   {t_i18n('Retire')}
                 </Button>
               )}
-              <Button variant="secondary" startIcon={<ManageSearchOutlined fontSize="small" />} onClick={() => setPreviewing(true)} data-testid="hunt-query-preview-open">
-                {t_i18n('Preview the query')}
-              </Button>
+              {hunt.hunt_type !== 'infrastructure' && (
+                <Button variant="secondary" startIcon={<ManageSearchOutlined fontSize="small" />} onClick={() => setPreviewing(true)} data-testid="hunt-query-preview-open">
+                  {t_i18n('Preview the query')}
+                </Button>
+              )}
               <HuntRunStart hunt={hunt} secondary />
               {primary && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>

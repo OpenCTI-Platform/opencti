@@ -105,10 +105,14 @@ describe('Hunt status header', () => {
   });
 
   it('words a missing logic as the platform does', () => {
-    expect(huntLogicMissingSentence('', [])).toBe('Add a Sigma rule or a native query');
-    expect(huntLogicMissingSentence('  ', [])).toBe('Add a Sigma rule or a native query');
-    expect(huntLogicMissingSentence('title: x', [])).toBeNull();
-    expect(huntLogicMissingSentence('', [{ platform: 'splunk' }])).toBeNull();
+    expect(huntLogicMissingSentence('telemetry', '', [])).toBe('Add a Sigma rule or a native query');
+    expect(huntLogicMissingSentence('telemetry', '', [{ platform: 'censys', language: 'fingerprint' }])).toBe('Add a Sigma rule or a native query');
+    expect(huntLogicMissingSentence('telemetry', 'title: x', [])).toBeNull();
+    expect(huntLogicMissingSentence('telemetry', '', [{ platform: 'splunk' }])).toBeNull();
+    const missingFingerprints = 'Add a fingerprint document for an internet scanning service';
+    expect(huntLogicMissingSentence('infrastructure', '', [{ platform: 'splunk', language: 'spl' }])).toBe(missingFingerprints);
+    expect(huntLogicMissingSentence('infrastructure', '', [{ platform: 'shodan', language: 'spl' }])).toBe(missingFingerprints);
+    expect(huntLogicMissingSentence('infrastructure', '', [{ platform: 'shodan', language: 'fingerprint' }])).toBeNull();
   });
 });
 
@@ -151,6 +155,14 @@ describe('Hunt status header dialogs', () => {
     testRender(<HuntStatusHeader data={hunt as never} />, asUser([KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT]));
     expect(screen.getByTestId('hunt-status-to-paused')).toBeInTheDocument();
     expect(screen.getByTestId('hunt-query-preview-open')).toBeInTheDocument();
+  });
+
+  it('offers no query preview for an infrastructure hunt, whose fingerprint documents are never translated', () => {
+    testRender(<HuntStatusHeader data={{ ...hunt, hunt_type: 'infrastructure' } as never} />, {
+      userContext: createMockUserContext({ me: { name: 'admin', user_email: 'admin@opencti.io', capabilities: [{ name: BYPASS }] } as never }),
+    });
+    expect(screen.getByTestId('hunt-status-to-paused')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-query-preview-open')).not.toBeInTheDocument();
   });
 
   it('keeps the checklist of a draft collapsed under its summary line', async () => {
