@@ -200,8 +200,16 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
       // MUI names the dialog after its title.
       title={isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}
       data-testid="dashboard-variable-dialog"
-      // The name is what is typed first.
-      slotProps={{ transition: { onEntered: () => nameInputRef.current?.focus() } }}
+      // The name is what is typed first, once the opening transition is over: unless the user already went into
+      // another field of the form meanwhile, whose typing would then land in the name.
+      slotProps={{
+        transition: {
+          onEntered: () => {
+            const isTypingInForm = !!nameInputRef.current?.form?.contains(document.activeElement);
+            if (!isTypingInForm) nameInputRef.current?.focus();
+          },
+        },
+      }}
     >
       <Formik<DashboardVariableDraft>
         initialValues={initialValues}

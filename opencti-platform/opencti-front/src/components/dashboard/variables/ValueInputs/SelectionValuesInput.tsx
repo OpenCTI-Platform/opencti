@@ -33,7 +33,8 @@ export interface SelectionValuesInputProps {
 const SelectionValuesInput = ({ variable, values, onChange, label, disabled, error }: SelectionValuesInputProps) => {
   const { t_i18n } = useFormatter();
   const isVocabulary = variable.type === 'vocabulary';
-  const { options: searchOptions, search } = useVariableValueOptions(variable);
+  const { options: searchOptions, search, hasListingError } = useVariableValueOptions(variable);
+  const helperText = error ?? (hasListingError ? t_i18n('The kill chain phases cannot be listed with your access rights or right now') : undefined);
   const vocabularyNames = useVocabularyNames(isVocabulary ? variable.vocabularyCategory : undefined);
   const { labels } = useVariableValueLabels(variable, values);
   // Each pick resolves the labels of the whole selection again: the labels already known stay shown meanwhile,
@@ -70,7 +71,7 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
       multiple
       closeOnSelect={false}
       disabled={disabled}
-      error={!!error}
+      error={!!helperText}
       options={options}
       value={selected}
       getOptionLabel={(option) => option.label ?? ''}
@@ -96,7 +97,7 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
         </ComboboxControls>
       </ComboboxField>
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
-      {error && <ComboboxHelperText>{error}</ComboboxHelperText>}
+      {helperText && <ComboboxHelperText aria-live="polite">{helperText}</ComboboxHelperText>}
     </Combobox>
   );
 };

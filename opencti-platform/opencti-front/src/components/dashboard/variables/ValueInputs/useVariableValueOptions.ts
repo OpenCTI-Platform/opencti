@@ -57,6 +57,7 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
       search: (_event, text, cause = 'type') => {
         if (restrictedTypes.length > 0) restrictedEntities.search(cause === 'type' ? text : '');
       },
+      hasListingError: false,
     };
   }
   const options = isKillChainPhase
