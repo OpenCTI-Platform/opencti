@@ -55,7 +55,13 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
+  'sentinelone',
 ];
+// The type of the security platform a hunt connector registers without naming one, SIEM for any other platform
+export const HUNT_PLATFORM_SECURITY_TYPES: Record<string, string> = {
+  'microsoft-defender': 'XDR',
+  sentinelone: 'EDR',
+};
 // endregion
 
 export interface HuntNativeQuery {

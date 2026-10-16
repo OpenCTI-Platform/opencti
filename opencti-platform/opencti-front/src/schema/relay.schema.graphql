@@ -17453,6 +17453,11 @@ type HuntRun implements BasicObject & InternalObject {
   started_at: DateTime
   completed_at: DateTime
   cost_ms: Int
+
+  """
+  The queries the run sent to its platform, as its hunt connector reported them; null when the connector does not count them
+  """
+  queries_count: Int
   error_message: String
 
   """
@@ -17682,6 +17687,11 @@ input HuntRunReportInput {
   observations: [HuntRunObservationInput!]
   result_ids: [String!]
   cost_ms: Int
+
+  """
+  The queries the run sent to its platform, which count against the quotas of the platform
+  """
+  queries_count: Int
   error: String
 
   """

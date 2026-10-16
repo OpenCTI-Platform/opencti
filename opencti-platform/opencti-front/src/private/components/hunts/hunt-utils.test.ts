@@ -79,6 +79,7 @@ describe('Hunt utils', () => {
       expect(huntConnectorSetupDocumentation('splunk-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#splunk');
       expect(huntConnectorSetupDocumentation('crowdstrike-logscale-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#crowdstrike-logscale');
       expect(huntConnectorSetupDocumentation('microsoft-defender-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#microsoft-defender-xdr');
+      expect(huntConnectorSetupDocumentation('sentinelone-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#sentinelone');
     });
 
     it('should open Before you start for any other hunt connector', () => {
@@ -94,6 +95,8 @@ describe('Hunt utils', () => {
       expect(huntPlatformLabel('crowdstrike-logscale')).toEqual('CrowdStrike Falcon LogScale');
       expect(huntQueryLanguageLabel('esql')).toEqual('ES|QL');
       expect(huntQueryLanguageLabel('yara-l')).toEqual('YARA-L');
+      expect(huntPlatformLabel('sentinelone')).toEqual('SentinelOne Singularity');
+      expect(huntQueryLanguageLabel('powerquery')).toEqual('SentinelOne PowerQuery');
     });
     it('should keep an unknown slug and return nothing without a value', () => {
       expect(huntPlatformLabel('new-platform')).toEqual('new-platform');

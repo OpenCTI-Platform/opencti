@@ -51,6 +51,7 @@ import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
   HUNT_INCIDENT_MODE_INCIDENT,
+  HUNT_PLATFORM_SECURITY_TYPES,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
@@ -1444,6 +1445,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   if (ruleResults) {
     patch.rule_results = ruleResults;
   }
+  // The queries a run sent count against the quotas of its platform, whatever its outcome
+  if (typeof input.queries_count === 'number' && Number.isFinite(input.queries_count)) {
+    patch.queries_count = Math.max(0, Math.round(input.queries_count));
+  }
   if (status === HUNT_RUN_STATUS_COMPLETED) {
     patch.completed_at = reportedAt;
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
@@ -1972,7 +1977,8 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
       }
       let securityPlatformId: string | null = existing?.internal_id ?? null;
       if (!existing) {
-        const created = await addSecurityPlatform(context, user, { name, security_platform_type: input.security_platform_type ?? 'SIEM' });
+        const securityPlatformType = input.security_platform_type ?? HUNT_PLATFORM_SECURITY_TYPES[platform] ?? 'SIEM';
+        const created = await addSecurityPlatform(context, user, { name, security_platform_type: securityPlatformType });
         securityPlatformId = (created as BasicStoreEntitySecurityPlatform).internal_id;
       }
       const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {

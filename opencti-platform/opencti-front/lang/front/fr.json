@@ -36,6 +36,7 @@
   "Open the incident as a draft": "Ouvrir l'incident en brouillon",
   "Order of the indicators and observables taken from the filter": "Ordre des indicateurs et observables pris dans le filtre",
   "Pick the type from what you have: indicators or a detection rule.": "Choisissez le type selon ce que vous avez : des indicateurs ou une règle de détection.",
+  "Queries sent": "Requêtes envoyées",
   "Recently updated first": "Mis à jour le plus récemment d'abord",
   "Required permissions of {connector}": "Permissions requises de {connector}",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "Oriente le bundle selon le résultat des chasses exécutées plus tôt dans cette exécution (verdicts, correspondances, incidents)",

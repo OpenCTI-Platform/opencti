@@ -80,6 +80,7 @@ const RUN_FIELDS = `
   security_platform_id
   dispatched_at
   hits_count
+  queries_count
   results_truncated
   translated_query
   verdict
@@ -475,9 +476,10 @@ describe('Hunt resolvers', () => {
 
   it('should complete a run without hits as benign', async () => {
     await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'running', translated_query: 'index=edr', query_language: 'spl' } } });
-    const completed = await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed', hits_count: 0, truncated: false, cost_ms: 120 } } });
+    const completed = await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed', hits_count: 0, truncated: false, cost_ms: 120, queries_count: 2 } } });
     const run = completed.data?.huntRunReport;
     expect(run.hunt_run_status).toEqual('completed');
+    expect(run.queries_count).toEqual(2);
     expect(run.verdict).toEqual('benign');
     expect(run.verdict_source).toEqual('auto');
     // The same outcome sent again (the connector lost the answer to its report) changes nothing, another one is refused
@@ -803,10 +805,12 @@ describe('Hunt resolvers', () => {
     await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: runId, input: { status: 'running' } } });
     const reported = await reportAsConnector({
       query: HUNT_RUN_REPORT,
-      variables: { id: runId, input: { status: 'timeout', error: 'The hunt run exceeded its deadline of 300 seconds', cost_ms: 300000 } },
+      variables: { id: runId, input: { status: 'timeout', error: 'The hunt run exceeded its deadline of 300 seconds', cost_ms: 300000, queries_count: 5 } },
     });
     const run = reported.data?.huntRunReport;
     expect(run.hunt_run_status).toEqual('timeout');
+    // The queries sent before the deadline still count against the quotas of the platform
+    expect(run.queries_count).toEqual(5);
     expect(run.error_message).toEqual('The hunt run exceeded its deadline of 300 seconds');
     expect(run.next_retry_at).toBeTruthy();
     expect(run.hits_count ?? 0).toEqual(0);

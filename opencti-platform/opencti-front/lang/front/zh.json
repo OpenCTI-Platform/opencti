@@ -36,6 +36,7 @@
   "Open the incident as a draft": "以草稿形式打开安全事件",
   "Order of the indicators and observables taken from the filter": "从过滤器获取的指标和可观察对象的顺序",
   "Pick the type from what you have: indicators or a detection rule.": "根据您已有的内容选择类型：指标或检测规则。",
+  "Queries sent": "已发送的查询",
   "Recently updated first": "最近更新的优先",
   "Required permissions of {connector}": "{connector} 所需权限",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "根据此次执行中先前运行的狩猎结果（判定、命中、安全事件）路由捆绑包",

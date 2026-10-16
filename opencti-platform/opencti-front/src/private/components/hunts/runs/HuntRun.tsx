@@ -147,6 +147,7 @@ const huntRunFragment = graphql`
     started_at
     completed_at
     cost_ms
+    queries_count
     error_message
     playbook_id
     created_at
@@ -278,6 +279,7 @@ const RunDetails = ({ run, columns }: { run: Run; columns: 2 | 4 }) => {
     { key: 'triggered_by', label: t_i18n('Triggered by'), value: run.triggeredBy?.name },
     { key: 'started', label: t_i18n('Started'), value: date(run.started_at) },
     { key: 'duration', label: t_i18n('Duration'), value: formatHuntRunDuration(run.cost_ms) },
+    { key: 'queries', label: t_i18n('Queries sent'), value: count(run.queries_count) },
     {
       key: 'hits',
       label: t_i18n('Hits'),

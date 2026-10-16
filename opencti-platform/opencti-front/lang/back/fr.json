@@ -1059,6 +1059,7 @@
   "Run playbook resume date": "Date de reprise du playbook",
   "Run playbook step": "Étape du playbook de l'exécution",
   "Run publication date": "Date de publication de l'exécution",
+  "Run queries sent": "Requêtes envoyées par l'exécution",
   "Run results": "Résultats de l'exécution",
   "Run sightings created": "Détections créées par l'exécution",
   "Run start date": "Date de début de l'exécution",

@@ -12171,6 +12171,8 @@ export type HuntRun = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   playbook_execution_id?: Maybe<Scalars['String']['output']>;
   playbook_id?: Maybe<Scalars['String']['output']>;
+  /** The queries the run sent to its platform, as its hunt connector reported them; null when the connector does not count them */
+  queries_count?: Maybe<Scalars['Int']['output']>;
   query_language?: Maybe<Scalars['String']['output']>;
   /** Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued */
   queue_reason?: Maybe<HuntMessage>;
@@ -12278,6 +12280,8 @@ export type HuntRunReportInput = {
   last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
   /** The hits of the run grouped by value (or rule) and victim host, over every hit read: the counts and dates of the observed data and sightings */
   observations?: InputMaybe<Array<HuntRunObservationInput>>;
+  /** The queries the run sent to its platform, which count against the quotas of the platform */
+  queries_count?: InputMaybe<Scalars['Int']['input']>;
   query_language?: InputMaybe<Scalars['String']['input']>;
   result_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   /** Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried */
@@ -48862,6 +48866,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_execution_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  queries_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   queue_reason?: Resolver<Maybe<ResolversTypes['HuntMessage']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;

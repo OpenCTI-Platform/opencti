@@ -124,6 +124,14 @@ class TestHuntHelpers(TestCase):
             last_hit_at=None,
             rule_results=None,
             observations=None,
+            queries_count=None,
+        )
+
+    def test_report_hunt_run_forwards_the_queries_sent(self):
+        helper = _helper()
+        helper.report_hunt_run("run-1", "completed", hits_count=0, queries_count=4)
+        self.assertEqual(
+            helper.api.hunt_run.report.call_args.kwargs["queries_count"], 4
         )
 
     def test_report_hunt_run_forwards_the_results_per_rule_and_the_observations(self):

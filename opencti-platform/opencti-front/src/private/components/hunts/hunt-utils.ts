@@ -45,6 +45,7 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
+  'sentinelone',
 ] as const;
 export const HUNT_QUERY_LANGUAGES = [
   'spl',
@@ -58,6 +59,7 @@ export const HUNT_QUERY_LANGUAGES = [
   'ppl',
   'opensearch-lucene',
   'sql',
+  'powerquery',
 ] as const;
 /** Default query language of each platform, offered first when a native query row is added */
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
@@ -70,6 +72,7 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   opensearch: 'ppl',
   clickhouse: 'sql',
   's3-ocsf': 'sql',
+  sentinelone: 'powerquery',
 };
 
 // Product and language names are proper nouns, never translated
@@ -83,6 +86,7 @@ const HUNT_PLATFORM_NAMES: Record<string, string> = {
   opensearch: 'OpenSearch',
   clickhouse: 'ClickHouse',
   's3-ocsf': 'Amazon S3 (OCSF)',
+  sentinelone: 'SentinelOne Singularity',
 };
 const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   spl: 'SPL',
@@ -96,6 +100,7 @@ const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   ppl: 'PPL',
   'opensearch-lucene': 'OpenSearch Lucene',
   sql: 'SQL',
+  powerquery: 'SentinelOne PowerQuery',
 };
 
 export const huntPlatformLabel = (platform: string | null | undefined) => {
@@ -306,6 +311,7 @@ const HUNT_CONNECTOR_SETUP_SECTIONS: Record<string, string> = {
   'crowdstrike-logscale-hunt': 'crowdstrike-logscale',
   'google-secops-hunt': 'google-secops',
   'opensearch-ocsf-hunt': 'opensearch-ocsf',
+  'sentinelone-hunt': 'sentinelone',
 };
 
 export const huntConnectorSetupDocumentation = (slug: string | null | undefined) => {

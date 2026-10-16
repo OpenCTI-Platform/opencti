@@ -36,6 +36,7 @@
   "Open the incident as a draft": "인시던트를 초안으로 열기",
   "Order of the indicators and observables taken from the filter": "필터에서 가져오는 지표 및 관측 가능 항목의 순서",
   "Pick the type from what you have: indicators or a detection rule.": "가진 것에 맞춰 유형을 선택하세요: 지표 또는 탐지 규칙.",
+  "Queries sent": "전송된 쿼리",
   "Recently updated first": "최근 업데이트순",
   "Required permissions of {connector}": "{connector}에 필요한 권한",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "이 실행에서 앞서 실행된 헌트의 결과(판정, 히트, 인시던트)에 따라 번들을 라우팅합니다",

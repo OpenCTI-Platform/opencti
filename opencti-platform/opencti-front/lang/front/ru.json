@@ -36,6 +36,7 @@
   "Open the incident as a draft": "Открывать инцидент как черновик",
   "Order of the indicators and observables taken from the filter": "Порядок индикаторов и наблюдаемых объектов, взятых из фильтра",
   "Pick the type from what you have: indicators or a detection rule.": "Выберите тип по тому, что у вас есть: индикаторы или правило обнаружения.",
+  "Queries sent": "Отправленные запросы",
   "Recently updated first": "Сначала недавно обновлённые",
   "Required permissions of {connector}": "Необходимые разрешения для {connector}",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "Направляет бандл в зависимости от результата охот, запущенных ранее в этом выполнении (вердикты, срабатывания, инциденты)",

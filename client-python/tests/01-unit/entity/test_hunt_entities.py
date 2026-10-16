@@ -348,6 +348,15 @@ class TestHuntRun(TestCase):
         HuntRun(opencti).report(id="run-1", status="failed", error="boom")
         self.assertNotIn("retryable", _variables(opencti)["input"])
 
+    def test_report_sends_the_queries_sent_only_when_known(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "completed"}}
+        )
+        HuntRun(opencti).report(id="run-1", status="completed", queries_count=3)
+        self.assertEqual(_variables(opencti)["input"]["queries_count"], 3)
+        HuntRun(opencti).report(id="run-1", status="completed", hits_count=0)
+        self.assertNotIn("queries_count", _variables(opencti)["input"])
+
     def test_report_names_the_work_of_the_dispatch(self):
         opencti = _opencti(
             {"huntRunReport": {"id": "run-1", "hunt_run_status": "running"}}

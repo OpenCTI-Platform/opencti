@@ -36,6 +36,7 @@
   "Open the incident as a draft": "Den Vorfall als Entwurf öffnen",
   "Order of the indicators and observables taken from the filter": "Reihenfolge der aus dem Filter übernommenen Indikatoren und Observables",
   "Pick the type from what you have: indicators or a detection rule.": "Wählen Sie den Typ nach dem, was Sie haben: Indikatoren oder eine Erkennungsregel.",
+  "Queries sent": "Gesendete Abfragen",
   "Recently updated first": "Zuletzt aktualisierte zuerst",
   "Required permissions of {connector}": "Erforderliche Berechtigungen von {connector}",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "Leitet das Bundle anhand des Ergebnisses der zuvor in dieser Ausführung gelaufenen Hunts weiter (Urteile, Treffer, Vorfälle)",

@@ -221,6 +221,8 @@ type HuntRun implements BasicObject & InternalObject {
   started_at: DateTime
   completed_at: DateTime
   cost_ms: Int
+  "The queries the run sent to its platform, as its hunt connector reported them; null when the connector does not count them"
+  queries_count: Int
   error_message: String
   "False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail"
   failure_retryable: Boolean
@@ -404,6 +406,8 @@ input HuntRunReportInput {
   observations: [HuntRunObservationInput!]
   result_ids: [String!]
   cost_ms: Int
+  "The queries the run sent to its platform, which count against the quotas of the platform"
+  queries_count: Int
   error: String
   "Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried"
   retryable: Boolean

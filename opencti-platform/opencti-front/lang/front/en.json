@@ -36,6 +36,7 @@
   "Open the incident as a draft": "Open the incident as a draft",
   "Order of the indicators and observables taken from the filter": "Order of the indicators and observables taken from the filter",
   "Pick the type from what you have: indicators or a detection rule.": "Pick the type from what you have: indicators or a detection rule.",
+  "Queries sent": "Queries sent",
   "Recently updated first": "Recently updated first",
   "Required permissions of {connector}": "Required permissions of {connector}",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)",

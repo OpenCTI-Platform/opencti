@@ -215,6 +215,7 @@ interface HuntRunAttributes {
   started_at?: string | null;
   completed_at?: string | null;
   cost_ms?: number | null;
+  queries_count?: number | null;
   error_message?: string | null;
   // False for a failure the same run meets again in the same way (translation, a query the platform rejects): no retry
   failure_retryable?: boolean | null;

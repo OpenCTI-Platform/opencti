@@ -36,6 +36,7 @@
   "Open the incident as a draft": "インシデントを下書きとして開く",
   "Order of the indicators and observables taken from the filter": "フィルターから取得するインジケーターとオブザーバブルの順序",
   "Pick the type from what you have: indicators or a detection rule.": "手元にあるものに合わせてタイプを選択してください：インジケーターまたは検知ルール。",
+  "Queries sent": "送信したクエリ",
   "Recently updated first": "更新日が新しい順",
   "Required permissions of {connector}": "{connector} に必要なパーミッション",
   "Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)": "この実行で先に実行されたハントの結果 (判定、ヒット、インシデント) に基づいてバンドルを振り分けます",
