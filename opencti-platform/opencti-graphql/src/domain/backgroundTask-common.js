@@ -104,7 +104,7 @@ const checkWorkflowActionsValidity = (context, user, actions) => {
   if (getDraftContext(context, user)) {
     throw FunctionalError('Cannot change workflow status in draft');
   }
-  if (actions.filter((a) => isWorkflowStatusAction(a)).length > 1) {
+  if (actions.filter((a) => a.context?.field === 'x_opencti_workflow_id').length > 1) {
     throw FunctionalError('A single task cannot perform several actions on the workflow status');
   }
   if (hasBypassAction && !isBypassUser(user)) {
