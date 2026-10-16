@@ -1819,20 +1819,6 @@ CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
 CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
 
 
-class ConnectorInfoErrorCriticity(Enum):
-    """Criticity of an error reported to the platform on ping, lowest first."""
-
-    LOW = "LOW"
-    MEDIUM = "MEDIUM"
-    HIGH = "HIGH"
-    CRITICAL = "CRITICAL"
-
-
-CRITICITY_RANK = {
-    criticity: rank for rank, criticity in enumerate(ConnectorInfoErrorCriticity)
-}
-
-
 class ConnectorRunError(BaseModel):
     """Error returned by a connector run"""
 
@@ -1843,10 +1829,13 @@ class ConnectorRunError(BaseModel):
     criticity: int
 
 
-def _parse_criticity(value) -> ConnectorInfoErrorCriticity:
-    if isinstance(value, ConnectorInfoErrorCriticity):
-        return value
-    return ConnectorInfoErrorCriticity(str(value).strip().upper())
+def _parse_criticity(value) -> int:
+    # bool is an int subclass, and the platform only accepts a GraphQL Int (32 bits).
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
+    if not -(2**31) <= value < 2**31:
+        raise ValueError(f"criticity {value} is out of the GraphQL Int range")
+    return value
 
 
 def _sanitize_connector_error(error) -> Optional[Dict]:
@@ -1877,11 +1866,8 @@ def _sanitize_connector_errors(errors) -> List[Dict]:
         ]
     except Exception:  # pylint: disable=broad-except
         return []
-    sanitized.sort(key=lambda error: CRITICITY_RANK[error["criticity"]], reverse=True)
-    return [
-        {**error, "criticity": error["criticity"].value}
-        for error in sanitized[:CONNECTOR_ERRORS_MAX_COUNT]
-    ]
+    sanitized.sort(key=lambda error: error["criticity"], reverse=True)
+    return sanitized[:CONNECTOR_ERRORS_MAX_COUNT]
 
 
 class ConnectorInfo:
@@ -1903,8 +1889,8 @@ class ConnectorInfo:
     :param last_run_datetime: Datetime of the last connector run
     :type last_run_datetime: datetime or None
     :param errors: List of errors reported to the platform, each a dict with
-        ``code`` (str), ``message`` (str) and ``criticity``
-        (:class:`ConnectorInfoErrorCriticity` or its name)
+        ``code`` (str), ``message`` (str) and ``criticity`` (int, higher is
+        more critical)
     :type errors: list or None
 
     Example:
@@ -2100,20 +2086,20 @@ class ConnectorInfo:
         self,
         code: str,
         message: str,
-        criticity: Union[ConnectorInfoErrorCriticity, str],
+        criticity: int,
     ) -> None:
         """Add an error to report on the next ping.
 
-        Errors are sanitized when sent: entries without a code or with an
-        unknown criticity are dropped, code and message are truncated, and
+        Errors are sanitized when sent: entries without a code or with a
+        non-integer criticity are dropped, code and message are truncated, and
         only the most critical ones are kept.
 
         :param code: Error code
         :type code: str
         :param message: Human readable error message
         :type message: str
-        :param criticity: Criticity level, as the enum or its name (case-insensitive)
-        :type criticity: ConnectorInfoErrorCriticity or str
+        :param criticity: Criticity level, higher is more critical
+        :type criticity: int
         """
         self._errors.append({"code": code, "message": message, "criticity": criticity})
 

@@ -6,19 +6,18 @@ from pycti.connector.opencti_connector_helper import (
     CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
     CONNECTOR_ERRORS_MAX_COUNT,
     ConnectorInfo,
-    ConnectorInfoErrorCriticity,
     PingAlive,
 )
 
 API_ERROR = {
     "code": "API_UNREACHABLE",
     "message": "Source API returned 503",
-    "criticity": "HIGH",
+    "criticity": 2,
 }
 RATE_ERROR = {
     "code": "RATE_LIMITED",
     "message": "Too many requests",
-    "criticity": "LOW",
+    "criticity": 0,
 }
 
 
@@ -37,21 +36,15 @@ def test_errors_from_constructor_are_copied():
 
 def test_sent_errors_coerce_field_types():
     info = ConnectorInfo()
-    info.add_error(404, None, ConnectorInfoErrorCriticity.MEDIUM)
+    info.add_error(404, None, 1)
     assert info.all_details["errors"] == [
-        {"code": "404", "message": "", "criticity": "MEDIUM"}
+        {"code": "404", "message": "", "criticity": 1}
     ]
-
-
-def test_sent_errors_accept_criticity_name_in_any_case():
-    info = ConnectorInfo()
-    info.add_error("API_UNREACHABLE", "Source API returned 503", " high ")
-    assert info.all_details["errors"] == [API_ERROR]
 
 
 def test_sent_errors_trim_and_truncate_strings():
     info = ConnectorInfo()
-    info.add_error("  " + "C" * 300 + "  ", "  " + "M" * 2000 + "  ", "LOW")
+    info.add_error("  " + "C" * 300 + "  ", "  " + "M" * 2000 + "  ", 0)
     [sent_error] = info.all_details["errors"]
     assert sent_error["code"] == "C" * CONNECTOR_ERROR_CODE_MAX_LENGTH
     assert sent_error["message"] == "M" * CONNECTOR_ERROR_MESSAGE_MAX_LENGTH
@@ -61,10 +54,12 @@ def test_sent_errors_drop_invalid_entries():
     info = ConnectorInfo(
         errors=[
             API_ERROR,
-            {"code": None, "message": "no code", "criticity": "LOW"},
-            {"code": "   ", "message": "blank code", "criticity": "LOW"},
-            {"code": "UNKNOWN", "message": "unknown criticity", "criticity": "SEVERE"},
-            {"code": "NUMERIC", "message": "numeric criticity", "criticity": 3},
+            {"code": None, "message": "no code", "criticity": 0},
+            {"code": "   ", "message": "blank code", "criticity": 0},
+            {"code": "STRING", "message": "string criticity", "criticity": "HIGH"},
+            {"code": "DECIMAL", "message": "decimal criticity", "criticity": 1.5},
+            {"code": "BOOLEAN", "message": "boolean criticity", "criticity": True},
+            {"code": "OVERFLOW", "message": "too big criticity", "criticity": 2**31},
             {"code": "NO_CRITICITY", "message": "missing criticity"},
             "not a dict",
             None,
@@ -75,21 +70,16 @@ def test_sent_errors_drop_invalid_entries():
 
 def test_sent_errors_are_sorted_from_most_to_least_critical():
     info = ConnectorInfo()
-    for criticity in ["MEDIUM", "CRITICAL", "LOW", "HIGH"]:
-        info.add_error(criticity, "", criticity)
-    assert [error["criticity"] for error in info.all_details["errors"]] == [
-        "CRITICAL",
-        "HIGH",
-        "MEDIUM",
-        "LOW",
-    ]
+    for criticity in [1, 3, 0, 2]:
+        info.add_error(f"CRITICITY_{criticity}", "", criticity)
+    assert [error["criticity"] for error in info.all_details["errors"]] == [3, 2, 1, 0]
 
 
 def test_sent_errors_keep_most_critical_up_to_the_limit():
     info = ConnectorInfo()
     for index in range(CONNECTOR_ERRORS_MAX_COUNT):
-        info.add_error(f"LOW_{index}", "", ConnectorInfoErrorCriticity.LOW)
-    info.add_error("CRITICAL", "", ConnectorInfoErrorCriticity.CRITICAL)
+        info.add_error(f"LOW_{index}", "", 0)
+    info.add_error("CRITICAL", "", 3)
     sent_errors = info.all_details["errors"]
     assert len(sent_errors) == CONNECTOR_ERRORS_MAX_COUNT
     assert sent_errors[0]["code"] == "CRITICAL"
@@ -121,15 +111,13 @@ def test_clear_errors():
 def test_all_details_errors_is_a_snapshot():
     info = ConnectorInfo(errors=[API_ERROR])
     details = info.all_details
-    info.add_error("RATE_LIMITED", "Too many requests", "LOW")
+    info.add_error("RATE_LIMITED", "Too many requests", 0)
     assert details["errors"] == [API_ERROR]
 
 
 def test_ping_alive_sends_errors_to_platform():
     connector_info = ConnectorInfo()
-    connector_info.add_error(
-        "API_UNREACHABLE", "Source API returned 503", ConnectorInfoErrorCriticity.HIGH
-    )
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
     fake_api = MagicMock()
 
     def fake_ping(connector_id, state, info):
