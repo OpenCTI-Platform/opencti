@@ -1,10 +1,22 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ForbiddenAccess } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
-import { AccessOperation, validateUserAccessOperation } from '../../utils/access';
+import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNHUNT, KNOWLEDGE_KNUPDATE, validateUserAccessOperation } from '../../utils/access';
 import { getDraftContext } from '../../utils/draftContext';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreEntityHunt } from './hunt-types';
+
+/**
+ * Creating, changing, running and triaging hunts take the update of the knowledge and the hunt capability, both: a role
+ * keeps the first without the second to edit the knowledge without launching queries on the security platforms.
+ */
+export const canLaunchHunts = (user: AuthUser) => isUserHasCapability(user, KNOWLEDGE_KNUPDATE) && isUserHasCapability(user, KNOWLEDGE_KNHUNT);
+
+export const checkHuntCapability = (user: AuthUser) => {
+  if (!canLaunchHunts(user)) {
+    throw ForbiddenAccess('Creating, changing and running hunts requires the capability to launch hunts on security platforms');
+  }
+};
 
 const loadCurrentDraft = async (context: AuthContext, user: AuthUser) => {
   const draftId = getDraftContext(context, user);

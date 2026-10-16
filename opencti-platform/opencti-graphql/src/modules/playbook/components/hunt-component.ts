@@ -27,7 +27,7 @@ import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/gra
 import { generateStandardId } from '../../../schema/identifier';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
-import { executionContext, HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNUPDATE, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../../utils/access';
+import { executionContext, HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../../utils/access';
 import { now } from '../../../utils/format';
 import { type ComponentDefinition, playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
@@ -38,7 +38,7 @@ import { createHuntRuns, designateHuntPlaybookLeader } from '../../hunt/huntRun/
 import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
 import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
-import { checkHuntEditAccess, filterEditableHunts } from '../../hunt/hunt-access';
+import { canLaunchHunts, checkHuntEditAccess, filterEditableHunts } from '../../hunt/hunt-access';
 import { deriveHuntContent, derivedHuntInput } from '../../hunt/hunt-derivation';
 import { addHunt } from '../../hunt/hunt-domain';
 import { isRestrictedToMembers } from '../../hunt/hunt-iocs';
@@ -127,16 +127,17 @@ const parseHuntConfiguration = (configuration: string): Record<string, unknown> 
 
 /**
  * The step starts the runs of its hunts with the hunt manager identity, and only of the hunts its writer can start (see
- * resolvePlaybookHunts). Writing it requires what starting the runs of a hunt requires: the capability to update the
- * knowledge, and the edit access to each hunt it names (a hunt that does not exist is left: the step never finds it).
+ * resolvePlaybookHunts). Writing it requires what starting the runs of a hunt requires: the capabilities to update the
+ * knowledge and to launch hunts, and the edit access to each hunt it names (a hunt that does not exist is left: the step
+ * never finds it).
  * Returns the configuration with its writer.
  */
 export const writePlaybookHuntStep = async (context: AuthContext, user: AuthUser, componentId: string, configuration: string) => {
   if (componentId !== PLAYBOOK_HUNT_COMPONENT_ID) {
     return configuration;
   }
-  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
-    throw ForbiddenAccess('Running hunts in a playbook requires the capability to update the knowledge');
+  if (!canLaunchHunts(user)) {
+    throw ForbiddenAccess('Running hunts in a playbook requires the capabilities to update the knowledge and to launch hunts on security platforms');
   }
   const parsed = parseHuntConfiguration(configuration);
   const huntIds = Array.isArray(parsed.hunt_ids) ? parsed.hunt_ids.map(String) : [];
@@ -176,7 +177,7 @@ const resolvePlaybookHuntAuthor = async (context: AuthContext, configuration: Wr
   const authorId = configuration[PLAYBOOK_HUNT_AUTHOR];
   const cached = authorId ? await resolveUserByIdFromCache(context, authorId) : undefined;
   const author = cached ? { ...cached, draft_context: undefined } : null;
-  if (!author || !isUserHasCapability(author, KNOWLEDGE_KNUPDATE)) {
+  if (!author || !canLaunchHunts(author)) {
     logApp.warn('[OPENCTI-MODULE] Playbook hunt step runs no hunt, the user who wrote it cannot start hunt runs', { authorId });
     return null;
   }

@@ -130,12 +130,12 @@ export const huntSigmaValidation = (hunt: BasicStoreEntityHunt) => {
 
 const HUNT_IOC_SET_DEFAULT_FIRST = 50;
 
-/** The values the next run of an indicator hunt looks up, the first ones listed. */
-export const loadHuntIocSet = async (context: AuthContext, hunt: BasicStoreEntityHunt, first?: number | null) => {
+/** The values the next run of an indicator hunt looks up, the first ones listed, the elements left out counted for the user. */
+export const loadHuntIocSet = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, first?: number | null) => {
   if (hunt.hunt_type !== HUNT_TYPE_INDICATORS) {
     return null;
   }
-  const iocSet = await resolveHuntIocSet(context, hunt);
+  const iocSet = await resolveHuntIocSet(context, hunt, user);
   const limit = Math.max(0, Math.min(first ?? HUNT_IOC_SET_DEFAULT_FIRST, HUNT_CONFIG.maxIocsPerRun));
   return { ...iocSet, iocs_count: iocSet.iocs.length, iocs: iocSet.iocs.slice(0, limit) };
 };
@@ -213,6 +213,16 @@ export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, i
     hunt_ioc_values: normalizeHuntIocValues(input.hunt_ioc_values),
   };
   normalized.huntTechniques = await huntTechniqueIds(context, user, input);
+  // A detection-rule hunt runs the rules of the indicators it is made from, copied into it, and every reader of the hunt
+  // reads them: it carries their markings, whatever markings it is created with
+  const sourceIds = (input.huntSources ?? []).filter((id): id is string => !!id);
+  if (normalized.hunt_type === HuntType.Telemetry && sourceIds.length > 0) {
+    const rules = await findByIds<BasicStoreEntity>(context, user, sourceIds, { type: ENTITY_TYPE_INDICATOR });
+    const inherited = rules.flatMap((rule) => (rule[RELATION_OBJECT_MARKING] ?? []) as string[]);
+    if (inherited.length > 0) {
+      normalized.objectMarking = Array.from(new Set([...(input.objectMarking ?? []), ...inherited]));
+    }
+  }
   return normalized;
 };
 
@@ -230,7 +240,13 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
   // synchronization replicates a hunt that exists elsewhere with its status, the hunt manager only running ready hunts.
   const replicated = !!input.stix_id || context.synchronizedUpsert === true;
   if (!context.draft_context && !replicated && huntInput.hunt_status === HuntStatus.Active && opts.upsertedStatus !== HUNT_STATUS_ACTIVE) {
-    const readiness = await computeHuntReadiness(context, user, { ...huntInput, [RELATION_HUNT_SOURCES]: huntInput.huntSources ?? [] } as unknown as BasicStoreEntityHunt);
+    // The hunt is not stored yet: its values are resolved with the markings and organizations it is created with
+    const readiness = await computeHuntReadiness(context, user, {
+      ...huntInput,
+      [RELATION_HUNT_SOURCES]: huntInput.huntSources ?? [],
+      [RELATION_OBJECT_MARKING]: huntInput.objectMarking ?? [],
+      [RELATION_GRANTED_TO]: huntInput.objectOrganization ?? [],
+    } as unknown as BasicStoreEntityHunt);
     const unmet = readiness.items.find(isUnmetReadinessItem);
     if (unmet && input.hunt_status) {
       throw ValidationError(`This hunt cannot be activated: ${unmet.message}`, 'hunt_status');

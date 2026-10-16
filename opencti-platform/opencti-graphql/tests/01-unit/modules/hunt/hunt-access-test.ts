@@ -4,7 +4,8 @@ import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { authorizedMembers } from '../../../../src/schema/attribute-definition';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../../src/utils/authorizedMembers';
-import { checkHuntEditAccess, filterEditableHunts } from '../../../../src/modules/hunt/hunt-access';
+import { canLaunchHunts, checkHuntEditAccess, filterEditableHunts } from '../../../../src/modules/hunt/hunt-access';
+import { validateHuntCreation, validateHuntUpdate } from '../../../../src/modules/hunt/hunt-validators';
 import { retryHuntRun, setHuntRunVerdict, startHuntPreview, startHuntRuns } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { ENTITY_TYPE_HUNT, type BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -25,6 +26,22 @@ describe('Hunt access', () => {
     expect(AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES).not.toContain(ENTITY_TYPE_HUNT_RUN);
     expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_HUNT, authorizedMembers.name)).toBeUndefined();
     expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_HUNT_RUN, authorizedMembers.name)).toBeUndefined();
+  });
+
+  it('should launch hunts only with the update of the knowledge and the hunt capability, both', async () => {
+    const withCapabilities = (...names: string[]) => ({ ...ADMIN_USER, capabilities: names.map((name) => ({ name })) }) as AuthUser;
+    expect(canLaunchHunts(withCapabilities('KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNHUNT'))).toBe(true);
+    expect(canLaunchHunts(withCapabilities('KNOWLEDGE_KNUPDATE_KNDELETE', 'KNOWLEDGE_KNHUNT'))).toBe(true);
+    expect(canLaunchHunts(withCapabilities('KNOWLEDGE_KNUPDATE'))).toBe(false);
+    expect(canLaunchHunts(withCapabilities('KNOWLEDGE', 'KNOWLEDGE_KNHUNT'))).toBe(false);
+    expect(canLaunchHunts(withCapabilities('BYPASS'))).toBe(true);
+    // Every write of a hunt checks it, its own mutations as the generic edition and the imports
+    const hunt = { name: 'DNS tunnelling', hunt_type: 'telemetry', hunt_status: 'draft' };
+    await expect(validateHuntCreation(testContext, withCapabilities('KNOWLEDGE_KNUPDATE'), hunt))
+      .rejects.toThrow('Creating, changing and running hunts requires the capability to launch hunts on security platforms');
+    await expect(validateHuntUpdate(testContext, withCapabilities('KNOWLEDGE_KNUPDATE'), { description: 'Changed' }, hunt))
+      .rejects.toThrow('Creating, changing and running hunts requires the capability to launch hunts on security platforms');
+    await expect(validateHuntCreation(testContext, withCapabilities('KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNHUNT'), hunt)).resolves.toBe(true);
   });
 });
 

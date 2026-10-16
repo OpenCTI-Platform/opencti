@@ -693,20 +693,20 @@ input HuntValidateFromEmulationInput {
 }
 
 type Mutation {
-  huntAdd(input: HuntAddInput!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntProposalAdd(input: HuntAddInput!, draftName: String): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntAdd(input: HuntAddInput!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntProposalAdd(input: HuntAddInput!, draftName: String): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
   huntDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  huntFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Hunt @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntContextPatch(id: ID!, input: EditContext!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntContextClean(id: ID!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]! @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntPlan(input: HuntPlanInput!): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntAssist(input: HuntAssistInput!): HuntAssistance! @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntPackImport(file: Upload!): HuntPackImportResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Hunt @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntContextPatch(id: ID!, input: EditContext!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntContextClean(id: ID!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Hunt @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]! @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntPlan(input: HuntPlanInput!): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntAssist(input: HuntAssistInput!): HuntAssistance! @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
+  huntPackImport(file: Upload!): HuntPackImportResult @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT], and: true)
 }
 
 extend type Subscription {

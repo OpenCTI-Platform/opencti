@@ -25,7 +25,7 @@ vi.mock('../../../../src/modules/hunt/hunt-access', async (importOriginal) => ({
 
 vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/user/user-domain')>(),
-  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => ({ id, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] })),
+  resolveUserByIdFromCache: vi.fn(async (_context, id: string) => ({ id, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'KNOWLEDGE_KNHUNT' }] })),
 }));
 
 const configuration = {

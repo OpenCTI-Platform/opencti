@@ -1,14 +1,21 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { v4 as uuid } from 'uuid';
-import { testContext } from '../../../utils/testQuery';
-import { elRawDeleteByQuery } from '../../../../src/database/engine';
+import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../../utils/testQuery';
+import { elCount, elRawDeleteByQuery } from '../../../../src/database/engine';
+import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../../src/database/utils';
+import { FilterMode } from '../../../../src/generated/graphql';
+import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
+import type { BasicStoreEntity } from '../../../../src/types/store';
+import type { AuthUser } from '../../../../src/types/user';
 import { findHuntHitRecords, huntHitRecordId, purgeExpiredHuntHitRecords, recordHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
+import { ENTITY_TYPE_HUNT_HIT_RECORD } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-types';
 
 // A hunt and a platform of their own, so the records of this test are never those of another test
 const huntId = uuid();
 const securityPlatformId = uuid();
 const HIT = 'hit-late-evidence';
+const MARKED_HIT = 'hit-restricted-run';
 const LATEST = '2026-01-10T12:00:00.000Z';
 const OLDER = '2026-01-05T08:30:00.000Z';
 const LATER = '2026-01-12T07:15:00.000Z';
@@ -24,7 +31,7 @@ describe('Hunt hit records', () => {
       index: READ_INDEX_INTERNAL_OBJECTS,
       refresh: true,
       wait_for_completion: true,
-      body: { query: { ids: { values: [huntHitRecordId(huntId, securityPlatformId, HIT).internalId] } } },
+      body: { query: { ids: { values: [HIT, MARKED_HIT].map((key) => huntHitRecordId(huntId, securityPlatformId, key).internalId) } } },
     });
   });
 
@@ -63,5 +70,23 @@ describe('Hunt hit records', () => {
     expect(await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [HIT], seenAt: LATER, keepKnown: true }))
       .toEqual({ newCount: 0, recurringCount: 1 });
     expect((await lastSeen()).timesSeen).toEqual(5);
+  });
+
+  it('should carry the markings of every run that found a hit, hiding it from a user who cannot read one of them', async () => {
+    const red = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, MARKING_TLP_RED);
+    const editor = await getAuthUser(USER_EDITOR.id);
+    const readable = (user: AuthUser) => elCount(testContext, user, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_HUNT_HIT_RECORD],
+      filters: { mode: FilterMode.And, filters: [{ key: ['hunt_id'], values: [huntId] }, { key: ['hit_key'], values: [MARKED_HIT] }], filterGroups: [] },
+    });
+    await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [MARKED_HIT], seenAt: LATEST, objectMarking: [] });
+    expect(await readable(editor)).toEqual(1);
+    // A run restricted to TLP:RED finds the hit again: the editor, who cannot read TLP:RED, no longer reads its record
+    await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [MARKED_HIT], seenAt: LATER, objectMarking: [red.internal_id] });
+    expect(await readable(editor)).toEqual(0);
+    expect(await readable(ADMIN_USER)).toEqual(1);
+    // A later run without the marking does not lift it
+    await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [MARKED_HIT], seenAt: LATER, objectMarking: [] });
+    expect(await readable(editor)).toEqual(0);
   });
 });

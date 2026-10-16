@@ -63,7 +63,7 @@ const huntResolvers: Resolvers = {
     translations: (hunt, _, context) => findHuntTranslationsView(context, context.user, hunt),
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
-    iocSet: (hunt, { first }, context) => loadHuntIocSet(context, hunt, first),
+    iocSet: (hunt, { first }, context) => loadHuntIocSet(context, context.user, hunt, first),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
     knownHits: (hunt, _, context) => findHuntKnownHits(context, context.user, hunt.id),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),

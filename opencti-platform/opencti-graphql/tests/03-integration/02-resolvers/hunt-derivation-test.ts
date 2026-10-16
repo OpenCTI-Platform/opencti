@@ -1,8 +1,15 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { internalLoadById } from '../../../src/database/middleware-loader';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import { HuntType, type HuntAddInput } from '../../../src/generated/graphql';
+import { deriveHuntContent, derivedHuntInput, type HuntDerivedContent } from '../../../src/modules/hunt/hunt-derivation';
+import { normalizeHuntInput } from '../../../src/modules/hunt/hunt-domain';
+import { resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
+import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../src/modules/hunt/hunt-types';
 
 const SIGMA_RULE = `title: Hunt derivation test rule
 logsource:
@@ -136,6 +143,29 @@ describe('Hunt derived content ("Hunt this")', () => {
     const elementIds = result.data?.huntDerivedContent.elements.map(({ id }: { id: string }) => id);
     expect(elementIds).not.toContain(redIndicatorId);
     expect(elementIds).toContain(ipIndicatorId);
+  });
+
+  it('should never let a hunt derived from a threat holding TLP:RED indicators disclose them to a user without TLP:RED', async () => {
+    const red = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, MARKING_TLP_RED);
+    const editor = await getAuthUser(USER_EDITOR.id);
+    // Derived by a user who reads TLP:RED, the hunt reaches the red indicator through the intrusion set
+    const derived = await deriveHuntContent(testContext, ADMIN_USER, intrusionSetId);
+    expect(derived?.elements.map(({ id }) => id)).toContain(redIndicatorId);
+    const input = derivedHuntInput(derived as HuntDerivedContent) as HuntAddInput;
+    const hunt = { internal_id: 'derived-hunt', hunt_type: input.hunt_type, [RELATION_HUNT_SOURCES]: input.huntSources } as unknown as BasicStoreEntityHunt;
+    // The hunt holds no marking: its runs never look up the red value, which is left out for the user who reads it only
+    const forAdmin = await resolveHuntIocSet(testContext, hunt, ADMIN_USER);
+    expect(forAdmin.iocs.map(({ value }) => value)).not.toContain('198.51.100.82');
+    expect(forAdmin.restricted_count).toEqual(1);
+    const forEditor = await resolveHuntIocSet(testContext, hunt, editor);
+    expect(forEditor.iocs.map(({ value }) => value).sort()).toEqual(forAdmin.iocs.map(({ value }) => value).sort());
+    expect(forEditor.restricted_count).toEqual(0);
+    // A detection-rule hunt carries the markings of the indicators it is made from, whatever markings it is created with
+    const rules = { name: 'Hunt derivation test rule hunt', hunt_type: HuntType.Telemetry, sigma_rules: [SIGMA_RULE], objectMarking: [] };
+    const restricted = await normalizeHuntInput(testContext, ADMIN_USER, { ...rules, huntSources: [sigmaIndicatorId, redIndicatorId] });
+    expect(restricted.objectMarking).toEqual([red.internal_id]);
+    const unrestricted = await normalizeHuntInput(testContext, ADMIN_USER, { ...rules, huntSources: [sigmaIndicatorId] });
+    expect(unrestricted.objectMarking).toEqual([]);
   });
 
   it('should propose the detection rules of a technique', async () => {
