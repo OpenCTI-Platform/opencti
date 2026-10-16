@@ -1399,7 +1399,7 @@ describe('Incident and case timeline', () => {
       expect(result.data.timelineSettingsUpdate).toMatchObject({ enabled_lanes: ['adversary', 'response'], hidden_kinds: ['relation_created'] });
       // The zoom and the grouping are each reader's own: the settings no longer take them
       const removed = await queryAsAdmin({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { default_grouping: 'week' } } });
-      expect(removed.errors?.[0].message).toContain('"default_grouping" is not defined by type "TimelineSettingsInput"');
+      expect(removed.errors?.[0].message).toContain('"TimelineSettingsInput" not to include unknown field "default_grouping"');
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { enabled_lanes: [] } } }, 'At least one lane must be enabled');
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: [...TIMELINE_KINDS] } } }, 'At least one kind must stay visible');
     });
