@@ -1361,6 +1361,7 @@ export const getMassWorkflowTransitions = async (
   entityType: string,
   target: { entityIds?: string[] | null; filters?: string | null; search?: string | null; excludedIds?: string[] | null },
 ): Promise<AllowedTransition[]> => {
+  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   const definitionData = await getDefinitionData(context, user, entitySetting);
   if (!definitionData) return [];
