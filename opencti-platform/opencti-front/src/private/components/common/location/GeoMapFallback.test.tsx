@@ -39,8 +39,8 @@ const withTinyCountry = (): CountriesCollection => {
   const file = countriesFile();
   file.features.push({
     type: 'Feature',
-    properties: { ISO2: 'TN', ISO3: 'TNY', NAME: 'Tiny', LON: 2.35, LAT: 48.2 },
-    geometry: { type: 'Polygon', coordinates: [square(2.3, 48.15, 0.1)] },
+    properties: { ISO2: 'TN', ISO3: 'TNY', NAME: 'Tiny', LON: 2.35, LAT: 48.6 },
+    geometry: { type: 'Polygon', coordinates: [square(2.3, 48.55, 0.1)] },
   });
   return file;
 };
@@ -97,13 +97,20 @@ describe('GeoMapFallback', () => {
     expect(await findByText('Germany')).toBeTruthy();
   });
 
-  it('names every country, however small, once the view is less than 2000 km wide', async () => {
+  it('names every country, however small, from zoom 5', async () => {
     vi.mocked(loadCountries).mockResolvedValue(withTinyCountry());
-    const { findByText } = testRender(<GeoMapFallback zoom={7} center={{ latitude: 48, longitude: 2.4 }} />);
+    const { findByText } = testRender(<GeoMapFallback zoom={5} center={{ latitude: 48, longitude: 2.4 }} />);
     expect(await findByText('Tiny')).toBeTruthy();
   });
 
-  it('only names countries large enough on screen when the view is wider', async () => {
+  it('names every country from zoom 5 whatever the size of the map', async () => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(2000);
+    vi.mocked(loadCountries).mockResolvedValue(withTinyCountry());
+    const { findByText } = testRender(<GeoMapFallback zoom={5} center={{ latitude: 48, longitude: 2.4 }} />);
+    expect(await findByText('Tiny')).toBeTruthy();
+  });
+
+  it('only names countries large enough on screen below zoom 5', async () => {
     vi.mocked(loadCountries).mockResolvedValue(withTinyCountry());
     const { findByText, queryByText } = testRender(<GeoMapFallback zoom={4} center={{ latitude: 48, longitude: 2.4 }} />);
     expect(await findByText('France')).toBeTruthy();

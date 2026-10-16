@@ -22,7 +22,7 @@ const LABEL_LINE_HEIGHT = 14;
 const LABEL_MAX_WIDTH = 10 * LABEL_FONT_SIZE;
 const LABEL_SPACING = 4;
 const LABEL_MIN_COUNTRY_AREA_PX = 1500;
-const LABEL_ALL_COUNTRIES_MAX_VIEW_KM = 2000;
+const LABEL_ALL_COUNTRIES_MIN_ZOOM = 5;
 const SHARED_GEOMETRY_OPTIONS: L.PolylineOptions = { smoothFactor: 0 };
 
 interface LabelCandidate {
@@ -177,9 +177,7 @@ const GeoMapFallback = ({
         const point = map.project(position, currentZoom);
         return L.bounds([point.x - MARKER_SIZE / 2, point.y - MARKER_SIZE / 2], [point.x + MARKER_SIZE / 2, point.y + MARKER_SIZE / 2]);
       });
-      const { x: width, y: height } = map.getSize();
-      const visibleWidthKm = map.distance(map.containerPointToLatLng([0, height / 2]), map.containerPointToLatLng([width, height / 2])) / 1000;
-      const labelsAllCountries = visibleWidthKm <= LABEL_ALL_COUNTRIES_MAX_VIEW_KM;
+      const labelsAllCountries = currentZoom >= LABEL_ALL_COUNTRIES_MIN_ZOOM;
       const ordered = candidates
         .filter((candidate) => labelsAllCountries || candidate.area * scale * scale >= LABEL_MIN_COUNTRY_AREA_PX)
         .sort((a, b) => Number(colorByIso3.has(b.iso3)) - Number(colorByIso3.has(a.iso3)) || b.area - a.area);
