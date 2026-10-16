@@ -194,8 +194,8 @@ const DataTableFilters = ({
             additionalHeaderButtons && (
               <Stack
                 direction="row"
-                gap={1}
                 sx={{
+                  gap: 1,
                   '&:empty': {
                     display: 'none',
                   },

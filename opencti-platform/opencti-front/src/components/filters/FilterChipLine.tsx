@@ -270,10 +270,10 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
               }
             >
               <Stack
-                alignItems="center"
                 direction="row"
-                gap={0.5}
                 sx={{
+                  alignItems: 'center',
+                  gap: 0.5,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}

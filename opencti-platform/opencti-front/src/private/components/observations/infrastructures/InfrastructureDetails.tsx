@@ -99,7 +99,13 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
               {t_i18n('Infrastructure types')}
             </Label>
             <FieldOrEmpty source={infrastructureTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {infrastructureTypes.length > 0
                   && infrastructureTypes.map((infrastructureType) => (
                     <Tag

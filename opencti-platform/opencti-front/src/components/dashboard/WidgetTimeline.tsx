@@ -41,8 +41,10 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
           return (
             <TimelineItem key={`${value.id}-${index}`}>
               <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
+                sx={{
+                  color: 'text.secondary',
+                  paddingTop: '18px',
+                }}
               >
                 <FieldOrEmpty source={value[dateAttribute]}>
                   {fldt(value[dateAttribute])}

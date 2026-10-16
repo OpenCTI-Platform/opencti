@@ -62,7 +62,13 @@ class NoteDetailsComponent extends Component {
                 {t('Note types')}
               </Label>
               <FieldOrEmpty source={note.note_types}>
-                <Stack direction="row" flexWrap="wrap" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    flexWrap: 'wrap',
+                    gap: 1,
+                  }}
+                >
                   {note.note_types?.map((noteType) => (
                     <Tag
                       key={noteType}

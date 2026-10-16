@@ -25,7 +25,12 @@ const CardStatistic = ({
 
   return (
     <Card sx={{ paddingY: 2 }}>
-      <Stack height="100%" justifyContent="space-between">
+      <Stack
+        sx={{
+          height: '100%',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography
           color={theme.palette.text.light}
           variant="body2"
@@ -36,8 +41,10 @@ const CardStatistic = ({
 
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <div
             data-testid={`card-stat-${label}`}

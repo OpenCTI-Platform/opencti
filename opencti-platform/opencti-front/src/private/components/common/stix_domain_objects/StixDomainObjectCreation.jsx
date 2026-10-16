@@ -796,7 +796,12 @@ const StixDomainPanel = ({
       open={true}
       onClose={onClose}
       title={(
-        <Stack direction="row" justifyContent="space-between">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
           <span>{t_i18n('Create an entity')}</span>
           {!isFromBulkRelation && (
             <BulkTextModalButton

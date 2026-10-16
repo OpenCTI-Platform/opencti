@@ -204,21 +204,30 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
               <Grid container columnSpacing={2}>
                 <Grid item xs={0.5}></Grid>
                 <Grid item xs={fileNameColumnSize}>
-                  <Typography fontWeight="bold">
+                  <Typography sx={{
+                    fontWeight: 'bold',
+                  }}
+                  >
                     {t_i18n('Files')}
                   </Typography>
                 </Grid>
                 {importMode !== 'auto' && (
                   <>
                     <Grid item xs={3}>
-                      <Typography fontWeight="bold">
+                      <Typography sx={{
+                        fontWeight: 'bold',
+                      }}
+                      >
                         {t_i18n('Connectors')}
                       </Typography>
                     </Grid>
 
                     {isConfigurationColumn && (
                       <Grid item xs={3}>
-                        <Typography fontWeight="bold">
+                        <Typography sx={{
+                          fontWeight: 'bold',
+                        }}
+                        >
                           {t_i18n('Configuration')}
                         </Typography>
                       </Grid>
@@ -238,7 +247,13 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
           return (
             <Collapse key={file.name}>
               <ListItem divider dense>
-                <Grid container alignItems="center" columnSpacing={2}>
+                <Grid
+                  container
+                  columnSpacing={2}
+                  sx={{
+                    alignItems: 'center',
+                  }}
+                >
                   {/* Column 1: File Icon */}
                   <Grid item xs={0.5} sx={{ display: 'flex' }}>
                     <UploadFileOutlined color="primary" />

@@ -318,13 +318,20 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     return (
       <Stack
         key={instanceTrigger?.id}
-        gap={3}
+        sx={{
+          gap: 3,
+        }}
       >
-        <Stack gap={1}>
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
           <Stack
             direction="row"
-            alignItems="center"
-            gap={1}
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
           >
             <Typography variant="h6">{t_i18n('Subscribe')}</Typography>
             <Tag
@@ -346,7 +353,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   padding: '16px',
                 }}
               >
-                <Stack gap={3}>
+                <Stack sx={{
+                  gap: 3,
+                }}
+                >
                   <div>
                     <Field
                       component={TextField}
@@ -498,7 +508,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
         open={open}
         onClose={handleClose}
       >
-        <Stack gap={3}>
+        <Stack sx={{
+          gap: 3,
+        }}
+        >
           <Alert severity="info" variant="outlined">
             {t_i18n('When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.')}
           </Alert>

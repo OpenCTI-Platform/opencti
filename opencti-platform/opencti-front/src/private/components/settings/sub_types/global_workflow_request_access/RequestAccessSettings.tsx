@@ -60,7 +60,13 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
   return (
     <>
       <div>
-        <Stack direction="row" alignItems="center" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           <Typography variant="h3" sx={{ marginBottom: 0 }}>
             {t_i18n('Specific Workflow for Request Access')}
           </Typography>

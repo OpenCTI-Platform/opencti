@@ -95,7 +95,13 @@ class StixDomainObjectKnowledge extends Component {
     const { t, n, stixDomainObjectId, theme } = this.props;
     return (
       <>
-        <Grid container={true} spacing={3} mb={3}>
+        <Grid
+          container={true}
+          spacing={3}
+          sx={{
+            mb: 3,
+          }}
+        >
           <Grid item xs={4}>
             <QueryRenderer
               query={stixDomainObjectKnowledgeReportsNumberQuery}

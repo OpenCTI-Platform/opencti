@@ -48,7 +48,13 @@ class ThreatActorGroupDetailsComponent extends Component {
                   {t('Threat actor types')}
                 </Label>
                 <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                  <Stack direction="row" flexWrap="wrap" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      flexWrap: 'wrap',
+                      gap: 1,
+                    }}
+                  >
                     {threatActorGroup.threat_actor_types
                       && threatActorGroup.threat_actor_types.map(
                         (threatActorGroupType) => (

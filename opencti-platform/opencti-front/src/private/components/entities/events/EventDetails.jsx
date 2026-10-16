@@ -31,7 +31,13 @@ class EventDetailsComponent extends Component {
                 {t('Event types')}
               </Label>
               <FieldOrEmpty source={event.event_types}>
-                <Stack direction="row" gap={1} flexWrap="wrap">
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {event.event_types?.map((eventType) => (
                     <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType} />
                   ))}

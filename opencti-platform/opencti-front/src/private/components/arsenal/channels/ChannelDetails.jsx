@@ -41,7 +41,13 @@ export const ChannelDetails = ({
             {t_i18n('Channel types')}
           </Label>
           <FieldOrEmpty source={channel.channel_types}>
-            <Stack direction="row" gap={1} flexWrap="wrap">
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                flexWrap: 'wrap',
+              }}
+            >
               {channel.channel_types?.map((channelType) => (
                 <Tag
                   key={channelType}

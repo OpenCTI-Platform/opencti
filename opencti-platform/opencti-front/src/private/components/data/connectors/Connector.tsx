@@ -838,7 +838,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const aboutContent = contractDefinition && (
     <Box sx={{ marginBottom: '20px' }}>
       <Card title={t_i18n('About this connector')}>
-        <Stack gap={1.5}>
+        <Stack sx={{
+          gap: 1.5,
+        }}
+        >
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
             {contractDefinition.short_description || contractDefinition.description}
           </Typography>
@@ -849,7 +852,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               ))}
             </Box>
           )}
-          <Stack direction="row" gap={1} flexWrap="wrap">
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
+          >
             {contractDefinition.slug && (
               <Button
                 variant="secondary"
@@ -910,7 +919,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           gap: theme.spacing(2),
         }}
       >
-        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 2,
+            alignItems: 'center',
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               height: 56,

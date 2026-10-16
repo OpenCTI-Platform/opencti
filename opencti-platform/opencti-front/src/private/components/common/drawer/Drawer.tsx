@@ -134,11 +134,26 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (subHeader.left && subHeader.right) {
       return (
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="row" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             {subHeader.left}
           </Stack>
-          <Stack direction="row" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             {subHeader.right}
           </Stack>
         </Stack>
@@ -147,7 +162,12 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (subHeader.left && !subHeader.right) {
       return (
-        <Stack direction="row" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+          }}
+        >
           {subHeader.left}
         </Stack>
       );
@@ -155,7 +175,13 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
     if (!subHeader.left && subHeader.right) {
       return (
-        <Stack direction="row" gap={1} justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            justifyContent: 'flex-end',
+          }}
+        >
           {subHeader.right}
         </Stack>
       );

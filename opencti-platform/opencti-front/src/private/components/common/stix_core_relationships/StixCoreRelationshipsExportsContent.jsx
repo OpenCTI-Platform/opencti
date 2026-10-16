@@ -98,11 +98,16 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
     const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
 
     return (
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <Stack
           direction="row"
-          justifyContent="flex-end"
-          gap={1}
+          sx={{
+            justifyContent: 'flex-end',
+            gap: 1,
+          }}
         >
           <Tooltip
             title={

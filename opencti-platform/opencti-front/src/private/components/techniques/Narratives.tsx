@@ -68,9 +68,11 @@ const Narratives: FunctionComponent = () => {
       <>
         <Stack
           direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ marginBottom: theme.spacing(2) }}
+          sx={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: theme.spacing(2),
+          }}
         >
           <SearchInput
             variant="small"
@@ -78,7 +80,12 @@ const Narratives: FunctionComponent = () => {
             keyword={searchTerm}
           />
 
-          <Stack direction="row" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+            }}
+          >
             <ViewSwitchingButtons
               handleChangeView={helpers.handleChangeView}
               disableCards={true}

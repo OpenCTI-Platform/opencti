@@ -252,7 +252,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         <ExperienceDetailRow
           divider={!xtmOneConfigured}
           label={(
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Typography variant="body2" color="textSecondary">
                 {xtmOneConfigured ? t_i18n('XTM One (Agentic AI)') : t_i18n('Agentic AI (Ariane Assistant)')}
               </Typography>
@@ -336,7 +342,14 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   return (
     <div style={{ margin: 0, padding: '0 0 50px 0' }} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
-      <Grid container={true} spacing={3} alignItems="stretch" style={{ marginBottom: 23 }}>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginBottom: 23 }}
+        sx={{
+          alignItems: 'stretch',
+        }}
+      >
         <Grid item xs={6}>
           <ExperienceCard
             icon={<RocketLaunchOutlined />}

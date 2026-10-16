@@ -82,8 +82,21 @@ const PlaybookHeaderComponent = ({
   const { t_i18n, nsdt, n } = useFormatter();
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={1}>
-        <Stack sx={{ flex: 1 }} direction="row" alignItems="center" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+            flex: 1,
+          }}
+        >
           <TitleMainEntity>
             {playbook.name}
           </TitleMainEntity>
@@ -109,7 +122,13 @@ const PlaybookHeaderComponent = ({
             aria-label="cards"
             style={{ padding: '5px' }}
           >
-            <Stack direction="row" alignItems="center" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
               <Tag
                 label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
                 labelTextTransform="none"

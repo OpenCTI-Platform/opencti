@@ -139,7 +139,14 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
       style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden', width: '100%', position: 'relative', gap: 4, height: 20 }}
     >
       {/* Hidden measurement row */}
-      <Stack direction="row" position="absolute" visibility="hidden" gap={0.5}>
+      <Stack
+        direction="row"
+        sx={{
+          position: 'absolute',
+          visibility: 'hidden',
+          gap: 0.5,
+        }}
+      >
         {tagValues.map((tag, index) => (
           <div
             key={tag}
@@ -153,7 +160,14 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
       </Stack>
 
       {/* Visible tags + overflow tag in the same row */}
-      <Stack direction="row" gap={0.5} overflow="hidden" alignItems="center">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 0.5,
+          overflow: 'hidden',
+          alignItems: 'center',
+        }}
+      >
         {tagValues.slice(0, visibleCount).map((tag) => (
           <Tag key={tag} label={tag.toLowerCase()} />
         ))}

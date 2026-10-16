@@ -276,7 +276,13 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
   const consumerContent = () => {
     if (loading && consumers.length === 0) {
       return (
-        <Box display="flex" justifyContent="center" p={4}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 4,
+          }}
+        >
           <CircularProgress />
         </Box>
       );

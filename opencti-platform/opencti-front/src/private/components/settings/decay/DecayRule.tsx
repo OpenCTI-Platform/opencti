@@ -176,7 +176,14 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6} container={true} gap={2}>
+        <Grid
+          item
+          xs={6}
+          container={true}
+          sx={{
+            gap: 2,
+          }}
+        >
           <Grid item xs={12}>
             <Card title={t_i18n('Impact')}>
               {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}

@@ -63,8 +63,10 @@ const FilterValuesContent: FunctionComponent<
     return (
       <Stack
         direction="row"
-        alignItems="center"
-        gap={0.5}
+        sx={{
+          alignItems: 'center',
+          gap: 0.5,
+        }}
       >
         <span style={wrapStyle}>{rawValue}</span>
         {tooltipMessage && (
