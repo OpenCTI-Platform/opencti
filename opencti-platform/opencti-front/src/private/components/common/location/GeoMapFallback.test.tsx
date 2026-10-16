@@ -4,12 +4,14 @@ import type { Position } from 'geojson';
 import testRender from '../../../../utils/tests/test-render';
 import GeoMapFallback from './GeoMapFallback';
 import { loadCountries, type CountriesCollection } from './countries';
+import { loadCountryNames } from './countryNames';
 
 vi.hoisted(() => {
   SVGSVGElement.prototype.createSVGRect = () => ({ x: 0, y: 0, width: 0, height: 0 }) as DOMRect;
 });
 
 vi.mock('./countries', () => ({ loadCountries: vi.fn() }));
+vi.mock('./countryNames', () => ({ loadCountryNames: vi.fn() }));
 
 const square = (west: number, south: number, size: number): Position[] => [
   [west, south],
@@ -75,6 +77,7 @@ describe('GeoMapFallback', () => {
     vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(300);
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     vi.mocked(loadCountries).mockReset();
+    vi.mocked(loadCountryNames).mockReset().mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -95,6 +98,15 @@ describe('GeoMapFallback', () => {
     expect(container.querySelector('img.leaflet-marker-icon[src="city.png"]')).not.toBeNull();
     expect(await findByText('France')).toBeTruthy();
     expect(await findByText('Germany')).toBeTruthy();
+  });
+
+  it('names countries after their Country entity when the entity names are available', async () => {
+    vi.mocked(loadCountries).mockResolvedValue(countriesFile());
+    vi.mocked(loadCountryNames).mockResolvedValue(new Map([['FRA', 'French Republic'], ['FR', 'French Republic']]));
+    const { findByText, queryByText } = testRender(<GeoMapFallback zoom={4} />);
+    expect(await findByText('French Republic')).toBeTruthy();
+    expect(queryByText('France')).toBeNull();
+    expect(queryByText('Germany')).toBeNull();
   });
 
   it('names every country, however small, from zoom 5', async () => {
