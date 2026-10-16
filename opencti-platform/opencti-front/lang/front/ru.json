@@ -1629,6 +1629,7 @@
   "Details: {message}": "Подробности: {message}",
   "Detection": "Обнаружение",
   "Detection fields": "Поля обнаружения",
+  "Detection rule": "Правило обнаружения",
   "Detection rule (Sigma or native query)": "Правило обнаружения (Sigma или нативный запрос)",
   "Detection rule hunt - {date}": "Охота по правилу обнаружения - {date}",
   "Diamond": "Diamond",

@@ -1629,6 +1629,7 @@
   "Details: {message}": "详情：{message}",
   "Detection": "检测",
   "Detection fields": "检测字段",
+  "Detection rule": "检测规则",
   "Detection rule (Sigma or native query)": "检测规则（Sigma 或原生查询）",
   "Detection rule hunt - {date}": "检测规则狩猎 - {date}",
   "Diamond": "钻石",

@@ -38,7 +38,7 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'hunt_id', label: 'Hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_type', label: 'Hunt type', type: 'string', format: 'enum', values: HUNT_TYPES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_source_kind', label: 'Hunt origin', type: 'string', format: 'enum', values: HUNT_SOURCE_KINDS, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'hunt_technique_ids', label: 'Hunt techniques', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_ATTACK_PATTERN], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'hunt_technique_ids', label: 'Run techniques', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_ATTACK_PATTERN], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'hunt_orphaned', label: 'Run of a deleted hunt', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_status', label: 'Hunt run status', type: 'string', format: 'enum', values: HUNT_RUN_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_trigger', label: 'Hunt run trigger', type: 'string', format: 'enum', values: HUNT_RUN_TRIGGERS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

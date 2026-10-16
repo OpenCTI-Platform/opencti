@@ -527,6 +527,24 @@ export const huntVerdictSourceLabel = (source?: string | null) => {
     default: return 'Not recorded';
   }
 };
+
+/**
+ * The label of a value of the hunt attribute a dashboard widget breaks down on, or null for any other attribute.
+ * Distributions return the values capitalized (`True_positive`); chart axes cut long names, hence the short hunt type.
+ */
+export const huntWidgetValueLabel = (attribute: string, value: string): string | null => {
+  const key = value.toLowerCase();
+  switch (attribute) {
+    case 'verdict': return huntVerdictLabel(key);
+    case 'verdict_source': return huntVerdictSourceLabel(key);
+    case 'hunt_run_status': return huntRunStatusLabel(key);
+    case 'hunt_run_trigger': return huntRunTriggerLabel(key);
+    case 'hunt_type': return key === 'indicators' ? huntTypeLabel(key) : 'Detection rule';
+    case 'hunt_source_kind': return huntSourceKindLabel(key);
+    case 'hunt_status': return huntStatusLabel(key);
+    default: return null;
+  }
+};
 // endregion
 
 // region status transitions

@@ -1629,6 +1629,7 @@
   "Details: {message}": "Details: {message}",
   "Detection": "Erkennung",
   "Detection fields": "Erkennungsfelder",
+  "Detection rule": "Erkennungsregel",
   "Detection rule (Sigma or native query)": "Erkennungsregel (Sigma oder native Abfrage)",
   "Detection rule hunt - {date}": "Jagd mit Erkennungsregel - {date}",
   "Diamond": "Diamant",

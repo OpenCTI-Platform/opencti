@@ -41,6 +41,7 @@ import {
   huntStatusTransitions,
   huntVerdictSeverity,
   huntVerdictSourceLabel,
+  huntWidgetValueLabel,
   isAutonomousHunt,
   isFilterGroupJsonEmpty,
   isHuntableEntityPath,
@@ -559,6 +560,19 @@ describe('Hunt utils', () => {
     expect(huntRunTriggerLabel('pir')).toEqual('PIR activation');
     expect(huntVerdictSourceLabel(null)).toEqual('Not recorded');
     expect(huntIncidentSeverityLabel('high')).toEqual('High');
+  });
+
+  it('should name the values of the hunt attributes a widget breaks down on, and leave the other attributes alone', () => {
+    expect(huntWidgetValueLabel('verdict', 'true_positive')).toEqual('True positive');
+    expect(huntWidgetValueLabel('verdict', 'True_positive')).toEqual('True positive');
+    expect(huntWidgetValueLabel('hunt_run_status', 'Timeout')).toEqual('Timed out');
+    expect(huntWidgetValueLabel('hunt_run_trigger', 'playbook')).toEqual('Playbook');
+    expect(huntWidgetValueLabel('hunt_type', 'Telemetry')).toEqual('Detection rule');
+    expect(huntWidgetValueLabel('hunt_type', 'indicators')).toEqual('Indicators');
+    expect(huntWidgetValueLabel('hunt_source_kind', 'agent')).toEqual('AI agent');
+    expect(huntWidgetValueLabel('verdict_source', 'analyst')).toEqual('Analyst');
+    expect(huntWidgetValueLabel('hunt_status', 'paused')).toEqual('Paused');
+    expect(huntWidgetValueLabel('incident_type', 'true_positive')).toBeNull();
   });
 
   it('should classify the failure of a run from its status and the class the connector reported', () => {

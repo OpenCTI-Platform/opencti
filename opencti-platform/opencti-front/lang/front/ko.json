@@ -1629,6 +1629,7 @@
   "Details: {message}": "세부 정보: {message}",
   "Detection": "탐지",
   "Detection fields": "탐지 필드",
+  "Detection rule": "탐지 규칙",
   "Detection rule (Sigma or native query)": "탐지 규칙(Sigma 또는 네이티브 쿼리)",
   "Detection rule hunt - {date}": "탐지 규칙 헌트 - {date}",
   "Diamond": "Diamond",

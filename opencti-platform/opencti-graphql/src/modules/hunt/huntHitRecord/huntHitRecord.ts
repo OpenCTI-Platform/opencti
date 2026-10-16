@@ -43,7 +43,7 @@ const HUNT_HIT_RECORD_DEFINITION: ModuleDefinition<StoreEntityHuntHitRecord, Sti
     { name: 'hunt_id', label: 'Hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_type', label: 'Hunt type', type: 'string', format: 'enum', values: HUNT_TYPES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_source_kind', label: 'Hunt origin', type: 'string', format: 'enum', values: HUNT_SOURCE_KINDS, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'hunt_technique_ids', label: 'Hunt techniques', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_ATTACK_PATTERN], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'hunt_technique_ids', label: 'Run techniques', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_ATTACK_PATTERN], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'security_platform_id', label: 'Security platform', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hit_key', label: 'Hit key', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'first_seen', label: 'First seen', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -1629,6 +1629,7 @@
   "Details: {message}": "詳細: {message}",
   "Detection": "検出",
   "Detection fields": "検出フィールド",
+  "Detection rule": "検知ルール",
   "Detection rule (Sigma or native query)": "検知ルール（Sigma またはネイティブクエリ）",
   "Detection rule hunt - {date}": "検知ルールハント - {date}",
   "Diamond": "ダイヤモンド",
