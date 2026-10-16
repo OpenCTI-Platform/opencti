@@ -1,4 +1,4 @@
-import { Readable, Transform } from 'node:stream';
+import { PassThrough, Readable } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent } from '../config/conf';
@@ -288,19 +288,13 @@ const toHeaderRecord = (method: string, response: Response) => {
 };
 
 interface BodyWatcher {
-  onProgress: () => void;
   onEnd: () => void;
   toError: (error: unknown) => Error;
 }
 
-const watchBody = (response: Response, { onProgress, onEnd, toError }: BodyWatcher) => {
+const watchBody = (response: Response, { onEnd, toError }: BodyWatcher) => {
   const source = response.body ? Readable.fromWeb(response.body as NodeReadableStream) : Readable.from([]);
-  const watched = new Transform({
-    transform(chunk, _encoding, callback) {
-      onProgress();
-      callback(null, chunk);
-    },
-  });
+  const watched = new PassThrough();
   source.on('error', (error) => watched.destroy(toError(error)));
   watched.on('error', () => undefined);
   watched.on('close', () => {
@@ -371,6 +365,21 @@ const createTimeoutWatchdog = (timeout: number) => {
   return { signal: controller.signal, arm, disarm };
 };
 
+const observeReceivedBytes = (onBytes: () => void): Dispatcher.DispatcherComposeInterceptor => (dispatch) => (options, handler) => dispatch(options, {
+  onRequestStart: (controller, context) => handler.onRequestStart?.(controller, context),
+  onRequestUpgrade: (controller, statusCode, headers, socket) => handler.onRequestUpgrade?.(controller, statusCode, headers, socket),
+  onResponseStarted: () => handler.onResponseStarted?.(),
+  onResponseStart: (controller, statusCode, headers, statusMessage) => handler.onResponseStart?.(controller, statusCode, headers, statusMessage),
+  onResponseData: (controller, chunk) => {
+    onBytes();
+    handler.onResponseData?.(controller, chunk);
+  },
+  onResponseEnd: (controller, trailers) => handler.onResponseEnd?.(controller, trailers),
+  onResponseError: (controller, error) => handler.onResponseError?.(controller, error),
+  onBodySent: (chunk) => handler.onBodySent?.(chunk),
+  onRequestSent: () => handler.onRequestSent?.(),
+});
+
 const proxyDispatchers = new Map<string, Dispatcher>();
 const getProxyDispatcher = (url: URL): Dispatcher | undefined => {
   const proxyDispatcher = getPlatformHttpProxyAgent(url.href, true);
@@ -430,7 +439,8 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     let response: Response;
     try {
       for (let redirectCount = 0; ; redirectCount += 1) {
-        const dispatcher: Dispatcher = useClientTransport ? (getProxyDispatcher(currentUrl) ?? clientAgent) : defaultAgent;
+        const transportDispatcher: Dispatcher = useClientTransport ? (getProxyDispatcher(currentUrl) ?? clientAgent) : defaultAgent;
+        const dispatcher = watchdog ? transportDispatcher.compose(observeReceivedBytes(watchdog.arm)) : transportDispatcher;
         const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
         const requestUrl = currentUrl.href;
         watchdog?.arm();
@@ -477,8 +487,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
       headers: toHeaderRecord(currentMethod, finalResponse),
       data: await transport(() => {
         watchdog?.arm();
-        return readData(finalResponse, ok || responseType === 'stream' ? responseType : 'json', {
-          onProgress: () => watchdog?.arm(),
+        return readData(finalResponse, responseType, {
           onEnd: () => watchdog?.disarm(),
           toError: (error) => toTransportError(error, requestTimeout, watchdog?.signal, config.signal),
         });

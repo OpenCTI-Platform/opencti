@@ -62,6 +62,19 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
     res.write('{"detail":"unavailable"}');
     setTimeout(() => res.socket?.destroy(), 50);
   },
+  '/gzip-trickle': (_req, res) => {
+    res.writeHead(200, { 'Content-Encoding': 'gzip', 'Content-Type': 'text/plain' });
+    const compressed = gzipSync('compressed trickle content');
+    let offset = 0;
+    const timer = setInterval(() => {
+      res.write(compressed.subarray(offset, offset + 1));
+      offset += 1;
+      if (offset === compressed.length) {
+        clearInterval(timer);
+        res.end();
+      }
+    }, 20);
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -449,5 +462,20 @@ describe('getHttpClient', () => {
       error.response.data.on('close', resolve);
     });
     expect(error.response.data.errored).toBeInstanceOf(HttpClientError);
+  });
+
+  it('should not time out a compressed body whose bytes keep arriving', async () => {
+    const response = await getHttpClient({ baseURL, responseType: 'text', timeout: 100 }).get('/gzip-trickle');
+
+    expect(response.data).toBe('compressed trickle content');
+  });
+
+  it('should read an error response with the requested response type', async () => {
+    const textError = await getHttpClient({ baseURL, responseType: 'text' }).get('/bad-request').catch((e) => e);
+    const bufferError = await getHttpClient({ baseURL, responseType: 'arraybuffer' }).get('/server-error').catch((e) => e);
+
+    expect(textError.response.data).toBe('{"detail":"invalid input"}');
+    expect(Buffer.isBuffer(bufferError.response.data)).toBe(true);
+    expect(bufferError.response.data.toString()).toBe('down');
   });
 });
