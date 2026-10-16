@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { useTheme } from '@mui/material/styles';
 import { Switch, Text } from '@filigran/design-system';
 import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -69,6 +70,7 @@ interface TasksDetailsProps {
 
 const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const data: TaskDetails_task$data = useFragment(
     TaskDetailsFragment,
     tasksData,
@@ -116,7 +118,7 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
                   })}
                 />
               </Security>
-              <Text variant="content-caption" as="div" style={{ marginTop: 4 }}>
+              <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }}>
                 {t_i18n('Its completion sets the containment date in the timeline of the case')}
               </Text>
             </Grid>
