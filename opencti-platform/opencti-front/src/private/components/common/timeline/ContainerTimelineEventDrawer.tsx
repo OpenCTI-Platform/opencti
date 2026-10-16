@@ -138,6 +138,7 @@ const ContainerTimelineEventDrawer = ({
     from: element.from && 'id' in element.from ? element.from as TimelineElementRef : null,
     to: element.to && 'id' in element.to ? element.to as TimelineElementRef : null,
   }) : undefined;
+  const elementName = event.element_name ?? element?.representative?.main;
   const author = event.createdBy?.name ? event.createdBy : null;
   const authorLink = author?.id && author.entity_type ? computeLink({ id: author.id, entity_type: author.entity_type }) : undefined;
   const hasConfidence = event.confidence !== null && event.confidence !== undefined;
@@ -214,7 +215,7 @@ const ContainerTimelineEventDrawer = ({
             </MetadataItem>
             <MetadataItem label={t_i18n('Source')}>
               <Text variant="content-base" as="div" data-testid="timeline-event-source">
-                {describeTimelineEventSource({ ...event, element_name: event.element_name ?? element?.representative?.main }, t_i18n)}
+                {describeTimelineEventSource({ ...event, element_name: elementName }, t_i18n)}
               </Text>
             </MetadataItem>
             {author && (
@@ -236,9 +237,9 @@ const ContainerTimelineEventDrawer = ({
                   <ItemIcon type={element.entity_type} size="small" />
                   <div style={{ minWidth: 0, overflowWrap: 'anywhere' }} data-testid="timeline-event-element-value">
                     {elementLink ? (
-                      <Link to={elementLink} data-testid="timeline-event-element">{element.representative?.main ?? t_i18n(`entity_${element.entity_type}`)}</Link>
+                      <Link to={elementLink} data-testid="timeline-event-element">{elementName ?? t_i18n(`entity_${element.entity_type}`)}</Link>
                     ) : (
-                      <Text variant="content-base">{element.representative?.main ?? t_i18n(`entity_${element.entity_type}`)}</Text>
+                      <Text variant="content-base">{elementName ?? t_i18n(`entity_${element.entity_type}`)}</Text>
                     )}
                     <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
                       {element.relationship_type ? t_i18n(`relationship_${element.relationship_type}`) : t_i18n(`entity_${element.entity_type}`)}

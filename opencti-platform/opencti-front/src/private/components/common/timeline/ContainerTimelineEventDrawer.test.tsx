@@ -83,6 +83,22 @@ describe('ContainerTimelineEventDrawer source', () => {
   });
 });
 
+describe('ContainerTimelineEventDrawer element', () => {
+  it('names the element as the timeline does: a note without an abstract by the start of its content', () => {
+    renderDrawer({
+      ...indicatorEvent,
+      title: 'Note The encrypted shares are mounted from FS-FIN-02 only',
+      kind: 'note_added',
+      lane: 'response',
+      event_end_time: null,
+      element_name: 'The encrypted shares are mounted from FS-FIN-02 only',
+      element: { id: 'note-1', entity_type: 'Note', representative: { main: 'Unknown' } },
+    });
+    expect(screen.getByTestId('timeline-event-element')).toHaveTextContent('The encrypted shares are mounted from FS-FIN-02 only');
+    expect(screen.queryByText('Unknown')).not.toBeInTheDocument();
+  });
+});
+
 describe('ContainerTimelineEventDrawer context windows', () => {
   const malwareSeen: TimelineEventDetails = {
     ...indicatorEvent,

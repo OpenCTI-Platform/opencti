@@ -34,6 +34,7 @@ import {
   TIMELINE_VIEW_DEFAULTS,
   timelineContainerHasTasks,
   type TimelineDomain,
+  timelineElementName,
   timelineExportWindow,
   timelineGroupingForSpan,
   type TimelineViewState,
@@ -300,6 +301,21 @@ describe('Timeline event source', () => {
     expect(describeTimelineEventSource({ ...derived(null), source: 'manual' }, t)).toBe('Analyst milestone');
     expect(describeTimelineEventSource(derived('a-future-rule'), t)).toBe('Derived from the knowledge');
     expect(describeTimelineEventSource(derived(null), t)).toBe('Derived from the knowledge');
+  });
+});
+
+describe('Timeline element names', () => {
+  const content = 'The encrypted shares are mounted from FS-FIN-02 only;\n\nthe backup server was not reached by the attacker before the isolation';
+
+  it('names a note without an abstract by the start of its content, as the exports do', () => {
+    expect(timelineElementName({ entity_type: 'Note', representative: { main: 'Unknown' }, attribute_abstract: null, content }))
+      .toBe('The encrypted shares are mounted from FS-FIN-02 only; the backup server was not...');
+  });
+
+  it('keeps the name of the platform for a note with an abstract and for any other element', () => {
+    expect(timelineElementName({ entity_type: 'Note', representative: { main: 'Shares mounted' }, attribute_abstract: 'Shares mounted', content })).toBe('Shares mounted');
+    expect(timelineElementName({ entity_type: 'Malware', representative: { main: 'LockBit 3.0 loader' } })).toBe('LockBit 3.0 loader');
+    expect(timelineElementName(null)).toBeNull();
   });
 });
 

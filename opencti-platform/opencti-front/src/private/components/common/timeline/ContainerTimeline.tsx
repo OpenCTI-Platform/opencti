@@ -65,6 +65,7 @@ import {
   type TimelineViewState,
   type TimelineZoomWindow,
   timelineContainerHasTasks,
+  timelineElementName,
   toTime,
   zoomDomain,
 } from './timelineUtils';
@@ -248,6 +249,10 @@ const containerTimelineEventsFragment = graphql`
                 main
               }
             }
+            ... on Note {
+              attribute_abstract
+              content
+            }
             ... on StixRelationship {
               id
               entity_type
@@ -365,7 +370,7 @@ const ContainerTimelineEventsView = ({
     const node = edge.node;
     return {
       ...node,
-      element_name: node.element?.representative?.main ?? null,
+      element_name: timelineElementName(node.element),
     } as TimelineEventDetails;
   }).reverse(), [data]);
   // Time of the event of the opening link: undefined while it loads, null when it is no event of this container

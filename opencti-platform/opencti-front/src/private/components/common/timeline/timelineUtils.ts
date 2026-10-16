@@ -1,6 +1,8 @@
 // Pure helpers of the incident and case timeline (no React, no Relay): constants shared with the
 // backend enums, URL view state, time domain math, grouping buckets, lane layout and export helpers.
 
+import { truncate } from '../../../../utils/String';
+
 // Display order of the lanes, from the attack to the response
 export const TIMELINE_LANES = ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'] as const;
 export type TimelineLane = typeof TIMELINE_LANES[number];
@@ -163,6 +165,22 @@ export const isTimelineContextWindow = (event: { rule_id?: string | null; kind: 
   && event.kind !== 'incident_seen';
 
 export const TIMELINE_CONTEXT_LEGEND = 'Global first and last seen of the entity, context only: not dated in this incident';
+
+const NOTE_NAME_LENGTH = 80;
+
+/** The name of the element of an event, the same as in the exports: a note without an abstract is named by the start of its content. */
+export const timelineElementName = (element?: {
+  readonly entity_type?: string;
+  readonly representative?: { readonly main: string } | null;
+  readonly attribute_abstract?: string | null;
+  readonly content?: string | null;
+} | null): string | null => {
+  const content = element?.content?.replace(/\s+/g, ' ').trim();
+  if (element?.entity_type === 'Note' && !element.attribute_abstract && content) {
+    return truncate(content, NOTE_NAME_LENGTH);
+  }
+  return element?.representative?.main ?? null;
+};
 
 // The cases hold tasks; an Incident has none, so a Containment milestone is its only way to record the containment
 const TIMELINE_TASK_CONTAINER_TYPES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
