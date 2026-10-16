@@ -22,6 +22,7 @@ const LABEL_LINE_HEIGHT = 14;
 const LABEL_MAX_WIDTH = 10 * LABEL_FONT_SIZE;
 const LABEL_SPACING = 4;
 const LABEL_MIN_COUNTRY_AREA_PX = 1500;
+const SHARED_GEOMETRY_OPTIONS: L.PolylineOptions = { smoothFactor: 0 };
 
 interface LabelCandidate {
   iso3: string;
@@ -220,15 +221,18 @@ const GeoMapFallback = ({
         if (released) return;
         const { countries: collection, borders } = simplifyCountries(fullCollection);
         L.geoJSON(collection, {
+          ...SHARED_GEOMETRY_OPTIONS,
           interactive: false,
           style: { stroke: false, fillColor: colors.bg, fillOpacity: 1 },
         }).addTo(map);
         borderLayer = L.geoJSON({ type: 'MultiLineString', coordinates: borders }, {
+          ...SHARED_GEOMETRY_OPTIONS,
           interactive: false,
           style: { color: colors.boundary, weight: boundaryWidth(map.getZoom()), lineJoin: 'round' },
         }).addTo(map);
         if (colorByIso3.size > 0) {
           L.geoJSON(collection, {
+            ...SHARED_GEOMETRY_OPTIONS,
             interactive: false,
             filter: (feature) => colorByIso3.has(feature.properties.ISO3),
             style: (feature) => {
