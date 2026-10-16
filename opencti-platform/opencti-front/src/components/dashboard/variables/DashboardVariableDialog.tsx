@@ -21,7 +21,7 @@ import SelectFieldFds, { SelectItem } from '../../fields/SelectFieldFds';
 import ComboboxField from '../../ComboboxField';
 import useSchema from '../../../utils/hooks/useSchema';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, normalizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
 import { useDashboardVariableMutations } from './useDashboardVariableMutations';
@@ -276,8 +276,9 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                   />
                 )}
                 {parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
-                {/* A type that cannot be restricted shows no restriction. */}
-                {(!type || RESTRICTABLE_TYPES.includes(type)) && (
+                {/* A type that cannot be restricted shows no restriction, unless it holds one (a manifest written elsewhere):
+                    it can then be left. */}
+                {(!type || RESTRICTABLE_TYPES.includes(type) || values.restrictionMode !== 'none') && (
                   <RadioGroup
                     aria-label={t_i18n('Restriction')}
                     orientation="vertical"
@@ -303,8 +304,8 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     label={t_i18n('Values')}
                     values={values.selectionValues}
                     disabled={isTypeIncomplete}
-                    error={errors.selectionValues && (touched.selectionValues || values.selectionValues.length > 0) ? errors.selectionValues : undefined}
-                    onBlur={() => setFieldTouched('selectionValues', true)}
+                    // Shown as soon as the mode is chosen: Create stays disabled until the selection is valid.
+                    error={errors.selectionValues}
                     onChange={(selectionValues) => {
                       setFieldValue('selectionValues', selectionValues);
                       // A default value removed from the selection is no longer allowed.
@@ -319,12 +320,15 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
                     entityTypes={values.entityTypes}
                     label={t_i18n('Filters')}
                     value={values.filters}
-                    error={touched.filters || isEditing ? errors.filters : undefined}
+                    // Shown as soon as the mode is chosen: Create stays disabled until the rule is valid.
+                    error={errors.filters}
                     onChange={(filters) => {
+                      const isSameRule = JSON.stringify(normalizeFilterGroupForBackend(filters))
+                        === JSON.stringify(normalizeFilterGroupForBackend(values.filters));
                       setFieldValue('filters', filters);
-                      setFieldTouched('filters', true, false);
-                      // Whether the default value still matches the rule is not known without a search: it is chosen again.
-                      setFieldValue('defaultValue', '');
+                      // Whether the default value still matches the rule is not known without a search: it is chosen again,
+                      // unless the rule sent is the same (a filter added without value yet, which is not sent).
+                      if (!isSameRule) setFieldValue('defaultValue', '');
                     }}
                   />
                 )}

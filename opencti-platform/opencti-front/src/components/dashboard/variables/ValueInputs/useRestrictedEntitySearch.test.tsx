@@ -46,6 +46,17 @@ describe('useRestrictedEntitySearch', () => {
     expect(hook.result.current.options.map((option) => option.label)).toEqual(['Acme Corp']);
   });
 
+  it('drops the options found for another rule', () => {
+    let filters = rule;
+    const { relayEnv, hook } = testRenderHook(() => useRestrictedEntitySearch(['Organization'], filters));
+    act(() => hook.result.current.search(''));
+    act(() => relayEnv.mock.resolveMostRecentOperation(answer([['org-1', 'Acme Corp']])));
+    expect(hook.result.current.options).toHaveLength(1);
+    filters = { ...rule, filters: [{ key: 'objectLabel', values: ['label-2'], operator: 'eq', mode: 'or' }] };
+    hook.rerender();
+    expect(hook.result.current.options).toEqual([]);
+  });
+
   it('offers nothing when the search fails', () => {
     const { relayEnv, hook } = testRenderHook(() => useRestrictedEntitySearch(['Organization'], rule));
     act(() => hook.result.current.search(''));

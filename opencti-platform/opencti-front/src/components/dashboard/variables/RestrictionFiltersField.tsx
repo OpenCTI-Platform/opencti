@@ -26,11 +26,14 @@ const RestrictionFiltersField = ({ entityTypes, value, onChange, label, error }:
   // Stable across the renders of the dialog (one per keystroke in any of its fields).
   const typesSignature = JSON.stringify(entityTypes);
   const searchContext = useMemo(() => ({ entityTypes: JSON.parse(typesSignature) as string[] }), [typesSignature]);
-  // The rule is reported on each of its changes, not on mount: the dialog would read the first render as an edit.
-  const isMounted = useRef(false);
+  // The rule is reported on each of its changes, never on mount (the dialog would read it as an edit): compared with
+  // the last rule reported, an effect run twice on the same state reports nothing.
+  const reported = useRef(filters);
   useEffect(() => {
-    if (isMounted.current) onChange(filters);
-    else isMounted.current = true;
+    if (filters !== reported.current) {
+      reported.current = filters;
+      onChange(filters);
+    }
   }, [filters]);
 
   return (
