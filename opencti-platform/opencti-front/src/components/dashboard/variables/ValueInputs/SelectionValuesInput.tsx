@@ -41,8 +41,16 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
     ? vocabularyNames.map((name) => ({ value: name, label: name, type: 'Vocabulary' }))
     : searchOptions;
   // A value no longer found (deleted, not visible) keeps a chip, labelled `Restricted`, so that it can be removed.
-  const selected = values.map((value) => options.find((option) => option.value === value)
-    ?? { value, label: labels.get(value) ?? t_i18n('Loading'), type: variable.type });
+  // The library keys its chips by label: a label already taken (values still loading, two restricted values,
+  // two entities of the same name) is numbered, or React would leave stale chips behind.
+  const seenLabels = new Map<string, number>();
+  const selected = values.map((value) => {
+    const option = options.find((candidate) => candidate.value === value)
+      ?? { value, label: labels.get(value) ?? t_i18n('Loading'), type: variable.type };
+    const count = (seenLabels.get(option.label) ?? 0) + 1;
+    seenLabels.set(option.label, count);
+    return count === 1 ? option : { ...option, label: `${option.label} (${count})` };
+  });
 
   const runSearch = (event: SyntheticEvent, text: string, cause?: Parameters<typeof search>[2]) => {
     if (!isVocabulary) search(event, text, cause);
