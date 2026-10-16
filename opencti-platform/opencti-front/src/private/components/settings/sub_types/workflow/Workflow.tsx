@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
-import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflowLayout';
+import useWorkflowLayout, { LayoutOptions } from './hooks/useWorkflowLayout';
 import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
@@ -168,10 +168,7 @@ const Workflow = ({
   // 2. Sync Placeholders (The effect is now tucked away)
   usePlaceholdersSync(nodes, edges);
 
-  const layoutOptions: LayoutOptions = {
-    direction: 'TB' as Direction,
-    spacing: [50, 50],
-  };
+  const layoutOptions: LayoutOptions = { spacing: [50, 50] };
 
   // 3. Sync layout and recenter graph
   useWorkflowLayout(layoutOptions);

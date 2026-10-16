@@ -13,7 +13,7 @@ const edges: Edge[] = [
   { id: 'e1', source: 'NEW', target: 't', type: 'transition' },
   { id: 'e2', source: 't', target: 'DONE', type: 'transition', data: { kept: true } },
 ];
-const options = { direction: 'TB' as const, spacing: [50, 50] as [number, number] };
+const options = { spacing: [50, 50] as [number, number] };
 
 describe('applyLayout', () => {
   it('moves nodes into rows and keeps their data', () => {
@@ -23,7 +23,8 @@ describe('applyLayout', () => {
     expect(byId.get('t')!.position.y).toBeLessThan(byId.get('DONE')!.position.y);
     expect(byId.get('NEW')!.data.statusTemplate).toEqual({ id: 'NEW', name: 'New', color: '#ff9800' });
     expect(byId.get('t')!.data.layout).toEqual({ backward: false, lane: null, rank: 1 });
-    expect(byId.get('NEW')!.style).toEqual({ opacity: 1 });
+    // No style is added: nothing hides nodes before the layout any more.
+    expect(byId.get('NEW')!.style).toBeUndefined();
   });
 
   it('writes a route on every edge and keeps existing edge data', () => {

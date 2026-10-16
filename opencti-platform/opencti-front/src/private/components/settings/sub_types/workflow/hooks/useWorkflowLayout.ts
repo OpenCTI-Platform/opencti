@@ -1,14 +1,10 @@
 import { useEffect } from 'react';
 import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore } from 'reactflow';
 import { layoutWorkflow } from '../layout/layoutWorkflow';
+import type { LayoutSpacing } from '../layout/types';
 
-export type Direction = 'TB' | 'LR' | 'RL' | 'BT';
-
-export type LayoutOptions = {
-  // Ignored for now: the layout is always top to bottom. Kept so callers need not change.
-  direction: Direction;
-  spacing: [number, number];
-};
+// The layout always runs top to bottom; only the gaps are configurable.
+export type LayoutOptions = LayoutSpacing;
 
 // Positions every node and writes render-only hints: `data.layout` on nodes (backward flag,
 // lane side, rank) and `data.route` on edges (orthogonal waypoints). transformToWorkflowDefinition
@@ -20,12 +16,10 @@ export const applyLayout = (nodes: Node[], edges: Edge[], options: LayoutOptions
       ...node,
       position: positions.get(node.id) ?? node.position,
       data: { ...node.data, layout: nodeHints.get(node.id) },
-      style: { ...node.style, opacity: 1 },
     })),
     edges: edges.map((edge) => ({
       ...edge,
       data: { ...edge.data, route: routes.get(edge.id) },
-      style: { ...edge.style, opacity: 1 },
     })),
   };
 };
