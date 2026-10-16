@@ -38,7 +38,17 @@ const inputKey = (variable: DashboardVariable) => [
   'killChainName' in variable ? variable.killChainName : '',
 ].join('|');
 
-const DashboardVariableChip = ({ variable, value, usedInWidgetIds, hasInvalidDefault = false, valueLabels, disabled = false, onChange, onEdit, onDelete }: DashboardVariableChipProps) => {
+const DashboardVariableChip = ({
+  variable,
+  value,
+  usedInWidgetIds,
+  hasInvalidDefault = false,
+  valueLabels,
+  disabled = false,
+  onChange,
+  onEdit,
+  onDelete,
+}: DashboardVariableChipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   // Nothing to resolve (so no query) when the bar already did.
