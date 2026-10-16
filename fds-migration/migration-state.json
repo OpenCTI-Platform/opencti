@@ -773,17 +773,6 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard variables dialog: the creation and edition form of a variable (Dialog, DialogContent size md, DialogTitle, DialogBody, DialogFooter), replacing the MUI wrapper @common/dialog/Dialog. The focus goes to the name through onOpenAutoFocus, not autoFocus.",
-      "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDialog.tsx"
-      ]
-    },
-    {
-      "component": "Dialog",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
       "reason": "dashboard variables deletion dialog: the confirmation of a variable deletion (size sm, DialogDescription for the question). Closing by Escape, overlay or close button is refused while the deletion is in flight.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableDeleteDialog.tsx"

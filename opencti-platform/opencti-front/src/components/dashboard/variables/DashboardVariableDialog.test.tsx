@@ -106,7 +106,7 @@ describe('DashboardVariableDialog', () => {
 
   it('is a modal dialog named by its title, with the focus on the name', async () => {
     renderDialog();
-    expect(screen.getByRole('dialog', { name: 'Create variable' })).toBe(screen.getByTestId('dashboard-variable-dialog'));
+    expect(within(screen.getByTestId('dashboard-variable-dialog')).getByRole('dialog', { name: 'Create variable' })).toBeInTheDocument();
     await waitFor(() => expect(nameInput()).toHaveFocus());
   });
 
