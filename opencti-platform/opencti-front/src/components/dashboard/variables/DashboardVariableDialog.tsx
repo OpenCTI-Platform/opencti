@@ -1,7 +1,8 @@
-import { type CSSProperties, Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useId, useMemo, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { v4 as uuid } from 'uuid';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import {
   Alert,
   Combobox,
@@ -11,22 +12,15 @@ import {
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
   Input,
   Radio,
   RadioGroup,
-  Text,
 } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 import SelectFieldFds, { SelectItem } from '../../fields/SelectFieldFds';
 import ComboboxField from '../../ComboboxField';
 import useSchema from '../../../utils/hooks/useSchema';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
-import { layerInputVars } from '../../../utils/fdsLayer';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { DASHBOARD_VARIABLE_TYPES, type DashboardVariable, type DashboardVariableType } from '../dashboard-types';
 import { draftToVariable, emptyDraft, validateDraft, variableToDraft, type DashboardVariableDraft } from './dashboardVariableDraft';
@@ -163,6 +157,7 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
   // Kept for the whole life of the dialog: submitting again after a failure must not create a second variable.
   const [newId] = useState(() => uuid());
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const titleId = useId();
 
   const typeLabels: Record<DashboardVariableType, string> = {
     entity: t_i18n('Entity'),
@@ -189,188 +184,172 @@ const DashboardVariableDialog = ({ open, workspaceId, variable, existingVariable
   };
 
   return (
+    // The MUI dialog, as the widget editor: the rule editor of a filters restriction opens the shared MUI filter
+    // popovers, which the library Dialog (a modal that blocks and traps everything outside of it) leaves unusable.
+    // FDS-WORKAROUND #70: back to the library Dialog once it can host them (fds-migration/LIBRARY-FEEDBACK.md).
     <Dialog
       open={open}
-      onOpenChange={(isOpen) => {
-        if (!isOpen) onClose();
-      }}
+      onClose={onClose}
+      size="medium"
+      title={<span id={titleId}>{isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}</span>}
+      aria-labelledby={titleId}
+      data-testid="dashboard-variable-dialog"
+      // The name is what is typed first.
+      slotProps={{ transition: { onEntered: () => nameInputRef.current?.focus() } }}
     >
-      <DialogContent
-        size="md"
-        data-testid="dashboard-variable-dialog"
-        // The content is a layer-2 surface, like a drawer, but its `layer-2` class does not reach the input backgrounds:
-        // re-declared on the same node, the fields get the layer-2 fill instead of the surface colour. See utils/fdsLayer.ts.
-        style={layerInputVars as CSSProperties}
-        // The dialog carries no description: its fields are labelled one by one.
-        aria-describedby={undefined}
-        // Radix focuses the first focusable element on open, which is the close button: the name is what is typed first.
-        onOpenAutoFocus={(event) => {
-          if (nameInputRef.current) {
-            event.preventDefault();
-            nameInputRef.current.focus();
-          }
-        }}
+      <Formik<DashboardVariableDraft>
+        initialValues={initialValues}
+        validate={(values) => validateDraft(values, existingVariables, t_i18n)}
+        onSubmit={onSubmit}
       >
-        <DialogTitle>
-          <Text as="span" variant="title-md">{isEditing ? t_i18n('Edit variable') : t_i18n('Create variable')}</Text>
-        </DialogTitle>
-        <Formik<DashboardVariableDraft>
-          initialValues={initialValues}
-          validate={(values) => validateDraft(values, existingVariables, t_i18n)}
-          onSubmit={onSubmit}
-        >
-          {({ values, touched, setFieldValue, setFieldTouched, submitForm, isSubmitting }) => {
-            // Computed here rather than read from the form state: the fields depend on it at the very render of a change.
-            const errors = validateDraft(values, existingVariables, t_i18n);
-            const type = values.type === '' ? undefined : values.type;
-            const parameter = type ? TYPE_PARAMETER[type] : undefined;
-            // The restriction and the default value wait for the type and for its parameter, which they depend on.
-            const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
-            // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
-            // the rule with it. They only change in creation: they are locked in edition.
-            const forgetDefaultValue = () => {
-              setFieldValue('defaultValue', '');
-              setFieldValue('selectionValues', []);
-              setFieldValue('filters', undefined);
-            };
+        {({ values, touched, setFieldValue, setFieldTouched, submitForm, isSubmitting }) => {
+          // Computed here rather than read from the form state: the fields depend on it at the very render of a change.
+          const errors = validateDraft(values, existingVariables, t_i18n);
+          const type = values.type === '' ? undefined : values.type;
+          const parameter = type ? TYPE_PARAMETER[type] : undefined;
+          // The restriction and the default value wait for the type and for its parameter, which they depend on.
+          const isTypeIncomplete = !type || (parameter !== undefined && !!errors[parameter]);
+          // A type, or one of its parameters, changing makes the default value meaningless, and the selection and
+          // the rule with it. They only change in creation: they are locked in edition.
+          const forgetDefaultValue = () => {
+            setFieldValue('defaultValue', '');
+            setFieldValue('selectionValues', []);
+            setFieldValue('filters', undefined);
+          };
             // A type that cannot be restricted, or restricted by filter, leaves its restriction.
-            const onTypeChange = (_name: string, nextType: string) => {
-              forgetDefaultValue();
-              const nextRestrictable = RESTRICTABLE_TYPES.includes(nextType as DashboardVariableType);
-              if (!nextRestrictable || (nextType !== 'entity' && values.restrictionMode === 'filters')) {
-                setFieldValue('restrictionMode', 'none');
-              }
-            };
+          const onTypeChange = (_name: string, nextType: string) => {
+            forgetDefaultValue();
+            const nextRestrictable = RESTRICTABLE_TYPES.includes(nextType as DashboardVariableType);
+            if (!nextRestrictable || (nextType !== 'entity' && values.restrictionMode === 'filters')) {
+              setFieldValue('restrictionMode', 'none');
+            }
+          };
             // The values of a mode left are kept in the draft, so that coming back finds them: only the current mode is sent.
             // The default value is chosen again, among the values the new mode allows.
-            const onRestrictionModeChange = (mode: string) => {
-              setFieldValue('restrictionMode', mode);
-              setFieldValue('defaultValue', '');
-              if (mode === 'filters' && !values.filters) setFieldValue('filters', emptyFilterGroup);
-            };
+          const onRestrictionModeChange = (mode: string) => {
+            setFieldValue('restrictionMode', mode);
+            setFieldValue('defaultValue', '');
+            if (mode === 'filters' && !values.filters) setFieldValue('filters', emptyFilterGroup);
+          };
 
-            return (
-              <Form className="flex flex-col gap-6 min-h-0">
-                {/* The negative margin keeps the focus ring (painted outside the fields) from being clipped by the scrolling body. */}
-                <DialogBody style={{ margin: 'calc(var(--spacing) * -1)', padding: 'var(--spacing)' }}>
-                  <div className="flex flex-col gap-4">
-                    {errors.form && <Alert severity="error" title={errors.form} />}
-                    <Input
-                      label={t_i18n('Name')}
-                      ref={nameInputRef}
-                      required
-                      value={values.name}
-                      onChange={(event) => setFieldValue('name', event.target.value)}
-                      onBlur={() => setFieldTouched('name', true)}
-                      error={errors.name && (touched.name || values.name !== '') ? errors.name : undefined}
-                    />
-                    <Field
-                      component={SelectFieldFds}
-                      name="type"
-                      label={t_i18n('Type')}
-                      fullWidth
-                      required
-                      disabled={isEditing}
-                      onChange={onTypeChange}
-                    >
-                      {DASHBOARD_VARIABLE_TYPES.map((variableType) => (
-                        <SelectItem key={variableType} value={variableType}>{typeLabels[variableType]}</SelectItem>
-                      ))}
-                    </Field>
-                    {/* Stands for the parameter of the type until it is chosen. A type without parameter shows none. */}
-                    {!type && <Input label={t_i18n('Type parameter')} disabled value="" onChange={() => {}} />}
-                    {parameter === 'vocabularyCategory' && (
-                      <Suspense fallback={null}>
-                        <VocabularyCategoryField disabled={isEditing} onChange={forgetDefaultValue} />
-                      </Suspense>
-                    )}
-                    {parameter === 'killChainName' && (
-                      <KillChainNameField
-                        value={values.killChainName}
-                        disabled={isEditing}
-                        onChange={(killChainName) => {
-                          setFieldValue('killChainName', killChainName);
-                          forgetDefaultValue();
-                        }}
-                        onBlur={() => setFieldTouched('killChainName', true)}
-                      />
-                    )}
-                    {parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
-                    {/* A type that cannot be restricted shows no restriction. */}
-                    {(!type || RESTRICTABLE_TYPES.includes(type)) && (
-                      <RadioGroup
-                        aria-label={t_i18n('Restriction')}
-                        orientation="vertical"
-                        value={values.restrictionMode}
-                        onValueChange={onRestrictionModeChange}
-                      >
-                        <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
-                        <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
-                        {type === 'entity' && <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />}
-                      </RadioGroup>
-                    )}
-                    {type && values.restrictionMode === 'selection' && (
-                      <SelectionValuesInput
-                        // Same key as the default value: the parameters of the type change what can be searched.
-                        key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}`}
-                        variable={draftToVariable({ ...values, restrictionMode: 'none' }, values.id ?? 'draft')}
-                        label={t_i18n('Values')}
-                        values={values.selectionValues}
-                        disabled={isTypeIncomplete}
-                        error={errors.selectionValues && (touched.selectionValues || values.selectionValues.length > 0) ? errors.selectionValues : undefined}
-                        onBlur={() => setFieldTouched('selectionValues', true)}
-                        onChange={(selectionValues) => {
-                          setFieldValue('selectionValues', selectionValues);
-                          // A default value removed from the selection is no longer allowed.
-                          if (!selectionValues.includes(values.defaultValue)) setFieldValue('defaultValue', '');
-                        }}
-                      />
-                    )}
-                    {type === 'entity' && values.restrictionMode === 'filters' && (
-                      <RestrictionFiltersField
-                        // The editor keeps its own state: other entity types start another rule.
-                        key={values.entityTypes.join()}
-                        entityTypes={values.entityTypes}
-                        label={t_i18n('Filters')}
-                        value={values.filters}
-                        error={touched.filters || isEditing ? errors.filters : undefined}
-                        onChange={(filters) => {
-                          setFieldValue('filters', filters);
-                          setFieldTouched('filters', true, false);
-                          // Whether the default value still matches the rule is not known without a search: it is chosen again.
-                          setFieldValue('defaultValue', '');
-                        }}
-                      />
-                    )}
-                    {type ? (
-                      <DashboardVariableValueInput
-                        // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
-                        // The restriction too: a new mode, selection or rule searches among other values.
-                        key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}${values.restrictionMode}${values.selectionValues.join()}${JSON.stringify(values.filters ?? null)}`}
-                        label={t_i18n('Default value')}
-                        variable={draftToVariable(values, values.id ?? 'draft')}
-                        value={values.defaultValue}
-                        disabled={isTypeIncomplete}
-                        onChange={(defaultValue) => setFieldValue('defaultValue', defaultValue)}
-                      />
-                    ) : <Input label={t_i18n('Default value')} disabled value="" onChange={() => {}} />}
-                  </div>
-                </DialogBody>
-                <DialogFooter>
-                  <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-                  <Button
-                    data-testid="variable-dialog-submit"
-                    onClick={submitForm}
-                    disabled={Object.keys(errors).length > 0 || isSubmitting}
+          return (
+            <Form>
+              <div className="flex flex-col gap-4">
+                {errors.form && <Alert severity="error" title={errors.form} />}
+                <Input
+                  label={t_i18n('Name')}
+                  ref={nameInputRef}
+                  required
+                  value={values.name}
+                  onChange={(event) => setFieldValue('name', event.target.value)}
+                  onBlur={() => setFieldTouched('name', true)}
+                  error={errors.name && (touched.name || values.name !== '') ? errors.name : undefined}
+                />
+                <Field
+                  component={SelectFieldFds}
+                  name="type"
+                  label={t_i18n('Type')}
+                  fullWidth
+                  required
+                  disabled={isEditing}
+                  onChange={onTypeChange}
+                >
+                  {DASHBOARD_VARIABLE_TYPES.map((variableType) => (
+                    <SelectItem key={variableType} value={variableType}>{typeLabels[variableType]}</SelectItem>
+                  ))}
+                </Field>
+                {/* Stands for the parameter of the type until it is chosen. A type without parameter shows none. */}
+                {!type && <Input label={t_i18n('Type parameter')} disabled value="" onChange={() => {}} />}
+                {parameter === 'vocabularyCategory' && (
+                  <Suspense fallback={null}>
+                    <VocabularyCategoryField disabled={isEditing} onChange={forgetDefaultValue} />
+                  </Suspense>
+                )}
+                {parameter === 'killChainName' && (
+                  <KillChainNameField
+                    value={values.killChainName}
+                    disabled={isEditing}
+                    onChange={(killChainName) => {
+                      setFieldValue('killChainName', killChainName);
+                      forgetDefaultValue();
+                    }}
+                    onBlur={() => setFieldTouched('killChainName', true)}
+                  />
+                )}
+                {parameter === 'entityTypes' && <EntityTypesField disabled={isEditing} onChange={forgetDefaultValue} />}
+                {/* A type that cannot be restricted shows no restriction. */}
+                {(!type || RESTRICTABLE_TYPES.includes(type)) && (
+                  <RadioGroup
+                    aria-label={t_i18n('Restriction')}
+                    orientation="vertical"
+                    value={values.restrictionMode}
+                    onValueChange={onRestrictionModeChange}
                   >
-                    {isEditing ? t_i18n('Update') : t_i18n('Create')}
-                  </Button>
-                </DialogFooter>
-              </Form>
-            );
-          }}
-        </Formik>
-      </DialogContent>
+                    <Radio value="none" label={t_i18n('No restriction')} disabled={isTypeIncomplete} />
+                    <Radio value="selection" label={t_i18n('Manual selection')} disabled={isTypeIncomplete} />
+                    {type === 'entity' && <Radio value="filters" label={t_i18n('By filter')} disabled={isTypeIncomplete} />}
+                  </RadioGroup>
+                )}
+                {type && values.restrictionMode === 'selection' && (
+                  <SelectionValuesInput
+                    // Same key as the default value: the parameters of the type change what can be searched.
+                    key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}`}
+                    variable={draftToVariable({ ...values, restrictionMode: 'none' }, values.id ?? 'draft')}
+                    label={t_i18n('Values')}
+                    values={values.selectionValues}
+                    disabled={isTypeIncomplete}
+                    error={errors.selectionValues && (touched.selectionValues || values.selectionValues.length > 0) ? errors.selectionValues : undefined}
+                    onBlur={() => setFieldTouched('selectionValues', true)}
+                    onChange={(selectionValues) => {
+                      setFieldValue('selectionValues', selectionValues);
+                      // A default value removed from the selection is no longer allowed.
+                      if (!selectionValues.includes(values.defaultValue)) setFieldValue('defaultValue', '');
+                    }}
+                  />
+                )}
+                {type === 'entity' && values.restrictionMode === 'filters' && (
+                  <RestrictionFiltersField
+                    // The editor keeps its own state: other entity types start another rule.
+                    key={values.entityTypes.join()}
+                    entityTypes={values.entityTypes}
+                    label={t_i18n('Filters')}
+                    value={values.filters}
+                    error={touched.filters || isEditing ? errors.filters : undefined}
+                    onChange={(filters) => {
+                      setFieldValue('filters', filters);
+                      setFieldTouched('filters', true, false);
+                      // Whether the default value still matches the rule is not known without a search: it is chosen again.
+                      setFieldValue('defaultValue', '');
+                    }}
+                  />
+                )}
+                {type ? (
+                  <DashboardVariableValueInput
+                    // Same key as the chips: the parameters of the type change the kind of input while the dialog is open.
+                    // The restriction too: a new mode, selection or rule searches among other values.
+                    key={`${values.type}${values.entityTypes.join()}${values.vocabularyCategory}${values.killChainName}${values.restrictionMode}${values.selectionValues.join()}${JSON.stringify(values.filters ?? null)}`}
+                    label={t_i18n('Default value')}
+                    variable={draftToVariable(values, values.id ?? 'draft')}
+                    value={values.defaultValue}
+                    disabled={isTypeIncomplete}
+                    onChange={(defaultValue) => setFieldValue('defaultValue', defaultValue)}
+                  />
+                ) : <Input label={t_i18n('Default value')} disabled value="" onChange={() => {}} />}
+              </div>
+              <div className="flex justify-end gap-2 pt-6">
+                <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+                <Button
+                  data-testid="variable-dialog-submit"
+                  onClick={submitForm}
+                  disabled={Object.keys(errors).length > 0 || isSubmitting}
+                >
+                  {isEditing ? t_i18n('Update') : t_i18n('Create')}
+                </Button>
+              </div>
+            </Form>
+          );
+        }}
+      </Formik>
     </Dialog>
   );
 };
