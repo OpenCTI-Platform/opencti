@@ -19,7 +19,7 @@ on:
 jobs:
   opencti-frontend-test:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,7 +64,7 @@ jobs:
 
   opencti-frontend-e2e-test:
     name: e2e tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -213,7 +213,7 @@ jobs:
 
   opencti-frontend-verify-translation:
     name: Verify translation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
