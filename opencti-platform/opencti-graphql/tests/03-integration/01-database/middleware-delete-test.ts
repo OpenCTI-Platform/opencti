@@ -12,7 +12,6 @@ import { addReport } from '../../../src/domain/report';
 import { utcDate } from '../../../src/utils/format';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER, INPUT_MARKINGS } from '../../../src/schema/general';
 import { createRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
-import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ALREADY_DELETED_ERROR } from '../../../src/config/errors';
 
@@ -100,31 +99,27 @@ describe('Delete functional errors behaviors', async () => {
   });
 
   it('should reject a ref relationship deletion when its source has been deleted in the meantime', async () => {
-    const reportAddData: ReportAddInput = {
-      name: 'Report4 for middleware-delete-test',
-      published: utcDate(),
-      objectMarking: [MARKING_TLP_GREEN],
-    };
-    const report = await addReport(testContext, ADMIN_USER, reportAddData);
-    const reportWithRefs = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report.id) as Record<string, any>;
-    const markingRelationId = reportWithRefs[INPUT_MARKINGS][0].i_relation.id;
+    // Use a report of the dataset, the rejected deletion must not emit any stream event
+    const report = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7') as Record<string, any>;
+    const markingRelationId = report[INPUT_MARKINGS][0].i_relation.id;
     // Only the reload of the source, after the ref relationship is loaded, misses the report
     const elFindByIds = engine.elFindByIds;
     const findByIdsSpy = vi.spyOn(engine, 'elFindByIds').mockImplementation(((context, user, ids, opts) => {
-      const isSourceReload = Array.isArray(ids) && ids.length === 1 && ids[0] === report.id && !opts?.toMap;
+      const isSourceReload = Array.isArray(ids) && ids.length === 1 && ids[0] === report.internal_id && !opts?.toMap;
       return isSourceReload ? Promise.resolve([]) : elFindByIds(context, user, ids, opts);
     }) as typeof engine.elFindByIds);
     try {
       await expect(() => deleteElementById(testContext, ADMIN_USER, markingRelationId, RELATION_OBJECT_MARKING))
         .rejects.toMatchObject({
           message: 'Already deleted elements',
-          extensions: { code: ALREADY_DELETED_ERROR, data: { id: report.id } },
+          extensions: { code: ALREADY_DELETED_ERROR, data: { id: report.internal_id } },
         });
     } finally {
       findByIdsSpy.mockRestore();
     }
 
-    const deleted = await deleteElementById(testContext, ADMIN_USER, report.id, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(deleted.id).toBe(report.id);
+    // The ref relationship is left untouched
+    const reportAfter = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report.internal_id) as Record<string, any>;
+    expect(reportAfter[INPUT_MARKINGS].map((marking: any) => marking.i_relation.id)).toContain(markingRelationId);
   });
 });
