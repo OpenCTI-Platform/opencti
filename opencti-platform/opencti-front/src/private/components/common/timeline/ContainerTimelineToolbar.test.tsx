@@ -132,6 +132,17 @@ describe('ContainerTimelineToolbar', () => {
     expect(onZoomWindow).toHaveBeenCalledWith('fit');
   });
 
+  it('names each grouping by one whole phrase', async () => {
+    const onChange = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ grouping: 'day' }), onChange)} />);
+    const grouping = screen.getByRole('combobox', { name: 'Group events by' });
+    expect(grouping).toHaveTextContent('By day');
+    await user.click(grouping);
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(['By hour', 'By day', 'By week']);
+    await user.click(screen.getByRole('option', { name: 'By week' }));
+    expect(onChange).toHaveBeenCalledWith({ grouping: 'week' });
+  });
+
   it('shows a custom window once the view was panned or zoomed, and goes back to the window picked', async () => {
     const onZoomWindow = vi.fn();
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ zoom: 'fit' }), vi.fn())} onZoomWindow={onZoomWindow} customWindow />);

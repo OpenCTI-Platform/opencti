@@ -117,7 +117,7 @@ export const TIMELINE_PRECISION_LABELS: Record<TimelinePrecision, string> = {
 
 export const TIMELINE_GROUPINGS = ['hour', 'day', 'week'] as const;
 export type TimelineGrouping = typeof TIMELINE_GROUPINGS[number];
-export const TIMELINE_GROUPING_LABELS: Record<TimelineGrouping, string> = { hour: 'Hour', day: 'Day', week: 'Week' };
+export const TIMELINE_GROUPING_LABELS: Record<TimelineGrouping, string> = { hour: 'By hour', day: 'By day', week: 'By week' };
 
 export const TIMELINE_ZOOM_WINDOWS = ['fit', 'day', 'week', 'month', 'quarter', 'year'] as const;
 export type TimelineZoomWindow = typeof TIMELINE_ZOOM_WINDOWS[number];

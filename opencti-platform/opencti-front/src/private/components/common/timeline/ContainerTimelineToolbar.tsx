@@ -269,7 +269,7 @@ const ContainerTimelineToolbar = ({
           </WithTooltip>
           <SelectContent aria-label={t_i18n('Group events by')}>
             {TIMELINE_GROUPINGS.map((grouping) => (
-              <SelectItem key={grouping} value={grouping}>{t_i18n('By {period}', { values: { period: t_i18n(TIMELINE_GROUPING_LABELS[grouping]).toLowerCase() } })}</SelectItem>
+              <SelectItem key={grouping} value={grouping}>{t_i18n(TIMELINE_GROUPING_LABELS[grouping])}</SelectItem>
             ))}
           </SelectContent>
         </Select>
