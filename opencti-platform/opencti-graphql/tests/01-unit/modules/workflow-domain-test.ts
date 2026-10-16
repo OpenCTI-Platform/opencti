@@ -4111,6 +4111,19 @@ describe('getWorkflowMigrationPreview', () => {
 
     expect(storeLoadByIds).toHaveBeenCalledWith(mockContext, mockUser, ['t1'], ENTITY_TYPE_STATUS_TEMPLATE);
   });
+
+  it('leaves out statuses marked for deletion by an earlier republish', async () => {
+    (fullEntitiesList as any).mockResolvedValue([
+      { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+      { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.Global, order: 2, to_be_deleted_at: new Date('2026-01-01') },
+    ]);
+    (storeLoadByIds as any).mockResolvedValue([{ id: 't1', name: 'New' }]);
+
+    const { byScope } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+    expect(byScope[StatusScope.Global]?.definition.states.map((s) => s.statusId)).toEqual(['t1']);
+    expect(storeLoadByIds).toHaveBeenCalledWith(mockContext, mockUser, ['t1'], ENTITY_TYPE_STATUS_TEMPLATE);
+  });
 });
 
 describe('syncWorkflowInstanceFromExternalWrite', () => {
@@ -4507,6 +4520,15 @@ describe('migrateWorkflowFromStatuses', () => {
 
     await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('Cannot publish migrated workflow');
     expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('refuses to publish a definition that fails validation, and persists nothing', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+    (validateWorkflowDefinitionData as any).mockResolvedValueOnce([{ type: 'DUPLICATE_TRANSITION_EVENT', message: 'Duplicate event MOVE_TO_DONE' }]);
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('the migrated definition is invalid');
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it('still saves a draft when a blocking diagnostic exists but publish is false', async () => {
