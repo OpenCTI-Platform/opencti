@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransitionOptions, buildWorkflowTransitionAction, withWorkflowBypassOptions } from './workflowMassActions';
+import { buildTransitionOptions, buildWorkflowTransitionAction, isFieldOptionDisabled, withWorkflowBypassOptions } from './workflowMassActions';
 
 describe('buildWorkflowTransitionAction', () => {
   it('should send the selected event as a replace of the workflow status', () => {
@@ -42,5 +42,23 @@ describe('buildTransitionOptions', () => {
       { label: 'start → Analyse', value: 'start' },
       { label: 'reject → rejected', value: 'reject' },
     ]);
+  });
+});
+
+describe('isFieldOptionDisabled', () => {
+  it('should let a row swap between Status and Workflow transition', () => {
+    const actionsInputs = [{ type: 'REPLACE', field: 'x_opencti_workflow_id' }];
+    expect(isFieldOptionDisabled(actionsInputs, 0, 'x_opencti_workflow_id_transition')).toBe(false);
+  });
+
+  it('should disable Workflow transition when another row replaces the Status', () => {
+    const actionsInputs = [{ type: 'REPLACE', field: 'x_opencti_workflow_id' }, { type: 'REPLACE' }];
+    expect(isFieldOptionDisabled(actionsInputs, 1, 'x_opencti_workflow_id_transition')).toBe(true);
+  });
+
+  it('should disable a field replaced in another row', () => {
+    const actionsInputs = [{ type: 'REPLACE', field: 'description' }, { type: 'ADD' }];
+    expect(isFieldOptionDisabled(actionsInputs, 1, 'description')).toBe(true);
+    expect(isFieldOptionDisabled(actionsInputs, 1, 'object-label')).toBe(false);
   });
 });
