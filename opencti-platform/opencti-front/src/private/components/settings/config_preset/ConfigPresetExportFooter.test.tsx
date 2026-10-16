@@ -24,7 +24,7 @@ describe('ConfigPresetExportFooter', () => {
     expect(screen.queryByRole('separator')).not.toBeInTheDocument();
   });
 
-  it('opens the Platform Bundle drawer and loads the catalog on click', async () => {
+  it('opens the Platform Bundle drawer and loads the exportable types on click', async () => {
     const { user, relayEnv } = testRender(<ConfigPresetExportFooter />);
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
 
@@ -35,8 +35,10 @@ describe('ConfigPresetExportFooter', () => {
           configPresetExportableTypes: [{
             key: 'messages',
             label: 'Messages',
+            description: 'Banner, login and consent messages',
             group: { key: 'platformSettings', label: 'Platform settings' },
-            items: [{ key: 'messages', label: 'Messages', translatable: true }],
+            items: [{ key: 'messages', label: 'Messages', translatable: true, isDefault: false, dependsOn: [] }],
+            itemsPageInfo: { hasNextPage: false, globalCount: 1 },
           }],
         }),
       }));
