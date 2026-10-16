@@ -50,6 +50,20 @@ export const getLiveActivityNotifications = async (context: AuthContext): Promis
   return liveNotifications.filter(isLiveActivity);
 };
 
+/**
+ * Resolve the user at the origin of an activity event, whose name prefixes the notification message.
+ * Internal users (managers) are not in the users cache, so they are looked up in INTERNAL_USERS first.
+ * @param userId the origin user id of the event, absent for system events
+ * @param platformUsers the users cache, by id
+ * @returns SYSTEM_USER when there is no user id, undefined when the user is unknown
+ */
+export const resolveActivitySourceUser = (userId: string | undefined, platformUsers: Map<string, AuthUser>): AuthUser | undefined => {
+  if (!userId) {
+    return SYSTEM_USER;
+  }
+  return INTERNAL_USERS[userId] || platformUsers.get(userId);
+};
+
 const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const triggers = await getLiveActivityNotifications(context);
@@ -59,8 +73,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     // status: 'error' | 'success'
     const event = events[index];
     const { message, data, origin, event_scope } = event.data;
-    // Internal users (managers) are not in the users cache
-    let sourceUser = origin.user_id ? (INTERNAL_USERS[origin.user_id] || platformUsers.get(origin.user_id)) : SYSTEM_USER;
+    let sourceUser = resolveActivitySourceUser(origin.user_id, platformUsers);
     if (ENABLED_DEMO_MODE) sourceUser = REDACTED_USER;
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
       const { trigger, users } = triggers[triggerIndex];
