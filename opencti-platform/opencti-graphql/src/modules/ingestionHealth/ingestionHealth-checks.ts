@@ -206,7 +206,7 @@ export const buildHealthTransitionMessage = (element: { name: string; entity_typ
 // endregion
 
 // region api
-export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
+const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
     const definition = HEALTH_CHECK_REGISTRY[check.health_check_code];
     if (!definition) {
@@ -222,7 +222,6 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
   });
 };
 
-// Spread into the resolvers of every type carrying an ingestion health.
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
 // Null until the manager first evaluates the ingestion, which reads as unknown.
 export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined): IngestionHealth | null => {
@@ -234,9 +233,5 @@ export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | 
     status_since: health.status_since,
     healthChecks: toGraphqlHealthChecks(health.health_checks),
   };
-};
-
-export const ingestionHealthFieldResolvers = {
-  ingestionHealth: (element: IngestionHealthFields) => toGraphqlIngestionHealth(element.ingestion_health),
 };
 // endregion
