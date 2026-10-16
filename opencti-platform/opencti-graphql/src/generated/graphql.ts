@@ -4726,20 +4726,13 @@ export type ConnectorInfo = {
 export type ConnectorInfoError = {
   __typename?: 'ConnectorInfoError';
   code: Scalars['String']['output'];
-  criticity: ConnectorInfoErrorCriticity;
+  criticity: Scalars['Int']['output'];
   message: Scalars['String']['output'];
 };
 
-export enum ConnectorInfoErrorCriticity {
-  Critical = 'CRITICAL',
-  High = 'HIGH',
-  Low = 'LOW',
-  Medium = 'MEDIUM'
-}
-
 export type ConnectorInfoErrorInput = {
   code: Scalars['String']['input'];
-  criticity: ConnectorInfoErrorCriticity;
+  criticity: Scalars['Int']['input'];
   message: Scalars['String']['input'];
 };
 
@@ -41040,7 +41033,6 @@ export type ResolversTypes = ResolversObject<{
   ConnectorHealthMetrics: ResolverTypeWrapper<ConnectorHealthMetrics>;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
   ConnectorInfoError: ResolverTypeWrapper<ConnectorInfoError>;
-  ConnectorInfoErrorCriticity: ConnectorInfoErrorCriticity;
   ConnectorInfoErrorInput: ConnectorInfoErrorInput;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorManager: ResolverTypeWrapper<BasicStoreEntityConnectorManager>;
@@ -44717,7 +44709,7 @@ export type ConnectorInfoResolvers<ContextType = any, ParentType extends Resolve
 
 export type ConnectorInfoErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfoError'] = ResolversParentTypes['ConnectorInfoError']> = ResolversObject<{
   code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  criticity?: Resolver<ResolversTypes['ConnectorInfoErrorCriticity'], ParentType, ContextType>;
+  criticity?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 

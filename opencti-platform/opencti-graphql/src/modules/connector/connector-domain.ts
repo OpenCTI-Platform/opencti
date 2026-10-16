@@ -629,13 +629,6 @@ export const CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024;
 // Truncate on code points so a cut never leaves a lone surrogate that the engine would reject.
 const truncate = (value: string, maxLength: number) => Array.from(value.trim()).slice(0, maxLength).join('');
 
-const CRITICITY_RANK: Record<ConnectorInfoErrorCriticity, number> = {
-  [ConnectorInfoErrorCriticity.Low]: 0,
-  [ConnectorInfoErrorCriticity.Medium]: 1,
-  [ConnectorInfoErrorCriticity.High]: 2,
-  [ConnectorInfoErrorCriticity.Critical]: 3,
-};
-
 // Errors are only reported by the connector: invalid entries are dropped, never thrown, so ping keeps working.
 export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null | undefined): ConnectorInfoError[] => {
   return (errors ?? [])
@@ -644,8 +637,8 @@ export const sanitizeConnectorInfoErrors = (errors: ConnectorInfoError[] | null 
       message: truncate(message ?? '', CONNECTOR_ERROR_MESSAGE_MAX_LENGTH),
       criticity,
     }))
-    .filter(({ code, criticity }) => code.length > 0 && criticity in CRITICITY_RANK)
-    .sort((a, b) => CRITICITY_RANK[b.criticity] - CRITICITY_RANK[a.criticity])
+    .filter(({ code, criticity }) => code.length > 0 && Number.isInteger(criticity))
+    .sort((a, b) => b.criticity - a.criticity)
     .slice(0, CONNECTOR_ERRORS_MAX_COUNT);
 };
 
