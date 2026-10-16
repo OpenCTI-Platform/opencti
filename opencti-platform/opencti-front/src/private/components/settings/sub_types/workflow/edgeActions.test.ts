@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { Edge, Node } from 'reactflow';
-import { createEdgeActions, deleteConnection } from './edgeActions';
+import { deleteConnection } from './edgeActions';
 import { WorkflowNodeType } from './utils';
 
 const node = (id: string, type: WorkflowNodeType): Node => ({ id, type, data: {}, position: { x: 0, y: 0 } });
@@ -38,21 +38,5 @@ describe('deleteConnection', () => {
   it('changes nothing for an unknown edge', () => {
     const result = deleteConnection(nodes, edges, 'gone');
     expect(result).toEqual({ nodes, edges });
-  });
-});
-
-describe('createEdgeActions', () => {
-  it('opens the insert drawer for the clicked edge', () => {
-    const openInsertDrawer = vi.fn();
-    createEdgeActions({ nodes, edges, setNodes: vi.fn(), setEdges: vi.fn(), openInsertDrawer }).insertStatus({ id: 'e-submit->DONE', source: 'submit', target: 'DONE' });
-    expect(openInsertDrawer).toHaveBeenCalledWith({ id: 'e-submit->DONE', source: 'submit', target: 'DONE' });
-  });
-
-  it('writes both the nodes and the edges after deleting a connection', () => {
-    const setNodes = vi.fn();
-    const setEdges = vi.fn();
-    createEdgeActions({ nodes, edges, setNodes, setEdges, openInsertDrawer: vi.fn() }).deleteConnection('e-submit->DONE');
-    expect(setNodes).toHaveBeenCalledWith(nodes);
-    expect(setEdges).toHaveBeenCalledWith([edges[0], edges[1]]);
   });
 });

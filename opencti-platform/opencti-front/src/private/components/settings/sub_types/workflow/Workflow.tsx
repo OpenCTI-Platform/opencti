@@ -21,7 +21,7 @@ import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWor
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { getHoverHighlight, HoverHighlightContext } from './hoverHighlight';
-import { createEdgeActions } from './edgeActions';
+import useDeleteConnection from './hooks/useDeleteConnection';
 import { WorkflowEdgeActionsContext, type EdgeRef } from './EdgeTypes/WorkflowEdgeActionsContext';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
@@ -396,10 +396,8 @@ const Workflow = ({
     },
     [openInsertDrawer],
   );
-  const edgeActions = useMemo(
-    () => createEdgeActions({ nodes, edges, setNodes, setEdges, openInsertDrawer }),
-    [nodes, edges, setNodes, setEdges, openInsertDrawer],
-  );
+  const deleteConnection = useDeleteConnection();
+  const edgeActions = useMemo(() => ({ insertStatus: openInsertDrawer, deleteConnection }), [openInsertDrawer, deleteConnection]);
 
   const onConnect = useStatusConnection();
 
