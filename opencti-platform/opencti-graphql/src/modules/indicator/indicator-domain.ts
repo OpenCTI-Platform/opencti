@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
+import { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, DOC_INCORRECT_INDICATOR_FORMAT, DOC_INDICATOR_PATTERN_EXCLUDED, FunctionalError, ValidationError } from '../../config/errors';
@@ -57,7 +57,7 @@ import { checkObservableValue, isCacheEmpty } from '../../database/exclusionList
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
-import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
+import { getEntitySettingFromCache, resolveCustomFieldValuesForCreation } from '../../modules/entitySetting/entitySetting-utils';
 import { pushAll } from '../../utils/arrayUtil';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
@@ -293,11 +293,16 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
   const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
 
-  const decayRule = await checkDecayRules(context, user, resolvedIndicator);
+  // The decay rules can select the indicator on its custom fields: the values it will be created with
+  // (stored format, default values included) are given to their filters, the indicator to create is unchanged
+  const decayIndicator = isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)
+    ? { ...resolvedIndicator, custom_field_values: await resolveCustomFieldValuesForCreation(context, user, resolvedIndicator, ENTITY_TYPE_INDICATOR, entitySetting) }
+    : resolvedIndicator;
+  const decayRule = await checkDecayRules(context, user, decayIndicator);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
-  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  const exclusionRule = await checkDecayExclusionRules(context, user, decayIndicator, activeDecayExclusionRuleList);
   const indicatorToCreate = {
     ...resolvedIndicator,
     valid_from: validFrom.toISOString(),
