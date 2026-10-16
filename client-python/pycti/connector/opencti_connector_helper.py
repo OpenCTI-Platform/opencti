@@ -1835,6 +1835,7 @@ CRITICITY_RANK = {
 
 class ConnectorRunError(BaseModel):
     """Error returned by a connector run"""
+
     model_config = ConfigDict(strict=True, extra="forbid")
 
     code: str
@@ -2058,7 +2059,7 @@ class ConnectorInfo:
         :type value: datetime
         """
         self._next_run_datetime = value
-    
+
     @property
     def last_run_datetime(self) -> datetime:
         """Get the last run datetime.
