@@ -90,7 +90,7 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
       oneOf: [
         { const: PLAYBOOK_HUNT_SOURCE_EXISTING, title: 'Run existing hunts' },
         { const: PLAYBOOK_HUNT_SOURCE_DERIVED, title: 'Derive a hunt from each element (created, or found again by its name), then run it' },
-        { const: PLAYBOOK_HUNT_SOURCE_AGENT, title: 'Derive a hunt from each element, or have the hunt planner propose up to 3 hunts from its text when it holds no indicator nor detection rule' },
+        { const: PLAYBOOK_HUNT_SOURCE_AGENT, title: 'Derive a hunt from each element, or have the hunt planner propose up to 3 when none derives' },
       ],
     },
     hunt_ids: {

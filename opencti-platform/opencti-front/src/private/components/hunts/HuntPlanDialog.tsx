@@ -177,7 +177,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
               {(current.hunt.native_queries ?? []).map((nativeQuery) => (
                 <div key={`${nativeQuery.platform}-${nativeQuery.language}`} style={{ marginTop: theme.spacing(1) }}>
                   <Text variant="content-compact">{`${huntPlatformLabel(nativeQuery.platform)} - ${huntQueryLanguageLabel(nativeQuery.language)}`}</Text>
-                  <CodeBlock language={prismLanguageOf(nativeQuery.language)} code={nativeQuery.query} customHeight="auto" />
+                  <CodeBlock language={prismLanguageOf(nativeQuery.language)} code={nativeQuery.query} customHeight="auto" wrapLongLines showLineNumbers={false} />
                 </div>
               ))}
             </div>
