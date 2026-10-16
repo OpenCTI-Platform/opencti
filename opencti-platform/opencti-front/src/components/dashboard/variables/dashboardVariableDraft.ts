@@ -56,11 +56,20 @@ const draftToRestriction = (draft: DashboardVariableDraft): DashboardVariableRes
 // filters of the widgets. The default of any other type is stored as typed.
 // A valid date default is also stored normalized (`toISOString`), like the server does, unless a selection restriction
 // holds it: the default must then stay the pool value it matches.
+// The normalized form of a strict ISO date, or null when the date, or its normalization (an edge year such as
+// 9999-12-31T20:00:00-05:00 becomes an extended year), is refused by the strict rule.
+const normalizeIsoDate = (value: string): string | null => {
+  if (!isStrictIsoDate(value)) return null;
+  const normalized = new Date(value).toISOString();
+  return isStrictIsoDate(normalized) ? normalized : null;
+};
+
 const draftToDefaultValue = (draft: DashboardVariableDraft) => {
   const isTyped = draft.type === 'boolean' || draft.type === 'numeric' || draft.type === 'date';
   const defaultValue = isTyped ? draft.defaultValue.trim() : draft.defaultValue;
-  if (draft.type === 'date' && draft.restrictionMode !== 'selection' && isStrictIsoDate(defaultValue)) {
-    return new Date(defaultValue).toISOString();
+  if (draft.type === 'date' && draft.restrictionMode !== 'selection') {
+    const normalized = normalizeIsoDate(defaultValue);
+    if (normalized) return normalized;
   }
   return defaultValue === '' ? null : defaultValue;
 };
@@ -125,7 +134,7 @@ export const validateDraft = (
     errors.defaultValue = t_i18n('Default value must be a number');
   } else if (draft.type === 'boolean' && defaultValue !== 'true' && defaultValue !== 'false') {
     errors.defaultValue = t_i18n('Default value is not valid');
-  } else if (draft.type === 'date' && !isStrictIsoDate(defaultValue)) {
+  } else if (draft.type === 'date' && (draft.restrictionMode === 'selection' ? !isStrictIsoDate(defaultValue) : normalizeIsoDate(defaultValue) === null)) {
     errors.defaultValue = t_i18n('Default value is not valid');
   }
   return errors;

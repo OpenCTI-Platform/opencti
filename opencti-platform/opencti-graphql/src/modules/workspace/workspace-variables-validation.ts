@@ -111,7 +111,11 @@ const buildDefaultValue = (
     if (!isStrictIsoDate(value)) throw FunctionalError('A date variable default value must be a valid date');
     // Stored normalized, so that every engine reads the same string. A selection restriction holds the values as given:
     // the default must then stay the pool value it matches.
-    if (restriction.mode !== 'selection') value = new Date(value).toISOString();
+    if (restriction.mode !== 'selection') {
+      value = new Date(value).toISOString();
+      // An edge-year input (e.g. 9999-12-31T20:00:00-05:00) normalizes to an extended year that the strict rule refuses.
+      if (!isStrictIsoDate(value)) throw FunctionalError('A date variable default value must be a valid date');
+    }
   } else if (isBlank) {
     throw FunctionalError('Dashboard variable default value is required');
   } else if (type === 'numeric') {

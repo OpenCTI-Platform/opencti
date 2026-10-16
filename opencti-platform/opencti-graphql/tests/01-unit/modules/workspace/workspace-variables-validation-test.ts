@@ -148,6 +148,9 @@ describe('buildDashboardVariable - strict ISO-8601 date default', () => {
   ])('should accept the date default "%s" and store it normalized as "%s"', (defaultValue, expected) => {
     expect(build({ type: 'date', defaultValue }).defaultValue).toEqual(expected);
   });
+  it('should reject a date default whose normalization leaves the strict ISO range', () => {
+    expect(() => build({ type: 'date', defaultValue: '9999-12-31T20:00:00-05:00' })).toThrow('A date variable default value must be a valid date');
+  });
   it('should store a blank date default as now, normalized', () => {
     expect(build({ type: 'date', defaultValue: '  ' }).defaultValue).toEqual(NOW.toISOString());
   });

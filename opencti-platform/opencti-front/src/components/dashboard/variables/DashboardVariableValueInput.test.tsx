@@ -384,7 +384,7 @@ describe('DashboardVariableValueInput', () => {
       describe('when the phases cannot be listed', () => {
         // Listing the phases needs the knowledge access, which not every user has: the default value is an id, so no
         // free text can replace the list, and the field says why it offers nothing.
-        const listingError = 'The kill chain phases cannot be listed with your access rights or right now, so a default value cannot be chosen';
+        const listingError = 'The kill chain phases cannot be listed with your access rights or right now';
         const rareChain: DashboardVariableShape = { type: 'killChainPhase', killChainName: 'rare-chain', restriction: none };
 
         it('says so, and offers no phase', async () => {

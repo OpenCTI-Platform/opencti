@@ -203,6 +203,11 @@ describe('dashboardVariableDraft - strict ISO-8601 date default', () => {
     },
   );
 
+  it('refuses a date default whose normalization leaves the strict ISO range', () => {
+    const draft = validDraft({ type: 'date', defaultValue: '9999-12-31T20:00:00-05:00' });
+    expect(validateDraft(draft, [], t_i18n).defaultValue).toBe('Default value is not valid');
+  });
+
   it.each([
     ['2024-01-01', '2024-01-01T00:00:00.000Z'],
     ['2024-01-01T10:00:00Z', '2024-01-01T10:00:00.000Z'],

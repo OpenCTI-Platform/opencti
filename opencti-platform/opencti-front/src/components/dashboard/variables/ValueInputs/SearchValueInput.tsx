@@ -87,7 +87,7 @@ const SearchValueInput = ({ variable, value, onChange, disabled, label, commitOn
       </ComboboxField>
       {hasListingError && (
         <ComboboxHelperText aria-live="polite">
-          {t_i18n('The kill chain phases cannot be listed with your access rights or right now, so a default value cannot be chosen')}
+          {t_i18n('The kill chain phases cannot be listed with your access rights or right now')}
         </ComboboxHelperText>
       )}
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />

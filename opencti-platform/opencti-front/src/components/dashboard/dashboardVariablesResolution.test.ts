@@ -52,7 +52,7 @@ describe('isValidVariableValue', () => {
     expect(isValidVariableValue(of('numeric'), '  ')).toBe(false);
   });
 
-  it('accepts only a parseable date for a date', () => {
+  it('accepts only a strict ISO-8601 date for a date', () => {
     expect(isValidVariableValue(of('date'), '2024-01-15T12:00:00.000Z')).toBe(true);
     expect(isValidVariableValue(of('date'), 'not a date')).toBe(false);
   });
