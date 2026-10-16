@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../../schema/internalObject';
-import { registerDefinition, type ModuleDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import type { StoreEntityConnectorManager, StoreEntityConnector } from './connector-types';
 import { updatedAt } from '../../schema/attribute-definition';
 import { ConnectorPriorityGroup } from '../../generated/graphql';
@@ -9,7 +9,7 @@ import { CATALOG_CONTRACT_MAPPINGS } from '../catalog/catalog';
 import { UnsupportedError } from '../../config/errors';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
-const CONNECTOR_DEFINITION: ModuleDefinition<StoreEntityConnector, any> = {
+export const CONNECTOR_DEFINITION: ModuleDefinition<StoreEntityConnector, any> = {
   type: {
     id: 'connector',
     name: ENTITY_TYPE_CONNECTOR,
@@ -68,9 +68,7 @@ const CONNECTOR_DEFINITION: ModuleDefinition<StoreEntityConnector, any> = {
   },
 };
 
-registerDefinition(CONNECTOR_DEFINITION);
-
-const CONNECTOR_MANAGER_DEFINITION: ModuleDefinition<StoreEntityConnectorManager, any> = {
+export const CONNECTOR_MANAGER_DEFINITION: ModuleDefinition<StoreEntityConnectorManager, any> = {
   type: {
     id: 'connectorManager',
     name: ENTITY_TYPE_CONNECTOR_MANAGER,
@@ -97,5 +95,3 @@ const CONNECTOR_MANAGER_DEFINITION: ModuleDefinition<StoreEntityConnectorManager
     throw UnsupportedError('Connector manager converter_2_1 should not be called');
   },
 };
-
-registerDefinition(CONNECTOR_MANAGER_DEFINITION);

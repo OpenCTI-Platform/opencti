@@ -6,6 +6,7 @@ import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
 import channelModule from './modules/channel/channel-module';
 import catalogModule from './modules/catalog/catalog-module';
+import connectorModule from './modules/connector/connector-module';
 import languageModule from './modules/language/language-module';
 import eventModule from './modules/event/event-module';
 import groupingModule from './modules/grouping/grouping-module';
@@ -90,6 +91,7 @@ import customFieldModule from './modules/customField/custom-field-module';
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   channelModule,
   catalogModule,
+  connectorModule,
   languageModule,
   eventModule,
   groupingModule,
