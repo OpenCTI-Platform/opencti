@@ -42,7 +42,8 @@ testCreatedCounter.indicator = 65;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 12;
+// - 1 created and deleted by the hunt test of the coverages validated by the same inject
+testCreatedCounter['intrusion-set'] = 13;
 testCreatedCounter['ipv4-addr'] = 2;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -62,7 +63,8 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
-testCreatedCounter.relationship = 158;
+// + 2 has-covered created by the hunt test of the coverages validated by the same inject
+testCreatedCounter.relationship = 160;
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8;
 testCreatedCounter.software = 2;
@@ -156,7 +158,8 @@ testDeletedCounter.indicator = 37;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 11;
+// - 1 created and deleted by the hunt test of the coverages validated by the same inject
+testDeletedCounter['intrusion-set'] = 12;
 testDeletedCounter['ipv4-addr'] = 2;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
