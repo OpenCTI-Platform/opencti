@@ -31,8 +31,6 @@ import {
   HuntStatus,
   HuntType,
   type InputMaybe,
-  OrderingMode,
-  PirRelationshipOrdering,
   type StixRefRelationshipAddInput,
 } from '../../generated/graphql';
 import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
@@ -42,7 +40,6 @@ import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, MEMBER_ACCESS_RIG
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
-import { findPirRelationPaginated } from '../pir/pir-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { resolveAgentJwtUser } from '../playbook/components/ai-agent-shared';
 import {
@@ -58,6 +55,7 @@ import {
 } from './hunt-types';
 import { isRestrictedToMembers, normalizeHuntIocValues, resolveHuntIocSet } from './hunt-iocs';
 import { computeHuntReadiness, isUnmetReadinessItem } from './hunt-readiness';
+import { listPirFlaggedEntities } from './hunt-derivation';
 import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { validateSigmaRule } from './hunt-sigma';
 import { computeNextRunAt } from './hunt-schedule';
@@ -477,14 +475,7 @@ export const loadHuntPlanEntities = async (context: AuthContext, user: AuthUser,
   for (let index = 0; index < pirIds.length; index += 1) {
     const pir = await storeLoadById<BasicStoreEntity>(context, user, pirIds[index], ENTITY_TYPE_PIR).catch(() => null);
     if (pir) {
-      const flagged = await findPirRelationPaginated(context, user, {
-        pirId: pir.internal_id,
-        first: PLAN_MAX_PIR_ENTITIES,
-        orderBy: PirRelationshipOrdering.PirScore,
-        orderMode: OrderingMode.Desc,
-      });
-      const flaggedIds = flagged.edges.map((edge: { node: { fromId: string } }) => edge.node.fromId);
-      entities.push(...(flaggedIds.length > 0 ? await findByIds<BasicStoreEntity & Record<string, any>>(context, user, flaggedIds) : []));
+      entities.push(...await listPirFlaggedEntities<BasicStoreEntity & Record<string, any>>(context, user, pir.internal_id, [ABSTRACT_STIX_DOMAIN_OBJECT], PLAN_MAX_PIR_ENTITIES));
     }
   }
   // Reports: the threats, techniques and indicators they contain, read through their object relationships (a
