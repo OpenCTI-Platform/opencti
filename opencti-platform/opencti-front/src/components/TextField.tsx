@@ -220,6 +220,8 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, for
       onPaste={internalOnPaste}
       onKeyDown={internalOnKeyDown}
       slotProps={{
+        // The caller's label slot only: the input slot carries this wrapper's adornments.
+        inputLabel: otherProps.slotProps?.inputLabel,
         input: {
           startAdornment,
           endAdornment: askAiSlot,

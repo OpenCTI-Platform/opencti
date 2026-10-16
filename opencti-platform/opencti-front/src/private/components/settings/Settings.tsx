@@ -596,7 +596,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           settings.platform_whitemark
                           && isEnterpriseEditionValid
                         }
-                        inputProps={{ 'aria-label': t_i18n('Remove Filigran logos') }}
+                        slotProps={{ input: { 'aria-label': t_i18n('Remove Filigran logos') } }}
                         onChange={(_event: ChangeEvent<HTMLInputElement>, value: boolean) => handleSubmitField(
                           'platform_whitemark',
                           value,

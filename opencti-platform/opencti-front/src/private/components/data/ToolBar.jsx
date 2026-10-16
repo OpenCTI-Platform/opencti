@@ -90,13 +90,15 @@ const ToolBar = (props) => {
           variant="persistent"
           classes={{ paper: paperClass }}
           open={isOpen}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-              bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
-              zIndex: theme.zIndex.appBar - 2,
+          slotProps={{
+            paper: {
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
+                zIndex: theme.zIndex.appBar - 2,
+              },
             },
           }}
         >

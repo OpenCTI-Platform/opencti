@@ -118,11 +118,15 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                   onChange={handleUnitChange}
                   style={{ flex: 1 }}
                   fullWidth
-                  SelectProps={{
-                    MenuProps: {
-                      PaperProps: {
-                        style: {
-                          maxHeight: 200,
+                  slotProps={{
+                    select: {
+                      MenuProps: {
+                        slotProps: {
+                          paper: {
+                            style: {
+                              maxHeight: 200,
+                            },
+                          },
                         },
                       },
                     },
