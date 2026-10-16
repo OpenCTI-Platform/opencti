@@ -45,6 +45,7 @@ import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/Js
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
+import { HuntConnectorDeploymentNotice } from '@components/hunts/HuntConnectorSetup';
 import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
@@ -372,6 +373,7 @@ const IngestionCatalogConnectorCreation = ({
                     </Alert>
                   )}
                   <IngestionCatalogCompatibilityAlert connector={connector} />
+                  {connector.container_type === 'INTERNAL_HUNT' && <HuntConnectorDeploymentNotice slug={connector.slug} />}
 
                   <fieldset
                     disabled={disableForm}

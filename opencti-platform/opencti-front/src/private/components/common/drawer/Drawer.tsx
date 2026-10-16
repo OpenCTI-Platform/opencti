@@ -1,10 +1,13 @@
 import DrawerHeader from '@common/drawer/DrawerHeader';
+import Button from '@common/button/Button';
 import DrawerMUI from '@mui/material/Drawer';
+import { MenuBookOutlined } from '@mui/icons-material';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { fdsLayerClass, layerInputVars, SURFACE_LAYER } from '../../../../utils/fdsLayer';
 import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
+import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { GenericContext } from '../model/GenericContextModel';
@@ -60,6 +63,8 @@ interface DrawerProps {
   onClose?: () => void;
   context?: readonly (GenericContext | null)[] | null;
   header?: React.ReactElement;
+  /** The documentation of what the drawer creates or edits, linked from the header next to the close button */
+  learnMore?: { href: string; testId?: string };
   subHeader?: {
     right?: React.ReactElement[];
     left?: React.ReactElement[];
@@ -89,6 +94,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   onClose,
   context,
   header,
+  learnMore,
   subHeader,
   controlledDial,
   containerStyle,
@@ -100,6 +106,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   } = useAuth();
 
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
@@ -215,6 +222,19 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
             <>
               {context && <SubscriptionAvatars context={context} />}
               {header}
+              {learnMore && (
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  startIcon={<MenuBookOutlined fontSize="small" />}
+                  href={learnMore.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid={learnMore.testId}
+                >
+                  {t_i18n('Learn more')}
+                </Button>
+              )}
             </>
           )}
           onClose={handleClose}

@@ -12,6 +12,7 @@ import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
+import { isHuntableEntityPath } from '@components/hunts/hunt-utils';
 
 const TOP_BAR_HEIGHT = 64;
 
@@ -83,10 +84,12 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
 
   const isDarkMode = theme.palette.mode === 'dark';
 
+  const isHuntablePage = isHuntableEntityPath(location.pathname);
   const promptSuggestions = [
     t_i18n('What are the latest threats?'),
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
+    ...(isHuntablePage ? [t_i18n('Plan a hunt for this threat')] : []),
   ];
 
   const draftId = me.draftContext?.id;

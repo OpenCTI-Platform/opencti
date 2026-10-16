@@ -34,6 +34,15 @@ const StixDomainObjectMain = ({
         {tabs.includes('result') && (
           <Route path="/result" element={pages.result} />
         )}
+        {tabs.includes('logic') && (
+          <Route path="/logic" element={pages.logic} />
+        )}
+        {tabs.includes('runs') && (
+          <Route path="/runs/*" element={pages.runs} />
+        )}
+        {tabs.includes('evidence') && (
+          <Route path="/evidence" element={pages.evidence} />
+        )}
         {tabs.includes('knowledge') && (
           <Route path="/knowledge/*" element={pages.knowledge} />
         )}
@@ -42,6 +51,9 @@ const StixDomainObjectMain = ({
         )}
         {tabs.includes('analyses') && (
           <Route path="/analyses" element={pages.analyses} />
+        )}
+        {tabs.includes('defense') && (
+          <Route path="/defense" element={pages.defense} />
         )}
         {tabs.includes('sightings') && (
           <Route path="/sightings" element={pages.sightings} />

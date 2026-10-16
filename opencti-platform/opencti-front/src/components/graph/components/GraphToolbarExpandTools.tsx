@@ -186,6 +186,9 @@ const expandRelationshipsQuery = graphql`
               name
               description
             }
+            ... on Hunt {
+              name
+            }
             ... on Malware {
               name
               first_seen
@@ -425,6 +428,9 @@ const expandRelationshipsQuery = graphql`
               name
             }
             ... on Region {
+              name
+            }
+            ... on Hunt {
               name
             }
             ... on Malware {

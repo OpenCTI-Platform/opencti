@@ -56,6 +56,7 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
   KNOWLEDGE_KNDISSEMINATION
+  KNOWLEDGE_KNHUNT
   KNOWLEDGE_KNSHAREFILTERS
   EXPLORE
   EXPLORE_EXUPDATE
@@ -3602,6 +3603,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   name: String!
   # Technical
   creators: [Creator!]
@@ -3641,6 +3643,7 @@ input ObservedDataAddInput {
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -13277,6 +13280,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | SecurityPlatform
   | SecurityCoverage
   | SecurityCoverageResult
+  | Hunt
   | Sector
   | System
   | Indicator
@@ -13447,6 +13451,7 @@ union StixObjectOrStixRelationship =
   | Pir
   | SecurityCoverage
   | SecurityCoverageResult
+  | Hunt
   | CustomView
   | IMEI
   | ICCID
@@ -13834,6 +13839,9 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
+  x_opencti_hunt_run_id: String
+  "The hunt whose runs keep this sighting up to date (one sighting per hunt, sighted object and security platform)"
+  x_opencti_hunt_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -13870,6 +13878,7 @@ input StixSightingRelationshipAddInput {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
+  x_opencti_hunt_run_id: String
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]

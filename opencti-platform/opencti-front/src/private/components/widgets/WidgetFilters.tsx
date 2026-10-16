@@ -80,6 +80,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
       'DraftWorkspace',
+      'Hunt-Run',
     ];
     const isDraftWorkspaceOnly = isDraftWorkspaceFilterGroup(filters);
     searchContext = isDraftWorkspaceOnly

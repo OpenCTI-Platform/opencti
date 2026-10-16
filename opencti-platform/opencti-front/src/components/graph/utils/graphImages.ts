@@ -45,6 +45,7 @@ import StixCyberObservable from '../../../static/images/entities/stix-cyber-obse
 import Relationship from '../../../static/images/entities/relationship.svg';
 import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
 import SecurityCoverage from '../../../static/images/entities/security-coverage.svg';
+import Hunt from '../../../static/images/entities/hunt.svg';
 
 interface GraphImage {
   img: HTMLImageElement;
@@ -153,6 +154,10 @@ const GRAPH_IMAGES: GraphImages = {
   SecurityPlatform: {
     rawImg: SecurityPlatform,
     img: generateHtmlImageElement(SecurityPlatform),
+  },
+  Hunt: {
+    rawImg: Hunt,
+    img: generateHtmlImageElement(Hunt),
   },
   Sector: {
     rawImg: Sector,

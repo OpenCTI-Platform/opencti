@@ -9,7 +9,7 @@ import * as masterLock from '../../../src/lock/master-lock';
 import * as entitySettingUtils from '../../../src/modules/entitySetting/entitySetting-utils';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as work from '../../../src/domain/work';
-import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
+import { batchInternalRels, extractWidgetTypesFromArgs, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
 
 describe('stix core object domain import push', () => {
   beforeEach(() => {
@@ -196,5 +196,24 @@ describe('batchInternalRels', () => {
     expect(restricted.name).toBe('Restricted');
     expect(restricted.standard_id).toBe('Restricted');
     expect(visible).toEqual(secondAuthor);
+  });
+});
+
+describe('stix core object widget types', () => {
+  const typeFilter = (values: string[]) => ({ mode: 'and', filters: [{ key: ['entity_type'], values, operator: 'eq', mode: 'or' }], filterGroups: [] });
+
+  it('should count and chart hunt runs when a widget filters on their type, translation previews left out', () => {
+    const { types, args } = extractWidgetTypesFromArgs({ filters: typeFilter(['Hunt-Run']) }, ['Stix-Core-Object']);
+    expect(types).toEqual(['Stix-Core-Object', 'Hunt-Run']);
+    const filters = (args as { filters: { filters: { key: string[]; values: string[]; operator: string }[] } }).filters.filters;
+    expect(filters).toContainEqual(expect.objectContaining({ key: ['hunt_run_mode'], values: ['preview'], operator: 'not_eq' }));
+  });
+
+  it('should leave the types and filters of other widgets as they are', () => {
+    const input = { filters: typeFilter(['Report']) };
+    const { types, args } = extractWidgetTypesFromArgs(input, ['Report']);
+    expect(types).toEqual(['Report']);
+    expect(args).toBe(input);
+    expect(extractWidgetTypesFromArgs({}, ['Malware'])).toEqual({ types: ['Malware'], args: {} });
   });
 });

@@ -12,6 +12,7 @@ const reportDefaultOverviewLayout: OverviewLayoutCustomization[] = [
   { key: 'externalReferences', width: 6, label: 'External references' },
   { key: 'mostRecentHistory', width: 6, label: 'Most recent history' },
   { key: 'notes', width: 12, label: 'Notes about this entity' },
+  { key: 'hunts', width: 12, label: 'Hunts' },
 ];
 
 // Register only the default layout

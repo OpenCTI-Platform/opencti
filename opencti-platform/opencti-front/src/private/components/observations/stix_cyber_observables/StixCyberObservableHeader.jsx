@@ -23,6 +23,8 @@ import useGranted, {
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
+import HuntThisMenu from '../../hunts/HuntThisMenu';
+import { isIocHuntEntity } from '../../hunts/hunt-utils';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent, enableEnrollPlaybook }) => {
   const [openSharing, setOpenSharing] = useState(false);
@@ -57,6 +59,9 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
       title={stixCyberObservable.observable_value}
       rightActions={(
         <>
+          {isIocHuntEntity(stixCyberObservable.entity_type) && (
+            <HuntThisMenu entity={{ id: stixCyberObservable.id, entity_type: stixCyberObservable.entity_type, name: stixCyberObservable.observable_value }} />
+          )}
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}

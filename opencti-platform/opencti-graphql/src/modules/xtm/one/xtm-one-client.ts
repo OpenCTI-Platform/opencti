@@ -1,10 +1,27 @@
 import conf, { logApp } from '../../../config/conf';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import type { AuthContext } from '../../../types/user';
-import { getHttpClient } from '../../../utils/http-client';
+import { getHttpClient, getResponseError } from '../../../utils/http-client';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
+
+/** A failed call to XTM One: the HTTP status when it answered, else the network error code (ECONNREFUSED, ECONNABORTED...). */
+export interface XtmCallFailure {
+  status: number | null;
+  code: string | null;
+  detail: string | null;
+}
+
+export const toXtmCallFailure = (error: unknown): XtmCallFailure => {
+  const httpError = getResponseError(error);
+  const rawDetail = httpError?.data?.detail ?? httpError?.data?.message ?? (error as Error | undefined)?.message;
+  return {
+    status: httpError?.status ?? null,
+    code: typeof (error as { code?: unknown } | undefined)?.code === 'string' ? (error as { code: string }).code : null,
+    detail: typeof rawDetail === 'string' ? rawDetail.substring(0, 500) : null,
+  };
+};
 
 // ── Intent catalog types ────────────────────────────────────────────────
 
@@ -71,7 +88,7 @@ const xtmOneClient = {
     return !!(XTM_ONE_URL && XTM_ONE_TOKEN);
   },
 
-  listAgentsForIntent: async (context: AuthContext, intent: string): Promise<IntentCatalogAgent[]> => {
+  listAgentsForIntent: async (context: AuthContext, intent: string, onFailure?: (failure: XtmCallFailure) => void): Promise<IntentCatalogAgent[]> => {
     if (!XTM_ONE_URL || !XTM_ONE_TOKEN || !context.user) {
       return [];
     }
@@ -88,7 +105,11 @@ const xtmOneClient = {
       const response = await httpClient.get('/api/v1/intents/catalog?vertical=cti&intent=' + encodeURIComponent(intent), { timeout: 15000 });
       return response.data.flatMap((entry: IntentCatalogEntry) => entry.agents);
     } catch (error: any) {
-      logApp.error('[XTM One] listAgentsForIntent failed', { error: error.message });
+      // Handled: the lookup gives no agent and the caller tells the user why. Only the sanitized failure is logged: the
+      // request of an HTTP error carries the bearer token
+      const failure = toXtmCallFailure(error);
+      logApp.warn('[XTM One] listAgentsForIntent failed', { failure, intent });
+      onFailure?.(failure);
       return [];
     }
   },
