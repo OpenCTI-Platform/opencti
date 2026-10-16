@@ -4,6 +4,7 @@ import { createEntity, updateAttribute } from '../../database/middleware';
 import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import type { BasicStoreEntityDataSanity } from './dataSanity-types';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
 import { utcDate } from '../../utils/format';
 import conf, { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -171,13 +172,7 @@ export const findForceRunOperations = async (context: AuthContext, user: AuthUse
     context,
     user,
     [ENTITY_TYPE_DATA_SANITY_EXECUTION],
-    {
-      filters: {
-        mode: FilterMode.And,
-        filters: [{ key: ['force_run'], values: ['true'], operator: FilterOperator.Eq, mode: FilterMode.Or }],
-        filterGroups: [],
-      },
-    },
+    { filters: booleanTrueFilter('force_run') },
   );
 };
 

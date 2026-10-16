@@ -4,7 +4,7 @@ import { pageEntitiesConnection, storeLoadById } from '../../database/middleware
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../../generated/graphql';
 import type { StoreEntity } from '../../types/store.d';
-import { FilterMode } from '../../generated/graphql';
+import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
 import { elReplace } from '../../database/engine';
 import { FunctionalError, UnsupportedError, ValidationError } from '../../config/errors';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
@@ -131,15 +131,7 @@ export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: Qu
     return pageEntitiesConnection<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }
   // No user specified, listing only public csv feeds
-  const filters = {
-    mode: FilterMode.And,
-    filterGroups: [],
-    filters: [{
-      key: ['feed_public'],
-      values: ['true'],
-    }],
-  };
-  const publicArgs = { ...(opts ?? {}), filters };
+  const publicArgs = { ...(opts ?? {}), filters: booleanTrueFilter('feed_public') };
   return pageEntitiesConnection<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
