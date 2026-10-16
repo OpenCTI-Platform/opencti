@@ -519,13 +519,16 @@ export const getWorkflowMigrationPreview = async (
 ): Promise<ConvertStatusToDefinitionResult> => {
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
-  const statuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+  const allStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
     filters: {
       mode: FilterMode.And,
       filters: [{ key: ['type'], values: [entityType] }],
       filterGroups: [],
     },
   });
+  // A status marked `to_be_deleted_at` is a state an admin removed in an earlier republish: migrating
+  // it again would bring it back and clear its deletion mark on publish.
+  const statuses = allStatuses.filter((status) => !status.to_be_deleted_at);
   const templateIds = [...new Set(statuses.map((status) => status.template_id))];
   const templates = templateIds.length > 0
     ? await storeLoadByIds<BasicWorkflowTemplateEntity>(executionContext, executionUser, templateIds, ENTITY_TYPE_STATUS_TEMPLATE)
@@ -542,7 +545,9 @@ export const getWorkflowMigrationPreview = async (
  * locking are the same as a hand-authored workflow. Refuses to replace an existing workflow unless
  * `overwrite` is true (the migrated definition then becomes a new draft version, and publishing it
  * keeps the usual guard against removing states still in use). Never publishes a definition the
- * preview flagged with a blocking diagnostic.
+ * preview flagged with a blocking diagnostic. When publishing, the definition is validated before
+ * anything is saved, so a validation error leaves the store untouched; only the publish-time
+ * in-use guard (overwrite path) can still fail after the draft is saved.
  */
 export const migrateWorkflowFromStatuses = async (
   context: AuthContext,
@@ -571,7 +576,27 @@ export const migrateWorkflowFromStatuses = async (
     }
   }
 
-  const draftResult = await setWorkflowDefinition(context, user, entityType, JSON.stringify(definition));
+  const definitionContent = JSON.stringify(definition);
+  if (publish) {
+    // Publishing re-validates the saved draft and throws on errors, by which point the draft (and,
+    // for a new type, the workflow itself) is already persisted. Validate first so a definition that
+    // cannot be published leaves nothing behind.
+    const validationErrors = await validateWorkflowDefinitionData(
+      bypassDraftContext(context),
+      bypassDraftUser(user),
+      definitionContent,
+      entityType,
+      entitySetting.workflow_id ?? undefined,
+    );
+    if (validationErrors.length > 0) {
+      throw FunctionalError('Cannot publish migrated workflow: the migrated definition is invalid', {
+        entityType,
+        errors: validationErrors.map((error) => error.message),
+      });
+    }
+  }
+
+  const draftResult = await setWorkflowDefinition(context, user, entityType, definitionContent);
   return publish ? publishWorkflowDefinition(context, user, entityType) : draftResult;
 };
 
