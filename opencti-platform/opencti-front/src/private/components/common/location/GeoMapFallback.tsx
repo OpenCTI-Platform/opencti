@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { Position } from 'geojson';
+import type { MultiLineString, Position } from 'geojson';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { isValidCoordinates } from '../../../../utils/position.utils';
@@ -225,7 +225,8 @@ const GeoMapFallback = ({
           interactive: false,
           style: { stroke: false, fillColor: colors.bg, fillOpacity: 1 },
         }).addTo(map);
-        borderLayer = L.geoJSON({ type: 'MultiLineString', coordinates: borders }, {
+        const borderLines: MultiLineString = { type: 'MultiLineString', coordinates: borders };
+        borderLayer = L.geoJSON(borderLines, {
           ...SHARED_GEOMETRY_OPTIONS,
           interactive: false,
           style: { color: colors.boundary, weight: boundaryWidth(map.getZoom()), lineJoin: 'round' },
