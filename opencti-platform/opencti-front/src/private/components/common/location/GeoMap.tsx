@@ -13,6 +13,14 @@ import { loadCountries, type CountriesCollection } from './countries';
 const GeoMapFallback = lazy(() => import('./GeoMapFallback'));
 const MAP_RENDERER_STORAGE_KEY = 'opencti-map-renderer';
 
+const isFallbackForced = () => {
+  try {
+    return localStorage.getItem(MAP_RENDERER_STORAGE_KEY) === 'fallback';
+  } catch {
+    return false;
+  }
+};
+
 // Configure MapLibre worker URL (must be set before creating any Map)
 maplibre.setWorkerUrl(maplibreglWorker);
 
@@ -214,7 +222,7 @@ const GeoMap = ({
   const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isFallbackRendered, setIsFallbackRendered] = useState(() => localStorage.getItem(MAP_RENDERER_STORAGE_KEY) === 'fallback');
+  const [isFallbackRendered, setIsFallbackRendered] = useState(isFallbackForced);
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
