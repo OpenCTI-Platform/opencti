@@ -223,8 +223,9 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
                 const attrPath = computeAttributePath(type, workflowStatusAction.attribute);
                 if (!result.success) {
                   logApp.warn('[OPENCTI-MODULE][PLAYBOOK] Workflow status not applied', { id, reason: result.reason });
-                } else if (attrPath) {
-                  // Keep the bundle aligned with the new status for the next playbook components
+                } else if (result.executionStatus === 'completed' && attrPath) {
+                  // Keep the bundle aligned with the new status for the next playbook components.
+                  // A pending status only changes once its background actions succeed.
                   patchOperations.push({ op: EditOperation.Replace, path: `/objects/${index}${attrPath}`, value: targetStatusId });
                 }
               } catch (error) {
