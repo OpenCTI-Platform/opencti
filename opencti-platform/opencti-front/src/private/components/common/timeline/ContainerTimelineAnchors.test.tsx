@@ -68,7 +68,7 @@ describe('ContainerTimelineAnchors containment help', () => {
     const { user } = testRender(<ContainerTimelineAnchors anchors={anchors} withTasks={true} />);
     await user.hover(screen.getByTestId('timeline-anchor-containment'));
     const help = await screen.findByRole('tooltip');
-    expect(help).toHaveTextContent('First Containment milestone, or first task completed with This task completes the containment switched on');
+    expect(help).toHaveTextContent('First Containment milestone, or first task completed with "This task completes the containment" switched on');
   });
 
   it('names the milestone only on an incident, which holds no task', async () => {

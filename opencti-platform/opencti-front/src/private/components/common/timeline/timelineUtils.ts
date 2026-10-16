@@ -83,7 +83,7 @@ const TIMELINE_ANCHOR_HELP: Record<TimelineAnchorKey, string> = {
   notification: 'First Notification milestone, added with Add an event',
   closure: 'Last transition to the final workflow status, while the case stays closed',
 };
-const CONTAINMENT_HELP_WITH_TASKS = 'First Containment milestone, or first task completed with This task completes the containment switched on (or labelled containment)';
+const CONTAINMENT_HELP_WITH_TASKS = 'First Containment milestone, or first task completed with "This task completes the containment" switched on (or labelled containment)';
 
 /** How a headline date is set, for the containers with tasks (the cases) or without (the incidents). */
 export const timelineAnchorHelp = (key: TimelineAnchorKey, withTasks: boolean) => (key === 'containment' && withTasks ? CONTAINMENT_HELP_WITH_TASKS : TIMELINE_ANCHOR_HELP[key]);
