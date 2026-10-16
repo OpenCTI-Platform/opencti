@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -10,6 +10,7 @@ import { deriveHuntContent, derivedHuntInput, type HuntDerivedContent } from '..
 import { normalizeHuntInput } from '../../../src/modules/hunt/hunt-domain';
 import { resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
 import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../src/modules/hunt/hunt-types';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const SIGMA_RULE = `title: Hunt derivation test rule
 logsource:
@@ -197,5 +198,33 @@ describe('Hunt derived content ("Hunt this")', () => {
     expect(ip.data?.huntDerivedContent).toMatchObject({ suggested_type: 'indicators', elements: [{ id: ipIndicatorId, value_types: ['IPv4-Addr'] }] });
     const lonely = await queryAsAdminWithSuccess({ query: DERIVED, variables: { entityId: lonelyTechniqueId } });
     expect(lonely.data?.huntDerivedContent).toMatchObject({ suggested_type: null, elements: [], rules: [] });
+  });
+
+  it('should follow the threats a PIR flags when a hunt starts from the PIR', async () => {
+    // PIRs are an Enterprise Edition feature
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    const criterion = { weight: 2, filters: { mode: 'and', filters: [{ key: ['toId'], values: [campaignId] }], filterGroups: [] } };
+    const pir = await queryAsAdminWithSuccess({
+      query: gql`mutation PirAdd($input: PirAddInput!) { pirAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Hunt derivation test PIR', pir_type: 'THREAT_LANDSCAPE', pir_rescan_days: 0, pir_criteria: [criterion], pir_filters: { mode: 'and', filters: [], filterGroups: [] } } },
+    });
+    const pirId = pir.data?.pirAdd.id;
+    try {
+      await queryAsAdminWithSuccess({
+        query: gql`mutation PirFlagElement($id: ID!, $input: PirFlagElementInput!) { pirFlagElement(id: $id, input: $input) }`,
+        variables: { id: pirId, input: { relationshipId: 'hunt-derivation-test-relationship', sourceId: intrusionSetId, matchingCriteria: [criterion] } },
+      });
+      const result = await queryAsAdminWithSuccess({ query: DERIVED, variables: { entityId: pirId } });
+      const derived = result.data?.huntDerivedContent;
+      expect(derived.entity).toEqual({ id: pirId, entity_type: 'Pir', relation: 'self' });
+      expect(derived.suggested_type).toEqual('indicators');
+      expect(derived.sources).toEqual(expect.arrayContaining([{ id: intrusionSetId, entity_type: 'Intrusion-Set', relation: 'flagged' }]));
+      expect(derived.targets.map(({ id }: { id: string }) => id)).toContain(intrusionSetId);
+      expect(derived.elements.map(({ id }: { id: string }) => id)).toEqual(expect.arrayContaining([ipIndicatorId, domainIndicatorId, fileIndicatorId]));
+    } finally {
+      await queryAsAdmin({ query: gql`mutation PirDelete($id: ID!) { pirDelete(id: $id) }`, variables: { id: pirId } });
+      vi.restoreAllMocks();
+    }
   });
 });
