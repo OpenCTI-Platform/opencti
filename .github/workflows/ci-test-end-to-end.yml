@@ -15,7 +15,7 @@ on:
 jobs:
   opencti-frontend-e2e-test:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -190,7 +190,7 @@ jobs:
 
   opencti-frontend-verify-translation:
     name: Verify translation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
