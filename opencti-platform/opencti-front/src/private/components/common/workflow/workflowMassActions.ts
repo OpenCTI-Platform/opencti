@@ -19,6 +19,18 @@ export const buildTransitionOptions = (transitions: readonly MassTransition[]) =
   value: transition.event,
 }));
 
+interface WorkflowStatus {
+  id: string;
+  order: number;
+  template?: { name: string; color: string } | null;
+}
+
+export const buildWorkflowStatusOptions = <T extends WorkflowStatus>(statuses: readonly T[]) => statuses.map((status) => ({
+  label: status.template?.name ?? status.id,
+  value: status.id,
+  status,
+}));
+
 export const buildWorkflowTransitionAction = (input: WorkflowActionInput) => ({
   type: input.type,
   context: {
