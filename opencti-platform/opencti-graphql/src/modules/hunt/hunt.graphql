@@ -532,6 +532,12 @@ type HuntDerivedContent {
 }
 
 # Queries
+"When a hunt last looked up an indicator or observable on a security platform, and last found it there"
+type HuntEntityActivity {
+  hunted_at: DateTime
+  matched_at: DateTime
+}
+
 type Query {
   hunt(id: String!): Hunt @auth(for: [KNOWLEDGE])
   hunts(
@@ -549,6 +555,8 @@ type Query {
   huntPackExport(ids: [ID!]!): String @auth(for: [KNOWLEDGE])
   "What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules"
   huntDerivedContent(entityId: ID!): HuntDerivedContent @auth(for: [KNOWLEDGE])
+  "When a hunt last looked up an indicator or observable, and last found it"
+  huntEntityActivity(id: String!): HuntEntityActivity @auth(for: [KNOWLEDGE])
 }
 
 # Mutations

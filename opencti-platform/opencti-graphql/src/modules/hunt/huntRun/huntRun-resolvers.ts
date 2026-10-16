@@ -24,6 +24,7 @@ import {
 import { huntRunQueueReason } from '../hunt-dispatch';
 import { huntRunFailureReason } from '../hunt-logic';
 import { annotateHuntRunHits } from '../huntHitRecord/huntHitRecord-domain';
+import { huntRunEntityMatched } from './huntRun-iocs';
 import { resolveHuntRunIncidentLink } from '../hunt-incident';
 
 const huntRunResolvers: Resolvers = {
@@ -49,6 +50,7 @@ const huntRunResolvers: Resolvers = {
     result_ids: (run, _, context) => findHuntRunResultIds(context, context.user, run),
     results_summary: (run, _, context) => findHuntRunResultsSummary(context, context.user, run),
     ioc_results: (run, _, context) => resolveHuntRunIocResults(context, context.user, run) as any,
+    entity_matched: (run, { id }) => huntRunEntityMatched(run, id),
     hits_sample: (run, _, context) => annotateHuntRunHits(context, context.user, run) as any,
     time_window_continued: (run) => !!run.continues_run_id,
     incident_id: async (run, _, context) => (await resolveHuntRunIncidentLink(context, context.user, run)).incident_id,

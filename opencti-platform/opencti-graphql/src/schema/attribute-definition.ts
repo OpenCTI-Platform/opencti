@@ -597,6 +597,30 @@ export const xOpenctiModifiedAt: DateAttribute = {
   isFilterable: false,
 };
 
+// Written by the platform when a hunt run completes, on the indicators and observables it looked up: never by a user
+export const xOpenctiHuntedAt: DateAttribute = {
+  name: 'x_opencti_hunted_at',
+  label: 'Last hunted',
+  type: 'date',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: true,
+};
+export const xOpenctiHuntMatchedAt: DateAttribute = {
+  name: 'x_opencti_hunt_matched_at',
+  label: 'Last matched by a hunt',
+  type: 'date',
+  update: false,
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: true,
+};
+
 export const createdAt: DateAttribute = {
   name: 'created_at',
   label: 'Platform creation date',

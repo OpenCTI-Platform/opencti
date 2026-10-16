@@ -9178,6 +9178,11 @@ type Query {
   What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules
   """
   huntDerivedContent(entityId: ID!): HuntDerivedContent
+
+  """
+  When a hunt last looked up an indicator or observable, and last found it
+  """
+  huntEntityActivity(id: String!): HuntEntityActivity
   huntRun(id: String!): HuntRun
   huntRuns(first: Int, after: ID, orderBy: HuntRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): HuntRunConnection
   huntConnectors(onlyAlive: Boolean): [HuntConnector!]!
@@ -16988,6 +16993,14 @@ type HuntDerivedContent {
   rules_truncated: Boolean!
 }
 
+"""
+When a hunt last looked up an indicator or observable on a security platform, and last found it there
+"""
+type HuntEntityActivity {
+  hunted_at: DateTime
+  matched_at: DateTime
+}
+
 input HuntAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
@@ -17384,6 +17397,11 @@ type HuntRun implements BasicObject & InternalObject {
 
   """Indicator hunts: one result per value looked up"""
   ioc_results: [HuntIocResult!]
+
+  """
+  Whether the run matched an entity of its hunt: an indicator or observable it searched when one of its values was seen, a source when the run has hits; null when the run is not completed or did not search the entity
+  """
+  entity_matched(id: String!): Boolean
 
   """
   Detection-rule hunts: one result per Sigma rule, null when the connector ran the first rule only
