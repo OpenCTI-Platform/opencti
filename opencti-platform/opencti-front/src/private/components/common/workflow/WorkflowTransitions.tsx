@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from '@filigran/design-system';
 import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
-import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
@@ -55,7 +55,7 @@ const WorkflowErrorHint = ({ message, severity }: { message: string; severity: '
         priority="tertiary"
         variant={severity === 'error' ? 'destructive' : 'default'}
         aria-label={message}
-        icon={<ErrorOutline color={severity} fontSize="small" />}
+        icon={<ErrorOutlined color={severity} fontSize="small" />}
       />
     </TooltipTrigger>
     <TooltipContent>{message}</TooltipContent>
