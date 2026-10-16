@@ -728,7 +728,7 @@ const handleTaskMigrationToWorker = async (context, task) => {
   return updatedTask;
 };
 
-const taskHandlerGenerator = (context) => {
+export const taskHandlerGenerator = (context) => {
   return async (rawTask) => {
     const initTask = { ...rawTask };
     const task = await handleTaskMigrationToWorker(context, initTask);
