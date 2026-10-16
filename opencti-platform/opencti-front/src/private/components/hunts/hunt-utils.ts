@@ -127,6 +127,7 @@ export const HUNT_MAX_RESULTS_PER_RUN = 10000;
 // The platform defaults until the hunting configuration is loaded
 export const HUNT_MAX_SIGMA_RULES = 100;
 export const HUNT_MAX_IOCS_PER_RUN = 1000;
+export const HUNT_MAX_FILTER_ENTITIES_PER_RUN = 100;
 export const HUNT_MAX_RELATED_SOURCES = 25;
 // Results a run reads when its hunt sets no limit (the platform default)
 export const HUNT_DEFAULT_MAX_RESULTS = 1000;

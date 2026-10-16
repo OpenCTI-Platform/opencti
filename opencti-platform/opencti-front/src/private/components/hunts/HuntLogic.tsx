@@ -26,6 +26,7 @@ import HuntSigmaRulesField from './HuntSigmaRulesField';
 import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
+import HuntIocFilterTake, { HUNT_IOC_SORT_DEFAULT } from './HuntIocFilterTake';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
 import { iocTypeLabel, iocValuesToText, parseIocText } from './hunt-ioc-utils';
 import {
@@ -82,6 +83,7 @@ const huntLogicFragment = graphql`
       run_id
     }
     hunt_ioc_filters
+    hunt_ioc_sort
     hunt_ioc_values {
       observable_type
       value
@@ -564,6 +566,8 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
     ioc_values_text: iocValuesToText(hunt.hunt_ioc_values),
   };
   const storedFiltersJson = serializeFilterGroupForBackend(storedFilters);
+  const storedSort = hunt.hunt_ioc_sort ?? HUNT_IOC_SORT_DEFAULT;
+  const [sort, setSort] = useState(storedSort);
   const onSubmit = (values: IocValues, { setSubmitting, resetForm }: { setSubmitting: (submitting: boolean) => void; resetForm: (next: { values: IocValues }) => void }) => {
     commit({
       variables: {
@@ -572,6 +576,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
           { key: 'huntSources', value: [...values.iocElements, ...values.iocEntities].map((option) => option.value) },
           { key: 'hunt_ioc_values', value: parseIocText(values.ioc_values_text).values },
           { key: 'hunt_ioc_filters', value: [serializeFilterGroupForBackend(filtersState[0])] },
+          { key: 'hunt_ioc_sort', value: [sort] },
         ],
       },
       onCompleted: (_, errors) => {
@@ -601,11 +606,12 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
   return (
     <Formik<IocValues> initialValues={initialValues} onSubmit={onSubmit} enableReinitialize>
       {({ values, dirty: formDirty, isSubmitting, submitForm }) => {
-        const filtersDirty = serializeFilterGroupForBackend(filtersState[0]) !== storedFiltersJson;
+        const filtersJson = serializeFilterGroupForBackend(filtersState[0]);
+        const filtersDirty = filtersJson !== storedFiltersJson || sort !== storedSort;
         const dirty = formDirty || filtersDirty;
+        const noFilter = (filtersState[0].filters ?? []).length === 0 && (filtersState[0].filterGroups ?? []).length === 0;
         const empty = values.iocElements.length === 0 && values.iocEntities.length === 0
-          && parseIocText(values.ioc_values_text).values.length === 0 && (filtersState[0].filters ?? []).length === 0
-          && (filtersState[0].filterGroups ?? []).length === 0;
+          && parseIocText(values.ioc_values_text).values.length === 0 && noFilter;
         return (
           <Form data-testid="hunt-logic-page">
             <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
@@ -617,7 +623,11 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
             <Grid container spacing={3}>
               <Grid item xs={12} lg={7}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
-                  <HuntIocFields filtersState={filtersState} disabled={!canEdit} />
+                  <HuntIocFields
+                    filtersState={filtersState}
+                    disabled={!canEdit}
+                    filterFooter={<HuntIocFilterTake huntId={hunt.id} filters={noFilter ? null : filtersJson} sort={sort} onSortChange={setSort} disabled={!canEdit} />}
+                  />
                   <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                       {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}

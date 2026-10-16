@@ -2,7 +2,14 @@ import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../relay/environment';
 import { HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES } from './hunt-schedule-utils';
-import { HUNT_MAX_IOCS_PER_RUN, HUNT_MAX_RELATED_SOURCES, HUNT_MAX_RESULTS_PER_RUN, HUNT_MAX_SIGMA_RULES, HUNT_MAX_TIME_WINDOW_HOURS } from './hunt-utils';
+import {
+  HUNT_MAX_FILTER_ENTITIES_PER_RUN,
+  HUNT_MAX_IOCS_PER_RUN,
+  HUNT_MAX_RELATED_SOURCES,
+  HUNT_MAX_RESULTS_PER_RUN,
+  HUNT_MAX_SIGMA_RULES,
+  HUNT_MAX_TIME_WINDOW_HOURS,
+} from './hunt-utils';
 import { useHuntConfigurationQuery } from './__generated__/useHuntConfigurationQuery.graphql';
 
 export const huntConfigurationQuery = graphql`
@@ -15,6 +22,7 @@ export const huntConfigurationQuery = graphql`
       max_results_per_run
       max_sigma_rules
       max_iocs_per_run
+      max_filter_entities_per_run
       max_related_sources
     }
   }
@@ -38,6 +46,8 @@ export interface HuntConfiguration {
   maxSigmaRules: number;
   /** Most values an indicators hunt sends in one run */
   maxIocsPerRun: number;
+  /** Most indicators and observables a run takes from the filter of an indicator hunt */
+  maxFilterEntitiesPerRun: number;
   /** Most related threats a hunt from a threat reads its indicators from */
   maxRelatedSources: number;
 }
@@ -54,6 +64,7 @@ const useHuntConfiguration = (): HuntConfiguration => {
     maxResultsPerRun: HUNT_MAX_RESULTS_PER_RUN,
     maxSigmaRules: HUNT_MAX_SIGMA_RULES,
     maxIocsPerRun: HUNT_MAX_IOCS_PER_RUN,
+    maxFilterEntitiesPerRun: HUNT_MAX_FILTER_ENTITIES_PER_RUN,
     maxRelatedSources: HUNT_MAX_RELATED_SOURCES,
   });
   useEffect(() => {
@@ -70,6 +81,7 @@ const useHuntConfiguration = (): HuntConfiguration => {
             maxResultsPerRun: positiveOr(data?.huntConfiguration?.max_results_per_run, HUNT_MAX_RESULTS_PER_RUN),
             maxSigmaRules: positiveOr(data?.huntConfiguration?.max_sigma_rules, HUNT_MAX_SIGMA_RULES),
             maxIocsPerRun: positiveOr(data?.huntConfiguration?.max_iocs_per_run, HUNT_MAX_IOCS_PER_RUN),
+            maxFilterEntitiesPerRun: positiveOr(data?.huntConfiguration?.max_filter_entities_per_run, HUNT_MAX_FILTER_ENTITIES_PER_RUN),
             maxRelatedSources: positiveOr(data?.huntConfiguration?.max_related_sources, HUNT_MAX_RELATED_SOURCES),
           });
         },

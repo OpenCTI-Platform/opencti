@@ -61,13 +61,15 @@ interface HuntIocFieldsProps {
   disabled?: boolean;
   /** The filter builder opens MUI popovers, which a modal design-system dialog cannot host: dialogs leave it out */
   withFilters?: boolean;
+  /** Shown under the filter: what a run takes out of it */
+  filterFooter?: React.ReactNode;
 }
 
 /**
  * What an indicator hunt looks for, four ways that add up: indicators and observables picked from a list, the
  * indicators and observables of entities, values pasted as text, and the ones matching a filter.
  */
-const HuntIocFields = ({ filtersState, disabled = false, withFilters = true }: HuntIocFieldsProps) => {
+const HuntIocFields = ({ filtersState, disabled = false, withFilters = true, filterFooter }: HuntIocFieldsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<{ ioc_values_text: string }>();
@@ -115,6 +117,7 @@ const HuntIocFields = ({ filtersState, disabled = false, withFilters = true }: H
             </div>
           )}
           <FilterIconButton filters={filters} helpers={helpers} entityTypes={IOC_FILTER_ENTITY_TYPES} searchContext={searchContext} redirection />
+          {filterFooter}
           <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
             <HuntHelp
               text={t_i18n('For example the indicators labelled apt28 that are still valid. Without a filter, only the values above are looked for.')}
