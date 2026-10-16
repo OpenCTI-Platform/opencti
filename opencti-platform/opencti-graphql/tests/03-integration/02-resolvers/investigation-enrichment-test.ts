@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import gql from 'graphql-tag';
-import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as rabbitmq from '../../../src/modules/connector/connector-rabbitmq';
 import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { connectorDelete, registerConnector } from '../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../src/modules/connector/connector-domain';
 import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreObject';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, mergeEntities } from '../../../src/database/middleware';
 import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber } from '../../../src/domain/work';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
@@ -208,6 +208,13 @@ describe('Enrichments linked to an investigation', () => {
     const WORKS = gql`
       query Works($filters: FilterGroup) { works(first: 50, filters: $filters) { edges { node { id } } } }
     `;
+    const WORK_EVENT_SOURCE = gql`
+      query WorkEventSource($filters: FilterGroup) {
+        works(first: 50, filters: $filters) {
+          edges { node { id eventSource { ... on IntrusionSet { id name } } } }
+        }
+      }
+    `;
     const TLP_RED = 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
     let otherInvestigationId: string;
     const tagged: string[] = [];
@@ -305,6 +312,36 @@ describe('Enrichments linked to an investigation', () => {
       const ids = [...first.edges, ...second.edges].map((e: any) => e.node.id);
       expect(new Set(ids).size).toBe(3);
       expect(ids.sort()).toEqual([...tagged].sort());
+    });
+
+    /**
+     * Read the event source of each work of an investigation from the works query, by work id.
+     */
+    const eventSourcesByWorkId = async (investigationId: string) => {
+      const filters = { mode: 'and', filters: [{ key: 'investigation_id', values: [investigationId] }], filterGroups: [] };
+      const result = await queryAsAdminWithSuccess({ query: WORK_EVENT_SOURCE, variables: { filters } });
+      return Object.fromEntries(result.data?.works.edges.map((e: any) => [e.node.id, e.node.eventSource]));
+    };
+
+    it('should resolve the enriched entity of every work', async () => {
+      const sources = await eventSourcesByWorkId(otherInvestigationId);
+      expect(Object.keys(sources).sort()).toEqual([...tagged].sort());
+      for (const workId of tagged) {
+        expect(sources[workId]).toEqual({ id: enriched.id, name: enriched.name });
+      }
+    });
+
+    it('should resolve the enriched entity after it was merged into another one', async () => {
+      const investigationId = await createWorkspace('investigation', 'Enrichment investigation (merged entity)', 'edit');
+      dedicatedInvestigationIds.push(investigationId);
+      const merged = await addIntrusionSet(testContext, ADMIN_USER, { name: `Investigation merged ${Date.now()}` });
+      const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Investigation merge target ${Date.now()}` });
+      dedicatedIntrusionSetIds.push(target.id);
+      const [work]: any[] = await askElementEnrichmentForConnectors(testContext, ADMIN_USER, merged.id, [INV_CONNECTOR_A], { investigationId });
+      workIds.push(work.id);
+      // The merge keeps the standard id of the merged entity in the stix ids of the target
+      await mergeEntities(testContext, ADMIN_USER, target.id, [merged.id]);
+      expect((await eventSourcesByWorkId(investigationId))[work.id]).toEqual({ id: target.id, name: target.name });
     });
 
     it('should tag the work with the internal id when the investigation is given by its standard id', async () => {

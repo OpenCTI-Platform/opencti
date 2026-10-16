@@ -804,6 +804,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
