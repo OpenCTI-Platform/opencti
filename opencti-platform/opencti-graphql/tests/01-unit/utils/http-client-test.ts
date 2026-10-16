@@ -57,6 +57,11 @@ const routes: Record<string, (req: http.IncomingMessage, res: http.ServerRespons
     res.writeHead(503, { 'Content-Type': 'application/json' });
     res.write('{"detail":"unavailable"}');
   },
+  '/error-then-reset': (_req, res) => {
+    res.writeHead(503, { 'Content-Type': 'application/json' });
+    res.write('{"detail":"unavailable"}');
+    setTimeout(() => res.socket?.destroy(), 50);
+  },
   '/echo': (req, res) => res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(received[received.length - 1])),
 };
 
@@ -434,5 +439,15 @@ describe('getHttpClient', () => {
 
     expect(error).toBeInstanceOf(HttpClientError);
     expect(error.code).toBe('ERR_CANCELED');
+  });
+
+  it('should not raise an unhandled error when an unread error stream fails', async () => {
+    const error = await getHttpClient({ baseURL, responseType: 'stream' }).get('/error-then-reset').catch((e) => e);
+
+    expect(error.status).toBe(503);
+    await new Promise((resolve) => {
+      error.response.data.on('close', resolve);
+    });
+    expect(error.response.data.errored).toBeInstanceOf(HttpClientError);
   });
 });
