@@ -13,6 +13,7 @@ HUNT_FIELDS = [
     "sigma_rule",
     "native_queries",
     "hunt_ioc_filters",
+    "hunt_ioc_sort",
     "hunt_ioc_values",
     "hunt_scope",
     "hunt_schedule",
@@ -69,6 +70,7 @@ class Hunt:
                 pipeline
             }
             hunt_ioc_filters
+            hunt_ioc_sort
             hunt_ioc_values {
                 observable_type
                 value
@@ -286,6 +288,9 @@ class Hunt:
         :param native_queries: (optional) list of {platform, language, query, pipeline}
         :param hunt_ioc_filters: (optional) indicator hunts: filter group (JSON)
             over indicators and observables
+        :param hunt_ioc_sort: (optional) indicator hunts: the order in which a run
+            takes what the filter matches, created_at_desc (default), created_at_asc,
+            updated_at_desc or updated_at_asc
         :param hunt_ioc_values: (optional) indicator hunts: pasted values, list of
             {observable_type, value}
         :param hunt_scope: (optional) filter group (JSON) over Security Platforms
