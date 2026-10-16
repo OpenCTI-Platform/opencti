@@ -200,7 +200,6 @@ describe('Hunt helpers', () => {
 
   it('should tell autonomous hunts apart', () => {
     expect(isAutonomousHunt({ hunt_schedule: 'manual' })).toBe(false);
-    expect(isAutonomousHunt({ hunt_schedule: 'manual', hunt_pir_activation: true })).toBe(true);
     expect(isAutonomousHunt({ hunt_schedule: 'standing' })).toBe(true);
     expect(isAutonomousHunt({ hunt_schedule: '0 * * * *' })).toBe(true);
   });

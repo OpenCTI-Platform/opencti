@@ -4,7 +4,7 @@ import { act, screen, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import { MESSAGING$ } from '../../../relay/environment';
-import { BYPASS } from '../../../utils/hooks/useGranted';
+import { BYPASS, KNOWLEDGE, KNOWLEDGE_KNHUNT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import HuntStatusHeader, { HuntReadinessChecklist, huntPrimaryStatusAction } from './HuntStatusHeader';
 import { huntLogicMissingSentence } from './HuntLogic';
 import { HUNT_READINESS_READ_ONLY_TEMPLATES, HUNT_STATUS_MEANINGS, HUNT_STATUS_MEANINGS_READ_ONLY, HUNT_STATUSES } from './hunt-utils';
@@ -46,7 +46,9 @@ describe('Hunt status header', () => {
 
   it('never names a control in the meanings shown to a user who can only view the hunt', () => {
     HUNT_STATUSES.forEach((status) => expect(HUNT_STATUS_MEANINGS_READ_ONLY[status]).not.toMatch(/Run now|click/));
-    expect(HUNT_STATUS_MEANINGS_READ_ONLY.paused).toBe('The schedule and the triggers are stopped; a user who can edit the hunt can still run it.');
+    // The right named is the one to launch hunts, which updating the knowledge alone does not give
+    expect(HUNT_STATUS_MEANINGS_READ_ONLY.paused).toBe('The schedule and the triggers are stopped; a user allowed to launch hunts can still run it.');
+    expect(HUNT_STATUS_MEANINGS_READ_ONLY.active).toBe('The hunt runs: on its schedule, when a playbook runs it, or when a user allowed to launch hunts runs it.');
   });
 
   it('lists each readiness item with the place to fix the unmet ones', () => {
@@ -78,7 +80,7 @@ describe('Hunt status header', () => {
     expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when you click Run now');
     unmount();
     testRender(<HuntReadinessChecklist huntId="hunt-id" items={[manual]} canEdit={false} />);
-    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user who can edit the hunt runs it');
+    expect(screen.getByTestId('hunt-readiness-schedule')).toHaveTextContent('Manual: it runs when a user allowed to launch hunts runs it');
   });
 
   it('never asks a user who can only view the hunt for a change they cannot make', () => {
@@ -138,6 +140,19 @@ describe('Hunt status header dialogs', () => {
     expect(screen.queryByTestId('hunt-status-to-paused')).not.toBeInTheDocument();
     expect(screen.getByTestId('hunt-readiness-scope')).toHaveAttribute('data-status', 'unmet');
     expect(screen.queryByTestId('hunt-readiness-edit-scope')).not.toBeInTheDocument();
+  });
+
+  it('offers the actions only with the update of the knowledge and the capability to launch hunts', () => {
+    const asUser = (capabilities: string[]) => ({
+      userContext: createMockUserContext({ me: { name: 'analyst', user_email: 'analyst@opencti.io', capabilities: capabilities.map((name) => ({ name })) } as never }),
+    });
+    const { unmount } = testRender(<HuntStatusHeader data={hunt as never} />, asUser([KNOWLEDGE, KNOWLEDGE_KNUPDATE]));
+    expect(screen.queryByTestId('hunt-status-to-paused')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-query-preview-open')).not.toBeInTheDocument();
+    unmount();
+    testRender(<HuntStatusHeader data={hunt as never} />, asUser([KNOWLEDGE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNHUNT]));
+    expect(screen.getByTestId('hunt-status-to-paused')).toBeInTheDocument();
+    expect(screen.getByTestId('hunt-query-preview-open')).toBeInTheDocument();
   });
 
   it('keeps the checklist of a draft collapsed under its summary line', async () => {

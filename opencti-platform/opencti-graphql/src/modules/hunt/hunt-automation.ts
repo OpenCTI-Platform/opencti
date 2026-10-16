@@ -12,7 +12,6 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE, offsetToCursor, READ_INDEX_INTERN
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { fetchStreamEventsRangeFromEventId } from '../../database/stream/stream-handler';
 import { type FilterGroup, FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs, OrderingMode } from '../../generated/graphql';
-import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { HUNT_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
@@ -45,7 +44,6 @@ import {
   HUNT_RUN_STATUS_FAILED,
   HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_STATUS_TIMEOUT,
-  HUNT_RUN_TRIGGER_PIR,
   HUNT_RUN_TRIGGER_SCHEDULE,
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
@@ -62,7 +60,7 @@ import {
   replaceHuntRun,
 } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, isHuntConnectorBoundToRun, listHuntConnectors } from './hunt-dispatch';
-import { computeNextRunAt, isCronSchedule } from './hunt-schedule';
+import { computeNextRunAt } from './hunt-schedule';
 import { type HuntRunInformationPatch, updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
 import { buildHuntPlaybookResume, executeHuntPlaybookResume, findPlaybookHuntRuns, isHuntRunGroupSettled, recordInterruptedHuntPlaybookResume } from './hunt-playbook';
@@ -153,8 +151,8 @@ const forEachHuntPage = (
 ) => forEachPage<BasicStoreEntityHunt>(context, ENTITY_TYPE_HUNT, andFilters(filters), onPage, { scan, withoutRels: false });
 
 /**
- * The runs one manager tick may dispatch, shared by every phase of the tick (automatic retries, PIR activation, scheduled
- * and standing hunts, then the queued runs): each phase dispatches within what the previous ones left, so a tick never
+ * The runs one manager tick may dispatch, shared by every phase of the tick (automatic retries, scheduled and standing
+ * hunts, then the queued runs): each phase dispatches within what the previous ones left, so a tick never
  * dispatches more than `maxRunsPerTick` runs. A phase called alone gets a full budget.
  */
 export interface HuntTickBudget {
@@ -645,13 +643,11 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
 // endregion
 
 // region autonomous hunts (Enterprise Edition)
-const isWaitingForPir = (hunt: BasicStoreEntityHunt) => hunt.hunt_pir_activation === true && hunt.hunt_pir_armed !== true;
-
 /**
- * Cron hunts: due hunts run (unless their PIR activation is not armed) and their next occurrence is computed from now,
+ * Cron hunts: due hunts run and their next occurrence is computed from now,
  * so that an outage never replays the missed occurrences. An occurrence that started no run (its runs could not be
- * created, or no hunt connector serves the scope yet) stays due for the next tick, as the standing and PIR triggers
- * do: the due hunts are scanned in turn, so the ones that cannot run never hold back the others. The next occurrence is
+ * created, or no hunt connector serves the scope yet) stays due for the next tick, as the standing triggers do: the due
+ * hunts are scanned in turn, so the ones that cannot run never hold back the others. The next occurrence is
  * recorded before the runs of the due one are created, and the due one restored only when no run started: a failure to
  * record it once its runs started can never run the same occurrence twice. Hunts approved from a draft get their first
  * occurrence here.
@@ -676,8 +672,8 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
         return index;
       }
       const hunt = hunts[index];
-      // A first occurrence, or one falling while the PIR activation is disarmed, is planned without running
-      const due = !!hunt.next_run_at && !isWaitingForPir(hunt);
+      // A first occurrence is planned without running
+      const due = !!hunt.next_run_at;
       const nextRunAt = computeNextRunAt(hunt.hunt_schedule, new Date());
       await updateHuntRunInformation(context, hunt.internal_id, { next_run_at: nextRunAt ? nextRunAt.toISOString() : null });
       if (due) {
@@ -692,51 +688,6 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
     }
     return hunts.length;
   }, { scan: 'scheduled-hunts', withoutRels: false });
-  return started;
-};
-
-/**
- * PIR activation: a hunt with PIR activation is armed while one of its targets is flagged by a PIR. Arming runs the hunt
- * once; while armed its schedule and standing triggers apply, disarmed it waits. The hunt status stays the analyst's.
- * Disarming drops the standing trigger the hunt still holds, as the occurrences of a cron hunt that fall while it is
- * disarmed are dropped: once armed again, the arming run covers its time window.
- */
-export const reconcilePirActivatedHunts = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
-  let started = 0;
-  await forEachHuntPage(context, [
-    { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
-    { key: ['hunt_pir_activation'], values: ['true'] },
-  ], async (hunts) => {
-    const targetIds = Array.from(new Set(hunts.flatMap((hunt) => hunt[RELATION_HUNT_TARGETS] ?? [])));
-    const targets = targetIds.length > 0 ? await findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, targetIds) : [];
-    const flagged = new Set(targets.filter((target) => (target[RELATION_IN_PIR] ?? []).length > 0).map((target) => target.internal_id));
-    for (let index = 0; index < hunts.length; index += 1) {
-      const hunt = hunts[index];
-      const armed = (hunt[RELATION_HUNT_TARGETS] ?? []).some((targetId) => flagged.has(targetId));
-      if (!armed && hunt.hunt_pir_armed === true) {
-        const pendingTrigger = hunt.hunt_schedule === HUNT_SCHEDULE_STANDING ? { next_run_at: null } : {};
-        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: false, hunt_pir_armed_at: null, ...pendingTrigger });
-        logApp.info('[OPENCTI-MODULE] Hunt disarmed by its PIR targets', { huntId: hunt.internal_id });
-      } else if (armed && hunt.hunt_pir_armed !== true && budget.remaining > 0) {
-        // Armed before its arming run starts, so that a failure to record it never starts a second arming run, and
-        // disarmed again when no run started: a run the tick budget, a missing connector or a failure refused is tried
-        // at the next tick. The arming run covers the occurrence of a cron hunt due meanwhile: its schedule resumes at
-        // the next one
-        const cron = isCronSchedule(hunt.hunt_schedule);
-        const nextRunAt = cron ? { next_run_at: computeNextRunAt(hunt.hunt_schedule, new Date())?.toISOString() ?? null } : {};
-        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: true, hunt_pir_armed_at: now(), ...nextRunAt });
-        const runs = await startAutomaticRuns(context, hunt, HUNT_RUN_TRIGGER_PIR, budget.remaining);
-        if (runs) {
-          started += runs;
-          budget.remaining -= runs;
-          logApp.info('[OPENCTI-MODULE] Hunt armed by its PIR targets', { huntId: hunt.internal_id });
-        } else {
-          const previousRunAt = cron ? { next_run_at: hunt.next_run_at } : {};
-          await restoreHuntInformation(context, hunt, { hunt_pir_armed: false, hunt_pir_armed_at: null, ...previousRunAt });
-        }
-      }
-    }
-  }, 'pir_activation');
   return started;
 };
 
@@ -959,7 +910,7 @@ export const processStandingHunts = async (context: AuthContext, budget: HuntTic
     { key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] },
     { key: ['hunt_schedule'], values: [HUNT_SCHEDULE_STANDING] },
   ], async (hunts) => {
-    listening.push(...hunts.filter((hunt) => !isWaitingForPir(hunt)));
+    listening.push(...hunts);
   });
   if (!lastEventId || listening.length === 0) {
     // Nothing listens: the position follows the present so that a new standing hunt never replays the past
@@ -1033,17 +984,16 @@ export interface HuntAutomationReport {
   resumed: number;
   purged: number;
   scheduled: number;
-  armed: number;
   standing: number;
 }
 
 /**
  * One tick of the hunt manager. The run lifecycle always applies (manual hunts are Community Edition), autonomous hunts
- * (schedules, PIR activation, standing hunts) only with an Enterprise Edition license.
+ * (schedules, standing hunts) only with an Enterprise Edition license.
  */
 export const runHuntAutomation = async (context: AuthContext, isEnterprise: boolean): Promise<HuntAutomationReport> => {
   const report: HuntAutomationReport = {
-    cancelled: 0, orphaned: 0, requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0,
+    cancelled: 0, orphaned: 0, requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, standing: 0,
   };
   // First: the runs of deleted hunts and connectors free their slots before anything is dispatched or expired
   report.cancelled = await cancelOrphanHuntRuns(context);
@@ -1054,7 +1004,6 @@ export const runHuntAutomation = async (context: AuthContext, isEnterprise: bool
   const budget = newHuntTickBudget();
   report.retried = await retryFailedHuntRuns(context, budget);
   if (isEnterprise) {
-    report.armed = await reconcilePirActivatedHunts(context, budget);
     report.scheduled = await runScheduledHunts(context, budget);
     report.standing = await processStandingHunts(context, budget);
   } else {

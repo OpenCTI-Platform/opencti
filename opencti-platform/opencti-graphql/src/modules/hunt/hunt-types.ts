@@ -87,7 +87,6 @@ interface HuntAttributes {
   hunt_scope?: string;
   hunt_schedule: string;
   trigger_filters?: string;
-  hunt_pir_activation?: boolean;
   time_window_hours: number;
   expected_observables?: string[];
   benign_patterns?: string[];
@@ -100,8 +99,6 @@ interface HuntAttributes {
   last_hits_count?: number;
   last_new_hits_count?: number;
   next_run_at?: string;
-  hunt_pir_armed?: boolean;
-  hunt_pir_armed_at?: string;
 }
 
 export interface BasicStoreEntityHunt extends BasicStoreEntity, HuntAttributes {
@@ -132,7 +129,6 @@ export interface StixHunt extends StixDomainObject {
   hunt_scope: string;
   hunt_schedule: string;
   trigger_filters: string;
-  hunt_pir_activation: boolean;
   time_window_hours: number;
   expected_observables: string[];
   benign_patterns: string[];

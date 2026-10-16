@@ -11,7 +11,7 @@ const HUNT_MANAGER_CONTEXT = 'hunt_manager';
 
 /**
  * Every tick: run lifecycle (timeouts, retries, deferred dispatch, playbook continuations, retention) for every edition,
- * then the autonomous hunts (cron schedules, PIR activation, standing hunts on stream events) with Enterprise Edition.
+ * then the autonomous hunts (cron schedules, standing hunts on stream events) with Enterprise Edition.
  */
 export const huntManagerHandler = async () => {
   const context = executionContext(HUNT_MANAGER_CONTEXT, HUNT_MANAGER_USER);

@@ -123,9 +123,8 @@ describe('Hunt utils', () => {
   });
 
   describe('isAutonomousHunt()', () => {
-    it('should flag schedules and PIR activation', () => {
-      expect(isAutonomousHunt({ hunt_schedule: 'manual', hunt_pir_activation: false })).toBe(false);
-      expect(isAutonomousHunt({ hunt_schedule: 'manual', hunt_pir_activation: true })).toBe(true);
+    it('should flag scheduled and standing hunts', () => {
+      expect(isAutonomousHunt({ hunt_schedule: 'manual' })).toBe(false);
       expect(isAutonomousHunt({ hunt_schedule: 'standing' })).toBe(true);
       expect(isAutonomousHunt({ hunt_schedule: '0 * * * *' })).toBe(true);
     });
@@ -257,7 +256,6 @@ describe('Hunt utils', () => {
         hunt_scope: buildHuntScope(['platform-1']),
         hunt_schedule: '0 * * * *',
         trigger_filters: '',
-        hunt_pir_activation: false,
         time_window_hours: 48,
         expected_observables: [],
         benign_patterns: ['svc_backup', 'sccm'],
@@ -671,7 +669,6 @@ describe('Observables to extract from hits', () => {
     it('should know which hunts run again and again by themselves', () => {
       expect(huntRunsRecur({ hunt_schedule: '0 */6 * * *' })).toBe(true);
       expect(huntRunsRecur({ hunt_schedule: 'standing' })).toBe(true);
-      expect(huntRunsRecur({ hunt_schedule: 'manual', hunt_pir_activation: true })).toBe(true);
       expect(huntRunsRecur({ hunt_schedule: 'manual' })).toBe(false);
     });
   });

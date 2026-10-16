@@ -11270,9 +11270,6 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   /** Indicator hunts: the values pasted as text */
   hunt_ioc_values?: Maybe<Array<HuntIocValue>>;
   hunt_max_results?: Maybe<Scalars['Int']['output']>;
-  hunt_pir_activation?: Maybe<Scalars['Boolean']['output']>;
-  hunt_pir_armed?: Maybe<Scalars['Boolean']['output']>;
-  hunt_pir_armed_at?: Maybe<Scalars['DateTime']['output']>;
   hunt_schedule: Scalars['String']['output'];
   hunt_scope?: Maybe<Scalars['String']['output']>;
   hunt_source_kind: HuntSourceKind;
@@ -11562,7 +11559,6 @@ export type HuntAddInput = {
   hunt_ioc_sort?: InputMaybe<HuntIocSort>;
   hunt_ioc_values?: InputMaybe<Array<HuntIocValueInput>>;
   hunt_max_results?: InputMaybe<Scalars['Int']['input']>;
-  hunt_pir_activation?: InputMaybe<Scalars['Boolean']['input']>;
   hunt_schedule?: InputMaybe<Scalars['String']['input']>;
   hunt_scope?: InputMaybe<Scalars['String']['input']>;
   hunt_source_kind?: InputMaybe<HuntSourceKind>;
@@ -11668,7 +11664,7 @@ export type HuntConfiguration = {
   /** The longest time window a hunt or a run searches, in hours */
   max_time_window_hours: Scalars['Int']['output'];
   min_schedule_interval_minutes: Scalars['Int']['output'];
-  /** Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes */
+  /** Recurring runs (schedule, standing hunt) search from where the previous completed run on the same platform ended, minus this overlap in minutes */
   schedule_lookback_minutes: Scalars['Int']['output'];
 };
 
@@ -48486,9 +48482,6 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   hunt_ioc_sort?: Resolver<Maybe<ResolversTypes['HuntIocSort']>, ParentType, ContextType>;
   hunt_ioc_values?: Resolver<Maybe<Array<ResolversTypes['HuntIocValue']>>, ParentType, ContextType>;
   hunt_max_results?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  hunt_pir_activation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  hunt_pir_armed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  hunt_pir_armed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   hunt_schedule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hunt_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hunt_source_kind?: Resolver<ResolversTypes['HuntSourceKind'], ParentType, ContextType>;

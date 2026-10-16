@@ -65,7 +65,6 @@
     "hunt_scope": { "type": "string", "description": "Filter group, as JSON, over the security platforms the hunt runs on; empty in a hunt pack." },
     "hunt_schedule": { "type": "string", "description": "manual, standing, or the interval of a scheduled hunt." },
     "trigger_filters": { "type": "string", "description": "Filter group, as JSON, of the knowledge events that trigger a standing hunt; empty in a hunt pack." },
-    "hunt_pir_activation": { "type": "boolean" },
     "time_window_hours": { "type": "integer", "minimum": 1, "description": "Time window a run searches, in hours." },
     "expected_observables": { "type": "array", "items": { "type": "string" } },
     "benign_patterns": { "type": "array", "items": { "type": "string" } },

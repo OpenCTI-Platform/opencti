@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCapabilities_role.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNHUNT, SETTINGS } from '../../../../utils/hooks/useGranted';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import { Stack } from '@mui/material';
 import { Checkbox } from '@filigran/design-system';
@@ -211,7 +211,12 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <LocalPoliceOutlined fontSize="small" />
                 </ListItemIcon>
-                <ListItemText primary={t_i18n(capability.description)} />
+                <ListItemText
+                  primary={t_i18n(capability.description)}
+                  // The tree nests the capabilities by name: this one sits beside the update of the knowledge it needs
+                  secondary={capability.name === KNOWLEDGE_KNHUNT ? t_i18n('Works together with Create / Update knowledge') : undefined}
+                  secondaryTypographyProps={{ variant: 'caption' }}
+                />
               </ListItem>
             );
           }

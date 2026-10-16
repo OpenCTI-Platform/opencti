@@ -99,7 +99,7 @@ const scheduleItem = (hunt: BasicStoreEntityHunt, enterprise: boolean): HuntRead
   if (schedule !== HUNT_SCHEDULE_MANUAL) {
     return item('schedule', 'met', HUNT_MESSAGES.scheduleCron, { schedule });
   }
-  return item('schedule', 'met', hunt.hunt_pir_activation ? HUNT_MESSAGES.schedulePir : HUNT_MESSAGES.scheduleManual);
+  return item('schedule', 'met', HUNT_MESSAGES.scheduleManual);
 };
 
 const connectorItem = (

@@ -7,6 +7,7 @@ import ReportDetails from './ReportDetails';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import HuntsOfEntity from '../../hunts/HuntsOfEntity';
+import { resolveLink } from '../../../../utils/Entity';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
@@ -140,7 +141,7 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
               case 'hunts':
                 return (
                   <Grid key={key} item xs={width}>
-                    <HuntsOfEntity entityId={report.id} />
+                    <HuntsOfEntity entityId={report.id} viewAllLink={`${resolveLink('Report')}/${report.id}/defense`} />
                   </Grid>
                 );
               default:

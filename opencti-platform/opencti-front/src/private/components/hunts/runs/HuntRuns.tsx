@@ -266,7 +266,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
             removeSelectAll
             emptyStateMessage={canEdit
               ? t_i18n('No run yet: click Run now to run the hunt over its time window, or Activate it to run on its schedule.')
-              : t_i18n('No run yet. Runs appear here once a user who can edit the hunt runs it or activates it.')}
+              : t_i18n('No run yet. Runs appear here once a user allowed to launch hunts runs it or activates it.')}
           />
         )}
       </div>

@@ -100,8 +100,8 @@ describe('Scheduled hunts of a manager tick', () => {
     expect(planned()).toEqual([]);
   });
 
-  it('should plan the first occurrence of a hunt, and the occurrences falling while its PIR activation is disarmed, without running', async () => {
-    serveHunts([cronHunt('blocked-1', 0, { next_run_at: null }), cronHunt('ready-2', 1, { hunt_pir_activation: true, hunt_pir_armed: false })]);
+  it('should plan the first occurrence of a hunt without running', async () => {
+    serveHunts([cronHunt('blocked-1', 0, { next_run_at: null }), cronHunt('ready-2', 1, { next_run_at: null })]);
     expect(await runScheduledHunts(testContext)).toEqual(0);
     expect(planned()).toEqual(['blocked-1', 'ready-2']);
     expect(createHuntRuns).not.toHaveBeenCalled();

@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { fetchQuery } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import { copyToClipboard } from '../../../utils/utils';
 import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { prismLanguageOf } from './HuntCodeEditor';
@@ -326,7 +326,7 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
                 ))}
               </SelectContent>
             </Select>
-            <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canStart}>
+            <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canStart}>
               <Button variant="secondary" onClick={start} disabled={preview.status === 'waiting'} data-testid="hunt-translation-preview-start">
                 {t_i18n('Preview the query')}
               </Button>
