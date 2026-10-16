@@ -24,7 +24,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT, PATH_SECURITY_COVERAGE } from '../../common/routes/paths';
+import { PATH_HUNT, PATH_HUNT_RUN, PATH_INCIDENT } from '../../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
 import { prismLanguageOf } from '../HuntCodeEditor';
 import useHuntAI from '../useHuntAI';
@@ -137,8 +137,6 @@ const huntRunFragment = graphql`
     incident_proposal
     incident_id
     draft_id
-    security_coverage_id
-    technique_id
     triggeredBy {
       id
       name
@@ -672,9 +670,6 @@ const runLinks = (run: Run, t_i18n: (message: string) => string) => {
   }
   if (run.playbook_id) {
     links.push({ key: 'playbook', to: `/dashboard/data/processing/automation/${run.playbook_id}`, label: t_i18n('Open the playbook') });
-  }
-  if (run.security_coverage_id) {
-    links.push({ key: 'coverage', to: PATH_SECURITY_COVERAGE(run.security_coverage_id), label: t_i18n('Open the security coverage') });
   }
   return links;
 };

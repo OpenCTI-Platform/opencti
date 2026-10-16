@@ -77,7 +77,6 @@ import {
   sanitizeRuleResults,
   shareAccessDecision,
   splitHitsByKeys,
-  techniqueValidationStatus,
   truncate,
 } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
@@ -94,7 +93,6 @@ import {
 import { isReadableByReadersOf, resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
 import { type HuntRunInformationPatch, updateHuntLastRunStatusIfStill, updateHuntRunInformation } from '../hunt-stats';
-import { writeHuntCoverageResult } from '../hunt-coverage';
 import {
   continueHuntIncident,
   createHuntIncidentInWorkspace,
@@ -123,7 +121,6 @@ import {
   HUNT_RUN_STATUS_RUNNING,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TERMINAL_STATUSES,
-  HUNT_RUN_TRIGGER_EMULATION,
   HUNT_RUN_TRIGGER_PREVIEW,
   HUNT_RUN_TRIGGER_RETRY,
   HUNT_VERDICT_BENIGN,
@@ -334,9 +331,6 @@ export interface HuntRunRequest {
   timeWindowHours?: number | null;
   windowStart?: string | null;
   windowEnd?: string | null;
-  aevInjectId?: string | null;
-  securityCoverageId?: string | null;
-  techniqueId?: string | null;
   triggeredBy?: string | null;
   // The user starting a manual run, a preview or a manual retry: only the security platforms this user can read are targeted
   requester?: AuthUser | null;
@@ -558,9 +552,6 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
       hunt_logic_fingerprint: logicFingerprint,
       auto_escalation: autoEscalation,
       unresolved_techniques: unresolvedTechniques,
-      aev_inject_id: request.aevInjectId ?? null,
-      security_coverage_id: request.securityCoverageId ?? null,
-      technique_id: request.techniqueId ?? null,
       triggered_by: request.triggeredBy ?? request.requester?.id ?? HUNT_MANAGER_USER.id,
       objectMarking: restrictions.objectMarking,
       objectOrganization: restrictions.objectOrganization,
@@ -902,10 +893,9 @@ const escalateHuntRun = async (
 
 /**
  * Post-completion of a run: the sightings of the hunt, the incident above the escalation threshold of new hits (a new
- * draft, or the incident still open from a previous run), hunt statistics, Security Coverage
- * write-back for emulation runs, then the automatic verdict, which marks the run finalized. Every step is idempotent
- * (the draft and incident ids are recorded as soon as they exist, older runs never overwrite the statistics of a newer
- * one, the coverage write-back merges): when one fails, the run stays unfinalized and a later attempt completes it.
+ * draft, or the incident still open from a previous run), hunt statistics, then the automatic verdict, which marks the
+ * run finalized. Every step is idempotent (the draft and incident ids are recorded as soon as they exist, older runs
+ * never overwrite the statistics of a newer one): when one fails, the run stays unfinalized and a later attempt completes it.
  * `force` records the verdict whatever failed, for a run whose finalization keeps failing.
  */
 const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt, force = false) => {
@@ -968,13 +958,6 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
     });
   } catch (error) {
     stepFailed('[OPENCTI-MODULE] Hunt statistics update failed', error);
-  }
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED) {
-    try {
-      await writeHuntCoverageResult(context, current);
-    } catch (error) {
-      stepFailed('[OPENCTI-MODULE] Hunt coverage write-back failed', error);
-    }
   }
   if (!complete && !force) {
     return current;
@@ -1150,7 +1133,7 @@ const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId:
 
 /**
  * The next attempt already created for a terminated run: the retry that names it in retry_of. Two runs sharing their
- * hunt, connector, window and attempt (two playbook executions, two emulations) each get their own replacement.
+ * hunt, connector, window and attempt (two playbook executions) each get their own replacement.
  */
 const findHuntRunReplacement = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
   const filters = [
@@ -1202,9 +1185,6 @@ export const replaceHuntRun = async (context: AuthContext, hunt: BasicStoreEntit
       connectorIds: run.connector_id ? [run.connector_id] : [],
       windowStart: run.time_window_start,
       windowEnd: run.time_window_end,
-      aevInjectId: run.aev_inject_id,
-      securityCoverageId: run.security_coverage_id,
-      techniqueId: run.technique_id,
       triggeredBy: options.triggeredBy ?? run.triggered_by,
       requester: options.requester,
       attempt: (run.attempt ?? 1) + 1,
@@ -1591,8 +1571,8 @@ const EVIDENCE_SOURCE_MAX_LENGTH = 128;
 const EVIDENCE_SOURCES_MAX = 20;
 
 /**
- * Statistics and coverage of a finalized completed run whose verdict an analyst or an agent set: they follow its hit
- * count, the verdict stays. Both steps are idempotent; a failure is logged and the next evidence refreshes them again.
+ * Statistics of a finalized completed run whose verdict an analyst or an agent set: they follow its hit count, the
+ * verdict stays. The step is idempotent; a failure is logged and the next evidence refreshes them again.
  */
 const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
   try {
@@ -1602,7 +1582,6 @@ const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntity
       last_hits_count: run.hits_count ?? 0,
       last_new_hits_count: huntRunNewHits(run),
     });
-    await writeHuntCoverageResult(context, run);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Hunt run outcome refresh after late evidence failed', { cause: error, runId: run.internal_id });
   }
@@ -1612,9 +1591,9 @@ const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntity
  * Evidence found outside the dispatch of a run (a SIEM alert action, a follow-up search, a late result), on any run
  * status: result objects are merged, hits are added, the evidence sample is merged under the platform caps. The status
  * never changes. When hits reach a completed run already finalized, its outcome follows: an automatic verdict is
- * finalized again (verdict, Incident draft above the escalation threshold, hunt statistics, coverage write-back of an
- * emulation run; the hunt manager completes a finalization interrupted by a failing step), while a verdict set by an
- * analyst or an agent is kept and only the statistics and the coverage follow.
+ * finalized again (verdict, Incident draft above the escalation threshold, hunt statistics; the hunt manager completes
+ * a finalization interrupted by a failing step), while a verdict set by an analyst or an agent is kept and only the
+ * statistics follow.
  */
 export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunEvidenceAddInput) => {
   const run = await findHuntRunById(context, user, runId);
@@ -1778,7 +1757,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     // that keeps failing refuses the verdict, so that the hunt manager keeps retrying it until it closes the run
     const current = isHuntRunFinalized(read) ? read : await completeHuntRunFinalization(context, read);
     if (!isHuntRunFinalized(current)) {
-      throw FunctionalError('The run is still being finalized (statistics, incident or coverage), set its verdict again in a few minutes', { runId });
+      throw FunctionalError('The run is still being finalized (statistics or incident), set its verdict again in a few minutes', { runId });
     }
     // The platform decides the provenance, not the client: a verdict is the agent's only when it applies the verdict the
     // agent proposed for this run, any other verdict is the decision of the analyst who sets it
@@ -2008,62 +1987,6 @@ interface HuntStatisticsArgs {
 
 const HUNT_STATISTICS_DEFAULT_DAYS = 30;
 const HUNT_STATISTICS_INTERVALS = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
-
-// Terms aggregations return at most this many buckets (MAX_AGGREGATION_SIZE of the engine)
-const TECHNIQUE_VALIDATION_BATCH = 100;
-
-/**
- * Validation of each technique of a hunt by the OpenAEV emulations, counted over every emulation run of the hunt the
- * user can read: four aggregations by technique per batch of techniques, whatever the number of runs.
- */
-export const computeHuntTechniqueValidations = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
-  const countByTechnique = async (techniqueIds: string[], extra: { key: string; values: string[]; operator?: FilterOperator }[]) => {
-    const buckets = await elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-      types: [ENTITY_TYPE_HUNT_RUN],
-      field: 'technique_id',
-      normalizeLabel: false,
-      noFiltersChecking: true,
-      filters: {
-        mode: FilterMode.And,
-        filters: [
-          { key: ['hunt_id'], values: [hunt.internal_id] },
-          { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_EMULATION] },
-          { key: ['technique_id'], values: techniqueIds },
-          ...extra.map((filter) => ({ key: [filter.key], values: filter.values, operator: filter.operator ?? FilterOperator.Eq })),
-        ],
-        filterGroups: [],
-      },
-    });
-    return new Map(buckets.map((bucket) => [String(bucket.label), bucket.count]));
-  };
-  const techniqueIds = hunt[RELATION_HUNT_TECHNIQUES] ?? [];
-  const completedFilter = { key: 'hunt_run_status', values: [HUNT_RUN_STATUS_COMPLETED] };
-  const validations: { technique_id: string; status: ReturnType<typeof techniqueValidationStatus>; emulation_runs_count: number; detected_runs_count: number }[] = [];
-  for (let start = 0; start < techniqueIds.length; start += TECHNIQUE_VALIDATION_BATCH) {
-    const batch = techniqueIds.slice(start, start + TECHNIQUE_VALIDATION_BATCH);
-    const [runs, detected, active, completed] = await Promise.all([
-      countByTechnique(batch, []),
-      countByTechnique(batch, [completedFilter, { key: 'hits_count', values: ['0'], operator: FilterOperator.Gt }]),
-      countByTechnique(batch, [{ key: 'hunt_run_status', values: HUNT_RUN_ACTIVE_STATUSES }]),
-      countByTechnique(batch, [completedFilter]),
-    ]);
-    batch.forEach((techniqueId) => {
-      const counts = {
-        runs: runs.get(techniqueId) ?? 0,
-        detected: detected.get(techniqueId) ?? 0,
-        active: active.get(techniqueId) ?? 0,
-        completed: completed.get(techniqueId) ?? 0,
-      };
-      validations.push({
-        technique_id: techniqueId,
-        status: techniqueValidationStatus(counts),
-        emulation_runs_count: counts.runs,
-        detected_runs_count: counts.detected,
-      });
-    });
-  }
-  return validations;
-};
 
 /**
  * Marks the runs of a hunt as the runs of a deleted hunt, or of a hunt that exists again, in one update: the statistics

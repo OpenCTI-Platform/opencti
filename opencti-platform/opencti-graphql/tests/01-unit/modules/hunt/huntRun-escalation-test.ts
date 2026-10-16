@@ -86,11 +86,6 @@ vi.mock('../../../../src/modules/hunt/hunt-stats', async (importOriginal) => ({
   updateHuntRunInformation: vi.fn(),
 }));
 
-vi.mock('../../../../src/modules/hunt/hunt-coverage', async (importOriginal) => ({
-  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-coverage')>(),
-  writeHuntCoverageResult: vi.fn(),
-}));
-
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>(),
   checkEnterpriseEdition: vi.fn(async () => {

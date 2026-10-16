@@ -10138,7 +10138,6 @@ type Mutation {
   huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun
   huntPlan(input: HuntPlanInput!): HuntProposal
   huntAssist(input: HuntAssistInput!): HuntAssistance!
-  huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation
   huntPackImport(file: Upload!): HuntPackImportResult
   huntRunRetry(id: ID!): HuntRun
   huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun
@@ -16655,20 +16654,6 @@ type HuntConfiguration {
   max_related_sources: Int!
 }
 
-enum HuntTechniqueValidationStatus {
-  validated
-  not_detected
-  in_progress
-  not_validated
-}
-
-type HuntTechniqueValidation {
-  technique_id: String!
-  status: HuntTechniqueValidationStatus!
-  emulation_runs_count: Int!
-  detected_runs_count: Int!
-}
-
 type HuntSigmaValidation {
   valid: Boolean!
   errors: [String!]!
@@ -16774,7 +16759,6 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   readiness: HuntReadiness!
   hunt_scope: String
   scopePlatforms: [SecurityPlatform!]
-  techniqueValidations: [HuntTechniqueValidation!]!
   hunt_schedule: String!
   trigger_filters: String
   hunt_pir_activation: Boolean
@@ -16969,11 +16953,6 @@ type HuntDerivedContent {
   rules_truncated: Boolean!
 }
 
-type HuntValidation {
-  hunts_count: Int!
-  runs: [HuntRun!]!
-}
-
 input HuntAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
@@ -17101,16 +17080,6 @@ type HuntAssistance {
   rationale: String!
 }
 
-input HuntValidateFromEmulationInput {
-  technique_id: String!
-  security_platform_id: String
-  security_platform_name: String
-  inject_id: String!
-  window_start: DateTime!
-  window_end: DateTime!
-  security_coverage_id: String
-}
-
 enum HuntRunStatus {
   queued
   running
@@ -17130,7 +17099,6 @@ enum HuntRunTrigger {
   standing
   pir
   playbook
-  emulation
   preview
   retry
 }
@@ -17413,10 +17381,6 @@ type HuntRun implements BasicObject & InternalObject {
   """
   incident_stix_id: String
   draft_id: String
-  aev_inject_id: String
-  security_coverage_id: String
-  technique_id: String
-  technique: AttackPattern
   triggered_by: String
   triggeredBy: Creator
   attempt: Int!

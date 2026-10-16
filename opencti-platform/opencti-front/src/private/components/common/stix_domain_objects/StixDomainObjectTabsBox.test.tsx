@@ -15,7 +15,6 @@ vi.mock('@components/custom_views/useCustomViewTabs', () => ({
 const TABS_TEST_DATA = [
   ['Overview', 'overview', ''],
   ['Knowledge', 'knowledge', '/knowledge'],
-  ['Coverage', 'coverage', '/coverage'],
   ['Content', 'content', '/content'],
   ['Analyses', 'analyses', '/analyses'],
   ['Sightings', 'sightings', '/sightings'],
@@ -60,24 +59,12 @@ describe('StixDomainObjectTabsBox', () => {
     testRender(
       <StixDomainObjectTabsBox
         entityType="Hunt"
-        tabs={['overview', 'logic', 'runs', 'evidence', 'coverage', 'content', 'files', 'history']}
+        tabs={['overview', 'logic', 'runs', 'evidence', 'content', 'files', 'history']}
         basePath=""
       />,
     );
     expect(screen.getAllByRole('tab').map((tab) => tab.textContent))
-      .toEqual(['Overview', 'Logic', 'Runs', 'Evidence', 'Coverage', 'Content', 'Data', 'History']);
-  });
-
-  it('renders the coverage tab after the knowledge tab', () => {
-    testRender(
-      <StixDomainObjectTabsBox
-        entityType="SecurityPlatform"
-        tabs={['overview', 'knowledge', 'coverage', 'content', 'history']}
-        basePath=""
-      />,
-    );
-    expect(screen.getAllByRole('tab').map((tab) => tab.textContent))
-      .toEqual(['Overview', 'Knowledge', 'Coverage', 'Content', 'History']);
+      .toEqual(['Overview', 'Logic', 'Runs', 'Evidence', 'Content', 'Data', 'History']);
   });
 
   it('renders components passed as extraActions', () => {
