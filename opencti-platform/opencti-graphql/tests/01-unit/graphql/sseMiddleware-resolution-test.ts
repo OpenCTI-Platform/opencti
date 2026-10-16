@@ -1,10 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Small batch size, so the chunking is visible on small graphs. Read when sseMiddleware is imported.
+const batchConfig = vi.hoisted(() => ({ size: 2 }));
 
 vi.mock('../../../src/config/conf', async () => {
   const actual = await vi.importActual<typeof import('../../../src/config/conf')>('../../../src/config/conf');
   const originalGet = actual.default.get.bind(actual.default);
-  // Small batch size, so the chunking is visible on small graphs
-  vi.spyOn(actual.default, 'get').mockImplementation((key?: string) => (key === 'app:live_stream:resolution_batch_size' ? 2 : originalGet(key)));
+  vi.spyOn(actual.default, 'get').mockImplementation((key?: string) => (key === 'app:live_stream:resolution_batch_size' ? batchConfig.size : originalGet(key)));
   return {
     ...actual,
     logApp: { info: vi.fn(), error: vi.fn(), debug: vi.fn(), warn: vi.fn() },
@@ -37,6 +39,10 @@ import { resolveMissingReferences } from '../../../src/graphql/sseMiddleware.js'
 
 const BATCH_SIZE = 2;
 
+// Modules under test, reloaded by the suites running with another batch size
+let loadByIdsWithRefs = vi.mocked(storeLoadByIdsWithRefs);
+let resolveReferences = resolveMissingReferences;
+
 const context = {} as any;
 const user = { id: 'user-id' } as any;
 
@@ -50,13 +56,13 @@ const buildGraph = (edges: Record<string, string[]>) => {
 };
 
 const mockStore = (graph: Record<string, any>) => {
-  vi.mocked(storeLoadByIdsWithRefs).mockImplementation(async (_context, _user, ids) => {
+  loadByIdsWithRefs.mockImplementation(async (_context, _user, ids) => {
     const elements = (ids as string[]).map((id) => graph[id]).filter((element) => element !== undefined);
     return [...new Set(elements)];
   });
 };
 
-const loadedChunks = () => vi.mocked(storeLoadByIdsWithRefs).mock.calls.map(([, , ids]) => ids as string[]);
+const loadedChunks = () => loadByIdsWithRefs.mock.calls.map(([, , ids]) => ids as string[]);
 
 const resolve = async (missingRefs: string[], opts: { requiredRefs?: string[]; cache?: LRUCache<string, string>; stopAfter?: number } = {}) => {
   const cache = opts.cache ?? new LRUCache<string, string>({ max: 5000 });
@@ -65,7 +71,7 @@ const resolve = async (missingRefs: string[], opts: { requiredRefs?: string[]; c
     publishedChunks.push(elements.map((element) => element.stix.id));
     return opts.stopAfter === undefined || publishedChunks.length < opts.stopAfter;
   });
-  const isComplete = await resolveMissingReferences(context, user, missingRefs, cache, onResolved, { requiredRefs: opts.requiredRefs });
+  const isComplete = await resolveReferences(context, user, missingRefs, cache, onResolved, { requiredRefs: opts.requiredRefs });
   return { isComplete, publishedChunks, published: publishedChunks.flat(), onResolved };
 };
 
@@ -80,7 +86,7 @@ const expectDependenciesFirst = (graph: Record<string, any>, published: string[]
 
 describe('resolveMissingReferences', () => {
   beforeEach(() => {
-    vi.mocked(storeLoadByIdsWithRefs).mockReset();
+    loadByIdsWithRefs.mockReset();
   });
 
   it('should load and publish a large container frontier in bounded chunks', async () => {
@@ -165,6 +171,18 @@ describe('resolveMissingReferences', () => {
     expect(published).toEqual(['b', 'c', 'a']);
   });
 
+  it('should publish elements referenced only through an alias id', async () => {
+    // a references b through one of its aliases only, which the load matches but the stix ids do not hold
+    const graph = buildGraph({ a: ['b-alias'], b: [] });
+    graph.b.i_aliases_ids = ['b-alias'];
+    graph['b-alias'] = graph.b;
+    mockStore(graph);
+    const { isComplete, published } = await resolve(['a']);
+    expect(isComplete).toBe(true);
+    expect(loadedChunks()).toEqual([['a'], ['b-alias']]);
+    expect(published).toEqual(['b', 'a']);
+  });
+
   it('should terminate on circular references', async () => {
     const graph = buildGraph({ a: ['b'], b: ['c'], c: ['a'] });
     mockStore(graph);
@@ -230,6 +248,50 @@ describe('resolveMissingReferences', () => {
       expect(isComplete).toBe(true);
       expect(loadedChunks()).toEqual([['to'], ['creator']]);
       expect(published).toEqual(['to', 'creator']);
+    });
+  });
+
+  describe('with a batch size of one', () => {
+    beforeAll(async () => {
+      batchConfig.size = 1;
+      vi.resetModules();
+      loadByIdsWithRefs = vi.mocked((await import('../../../src/database/middleware')).storeLoadByIdsWithRefs);
+      // eslint-disable-next-line import/extensions
+      resolveReferences = (await import('../../../src/graphql/sseMiddleware.js')).resolveMissingReferences;
+    });
+
+    afterAll(() => {
+      batchConfig.size = BATCH_SIZE;
+      loadByIdsWithRefs = vi.mocked(storeLoadByIdsWithRefs);
+      resolveReferences = resolveMissingReferences;
+    });
+
+    it('should load required refs one by one before publishing anything', async () => {
+      const graph = buildGraph({ from: ['marking'], to: ['marking'], marking: [] });
+      mockStore(graph);
+      const { isComplete, publishedChunks } = await resolve(['from', 'to', 'marking'], { requiredRefs: ['from', 'to'] });
+      expect(isComplete).toBe(true);
+      expect(loadedChunks()).toEqual([['from'], ['to'], ['marking']]);
+      expect(publishedChunks).toEqual([['marking'], ['from'], ['to']]);
+    });
+
+    it('should stop at the first required ref not accessible', async () => {
+      mockStore(buildGraph({ to: [] }));
+      const { isComplete, onResolved } = await resolve(['from', 'to'], { requiredRefs: ['from', 'to'] });
+      expect(isComplete).toBe(false);
+      expect(onResolved).not.toHaveBeenCalled();
+      expect(loadedChunks()).toEqual([['from']]);
+    });
+
+    it('should not reload a required ref already loaded through another of its ids', async () => {
+      const graph = buildGraph({ from: [] });
+      graph.from.x_opencti_stix_ids = ['from-alias'];
+      graph['from-alias'] = graph.from;
+      mockStore(graph);
+      const { isComplete, published } = await resolve(['from'], { requiredRefs: ['from', 'from-alias'] });
+      expect(isComplete).toBe(true);
+      expect(loadedChunks()).toEqual([['from']]);
+      expect(published).toEqual(['from']);
     });
   });
 });
