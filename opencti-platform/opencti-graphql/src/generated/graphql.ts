@@ -15480,6 +15480,11 @@ export type LocalAuthConfig = {
 
 export type LocalAuthConfigInput = {
   enabled: Scalars['Boolean']['input'];
+  local_auth_lockout_duration?: InputMaybe<Scalars['Int']['input']>;
+  local_auth_lockout_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  local_auth_lockout_max_attempts?: InputMaybe<Scalars['Int']['input']>;
+  local_auth_lockout_max_duration?: InputMaybe<Scalars['Int']['input']>;
+  local_auth_lockout_window?: InputMaybe<Scalars['Int']['input']>;
   password_policy_max_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_lowercase?: InputMaybe<Scalars['Int']['input']>;
@@ -31348,6 +31353,11 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   id: Scalars['ID']['output'];
   is_authentication_by_env?: Maybe<Scalars['Boolean']['output']>;
   local_auth?: Maybe<LocalAuthConfig>;
+  local_auth_lockout_duration?: Maybe<Scalars['Int']['output']>;
+  local_auth_lockout_enabled?: Maybe<Scalars['Boolean']['output']>;
+  local_auth_lockout_max_attempts?: Maybe<Scalars['Int']['output']>;
+  local_auth_lockout_max_duration?: Maybe<Scalars['Int']['output']>;
+  local_auth_lockout_window?: Maybe<Scalars['Int']['output']>;
   messages_administration?: Maybe<Array<SettingsMessage>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   metrics_definition?: Maybe<Array<MetricDefinition>>;
@@ -52272,6 +52282,11 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_authentication_by_env?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   local_auth?: Resolver<Maybe<ResolversTypes['LocalAuthConfig']>, ParentType, ContextType>;
+  local_auth_lockout_duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  local_auth_lockout_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  local_auth_lockout_max_attempts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  local_auth_lockout_max_duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  local_auth_lockout_window?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
