@@ -272,7 +272,7 @@ const CONTAINER_TIMELINE_SUMMARY = gql`
       lanes { lane count }
       kinds { kind count }
       anchors { first_adversary_activity first_detection first_response containment closure computed_at }
-      settings { enabled_lanes default_grouping default_zoom_window hidden_kinds }
+      settings { enabled_lanes hidden_kinds }
       can_edit
       truncated
       generated_at
@@ -397,7 +397,7 @@ const TIMELINE_EVENT_HIDE = gql`
 `;
 const TIMELINE_SETTINGS_UPDATE = gql`
   mutation TimelineSettingsUpdate($containerId: ID!, $input: TimelineSettingsInput!) {
-    timelineSettingsUpdate(containerId: $containerId, input: $input) { container_id enabled_lanes default_grouping default_zoom_window hidden_kinds }
+    timelineSettingsUpdate(containerId: $containerId, input: $input) { container_id enabled_lanes hidden_kinds }
   }
 `;
 const TIMELINE_IMPORT = gql`
@@ -1146,7 +1146,6 @@ describe('Incident and case timeline', () => {
       // The only knowledge event (the relationship) is hidden, the notification milestone has no lane
       expect(summary.lanes.map((l: { lane: string }) => l.lane).sort()).toEqual(['adversary', 'custom', 'evidence', 'response']);
       expect(iso(summary.anchors.containment)).toEqual(CONTAINMENT_TIME);
-      expect(summary.settings).toMatchObject({ default_grouping: 'day', default_zoom_window: 'fit' });
     });
 
     it('should restrict the counts and bounds of the summary to some lanes and kinds', async () => {
@@ -1380,11 +1379,30 @@ describe('Incident and case timeline', () => {
     it('should update the settings of the timeline', async () => {
       const result = await queryAsAdminWithSuccess({
         query: TIMELINE_SETTINGS_UPDATE,
-        variables: { containerId: caseIncident.id, input: { enabled_lanes: ['adversary', 'response', 'adversary'], default_grouping: 'week', hidden_kinds: ['relation_created'] } },
+        variables: { containerId: caseIncident.id, input: { enabled_lanes: ['adversary', 'response', 'adversary'], hidden_kinds: ['relation_created'] } },
       });
-      expect(result.data.timelineSettingsUpdate).toMatchObject({ enabled_lanes: ['adversary', 'response'], default_grouping: 'week', default_zoom_window: 'fit', hidden_kinds: ['relation_created'] });
+      expect(result.data.timelineSettingsUpdate).toMatchObject({ enabled_lanes: ['adversary', 'response'], hidden_kinds: ['relation_created'] });
+      // The zoom and the grouping are each reader's own: the settings no longer take them
+      const removed = await queryAsAdmin({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { default_grouping: 'week' } } });
+      expect(removed.errors?.[0].message).toContain('"default_grouping" is not defined by type "TimelineSettingsInput"');
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { enabled_lanes: [] } } }, 'At least one lane must be enabled');
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: [...TIMELINE_KINDS] } } }, 'At least one kind must stay visible');
+    });
+
+    it('should read the settings of a timeline saved with the former display defaults', async () => {
+      const stored = await timelineEngine.loadTimelineSettings(testContext, caseIncident.id);
+      if (!stored) throw new Error('The settings of the timeline should be stored');
+      // Written before the zoom and the grouping became each reader's own
+      await elUpdate(testContext, stored._index, stored.internal_id, {
+        doc: { timeline_state: { ...stored.timeline_state, default_grouping: 'week', default_zoom_window: 'month' } },
+      });
+      const summary = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
+      expect(summary.data.containerTimelineSummary.settings).toEqual({ enabled_lanes: stored.enabled_lanes, hidden_kinds: stored.hidden_kinds });
+      const updated = await queryAsAdminWithSuccess({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: ['relation_created'] } } });
+      expect(updated.data.timelineSettingsUpdate.hidden_kinds).toEqual(['relation_created']);
+      const reloaded = await timelineEngine.loadTimelineSettings(testContext, caseIncident.id);
+      expect(reloaded).not.toHaveProperty('default_grouping');
+      expect(reloaded).not.toHaveProperty('default_zoom_window');
     });
 
     it('should publish with a settings update the anchors read under the timeline lock', async () => {
@@ -1400,7 +1418,7 @@ describe('Incident and case timeline', () => {
       });
       const published = vi.spyOn(timelineEngine, 'publishTimelineUpdate');
       try {
-        await queryAsAdminWithSuccess({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { default_grouping: 'week' } } });
+        await queryAsAdminWithSuccess({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: ['relation_created'] } } });
         const update = published.mock.calls.map(([payload]) => payload).find((payload) => payload.update_type === 'settings' && payload.container_id === caseIncident.id);
         expect(iso(update?.anchors?.closure as string | undefined)).toEqual(closure);
       } finally {

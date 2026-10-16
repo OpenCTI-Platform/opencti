@@ -72,12 +72,6 @@ export const TIMELINE_KINDS = [
 ] as const;
 export type TimelineKindValue = typeof TIMELINE_KINDS[number];
 
-export const TIMELINE_GROUPINGS = ['hour', 'day', 'week'] as const;
-export type TimelineGroupingValue = typeof TIMELINE_GROUPINGS[number];
-
-export const TIMELINE_ZOOM_WINDOWS = ['fit', 'day', 'week', 'month', 'quarter', 'year'] as const;
-export type TimelineZoomWindowValue = typeof TIMELINE_ZOOM_WINDOWS[number];
-
 // Fields an analyst can set on any event, derived or manual. A regeneration of the
 // derived events keeps the value of every field listed in `analyst_fields`.
 export const TIMELINE_ANALYST_FIELDS = ['pinned', 'hidden', 'annotation', 'ordering_hint'] as const;
@@ -216,11 +210,13 @@ export interface TimelineCappedAnnotatedEvent {
   ordering_hint?: number | null;
 }
 
-/** Settings and generation state of a container timeline, stored as the non-indexed `timeline_state` object. */
+/**
+ * Settings and generation state of a container timeline, stored as the non-indexed `timeline_state` object. The zoom,
+ * the grouping and the view are each reader's own, kept in their browser; a state written before still carrying
+ * `default_grouping` or `default_zoom_window` is read without them.
+ */
 export interface TimelineSettingsState {
   enabled_lanes: TimelineLaneValue[];
-  default_grouping: TimelineGroupingValue;
-  default_zoom_window: TimelineZoomWindowValue;
   hidden_kinds: TimelineKindValue[];
   pending_annotations?: TimelinePendingAnnotation[];
   derivation_truncated?: boolean;
@@ -237,8 +233,6 @@ export interface BasicStoreEntityTimelineSettings extends BasicStoreEntity, Time
 
 export const TIMELINE_DEFAULT_SETTINGS = {
   enabled_lanes: [...TIMELINE_LANES] as TimelineLaneValue[],
-  default_grouping: 'day' as TimelineGroupingValue,
-  default_zoom_window: 'fit' as TimelineZoomWindowValue,
   hidden_kinds: [] as TimelineKindValue[],
 };
 

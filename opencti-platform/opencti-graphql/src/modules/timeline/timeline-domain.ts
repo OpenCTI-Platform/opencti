@@ -471,8 +471,6 @@ const settingsWithDefaults = (containerId: string, settings: StoredTimelineSetti
   representative: { main: 'Timeline settings', secondary: containerId },
   container_id: containerId,
   enabled_lanes: settings?.enabled_lanes?.length ? settings.enabled_lanes : TIMELINE_DEFAULT_SETTINGS.enabled_lanes,
-  default_grouping: settings?.default_grouping ?? TIMELINE_DEFAULT_SETTINGS.default_grouping,
-  default_zoom_window: settings?.default_zoom_window ?? TIMELINE_DEFAULT_SETTINGS.default_zoom_window,
   hidden_kinds: settings?.hidden_kinds ?? TIMELINE_DEFAULT_SETTINGS.hidden_kinds,
 } as unknown as TimelineSettings);
 
@@ -1151,8 +1149,6 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
     if (input.enabled_lanes.length === 0) throw FunctionalError('At least one lane must be enabled');
     patch.enabled_lanes = Array.from(new Set(input.enabled_lanes));
   }
-  if (input.default_grouping) patch.default_grouping = input.default_grouping;
-  if (input.default_zoom_window) patch.default_zoom_window = input.default_zoom_window;
   if (input.hidden_kinds) {
     // An empty kinds filter means every kind: hiding them all would show them all again
     const hidden = new Set<string>(input.hidden_kinds);

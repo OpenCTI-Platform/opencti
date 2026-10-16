@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
-import { Checkbox, Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
+import { Checkbox, Chip, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,29 +13,14 @@ import { notifyTimelineMutationErrors, timelineSettingsUpdateMutation } from './
 import type {
   ContainerTimelineMutationsSettingsMutation,
   TimelineEventKind,
-  TimelineGrouping as GqlTimelineGrouping,
   TimelineLane as GqlTimelineLane,
-  TimelineZoomWindow as GqlTimelineZoomWindow,
 } from './__generated__/ContainerTimelineMutationsSettingsMutation.graphql';
-import {
-  TIMELINE_ANCHOR_LABELS,
-  TIMELINE_GROUPING_LABELS,
-  TIMELINE_GROUPINGS,
-  TIMELINE_KIND_LABELS,
-  TIMELINE_KINDS,
-  TIMELINE_LANE_LABELS,
-  TIMELINE_LANES,
-  TIMELINE_ZOOM_LABELS,
-  TIMELINE_ZOOM_WINDOWS,
-  type TimelineAnchorKey,
-} from './timelineUtils';
+import { TIMELINE_ANCHOR_LABELS, TIMELINE_KIND_LABELS, TIMELINE_KINDS, TIMELINE_LANE_LABELS, TIMELINE_LANES, type TimelineAnchorKey } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
 import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
 
 export interface TimelineSettingsValues {
   enabled_lanes: readonly string[];
-  default_grouping: string;
-  default_zoom_window: string;
   hidden_kinds: readonly string[];
 }
 
@@ -84,8 +69,6 @@ const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDate
         containerId,
         input: {
           enabled_lanes: values.enabled_lanes as GqlTimelineLane[],
-          default_grouping: values.default_grouping as GqlTimelineGrouping,
-          default_zoom_window: values.default_zoom_window as GqlTimelineZoomWindow,
           hidden_kinds: values.hidden_kinds as TimelineEventKind[],
         },
       },
@@ -103,7 +86,9 @@ const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDate
   return (
     <Drawer title={t_i18n('Timeline settings')} open={open} onClose={onClose}>
       <div data-testid="timeline-settings-drawer">
-        <Text variant="content-base" as="div" style={{ marginBottom: theme.spacing(2.5) }}>{t_i18n('These settings apply to every user of this case timeline.')}</Text>
+        <Text variant="content-base" as="div" style={{ marginBottom: theme.spacing(2.5) }}>
+          {t_i18n('These settings apply to every user of this case timeline. The zoom, the grouping and the view are kept for each reader, in their browser.')}
+        </Text>
         <SectionTitle>{t_i18n('Enabled lanes')}</SectionTitle>
         <Text variant="content-caption" as="p" style={helpStyle}>{t_i18n('Lanes switched off are hidden for every reader of this case.')}</Text>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
@@ -135,40 +120,6 @@ const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDate
               </Link>
             </Text>
           )}
-        </div>
-        <div style={{ display: 'flex', gap: theme.spacing(2), marginTop: theme.spacing(2.5) }}>
-          <div style={{ flex: 1 }}>
-            <Select value={values.default_grouping} onValueChange={(value) => setValues({ ...values, default_grouping: value })}>
-              <SelectLabel>{t_i18n('Default grouping')}</SelectLabel>
-              <SelectTrigger aria-label={t_i18n('Default grouping')} aria-describedby="timeline-settings-grouping-help">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent aria-label={t_i18n('Default grouping')}>
-                {TIMELINE_GROUPINGS.map((grouping) => (
-                  <SelectItem key={grouping} value={grouping}>{t_i18n(TIMELINE_GROUPING_LABELS[grouping])}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Text id="timeline-settings-grouping-help" variant="content-caption" as="p" style={helpStyle}>
-              {t_i18n('How events are grouped when the timeline opens, for every user of this case. Each reader can still change the grouping from the toolbar.')}
-            </Text>
-          </div>
-          <div style={{ flex: 1 }}>
-            <Select value={values.default_zoom_window} onValueChange={(value) => setValues({ ...values, default_zoom_window: value })}>
-              <SelectLabel>{t_i18n('Default zoom window')}</SelectLabel>
-              <SelectTrigger aria-label={t_i18n('Default zoom window')} aria-describedby="timeline-settings-zoom-help">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent aria-label={t_i18n('Default zoom window')}>
-                {TIMELINE_ZOOM_WINDOWS.map((zoom) => (
-                  <SelectItem key={zoom} value={zoom}>{t_i18n(TIMELINE_ZOOM_LABELS[zoom])}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Text id="timeline-settings-zoom-help" variant="content-caption" as="p" style={helpStyle}>
-              {t_i18n('The period the lanes view shows when it opens, for every user of this case. Each reader can still choose another period, zoom or pan from the toolbar.')}
-            </Text>
-          </div>
         </div>
         <div style={{ marginTop: theme.spacing(2.5) }}>
           <SectionTitle>{t_i18n('Events hidden by default')}</SectionTitle>

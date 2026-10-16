@@ -31,12 +31,13 @@ import {
   TIMELINE_MILESTONE_DEFAULT_LANE,
   TIMELINE_OPEN_SETTINGS_PARAM,
   type TimelineAnchorKey,
-  type TimelineGrouping,
   timelineContainerHasTasks,
+  timelineGroupingForSpan,
   toTime,
 } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
 import useTimelineHeadlineDates from './useTimelineHeadlineDates';
+import { readTimelineViewPreference } from './useTimelineViewPreference';
 
 const STRIP_EVENTS = 300;
 // Height of the miniature of the lanes while the events load (the axis and two lanes)
@@ -63,7 +64,6 @@ export const containerTimelineStripQuery = graphql`
         id
         enabled_lanes
         hidden_kinds
-        default_grouping
       }
     }
   }
@@ -174,13 +174,12 @@ interface ContainerTimelineStripEventsProps {
   enabledLanes: readonly string[];
   hiddenKinds: readonly string[];
   anchors: TimelineChartAnchors;
-  grouping: TimelineGrouping;
   timelinePath: string;
   canEdit: boolean;
 }
 
 /** Summary line and miniature of the lanes, both from the events the timeline settings show. */
-const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, anchors, grouping, timelinePath, canEdit }: ContainerTimelineStripEventsProps) => {
+const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, anchors, timelinePath, canEdit }: ContainerTimelineStripEventsProps) => {
   const { t_i18n } = useFormatter();
   const colors = useTimelineColors();
   const navigate = useNavigate();
@@ -201,6 +200,8 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
   // The fit frames every shown event, also those older than the latest ones drawn here
   const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.frame_start, shown?.frame_end]);
+  // The grouping the reader last chose on this timeline, or the one that suits the length of the incident
+  const grouping = readTimelineViewPreference(containerId).grouping ?? timelineGroupingForSpan(extent);
   if (total === 0) {
     return (
       <ContainerTimelineStripEmpty
@@ -266,7 +267,6 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath, wi
               enabledLanes={summary?.settings.enabled_lanes ?? []}
               hiddenKinds={summary?.settings.hidden_kinds ?? []}
               anchors={headlineAnchorsOf(summary?.anchors, headlineDates)}
-              grouping={(summary?.settings.default_grouping ?? 'day') as TimelineGrouping}
               timelinePath={timelinePath}
               canEdit={canEdit}
             />

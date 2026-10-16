@@ -149,7 +149,8 @@ export type TimelineExportFormat = 'csv' | 'pdf' | 'svg' | 'png';
 // Entity types carrying a timeline
 export const TIMELINE_CONTAINER_TYPES = ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'];
 
-export type TimelineView = 'lanes' | 'list';
+export const TIMELINE_VIEWS = ['lanes', 'list'] as const;
+export type TimelineView = typeof TIMELINE_VIEWS[number];
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
@@ -216,10 +217,41 @@ export interface TimelineViewState {
   event: string | null;
 }
 
-export interface TimelineViewDefaults {
-  grouping: TimelineGrouping;
-  zoom: TimelineZoomWindow;
-}
+export type TimelineViewDefaults = Pick<TimelineViewState, 'view' | 'grouping' | 'zoom'>;
+
+/** View of a timeline opened for the first time: the lanes of the whole timeline, grouped by day. */
+export const TIMELINE_VIEW_DEFAULTS: TimelineViewDefaults = { view: 'lanes', grouping: 'day', zoom: 'fit' };
+
+/** Zoom window, grouping and view a reader last chose on a timeline, saved in their browser. */
+export type TimelineViewPreference = Partial<TimelineViewDefaults>;
+
+const pickOne = <T extends string>(value: unknown, allowed: readonly T[]): T | undefined => {
+  return typeof value === 'string' && (allowed as readonly string[]).includes(value) ? value as T : undefined;
+};
+
+/** The saved preference keeps only the values a timeline still offers. */
+export const parseTimelineViewPreference = (stored: unknown): TimelineViewPreference => {
+  const value = (stored && typeof stored === 'object' ? stored : {}) as Record<string, unknown>;
+  const preference: TimelineViewPreference = {};
+  const view = pickOne(value.view, TIMELINE_VIEWS);
+  const grouping = pickOne(value.grouping, TIMELINE_GROUPINGS);
+  const zoom = pickOne(value.zoom, TIMELINE_ZOOM_WINDOWS);
+  if (view) preference.view = view;
+  if (grouping) preference.grouping = grouping;
+  if (zoom) preference.zoom = zoom;
+  return preference;
+};
+
+/**
+ * Grouping of a timeline drawn without a toolbar (the overview card, the dashboard widget): the finest one whose
+ * buckets stay few enough to read over the drawn span.
+ */
+export const timelineGroupingForSpan = (domain: TimelineDomain | null): TimelineGrouping => {
+  const span = domain ? Math.max(domain[1] - domain[0], 0) : 0;
+  if (span <= 2 * DAY) return 'hour';
+  if (span <= 60 * DAY) return 'day';
+  return 'week';
+};
 
 const listParam = <T extends string>(params: URLSearchParams, key: string, allowed: readonly T[]): T[] => {
   const value = params.get(key);
@@ -236,7 +268,7 @@ export const parseTimelineViewState = (params: URLSearchParams, defaults: Timeli
   const to = Number(params.get('to'));
   const domain: TimelineDomain | null = Number.isFinite(from) && Number.isFinite(to) && from > 0 && to > from ? [from, to] : null;
   return {
-    view: oneOf<TimelineView>(params.get('view'), ['lanes', 'list'], 'lanes'),
+    view: oneOf(params.get('view'), TIMELINE_VIEWS, defaults.view),
     grouping: oneOf(params.get('grouping'), TIMELINE_GROUPINGS, defaults.grouping),
     zoom: oneOf(params.get('zoom'), TIMELINE_ZOOM_WINDOWS, defaults.zoom),
     domain,
@@ -253,7 +285,7 @@ export const parseTimelineViewState = (params: URLSearchParams, defaults: Timeli
 /** Serialize the view state, omitting the values equal to the defaults to keep the URL short. */
 export const serializeTimelineViewState = (state: TimelineViewState, defaults: TimelineViewDefaults): URLSearchParams => {
   const params = new URLSearchParams();
-  if (state.view !== 'lanes') params.set('view', state.view);
+  if (state.view !== defaults.view) params.set('view', state.view);
   if (state.grouping !== defaults.grouping) params.set('grouping', state.grouping);
   if (state.zoom !== defaults.zoom) params.set('zoom', state.zoom);
   if (state.domain) {

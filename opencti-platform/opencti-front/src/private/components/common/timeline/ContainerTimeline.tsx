@@ -1,6 +1,5 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePaginationFragment, usePreloadedQuery, useSubscription } from 'react-relay';
-import { useSearchParams } from 'react-router';
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
@@ -22,6 +21,7 @@ import { ContainerTimelineEmptyState, ContainerTimelineErrorBoundary, ContainerT
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
 import useTimelineHeadlineDates from './useTimelineHeadlineDates';
+import useTimelineViewState from './useTimelineViewState';
 import {
   containerTimelineUpdatedSubscription,
   notifyTimelineMutationErrors,
@@ -54,8 +54,6 @@ import {
   hasClearableTimelineFilters,
   headlineAnchorsOf,
   isTimelineViewFilteredBy,
-  parseTimelineViewState,
-  serializeTimelineViewState,
   TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
@@ -63,7 +61,6 @@ import {
   type TimelineAnchorKey,
   type TimelineDomain,
   timelineExportWindow,
-  type TimelineGrouping,
   type TimelineViewState,
   type TimelineZoomWindow,
   timelineContainerHasTasks,
@@ -98,8 +95,6 @@ export const containerTimelineSummaryQuery = graphql`
       settings {
         id
         enabled_lanes
-        default_grouping
-        default_zoom_window
         hidden_kinds
       }
       can_edit
@@ -501,13 +496,8 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
   const headlineDates = useTimelineHeadlineDates(entityType);
-  const [searchParams, setSearchParams] = useSearchParams();
   const settings = summary?.settings;
-  const defaults = useMemo(() => ({
-    grouping: (settings?.default_grouping ?? 'day') as TimelineGrouping,
-    zoom: (settings?.default_zoom_window ?? 'fit') as TimelineZoomWindow,
-  }), [settings?.default_grouping, settings?.default_zoom_window]);
-  const state = useMemo(() => parseTimelineViewState(searchParams, defaults), [searchParams, defaults]);
+  const { searchParams, state, updateState } = useTimelineViewState(containerId);
   // Pan and zoom move the domain continuously: it lives here and reaches the URL once settled
   const [domain, setDomain] = useState<TimelineDomain | null>(state.domain);
   const urlTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -523,21 +513,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
   // Only the event of the opening link is searched in earlier pages, never a later selection
   const [linkedEventId, setLinkedEventId] = useState<string | null>(state.event);
 
-  // Patches apply to the URL as it is when they land: a delayed domain update never reverts a later change (view, filters)
-  const updateState = useCallback((patch: Partial<TimelineViewState>) => {
-    setSearchParams((current) => serializeTimelineViewState({ ...parseTimelineViewState(current, defaults), ...patch }, defaults), { replace: true });
-  }, [defaults, setSearchParams]);
-
   useEffect(() => () => clearTimeout(urlTimer.current), []);
-  useEffect(() => {
-    if (!searchParams.has(TIMELINE_ADD_MILESTONE_PARAM) && !searchParams.has(TIMELINE_OPEN_SETTINGS_PARAM)) return;
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current);
-      next.delete(TIMELINE_ADD_MILESTONE_PARAM);
-      next.delete(TIMELINE_OPEN_SETTINGS_PARAM);
-      return next;
-    }, { replace: true });
-  }, []);
   // A new zoom window (or a URL change from the outside) resets the visible domain
   useEffect(() => {
     setDomain(state.domain);

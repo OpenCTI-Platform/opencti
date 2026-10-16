@@ -24,21 +24,24 @@ import {
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
+  parseTimelineViewPreference,
   parseTimelineViewState,
   resolveTimelineHeadlineDates,
   serializeTimelineViewState,
   TIMELINE_KINDS,
   TIMELINE_MIN_SPAN,
+  TIMELINE_VIEW_DEFAULTS,
   timelineContainerHasTasks,
   type TimelineDomain,
   timelineExportWindow,
+  timelineGroupingForSpan,
   type TimelineViewState,
   zoomDomain,
 } from './timelineUtils';
 
 const HOUR = 3600 * 1000;
 const DAY = 24 * HOUR;
-const DEFAULTS = { grouping: 'day' as const, zoom: 'fit' as const };
+const DEFAULTS = TIMELINE_VIEW_DEFAULTS;
 
 // Local noon avoids any day boundary effect of the test machine time zone
 const localNoon = (year: number, month: number, day: number) => new Date(year, month - 1, day, 12, 0, 0).getTime();
@@ -95,6 +98,37 @@ describe('Timeline URL view state', () => {
     expect(parseTimelineViewState(params, DEFAULTS)).toEqual(state);
     const defaults = serializeTimelineViewState(parseTimelineViewState(new URLSearchParams(''), DEFAULTS), DEFAULTS);
     expect(defaults.toString()).toEqual('');
+  });
+
+  it('should open with the saved choices of the reader unless the address names others', () => {
+    const saved = { ...TIMELINE_VIEW_DEFAULTS, view: 'list' as const, grouping: 'week' as const, zoom: 'month' as const };
+    const opened = parseTimelineViewState(new URLSearchParams(''), saved);
+    expect([opened.view, opened.grouping, opened.zoom]).toEqual(['list', 'week', 'month']);
+    // A shared link wins over what the reader saved
+    const shared = parseTimelineViewState(new URLSearchParams('view=lanes&grouping=hour'), saved);
+    expect([shared.view, shared.grouping, shared.zoom]).toEqual(['lanes', 'hour', 'month']);
+    // Written against the first-visit view, the address names the saved choices for whoever opens it
+    expect(serializeTimelineViewState(opened, TIMELINE_VIEW_DEFAULTS).toString()).toEqual('view=list&grouping=week&zoom=month');
+  });
+});
+
+describe('Timeline view preference', () => {
+  it('should keep only the saved values a timeline still offers', () => {
+    expect(parseTimelineViewPreference({ view: 'list', grouping: 'hour', zoom: 'quarter' })).toEqual({ view: 'list', grouping: 'hour', zoom: 'quarter' });
+    expect(parseTimelineViewPreference({ view: 'gantt', grouping: 'minute', zoom: 3, other: 'ignored' })).toEqual({});
+    expect(parseTimelineViewPreference({ grouping: 'week' })).toEqual({ grouping: 'week' });
+    expect(parseTimelineViewPreference(null)).toEqual({});
+    expect(parseTimelineViewPreference('day')).toEqual({});
+  });
+
+  it('should choose the grouping of a timeline drawn without toolbar from its span', () => {
+    expect(timelineGroupingForSpan(null)).toEqual('hour');
+    expect(timelineGroupingForSpan([0, 6 * HOUR])).toEqual('hour');
+    expect(timelineGroupingForSpan([0, 2 * DAY])).toEqual('hour');
+    expect(timelineGroupingForSpan([0, 3 * DAY])).toEqual('day');
+    expect(timelineGroupingForSpan([0, 60 * DAY])).toEqual('day');
+    expect(timelineGroupingForSpan([0, 61 * DAY])).toEqual('week');
+    expect(timelineGroupingForSpan([0, 3 * 365 * DAY])).toEqual('week');
   });
 });
 

@@ -284,10 +284,9 @@ const TIMELINE_INITIAL_STATE: TimelineSettingsState = {
   generated_at: null,
 };
 
+// Only the known keys are read: the others an earlier state may still hold (the former display defaults) are ignored
 const stateOf = (settings: Partial<TimelineSettingsState> | null | undefined): TimelineSettingsState => ({
   enabled_lanes: settings?.enabled_lanes ?? TIMELINE_INITIAL_STATE.enabled_lanes,
-  default_grouping: settings?.default_grouping ?? TIMELINE_INITIAL_STATE.default_grouping,
-  default_zoom_window: settings?.default_zoom_window ?? TIMELINE_INITIAL_STATE.default_zoom_window,
   hidden_kinds: settings?.hidden_kinds ?? TIMELINE_INITIAL_STATE.hidden_kinds,
   pending_annotations: settings?.pending_annotations ?? [],
   derivation_truncated: settings?.derivation_truncated ?? false,

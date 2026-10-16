@@ -26,7 +26,7 @@ import {
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   TIMELINE_ZOOM_WINDOWS,
-  type TimelineGrouping,
+  timelineGroupingForSpan,
   type TimelineLane,
   type TimelineZoomWindow,
 } from './timelineUtils';
@@ -64,7 +64,6 @@ export const containerTimelineWidgetQuery = graphql`
         id
         enabled_lanes
         hidden_kinds
-        default_grouping
       }
     }
   }
@@ -113,7 +112,6 @@ interface ContainerTimelineWidgetEventsProps {
   enabledLanes: readonly string[];
   hiddenKinds: readonly string[];
   zoomWindow: TimelineZoomWindow;
-  grouping: TimelineGrouping;
   anchors: TimelineChartAnchors;
 }
 
@@ -125,7 +123,6 @@ const ContainerTimelineWidgetEvents = ({
   enabledLanes,
   hiddenKinds,
   zoomWindow,
-  grouping,
   anchors,
 }: ContainerTimelineWidgetEventsProps) => {
   const { t_i18n, n } = useFormatter();
@@ -149,6 +146,7 @@ const ContainerTimelineWidgetEvents = ({
   const shownLanes = (apiLanes ?? TIMELINE_LANES).filter((lane) => events.some((e) => e.lane === lane));
   // The whole timeline of the shown lanes and kinds, also the events older than the latest ones drawn here
   const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.frame_start, shown?.frame_end]);
+  const domain = computeVisibleDomain(extent, zoomWindow);
   // A long timeline is drawn from its latest events: the count says so, the full timeline is one click away
   const total = containerTimeline?.pageInfo.globalCount ?? events.length;
   return (
@@ -156,8 +154,9 @@ const ContainerTimelineWidgetEvents = ({
       <ContainerTimelineLanes
         events={events}
         lanes={shownLanes}
-        domain={computeVisibleDomain(extent, zoomWindow)}
-        grouping={grouping}
+        domain={domain}
+        // The widget frames the period chosen in the dashboard: its grouping follows that period, not one reader's choice
+        grouping={timelineGroupingForSpan(domain)}
         anchors={anchors}
         onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
         ariaLabel={t_i18n('Timeline of {name}', { values: { name: containerName } })}
@@ -215,7 +214,6 @@ const ContainerTimelineWidgetContent = ({ queryRef, lanes, zoomWindow, renderWid
           enabledLanes={summary.settings.enabled_lanes}
           hiddenKinds={summary.settings.hidden_kinds}
           zoomWindow={zoomWindow}
-          grouping={(summary.settings.default_grouping ?? 'day') as TimelineGrouping}
           anchors={headlineAnchorsOf(summary.anchors, headlineDates)}
         />
       </Suspense>

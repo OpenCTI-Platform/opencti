@@ -17877,21 +17877,6 @@ enum TimelineEventKind {
   notification
 }
 
-enum TimelineGrouping {
-  hour
-  day
-  week
-}
-
-enum TimelineZoomWindow {
-  fit
-  day
-  week
-  month
-  quarter
-  year
-}
-
 enum TimelineExportFormat {
   csv
   svg
@@ -18006,8 +17991,6 @@ type TimelineSettings implements InternalObject & BasicObject {
   representative: Representative!
   container_id: String!
   enabled_lanes: [TimelineLane!]!
-  default_grouping: TimelineGrouping!
-  default_zoom_window: TimelineZoomWindow!
   hidden_kinds: [TimelineEventKind!]!
 }
 
@@ -18191,7 +18174,5 @@ type TimelineExportFile {
 
 input TimelineSettingsInput {
   enabled_lanes: [TimelineLane!]
-  default_grouping: TimelineGrouping
-  default_zoom_window: TimelineZoomWindow
   hidden_kinds: [TimelineEventKind!]
 }

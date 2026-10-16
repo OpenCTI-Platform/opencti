@@ -36900,12 +36900,6 @@ export type TimelineExportLabelInput = {
   label: Scalars['String']['input'];
 };
 
-export enum TimelineGrouping {
-  Day = 'day',
-  Hour = 'hour',
-  Week = 'week'
-}
-
 /** A headline date of the timelines (an anchor) */
 export enum TimelineHeadlineDate {
   Closure = 'closure',
@@ -36971,8 +36965,6 @@ export type TimelineRuleDefinition = {
 export type TimelineSettings = BasicObject & InternalObject & {
   __typename?: 'TimelineSettings';
   container_id: Scalars['String']['output'];
-  default_grouping: TimelineGrouping;
-  default_zoom_window: TimelineZoomWindow;
   enabled_lanes: Array<TimelineLane>;
   entity_type: Scalars['String']['output'];
   hidden_kinds: Array<TimelineEventKind>;
@@ -36984,8 +36976,6 @@ export type TimelineSettings = BasicObject & InternalObject & {
 };
 
 export type TimelineSettingsInput = {
-  default_grouping?: InputMaybe<TimelineGrouping>;
-  default_zoom_window?: InputMaybe<TimelineZoomWindow>;
   enabled_lanes?: InputMaybe<Array<TimelineLane>>;
   hidden_kinds?: InputMaybe<Array<TimelineEventKind>>;
 };
@@ -37041,15 +37031,6 @@ export enum TimelineUpdateType {
   Derived = 'derived',
   Manual = 'manual',
   Settings = 'settings'
-}
-
-export enum TimelineZoomWindow {
-  Day = 'day',
-  Fit = 'fit',
-  Month = 'month',
-  Quarter = 'quarter',
-  Week = 'week',
-  Year = 'year'
 }
 
 export enum TokenDuration {
@@ -42403,7 +42384,6 @@ export type ResolversTypes = ResolversObject<{
   TimelineExportFile: ResolverTypeWrapper<Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversTypes['MarkingDefinition']> }>;
   TimelineExportFormat: TimelineExportFormat;
   TimelineExportLabelInput: TimelineExportLabelInput;
-  TimelineGrouping: TimelineGrouping;
   TimelineHeadlineDate: TimelineHeadlineDate;
   TimelineKindDistribution: ResolverTypeWrapper<TimelineKindDistribution>;
   TimelineLane: TimelineLane;
@@ -42417,7 +42397,6 @@ export type ResolversTypes = ResolversObject<{
   TimelineSummary: ResolverTypeWrapper<TimelineSummary>;
   TimelineUpdate: ResolverTypeWrapper<TimelineUpdate>;
   TimelineUpdateType: TimelineUpdateType;
-  TimelineZoomWindow: TimelineZoomWindow;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
   Tone: Tone;
@@ -54718,8 +54697,6 @@ export type TimelineRuleDefinitionResolvers<ContextType = any, ParentType extend
 
 export type TimelineSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSettings'] = ResolversParentTypes['TimelineSettings']> = ResolversObject<{
   container_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  default_grouping?: Resolver<ResolversTypes['TimelineGrouping'], ParentType, ContextType>;
-  default_zoom_window?: Resolver<ResolversTypes['TimelineZoomWindow'], ParentType, ContextType>;
   enabled_lanes?: Resolver<Array<ResolversTypes['TimelineLane']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hidden_kinds?: Resolver<Array<ResolversTypes['TimelineEventKind']>, ParentType, ContextType>;

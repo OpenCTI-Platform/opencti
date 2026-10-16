@@ -80,8 +80,6 @@ export const timelineSettingsUpdateMutation = graphql`
     timelineSettingsUpdate(containerId: $containerId, input: $input) {
       id
       enabled_lanes
-      default_grouping
-      default_zoom_window
       hidden_kinds
     }
   }

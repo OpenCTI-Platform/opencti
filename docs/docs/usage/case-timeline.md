@@ -100,7 +100,7 @@ The overview of incidents and cases shows the same anchors with a miniature of t
 
 ![Timeline strip on the overview of an incident response](assets/case-timeline-overview-strip.png)
 
-The strip counts and draws the events the timeline settings show. A case without any event yet invites to add a milestone; when the lanes switched off and the events hidden in the timeline settings leave out every event of the case, the strip says so and offers **Timeline settings**, which opens the Timeline tab with its settings drawer, and **Add a milestone** when the settings show the lane and the event of a new milestone (Response and Milestone).
+The strip counts and draws the events the timeline settings show. It groups them like the last grouping you picked on the Timeline tab of the case, or, until you pick one, from the length of the incident: by hour up to two days, by day up to two months, by week beyond. A case without any event yet invites to add a milestone; when the lanes switched off and the events hidden in the timeline settings leave out every event of the case, the strip says so and offers **Timeline settings**, which opens the Timeline tab with its settings drawer, and **Add a milestone** when the settings show the lane and the event of a new milestone (Response and Milestone).
 
 ![Timeline strip of a case whose events are all hidden by the timeline settings](assets/case-timeline-overview-widget-hidden.png)
 
@@ -149,6 +149,7 @@ When the events cannot be loaded, the tab says so, suggests checking the connect
 - **Group events by**: hour, day or week.
 - **Search** and filters: lanes and events (pick the ones to show, for example Sighting or Containment; every lane and every event is shown when none is picked, and the field counts the ones picked: **Events (2)**), event source (**All sources**, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
 - The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
+- The zoom window, the grouping and the view (lanes or list) you pick are also remembered for each timeline in your browser, like the views of the lists: the timeline opens again as you left it. A timeline you open for the first time shows the lanes of the whole timeline (**Fit**), grouped by day. A shared link opens as it was sent, whatever you saved; what it does not name comes from your own choices, and opening it does not change them.
 - The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
 - In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
 
@@ -188,7 +189,7 @@ Milestones can be edited and deleted by the users who can update the case.
 
 ### Timeline settings
 
-**Timeline settings** (under **More actions** in the toolbar of the tab, next to **Regenerate the timeline**) opens a drawer with the settings of the case timeline: enabled lanes, default grouping, default zoom window and events hidden by default. These settings apply to every user of the case timeline. The drawer also lists the headline dates of the type of the case, which are chosen in its customization (see [Headline dates of a type](#headline-dates-of-a-type)).
+**Timeline settings** (under **More actions** in the toolbar of the tab, next to **Regenerate the timeline**) opens a drawer with the settings of the case timeline: enabled lanes and events hidden by default. These settings decide what the timeline contains and apply to every user of the case timeline; how each reader views it (zoom, grouping, lanes or list) is theirs, remembered in their browser (see [Views and navigation](#views-and-navigation)). The drawer also lists the headline dates of the type of the case, which are chosen in its customization (see [Headline dates of a type](#headline-dates-of-a-type)).
 
 ![Timeline settings drawer of a case](assets/case-timeline-settings-drawer.png)
 
@@ -215,7 +216,7 @@ What an export contains and how it is marked:
 
 The **Incident and case timeline** visualization is available in the widget catalog (see [Widget creation](widgets.md)):
 
-- in custom dashboards, select the incident or case, the lanes to display (all when none is selected) and the time window;
+- in custom dashboards, select the incident or case, the lanes to display (all when none is selected) and the time window; the events are grouped from the length of that window (by hour up to two days, by day up to two months, by week beyond);
 - in the custom views of incidents and cases, the widget shows the timeline of the displayed entity.
 
 ![Timeline widget of an incident response in a custom dashboard](assets/case-timeline-widget-populated.png)

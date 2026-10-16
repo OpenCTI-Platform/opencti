@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
-import { parseTimelineViewState, TIMELINE_KIND_LABELS, TIMELINE_KINDS, TIMELINE_LANES, type TimelineViewState } from './timelineUtils';
+import { parseTimelineViewState, TIMELINE_KIND_LABELS, TIMELINE_KINDS, TIMELINE_LANES, TIMELINE_VIEW_DEFAULTS, type TimelineViewState } from './timelineUtils';
 
 const baseState = (patch: Partial<TimelineViewState> = {}): TimelineViewState => ({
-  ...parseTimelineViewState(new URLSearchParams(), { grouping: 'day', zoom: 'fit' }),
+  ...parseTimelineViewState(new URLSearchParams(), TIMELINE_VIEW_DEFAULTS),
   ...patch,
 });
 

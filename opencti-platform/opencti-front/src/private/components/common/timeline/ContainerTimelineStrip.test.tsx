@@ -5,6 +5,7 @@ import type { OperationDescriptor } from 'relay-runtime';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineStrip from './ContainerTimelineStrip';
 import { TIMELINE_DEFAULT_HEADLINE_DATES, type TimelineAnchorKey } from './timelineUtils';
+import { timelineViewPreferenceKey } from './useTimelineViewPreference';
 
 // Headline dates of the type, set in Settings > Customization
 const headlineDates = vi.hoisted(() => ({ current: [] as readonly string[] }));
@@ -25,7 +26,11 @@ let anchors: Record<TimelineAnchorKey, string | null> = NO_ANCHORS;
 beforeEach(() => {
   headlineDates.current = TIMELINE_DEFAULT_HEADLINE_DATES;
   anchors = NO_ANCHORS;
+  window.localStorage.clear();
 });
+
+// Grouping the reader last picked on the Timeline tab of the case
+const saveGrouping = (grouping: string) => window.localStorage.setItem(timelineViewPreferenceKey('case-1'), JSON.stringify({ grouping }));
 
 interface StripCase {
   canEdit?: boolean;
@@ -47,7 +52,7 @@ const renderStrip = async (total: number, shownEvents: Array<Record<string, unkn
             last_event_time: total > 0 ? '2026-02-03T09:00:00.000Z' : null,
             can_edit: canEdit,
             anchors,
-            settings: { id: 'timeline-settings-1', enabled_lanes: enabledLanes, hidden_kinds: hiddenKinds, default_grouping: 'day' },
+            settings: { id: 'timeline-settings-1', enabled_lanes: enabledLanes, hidden_kinds: hiddenKinds },
           },
         },
       };
@@ -154,7 +159,36 @@ describe('ContainerTimelineStrip', () => {
     expect(screen.getByTestId('timeline-anchor-recovery')).not.toHaveTextContent('Not reached');
   });
 
+  it('groups the events by the grouping the reader last picked on the timeline', async () => {
+    const events = [
+      stripEvent('event-2', 'Technique Exfiltration', '2026-02-02T11:00:00.000Z'),
+      stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z'),
+    ];
+    saveGrouping('day');
+    await renderStrip(2, events);
+    expect(await screen.findByRole('button', { name: /^2 events - / })).toBeInTheDocument();
+  });
+
+  it('groups the events from the length of the incident when the reader has picked no grouping', async () => {
+    // Two hours of events: grouped by hour, the two events stay apart
+    const { unmount } = await renderStrip(2, [
+      stripEvent('event-2', 'Technique Exfiltration', '2026-02-02T11:00:00.000Z'),
+      stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z'),
+    ]);
+    await screen.findByTestId('timeline-strip-summary');
+    expect(screen.queryByRole('button', { name: /^2 events - / })).toBeNull();
+    unmount();
+    // Ten days of events: grouped by day, the two events of the same morning share a circle
+    await renderStrip(3, [
+      stripEvent('event-3', 'Technique Impact', '2026-02-12T09:00:00.000Z'),
+      stripEvent('event-2', 'Technique Exfiltration', '2026-02-02T11:00:00.000Z'),
+      stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z'),
+    ]);
+    expect(await screen.findByRole('button', { name: /^2 events - / })).toBeInTheDocument();
+  });
+
   it('lists the events of a numbered circle, each opening the Timeline tab on that event', async () => {
+    saveGrouping('day');
     const { user } = await renderStrip(2, [
       stripEvent('event-2', 'Technique Exfiltration', '2026-02-02T11:00:00.000Z'),
       stripEvent('event-1', 'Technique Phishing', '2026-02-02T09:00:00.000Z'),

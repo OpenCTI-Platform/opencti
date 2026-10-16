@@ -4,7 +4,7 @@ import { screen, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
 
-const settings = { enabled_lanes: ['adversary', 'response'], default_grouping: 'day', default_zoom_window: 'fit', hidden_kinds: [] };
+const settings = { enabled_lanes: ['adversary', 'response'], hidden_kinds: [] };
 
 const renderDrawer = (capabilities: string[]) => testRender(
   <ContainerTimelineSettingsDrawer
@@ -34,5 +34,19 @@ describe('ContainerTimelineSettingsDrawer headline dates', () => {
     const section = await screen.findByTestId('timeline-settings-headline-dates');
     expect(within(section).getAllByRole('listitem')).toHaveLength(2);
     expect(within(section).queryByRole('link')).toBeNull();
+  });
+});
+
+describe('ContainerTimelineSettingsDrawer display choices', () => {
+  it('leaves the zoom, the grouping and the view to each reader', async () => {
+    const { user, relayEnv } = renderDrawer(['KNOWLEDGE_KNUPDATE']);
+    const drawer = await screen.findByTestId('timeline-settings-drawer');
+    expect(drawer).toHaveTextContent('The zoom, the grouping and the view are kept for each reader, in their browser.');
+    expect(within(drawer).queryByRole('combobox')).toBeNull();
+    await user.click(screen.getByTestId('timeline-settings-save'));
+    expect(relayEnv.mock.getMostRecentOperation().request.variables).toEqual({
+      containerId: 'case-1',
+      input: { enabled_lanes: ['adversary', 'response'], hidden_kinds: [] },
+    });
   });
 });
