@@ -34,7 +34,8 @@ describe('ContainerTimelineEventForm lane of the event', () => {
     await pick(user, 'Lane', 'Detection');
     expect(screen.getByRole('combobox', { name: 'Lane' })).toHaveTextContent('Detection');
     expect(screen.getByRole('combobox', { name: 'Event' })).toHaveTextContent('Containment');
-    await user.type(screen.getByRole('textbox', { name: /Title/ }), 'Hosts isolated by the SOC');
+    await user.click(screen.getByRole('textbox', { name: /Title/ }));
+    await user.paste('Hosts isolated by the SOC');
     await user.click(screen.getByTestId('timeline-event-form-submit'));
     await vi.waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
     expect(relayEnv.mock.getMostRecentOperation().request.variables.input).toMatchObject({ lane: 'detection', kind: 'containment' });
