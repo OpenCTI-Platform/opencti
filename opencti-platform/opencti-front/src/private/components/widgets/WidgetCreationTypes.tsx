@@ -6,7 +6,6 @@ import { useWidgetConfigContext } from './WidgetConfigContext';
 import { useFormatter } from '../../../components/i18n';
 import {
   fintelTemplatesWidgetVisualizationTypes,
-  isWidgetWithoutDataSelection,
   renderWidgetIcon,
   workspacesWidgetVisualizationTypes,
   WidgetVisualizationTypes,
@@ -33,7 +32,7 @@ const WidgetCreationTypes = () => {
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });
-    setStep(isWidgetWithoutDataSelection(type) ? 3 : 1);
+    setStep(type === 'text' || type === 'attribute' || type === 'custom-attributes' ? 3 : 1);
   };
 
   return (

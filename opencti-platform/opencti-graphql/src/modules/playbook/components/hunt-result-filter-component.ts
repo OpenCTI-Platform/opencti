@@ -47,14 +47,14 @@ const PLAYBOOK_HUNT_RESULT_FILTER_SCHEMA: JSONSchemaType<HuntResultFilterConfigu
     },
     use_triage_proposals: { type: 'boolean', default: true, $ref: 'Use the verdicts proposed by the triage agent for runs still pending' },
     min_hits: { type: 'number', default: 1, $ref: 'Minimum number of hits over the runs' },
-    require_incident: { type: 'boolean', default: false, $ref: 'Only when an incident draft was opened' },
+    require_incident: { type: 'boolean', default: false, $ref: 'Only when an incident was opened' },
   },
   required: ['verdicts', 'use_triage_proposals', 'min_hits', 'require_incident'],
 };
 
 /**
  * Every configured condition must hold: a run verdict in the list (proposals of the triage agent count for pending
- * runs when enabled), at least min_hits hits, an incident draft when required. No run never matches.
+ * runs when enabled), at least min_hits hits, an incident (a draft or created directly) when required. No run never matches.
  */
 export const matchHuntResultFilter = (outcome: HuntPlaybookOutcome, configuration: HuntResultFilterConfiguration) => {
   if (outcome.runs_count === 0) {
@@ -79,7 +79,7 @@ export const isHuntStepNode = (playbookDefinition: string | undefined, nodeId: s
 export const PLAYBOOK_HUNT_RESULT_FILTER: PlaybookComponent<HuntResultFilterConfiguration> = {
   id: 'PLAYBOOK_HUNT_RESULT_FILTER',
   name: 'Match hunt results',
-  description: 'Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incident drafts)',
+  description: 'Route the bundle on the outcome of the hunts run earlier in this execution (verdicts, hits, incidents)',
   icon: 'hunt-result',
   category: 'transform_and_enrich',
   is_entry_point: false,

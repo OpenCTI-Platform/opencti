@@ -3328,6 +3328,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         last_hit_at: Optional[str] = None,
         rule_results: Optional[List[Dict]] = None,
         observations: Optional[List[Dict]] = None,
+        queries_count: Optional[int] = None,
     ) -> Dict:
         """Report the outcome of a hunt run to OpenCTI (huntRunReport).
 
@@ -3368,6 +3369,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param observations: every hit the run read, grouped by rule (or indicator value) and victim:
             {key, host, hits_count, first_seen, last_seen, hit_keys}; OpenCTI counts and dates the observed
             data and the sightings of the run from them instead of the hits sample
+        :param queries_count: the queries the run sent to its platform, which count against the quotas
+            of the platform
         :return: the hunt run
         :rtype: Dict
         """
@@ -3392,6 +3395,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             last_hit_at=last_hit_at,
             rule_results=rule_results,
             observations=observations,
+            queries_count=queries_count,
         )
 
     def listen_hunt(self, message_callback: Callable[[Dict], str]) -> None:

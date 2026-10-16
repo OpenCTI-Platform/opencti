@@ -12,12 +12,13 @@ import {
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
+  topEntitiesList,
 } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { generateStandardId, getInputIds } from '../../schema/identifier';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { now } from '../../utils/format';
 import {
@@ -27,6 +28,7 @@ import {
   type HuntAssistField,
   type HuntAssistInput,
   type HuntPlanInput,
+  HuntIncidentMode,
   HuntSourceKind,
   HuntStatus,
   HuntType,
@@ -56,12 +58,13 @@ import {
 import { isRestrictedToMembers, normalizeHuntIocValues, resolveHuntIocSet } from './hunt-iocs';
 import { computeHuntReadiness, isUnmetReadinessItem } from './hunt-readiness';
 import { listPirFlaggedEntities } from './hunt-derivation';
-import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
+import { HUNT_IOC_CONTAINER_TYPES, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { validateSigmaRule } from './hunt-sigma';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import {
   buildHuntScopeFilter,
+  HUNT_AGENT_AUTONOMY_RUN,
   HUNT_CONFIG,
   HUNT_DEFAULT_ESCALATION_THRESHOLD,
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
@@ -74,15 +77,19 @@ import {
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
 import {
   buildHuntAssistRequest,
+  buildHuntSourceText,
   callHuntAgent,
   draftNativeQueries,
   HUNT_PLANNER_INTENT,
+  HUNT_PLANNER_MAX_PROPOSALS,
   HUNT_SIGMA_GENERATION_INTENT,
+  HUNT_SOURCE_TEXT_MIN_LENGTH,
   huntAssistHasSubject,
+  type HuntPlanSpec,
   pickHuntAssistance,
   resolveHuntAssistTarget,
   validateHuntAssistDraft,
-  validateHuntPlanSpec,
+  validateHuntPlanProposals,
 } from './hunt-agents';
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
@@ -201,6 +208,7 @@ export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, i
     time_window_hours: input.time_window_hours ?? HUNT_DEFAULT_TIME_WINDOW_HOURS,
     escalation_threshold: input.escalation_threshold ?? HUNT_DEFAULT_ESCALATION_THRESHOLD,
     escalate_manual_runs: input.escalate_manual_runs ?? false,
+    hunt_incident_mode: input.hunt_incident_mode ?? HuntIncidentMode.Draft,
     native_queries: normalizeNativeQueries(input.native_queries),
     hunt_ioc_values: normalizeHuntIocValues(input.hunt_ioc_values),
   };
@@ -478,9 +486,10 @@ export const loadHuntPlanEntities = async (context: AuthContext, user: AuthUser,
       entities.push(...await listPirFlaggedEntities<BasicStoreEntity & Record<string, any>>(context, user, pir.internal_id, [ABSTRACT_STIX_DOMAIN_OBJECT], PLAN_MAX_PIR_ENTITIES));
     }
   }
-  // Reports: the threats, techniques and indicators they contain, read through their object relationships (a
-  // stored report does not carry its object refs)
-  const reports = entities.filter((entity) => entity.entity_type === ENTITY_TYPE_CONTAINER_REPORT);
+  // Reports, groupings and incident responses: the threats, techniques and indicators they contain, read through their
+  // object relationships (a stored container does not carry its object refs). A container restricted to authorized
+  // members is never planned from, so what it contains is not read
+  const reports = entities.filter((entity) => HUNT_IOC_CONTAINER_TYPES.includes(entity.entity_type) && !isRestrictedToMembers(entity));
   const plannedTypes = [...HUNT_TARGET_TYPES, ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INDICATOR];
   for (let index = 0; index < reports.length; index += 1) {
     const contained = await pageRegardingEntitiesConnection<BasicStoreEntity & Record<string, any>>(
@@ -571,6 +580,37 @@ const buildHuntPlannerRequest = async (
   };
 };
 
+/** The hunt a plan proposes, from the knowledge it was planned from: a draft, with the markings of that knowledge. */
+const huntInputOfPlan = (
+  spec: HuntPlanSpec,
+  { entities, reports, threats, techniques, indicators }: HuntPlanKnowledge & { entities: BasicStoreEntity[] },
+  scopePlatformIds: string[],
+  benignPatterns: string[],
+): HuntAddInput => {
+  const infrastructure = spec.hunt_type === HuntType.Infrastructure;
+  return {
+    name: spec.name,
+    description: [spec.description, spec.rationale ? `Rationale: ${spec.rationale}` : ''].filter((part) => part.length > 0).join('\n\n'),
+    hypothesis: spec.hypothesis,
+    hunt_type: infrastructure ? HuntType.Infrastructure : HuntType.Telemetry,
+    // An infrastructure hunt runs on the internet platform, never on a security platform
+    hunt_scope: infrastructure ? '' : buildHuntScopeFilter(scopePlatformIds),
+    // Validating the draft workspace creates the hunt; an analyst then activates it from its readiness checklist
+    hunt_status: HuntStatus.Draft,
+    hunt_source_kind: HuntSourceKind.Agent,
+    sigma_rule: spec.sigma_rule,
+    native_queries: spec.native_queries,
+    expected_observables: spec.expected_observables,
+    benign_patterns: Array.from(new Set([...spec.benign_patterns, ...benignPatterns])),
+    escalation_threshold: spec.escalation_threshold,
+    time_window_hours: spec.time_window_hours,
+    huntTechniques: [...techniques.map((technique) => technique.internal_id), ...spec.technique_ids],
+    huntTargets: spec.target_ids.length > 0 ? spec.target_ids : threats.map((threat) => threat.internal_id),
+    huntSources: [...indicators, ...reports].filter((entity) => HUNT_SOURCE_TYPES.includes(entity.entity_type)).map((entity) => entity.internal_id),
+    objectMarking: Array.from(new Set(entities.flatMap((entity) => (entity[RELATION_OBJECT_MARKING] ?? []) as string[]))),
+  };
+};
+
 export const planHunt = async (context: AuthContext, user: AuthUser, input: HuntPlanInput) => {
   await checkEnterpriseEdition(context);
   if (input.entity_ids.length === 0 || input.entity_ids.length > PLAN_MAX_ENTITIES) {
@@ -589,32 +629,9 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
   const payload = await buildHuntPlannerRequest(context, user, { reports, threats, techniques, indicators }, scopePlatformIds, input.benign_patterns ?? []);
   const jwtUser = await resolveAgentJwtUser(user.id);
   const { answer } = await callHuntAgent(HUNT_PLANNER_INTENT, jwtUser, payload, input.agent_slug);
-  const spec = validateHuntPlanSpec(answer, threats.map((threat) => threat.internal_id));
+  const [spec] = validateHuntPlanProposals(answer, threats.map((threat) => threat.internal_id), payload.security_platforms, 1);
   addHuntPlanCount();
-  // The hunt inherits the markings of the knowledge it was planned from
-  const markingIds = Array.from(new Set(unique.flatMap((entity) => (entity[RELATION_OBJECT_MARKING] ?? []) as string[])));
-  const huntType = spec.hunt_type === HuntType.Infrastructure ? HuntType.Infrastructure : HuntType.Telemetry;
-  const huntInput: HuntAddInput = {
-    name: spec.name,
-    description: [spec.description, spec.rationale ? `Rationale: ${spec.rationale}` : ''].filter((part) => part.length > 0).join('\n\n'),
-    hypothesis: spec.hypothesis,
-    hunt_type: huntType,
-    // An infrastructure hunt runs on the internet platform, never on a security platform
-    hunt_scope: huntType === HuntType.Telemetry ? buildHuntScopeFilter(scopePlatformIds) : '',
-    // Validating the draft workspace creates the hunt; an analyst then activates it from its readiness checklist
-    hunt_status: HuntStatus.Draft,
-    hunt_source_kind: HuntSourceKind.Agent,
-    sigma_rule: spec.sigma_rule,
-    native_queries: spec.native_queries,
-    expected_observables: spec.expected_observables,
-    benign_patterns: Array.from(new Set([...spec.benign_patterns, ...(input.benign_patterns ?? [])])),
-    escalation_threshold: spec.escalation_threshold,
-    time_window_hours: spec.time_window_hours,
-    huntTechniques: [...techniques.map((technique) => technique.internal_id), ...spec.technique_ids],
-    huntTargets: spec.target_ids.length > 0 ? spec.target_ids : threats.map((threat) => threat.internal_id),
-    huntSources: [...indicators, ...reports].filter((entity) => HUNT_SOURCE_TYPES.includes(entity.entity_type)).map((entity) => entity.internal_id),
-    objectMarking: markingIds,
-  };
+  const huntInput = huntInputOfPlan(spec, { entities: unique, reports, threats, techniques, indicators }, scopePlatformIds, input.benign_patterns ?? []);
   const proposal = await addHuntProposal(context, user, huntInput, `Hunt plan - ${spec.name}`);
   await publishUserAction({
     user,
@@ -625,6 +642,55 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
     context_data: { id: proposal.hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input: { entity_ids: input.entity_ids, draft_id: proposal.draft_id } },
   });
   return proposal;
+};
+
+/**
+ * The hunts the planner proposes for an entity holding no indicator nor detection rule (a report, a grouping, an
+ * incident response), as a playbook hunt step asks: up to max hunts from the text of the entity and the threats,
+ * techniques and indicators it holds. As hunt_manager:agent_hunt_autonomy says, each valid plan is proposed in a draft
+ * workspace an analyst validates (propose, the default), or created active (run). The hunts the planner already
+ * proposed from the entity are found again instead of asking again. Returns the active hunts, which the step runs.
+ */
+export const planAgentHunts = async (context: AuthContext, author: AuthUser, entity: BasicStoreEntity, max: number): Promise<BasicStoreEntityHunt[]> => {
+  const first = Math.max(1, Math.min(HUNT_PLANNER_MAX_PROPOSALS, max));
+  const planned = await topEntitiesList<BasicStoreEntityHunt>(context, author, [ENTITY_TYPE_HUNT], {
+    first,
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['hunt_source_kind'], values: [HuntSourceKind.Agent] }, { key: [INPUT_HUNT_SOURCES], values: [entity.internal_id] }],
+      filterGroups: [],
+    },
+    withoutRels: false,
+  });
+  if (planned.length > 0) {
+    return planned.filter((hunt) => hunt.hunt_status === HUNT_STATUS_ACTIVE);
+  }
+  const knowledge = await loadHuntPlanEntities(context, author, [entity.internal_id]);
+  if (restrictedToMembers(knowledge.entities).length > 0) {
+    return [];
+  }
+  const sourceText = buildHuntSourceText(entity as BasicStoreEntity & { name?: string; description?: string; content?: string });
+  const { threats, techniques, indicators } = knowledge;
+  if (threats.length + techniques.length + indicators.length === 0 && sourceText.trim().length < HUNT_SOURCE_TEXT_MIN_LENGTH) {
+    return [];
+  }
+  const request = await buildHuntPlannerRequest(context, author, knowledge, [], []);
+  const payload = { ...request, source_text: sourceText, max_proposals: first };
+  const jwtUser = await resolveAgentJwtUser(author.id);
+  const { answer } = await callHuntAgent(HUNT_PLANNER_INTENT, jwtUser, payload);
+  const specs = validateHuntPlanProposals(answer, threats.map((threat) => threat.internal_id), request.security_platforms, first);
+  const hunts: BasicStoreEntityHunt[] = [];
+  for (let index = 0; index < specs.length; index += 1) {
+    const huntInput = huntInputOfPlan(specs[index], knowledge, [], []);
+    if (HUNT_CONFIG.agentHuntAutonomy === HUNT_AGENT_AUTONOMY_RUN) {
+      // Without a status, the hunt is active when it can run and a draft otherwise
+      hunts.push(await addHunt(context, author, { ...huntInput, hunt_status: null }));
+    } else {
+      await addHuntProposal(context, author, huntInput, `Hunt plan - ${specs[index].name}`);
+    }
+    addHuntPlanCount();
+  }
+  return hunts.filter((hunt) => hunt.hunt_status === HUNT_STATUS_ACTIVE);
 };
 // endregion
 
@@ -700,7 +766,8 @@ export const assistHunt = async (context: AuthContext, user: AuthUser, input: Hu
   const sigmaOnly = payload.task === 'hunt_sigma_generation';
   const jwtUser = await resolveAgentJwtUser(user.id);
   const { slug, answer } = await callHuntAgent(sigmaOnly ? HUNT_SIGMA_GENERATION_INTENT : HUNT_PLANNER_INTENT, jwtUser, payload, input.agent_slug);
-  const proposal = pickHuntAssistance(validateHuntPlanSpec(answer, knowledge.threats.map((threat) => threat.internal_id)), target);
+  const [plan] = validateHuntPlanProposals(answer, knowledge.threats.map((threat) => threat.internal_id), null, 1);
+  const proposal = pickHuntAssistance(plan, target);
   const { techniques, unknown } = await resolveAssistTechniques(context, user, proposal.technique_ids);
   if (target.fields.length === 0) {
     addHuntPlanCount();

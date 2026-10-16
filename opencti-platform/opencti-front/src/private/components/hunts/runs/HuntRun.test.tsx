@@ -116,6 +116,7 @@ const completedRun = (overrides: Record<string, unknown> = {}) => ({
   started_at: '2026-10-05T12:00:02Z',
   completed_at: '2026-10-05T12:00:12Z',
   cost_ms: 10000,
+  queries_count: null,
   error_message: null,
   playbook_id: 'playbook-1',
   created_at: '2026-10-05T12:00:00Z',
@@ -257,6 +258,16 @@ describe('Hunt run page', () => {
     const cells = Array.from(screen.getByTestId('hunt-run-summary').children) as HTMLElement[];
     expect(cells.map((cell) => cell.dataset.testid)).toEqual(['hunt-run-summary-verdict', 'hunt-run-summary-details', 'hunt-run-summary-knowledge']);
     expect(cells[2].style.gridColumn).toBe('1 / -1');
+  });
+
+  it('shows the queries the run sent when its hunt connector counted them', () => {
+    renderRun(completedRun({ queries_count: 3 }));
+    expect(screen.getByTestId('hunt-run-details')).toHaveTextContent('Queries sent3');
+  });
+
+  it('leaves the queries out when the hunt connector did not count them', () => {
+    renderRun(completedRun({ queries_count: null }));
+    expect(screen.getByTestId('hunt-run-details')).not.toHaveTextContent('Queries sent');
   });
 
   it('stacks the summary in one column on a narrow screen, the details then in four columns', () => {

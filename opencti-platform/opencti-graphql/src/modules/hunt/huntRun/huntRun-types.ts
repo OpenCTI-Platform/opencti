@@ -149,6 +149,10 @@ export interface HuntObservation {
 
 interface HuntRunAttributes {
   hunt_id: string;
+  // The type, origin and techniques of the hunt when the run was created, so that dashboards filter runs on them
+  hunt_type?: string | null;
+  hunt_source_kind?: string | null;
+  hunt_technique_ids?: string[] | null;
   // The hunt of the run no longer exists (deleted, in the trash): the statistics leave the run out
   hunt_orphaned?: boolean | null;
   hunt_run_status: string;
@@ -211,6 +215,7 @@ interface HuntRunAttributes {
   started_at?: string | null;
   completed_at?: string | null;
   cost_ms?: number | null;
+  queries_count?: number | null;
   error_message?: string | null;
   // False for a failure the same run meets again in the same way (translation, a query the platform rejects): no retry
   failure_retryable?: boolean | null;

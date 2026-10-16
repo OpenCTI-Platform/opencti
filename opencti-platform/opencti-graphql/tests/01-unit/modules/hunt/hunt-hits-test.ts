@@ -11,7 +11,7 @@ import {
   sha256,
 } from '../../../../src/modules/hunt/hunt-utils';
 import { extractHitObservables } from '../../../../src/modules/hunt/hunt-hit-observations';
-import { buildHuntIncidentContent, HUNT_INCIDENT_RECOMMENDATION, huntIncidentRelatedIds } from '../../../../src/modules/hunt/hunt-incident';
+import { buildHuntIncidentContent, HUNT_INCIDENT_RECOMMENDATION, HUNT_INCIDENT_RECOMMENDATION_DIRECT, huntIncidentRelatedIds } from '../../../../src/modules/hunt/hunt-incident';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun, HuntHit, HuntHitField } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 
@@ -222,6 +222,12 @@ describe('Incident of a hunt run', () => {
     expect(content.description).toContain('host ws-042, user alice, target.process.command_line = powershell -enc AAAA');
     expect(content.description).toContain(HUNT_INCIDENT_RECOMMENDATION);
     expect(content.description).not.toContain('Hunt hypothesis: \n');
+  });
+
+  it('should not mention a draft to validate in the incident a hunt opens directly', () => {
+    const content = buildHuntIncidentContent({ ...hunt, hunt_incident_mode: 'incident' } as BasicStoreEntityHunt, run, null, 'Google SecOps');
+    expect(content.description).toContain(HUNT_INCIDENT_RECOMMENDATION_DIRECT);
+    expect(content.description).not.toContain('draft');
   });
 
   it('should fall back on the window and a medium severity without hits dates nor rule level', () => {

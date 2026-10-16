@@ -27,6 +27,8 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntFormHasLogic,
+  huntEscalationTarget,
+  huntIncidentModeValue,
   huntIncidentSeverityLabel,
   huntMessageText,
   huntVerdictOffersIncident,
@@ -40,6 +42,7 @@ import {
   huntStatusTransitions,
   huntVerdictSeverity,
   huntVerdictSourceLabel,
+  huntWidgetValueLabel,
   isAutonomousHunt,
   isFilterGroupJsonEmpty,
   isHuntableEntityPath,
@@ -79,6 +82,7 @@ describe('Hunt utils', () => {
       expect(huntConnectorSetupDocumentation('crowdstrike-logscale-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#crowdstrike-logscale');
       expect(huntConnectorSetupDocumentation('microsoft-defender-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#microsoft-defender-xdr');
       expect(huntConnectorSetupDocumentation('infrastructure-tracker')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#infrastructure-tracker');
+      expect(huntConnectorSetupDocumentation('sentinelone-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#sentinelone');
     });
 
     it('should open Before you start for any other hunt connector', () => {
@@ -95,6 +99,8 @@ describe('Hunt utils', () => {
       expect(huntPlatformLabel('crowdstrike-logscale', t)).toEqual('CrowdStrike Falcon LogScale');
       expect(huntQueryLanguageLabel('esql', t)).toEqual('ES|QL');
       expect(huntQueryLanguageLabel('yara-l', t)).toEqual('YARA-L');
+      expect(huntPlatformLabel('sentinelone', t)).toEqual('SentinelOne Singularity');
+      expect(huntQueryLanguageLabel('powerquery', t)).toEqual('SentinelOne PowerQuery');
     });
     it('should translate the internet entries only', () => {
       expect(huntPlatformLabel('internet', t)).toEqual('t:Internet');
@@ -261,6 +267,7 @@ describe('Hunt utils', () => {
         benign_patterns: ['svc_backup', 'sccm'],
         escalation_threshold: 5,
         escalate_manual_runs: false,
+        hunt_incident_mode: 'draft',
         hunt_max_results: null,
         huntTargets: ['is-1'],
         huntTechniques: ['ap-1'],
@@ -308,6 +315,21 @@ describe('Hunt utils', () => {
       expect(buildHuntEditPatch(initial, '', { ...initial, escalate_manual_runs: true }, '')).toEqual([{ key: 'escalate_manual_runs', value: [true] }]);
       expect(buildHuntEditPatch({ ...initial, escalate_manual_runs: true }, '', { ...initial, escalate_manual_runs: false }, '')).toEqual([{ key: 'escalate_manual_runs', value: [false] }]);
       expect(buildHuntEditPatch(initial, '', { ...initial }, '')).toEqual([]);
+    });
+
+    it('should open the incidents of a hunt as drafts unless it creates them directly', () => {
+      expect(toHuntAddInput(emptyHuntFormValues(), '').hunt_incident_mode).toEqual('draft');
+      const initial = { ...emptyHuntFormValues(), name: 'APT28 PowerShell' };
+      expect(buildHuntEditPatch(initial, '', { ...initial, hunt_incident_mode: 'incident' }, '')).toEqual([{ key: 'hunt_incident_mode', value: ['incident'] }]);
+      // A hunt stored before the setting existed reads as a draft one
+      expect(huntIncidentModeValue(null)).toEqual('draft');
+      expect(huntIncidentModeValue('incident')).toEqual('incident');
+    });
+
+    it('should say where the hits of an escalated run go, as the incident mode of the hunt sets it', () => {
+      expect(huntEscalationTarget('draft')).toEqual('The hits go to the open incident of this hunt, or to a new incident draft');
+      expect(huntEscalationTarget(null)).toEqual('The hits go to the open incident of this hunt, or to a new incident draft');
+      expect(huntEscalationTarget('incident')).toEqual('The hits go to the open incident of this hunt, or to a new incident');
     });
   });
 
@@ -561,6 +583,20 @@ describe('Hunt utils', () => {
     expect(huntRunTriggerLabel('pir')).toEqual('PIR activation');
     expect(huntVerdictSourceLabel(null)).toEqual('Not recorded');
     expect(huntIncidentSeverityLabel('high')).toEqual('High');
+  });
+
+  it('should name the values of the hunt attributes a widget breaks down on, and leave the other attributes alone', () => {
+    expect(huntWidgetValueLabel('verdict', 'true_positive')).toEqual('True positive');
+    expect(huntWidgetValueLabel('verdict', 'True_positive')).toEqual('True positive');
+    expect(huntWidgetValueLabel('hunt_run_status', 'Timeout')).toEqual('Timed out');
+    expect(huntWidgetValueLabel('hunt_run_trigger', 'playbook')).toEqual('Playbook');
+    expect(huntWidgetValueLabel('hunt_type', 'Telemetry')).toEqual('Detection rule');
+    expect(huntWidgetValueLabel('hunt_type', 'indicators')).toEqual('Indicators');
+    expect(huntWidgetValueLabel('hunt_type', 'Unknown')).toBeNull();
+    expect(huntWidgetValueLabel('hunt_source_kind', 'agent')).toEqual('AI agent');
+    expect(huntWidgetValueLabel('verdict_source', 'analyst')).toEqual('Analyst');
+    expect(huntWidgetValueLabel('hunt_status', 'paused')).toEqual('Paused');
+    expect(huntWidgetValueLabel('incident_type', 'true_positive')).toBeNull();
   });
 
   it('should classify the failure of a run from its status and the class the connector reported', () => {

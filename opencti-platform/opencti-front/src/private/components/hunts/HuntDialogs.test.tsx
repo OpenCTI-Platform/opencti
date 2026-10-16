@@ -102,6 +102,36 @@ describe('Hunt dialogs', () => {
     expect(Array.from(submit.parentElement?.children ?? []).map((action) => action.textContent)).toEqual(['Cancel', 'Plan the hunt']);
   });
 
+  it('shows the native queries the planner wrote for the connected platforms next to the Sigma rule of the proposal', async () => {
+    const { user, relayEnv } = testRender(<HuntPlanDialog open onClose={() => undefined} entityIds={['intrusion-set-1']} />);
+    const submit = await screen.findByTestId('hunt-plan-submit');
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: {
+          huntPlan: {
+            draft_id: 'draft-1',
+            hunt: {
+              id: 'hunt-1',
+              name: 'Encoded PowerShell of APT-X',
+              hypothesis: 'APT-X runs encoded PowerShell on workstations',
+              hunt_type: 'telemetry',
+              sigma_rule: SIGMA_RULE,
+              native_queries: [
+                { platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' },
+                { platform: 'microsoft-sentinel', language: 'kql', query: 'DeviceProcessEvents | where ProcessCommandLine has " -enc "' },
+              ],
+            },
+          },
+        },
+      } as never);
+    });
+    const queries = await screen.findByTestId('hunt-plan-native-queries');
+    expect(within(queries).getByText('Splunk - SPL')).toBeInTheDocument();
+    expect(within(queries).getByText('Microsoft Sentinel - KQL')).toBeInTheDocument();
+  });
+
   it('gives the fields of the guided creation the room of their focus ring', () => {
     testRender(<HuntGuidedCreation kind="sigma" open onClose={() => undefined} />);
     const body = screen.getByRole('dialog').querySelector<HTMLElement>('.overflow-y-auto');
