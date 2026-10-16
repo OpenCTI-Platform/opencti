@@ -166,6 +166,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
       render: ({ hunt_run_status, queue_reason }: HuntRuns_RunFragment$data) => (queue_reason ? (
         <Tooltip>
           <TooltipTrigger asChild>
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
             <span tabIndex={0} aria-label={huntMessageText(queue_reason, t_i18n)} data-testid="hunt-run-queue-reason">
               <HuntRunStatusChip value={hunt_run_status} />
             </span>
@@ -204,6 +205,7 @@ const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
         return (
           <Tooltip>
             <TooltipTrigger asChild>
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
               <span tabIndex={0} data-testid="hunt-run-hits-lower-bound">{t_i18n('At least {count}', { values: { count: n(hits_count) } })}</span>
             </TooltipTrigger>
             <TooltipContent>{huntRunPartialResultsSentence({ hits_count, maxResults: hunt.hunt_max_results }, platform, t_i18n, n)}</TooltipContent>

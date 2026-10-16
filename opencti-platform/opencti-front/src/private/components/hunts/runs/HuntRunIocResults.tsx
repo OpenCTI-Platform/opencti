@@ -160,6 +160,7 @@ const HuntRunIocResults = ({ data }: { data: HuntRunIocResults_run$key }) => {
                     <TooltipTrigger asChild>
                       {/* rounded-sm is the radius of the chip, so the focus ring follows its shape */}
                       <span
+                        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                         tabIndex={0}
                         className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
                         data-testid="hunt-run-ioc-reason"

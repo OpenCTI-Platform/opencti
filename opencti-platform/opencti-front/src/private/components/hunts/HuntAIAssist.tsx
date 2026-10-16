@@ -215,6 +215,7 @@ export const HuntAIAction = ({ request, label, disabled = false, testId }: HuntA
           {/* A disabled button receives no pointer or focus events: its wrapper carries the reason, and the focus ring of
               the button with its rounded-sm radius */}
           <span
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
             tabIndex={0}
             aria-label={`${text} - ${reason}`}
             className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
@@ -275,6 +276,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
   const [edits, setEdits] = useState<HuntAIEdits>({});
   const [elapsed, setElapsed] = useState(0);
   const inFlight = useRef<Disposable | null>(null);
+  const promptRef = useRef<HTMLInputElement>(null);
   const [commit] = useMutation<HuntAIAssistMutation>(huntAIAssistMutation);
   const fallback = t_i18n('XTM One could not write the proposal');
 
@@ -321,6 +323,12 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
     }
     return () => inFlight.current?.dispose();
   }, []);
+
+  useEffect(() => {
+    if (phase === 'prompt') {
+      promptRef.current?.focus();
+    }
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'running') return undefined;
@@ -473,7 +481,7 @@ const HuntAIProposalDialog = ({ request, scope, onClose }: HuntAIProposalDialogP
                 generate();
               }
             }}
-            autoFocus
+            ref={promptRef}
             data-testid="hunt-ai-prompt"
           />
         );

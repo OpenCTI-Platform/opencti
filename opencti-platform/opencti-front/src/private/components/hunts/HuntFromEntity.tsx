@@ -157,6 +157,7 @@ const EmptyDerivation = ({ derived }: { derived: HuntDerived }) => {
   const planDisabledReason = useHuntPlanDisabledReason();
   const [planOpen, setPlanOpen] = useState(false);
   const planButton = (
+    // eslint-disable-next-line jsx-a11y/role-supports-aria-props
     <Button
       priority="secondary"
       size="sm"
