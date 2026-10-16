@@ -307,9 +307,19 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           {({ values, isSubmitting, isValid, setFieldValue }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
-            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
+            // Radix gives every DialogDescription the same id, so the closing reason and validation prompts use it only when no comment prompt precedes them.
             const showComment = wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required;
             const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
+            const closingReasonPrompt = (
+              <>
+                <Text variant="title-sm">{t_i18n('Closing reason')}</Text>
+                <Text variant="content-compact">
+                  {wizard.closingReasonMode === CommentMode.required
+                    ? t_i18n('A closing reason is required before changing the status.')
+                    : t_i18n('You can optionally select a closing reason before changing the status.')}
+                </Text>
+              </>
+            );
             return (
               <Dialog
                 open
@@ -368,14 +378,9 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                         )}
                         {wizard.closingReasonMode && (
                           <div className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-2">
-                              <Text variant="title-sm">{t_i18n('Closing reason')}</Text>
-                              <Text variant="content-compact">
-                                {wizard.closingReasonMode === CommentMode.required
-                                  ? t_i18n('A closing reason is required before changing the status.')
-                                  : t_i18n('You can optionally select a closing reason before changing the status.')}
-                              </Text>
-                            </div>
+                            {showComment
+                              ? <div className="flex flex-col gap-2">{closingReasonPrompt}</div>
+                              : <DialogDescription className="flex flex-col gap-2">{closingReasonPrompt}</DialogDescription>}
                             <OpenVocabField
                               type="closing_reason_ov"
                               name="closingReason"
