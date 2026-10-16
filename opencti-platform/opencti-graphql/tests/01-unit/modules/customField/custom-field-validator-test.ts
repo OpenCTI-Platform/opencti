@@ -980,3 +980,31 @@ describe('foldCustomFieldValuesInputs', () => {
     expect(result).toEqual([{ field_id: 'cf-sectors', select_values: ['a', 'b', 'c'] }, { field_id: 'cf-score', int_value: 42 }]);
   });
 });
+
+describe('decimal custom fields', () => {
+  const DECIMAL = makeDefinition({ id: 'cf-rate', name: 'x_opencti_cf_rate', field_type: 'decimal' });
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    seed(DECIMAL);
+  });
+
+  it('stores a decimal input value in float_value and drops a non numeric one', async () => {
+    const values = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: [0.85] }], ENTITY_TYPE);
+    expect(values).toEqual([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 0.85 }]);
+    const dropped = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: ['high'] }], ENTITY_TYPE);
+    expect(dropped).toEqual([]);
+  });
+
+  it('validates a decimal value', async () => {
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 1.5 }])).resolves.not.toThrow();
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: Number.NaN }])).rejects.toThrow('float_value must be a number');
+  });
+
+  it('parses a decimal default value', () => {
+    const definition = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: '0.5' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', float_value: 0.5 });
+    const invalid = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: 'high' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(invalid, ENTITY_TYPE)).toBeUndefined();
+  });
+});

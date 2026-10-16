@@ -1337,6 +1337,7 @@
   "Decay rules": "Regole di decadimento",
   "Decay Rules | Customization | Settings": "Regole di decadimento | Personalizzazione | Impostazioni",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Le regole di decadimento vengono applicate agli indicatori in ordine di priorità (dal più grande al più piccolo, il più piccolo è 0). Ci sono regole di decadimento integrate applicate per impostazione predefinita che non sono modificabili, puoi aggiungere una regola di decadimento personalizzata e definire il suo ordine di priorità.",
+  "Decimal": "Decimale",
   "Decline": "Declinare",
   "Decline this call": "Rifiuta questa richiesta",
   "Declined": "Rifiutato",
