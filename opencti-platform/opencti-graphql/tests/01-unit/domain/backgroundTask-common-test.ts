@@ -154,8 +154,9 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('A single task cannot perform several actions on the workflow status');
     });
 
-    it('should throw an error if the user has no BYPASS capability', async () => {
-      await expect(checkActionValidity(testContext, userUpdate, buildInput([bypassAction]), scope, type))
+    it.each([true, false])('should throw an error if the user has no BYPASS capability (applyTransitionActions: %s)', async (applyTransitionActions) => {
+      const action = { ...bypassAction, context: { ...bypassAction.context, options: { applyTransitionActions } } };
+      await expect(checkActionValidity(testContext, userUpdate, buildInput([action]), scope, type))
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
