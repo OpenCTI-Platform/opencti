@@ -73,16 +73,19 @@ class TestHunt(TestCase):
             name="Hunt",
             hunt_type="indicators",
             hunt_ioc_filters=filters,
+            hunt_ioc_sort="updated_at_desc",
             hunt_ioc_values=values,
         )
         hunt_input = _variables(opencti)["input"]
         self.assertEqual(hunt_input["hunt_type"], "indicators")
         self.assertEqual(hunt_input["hunt_ioc_filters"], filters)
+        self.assertEqual(hunt_input["hunt_ioc_sort"], "updated_at_desc")
         self.assertEqual(hunt_input["hunt_ioc_values"], values)
 
     def test_default_fields_read_the_indicator_hunt_definition(self):
         properties = Hunt(_opencti({})).properties
         self.assertIn("hunt_ioc_filters", properties)
+        self.assertIn("hunt_ioc_sort", properties)
         self.assertIn("hunt_ioc_values {", properties)
         self.assertIn("observable_type", properties)
 

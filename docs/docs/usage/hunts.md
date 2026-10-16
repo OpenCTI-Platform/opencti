@@ -296,7 +296,7 @@ A pack hunt keeps its markings and the organizations it is restricted to. Its re
 
 ## Automation
 
-Hunts can run on a schedule, react to new knowledge, be armed by Priority Intelligence Requirements and be orchestrated by playbooks. See [Hunt automation](hunt-automation.md).
+Hunts can run on a schedule, react to new knowledge and be orchestrated by playbooks, for example on what a Priority Intelligence Requirement flags. See [Hunt automation](hunt-automation.md).
 
 ## Access rights
 
