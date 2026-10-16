@@ -578,7 +578,8 @@ export const layoutLaneRows = (items: LaneLayoutItem[], gap = 4): { rows: Map<st
 };
 // endregion
 
-const LONG_TOKEN_LENGTH = 24;
+// An MD5 or a domain of up to 32 characters still fits the title of the drawer after a prefix such as "Indicator validity:"
+const LONG_TOKEN_LENGTH = 32;
 const LONG_TOKEN_KEPT = 8;
 
 /**

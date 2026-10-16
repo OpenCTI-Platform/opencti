@@ -371,7 +371,9 @@ describe('Timeline titles', () => {
   it('should crop the values too long to fit a line to their start and end', () => {
     expect(cropLongTokens('Indicator abcdefghijklmnopqrstuvwxyz0123456789 valid')).toEqual('Indicator abcdefgh...23456789 valid');
     expect(cropLongTokens('short words only')).toEqual('short words only');
-    expect(cropLongTokens('x'.repeat(24))).toEqual('x'.repeat(24));
+    expect(cropLongTokens('x'.repeat(32))).toEqual('x'.repeat(32));
+    expect(cropLongTokens('Indicator validity: 5d41402abc4b2a76b9719d911017c592')).toEqual('Indicator validity: 5d41402abc4b2a76b9719d911017c592');
+    expect(cropLongTokens('Indicator validity: login-microsoftonline-secure.com')).toEqual('Indicator validity: login-microsoftonline-secure.com');
   });
 });
 
