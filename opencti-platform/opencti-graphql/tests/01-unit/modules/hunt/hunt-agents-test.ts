@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildHuntAssistRequest,
+  buildHuntSourceText,
   classifyXtmCallFailure,
   draftNativeQueries,
   extractJsonObject,
+  HUNT_SOURCE_TEXT_MAX_LENGTH,
   type HuntAssistDraft,
   huntAgentRefusalErrors,
   huntAssistHasSubject,
+  huntPlanProposals,
   pickHuntAssistance,
   resolveHuntAssistTarget,
   validateHuntAssistDraft,
+  validateHuntPlanProposals,
   validateHuntPlanSpec,
   validateHuntTriageResult,
 } from '../../../../src/modules/hunt/hunt-agents';
@@ -83,6 +87,59 @@ describe('Hunt planner answers', () => {
     expect(() => validateHuntPlanSpec(planAnswer({ native_queries: [{ platform: 'nowhere', language: 'x', query: 'y' }] }), [])).toThrow('platform must be one of');
     expect(() => validateHuntPlanSpec(planAnswer({ native_queries: [{ platform: 'internet', language: 'internet', query: 'services.port: 443' }] }), []))
       .toThrow('platform must be one of');
+  });
+
+  it('should keep the native queries of the platforms and languages of the request only', () => {
+    const answer = planAnswer({
+      native_queries: [
+        { platform: 'splunk', language: 'spl', query: 'index=edr process=rundll32.exe' },
+        { platform: 'microsoft-sentinel', language: 'kql', query: 'DeviceProcessEvents | where FileName == "rundll32.exe"' },
+        { platform: 'elastic-security', language: 'eql', query: 'process where process.name == "rundll32.exe"' },
+      ],
+    });
+    const platforms = [{ platform: 'splunk', languages: ['spl'] }, { platform: 'microsoft-sentinel', languages: ['esql'] }];
+    expect(validateHuntPlanSpec(answer, [], platforms).native_queries.map((query) => query.platform)).toEqual(['splunk']);
+    expect(validateHuntPlanSpec(answer, []).native_queries).toHaveLength(3);
+    // A plan whose only logic is a query for a platform the request does not list cannot run
+    expect(() => validateHuntPlanSpec(planAnswer({ sigma_rule: '', native_queries: [{ platform: 'microsoft-sentinel', language: 'kql', query: 'x' }] }), [], platforms))
+      .toThrow('Add a Sigma rule or a native query');
+  });
+
+  it('should read the proposals of an answer, and a bare plan as the only proposal', () => {
+    const first = planAnswer({ name: 'First hunt' });
+    const second = planAnswer({ name: 'Second hunt', hypothesis: 'If APT-X is active, regsvr32 loads a remote scriptlet' });
+    expect(huntPlanProposals({ proposals: [first, second] })).toEqual([first, second]);
+    expect(huntPlanProposals(first)).toEqual([first]);
+    expect(validateHuntPlanProposals({ proposals: [first, second] }, [], null, 3).map((plan) => plan.name)).toEqual(['First hunt', 'Second hunt']);
+    expect(validateHuntPlanProposals(first, [], null, 3).map((plan) => plan.name)).toEqual(['First hunt']);
+    // The dialog asks for one plan: the first valid one
+    expect(validateHuntPlanProposals({ proposals: [first, second] }, [], null, 1).map((plan) => plan.name)).toEqual(['First hunt']);
+  });
+
+  it('should drop the invalid proposals, and fail only when none is valid', () => {
+    const valid = planAnswer({ name: 'Valid hunt' });
+    const invalid = planAnswer({ name: 'Invalid hunt', sigma_rule: 'title: broken' });
+    expect(validateHuntPlanProposals({ proposals: [invalid, valid] }, [], null, 3).map((plan) => plan.name)).toEqual(['Valid hunt']);
+    expect(() => validateHuntPlanProposals({ proposals: [invalid] }, [], null, 3)).toThrow('invalid Sigma rule');
+    expect(failureOf(() => validateHuntPlanProposals({ proposals: [] }, [], null, 3))).toEqual('XTM_ONE_INVALID_ANSWER');
+  });
+});
+
+describe('Hunt source text', () => {
+  it('should join the name, description and content of an entity as text', () => {
+    const text = buildHuntSourceText({
+      name: 'Operation Night Owl',
+      description: 'A campaign against   energy companies.',
+      content: '<h1>Summary</h1><p>The actor uses <b>rundll32</b> &amp; scheduled tasks.</p><script>alert(1)</script><p>Second&nbsp;paragraph</p>',
+    });
+    expect(text).toEqual('Operation Night Owl\n\nA campaign against energy companies.\n\nSummary\nThe actor uses rundll32 & scheduled tasks.\nSecond paragraph');
+    expect(buildHuntSourceText({ name: 'Only a name', description: null })).toEqual('Only a name');
+  });
+
+  it('should cut a long text on a word, within the limit', () => {
+    const text = buildHuntSourceText({ name: 'Report', description: 'word '.repeat(HUNT_SOURCE_TEXT_MAX_LENGTH) });
+    expect(text.length).toBeLessThanOrEqual(HUNT_SOURCE_TEXT_MAX_LENGTH);
+    expect(text.endsWith('word')).toBe(true);
   });
 });
 

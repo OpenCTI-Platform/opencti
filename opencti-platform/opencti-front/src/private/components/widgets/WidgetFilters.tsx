@@ -3,7 +3,13 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmptyShallow, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import {
+  isDraftWorkspaceFilterGroup,
+  isFilterGroupNotEmptyShallow,
+  useAvailableFilterKeysForEntityTypes,
+  WIDGET_INTERNAL_ENTITY_TYPES,
+  widgetInternalEntityTypes,
+} from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
@@ -80,12 +86,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
       'DraftWorkspace',
-      'Hunt-Run',
+      ...WIDGET_INTERNAL_ENTITY_TYPES,
     ];
     const isDraftWorkspaceOnly = isDraftWorkspaceFilterGroup(filters);
     searchContext = isDraftWorkspaceOnly
       ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
-      : { entityTypes: ['Stix-Core-Object'] };
+      : { entityTypes: ['Stix-Core-Object', ...widgetInternalEntityTypes(filters)] };
     savedFiltersScope = 'Stix-Core-Object';
   }
 

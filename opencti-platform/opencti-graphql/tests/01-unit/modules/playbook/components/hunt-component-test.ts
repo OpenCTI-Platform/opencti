@@ -11,13 +11,14 @@ import { createHuntRuns, designateHuntPlaybookLeader } from '../../../../../src/
 import { findPlaybookHuntRuns, resumeHuntPlaybookStep } from '../../../../../src/modules/hunt/hunt-playbook';
 import {
   PLAYBOOK_HUNT_COMPONENT,
+  PLAYBOOK_HUNT_SOURCE_AGENT,
   PLAYBOOK_HUNT_SOURCE_DERIVED,
   resolvePlaybookHunts,
   writePlaybookDefinitionHuntSteps,
   writePlaybookHuntStep,
 } from '../../../../../src/modules/playbook/components/hunt-component';
 import { deriveHuntContent } from '../../../../../src/modules/hunt/hunt-derivation';
-import { addHunt } from '../../../../../src/modules/hunt/hunt-domain';
+import { addHunt, planAgentHunts } from '../../../../../src/modules/hunt/hunt-domain';
 import { RELATION_OBJECT_MARKING } from '../../../../../src/schema/stixRefRelationship';
 import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
@@ -63,6 +64,7 @@ vi.mock('../../../../../src/modules/hunt/hunt-derivation', async (importOriginal
 vi.mock('../../../../../src/modules/hunt/hunt-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../../src/modules/hunt/hunt-domain')>(),
   addHunt: vi.fn(),
+  planAgentHunts: vi.fn(),
 }));
 
 vi.mock('../../../../../src/modules/hunt/huntRun/huntRun-domain', async (importOriginal) => ({
@@ -273,6 +275,7 @@ describe('Run hunts playbook step deriving a hunt from each element', () => {
     vi.mocked(topEntitiesList).mockReset();
     vi.mocked(addHunt).mockReset();
     vi.mocked(deriveHuntContent).mockReset();
+    vi.mocked(planAgentHunts).mockReset();
   });
 
   it('should create the hunt of a report with its markings, and run it', async () => {
@@ -311,5 +314,32 @@ describe('Run hunts playbook step deriving a hunt from each element', () => {
     vi.mocked(storeLoadById).mockImplementation((async (_context: AuthContext, user: AuthUser) => (user === HUNT_MANAGER_USER ? active : null)) as never);
     await expect(resolvePlaybookHunts(context, [element], step)).resolves.toEqual([]);
     expect(addHunt).not.toHaveBeenCalled();
+  });
+
+  it('should ask the planner for the hunts of an element from which no hunt derives, with the agent source only', async () => {
+    const agentStep = { ...step, hunt_source: PLAYBOOK_HUNT_SOURCE_AGENT, max_hunts: 2 } as Parameters<typeof resolvePlaybookHunts>[2];
+    const planned = { internal_id: 'hunt-agent-1', name: 'Planned hunt', hunt_status: 'active' };
+    vi.mocked(findByIds).mockResolvedValue([report] as never);
+    vi.mocked(deriveHuntContent).mockResolvedValue(null);
+    vi.mocked(planAgentHunts).mockResolvedValue([planned] as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([planned] as never);
+    await expect(resolvePlaybookHunts(context, [element], agentStep)).resolves.toEqual([planned]);
+    expect(planAgentHunts).toHaveBeenCalledWith(context, expect.objectContaining({ id: 'user-1' }), report, 2);
+    const filters = vi.mocked(topEntitiesList).mock.calls[0][3]?.filters as { filters: { key: string[]; values: string[] }[] };
+    expect(filters.filters).toEqual(expect.arrayContaining([{ key: ['id'], values: ['hunt-agent-1'] }]));
+    // The derived source never asks the planner
+    vi.mocked(planAgentHunts).mockClear();
+    await resolvePlaybookHunts(context, [element], step);
+    expect(planAgentHunts).not.toHaveBeenCalled();
+  });
+
+  it('should run the derived hunt of an element holding indicators without asking the planner, with the agent source', async () => {
+    const agentStep = { ...step, hunt_source: PLAYBOOK_HUNT_SOURCE_AGENT } as Parameters<typeof resolvePlaybookHunts>[2];
+    vi.mocked(findByIds).mockResolvedValue([report] as never);
+    vi.mocked(deriveHuntContent).mockResolvedValue(derived as never);
+    vi.mocked(storeLoadById).mockResolvedValue(active as never);
+    vi.mocked(topEntitiesList).mockResolvedValue([active] as never);
+    await expect(resolvePlaybookHunts(context, [element], agentStep)).resolves.toEqual([active]);
+    expect(planAgentHunts).not.toHaveBeenCalled();
   });
 });

@@ -144,6 +144,21 @@ describe('Hunt connectors and their security platforms', () => {
     expect(addSecurityPlatform).not.toHaveBeenCalled();
   });
 
+  it('should give the security platform a registration creates the type of its hunt platform when the connector names none', async () => {
+    const sentinelOne = connector('connector-s1', 'sentinelone', null);
+    serving([sentinelOne]);
+    loadingRegistration(sentinelOne, null);
+    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-s1' } as never);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...sentinelOne, ...patch } }) as never);
+    await registering({ connector_id: sentinelOne.internal_id, platform: 'sentinelone', languages: ['powerquery'], security_platform_name: 'Singularity' });
+    expect(addSecurityPlatform).toHaveBeenCalledWith(testContext, ADMIN_USER, { name: 'Singularity', security_platform_type: 'EDR' });
+    vi.mocked(addSecurityPlatform).mockClear();
+    serving([SPLUNK_PROD]);
+    loadingRegistration(SPLUNK_PROD, null);
+    await registering({ security_platform_name: 'Prod SIEM' });
+    expect(addSecurityPlatform).toHaveBeenCalledWith(testContext, ADMIN_USER, { name: 'Prod SIEM', security_platform_type: 'SIEM' });
+  });
+
   it('should check and bind a connector under a lock per security platform, then under its dispatch lock', async () => {
     serving([SPLUNK_PROD]);
     loadingRegistration(SPLUNK_PROD, { internal_id: 'platform-prod' });

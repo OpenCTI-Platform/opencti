@@ -4,7 +4,8 @@ import { type ModuleDefinition, registerDefinition } from '../../../schema/modul
 import { createdAt, creators, updatedAt } from '../../../schema/attribute-definition';
 import { objectMarking, objectOrganization } from '../../../schema/stixRefRelationship';
 import convertHuntRunToStix from './huntRun-converter';
-import { ENTITY_TYPE_HUNT } from '../hunt-types';
+import { ENTITY_TYPE_HUNT, HUNT_SOURCE_KINDS, HUNT_TYPES } from '../hunt-types';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
 import {
@@ -34,12 +35,15 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     creators,
     createdAt,
     updatedAt,
-    { name: 'hunt_id', label: 'Run hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_id', label: 'Hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_type', label: 'Hunt type', type: 'string', format: 'enum', values: HUNT_TYPES, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_source_kind', label: 'Hunt origin', type: 'string', format: 'enum', values: HUNT_SOURCE_KINDS, mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_technique_ids', label: 'Run techniques', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_ATTACK_PATTERN], mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'hunt_orphaned', label: 'Run of a deleted hunt', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_status', label: 'Hunt run status', type: 'string', format: 'enum', values: HUNT_RUN_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_trigger', label: 'Hunt run trigger', type: 'string', format: 'enum', values: HUNT_RUN_TRIGGERS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_mode', label: 'Run mode', type: 'string', format: 'enum', values: HUNT_RUN_MODES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'security_platform_id', label: 'Run security platform', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'security_platform_id', label: 'Security platform', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_id', label: 'Run connector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_name', label: 'Run connector name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // The user the connector ran as when the run was dispatched: only that identity reports the run and reads its results
@@ -90,6 +94,7 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'started_at', label: 'Run start date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'completed_at', label: 'Run completion date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'cost_ms', label: 'Run duration (ms)', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'queries_count', label: 'Run queries sent', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'error_message', label: 'Run error', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'failure_retryable', label: 'Run failure retryable', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_logic_fingerprint', label: 'Run hunt logic fingerprint', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

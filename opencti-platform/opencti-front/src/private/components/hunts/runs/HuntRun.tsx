@@ -37,6 +37,7 @@ import {
   HUNT_ANALYST_VERDICTS,
   HUNT_DOCS,
   huntDraftWorkspacePath,
+  huntEscalationTarget,
   huntIncidentSeverityLabel,
   huntMessageText,
   huntQueryLanguageLabel,
@@ -76,6 +77,7 @@ const huntRunFragment = graphql`
       name
       hunt_status
       hunt_max_results
+      hunt_incident_mode
     }
     hunt_run_status
     hunt_run_trigger
@@ -147,6 +149,7 @@ const huntRunFragment = graphql`
     started_at
     completed_at
     cost_ms
+    queries_count
     error_message
     playbook_id
     created_at
@@ -278,6 +281,7 @@ const RunDetails = ({ run, columns }: { run: Run; columns: 2 | 4 }) => {
     { key: 'triggered_by', label: t_i18n('Triggered by'), value: run.triggeredBy?.name },
     { key: 'started', label: t_i18n('Started'), value: date(run.started_at) },
     { key: 'duration', label: t_i18n('Duration'), value: formatHuntRunDuration(run.cost_ms) },
+    { key: 'queries', label: t_i18n('Queries sent'), value: count(run.queries_count) },
     {
       key: 'hits',
       label: t_i18n('Hits'),
@@ -534,7 +538,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                         name="create_incident"
                         label={t_i18n('Escalate to an incident')}
                         helpertext={values.create_incident
-                          ? t_i18n('The hits go to the open incident of this hunt, or to a new incident draft')
+                          ? t_i18n(huntEscalationTarget(run.hunt?.hunt_incident_mode))
                           : t_i18n('Only the verdict is recorded')}
                       />
                     </div>

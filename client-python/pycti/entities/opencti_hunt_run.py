@@ -192,6 +192,8 @@ class HuntRun:
         :param translated_query: (optional) the query executed on the platform
         :param query_language: (optional) the language of the query
         :param cost_ms: (optional) execution duration in milliseconds
+        :param queries_count: (optional) the queries the run sent to its platform, which count against the
+            quotas of the platform
         :param result_ids: (optional) STIX ids of the result bundle objects
         :param error: (optional) the error of a failed run
         :param truncated: (optional) True when the platform returned partial results (the hits count is then a
@@ -268,6 +270,8 @@ class HuntRun:
             report_input["observations"] = list(kwargs.get("observations"))
         if kwargs.get("retryable", None) is not None:
             report_input["retryable"] = bool(kwargs.get("retryable"))
+        if kwargs.get("queries_count", None) is not None:
+            report_input["queries_count"] = int(kwargs.get("queries_count"))
         result = self.opencti.query(query, {"id": id, "input": report_input})
         return result["data"]["huntRunReport"]
 

@@ -4,7 +4,7 @@ import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
+import { HUNT_INCIDENT_MODE_DRAFT, HUNT_INCIDENT_MODE_INCIDENT, HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence, HuntHit, HuntRuleResult } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
@@ -23,6 +23,10 @@ export const huntCountSetting = (setting: unknown, fallback: number, min = 1): n
   return Number.isFinite(value) && value >= min ? value : fallback;
 };
 const countConf = (key: string, fallback: number, min = 1): number => huntCountSetting(conf.get(key), fallback, min);
+
+// What a playbook hunt step does with the hunts the planner proposes: propose them for review, or create them active
+export const HUNT_AGENT_AUTONOMY_PROPOSE = 'propose';
+export const HUNT_AGENT_AUTONOMY_RUN = 'run';
 
 export const HUNT_CONFIG = {
   enabled: booleanConf('hunt_manager:enabled', true),
@@ -55,6 +59,7 @@ export const HUNT_CONFIG = {
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
   previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
   maxHitRecordsPurgedPerTick: countConf('hunt_manager:max_hit_records_purged_per_tick', 10000),
+  agentHuntAutonomy: conf.get('hunt_manager:agent_hunt_autonomy') === HUNT_AGENT_AUTONOMY_RUN ? HUNT_AGENT_AUTONOMY_RUN : HUNT_AGENT_AUTONOMY_PROPOSE,
   scheduleLookbackMinutes: Number.isFinite(Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     ? Math.max(0, Number(conf.get('hunt_manager:schedule_lookback_minutes')))
     : 15,
@@ -143,6 +148,11 @@ export const shareAccessDecision = <T>(key: string, compute: () => Promise<T>): 
 };
 
 export const sha256 = (value: string) => createHash('sha256').update(value, 'utf8').digest('hex');
+
+/** How a hunt opens the incident of a run: a draft unless it was set to open the incident itself (hunts created before the choice open drafts). */
+export const huntIncidentMode = (hunt: { hunt_incident_mode?: string | null }) => {
+  return hunt.hunt_incident_mode === HUNT_INCIDENT_MODE_INCIDENT ? HUNT_INCIDENT_MODE_INCIDENT : HUNT_INCIDENT_MODE_DRAFT;
+};
 
 export const truncate = (value: string, maxLength: number) => {
   if (value.length <= maxLength) {

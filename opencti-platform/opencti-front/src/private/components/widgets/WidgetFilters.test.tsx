@@ -80,6 +80,8 @@ vi.mock('src/components/saved_filters/WidgetSavedFiltersIcon', () => ({
   ),
 }));
 
+const { filterKeyContexts } = vi.hoisted(() => ({ filterKeyContexts: [] as string[][] }));
+
 vi.mock('../../../utils/filters/filtersUtils', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../utils/filters/filtersUtils')>();
   return {
@@ -95,6 +97,7 @@ vi.mock('../../../utils/filters/filtersUtils', async (importOriginal) => {
       });
     },
     useAvailableFilterKeysForEntityTypes: (entityTypes: string[]) => {
+      filterKeyContexts.push(entityTypes);
       if (entityTypes.includes('DraftWorkspace')) {
         return ['name', 'created_at', 'workflowInstanceCurrentState'];
       }
@@ -172,6 +175,27 @@ describe('WidgetFilters', () => {
       createRenderOptions(),
     );
     expect(getByTestId('filters')).toBeTruthy();
+  });
+
+  it('offers the filter keys of hunt runs and hit records once their type is selected', () => {
+    filterKeyContexts.length = 0;
+    testRender(
+      <WidgetFilters
+        perspective="entities"
+        type="number"
+        dataSelection={{
+          ...baseDataSelection,
+          filters: {
+            mode: 'and',
+            filters: [{ key: 'entity_type', values: ['Hunt-Run', 'Hunt-Hit-Record'], operator: 'eq', mode: 'or' }],
+            filterGroups: [],
+          },
+        }}
+        setDataSelection={vi.fn()}
+      />,
+      createRenderOptions(),
+    );
+    expect(filterKeyContexts).toContainEqual(['Stix-Core-Object', 'Hunt-Run', 'Hunt-Hit-Record']);
   });
 
   it('keeps custom filters in local state when switching to saved mode and restores them when returning to custom mode', () => {

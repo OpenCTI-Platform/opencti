@@ -14,11 +14,11 @@ import { findByType as findStatusesByType } from '../../domain/status';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
-import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
+import { type BasicStoreEntityHunt, HUNT_INCIDENT_MODE_INCIDENT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, type HuntHit } from './huntRun/huntRun-types';
 import { isReadableByReadersOf } from './hunt-iocs';
 import { validateSigmaRule } from './hunt-sigma';
-import { truncate } from './hunt-utils';
+import { huntIncidentMode, truncate } from './hunt-utils';
 
 const INCIDENT_SEVERITIES = ['low', 'medium', 'high', 'critical'];
 // Sigma levels as incident severities: an informational rule raises a low one
@@ -28,6 +28,8 @@ const DESCRIPTION_TOP_VALUES = 5;
 // The incidents hunts open have their own type, to filter and count them
 export const HUNT_INCIDENT_TYPE = 'hunting';
 export const HUNT_INCIDENT_RECOMMENDATION = 'Recommendation: Run Case Autopilot on this incident once the draft is validated, to investigate the hits listed above, '
+  + 'the observables and observed data it is related to, and their attribution.';
+export const HUNT_INCIDENT_RECOMMENDATION_DIRECT = 'Recommendation: Run Case Autopilot on this incident to investigate the hits listed above, '
   + 'the observables and observed data it is related to, and their attribution.';
 
 export interface HuntIncidentProposal {
@@ -161,7 +163,7 @@ export const buildHuntIncidentContent = (
     sections.push('The connector reported no single hit: the evidence of the hunt run lists the matched values.');
   }
   // Hunts never investigate: the deeper look is the job of Case Autopilot, run by the analyst or a playbook
-  sections.push(HUNT_INCIDENT_RECOMMENDATION);
+  sections.push(huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT ? HUNT_INCIDENT_RECOMMENDATION_DIRECT : HUNT_INCIDENT_RECOMMENDATION);
   return {
     name: truncate(proposal?.name?.trim() || `${hunt.name} - ${run.hits_count ?? 0} hits`, 250),
     description: sections.join('\n\n'),
@@ -189,18 +191,19 @@ export const huntIncidentStixId = (run: Pick<BasicStoreEntityHuntRun, 'internal_
 };
 
 /**
- * Creates the Incident of a hunt run in its draft workspace. The incident carries the markings and organizations of
- * the run (those of the hunt and of its security platform), the hunt author, and is related to what the run hunted
- * and found (huntIncidentRelatedIds).
+ * Creates the Incident of a hunt run in its draft workspace, or in the knowledge without a draft (a hunt that opens its
+ * incidents directly). The incident carries the markings and organizations of the run (those of the hunt and of its
+ * security platform), the hunt author, and is related to what the run hunted and found (huntIncidentRelatedIds). Its
+ * STIX id is that of the run, so that a later attempt updates the incident an interrupted one created.
  */
 export const createHuntIncidentInWorkspace = async (
   context: AuthContext,
   hunt: BasicStoreEntityHunt,
   run: BasicStoreEntityHuntRun,
   proposal: HuntIncidentProposal | null,
-  draftId: string,
+  draftId: string | null,
 ): Promise<{ incidentId: string; incidentStixId: string }> => {
-  const draftContext: AuthContext = { ...context, draft_context: draftId };
+  const draftContext: AuthContext = draftId ? { ...context, draft_context: draftId } : context;
   const platform = run.security_platform_id ? await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null;
   const content = buildHuntIncidentContent(hunt, run, proposal, platform?.name ?? null);
   const incidentInput: Record<string, unknown> = {

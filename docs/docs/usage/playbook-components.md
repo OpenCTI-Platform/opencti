@@ -225,7 +225,7 @@ This component routes the bundle on the outcome of the hunts run earlier in the 
 - ***Verdicts***: the bundle matches when a run has one of the selected verdicts (any verdict when empty).
 - ***Use the verdicts proposed by the triage agent***: for the runs still pending, the verdict proposed by the triage agent is used.
 - ***Minimum number of hits***: over the runs of the execution.
-- ***Only when an incident draft was opened***.
+- ***Only when an incident was opened***, as a draft or directly, as the hunt sets it.
 
 ***Routes:***
 
@@ -293,7 +293,7 @@ Add filters to control which elements in your bundle the action defined in the c
 ***Component details***
 
 - ***Hunts***: ***Run existing hunts*** [default], or ***Derive a hunt from each element***: the hunt "Hunt this" proposes for each element is created (or found again by its name) and run. See [Hunt automation](hunt-automation.md#hunt-every-new-report).
-- ***Hunts to run***: with existing hunts, a fixed list of hunts. When empty, the active hunts targeting the threats, techniques and indicators of the elements are run.
+- ***Existing hunts to run***: with ***Run existing hunts*** only, the other sources ignore it: a fixed list of hunts. When empty, the active hunts targeting the threats, techniques and indicators of the elements are run.
 - ***Security platforms***: when empty, each hunt runs on its own scope.
 - ***Time window***: in hours, 0 to use the window of each hunt.
 - ***Maximum number of hunts per execution***.

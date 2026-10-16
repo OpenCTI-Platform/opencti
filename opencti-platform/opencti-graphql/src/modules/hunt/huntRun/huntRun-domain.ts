@@ -54,6 +54,8 @@ import { resolveAgentJwtUser } from '../../playbook/components/ai-agent-shared';
 import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
+  HUNT_INCIDENT_MODE_INCIDENT,
+  HUNT_PLATFORM_SECURITY_TYPES,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
@@ -66,6 +68,7 @@ import {
   clampInteger,
   HUNT_CONFIG,
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
+  huntIncidentMode,
   huntRunRestrictions,
   huntHitDates,
   huntSigmaRules,
@@ -107,7 +110,7 @@ import {
 } from '../hunt-incident';
 import { createHuntHitObservations } from '../hunt-hit-observations';
 import { huntSightedIdsByHit, resolveHuntSightingTargets, upsertHuntSightings } from '../hunt-sightings';
-import { findHitKeysNewOnPlatform, isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
+import { findHitKeysNewOnPlatform, huntContextOfRun, isHuntRunRemembered, recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -544,6 +547,9 @@ const createHuntRunsOnTargets = async (context: AuthContext, hunt: BasicStoreEnt
     }
     const runInput = {
       hunt_id: hunt.internal_id,
+      hunt_type: hunt.hunt_type,
+      hunt_source_kind: hunt.hunt_source_kind ?? null,
+      hunt_technique_ids: hunt[RELATION_HUNT_TECHNIQUES] ?? [],
       hunt_run_status: HUNT_RUN_STATUS_QUEUED,
       hunt_run_trigger: request.trigger,
       hunt_run_mode: mode,
@@ -880,8 +886,9 @@ const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Pro
 
 /**
  * The incident of a run: the hits go to the incident still open from a previous run of the hunt on the same platform
- * (in its draft when not validated yet), else a new incident draft is opened. A draft recorded by an interrupted
- * finalization is reused rather than doubled. The run records the incident, and whether it continued an open one.
+ * (in its draft when not validated yet), else a new incident draft is opened, or the incident itself when the hunt opens
+ * its incidents directly. A draft recorded by an interrupted finalization is reused rather than doubled. The run records
+ * the incident, and whether it continued an open one.
  */
 const escalateHuntRun = async (
   context: AuthContext,
@@ -893,6 +900,10 @@ const escalateHuntRun = async (
   if (open) {
     await continueHuntIncident(context, hunt, run, open);
     return patchHuntRun(context, run, { incident_id: open.incidentId, incident_stix_id: open.incidentStixId, draft_id: open.draftId, incident_continued: true });
+  }
+  if (!run.draft_id && huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT) {
+    const { incidentId, incidentStixId } = await createHuntIncidentInWorkspace(context, hunt, run, proposal, null);
+    return patchHuntRun(context, run, { incident_id: incidentId, incident_stix_id: incidentStixId, incident_continued: false });
   }
   const current = run.draft_id ? run : await createHuntIncidentWorkspace(context, run, (draftId) => patchHuntRun(context, run, { draft_id: draftId }));
   const { incidentId, incidentStixId } = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
@@ -1338,6 +1349,7 @@ const recordReportedHits = async (
       sightedIdsByHit,
       seenAt: reportedAt,
       objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
+      huntContext: huntContextOfRun(run),
     });
     const { newHits, recurringHits } = splitHitsByKeys(hits.count, newCount, recurringCount);
     return { hits_identified: true, hits_new_count: newHits, hits_recurring_count: recurringHits };
@@ -1440,6 +1452,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   const ruleResults = sanitizeRuleResults(input.rule_results as never);
   if (ruleResults) {
     patch.rule_results = ruleResults;
+  }
+  // The queries a run sent count against the quotas of its platform, whatever its outcome
+  if (typeof input.queries_count === 'number' && Number.isFinite(input.queries_count)) {
+    patch.queries_count = Math.max(0, Math.round(input.queries_count));
   }
   if (status === HUNT_RUN_STATUS_COMPLETED) {
     patch.completed_at = reportedAt;
@@ -1695,6 +1711,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           keepKnown: !await isHuntRunRemembered(context, current),
           uncountedOnly: true,
           objectMarking: current[RELATION_OBJECT_MARKING] ?? [],
+          huntContext: huntContextOfRun(current),
         };
         // The run takes its hits before the records count them for it: evidence sent again after a failed patch finds
         // its hits uncounted and counts them, never leaving them out as counted already
@@ -1798,6 +1815,11 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
           patch.incident_id = open.incidentId;
           patch.incident_stix_id = open.incidentStixId;
           patch.incident_continued = true;
+        } else if (!current.draft_id && huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT) {
+          const created = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), null);
+          patch.incident_id = created.incidentId;
+          patch.incident_stix_id = created.incidentStixId;
+          patch.incident_continued = false;
         } else {
           // A draft recorded by an interrupted finalization or verdict is reused rather than doubled
           const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current, async (opened) => {
@@ -1966,7 +1988,8 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
       }
       let securityPlatformId: string | null = existing?.internal_id ?? null;
       if (!existing) {
-        const created = await addSecurityPlatform(context, user, { name, security_platform_type: input.security_platform_type ?? 'SIEM' });
+        const securityPlatformType = input.security_platform_type ?? HUNT_PLATFORM_SECURITY_TYPES[platform] ?? 'SIEM';
+        const created = await addSecurityPlatform(context, user, { name, security_platform_type: securityPlatformType });
         securityPlatformId = (created as BasicStoreEntitySecurityPlatform).internal_id;
       }
       const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {

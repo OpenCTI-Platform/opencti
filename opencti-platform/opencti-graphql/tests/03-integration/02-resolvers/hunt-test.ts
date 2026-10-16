@@ -12,7 +12,13 @@ import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
 import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+} from '../../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { addObservedData } from '../../../src/domain/observedData';
 import { addStixSightingRelationship } from '../../../src/domain/stixSightingRelationship';
@@ -22,7 +28,7 @@ import { redisSetConnectorHeartbeat } from '../../../src/modules/connector/conne
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import type { BasicStoreEntityConnector } from '../../../src/modules/connector/connector-types';
 import { importHuntPack, loadHuntPlanEntities, resolveHuntPlanPlatformIds } from '../../../src/modules/hunt/hunt-domain';
-import { HUNT_INCIDENT_RECOMMENDATION } from '../../../src/modules/hunt/hunt-incident';
+import { HUNT_INCIDENT_RECOMMENDATION, HUNT_INCIDENT_RECOMMENDATION_DIRECT } from '../../../src/modules/hunt/hunt-incident';
 import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
 import { HUNT_MANAGER_USER } from '../../../src/utils/access';
 import { finalizeInterruptedHuntRuns } from '../../../src/modules/hunt/hunt-automation';
@@ -57,6 +63,7 @@ const HUNT_FIELDS = `
   hunt_source_kind
   hunt_schedule
   escalation_threshold
+  hunt_incident_mode
   next_run_at
   sigmaValidation { valid errors title detection_fields attack_techniques }
   huntTechniques { id x_mitre_id }
@@ -73,6 +80,7 @@ const RUN_FIELDS = `
   security_platform_id
   dispatched_at
   hits_count
+  queries_count
   results_truncated
   translated_query
   verdict
@@ -343,6 +351,8 @@ describe('Hunt resolvers', () => {
     expect(created.hunt_status).toEqual('active');
     expect(created.hunt_source_kind).toEqual('analyst');
     expect(created.hunt_schedule).toEqual('manual');
+    // Incidents open as drafts an analyst validates unless the hunt is set to create them
+    expect(created.hunt_incident_mode).toEqual('draft');
     expect(created.next_run_at).toBeNull();
     expect(created.sigmaValidation.valid).toBe(true);
     expect(created.huntTechniques.map((t: { x_mitre_id: string }) => t.x_mitre_id)).toEqual([TECHNIQUE_MITRE_ID]);
@@ -392,6 +402,10 @@ describe('Hunt resolvers', () => {
     expect(run.connector_id).toEqual(CONNECTOR_ID);
     expect(run.security_platform_id).toEqual(securityPlatformId);
     expect(run.verdict).toEqual('pending');
+    // The run keeps the type and the origin of its hunt, for the dashboard widgets filtering runs on them
+    const stored = await internalLoadById<BasicStoreEntity & { hunt_type?: string; hunt_source_kind?: string }>(testContext, ADMIN_USER, run.id, { type: ENTITY_TYPE_HUNT_RUN });
+    expect(stored.hunt_type).toEqual('telemetry');
+    expect(stored.hunt_source_kind).toEqual('analyst');
   });
 
   it('should refuse to create, change, run and triage hunts to a role updating the knowledge without the hunt capability', async () => {
@@ -472,9 +486,10 @@ describe('Hunt resolvers', () => {
 
   it('should complete a run without hits as benign', async () => {
     await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'running', translated_query: 'index=edr', query_language: 'spl' } } });
-    const completed = await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed', hits_count: 0, truncated: false, cost_ms: 120 } } });
+    const completed = await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'completed', hits_count: 0, truncated: false, cost_ms: 120, queries_count: 2 } } });
     const run = completed.data?.huntRunReport;
     expect(run.hunt_run_status).toEqual('completed');
+    expect(run.queries_count).toEqual(2);
     expect(run.verdict).toEqual('benign');
     expect(run.verdict_source).toEqual('auto');
     // The same outcome sent again (the connector lost the answer to its report) changes nothing, another one is refused
@@ -721,6 +736,52 @@ describe('Hunt resolvers', () => {
     }
   });
 
+  it('should open the incident itself, without a draft, for a hunt set to create its incidents', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: HUNT_ADD,
+      variables: {
+        input: {
+          name: 'Hunt test direct incident',
+          hypothesis: 'Encoded commands run on endpoints and need an incident at once',
+          escalation_threshold: 2,
+          escalate_manual_runs: true,
+          hunt_incident_mode: 'incident',
+          native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
+        },
+      },
+    });
+    const directHuntId = created.data?.huntAdd.id;
+    let incidentId: string | null = null;
+    try {
+      expect(created.data?.huntAdd.hunt_incident_mode).toEqual('incident');
+      const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: directHuntId } });
+      const runId = started.data?.huntRunStart[0].id;
+      const hit = (eventId: string) => ({
+        event_id: eventId,
+        timestamp: '2026-10-05T11:00:00Z',
+        matched: [{ field: 'process.command_line', value_hash: 'c'.repeat(64), value_preview: 'powershell -enc CCCC' }],
+        host: null,
+      });
+      const events = ['evt-direct-a', 'evt-direct-b', 'evt-direct-c'];
+      await reportAsConnector({
+        query: HUNT_RUN_REPORT,
+        variables: { id: runId, input: { status: 'completed', hits_count: events.length, hits_sample: events.map(hit), hit_keys: events.map((eventId) => huntHitKey(hit(eventId))) } },
+      });
+      const run = (await queryAsAdminWithSuccess({ query: HUNT_RUN_KNOWN_HITS, variables: { id: runId } })).data?.huntRun;
+      incidentId = run.incident_id;
+      expect(run.incident_id).toBeTruthy();
+      expect(run.draft_id).toBeNull();
+      // The incident is in the knowledge at once, and says nothing of a draft to validate
+      const live = await queryAsAdminWithSuccess({ query: gql`query Incident($id: String!) { incident(id: $id) { id description } }`, variables: { id: run.incident_id } });
+      expect(live.data?.incident.description).toContain(HUNT_INCIDENT_RECOMMENDATION_DIRECT);
+    } finally {
+      await queryAsAdmin({ query: HUNT_DELETE, variables: { id: directHuntId } });
+      if (incidentId) {
+        await deleteElementById(testContext, ADMIN_USER, incidentId, ENTITY_TYPE_INCIDENT);
+      }
+    }
+  });
+
   it('should translate without executing for a preview', async () => {
     const run = (await queryAsAdminWithSuccess({ query: HUNT_RUN_STATE, variables: { id: creationPreviewId } })).data?.huntRun;
     expect(run.hunt_run_mode).toEqual('preview');
@@ -754,10 +815,12 @@ describe('Hunt resolvers', () => {
     await reportAsConnector({ query: HUNT_RUN_REPORT, variables: { id: runId, input: { status: 'running' } } });
     const reported = await reportAsConnector({
       query: HUNT_RUN_REPORT,
-      variables: { id: runId, input: { status: 'timeout', error: 'The hunt run exceeded its deadline of 300 seconds', cost_ms: 300000 } },
+      variables: { id: runId, input: { status: 'timeout', error: 'The hunt run exceeded its deadline of 300 seconds', cost_ms: 300000, queries_count: 5 } },
     });
     const run = reported.data?.huntRunReport;
     expect(run.hunt_run_status).toEqual('timeout');
+    // The queries sent before the deadline still count against the quotas of the platform
+    expect(run.queries_count).toEqual(5);
     expect(run.error_message).toEqual('The hunt run exceeded its deadline of 300 seconds');
     expect(run.next_retry_at).toBeTruthy();
     expect(run.hits_count ?? 0).toEqual(0);

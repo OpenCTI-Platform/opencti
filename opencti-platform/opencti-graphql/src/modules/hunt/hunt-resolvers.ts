@@ -1,4 +1,4 @@
-import type { Resolvers } from '../../generated/graphql';
+import { HuntIncidentMode, type Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../../domain/stixDomainObject';
@@ -25,8 +25,8 @@ import { deriveHuntContent, HUNT_MAX_RELATED_SOURCES } from './hunt-derivation';
 import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { findUnresolvedAttackTechniques } from './hunt-logic';
-import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
-import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, huntRuleKey, storedSigmaRules } from './hunt-utils';
+import { ENTITY_TYPE_HUNT, HUNT_INCIDENT_MODE_INCIDENT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
+import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES, HUNT_MAX_SIGMA_RULES, huntIncidentMode, huntRuleKey, storedSigmaRules } from './hunt-utils';
 import { computeHuntStatistics, findHuntRunsForHunt, findHuntTranslationsView, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
 import { storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
@@ -65,6 +65,7 @@ const huntResolvers: Resolvers = {
     translations: (hunt, _, context) => findHuntTranslationsView(context, context.user, hunt),
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
+    hunt_incident_mode: (hunt) => (huntIncidentMode(hunt) === HUNT_INCIDENT_MODE_INCIDENT ? HuntIncidentMode.Incident : HuntIncidentMode.Draft),
     iocSet: (hunt, { first }, context) => loadHuntIocSet(context, context.user, hunt, first),
     iocFilterPreview: (hunt, { filters, sort }, context) => previewHuntIocFilter(context, hunt, { filters, sort }),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),

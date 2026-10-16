@@ -11,6 +11,8 @@ import {
   getAvailableOperatorForFilter,
   getEntityTypeThreeFirstLevelsFilterValues,
   isDraftWorkspaceFilterGroup,
+  isHuntRunFilterGroup,
+  widgetInternalEntityTypes,
   isFilterGroupFormatCorrect,
   isFilterGroupNotEmpty,
   isRegardingOfFilterWarning,
@@ -1579,6 +1581,31 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+});
+
+describe('widgetInternalEntityTypes', () => {
+  it('should return the hunt runs and hit records selected in the entity type filter', () => {
+    const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: ['Report', 'Hunt-Hit-Record', { value: 'Hunt-Run' }] }], filterGroups: [] };
+    expect(widgetInternalEntityTypes(filters)).toEqual(['Hunt-Run', 'Hunt-Hit-Record']);
+  });
+
+  it('should return nothing for knowledge types or without an entity type filter', () => {
+    expect(widgetInternalEntityTypes(null)).toEqual([]);
+    expect(widgetInternalEntityTypes({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] })).toEqual([]);
+  });
+});
+
+describe('isHuntRunFilterGroup', () => {
+  it('should be true when the entity type filter selects hunt runs only', () => {
+    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: ['Hunt-Run'] }], filterGroups: [] })).toBe(true);
+    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'Hunt-Run' }] }], filterGroups: [] })).toBe(true);
+  });
+
+  it('should be false for other or mixed types', () => {
+    expect(isHuntRunFilterGroup(undefined)).toBe(false);
+    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: [] }], filterGroups: [] })).toBe(false);
+    expect(isHuntRunFilterGroup({ mode: 'and', filters: [{ key: 'entity_type', values: ['Hunt-Run', 'Hunt-Hit-Record'] }], filterGroups: [] })).toBe(false);
   });
 });
 

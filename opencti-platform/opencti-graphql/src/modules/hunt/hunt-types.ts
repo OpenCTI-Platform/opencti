@@ -33,6 +33,10 @@ export const HUNT_SOURCE_ANALYST = 'analyst';
 export const HUNT_SOURCE_AGENT = 'agent';
 export const HUNT_SOURCE_HUB = 'hub';
 export const HUNT_SOURCE_KINDS = [HUNT_SOURCE_ANALYST, HUNT_SOURCE_AGENT, HUNT_SOURCE_HUB];
+// How a run above the escalation threshold opens its incident: as a draft an analyst validates (the default), or directly
+export const HUNT_INCIDENT_MODE_DRAFT = 'draft';
+export const HUNT_INCIDENT_MODE_INCIDENT = 'incident';
+export const HUNT_INCIDENT_MODES = [HUNT_INCIDENT_MODE_DRAFT, HUNT_INCIDENT_MODE_INCIDENT];
 
 // The order an indicator hunt takes the indicators and observables matching its filter in
 export const HUNT_IOC_SORT_CREATED_DESC = 'created_at_desc';
@@ -51,7 +55,13 @@ export const HUNT_PLATFORMS = [
   'opensearch',
   'clickhouse',
   's3-ocsf',
+  'sentinelone',
 ];
+// The type of the security platform a hunt connector registers without naming one, SIEM for any other platform
+export const HUNT_PLATFORM_SECURITY_TYPES: Record<string, string> = {
+  'microsoft-defender': 'XDR',
+  sentinelone: 'EDR',
+};
 // endregion
 
 export interface HuntNativeQuery {
@@ -80,6 +90,7 @@ interface HuntAttributes {
   native_queries?: HuntNativeQuery[];
   hunt_ioc_filters?: string;
   hunt_ioc_sort?: string;
+  hunt_incident_mode?: string;
   hunt_ioc_values?: HuntIocValue[];
   hunt_scope?: string;
   hunt_schedule: string;
@@ -122,6 +133,7 @@ export interface StixHunt extends StixDomainObject {
   native_queries: HuntNativeQuery[];
   hunt_ioc_filters?: string;
   hunt_ioc_sort?: string;
+  hunt_incident_mode?: string;
   hunt_ioc_values?: HuntIocValue[];
   hunt_scope: string;
   hunt_schedule: string;

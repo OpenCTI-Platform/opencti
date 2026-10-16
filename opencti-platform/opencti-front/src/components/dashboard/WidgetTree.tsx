@@ -1,4 +1,5 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
+import { huntWidgetValueLabel } from '@components/hunts/hunt-utils';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
@@ -31,6 +32,9 @@ const WidgetTree = ({
         item.x = getMainRepresentative(n.entity);
       } else if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
         item.x = t_i18n(`entity_${n.label}`);
+      } else {
+        const huntLabel = huntWidgetValueLabel(groupBy, n.label);
+        if (huntLabel) item.x = t_i18n(huntLabel);
       }
       return item;
     });

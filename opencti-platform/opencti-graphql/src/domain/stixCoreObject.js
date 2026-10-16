@@ -80,6 +80,7 @@ import { buildContextDataForFile, completeContextDataForEntity, publishUserActio
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, emptyFilterGroup, extractFilterGroupValues, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_HUNT_RUN, HUNT_RUN_MODE_PREVIEW } from '../modules/hunt/huntRun/huntRun-types';
+import { ENTITY_TYPE_HUNT_HIT_RECORD } from '../modules/hunt/huntHitRecord/huntHitRecord-types';
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF, TYPE_FILTER } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
@@ -143,15 +144,18 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
   return types;
 };
 
-// Hunt runs are internal objects the dashboards count and chart like entities when a widget filters on their type;
-// translation previews are not runs and stay out
-const WIDGET_INTERNAL_TYPES = [ENTITY_TYPE_HUNT_RUN];
+// Hunt runs and the records of their hits are internal objects the dashboards count and chart like entities when a
+// widget filters on their type; translation previews are not runs and stay out
+const WIDGET_INTERNAL_TYPES = [ENTITY_TYPE_HUNT_RUN, ENTITY_TYPE_HUNT_HIT_RECORD];
 export const extractWidgetTypesFromArgs = (args, types = extractStixCoreObjectTypesFromArgs(args)) => {
   const internalTypes = args.filters
     ? R.uniq(extractFilterGroupValues(args.filters, TYPE_FILTER).filter((type) => WIDGET_INTERNAL_TYPES.includes(type)))
     : [];
   if (internalTypes.length === 0) {
     return { types, args };
+  }
+  if (!internalTypes.includes(ENTITY_TYPE_HUNT_RUN)) {
+    return { types: [...types, ...internalTypes], args };
   }
   const filters = addFilter(args.filters, 'hunt_run_mode', HUNT_RUN_MODE_PREVIEW, 'not_eq');
   return { types: [...types, ...internalTypes], args: { ...args, filters } };
