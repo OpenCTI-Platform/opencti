@@ -20,6 +20,7 @@ import {
   groupOverflowItems,
   hasClearableTimelineFilters,
   headlineAnchorsOf,
+  inactiveTimelineKinds,
   isTimelineViewFilteredBy,
   layoutAnchorLabels,
   layoutLaneRows,
@@ -405,6 +406,23 @@ describe('Timeline filters', () => {
     expect(isTimelineViewFilteredBy('annotation', { pinnedOnly: true, search: '' })).toBe(false);
     // A blank search filters nothing
     expect(isTimelineViewFilteredBy('annotation', { pinnedOnly: false, search: '   ' })).toBe(false);
+  });
+
+  it('should name the module of the events only a rule of a module not installed produces', () => {
+    const rules = [
+      { kinds: ['sighting'], available: true, required_module: null },
+      { kinds: ['coverage_result'], available: true, required_module: 'Security coverage' },
+      { kinds: ['hunt_run'], available: false, required_module: 'Hunts' },
+      { kinds: ['deployment'], available: false, required_module: 'Indicator deployments' },
+      // An event another rule still produces stays active
+      { kinds: ['sighting'], available: false, required_module: 'Hunts' },
+      // Without a module there is nothing to name
+      { kinds: ['merged'], available: false, required_module: null },
+    ];
+    expect(inactiveTimelineKinds(rules)).toEqual({ hunt_run: 'Hunts', deployment: 'Indicator deployments' });
+    expect(inactiveTimelineKinds(rules.filter((rule) => rule.available))).toEqual({});
+    expect(inactiveTimelineKinds(null)).toEqual({});
+    expect(inactiveTimelineKinds(undefined)).toEqual({});
   });
 });
 

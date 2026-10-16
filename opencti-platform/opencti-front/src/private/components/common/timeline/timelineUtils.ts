@@ -130,6 +130,28 @@ export const TIMELINE_ZOOM_LABELS: Record<TimelineZoomWindow, string> = {
   year: 'Year',
 };
 
+interface TimelineRuleAvailability {
+  kinds: readonly string[];
+  available: boolean;
+  required_module?: string | null;
+}
+
+/**
+ * Events only produced by rules reading a module not installed on the platform, with the name of that module: they are
+ * listed as inactive until it is installed.
+ */
+export const inactiveTimelineKinds = (rules: readonly TimelineRuleAvailability[] | null | undefined): Readonly<Record<string, string>> => {
+  const produced = new Set((rules ?? []).filter((rule) => rule.available).flatMap((rule) => rule.kinds));
+  const inactive: Record<string, string> = {};
+  (rules ?? []).forEach((rule) => {
+    if (rule.available || !rule.required_module) return;
+    rule.kinds.filter((kind) => !produced.has(kind) && !inactive[kind]).forEach((kind) => {
+      inactive[kind] = rule.required_module as string;
+    });
+  });
+  return inactive;
+};
+
 export const TIMELINE_SOURCES = ['derived', 'manual'] as const;
 export type TimelineSource = typeof TIMELINE_SOURCES[number];
 

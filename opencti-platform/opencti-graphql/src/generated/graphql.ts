@@ -36955,11 +36955,15 @@ export type TimelineRegenerationResult = {
 
 export type TimelineRuleDefinition = {
   __typename?: 'TimelineRuleDefinition';
-  /** False for soft-check rules whose source type is not registered on this platform */
+  /** False for the rules reading a module that is not installed on this platform: they produce no event until it is */
   available: Scalars['Boolean']['output'];
   id: Scalars['String']['output'];
+  /** Why the rule produces no event, such as 'Activates when the Hunts module is installed'; null while it is active */
+  inactive_reason?: Maybe<Scalars['String']['output']>;
   kinds: Array<TimelineEventKind>;
   label: Scalars['String']['output'];
+  /** Name of the module whose data the rule reads, for the rules that depend on another module */
+  required_module?: Maybe<Scalars['String']['output']>;
 };
 
 export type TimelineSettings = BasicObject & InternalObject & {
@@ -54691,8 +54695,10 @@ export type TimelineRegenerationResultResolvers<ContextType = any, ParentType ex
 export type TimelineRuleDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineRuleDefinition'] = ResolversParentTypes['TimelineRuleDefinition']> = ResolversObject<{
   available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  inactive_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   kinds?: Resolver<Array<ResolversTypes['TimelineEventKind']>, ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required_module?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type TimelineSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineSettings'] = ResolversParentTypes['TimelineSettings']> = ResolversObject<{

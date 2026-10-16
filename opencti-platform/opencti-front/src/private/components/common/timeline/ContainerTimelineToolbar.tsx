@@ -70,6 +70,8 @@ interface ContainerTimelineToolbarProps {
   state: TimelineViewState;
   onChange: (patch: Partial<TimelineViewState>) => void;
   enabledLanes: readonly string[];
+  // Events of the rules reading a module not installed, with the name of that module
+  inactiveKinds?: Readonly<Record<string, string>>;
   canEdit: boolean;
   liveUpdates: number;
   regenerating: boolean;
@@ -116,6 +118,9 @@ interface ToolbarFilterOption {
   value: string;
   label: string;
   color?: string;
+  disabled?: boolean;
+  // Second line of the option, under its label
+  description?: string;
 }
 
 // The design-system Select picks a single value: a filter on several values is the library Combobox in multiple mode,
@@ -140,18 +145,30 @@ const ToolbarMultiFilter = ({ label, summary, clearLabel, options, selected, onS
         onValueChange={(next) => onSelectedChange(((next ?? []) as ToolbarFilterOption[]).map((option) => option.value))}
         getOptionLabel={(option) => option.label}
         isOptionEqualToValue={(a, b) => a.value === b.value}
+        isOptionDisabled={(option) => !!option.disabled}
+        isOptionTwoLine={(option) => !!option.description}
         filterOptions={(all) => all}
         inputValue={summary}
         onInputChange={() => {}}
         selectOnFocus={false}
         labelPosition="none"
-        renderOption={(option) => (option.color ? (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
-            {/* The marker of the lane in the lanes view */}
-            <span aria-hidden="true" style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: option.color }} />
-            {option.label}
-          </span>
-        ) : option.label)}
+        renderOption={(option) => {
+          if (option.description) {
+            return (
+              <span style={{ display: 'flex', flexDirection: 'column' }}>
+                <span>{option.label}</span>
+                <Text variant="content-caption" as="span">{option.description}</Text>
+              </span>
+            );
+          }
+          return option.color ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
+              {/* The marker of the lane in the lanes view */}
+              <span aria-hidden="true" style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: option.color }} />
+              {option.label}
+            </span>
+          ) : option.label;
+        }}
       >
         <ComboboxField>
           <ComboboxInput aria-label={label} readOnly style={{ cursor: 'pointer' }} />
@@ -170,6 +187,7 @@ const ContainerTimelineToolbar = ({
   state,
   onChange,
   enabledLanes,
+  inactiveKinds = {},
   canEdit,
   liveUpdates,
   regenerating,
@@ -330,7 +348,15 @@ const ContainerTimelineToolbar = ({
           label={t_i18n('Events')}
           summary={state.kinds.length > 0 ? t_i18n('Events ({count})', { values: { count: state.kinds.length } }) : t_i18n('All events')}
           clearLabel={t_i18n('Clear the event filter')}
-          options={TIMELINE_KINDS.map((kind) => ({ value: kind, label: t_i18n(TIMELINE_KIND_LABELS[kind]) }))}
+          options={TIMELINE_KINDS.map((kind) => ({
+            value: kind,
+            label: t_i18n(TIMELINE_KIND_LABELS[kind]),
+            // No event of this type exists until the module that produces it is installed
+            ...(inactiveKinds[kind] ? {
+              disabled: true,
+              description: t_i18n('Activates when the {module} module is installed', { values: { module: t_i18n(inactiveKinds[kind]) } }),
+            } : {}),
+          }))}
           selected={state.kinds}
           onSelectedChange={(next) => onChange({ kinds: next })}
           testId="timeline-kinds-filter"

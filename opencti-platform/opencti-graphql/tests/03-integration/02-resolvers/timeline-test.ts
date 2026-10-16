@@ -359,7 +359,7 @@ const ENTITY_SETTING_HEADLINE_DATES_PATCH = gql`
 `;
 const TIMELINE_RULES = gql`
   query TimelineRules {
-    timelineRules { id label kinds available }
+    timelineRules { id label kinds available required_module inactive_reason }
   }
 `;
 const TIMELINE_REGENERATE = gql`
@@ -632,10 +632,16 @@ describe('Incident and case timeline', () => {
 
     it('should list the derivation rules with their availability', async () => {
       const result = await queryAsAdminWithSuccess({ query: TIMELINE_RULES, variables: {} });
-      const rules = result.data.timelineRules as Array<{ id: string; available: boolean; kinds: string[] }>;
-      expect(rules.find((r) => r.id === 'technique-kill-chain')).toMatchObject({ available: true, kinds: ['technique_used'] });
-      expect(rules.find((r) => r.id === 'security-coverage-result')?.available).toBe(true);
-      expect(rules.map((r) => r.id)).toEqual(expect.arrayContaining(['hunt-run', 'indicator-deployment', 'investigation-run']));
+      type Rule = { id: string; available: boolean; kinds: string[]; required_module: string | null; inactive_reason: string | null };
+      const rules = result.data.timelineRules as Rule[];
+      expect(rules.find((r) => r.id === 'technique-kill-chain')).toMatchObject({ available: true, kinds: ['technique_used'], required_module: null, inactive_reason: null });
+      expect(rules.find((r) => r.id === 'security-coverage-result')).toMatchObject({ available: true, required_module: 'Security coverage', inactive_reason: null });
+      // Kept for the modules they read, they produce nothing until these are installed
+      expect(rules.filter((r) => !r.available).map((r) => [r.id, r.kinds, r.inactive_reason])).toEqual([
+        ['hunt-run', ['hunt_run'], 'Activates when the Hunts module is installed'],
+        ['indicator-deployment', ['deployment'], 'Activates when the Indicator deployments module is installed'],
+        ['investigation-run', ['investigation_step'], 'Activates when the Case Autopilot module is installed'],
+      ]);
     });
 
     describe('tasks, notes and opinions of a case', () => {

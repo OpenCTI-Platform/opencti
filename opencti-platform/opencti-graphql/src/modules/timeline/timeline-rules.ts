@@ -164,6 +164,8 @@ export interface TimelineRule {
   kinds: TimelineKindValue[];
   // Soft-check rules consume types owned by other modules and only activate when those types are registered
   isAvailable?: () => boolean;
+  // Name of the module a soft-check rule reads, shown to say what activates it
+  module?: string;
   derive: (input: TimelineDerivationInput) => DerivedTimelineEvent[];
 }
 // endregion
@@ -872,6 +874,7 @@ export const coverageResultRule: TimelineRule = {
   id: 'security-coverage-result',
   label: 'Security coverage results of the container (OpenAEV)',
   kinds: ['coverage_result'],
+  module: 'Security coverage',
   derive: (input) => [
     ...input.soft.coverageResults.flatMap((result) => {
       const time = toTimelineTime(readExtraString(result, 'coverage_last_result')) ?? toTimelineTime(result.created_at);
@@ -916,6 +919,7 @@ export const huntRunRule: TimelineRule = {
   id: 'hunt-run',
   label: 'Hunt runs of the hunts in scope',
   kinds: ['hunt_run'],
+  module: 'Hunts',
   derive: (input) => {
     const huntNames = new Map(input.entities.filter((e) => e.entity_type === 'Hunt').map((e) => [e.id, e.name]));
     return input.soft.huntRuns.flatMap((run) => {
@@ -954,6 +958,7 @@ export const deploymentRule: TimelineRule = {
   id: 'indicator-deployment',
   label: 'Deployments of the indicators in scope on security platforms',
   kinds: ['deployment'],
+  module: 'Indicator deployments',
   derive: (input) => input.soft.deployments.flatMap((deployment) => {
     const start = toTimelineTime(readExtraString(deployment, 'deployed_at')) ?? toTimelineTime(deployment.created_at);
     if (start === null) return [];
@@ -1102,6 +1107,7 @@ export const investigationRunRule: TimelineRule = {
   id: RULE_INVESTIGATION_RUN,
   label: 'Case Autopilot investigation runs, the goal-plan actions they reached and the findings outside the case',
   kinds: ['investigation_step'],
+  module: 'Case Autopilot',
   derive: (input) => {
     // Findings about elements already in scope are derived by the core rules, only the others are new
     const inScope = new Set([input.container.id, ...input.entities.map((e) => e.id), ...input.relationships.map((r) => r.id)]);

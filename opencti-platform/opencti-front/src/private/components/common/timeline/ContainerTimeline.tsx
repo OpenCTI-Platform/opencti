@@ -53,6 +53,7 @@ import {
   effectiveLanes,
   hasClearableTimelineFilters,
   headlineAnchorsOf,
+  inactiveTimelineKinds,
   isTimelineViewFilteredBy,
   TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
@@ -100,6 +101,12 @@ export const containerTimelineSummaryQuery = graphql`
       can_edit
       truncated
       generated_at
+    }
+    timelineRules {
+      id
+      kinds
+      available
+      required_module
     }
   }
 `;
@@ -494,8 +501,9 @@ interface ContainerTimelineContentProps {
 const ContainerTimelineContent = ({ containerId, containerName, entityType, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme();
-  const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
+  const { containerTimelineSummary: summary, timelineRules } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
   const headlineDates = useTimelineHeadlineDates(entityType);
+  const inactiveKinds = useMemo(() => inactiveTimelineKinds(timelineRules), [timelineRules]);
   const settings = summary?.settings;
   const { searchParams, state, updateState } = useTimelineViewState(containerId);
   // Pan and zoom move the domain continuously: it lives here and reaches the URL once settled
@@ -678,6 +686,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
           state={state}
           onChange={updateState}
           enabledLanes={settings.enabled_lanes}
+          inactiveKinds={inactiveKinds}
           canEdit={summary.can_edit}
           liveUpdates={liveUpdates}
           regenerating={regenerating}
@@ -747,6 +756,7 @@ const ContainerTimelineContent = ({ containerId, containerName, entityType, summ
         containerId={containerId}
         entityType={entityType}
         headlineDates={headlineDates}
+        inactiveKinds={inactiveKinds}
         open={settingsOpen}
         settings={settings}
         onClose={() => setSettingsOpen(false)}

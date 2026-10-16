@@ -3,16 +3,18 @@ import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
+import { TIMELINE_KINDS } from './timelineUtils';
 
-const settings = { enabled_lanes: ['adversary', 'response'], hidden_kinds: [] };
+const settings = { enabled_lanes: ['adversary', 'response'], hidden_kinds: [] as string[] };
 
-const renderDrawer = (capabilities: string[]) => testRender(
+const renderDrawer = (capabilities: string[], inactiveKinds?: Record<string, string>, drawerSettings = settings) => testRender(
   <ContainerTimelineSettingsDrawer
     containerId="case-1"
     entityType="Case-Incident"
     headlineDates={['containment', 'recovery']}
+    inactiveKinds={inactiveKinds}
     open={true}
-    settings={settings}
+    settings={drawerSettings}
     onClose={vi.fn()}
     onSaved={vi.fn()}
   />,
@@ -48,5 +50,27 @@ describe('ContainerTimelineSettingsDrawer display choices', () => {
       containerId: 'case-1',
       input: { enabled_lanes: ['adversary', 'response'], hidden_kinds: [] },
     });
+  });
+});
+
+describe('ContainerTimelineSettingsDrawer events of a module not installed', () => {
+  it('shows them inactive, naming the module that activates them', async () => {
+    renderDrawer(['KNOWLEDGE_KNUPDATE'], { hunt_run: 'Hunts', deployment: 'Indicator deployments' });
+    await screen.findByTestId('timeline-settings-drawer');
+    expect(screen.getByRole('checkbox', { name: /^Hunt run/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /^Deployment/ })).toBeDisabled();
+    expect(screen.getByText('Activates when the Hunts module is installed')).toBeInTheDocument();
+    expect(screen.getByText('Activates when the Indicator deployments module is installed')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Sighting' })).toBeEnabled();
+  });
+
+  it('keeps one event that can exist visible, leaving the inactive ones out of the count', async () => {
+    const inactive = { hunt_run: 'Hunts' };
+    const hidden = TIMELINE_KINDS.filter((kind) => kind !== 'sighting' && kind !== 'hunt_run');
+    renderDrawer(['KNOWLEDGE_KNUPDATE'], inactive, { ...settings, hidden_kinds: hidden });
+    await screen.findByTestId('timeline-settings-drawer');
+    const sighting = screen.getByRole('checkbox', { name: 'Sighting' });
+    expect(sighting).not.toBeChecked();
+    expect(sighting).toBeDisabled();
   });
 });

@@ -29,6 +29,8 @@ interface ContainerTimelineSettingsDrawerProps {
   entityType: string;
   // Headline dates of the type, set in Settings > Customization
   headlineDates: readonly TimelineAnchorKey[];
+  // Events of the rules reading a module not installed, with the name of that module
+  inactiveKinds?: Readonly<Record<string, string>>;
   open: boolean;
   settings: TimelineSettingsValues;
   onClose: () => void;
@@ -48,13 +50,23 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
 };
 
 /** Per-container timeline settings, shared by every user of the case timeline. */
-const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDates, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
+const ContainerTimelineSettingsDrawer = ({
+  containerId,
+  entityType,
+  headlineDates,
+  inactiveKinds = {},
+  open,
+  settings,
+  onClose,
+  onSaved,
+}: ContainerTimelineSettingsDrawerProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
   const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const helpStyle = { color: colors.textSecondary, margin: theme.spacing(0.75, 0, 1) };
   const [values, setValues] = useState<TimelineSettingsValues>(settings);
+  const activeKinds = TIMELINE_KINDS.filter((kind) => !inactiveKinds[kind]);
   const [saving, setSaving] = useState(false);
   const [commit] = useApiMutation<ContainerTimelineMutationsSettingsMutation>(timelineSettingsUpdateMutation);
 
@@ -132,9 +144,13 @@ const ContainerTimelineSettingsDrawer = ({ containerId, entityType, headlineDate
             <Checkbox
               key={kind}
               label={t_i18n(TIMELINE_KIND_LABELS[kind])}
+              // No event of this type exists until the module that produces it is installed
+              description={inactiveKinds[kind]
+                ? t_i18n('Activates when the {module} module is installed', { values: { module: t_i18n(inactiveKinds[kind]) } })
+                : undefined}
               checked={values.hidden_kinds.includes(kind)}
-              // At least one event stays visible
-              disabled={!values.hidden_kinds.includes(kind) && TIMELINE_KINDS.every((other) => other === kind || values.hidden_kinds.includes(other))}
+              // At least one event that can exist stays visible
+              disabled={!!inactiveKinds[kind] || (!values.hidden_kinds.includes(kind) && activeKinds.every((other) => other === kind || values.hidden_kinds.includes(other)))}
               onCheckedChange={() => setValues({ ...values, hidden_kinds: toggle(values.hidden_kinds, kind) })}
             />
           ))}

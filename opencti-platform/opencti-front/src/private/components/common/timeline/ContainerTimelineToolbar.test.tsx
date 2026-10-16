@@ -74,6 +74,16 @@ describe('ContainerTimelineToolbar', () => {
     expect(screen.getByRole('combobox', { name: 'Events' })).toHaveValue('All events');
   });
 
+  it('shows the events of a module not installed as inactive, naming what activates them', async () => {
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState(), vi.fn())} inactiveKinds={{ hunt_run: 'Hunts' }} />);
+    await user.click(screen.getByRole('combobox', { name: 'Events' }));
+    const huntRun = screen.getAllByRole('option').find((option) => option.textContent?.startsWith('Hunt run')) as HTMLElement;
+    expect(huntRun).toHaveAttribute('aria-disabled', 'true');
+    expect(huntRun).toHaveTextContent('Activates when the Hunts module is installed');
+    expect(screen.getByRole('option', { name: 'Sighting' })).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getAllByText(/Activates when/)).toHaveLength(1);
+  });
+
   it('shows every lane when the lane kept in the URL was disabled since, and leaves the disabled lane out', async () => {
     const enabled = TIMELINE_LANES.filter((lane) => lane !== 'evidence');
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['evidence'] }), vi.fn(), enabled)} />);

@@ -48,14 +48,16 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Incidents contained in an incident response | **Incident closed**, in the response lane: the latest moment the incident reached the last status of its workflow, read from its history (its last update, approximate, when the history does not tell), as long as it stays closed. The incident is often closed (contained, eradicated, recovered) while its incident response stays open for the post-incident work |
 | Relationships between objects of the case | Creation |
 
-The following sources are used when they exist on the platform, and are otherwise ignored:
+The following sources come from other modules. Their rules are part of the timeline, but they produce no event until the module they read is installed on the platform:
 
-| Source | Events |
-|:-------|:-------|
-| Security coverage results (OpenAEV) | Coverage results of the container, in the detection lane |
-| Hunt runs | Runs of the hunts linked to the case, in the detection lane |
-| Indicator deployments | Deployments of the indicators of the case on security platforms, in the detection lane |
-| Case Autopilot investigation runs | One **Investigation step** per run (from its start to its completion, still open while it runs) and one per goal plan action the run reached or that found something, with its step state (an action with a source still querying stays open), in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision |
+| Source | Events | Status |
+|:-------|:-------|:-------|
+| Security coverage results (OpenAEV) | Coverage results of the container, in the detection lane | Active |
+| Hunt runs | Runs of the hunts linked to the case, in the detection lane | Inactive: activates when the Hunts module is installed |
+| Indicator deployments | Deployments of the indicators of the case on security platforms, in the detection lane | Inactive: activates when the Indicator deployments module is installed |
+| Case Autopilot investigation runs | One **Investigation step** per run (from its start to its completion, still open while it runs) and one per goal plan action the run reached or that found something, with its step state (an action with a source still querying stays open), in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision | Inactive: activates when the Case Autopilot module is installed |
+
+While a module is not installed, the events it would produce are shown as inactive in the **Events** filter of the toolbar and in the timeline settings, with the module that activates them, and they cannot be picked.
 
 ### Precision
 
@@ -132,7 +134,7 @@ See [Overview layout customization](../administration/entities.md#overview-layou
 
 ### First use
 
-When the case holds no dated knowledge yet, the Timeline tab explains what fills it (the knowledge of the case, Case Autopilot steps, hunt runs, deployments and the milestones you add) and offers **Add an event**, a link to this documentation and **Regenerate the timeline**. When filters hide every event, the tab says so and offers **Clear filters**.
+When the case holds no dated knowledge yet, the Timeline tab explains what fills it (the knowledge of the case and its history, and the events you add) and offers **Add an event**, a link to this documentation and **Regenerate the timeline**. When filters hide every event, the tab says so and offers **Clear filters**.
 
 ![Timeline tab of an incident without dated knowledge yet](assets/case-timeline-first-use-empty.png)
 
@@ -169,7 +171,7 @@ The source of a derived event names the attributes its dates were taken from and
 
 ![Details of a timeline event: header actions and metadata grid](assets/case-timeline-drawer-event.png)
 
-Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached). Hunt runs and indicator deployments appear on the timeline when those features are available on the platform; their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
+Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached). Hunt runs and indicator deployments appear on the timeline once their modules are installed on the platform (see [Derived events](#derived-events)); their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
 
 ### Pin, hide and annotate
 
@@ -241,7 +243,7 @@ The trigger filters apply to the incident or case, and only users who can access
 ## Exchange and API
 
 - **STIX**: the analyst contributions (milestones, pins, hidden flags, annotations) travel with the container in the `extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb` extension. Derived events are not exported: the receiving platform computes them from its own knowledge, and imports the contributions idempotently. The pins, hidden flags and annotations of a derived event travel when the event comes from the knowledge alone (an element, its dates and relationships, a task); those of events that come from the history of the platform (status transitions, assignments, objects added), from files, or from hunt and investigation runs stay on the platform, because the receiving platform has no such history, file or run to attach them to. An imported pin, hidden flag or annotation applies to a derived event only when the importing user could set it on the platform: he reads the event, its element and every element whose data it carries, and its confidence is within his confidence level; one whose event the receiving platform has not computed yet waits for it and is checked when the event is computed. A milestone imported again keeps its element and its author when the imported version names none the importing user can resolve. In a bundle, the elements, authors and markings the contributions name are imported before the container; an element that refers back to the container (a note about the case) is imported after it, and the container is then imported again so that its milestones attach that element. An annotation or ordering hint removed from a derived event is named in the `cleared_fields` of its contribution, so that the receiving platform removes it too; a field the contribution does not carry leaves the receiving event unchanged. The contributions on derived events left out by the limits of the case keep travelling until the events are back.
-- **GraphQL API**: the queries `containerTimeline` (by event time), `containerTimelineBounds` (first start and latest start or end of every event matching the same filters, also the ones not loaded yet, and `frame_start` / `frame_end`, the span **Fit** frames: the starts of the events without the global first and last seen of entities), `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFile` (the content of a stored export together with the markings the file must carry), `timelineEvent`, `timelineAnchors` and `timelineRules` (the derivation rules, the events (`kind`) they produce and whether their source is available on the platform); the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, `timelineImport` (imports the analyst contributions of a timeline STIX extension into a container, idempotently, never declassifying them) and `timelineViewed` (usage count of the Timeline tab, no data change); the subscription `containerTimelineUpdated`; and the `timeline_headline_dates` field of the entity settings of the four types, set with `entitySettingsFieldPatch`.
+- **GraphQL API**: the queries `containerTimeline` (by event time), `containerTimelineBounds` (first start and latest start or end of every event matching the same filters, also the ones not loaded yet, and `frame_start` / `frame_end`, the span **Fit** frames: the starts of the events without the global first and last seen of entities), `containerTimelineSummary`, `containerTimelineExport` (with the `contentMaxMarkings` ceiling), `containerTimelineExportFile` (the content of a stored export together with the markings the file must carry), `timelineEvent`, `timelineAnchors` and `timelineRules` (the derivation rules, the events (`kind`) they produce, whether they are active on the platform, and for the rules reading another module its name, `required_module`, and why they are inactive, `inactive_reason`); the mutations `timelineEventAdd` (with an `external_id` idempotency key), `timelineEventEdit`, `timelineEventDelete`, `timelineEventPin`, `timelineEventHide`, `timelineSettingsUpdate`, `timelineRegenerate`, `timelineImport` (imports the analyst contributions of a timeline STIX extension into a container, idempotently, never declassifying them) and `timelineViewed` (usage count of the Timeline tab, no data change); the subscription `containerTimelineUpdated`; and the `timeline_headline_dates` field of the entity settings of the four types, set with `entitySettingsFieldPatch`.
 - **Python client (pycti)**: `OpenCTIApiClient.timeline_event` with `create`, `update`, `delete`, `list`, `read`, `pin`, `hide`, `anchors`, `regenerate` and `import_extension` (calls `timelineImport` with a timeline STIX extension), so that connectors and incident importers can push milestones and contributions.
 
 ## Large cases

@@ -29,7 +29,13 @@ import {
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
 import type { AuthUser } from '../../../../src/types/user';
-import { buildTimelineFilters, collectTimelineExportPages, latestTimelineTime, strongerTimelineConfidence } from '../../../../src/modules/timeline/timeline-domain';
+import {
+  buildTimelineFilters,
+  collectTimelineExportPages,
+  latestTimelineTime,
+  listTimelineRules,
+  strongerTimelineConfidence,
+} from '../../../../src/modules/timeline/timeline-domain';
 import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
 import { RULE_INDICATOR_REVOCATION, RULE_INDICATOR_VALIDITY, RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modules/timeline/timeline-types';
@@ -178,8 +184,25 @@ describe('Timeline schema registration', () => {
     const rules = getTimelineRules();
     expect(new Set(rules.map((r) => r.id)).size).toEqual(rules.length);
     rules.forEach((rule) => expect(rule.kinds.length).toBeGreaterThan(0));
-    // soft-check rules expose their availability
-    expect(rules.filter((r) => r.isAvailable).map((r) => r.id)).toEqual(['security-coverage-result', 'hunt-run', 'indicator-deployment', 'investigation-run']);
+    // soft-check rules expose their availability and the module they read
+    expect(rules.filter((r) => r.isAvailable).map((r) => [r.id, r.module])).toEqual([
+      ['security-coverage-result', 'Security coverage'],
+      ['hunt-run', 'Hunts'],
+      ['indicator-deployment', 'Indicator deployments'],
+      ['investigation-run', 'Case Autopilot'],
+    ]);
+  });
+
+  it('should list the rules of a module not installed as inactive, naming what activates them', () => {
+    const rules = listTimelineRules();
+    expect(rules.find((r) => r.id === 'technique-kill-chain')).toMatchObject({ available: true, required_module: null, inactive_reason: null });
+    // The hunts, the indicator deployments and Case Autopilot are not part of the platform yet
+    expect(rules.filter((r) => ['hunt-run', 'indicator-deployment', 'investigation-run'].includes(r.id)).map((r) => [r.available, r.inactive_reason])).toEqual([
+      [false, 'Activates when the Hunts module is installed'],
+      [false, 'Activates when the Indicator deployments module is installed'],
+      [false, 'Activates when the Case Autopilot module is installed'],
+    ]);
+    rules.filter((r) => r.available).forEach((rule) => expect(rule.inactive_reason).toBeNull());
   });
 });
 

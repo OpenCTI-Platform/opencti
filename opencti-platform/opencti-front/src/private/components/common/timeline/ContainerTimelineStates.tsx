@@ -82,7 +82,7 @@ export const ContainerTimelineEmptyState = ({
         </HeroHeader>
         <HeroBody>
           <Text variant="content-base">
-            {t_i18n('The timeline fills itself from the knowledge of the case, the Case Autopilot steps, the hunt runs and the deployments, and from the events you add.')}
+            {t_i18n('The timeline fills itself from the knowledge of the case and its history, and from the events you add.')}
           </Text>
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(2), marginTop: theme.spacing(1.5) }}>
             <Link to={TIMELINE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">

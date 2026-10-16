@@ -531,12 +531,17 @@ export const recordTimelineView = async (context: AuthContext, user: AuthUser, c
   return true;
 };
 export const listTimelineRules = (): TimelineRuleDefinition[] => {
-  return getTimelineRules().map((rule) => ({
-    id: rule.id,
-    label: rule.label,
-    kinds: rule.kinds as unknown as TimelineEventKind[],
-    available: !rule.isAvailable || rule.isAvailable(),
-  }));
+  return getTimelineRules().map((rule) => {
+    const available = !rule.isAvailable || rule.isAvailable();
+    return {
+      id: rule.id,
+      label: rule.label,
+      kinds: rule.kinds as unknown as TimelineEventKind[],
+      available,
+      required_module: rule.module ?? null,
+      inactive_reason: !available && rule.module ? `Activates when the ${rule.module} module is installed` : null,
+    };
+  });
 };
 // endregion
 

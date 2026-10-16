@@ -237,8 +237,12 @@ type TimelineRuleDefinition {
   id: String!
   label: String!
   kinds: [TimelineEventKind!]!
-  "False for soft-check rules whose source type is not registered on this platform"
+  "False for the rules reading a module that is not installed on this platform: they produce no event until it is"
   available: Boolean!
+  "Name of the module whose data the rule reads, for the rules that depend on another module"
+  required_module: String
+  "Why the rule produces no event, such as 'Activates when the Hunts module is installed'; null while it is active"
+  inactive_reason: String
 }
 
 input TimelineEventAddInput {
