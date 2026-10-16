@@ -36,6 +36,7 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   user_email: string;
   personal_notifiers: Array<string>;
   password: string;
+  password_history?: Array<string>;
   name: string;
   description: string;
   firstname: string;

@@ -141,7 +141,7 @@ const ACKNOWLEDGED_ROWS: Array<{ registerRow: string; entityType: string; detail
   {
     registerRow: 'user.password',
     entityType: ENTITY_TYPE_USER,
-    detail: 'kept: the account is disabled and its tokens revoked, so the password opens nothing',
+    detail: 'kept: the account is disabled and its tokens revoked, so the password opens nothing; its password history is emptied when it is disabled',
   },
   {
     registerRow: 'user.otp',
