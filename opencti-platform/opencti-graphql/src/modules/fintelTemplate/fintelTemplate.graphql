@@ -60,6 +60,14 @@ enum FintelTemplateOrdering {
 
 type Query {
   fintelTemplate(id: ID!): FintelTemplate @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+  fintelTemplates(
+    first: Int
+    after: ID
+    orderBy: FintelTemplateOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Mutations

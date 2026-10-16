@@ -1,0 +1,8 @@
+input GlobalExportSelectionInput {
+  entityType: String!
+  ids: [ID!]
+}
+
+extend type Mutation {
+  globalConfigurationExport(entityTypes: [String!]!, selections: [GlobalExportSelectionInput!], bundleName: String): File! @auth(for: [BYPASS]) @ff(flags: ["GLOBAL_EXPORT_BUNDLE"])
+}
