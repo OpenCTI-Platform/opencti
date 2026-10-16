@@ -1295,6 +1295,7 @@
   "Decay rules": "Reglas de decaimiento",
   "Decay Rules | Customization | Settings": "Reglas de descomposición | Personalización | Configuración",
   "Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.": "Las reglas de decaimiento se aplican a los indicadores por orden de prioridad (de mayor a menor, siendo 0 el valor más bajo). Hay reglas incorporadas (built-in) aplicadas por defecto que no son editables, puede añadir una regla de decaimiento personalizada y definir su orden de prioridad.",
+  "Decimal": "Decimal",
   "Decline": "Decline",
   "Decline this call": "Rechazar esta solicitud",
   "Declined": "Rechazado",

@@ -24,6 +24,7 @@ const edgeSCO = (id: string, entity_type: string, main: string, created_at: stri
 // Every value slot must be set, otherwise the mock generator fills it with a placeholder.
 const emptyCustomFieldValue = {
   int_value: null,
+  float_value: null,
   string_value: null,
   boolean_value: null,
   date_value: null,
