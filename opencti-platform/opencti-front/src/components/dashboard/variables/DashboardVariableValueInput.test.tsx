@@ -253,7 +253,7 @@ describe('DashboardVariableValueInput', () => {
       expect(operation.request.variables.filters.filters[0]).toEqual(expect.objectContaining({ key: ['objectLabel'], values: ['label-1'] }));
       act(() => {
         relayEnv.mock.resolve(operation, {
-          data: { stixCoreObjects: { edges: [{ node: { id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+          data: { stixCoreObjects: { edges: [{ node: { __typename: 'Organization', id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
         });
       });
       await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
@@ -267,7 +267,7 @@ describe('DashboardVariableValueInput', () => {
       await user.type(screen.getByRole('combobox'), 'ac');
       act(() => {
         relayEnv.mock.resolveMostRecentOperation({
-          data: { stixCoreObjects: { edges: [{ node: { id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+          data: { stixCoreObjects: { edges: [{ node: { __typename: 'Organization', id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
         });
       });
       await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
