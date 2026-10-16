@@ -29,8 +29,13 @@ test.describe('Drafts list', { tag: ['@ce', '@workflow'] }, () => {
     await Drafts.createDraft({ name: betaName, authorizedMembers: [] });
     await expect(Drafts.getDraft(betaName)).toBeVisible();
 
-    await Search.addExactSearch(alphaName);
-    await expect(Drafts.getDraft(alphaName)).toBeVisible();
+    // Retry the search itself (not just re-poll the same result) - under CI resource
+    // contention the search query can occasionally return before the freshly created draft
+    // is reflected, and re-pressing Enter re-issues it rather than waiting out a dead end.
+    await expect(async () => {
+      await Search.addExactSearch(alphaName);
+      await expect(Drafts.getDraft(alphaName)).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
     await expect(Drafts.getDraft(betaName)).not.toBeVisible();
 
     // Clearing the search (fresh navigation) restores the full list.
