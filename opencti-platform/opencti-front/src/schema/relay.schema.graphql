@@ -10174,6 +10174,7 @@ type Mutation {
   customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition
   customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition
+  configPresetExport(selections: [ConfigPresetSelectionInput!]!, bundle_name: String): File!
 }
 
 enum WorkflowExecutionStatus {
@@ -17675,4 +17676,9 @@ type ConfigPresetExportableType {
   label: String!
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetExportableItem!]!
+}
+
+input ConfigPresetSelectionInput {
+  type: ID!
+  items: [ID!]
 }

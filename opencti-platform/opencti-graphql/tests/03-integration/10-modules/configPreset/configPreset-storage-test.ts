@@ -1,0 +1,97 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import gql from 'graphql-tag';
+// @ts-expect-error unzipper ships no type declarations
+import unzipper from 'unzipper';
+import { ADMIN_USER, API_URI, generateBasicAuth, testContext, USER_EDITOR } from '../../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
+import { basePath } from '../../../../src/config/conf';
+import { deleteFile } from '../../../../src/database/file-storage';
+
+const EXPORT_MUTATION = gql`
+  mutation ConfigPresetStorageTest($selections: [ConfigPresetSelectionInput!]!, $bundle_name: String) {
+    configPresetExport(selections: $selections, bundle_name: $bundle_name) {
+      id
+      name
+    }
+  }
+`;
+
+const EXPORT_VARIABLES = {
+  selections: [
+    { type: 'platform', items: ['platform'] },
+    { type: 'messages', items: ['messages'] },
+    { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'] },
+  ],
+  bundle_name: 'Integration bundle',
+};
+
+const storageGet = (fileId: string, authorization: string) => fetch(`${API_URI}${basePath}/storage/get/${encodeURIComponent(fileId)}`, {
+  headers: { authorization },
+});
+
+// USER_EDITOR has the knowledge capabilities, not BYPASS
+const editorAuthorization = generateBasicAuth(USER_EDITOR.email, USER_EDITOR.password);
+
+describe('Config preset bundle storage round trip', () => {
+  let fileId: string;
+  let fileName: string;
+
+  beforeAll(async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: EXPORT_VARIABLES });
+    fileId = data.configPresetExport.id;
+    fileName = data.configPresetExport.name;
+  });
+
+  afterAll(async () => {
+    // config_preset/ is not a root cleaned by the test teardown
+    if (fileId) {
+      await deleteFile(testContext, ADMIN_USER, fileId);
+    }
+  });
+
+  it('stores the bundle in its own folder under config_preset', () => {
+    expect(fileId).toMatch(/^config_preset\/[0-9a-f-]{36}\/opencti-config-\d{8}-\d{6}-.+\.zip$/);
+    expect(fileId.endsWith(`/${fileName}`)).toBe(true);
+  });
+
+  it('serves the zip to an admin through /storage/get', async () => {
+    const res = await storageGet(fileId, generateBasicAuth());
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-disposition')).toContain(fileName);
+    const directory = await unzipper.Open.buffer(Buffer.from(await res.arrayBuffer()));
+    const paths = directory.files.map((file: { path: string }) => file.path).sort();
+    expect(paths).toEqual([
+      'data_model/hidden_entity_types.json',
+      'metadata.json',
+      'platform_settings/messages.json',
+      'platform_settings/platform.json',
+    ]);
+    const metadataFile = directory.files.find((file: { path: string }) => file.path === 'metadata.json');
+    const metadata = JSON.parse((await metadataFile.buffer()).toString('utf8'));
+    expect(metadata.bundle_name).toBe('Integration bundle');
+    expect(metadata.entity_types).toEqual(['platform', 'messages', 'hiddenEntityTypes']);
+    expect(metadata.counts).toEqual({ platform: 1, messages: 1, hiddenEntityTypes: 1 });
+    expect(metadata.items).toEqual({ platform: ['platform'], messages: ['messages'], hiddenEntityTypes: ['hiddenEntityTypes'] });
+  });
+
+  it('refuses the bundle to a knowledge user without BYPASS', async () => {
+    const res = await storageGet(fileId, editorAuthorization);
+    expect(res.status).not.toBe(200);
+    expect(((await res.json()) as { error: string }).error).toBe('File not found or restricted');
+  });
+
+  it('refuses the bundle to a knowledge user without BYPASS through a case variant of the path', async () => {
+    const variant = fileId.replace(/^config_preset\//, 'Config_Preset/');
+    // The variant reaches the bundle: an admin gets it
+    const adminRes = await storageGet(variant, generateBasicAuth());
+    expect(adminRes.status).toBe(200);
+    await adminRes.arrayBuffer();
+    const res = await storageGet(variant, editorAuthorization);
+    expect(res.status).not.toBe(200);
+    expect(((await res.json()) as { error: string }).error).toBe('File not found or restricted');
+  });
+
+  it('refuses the export mutation to a user without BYPASS', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: EXPORT_MUTATION, variables: EXPORT_VARIABLES });
+  });
+});
