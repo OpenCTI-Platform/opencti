@@ -72,7 +72,8 @@ describe('Component: RelativeDateInput', () => {
       />,
     );
 
-    const input = screen.getByLabelText('From') as HTMLInputElement;
+    // The picker field is a group of sections; its hidden input mirrors the displayed value.
+    const input = screen.getByRole('group', { name: 'From' }).querySelector('input') as HTMLInputElement;
     expect(input.value).not.toEqual(isoValue);
     expect(input.value.length).toBeGreaterThan(0);
   });
@@ -119,6 +120,7 @@ describe('Component: RelativeDateInput', () => {
 
     rerender(<RelativeDateInput {...props} dateInput={['', '2026-01-01T00:00:00.000Z']} />);
 
-    expect(screen.getByLabelText('To')).toHaveFocus();
+    // The date field takes the focus on its first section, inside the group its label names.
+    expect(screen.getByRole('group', { name: 'To' })).toContainElement(document.activeElement as HTMLElement);
   });
 });

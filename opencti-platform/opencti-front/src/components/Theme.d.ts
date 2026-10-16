@@ -1,3 +1,5 @@
+// Types the date pickers' entries (MuiPickers*) in the theme `components`.
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 import { CommonColors, PaletteColorOptions, PaletteMode, PaletteOptions, Theme as MuiTheme, ThemeOptions, TypeBackground, TypeText } from '@mui/material/styles';
 
 declare module '@mui/material/IconButton' {

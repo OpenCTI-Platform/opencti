@@ -138,7 +138,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     return (
       <div style={{ display: 'flex', flex: 1, minWidth: 0, alignItems: 'center' }}>
         <DateTimePicker
-          enableAccessibleFieldDOMStructure={false}
           label={label}
           value={new Date(committedValue)}
           onChange={(value) => {
@@ -221,7 +220,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       {isDatePickerOpen && (
         <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden>
           <DateTimePicker
-            enableAccessibleFieldDOMStructure={false}
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
             onAccept={handleChangeAbsoluteDateFilter}
