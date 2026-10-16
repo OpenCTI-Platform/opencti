@@ -142,6 +142,48 @@ export const computeStateOrder = (
 };
 
 /**
+ * Returns the edges (keyed `${from}->${to}`) that can be taken from `fromState` by moving forward
+ * only: back edges found from `initialState`, such as "reopen", are not followed. Transitions from
+ * any state (`*`) are ignored. Returns nothing when `fromState` is not reachable from `initialState`.
+ */
+export const findForwardEdges = (
+  initialState: string,
+  transitions: OrderingTransition[],
+  fromState: string,
+): Set<string> => {
+  const adjacency = buildAdjacency(transitions);
+  const reachable = new Set<string>([initialState]);
+  const stack: string[] = [initialState];
+  while (stack.length > 0) {
+    const current = stack.pop() as string;
+    (adjacency.get(current) ?? new Set<string>()).forEach((neighbor) => {
+      if (!reachable.has(neighbor)) {
+        reachable.add(neighbor);
+        stack.push(neighbor);
+      }
+    });
+  }
+  const forwardEdges = new Set<string>();
+  if (!reachable.has(fromState)) return forwardEdges;
+  const backEdges = findBackEdges(initialState, reachable, adjacency);
+  const visited = new Set<string>([fromState]);
+  const queue: string[] = [fromState];
+  while (queue.length > 0) {
+    const current = queue.shift() as string;
+    (adjacency.get(current) ?? new Set<string>()).forEach((next) => {
+      const edge = `${current}->${next}`;
+      if (backEdges.has(edge)) return;
+      forwardEdges.add(edge);
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push(next);
+      }
+    });
+  }
+  return forwardEdges;
+};
+
+/**
  * Returns the subset of `allStates` that cannot be reached from `initialState` via any transition
  * path (excluding `initialState` itself). Reachability here is independent of cycles: a state
  * inside a cycle it can be entered from is still reachable and is not reported.
