@@ -51,6 +51,14 @@ describe('HuntRunsWidgetRows', () => {
     expect(screen.getByText('Cobalt Strike beacons')).toBeTruthy();
     expect(screen.getByText('Splunk prod')).toBeTruthy();
     expect(screen.getByRole('link').getAttribute('href')).toContain('/hunts/hunt-1/runs/run-1');
+    expect(screen.getByText('2 hits')).toBeTruthy();
+  });
+
+  it('should show no hits nor verdict for a run that is not completed', () => {
+    testRender(<HuntRunsWidgetRows runs={[{ ...run, hunt_run_status: 'running', hits_count: 0, verdict: 'pending' }]} />);
+    expect(screen.getByText('Cobalt Strike beacons')).toBeTruthy();
+    expect(screen.queryByText('No hit')).toBeNull();
+    expect(screen.queryByText('Pending')).toBeNull();
   });
 
   it('should name a deleted hunt and show the empty state without runs', () => {

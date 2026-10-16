@@ -93,8 +93,12 @@ export const HuntRunsWidgetRows = ({ runs }: { runs: readonly HuntRunsWidgetRun[
               </span>
               <Text variant="content-caption">{run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Unknown')}</Text>
             </span>
-            <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: run.hits_count ?? 0 } })}</Text>
-            <HuntVerdictChip value={run.verdict} />
+            {run.hunt_run_status === 'completed' && (
+              <>
+                <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: run.hits_count ?? 0 } })}</Text>
+                <HuntVerdictChip value={run.verdict} />
+              </>
+            )}
           </Link>
         </li>
       ))}

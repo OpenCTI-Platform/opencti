@@ -27,6 +27,7 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntFormHasLogic,
+  huntEscalationTarget,
   huntIncidentModeValue,
   huntIncidentSeverityLabel,
   huntMessageText,
@@ -313,6 +314,12 @@ describe('Hunt utils', () => {
       expect(huntIncidentModeValue(null)).toEqual('draft');
       expect(huntIncidentModeValue('incident')).toEqual('incident');
     });
+
+    it('should say where the hits of an escalated run go, as the incident mode of the hunt sets it', () => {
+      expect(huntEscalationTarget('draft')).toEqual('The hits go to the open incident of this hunt, or to a new incident draft');
+      expect(huntEscalationTarget(null)).toEqual('The hits go to the open incident of this hunt, or to a new incident draft');
+      expect(huntEscalationTarget('incident')).toEqual('The hits go to the open incident of this hunt, or to a new incident');
+    });
   });
 
   it('should parse benign patterns, one per line', () => {
@@ -569,6 +576,7 @@ describe('Hunt utils', () => {
     expect(huntWidgetValueLabel('hunt_run_trigger', 'playbook')).toEqual('Playbook');
     expect(huntWidgetValueLabel('hunt_type', 'Telemetry')).toEqual('Detection rule');
     expect(huntWidgetValueLabel('hunt_type', 'indicators')).toEqual('Indicators');
+    expect(huntWidgetValueLabel('hunt_type', 'Unknown')).toBeNull();
     expect(huntWidgetValueLabel('hunt_source_kind', 'agent')).toEqual('AI agent');
     expect(huntWidgetValueLabel('verdict_source', 'analyst')).toEqual('Analyst');
     expect(huntWidgetValueLabel('hunt_status', 'paused')).toEqual('Paused');

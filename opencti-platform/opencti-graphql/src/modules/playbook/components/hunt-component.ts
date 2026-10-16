@@ -97,7 +97,7 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
       type: 'array',
       uniqueItems: true,
       default: [],
-      $ref: 'Hunts to run (empty: the active hunts targeting the threats, techniques and indicators of the elements)',
+      $ref: 'Existing hunts to run (Run existing hunts only; empty: the active hunts targeting the threats, techniques and indicators of the elements)',
       items: { type: 'string', oneOf: [] },
     },
     security_platform_ids: {

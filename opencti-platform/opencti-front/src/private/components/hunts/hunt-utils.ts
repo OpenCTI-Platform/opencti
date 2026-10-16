@@ -528,9 +528,15 @@ export const huntVerdictSourceLabel = (source?: string | null) => {
   }
 };
 
+// Chart axes cut long names, hence the short name of a telemetry hunt
+const huntTypeWidgetLabel = (huntType: string): string | null => {
+  if (huntType === 'telemetry') return 'Detection rule';
+  return huntType === 'indicators' ? huntTypeLabel(huntType) : null;
+};
+
 /**
  * The label of a value of the hunt attribute a dashboard widget breaks down on, or null for any other attribute.
- * Distributions return the values capitalized (`True_positive`); chart axes cut long names, hence the short hunt type.
+ * Distributions return the values capitalized (`True_positive`).
  */
 export const huntWidgetValueLabel = (attribute: string, value: string): string | null => {
   const key = value.toLowerCase();
@@ -539,7 +545,7 @@ export const huntWidgetValueLabel = (attribute: string, value: string): string |
     case 'verdict_source': return huntVerdictSourceLabel(key);
     case 'hunt_run_status': return huntRunStatusLabel(key);
     case 'hunt_run_trigger': return huntRunTriggerLabel(key);
-    case 'hunt_type': return key === 'indicators' ? huntTypeLabel(key) : 'Detection rule';
+    case 'hunt_type': return huntTypeWidgetLabel(key);
     case 'hunt_source_kind': return huntSourceKindLabel(key);
     case 'hunt_status': return huntStatusLabel(key);
     default: return null;
@@ -726,6 +732,10 @@ export const HUNT_INCIDENT_MODES = ['draft', 'incident'] as const;
 export type HuntIncidentModeValue = typeof HUNT_INCIDENT_MODES[number];
 export const HUNT_INCIDENT_MODE_DEFAULT: HuntIncidentModeValue = 'draft';
 export const huntIncidentModeValue = (mode?: string | null): HuntIncidentModeValue => (mode === 'incident' ? 'incident' : HUNT_INCIDENT_MODE_DEFAULT);
+/** Where the hits of a run an analyst escalates go, as the incident mode of its hunt sets it. */
+export const huntEscalationTarget = (mode?: string | null) => (huntIncidentModeValue(mode) === 'incident'
+  ? 'The hits go to the open incident of this hunt, or to a new incident'
+  : 'The hits go to the open incident of this hunt, or to a new incident draft');
 
 export interface HuntFormValues {
   name: string;
