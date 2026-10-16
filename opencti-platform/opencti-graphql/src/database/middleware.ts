@@ -910,7 +910,7 @@ export const distributionEntities = async (
     const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
-    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
+    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'float_value', 'boolean_value', 'date_value'];
     const rawValueField = customFieldDef ? getCustomFieldValueField(customFieldDef.field_type) : 'string_value';
     const valueField = `custom_field_values.${rawValueField}${NON_KEYWORD_VALUE_FIELDS.includes(rawValueField) ? '' : '.keyword'}`;
 

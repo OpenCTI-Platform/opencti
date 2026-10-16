@@ -1702,6 +1702,7 @@ class OpenCTIStix2:
             for value_field in [
                 "select_values",
                 "int_value",
+                "float_value",
                 "string_value",
                 "boolean_value",
                 "date_value",
