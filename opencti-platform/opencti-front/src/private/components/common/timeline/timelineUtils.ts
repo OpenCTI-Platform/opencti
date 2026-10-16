@@ -586,8 +586,8 @@ const LONG_TOKEN_KEPT = 8;
  * Crops the values without spaces too long to fit a line (hashes, URLs) to their start and end, so that the rest of a
  * title such as "Indicator validity: bb235453...681d8c4e" stays visible.
  */
-export const cropLongTokens = (text: string): string => text.replace(
-  new RegExp(`\\S{${LONG_TOKEN_LENGTH + 1},}`, 'g'),
+export const cropLongTokens = (text: string, maxLength = LONG_TOKEN_LENGTH): string => text.replace(
+  new RegExp(`\\S{${maxLength + 1},}`, 'g'),
   (token) => `${token.slice(0, LONG_TOKEN_KEPT)}...${token.slice(-LONG_TOKEN_KEPT)}`,
 );
 

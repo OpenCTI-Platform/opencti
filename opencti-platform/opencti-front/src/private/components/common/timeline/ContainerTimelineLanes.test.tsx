@@ -235,6 +235,15 @@ describe('ContainerTimelineLanes numbered circles', () => {
     expect(onClusterSelect).toHaveBeenCalledWith([new Date('2026-02-05T08:00:00.000Z').getTime(), new Date('2026-02-05T16:00:00.000Z').getTime()]);
   });
 
+  it('keeps the start and the end of a hash in the title of a listed event', async () => {
+    const hashed = [{ ...events[0], title: 'Indicator validity: 5d41402abc4b2a76b9719d911017c592' }, events[1]];
+    const { user } = testRender(
+      <ContainerTimelineLanes events={hashed} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^2 events - / }));
+    expect(screen.getByTestId('timeline-cluster-event-late')).toHaveTextContent(/^Indicator validity: 5d41402a\.\.\.1017c592/);
+  });
+
   it('opens the list from the keyboard', async () => {
     const { user } = testRender(
       <ContainerTimelineLanes events={events} lanes={['response']} domain={domain} grouping="day" ariaLabel="Timeline" onSelect={() => {}} />,

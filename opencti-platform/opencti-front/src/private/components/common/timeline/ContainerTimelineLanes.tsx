@@ -10,6 +10,7 @@ import { resolveTimelineSourceState, type TimelineSourceStateValue } from './tim
 import {
   clusterLaneEvents,
   compactDayTicks,
+  cropLongTokens,
   describeTimelineEventSource,
   describeTimelineEventTimes,
   groupOverflowItems,
@@ -87,6 +88,8 @@ const POINT_RADIUS = 5;
 const MARKER_WIDTH = 14;
 const LABEL_CHARS = 26;
 const CLUSTER_TITLE_CHARS = 40;
+// A hash cropped to its start and end leaves room in a listed title for a prefix such as "Indicator validity:"
+const CLUSTER_TOKEN_CHARS = 20;
 const ZOOM_STEP = 0.7;
 const PAN_STEP = 0.15;
 const CONTEXT_OPACITY = 0.45;
@@ -438,7 +441,7 @@ const ContainerTimelineLanes = ({
           {listed.map((listedEvent) => (
             <MenuItem key={listedEvent.id} onSelect={() => onSelect?.(listedEvent.id)} data-testid={`timeline-cluster-event-${listedEvent.id}`}>
               <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <Text variant="content-compact-medium" as="span">{truncate(listedEvent.title, CLUSTER_TITLE_CHARS)}</Text>
+                <Text variant="content-compact-medium" as="span">{truncate(cropLongTokens(listedEvent.title, CLUSTER_TOKEN_CHARS), CLUSTER_TITLE_CHARS)}</Text>
                 <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>
                   {`${fldt(listedEvent.event_time)} - ${t_i18n(TIMELINE_KIND_LABELS[listedEvent.kind] ?? listedEvent.kind)}`}
                 </Text>
