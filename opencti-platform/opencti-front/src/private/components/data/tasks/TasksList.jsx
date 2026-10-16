@@ -105,6 +105,9 @@ const TasksListFragment = graphql`
               field
               type
               values
+              options {
+                eventName
+              }
             }
           }
           created_at
@@ -364,7 +367,7 @@ const TasksList = ({ data, options }) => {
                                   <Tag
                                     label={[
                                       action.context.field && `${fieldLabel(action.context.field)}: `,
-                                      truncate(R.join(', ', action.context.values || []), 80),
+                                      truncate(R.join(', ', action.context.options?.eventName ? [action.context.options.eventName] : action.context.values || []), 80),
                                     ]
                                       .filter(Boolean)
                                       .join('')}
