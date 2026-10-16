@@ -7,6 +7,7 @@ import { ME_FILTER_VALUE } from '../../../../utils/filters/filtersUtils';
 import { VARIABLE_SEARCH_CONTEXT, VARIABLE_TYPE_SEARCH } from '../variableTypeSearch';
 import type { DashboardVariableShape } from '../DashboardVariableValueInput';
 import useKillChainPhaseSearch from './useKillChainPhaseSearch';
+import useRestrictedEntitySearch from './useRestrictedEntitySearch';
 
 export interface VariableValueOptions {
   options: FilterOptionValue[];
@@ -20,7 +21,8 @@ export interface VariableValueOptions {
 /**
  * Server side search of the candidate values of an entity pool variable (entity, label, marking, user, group, status,
  * kill chain phase) or of an entity type, through the same search as the filters. A kill chain phase is searched among the
- * phases of the kill chain of the variable only, on the server (see useKillChainPhaseSearch).
+ * phases of the kill chain of the variable only, on the server (see useKillChainPhaseSearch). An entity variable
+ * restricted by filters is searched among the entities that match its rule (see useRestrictedEntitySearch).
  * Shared by the input of one value and the input of the values of a selection.
  */
 const useVariableValueOptions = (variable: DashboardVariableShape): VariableValueOptions => {
@@ -34,7 +36,21 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
   const [entities, searchEntities] = useSearchEntities({ searchContext: VARIABLE_SEARCH_CONTEXT, searchScope, setInputValues: () => {} });
   const isKillChainPhase = variable.type === 'killChainPhase';
   const killChainPhases = useKillChainPhaseSearch(variable.killChainName);
+  const isRestrictedByFilters = variable.type === 'entity' && variable.restriction.mode === 'filters';
+  const restrictedEntities = useRestrictedEntitySearch(
+    entityTypes,
+    variable.restriction.mode === 'filters' ? variable.restriction.filters : undefined,
+  );
 
+  if (isRestrictedByFilters) {
+    // Searched with the typed text only: picking writes the label of the pick, which is no search.
+    return {
+      options: restrictedEntities.options,
+      search: (_event, text, cause = 'type') => {
+        if (cause === 'type') restrictedEntities.search(text);
+      },
+    };
+  }
   const options = isKillChainPhase
     ? killChainPhases.options
     : (isSearchable ? getOptionsFromEntities(entities, searchScope, searchKey) : [])
