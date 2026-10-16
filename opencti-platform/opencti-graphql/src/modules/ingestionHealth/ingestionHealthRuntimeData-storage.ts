@@ -1,5 +1,6 @@
 import { getClientBase } from '../../database/redis';
 import { logApp } from '../../config/conf';
+import { UnsupportedError } from '../../config/errors';
 
 // Where a runtime data is stored. A storage only moves raw values: it knows nothing about
 // the format of the value (validated by the registry) nor about its freshness (judged by the manager).
@@ -83,6 +84,6 @@ export const createStorage = (config: RuntimeDataStorageConfig): RuntimeDataStor
     case 'redis_sorted_set':
       return redisSortedSet(config);
     default:
-      throw new Error(`Unknown runtime data storage: ${(config as { type: string }).type}`);
+      throw UnsupportedError('Unknown runtime data storage', { type: (config as { type: string }).type });
   }
 };
