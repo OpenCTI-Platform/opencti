@@ -67,7 +67,6 @@ const HUNT_DEFINITION: ModuleDefinition<StoreEntityHunt, StixHunt> = {
     { name: 'hunt_scope', label: 'Hunt scope', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'hunt_schedule', label: 'Hunt schedule', type: 'string', format: 'short', defaultValue: 'manual', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'trigger_filters', label: 'Hunt trigger filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    { name: 'hunt_pir_activation', label: 'Activate with PIR', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'time_window_hours', label: 'Hunt time window (hours)', type: 'numeric', precision: 'integer', defaultValue: 24, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'expected_observables', label: 'Hunt expected observables', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
     { name: 'benign_patterns', label: 'Hunt benign patterns', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
@@ -80,8 +79,6 @@ const HUNT_DEFINITION: ModuleDefinition<StoreEntityHunt, StixHunt> = {
     { name: 'last_hits_count', label: 'Hunt last run hits', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_new_hits_count', label: 'Hunt last run new hits', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'next_run_at', label: 'Hunt next run date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'hunt_pir_armed', label: 'Hunt armed by a PIR', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'hunt_pir_armed_at', label: 'Hunt PIR arming date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   relationsRefs: [

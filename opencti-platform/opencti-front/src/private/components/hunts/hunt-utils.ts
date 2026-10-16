@@ -230,7 +230,6 @@ export const HUNT_DOCS = {
   automation: `${HUNT_DOCS_BASE}/hunt-automation/`,
   schedules: `${HUNT_DOCS_BASE}/hunt-automation/#schedules`,
   standing: `${HUNT_DOCS_BASE}/hunt-automation/#standing-hunts`,
-  pir: `${HUNT_DOCS_BASE}/hunt-automation/#activation-by-priority-intelligence-requirements`,
   hitCounting: `${HUNT_DOCS_BASE}/hunts/#how-hits-are-counted`,
 };
 
@@ -270,9 +269,9 @@ export const huntLastRunHits = (
   return t_i18n('{hits}, {new} new', { values: { hits: label, new: n(hunt.last_new_hits_count) } });
 };
 
-/** Whether a hunt runs by itself again and again (schedule, standing hunt, PIR activation): its runs search since the previous one. */
-export const huntRunsRecur = (hunt: { hunt_schedule?: string | null; hunt_pir_activation?: boolean | null }) => {
-  return huntScheduleMode(hunt.hunt_schedule) !== 'manual' || hunt.hunt_pir_activation === true;
+/** Whether a hunt runs by itself again and again (schedule, standing hunt): its runs search since the previous one. */
+export const huntRunsRecur = (hunt: { hunt_schedule?: string | null }) => {
+  return huntScheduleMode(hunt.hunt_schedule) !== 'manual';
 };
 
 /** Whether a sampled hit is new in its run, or since when and how often the runs of the hunt found it; null when unknown. */
@@ -369,7 +368,7 @@ export const huntObservableTypeNames = (types: ReadonlyArray<string>, t_i18n: (m
 /** The meaning of each status, one line each, as the hunt page explains them. */
 export const HUNT_STATUS_MEANINGS: Record<HuntStatusValue, string> = {
   draft: 'The hunt is being written; it never runs.',
-  active: 'The hunt runs: on its schedule, when a PIR flags one of its targets, or when you click Run now.',
+  active: 'The hunt runs: on its schedule, when a playbook runs it, or when you click Run now.',
   paused: 'The schedule and the triggers are stopped; Run now still works.',
   retired: 'Kept for the record; it never runs again until it is reopened as a draft.',
 };
@@ -377,7 +376,7 @@ export const HUNT_STATUS_MEANINGS: Record<HuntStatusValue, string> = {
 /** The same meanings for a user who can only view the hunt, who is not shown the controls they name. */
 export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
   ...HUNT_STATUS_MEANINGS,
-  active: 'The hunt runs: on its schedule, when a PIR flags one of its targets, or when a user who can edit it runs it.',
+  active: 'The hunt runs: on its schedule, when a playbook runs it, or when a user allowed to launch hunts runs it.',
   paused: 'The schedule and the triggers are stopped; a user who can edit the hunt can still run it.',
 };
 
@@ -398,8 +397,8 @@ export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
     'No hunt connector can run it on the platforms of its scope yet; a user who can edit the hunt can widen the scope',
   'No hunt connector of its scope supports indicator lookups: deploy one that does, such as the Splunk hunt connector':
     'No hunt connector of its scope supports indicator lookups yet; it runs once one that does is deployed, such as the Splunk hunt connector',
-  'Scheduled, standing and PIR-activated hunts need the Enterprise Edition: set the schedule to manual':
-    'Scheduled, standing and PIR-activated hunts need the Enterprise Edition; a user who can edit the hunt can set its schedule to manual',
+  'Scheduled and standing hunts need the Enterprise Edition: set the schedule to manual':
+    'Scheduled and standing hunts need the Enterprise Edition; a user allowed to launch hunts can set its schedule to manual',
   'The scope matches no security platform: edit the scope': 'The scope matches no security platform yet; a user who can edit the hunt can change it',
 };
 
@@ -545,9 +544,9 @@ export const huntStatusTransitions = (status?: string | null): HuntStatusTransit
   }
 };
 
-/** Autonomous execution (any schedule but manual, PIR activation) is an Enterprise Edition capability. */
-export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null; hunt_pir_activation?: boolean | null }) => {
-  return huntScheduleMode(hunt.hunt_schedule) !== 'manual' || hunt.hunt_pir_activation === true;
+/** Autonomous execution (any schedule but manual) is an Enterprise Edition capability. */
+export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null }) => {
+  return huntScheduleMode(hunt.hunt_schedule) !== 'manual';
 };
 
 export const hasHuntLogic = (hunt: {
@@ -705,7 +704,6 @@ export interface HuntFormValues {
   scopePlatforms: FieldOption[];
   schedule_mode: HuntScheduleMode;
   schedule_cron: string;
-  hunt_pir_activation: boolean;
   time_window_hours: number | string;
   expected_observables: string[];
   benign_patterns: string;
@@ -737,7 +735,6 @@ export const emptyHuntFormValues = (): HuntFormValues => ({
   scopePlatforms: [],
   schedule_mode: 'manual',
   schedule_cron: '',
-  hunt_pir_activation: false,
   time_window_hours: HUNT_DEFAULT_TIME_WINDOW_HOURS,
   expected_observables: [],
   benign_patterns: '',
@@ -824,7 +821,6 @@ export const toHuntAddInput = (values: HuntFormValues, triggerFilters: string, i
     hunt_scope: buildHuntScope(optionValues(values.scopePlatforms)),
     hunt_schedule: schedule,
     trigger_filters: schedule === HUNT_SCHEDULE_STANDING ? triggerFilters : '',
-    hunt_pir_activation: values.hunt_pir_activation,
     time_window_hours: toInteger(values.time_window_hours, HUNT_DEFAULT_TIME_WINDOW_HOURS),
     expected_observables: values.expected_observables,
     benign_patterns: parseBenignPatterns(values.benign_patterns),
@@ -864,7 +860,6 @@ export const HUNT_EDITABLE_KEYS = [
   'hunt_scope',
   'hunt_schedule',
   'trigger_filters',
-  'hunt_pir_activation',
   'time_window_hours',
   'expected_observables',
   'benign_patterns',

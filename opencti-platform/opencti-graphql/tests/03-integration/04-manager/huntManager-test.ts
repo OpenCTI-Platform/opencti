@@ -7,8 +7,7 @@ import { deleteElementById, patchAttribute } from '../../../src/database/middlew
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import * as playbookManager from '../../../src/manager/playbookManager/playbookManager';
-import { FilterMode, OrderingMode, PirType } from '../../../src/generated/graphql';
-import { deletePir, pirAdd, pirFlagElement, pirUnflagElement } from '../../../src/modules/pir/pir-domain';
+import { FilterMode, OrderingMode } from '../../../src/generated/graphql';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
@@ -21,7 +20,6 @@ import {
   HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TRIGGER_MANUAL,
-  HUNT_RUN_TRIGGER_PIR,
   HUNT_RUN_TRIGGER_PLAYBOOK,
   HUNT_RUN_TRIGGER_PREVIEW,
   HUNT_RUN_TRIGGER_RETRY,
@@ -38,7 +36,6 @@ import {
   HUNT_MANAGER_STREAM_STATE,
   processStandingHunts,
   purgeExpiredHuntRuns,
-  reconcilePirActivatedHunts,
   requeueUnpublishedHuntRuns,
   resumeSettledHuntPlaybooks,
   retryFailedHuntRuns,
@@ -178,44 +175,6 @@ describe('Hunt manager', () => {
     expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_SCHEDULE)).toHaveLength(1);
     await runScheduledHunts(testContext);
     expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_SCHEDULE)).toHaveLength(1);
-  });
-
-  it('should arm a PIR activated hunt while a PIR flags one of its targets', async () => {
-    await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_schedule: 'manual', next_run_at: null, hunt_pir_activation: true });
-    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
-    const pir = await pirAdd(testContext, ADMIN_USER, {
-      name: 'Hunt manager test PIR',
-      pir_type: PirType.ThreatLandscape,
-      pir_rescan_days: 0,
-      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
-      pir_criteria: [criterion],
-    });
-    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
-    try {
-      await reconcilePirActivatedHunts(testContext);
-      expect((await loadHunt(huntId)).hunt_pir_armed).not.toBe(true);
-      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
-      expect(await reconcilePirActivatedHunts(testContext)).toBeGreaterThanOrEqual(1);
-      const armed = await loadHunt(huntId);
-      expect(armed.hunt_pir_armed).toBe(true);
-      expect(armed.hunt_pir_armed_at).toBeTruthy();
-      expect(armed.hunt_status).toEqual('active');
-      expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_PIR)).toHaveLength(1);
-      // Still flagged: no new run
-      await reconcilePirActivatedHunts(testContext);
-      expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_PIR)).toHaveLength(1);
-      // A standing trigger still pending when the hunt is disarmed is dropped, not served once the hunt is armed again
-      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_schedule: 'standing', next_run_at: hoursAgo(1) });
-      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
-      await reconcilePirActivatedHunts(testContext);
-      const disarmed = await loadHunt(huntId);
-      expect(disarmed.hunt_pir_armed).toBe(false);
-      expect(disarmed.hunt_status).toEqual('active');
-      expect(disarmed.next_run_at ?? null).toBeNull();
-    } finally {
-      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_pir_activation: false, hunt_schedule: 'manual', next_run_at: null });
-      await deletePir(testContext, ADMIN_USER, pir.id);
-    }
   });
 
   it('should resume a playbook waiting on a hunt step once its runs are settled, exactly once', async () => {
@@ -577,37 +536,6 @@ describe('Hunt manager', () => {
     await queryAsAdmin({ query: gql`mutation HuntDelete($id: ID!) { huntDelete(id: $id) }`, variables: { id } });
   };
 
-  it('should evaluate every PIR activated hunt at each tick, past the first page', async () => {
-    const olderId = await addTestHunt('Hunt manager test older PIR hunt');
-    const newerId = await addTestHunt('Hunt manager test newer PIR hunt');
-    await patchAttribute(testContext, ADMIN_USER, olderId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
-    await patchAttribute(testContext, ADMIN_USER, newerId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
-    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
-    const pir = await pirAdd(testContext, ADMIN_USER, {
-      name: 'Hunt manager test paging PIR',
-      pir_type: PirType.ThreatLandscape,
-      pir_rescan_days: 0,
-      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
-      pir_criteria: [criterion],
-    });
-    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
-    const { automationPageSize } = HUNT_CONFIG;
-    // One hunt per page: a single first page would read the same oldest hunt at every tick
-    HUNT_CONFIG.automationPageSize = 1;
-    try {
-      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
-      await reconcilePirActivatedHunts(testContext);
-      expect((await loadHunt(olderId)).hunt_pir_armed).toBe(true);
-      expect((await loadHunt(newerId)).hunt_pir_armed).toBe(true);
-    } finally {
-      HUNT_CONFIG.automationPageSize = automationPageSize;
-      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
-      await deletePir(testContext, ADMIN_USER, pir.id);
-      await deleteTestHunt(olderId);
-      await deleteTestHunt(newerId);
-    }
-  });
-
   it('should keep the due occurrence of the scheduled hunts beyond the tick budget', async () => {
     const firstId = await addTestHunt('Hunt manager test first due cron hunt');
     const secondId = await addTestHunt('Hunt manager test second due cron hunt');
@@ -674,39 +602,6 @@ describe('Hunt manager', () => {
     } finally {
       failing.mockRestore();
       await deleteTestHunt(transientId);
-    }
-  });
-
-  it('should arm a PIR activated hunt only once its arming run started', async () => {
-    const armedId = await addTestHunt('Hunt manager test arming run hunt');
-    await patchAttribute(testContext, ADMIN_USER, armedId, ENTITY_TYPE_HUNT, { hunt_pir_activation: true });
-    const criterion = { weight: 1, filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: [ENTITY_TYPE_INTRUSION_SET] }], filterGroups: [] } };
-    const pir = await pirAdd(testContext, ADMIN_USER, {
-      name: 'Hunt manager test arming PIR',
-      pir_type: PirType.ThreatLandscape,
-      pir_rescan_days: 0,
-      pir_filters: { mode: FilterMode.And, filters: [], filterGroups: [] },
-      pir_criteria: [criterion],
-    });
-    const flag = { relationshipId: uuidv4(), sourceId: intrusionSetId };
-    const { maxRunsPerTick } = HUNT_CONFIG;
-    try {
-      await pirFlagElement(testContext, ADMIN_USER, pir.standard_id, { ...flag, matchingCriteria: [criterion] });
-      // No run can start in this tick: the hunt stays disarmed and arming is tried again
-      HUNT_CONFIG.maxRunsPerTick = 0;
-      await reconcilePirActivatedHunts(testContext);
-      expect((await loadHunt(armedId)).hunt_pir_armed).not.toBe(true);
-      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
-      await reconcilePirActivatedHunts(testContext);
-      expect((await loadHunt(armedId)).hunt_pir_armed).toBe(true);
-      const armingRuns = await listHuntRuns(armedId);
-      expect(armingRuns.filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_PIR)).toHaveLength(1);
-      expect(armingRuns.filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_STANDING)).toHaveLength(0);
-    } finally {
-      HUNT_CONFIG.maxRunsPerTick = maxRunsPerTick;
-      await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
-      await deletePir(testContext, ADMIN_USER, pir.id);
-      await deleteTestHunt(armedId);
     }
   });
 

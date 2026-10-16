@@ -23,7 +23,6 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
 import useDefaultValues from '../../../utils/hooks/useDefaultValues';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
@@ -39,7 +38,6 @@ import HuntRunProducesSection from './HuntRunProducesSection';
 import HuntSigmaRulesField from './HuntSigmaRulesField';
 import HuntBenignPatternsField from './HuntBenignPatternsField';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
-import HuntEELabel from './HuntEELabel';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
@@ -160,7 +158,7 @@ const HUNT_CREATION_STEPS = ['What to hunt', 'Context', 'Execution', 'Knowledge'
 const HUNT_CREATION_STEP_FIELDS: (keyof HuntFormValues)[][] = [
   ['hunt_type', 'sigma_rule', 'more_sigma_rules', 'native_queries', 'iocElements', 'iocEntities', 'ioc_values_text'],
   ['name', 'hypothesis', 'description', 'hunt_status'],
-  ['scopePlatforms', 'schedule_mode', 'schedule_cron', 'hunt_pir_activation', 'time_window_hours', 'escalation_threshold', 'hunt_max_results', 'escalate_manual_runs', 'expected_observables', 'benign_patterns'],
+  ['scopePlatforms', 'schedule_mode', 'schedule_cron', 'time_window_hours', 'escalation_threshold', 'hunt_max_results', 'escalate_manual_runs', 'expected_observables', 'benign_patterns'],
   ['huntTargets', 'huntTechniques', 'huntSources', 'createdBy', 'objectLabel', 'objectMarking', 'externalReferences'],
 ];
 
@@ -179,7 +177,6 @@ interface HuntCreationFormProps {
 export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill, derived, targetsHelperText }: HuntCreationFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const triggerFiltersState = useFiltersState(emptyFilterGroup);
   const iocFiltersState = useFiltersState(emptyFilterGroup);
   const { validator, mandatoryAttributes } = useHuntFormValidation(serializeFilterGroupForBackend(iocFiltersState[0]));
@@ -368,16 +365,6 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
                   <HuntScheduleField />
                 </div>
                 {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
-                <div style={fieldSpacingContainerStyle}>
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="hunt_pir_activation"
-                    label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
-                    helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
-                    disabled={!isEnterpriseEdition}
-                  />
-                </div>
                 <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
                   <div style={{ flex: 1 }}>
                     <Field

@@ -39,8 +39,6 @@ const subscription = graphql`
       last_run_status
       last_hits_count
       next_run_at
-      hunt_pir_armed
-      hunt_pir_armed_at
       ...Hunt_hunt
       ...HuntLogic_hunt
       ...HuntStatusHeader_hunt

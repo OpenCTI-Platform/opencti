@@ -23,7 +23,6 @@ import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGro
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useIsMandatoryAttribute } from '../../../utils/hooks/useEntitySettings';
 import CreatedByField from '../common/form/CreatedByField';
@@ -54,7 +53,6 @@ import {
   type HuntTypeValue,
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
-import HuntEELabel from './HuntEELabel';
 import HuntBenignPatternsField from './HuntBenignPatternsField';
 import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
 import type { HuntAIFormValues } from './hunt-ai-utils';
@@ -79,7 +77,6 @@ const huntEditionFragment = graphql`
       entity_type
     }
     trigger_filters
-    hunt_pir_activation
     time_window_hours
     escalation_threshold
     escalate_manual_runs
@@ -168,7 +165,6 @@ const toFormValues = (hunt: HuntEdition_hunt$data): HuntFormValues => ({
   hunt_status: hunt.hunt_status as HuntFormValues['hunt_status'],
   scopePlatforms: (hunt.scopePlatforms ?? []).map((platform) => ({ value: platform.id, label: platform.name, type: platform.entity_type })),
   ...huntScheduleFormValues(hunt.hunt_schedule),
-  hunt_pir_activation: hunt.hunt_pir_activation === true,
   time_window_hours: hunt.time_window_hours,
   escalation_threshold: hunt.escalation_threshold,
   escalate_manual_runs: hunt.escalate_manual_runs === true,
@@ -195,7 +191,6 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { minScheduleIntervalMinutes: minScheduleInterval, maxTimeWindowHours, maxResultsPerRun } = useHuntConfiguration();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const { mandatoryAttributes } = useIsMandatoryAttribute(HUNT_ENTITY_TYPE);
   const hunt = useFragment(huntEditionFragment, data);
   const initialTriggerFilters = hunt.trigger_filters ?? '';
@@ -311,16 +306,6 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               <HuntScheduleField />
             </div>
             {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
-            <div style={fieldSpacingContainerStyle}>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="hunt_pir_activation"
-                label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
-                helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
-                disabled={!isEnterpriseEdition}
-              />
-            </div>
             <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
               <div style={{ flex: 1 }}>
                 <Field
