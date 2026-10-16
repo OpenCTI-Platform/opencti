@@ -83,6 +83,8 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_firstname',
   'x_opencti_lastname',
   'x_opencti_modified_at',
+  'x_opencti_hunted_at',
+  'x_opencti_hunt_matched_at',
   // CVSS 3
   'x_opencti_cvss_base_severity',
   'x_opencti_cvss_attack_vector',
