@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { expect } from '../../fixtures/baseFixtures';
 
 /**
@@ -19,8 +19,19 @@ export default class DraftToolbarPageModel {
     return this.page.getByText('This page is not found on this OpenCTI application.');
   }
 
+  /**
+   * Reloads between attempts, like `waitForTransitionTrigger` - access revocation from an async
+   * transition (e.g. a Reject that runs its access update as a background task) can land after
+   * this page's initial load, and nothing on it re-checks access live.
+   */
   async assertNoAccess() {
-    await expect(this.getNoAccessMessage()).toBeVisible();
+    const noAccessMessage = this.getNoAccessMessage();
+    await expect(async () => {
+      if (!(await noAccessMessage.isVisible())) {
+        await this.page.reload({ waitUntil: 'domcontentloaded' });
+      }
+      await expect(noAccessMessage).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
   }
 
   async assertHasAccess() {
@@ -42,22 +53,49 @@ export default class DraftToolbarPageModel {
   }
 
   /**
-   * Clicks a transition by its exact event name. Handles both UI variants: a direct button
-   * (exactly 1 allowed transition) and the "Next status" dropdown menu (2 or more, per
-   * `WorkflowTransitions.tsx`'s `allowedTransitions.length > 1` check).
+   * Waits for either UI variant of a transition trigger to appear: a direct button (exactly 1
+   * allowed transition) or the "Next status" dropdown menu (2 or more, per
+   * `WorkflowTransitions.tsx`'s `allowedTransitions.length > 1` check). Reloads between attempts
+   * instead of just re-polling the same page - under CI resource contention the toolbar's
+   * background refetch (`WorkflowStatus.tsx`, polled on `FIVE_SECONDS`) can lag well past a
+   * single check's timeout after a just-completed server-side transition.
    */
-  async openTransition(eventName: string) {
+  private async waitForTransitionTrigger(eventName: string) {
     const actions = this.getTransitionsActions();
     const directButton = actions.getByRole('button', { name: eventName, exact: true });
     const nextStatusButton = actions.getByRole('button', { name: 'Next status' });
-    // The toolbar's transitions are fetched asynchronously - wait for either variant to render
-    // instead of an immediate (and possibly premature) count() check.
-    await expect(directButton.or(nextStatusButton)).toBeVisible();
+    await expect(async () => {
+      if (!(await directButton.or(nextStatusButton).isVisible())) {
+        await this.page.reload({ waitUntil: 'domcontentloaded' });
+      }
+      await expect(directButton.or(nextStatusButton)).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
+    return { directButton, nextStatusButton };
+  }
+
+  /** Same reload-and-retry treatment as `waitForTransitionTrigger`, for a dropdown menu item. */
+  private async waitForMenuItem(eventName: string, nextStatusButton: Locator) {
+    const menuItem = this.page.getByRole('menuitem', { name: eventName, exact: true });
+    await expect(async () => {
+      if (!(await menuItem.isVisible())) {
+        await this.page.keyboard.press('Escape').catch(() => {});
+        await this.page.reload({ waitUntil: 'domcontentloaded' });
+        await nextStatusButton.click();
+      }
+      await expect(menuItem).toBeVisible({ timeout: 5000 });
+    }).toPass({ timeout: 60000, intervals: [2000, 5000, 10000] });
+    return menuItem;
+  }
+
+  /** Clicks a transition by its exact event name. Handles both UI variants - see `waitForTransitionTrigger`. */
+  async openTransition(eventName: string) {
+    const { directButton, nextStatusButton } = await this.waitForTransitionTrigger(eventName);
     if (await directButton.count() > 0) {
       return directButton.click();
     }
     await nextStatusButton.click();
-    return this.page.getByRole('menuitem', { name: eventName, exact: true }).click();
+    const menuItem = await this.waitForMenuItem(eventName, nextStatusButton);
+    return menuItem.click();
   }
 
   /**
@@ -66,15 +104,12 @@ export default class DraftToolbarPageModel {
    * status" dropdown - opened, checked, then closed again to leave the toolbar as found.
    */
   async assertTransitionVisible(eventName: string) {
-    const actions = this.getTransitionsActions();
-    const directButton = actions.getByRole('button', { name: eventName, exact: true });
-    const nextStatusButton = actions.getByRole('button', { name: 'Next status' });
-    await expect(directButton.or(nextStatusButton)).toBeVisible();
+    const { directButton, nextStatusButton } = await this.waitForTransitionTrigger(eventName);
     if (await directButton.count() > 0) {
       return;
     }
     await nextStatusButton.click();
-    await expect(this.page.getByRole('menuitem', { name: eventName, exact: true })).toBeVisible();
+    await this.waitForMenuItem(eventName, nextStatusButton);
     await this.page.keyboard.press('Escape');
   }
 
@@ -110,7 +145,14 @@ export default class DraftToolbarPageModel {
       // to catch.)
       await this.page.getByRole('textbox', { name: 'Comment' }).fill(comment);
     }
-    return this.getWizardSubmitButton().click();
+    await this.getWizardSubmitButton().click();
+    // A sync transition applies immediately - nothing to wait for. An async one (e.g. a Reject
+    // that revokes access as a background task) shows `workflow-transitions-pending` for as long
+    // as that task runs; give it a moment to appear, then wait it out, so callers never race the
+    // transition's actual completion.
+    const pending = this.getToolbar().getByTestId('workflow-transitions-pending');
+    await pending.waitFor({ state: 'visible', timeout: 1000 }).catch(() => {});
+    await expect(pending).toHaveCount(0, { timeout: 60000 });
   }
 
   /** The dialog's single submit button - labeled "Approve" for a validating transition, "Confirm" otherwise. */
