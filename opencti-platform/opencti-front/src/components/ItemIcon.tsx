@@ -151,7 +151,7 @@ const iconSelector = (
   // Ingestions take the icon of their kind in the Integrations menu
   const integrationIcon = (kind: BuiltInIntegrationKind) => {
     const IntegrationIcon = getBuiltInIntegration(kind)?.icon ?? AutoAwesomeMotion;
-    return <IntegrationIcon style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    return <IntegrationIcon style={style} fontSize={fontSize} role="img" aria-label={type ?? undefined} />;
   };
 
   switch (type?.toLowerCase()) {

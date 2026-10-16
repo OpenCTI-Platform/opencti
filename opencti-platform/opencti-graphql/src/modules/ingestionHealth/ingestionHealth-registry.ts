@@ -124,7 +124,7 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'User is missing',
     // A required user, or an optional one that was set: it must exist
-    isEnabled: (ingestor) => isDeployed(ingestor) && isUserRequired(ingestor),
+    isEnabled: (ingestor) => isDeployed(ingestor) && (isUserRequired(ingestor) || !!getIngestorUserId(ingestor)),
     getFailure: (ingestor, { isExistingUser }) => {
       const userId = getIngestorUserId(ingestor);
       return !userId || !isExistingUser(userId) ? {} : null;
