@@ -149,6 +149,11 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     // region Containment anchor
     await addTimelineContainment(request, timelineCase.caseId, 'Hosts isolated', '2026-02-05T10:00:00.000Z');
     await page.goto(timelineUrl);
+    // The view the reader picked is kept when the timeline is opened again
+    await expect(page).toHaveURL(/view=list/);
+    await expect(list).toBeVisible();
+    await page.getByLabel('Lanes view', { exact: true }).click();
+    await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     await expect(page.getByTestId('timeline-anchor-containment')).toContainText(/\d/);
     await capture('anchors-containment');
     // endregion
