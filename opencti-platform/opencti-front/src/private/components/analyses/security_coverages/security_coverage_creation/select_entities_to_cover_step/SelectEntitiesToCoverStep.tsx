@@ -23,6 +23,8 @@ interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
   // Hide the entities already covered by this security coverage result.
   excludedCoveredResultId?: string;
+  // Hide these entities, for example the ones still being covered by a background task.
+  excludedEntityIds?: string[];
   // Prevent going to the next step until at least one entity is selected.
   nextRequiresSelection?: boolean;
   onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
@@ -136,6 +138,7 @@ const DATA_COLUMNS = {
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
   excludedCoveredResultId,
+  excludedEntityIds,
   nextRequiresSelection = false,
   onNext,
   onCreate,
@@ -166,7 +169,7 @@ const SelectEntitiesToCoverStep = ({
 
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: buildCoveredEntitiesFilters(coveredEntity, excludedCoveredResultId),
+    filters: buildCoveredEntitiesFilters(coveredEntity, excludedCoveredResultId, excludedEntityIds),
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 

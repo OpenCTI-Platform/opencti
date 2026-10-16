@@ -112,6 +112,10 @@ const SecurityCoverageResultFormDrawer = ({
   const [formDetails, setFormDetails] = useState<SecurityCoverageResultFormData>();
   const [selectedEntities, setSelectedEntities] = useState<SelectedEntities | null>();
   const [relToEntities, setRelToEntities] = useState<UseEntityToggleType[]>();
+  // Entities submitted for each result, while the background task creates
+  // their has-covered relationships. Kept when the drawer is closed, so they
+  // can't be selected again before the relationships exist.
+  const [pendingCoveredIds, setPendingCoveredIds] = useState<Record<string, string[]>>({});
 
   const [commitCreation, creating] = useApiMutation<SecurityCoverageResultCreationMutation>(
     securityCoverageResultMutation,
@@ -213,7 +217,14 @@ const SecurityCoverageResultFormDrawer = ({
       coverage_valid_to: details.validTo,
       add_related_entities: related_entities,
     };
-    const onCompleted = () => {
+    const onCompleted = (resultId?: string) => {
+      const submittedIds = entities?.selected_ids ?? [];
+      if (resultId && submittedIds.length > 0) {
+        setPendingCoveredIds((pending) => ({
+          ...pending,
+          [resultId]: [...(pending[resultId] ?? []), ...submittedIds],
+        }));
+      }
       notifySuccess(!!related_entities);
       close();
     };
@@ -222,7 +233,7 @@ const SecurityCoverageResultFormDrawer = ({
       commitEdition({
         // Send null to clear the author of the result.
         variables: { id: resultToEdit.id, input: { ...input, createdBy: input.createdBy ?? null } },
-        onCompleted,
+        onCompleted: () => onCompleted(resultToEdit.id),
       });
       return;
     }
@@ -234,7 +245,7 @@ const SecurityCoverageResultFormDrawer = ({
           resultOf: id,
         },
       },
-      onCompleted,
+      onCompleted: (response) => onCompleted(response.securityCoverageResultAdd?.id),
     });
   };
 
@@ -307,6 +318,7 @@ const SecurityCoverageResultFormDrawer = ({
                 onCancel={close}
                 coveredEntity={objectCovered}
                 excludedCoveredResultId={resultToEdit?.id}
+                excludedEntityIds={resultToEdit ? pendingCoveredIds[resultToEdit.id] : undefined}
                 nextRequiresSelection
                 onNext={(entities, elements) => {
                   setSelectedEntities(entities);

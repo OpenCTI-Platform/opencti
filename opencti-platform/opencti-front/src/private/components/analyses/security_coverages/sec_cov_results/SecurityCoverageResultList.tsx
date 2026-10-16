@@ -10,10 +10,7 @@ import { UsePreloadedPaginationFragment } from '../../../../../utils/hooks/usePr
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import { SecurityCoverageResultToEdit } from './SecurityCoverageResultForm-utils';
-import {
-  SecurityCoverageResultListLinesQuery,
-  SecurityCoverageResultListLinesQuery$variables,
-} from './__generated__/SecurityCoverageResultListLinesQuery.graphql';
+import { SecurityCoverageResultListLinesQuery, SecurityCoverageResultListLinesQuery$variables } from './__generated__/SecurityCoverageResultListLinesQuery.graphql';
 import { SecurityCoverageResultListLines_data$data } from './__generated__/SecurityCoverageResultListLines_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'SecurityCoverageResultList';

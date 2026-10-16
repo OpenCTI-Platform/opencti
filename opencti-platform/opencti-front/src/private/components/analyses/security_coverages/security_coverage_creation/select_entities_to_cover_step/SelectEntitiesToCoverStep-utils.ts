@@ -18,20 +18,31 @@ export const INITIAL_VALUES = {
  * Mandatory filters restricting the list to the entities the backend receives.
  * When a security coverage result is given, the entities it already covers are
  * excluded, so existing has-covered relationships are never targeted again.
+ * The excluded entity ids are hidden too: they are entities whose has-covered
+ * relationships are still being created by a background task.
  */
 export const buildCoveredEntitiesFilters = (
   coveredEntity: { parent_types: readonly string[]; id: string },
   excludedCoveredResultId?: string,
+  excludedEntityIds: string[] = [],
 ): FilterGroup['filters'] => {
-  const alreadyCoveredFilters = excludedCoveredResultId ? [{
-    key: 'regardingOf',
-    operator: 'not_eq',
-    mode: 'or',
-    values: [
-      { key: 'id', values: [excludedCoveredResultId] },
-      { key: 'relationship_type', values: ['has-covered'] },
-    ],
-  }] : [];
+  const alreadyCoveredFilters = [
+    ...(excludedCoveredResultId ? [{
+      key: 'regardingOf',
+      operator: 'not_eq',
+      mode: 'or',
+      values: [
+        { key: 'id', values: [excludedCoveredResultId] },
+        { key: 'relationship_type', values: ['has-covered'] },
+      ],
+    }] : []),
+    ...(excludedEntityIds.length > 0 ? [{
+      key: 'ids',
+      operator: 'not_eq',
+      mode: 'or',
+      values: excludedEntityIds,
+    }] : []),
+  ];
 
   const typeFilter = {
     key: 'entity_type',
