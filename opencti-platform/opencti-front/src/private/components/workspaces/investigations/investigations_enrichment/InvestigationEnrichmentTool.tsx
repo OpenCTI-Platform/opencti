@@ -21,6 +21,30 @@ const investigationQuery = graphql`
             id
             status
             event_source_id
+            eventSource {
+              ...on StixObject {
+                id
+                entity_type
+                representative {
+                  main
+                }
+              }
+            }
+            timestamp
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+            connector {
+              id
+              name
+              active
+              connector_type
+            }
           }
         }
       }

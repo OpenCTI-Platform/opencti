@@ -51,7 +51,7 @@ export interface ConnectorWorkListItem {
 interface ConnectorWorkListProps {
   items: ReadonlyArray<ConnectorWorkListItem>;
   onRefresh: (connector: ConnectorWorkListConnector) => void;
-  onWorkDeleted: () => void;
+  onWorkDeleted?: () => void;
 }
 
 /**
@@ -72,7 +72,7 @@ const ConnectorWorkList = ({
   const deleteWork = (workId: string) => {
     commitDeleteWork({
       variables: { workId },
-      onCompleted: () => onWorkDeleted(),
+      onCompleted: () => onWorkDeleted?.(),
     });
   };
 

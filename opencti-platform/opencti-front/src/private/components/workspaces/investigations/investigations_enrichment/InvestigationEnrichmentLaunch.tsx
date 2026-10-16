@@ -50,7 +50,7 @@ const InvestigationEnrichmentLaunch = ({
 
   return (
     <>
-      <Card>
+      <Card elevation={3}>
         <CardHeader>
           <CardTitle>
             {t_i18n('Start an enrichment')}
