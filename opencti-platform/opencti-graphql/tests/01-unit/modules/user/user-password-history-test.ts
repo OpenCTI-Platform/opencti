@@ -132,6 +132,26 @@ describe('isPasswordReused', () => {
     compare.mockRestore();
   });
 
+  // Run together, the compares would block the event loop for the whole check
+  it('compares one hash at a time', async () => {
+    const original = bcrypt.compare.bind(bcrypt);
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const compare = vi.spyOn(bcrypt, 'compare').mockImplementation(async (password: string, stored: string) => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      try {
+        return await original(password, stored);
+      } finally {
+        inFlight -= 1;
+      }
+    });
+    expect(await isPasswordReused(user, 'Second-password-2!', 3)).toBe(true);
+    expect(compare).toHaveBeenCalledTimes(3);
+    expect(maxInFlight).toBe(1);
+    compare.mockRestore();
+  });
+
   it('skips null and malformed hashes without throwing', async () => {
     const corrupted = { password: null as unknown as string, password_history: ['not-a-hash', P3] };
     expect(await isPasswordReused(corrupted, 'Third-password-3!', 3)).toBe(true);
@@ -244,10 +264,29 @@ describe('cleanUpPasswordHistoryWhenDisabled', () => {
     vi.mocked(elRawUpdateByQuery).mockResolvedValue({ version_conflicts: 0 });
   });
 
-  it('does nothing while the feature flag is on', async () => {
+  it('does nothing while the rule applies', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(true);
     await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 });
+    expect(elRawCount).not.toHaveBeenCalled();
     expect(elRawUpdateByQuery).not.toHaveBeenCalled();
+  });
+
+  // Also what remains once the flag is removed: with N = 0, no history may stay behind
+  it('deletes leftover histories when the flag is on and N is 0, keeping the count', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    vi.mocked(elRawCount).mockResolvedValueOnce(2).mockResolvedValue(0);
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
+    const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).toContain("remove('password_history')");
+  });
+
+  it('removes a stored count the platform cannot use while the flag is on', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    vi.mocked(elRawCount).mockResolvedValue(0);
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 25 });
+    const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
+    expect(scripts).toEqual([expect.stringContaining("remove('password_policy_history_count')")]);
   });
 
   it('does nothing when the flag is off and nothing is stored', async () => {

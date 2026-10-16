@@ -83,8 +83,12 @@ export const isPasswordReused = async (user: PasswordHashes, clearPassword: stri
   while (window.length < n) {
     window.push(getPaddingHash());
   }
-  const matches = await Promise.all(window.map((hash) => bcrypt.compare(clearPassword, hash)));
-  return matches.some((match) => match);
+  // One at a time: each compare fits in a single bcryptjs chunk, so running them together would block the event loop for N × ~50 ms
+  let reused = false;
+  for (const hash of window) {
+    reused = (await bcrypt.compare(clearPassword, hash)) || reused;
+  }
+  return reused;
 };
 
 // The forgot-password flow submits as SYSTEM, so it has its own counter on each account
@@ -199,10 +203,12 @@ const clearStoredPasswordHistoryCount = async () => {
   await publishCacheResetEvent(ENTITY_TYPE_SETTINGS);
 };
 
-// Run at startup: with the feature flag off, the stored value is removed and every history deleted,
-// so turning the flag back on later always starts from scratch.
+// Run at startup: while the rule is off (N = 0, or the feature flag off), no password history may stay
+// behind and a count the platform cannot use is removed, so turning the rule back on starts from scratch.
+// It reads the effective count rather than the flag: removing the flag later leaves it meaning the same,
+// where deleting a flag check here would make it wipe every history at each restart.
 export const cleanUpPasswordHistoryWhenDisabled = async (settings: Pick<BasicStoreSettings, 'password_policy_history_count'>) => {
-  if (isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
+  if (readPasswordHistoryCount(settings) >= 1) {
     return;
   }
   const storedCount = settings.password_policy_history_count ?? 0;
@@ -210,7 +216,7 @@ export const cleanUpPasswordHistoryWhenDisabled = async (settings: Pick<BasicSto
   if (storedCount === 0 && usersWithHistory === 0) {
     return;
   }
-  logApp.info('[PASSWORD_HISTORY] Feature disabled, removing stored password history', { storedCount, usersWithHistory });
+  logApp.info('[PASSWORD_HISTORY] Rule off, removing stored password history', { storedCount, usersWithHistory });
   if (storedCount !== 0) {
     await clearStoredPasswordHistoryCount();
   }
