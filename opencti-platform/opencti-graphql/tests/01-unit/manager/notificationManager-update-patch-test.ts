@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterUpdateInstanceIdsFromUpdateEvent } from '../../../src/manager/notificationManager';
+import { filterUpdateInstanceIdsFromUpdatePatch, normalizeUpdatePatch } from '../../../src/manager/notificationManager';
 import * as jsonpatch from 'fast-json-patch';
 import { computeJsonPatch } from '../../../src/utils/json-patch';
 import type { StixCoreObject, StixObject } from '../../../src/types/stix-2-1-common';
@@ -12,7 +12,7 @@ const applyPatch = (document: unknown, operations: jsonpatch.Operation[]) => jso
 
 const report = (objectRefs: string[]) => ({ id: 'report--r', type: 'report', object_refs: objectRefs }) as unknown as StixCoreObject;
 
-describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
+describe('normalizeUpdatePatch', () => {
   it('should not report kept references of a whole array replacement as added', () => {
     const previous = report([malware.id, attackPattern.id, 'identity--c']);
     const current = report([malware.id]);
@@ -20,7 +20,7 @@ describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
       patch: [{ op: 'replace' as const, path: '/object_refs', value: current.object_refs }],
       reverse_patch: [{ op: 'replace' as const, path: '/object_refs', value: previous.object_refs }],
     };
-    const result = filterUpdateInstanceIdsFromUpdateEvent(listenedInstanceIdsMap, updatePatch, previous, current);
+    const result = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, normalizeUpdatePatch(updatePatch, previous, current));
     expect(result).toEqual([{ instance: attackPattern, action: 'removed from' }]);
   });
 
@@ -31,7 +31,7 @@ describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
       patch: [{ op: 'replace' as const, path: '/object_refs', value: current.object_refs }],
       reverse_patch: [{ op: 'replace' as const, path: '/object_refs', value: previous.object_refs }],
     };
-    const result = filterUpdateInstanceIdsFromUpdateEvent(listenedInstanceIdsMap, updatePatch, previous, current);
+    const result = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, normalizeUpdatePatch(updatePatch, previous, current));
     expect(result).toEqual([{ instance: attackPattern, action: 'added in' }]);
   });
 
@@ -53,7 +53,7 @@ describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
     };
     expect(applyPatch(previous, updatePatch.patch)).toEqual(current);
     expect(applyPatch(current, updatePatch.reverse_patch)).toEqual(previous);
-    const result = filterUpdateInstanceIdsFromUpdateEvent(groupsMap, updatePatch, previous, current);
+    const result = filterUpdateInstanceIdsFromUpdatePatch(groupsMap, normalizeUpdatePatch(updatePatch, previous, current));
     expect(result).toEqual([{ instance: removed, action: 'removed from' }]);
   });
 
@@ -61,7 +61,7 @@ describe('filterUpdateInstanceIdsFromUpdateEvent', () => {
     const previous = report([malware.id, 'identity--c']);
     const current = report(['identity--c', attackPattern.id]);
     const updatePatch = { patch: computeJsonPatch(previous, current), reverse_patch: computeJsonPatch(current, previous) };
-    const result = filterUpdateInstanceIdsFromUpdateEvent(listenedInstanceIdsMap, updatePatch, previous, current);
+    const result = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, normalizeUpdatePatch(updatePatch, previous, current));
     expect(result).toEqual([{ instance: attackPattern, action: 'added in' }, { instance: malware, action: 'removed from' }]);
   });
 });
