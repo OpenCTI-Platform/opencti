@@ -48,7 +48,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
   const rows = (values[name] ?? []) as HuntNativeQueryFormValue[];
   const helper = (
     <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-      {t_i18n('Native queries override the Sigma translation on their platform. Infrastructure hunts need an internet query.')}
+      {t_i18n('Native queries override the Sigma translation on their platform. Infrastructure hunts need a fingerprint document for an internet scanning service.')}
     </Text>
   );
 

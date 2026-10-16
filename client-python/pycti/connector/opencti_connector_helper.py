@@ -3263,10 +3263,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """Register the hunt platform an INTERNAL_HUNT connector executes on.
 
         Call it right after the helper initialisation. The Security Platform
-        identity is created in OpenCTI when it does not exist; the ``internet``
-        platform (outside-in hunts) has none.
+        identity is created in OpenCTI when it does not exist; the internet
+        scanning services (``censys``, ``silentpush``, ``urlscan``,
+        ``cymru-scout``, ``shodan``: outside-in hunts) have none and execute
+        the ``fingerprint`` language.
 
-        :param platform: the platform slug (splunk, microsoft-sentinel, ..., internet)
+        :param platform: the platform slug (splunk, microsoft-sentinel, ..., shodan)
         :type platform: str
         :param languages: the query languages the connector executes
         :type languages: List[str]

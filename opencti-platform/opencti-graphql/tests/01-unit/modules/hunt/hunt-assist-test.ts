@@ -187,7 +187,7 @@ describe('Assistance of a hunt being written with XTM One', () => {
     vi.mocked(callXtmAgent).mockResolvedValue(plannerAnswer({
       hunt_type: 'infrastructure',
       sigma_rule: '',
-      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
+      native_queries: [{ platform: 'censys', language: 'fingerprint', query: 'fingerprints:\n  - kind: jarm\n    value: abc', pipeline: null }],
     }));
     const incomplete = await failureOf(assistHunt(testContext, ADMIN_USER, { fields: [HuntAssistField.SigmaRule], hypothesis: 'If APT-X is active', target_ids: ['threat-1'] }));
     expect(incomplete.message).toContain('answered without: sigma_rule');

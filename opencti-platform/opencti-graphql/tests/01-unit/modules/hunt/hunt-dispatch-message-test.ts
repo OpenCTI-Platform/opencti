@@ -130,8 +130,23 @@ describe('Hunt run message', () => {
     const message = await buildHuntRunMessage(testContext, run as never, hunt as never, { hunt_platform: 'splunk' } as never, null, 'work-4');
     expect(message.event.hunt.sigma_rule).toBe('title: t');
     // The rule an internet infrastructure hunt still carries is not its logic
-    const internet = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'infrastructure' } as never, { hunt_platform: 'internet' } as never, null, 'work-4');
-    expect(internet.event.hunt.sigma_rule).toBeNull();
+    const infrastructure = await buildHuntRunMessage(testContext, run as never, { ...hunt, hunt_type: 'infrastructure' } as never, { hunt_platform: 'censys', hunt_languages: ['fingerprint'] } as never, null, 'work-4');
+    expect(infrastructure.event.hunt.sigma_rule).toBeNull();
+  });
+
+  it('should give every internet scanning service the fingerprint document of its platform, or else the first one', async () => {
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(markings as never);
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => ids.map((id) => elements.get(id)).filter((element) => !!element) as never);
+    const shodan = { platform: 'shodan', language: 'fingerprint', query: 'fingerprints:\n  - kind: jarm\n    value: abc' };
+    const urlscan = { platform: 'urlscan', language: 'fingerprint', query: 'queries:\n  urlscan: page.title:"Login"' };
+    const hunt = { internal_id: 'hunt-6', standard_id: 'hunt--6', name: 'Infrastructure hunt', hunt_type: 'infrastructure', sigma_rule: '', native_queries: [shodan, urlscan], escalation_threshold: 1 };
+    const run = { internal_id: 'run-6', attempt: 1, hunt_run_trigger: 'manual', hunt_run_mode: 'execute' };
+    const service = (platform: string) => ({ hunt_platform: platform, hunt_languages: ['fingerprint'] });
+    const own = await buildHuntRunMessage(testContext, run as never, hunt as never, service('urlscan') as never, null, 'work-6');
+    expect(own.event.hunt.native_query).toMatchObject({ platform: 'urlscan', query: urlscan.query });
+    // The fingerprints mean the same to every service: one without its own document takes the first, as its platform
+    const first = await buildHuntRunMessage(testContext, run as never, hunt as never, service('censys') as never, null, 'work-6');
+    expect(first.event.hunt.native_query).toMatchObject({ platform: 'censys', language: 'fingerprint', query: shodan.query });
   });
 
   it('should give the connector the native query of its platform only in a language it executes', async () => {

@@ -1,7 +1,14 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityConnector } from '../connector/connector-types';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { HUNT_PLATFORM_INTERNET, HUNT_SCHEDULE_MANUAL, HUNT_SCHEDULE_STANDING, HUNT_TYPE_INDICATORS, HUNT_TYPE_INFRASTRUCTURE, type BasicStoreEntityHunt } from './hunt-types';
+import {
+  HUNT_SCHEDULE_MANUAL,
+  HUNT_SCHEDULE_STANDING,
+  HUNT_TYPE_INDICATORS,
+  HUNT_TYPE_INFRASTRUCTURE,
+  isHuntInfrastructurePlatform,
+  type BasicStoreEntityHunt,
+} from './hunt-types';
 import { HUNT_CONFIG, huntSigmaRules, isAutonomousHunt, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
 import { validateHuntSchedule } from './hunt-schedule';
 import { huntLogicError, sigmaRuleErrors } from './hunt-validators';
@@ -106,16 +113,16 @@ const connectorItem = (
   hunt: BasicStoreEntityHunt,
   connectors: BasicStoreEntityConnector[],
   scopePlatformIds: Set<string> | null,
-  // Security platforms (empty for the internet) the current logic fails to translate to for good
+  // Security platforms (empty for an internet scanning service) the current logic fails to translate to for good
   untranslatablePlatformIds: Set<string> = new Set(),
 ): HuntReadinessItem => {
   let candidates: BasicStoreEntityConnector[];
   let missing: string;
   if (hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
-    candidates = connectors.filter((connector) => huntConnectorPlatform(connector) === HUNT_PLATFORM_INTERNET);
-    missing = HUNT_MESSAGES.connectorInternetMissing;
+    candidates = connectors.filter((connector) => isHuntInfrastructurePlatform(huntConnectorPlatform(connector)));
+    missing = HUNT_MESSAGES.connectorInfrastructureMissing;
   } else {
-    const inScope = connectors.filter((connector) => huntConnectorPlatform(connector) !== HUNT_PLATFORM_INTERNET
+    const inScope = connectors.filter((connector) => !isHuntInfrastructurePlatform(huntConnectorPlatform(connector))
       && !!connector.hunt_security_platform_id && (scopePlatformIds?.has(connector.hunt_security_platform_id) ?? false));
     if (hunt.hunt_type === HUNT_TYPE_INDICATORS) {
       candidates = inScope.filter((connector) => connector.hunt_supports_indicators === true);
@@ -178,7 +185,7 @@ export const computeHuntReadiness = async (context: AuthContext, user: AuthUser,
   if (hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
     items.push(connectorItem(hunt, connectors, null, untranslatable));
     items.push(scheduleItem(hunt, enterprise));
-    items.push(item('scope', 'met', HUNT_MESSAGES.scopeInternet));
+    items.push(item('scope', 'met', HUNT_MESSAGES.scopeInfrastructure));
   } else {
     const platforms = await resolveHuntScopePlatforms(context, user, hunt);
     items.push(connectorItem(hunt, connectors, new Set(platforms.map((platform) => platform.internal_id)), untranslatable));

@@ -75,7 +75,7 @@ const PreviewFailure = ({ run }: { run: PreviewRun }) => {
   const [showDetails, setShowDetails] = useState(false);
   const failure = huntRunFailure(run.hunt_run_status, run.error_message);
   if (!failure) return null;
-  const platform = run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+  const platform = run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet scanning service');
   let title: string;
   switch (failure.kind) {
     case 'timeout':

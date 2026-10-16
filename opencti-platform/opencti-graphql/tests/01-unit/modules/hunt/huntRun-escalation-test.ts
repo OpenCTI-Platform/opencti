@@ -354,7 +354,7 @@ describe('Hits counted once across the runs of a hunt', () => {
     expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
   });
 
-  it('should refuse late evidence observed on a security platform for a run of the internet', async () => {
+  it('should refuse late evidence observed on a security platform for a run of an internet scanning service', async () => {
     loading({ ...autonomous, security_platform_id: null } as BasicStoreEntityHuntRun);
     const loadRunOrHunt = vi.mocked(storeLoadById).getMockImplementation();
     vi.mocked(storeLoadById).mockImplementation(async (context, user, id, type) => (type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM

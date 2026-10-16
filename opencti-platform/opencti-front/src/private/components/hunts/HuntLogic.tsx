@@ -36,8 +36,9 @@ import {
   HUNT_FIRST_RULE,
   HUNT_IOC_ELEMENT_TYPES,
   HUNT_IOC_SORT_DEFAULT,
-  HUNT_PLATFORM_INTERNET,
+  HUNT_LANGUAGE_FINGERPRINT,
   huntQueryLanguageLabel,
+  isHuntInfrastructurePlatform,
   huntTimeWindowPresets,
   normalizeNativeQueries,
   type HuntNativeQueryFormValue,
@@ -158,11 +159,13 @@ type HuntLogicData = HuntLogic_hunt$data;
 const scopePlatformIdsOf = (hunt: HuntLogicData) => (hunt.scopePlatforms ?? []).map((platform) => platform.id);
 
 /** The sentence of the platform when the edited logic of a hunt misses what its type needs, null otherwise. */
-export const huntLogicMissingSentence = (huntType: string, sigmaRule: string, nativeQueries: ReadonlyArray<{ platform: string }>) => {
+export const huntLogicMissingSentence = (huntType: string, sigmaRule: string, nativeQueries: ReadonlyArray<{ platform: string; language?: string }>) => {
   if (huntType === 'infrastructure') {
-    return nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET) ? null : 'Add a native query for the internet platform';
+    return nativeQueries.some((nativeQuery) => isHuntInfrastructurePlatform(nativeQuery.platform) && nativeQuery.language === HUNT_LANGUAGE_FINGERPRINT)
+      ? null
+      : 'Add a fingerprint document for an internet scanning service';
   }
-  if (sigmaRule.trim().length === 0 && !nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET)) {
+  if (sigmaRule.trim().length === 0 && !nativeQueries.some((nativeQuery) => !isHuntInfrastructurePlatform(nativeQuery.platform))) {
     return 'Add a Sigma rule or a native query';
   }
   return null;
@@ -233,7 +236,7 @@ const HuntTranslations = ({ hunt }: { hunt: HuntLogicData }) => {
       {hunt.translations.map((translation) => {
         const state = TRANSLATION_STATES[translation.state] ?? TRANSLATION_STATES.checking;
         const failedRules = translation.rules.filter((rule) => rule.status !== 'completed');
-        const platform = translation.securityPlatform?.name ?? translation.connector_name ?? t_i18n('Internet');
+        const platform = translation.securityPlatform?.name ?? translation.connector_name ?? t_i18n('Internet scanning service');
         return (
           <li key={translation.run_id} data-testid="hunt-translation" data-state={translation.state}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>

@@ -149,7 +149,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
   const draftContext = useDraftContext();
   const [open, setOpen] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
-  // null while unknown, and for infrastructure hunts, which run on the internet hunt connectors
+  // null while unknown, and for infrastructure hunts, which run on the internet scanning services
   const [runnablePlatforms, setRunnablePlatforms] = useState<number | null>(null);
   const [commit] = useDialogMutation<HuntRunStartMutation>(huntRunStartMutation);
   const openDialog = (next: boolean) => {
@@ -253,7 +253,7 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
               <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
                   {hunt.hunt_type === 'infrastructure' ? (
-                    <Text variant="content-compact">{t_i18n('Infrastructure hunts run on the internet hunt connectors')}</Text>
+                    <Text variant="content-compact">{t_i18n('Infrastructure hunts run on every connected internet scanning service')}</Text>
                   ) : (
                     <Suspense fallback={<Spinner size="md" label={t_i18n('Loading')} />}>
                       <PlatformChoices

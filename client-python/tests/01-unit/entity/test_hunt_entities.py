@@ -427,10 +427,10 @@ class TestHuntRun(TestCase):
             )
         )
         run.register_connector(
-            connector_id="connector-1", platform="internet", languages=["internet"]
+            connector_id="connector-1", platform="censys", languages=["fingerprint"]
         )
         registration = _variables(opencti)["input"]
-        self.assertEqual(registration["platform"], "internet")
+        self.assertEqual(registration["platform"], "censys")
         self.assertTrue(registration["supports_preview"])
 
     def test_list_reads_the_runs(self):

@@ -8,13 +8,14 @@ import { validateHuntSchedule } from './hunt-schedule';
 import {
   ENTITY_TYPE_HUNT,
   HUNT_IOC_SORTS,
-  HUNT_PLATFORM_INTERNET,
+  HUNT_LANGUAGE_FINGERPRINT,
   HUNT_SCHEDULE_MANUAL,
   HUNT_STATUS_ACTIVE,
   HUNT_TYPE_INDICATORS,
   HUNT_TYPE_INFRASTRUCTURE,
   HUNT_TYPE_TELEMETRY,
   INPUT_HUNT_SOURCES,
+  isHuntInfrastructurePlatform,
   type HuntNativeQuery,
   RELATION_HUNT_SOURCES,
 } from './hunt-types';
@@ -77,13 +78,14 @@ export const sigmaRuleError = (sigmaRule: string | null | undefined): string | n
 
 /**
  * What a hunt misses to run, null when it has the logic of its type: a Sigma rule or a telemetry native query for a
- * telemetry hunt, something to look for for an indicator hunt, an internet native query for an infrastructure hunt.
+ * telemetry hunt, something to look for for an indicator hunt, a fingerprint document of an internet scanning service
+ * for an infrastructure hunt.
  */
 export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>): { message: string; field: string } | null => {
   const huntType = state.hunt_type ?? HUNT_TYPE_TELEMETRY;
   const nativeQueries: HuntNativeQuery[] = normalizeNativeQueries(state.native_queries);
   if (huntType === HUNT_TYPE_TELEMETRY) {
-    const hasTelemetryQuery = nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
+    const hasTelemetryQuery = nativeQueries.some((nativeQuery) => !isHuntInfrastructurePlatform(nativeQuery.platform));
     if (storedSigmaRules(state).length === 0 && !hasTelemetryQuery) {
       return { message: HUNT_MESSAGES.logicTelemetryMissing, field: 'sigma_rule' };
     }
@@ -91,7 +93,9 @@ export const huntLogicError = (state: Omit<HuntValidationState, 'hunt_status'>):
   if (huntType === HUNT_TYPE_INDICATORS && !hasHuntIocLogic(state)) {
     return { message: HUNT_MESSAGES.logicIndicatorsMissing, field: 'hunt_ioc_values' };
   }
-  if (huntType === HUNT_TYPE_INFRASTRUCTURE && !nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET)) {
+  const hasFingerprints = nativeQueries.some((nativeQuery) => isHuntInfrastructurePlatform(nativeQuery.platform)
+    && nativeQuery.language.toLowerCase() === HUNT_LANGUAGE_FINGERPRINT);
+  if (huntType === HUNT_TYPE_INFRASTRUCTURE && !hasFingerprints) {
     return { message: HUNT_MESSAGES.logicInfrastructureMissing, field: 'native_queries' };
   }
   return null;

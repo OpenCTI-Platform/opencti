@@ -123,7 +123,7 @@ export const useHuntFormValidation = (iocFilters: string | null = null) => {
         if (huntFormHasLogic(values, iocFilters)) return true;
         let sentence = 'Add a Sigma rule or a native query';
         if (values.hunt_type === 'indicators') sentence = 'Add the indicators or observables to look for';
-        if (values.hunt_type === 'infrastructure') sentence = 'Add a native query for the internet platform';
+        if (values.hunt_type === 'infrastructure') sentence = 'Add a fingerprint document for an internet scanning service';
         return this.createError({ message: t_i18n('An active hunt cannot run: {sentence}', { values: { sentence: t_i18n(sentence) } }) });
       }),
     sigma_rule: Yup.string().nullable(),

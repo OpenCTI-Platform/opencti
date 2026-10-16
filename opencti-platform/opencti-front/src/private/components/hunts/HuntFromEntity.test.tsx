@@ -124,7 +124,7 @@ describe('Hunt this from a threat', () => {
     await resolveConnectors(relayEnv);
     expect(screen.getByText(/looks them up in the telemetry of your security platforms, no query language needed/)).toBeInTheDocument();
     expect(screen.getByText(/runs it on the logs and events of your SIEM, EDR or data lake/)).toBeInTheDocument();
-    expect(screen.getByText(/not a Sigma rule or indicators: searches internet scan data/)).toBeInTheDocument();
+    expect(screen.getByText(/not a Sigma rule or indicators: searches every internet scanning service you connected/)).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('radio', { name: /Internet infrastructure \(outside-in\)/ }));
     });

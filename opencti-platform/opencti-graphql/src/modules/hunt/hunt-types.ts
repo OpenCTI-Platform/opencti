@@ -46,7 +46,13 @@ export const HUNT_IOC_SORTS = [HUNT_IOC_SORT_CREATED_DESC, 'created_at_asc', 'up
 export const HUNT_SCHEDULE_MANUAL = 'manual';
 export const HUNT_SCHEDULE_STANDING = 'standing';
 
-export const HUNT_PLATFORM_INTERNET = 'internet';
+// The internet scanning services: infrastructure hunts run on every connected one, without security platform
+export const HUNT_INFRASTRUCTURE_PLATFORMS = ['censys', 'silentpush', 'urlscan', 'cymru-scout', 'shodan'];
+export const HUNT_LANGUAGE_FINGERPRINT = 'fingerprint';
+export const isHuntInfrastructurePlatform = (platform: string | null | undefined) => !!platform && HUNT_INFRASTRUCTURE_PLATFORMS.includes(platform);
+// Key of the hits, locks and statistics of the runs without security platform: the hosts the internet scanning services
+// find are the same infrastructure whichever service found them
+export const HUNT_INFRASTRUCTURE_KEY = 'internet-scanning';
 export const HUNT_PLATFORMS = [
   'splunk',
   'microsoft-sentinel',
@@ -58,7 +64,7 @@ export const HUNT_PLATFORMS = [
   'clickhouse',
   's3-ocsf',
   'sentinelone',
-  HUNT_PLATFORM_INTERNET,
+  ...HUNT_INFRASTRUCTURE_PLATFORMS,
 ];
 // The type of the security platform a hunt connector registers without naming one, SIEM for any other platform
 export const HUNT_PLATFORM_SECURITY_TYPES: Record<string, string> = {

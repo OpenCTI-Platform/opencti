@@ -51,12 +51,14 @@ import {
   type BasicStoreEntityHunt,
   ENTITY_TYPE_HUNT,
   HUNT_INCIDENT_MODE_INCIDENT,
-  HUNT_PLATFORM_INTERNET,
+  HUNT_INFRASTRUCTURE_KEY,
+  HUNT_LANGUAGE_FINGERPRINT,
   HUNT_PLATFORM_SECURITY_TYPES,
   HUNT_PLATFORMS,
   HUNT_STATUS_DRAFT,
   HUNT_STATUS_RETIRED,
   HUNT_TYPE_INDICATORS,
+  isHuntInfrastructurePlatform,
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
@@ -383,7 +385,7 @@ export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: 
 };
 
 /**
- * The completed run of a hunt on a security platform (null: on the internet) whose time window ends last, among the runs
+ * The completed run of a hunt on a security platform (null: on the internet scanning services) whose time window ends last, among the runs
  * of the current logic of the hunt: a run of an earlier rule or query never searched for what the current one matches.
  */
 export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null, logicFingerprint: string) => {
@@ -451,7 +453,7 @@ export const recordHuntRunSummary = async (context: AuthContext, hunt: BasicStor
 
 interface HuntRunCreation {
   runs: BasicStoreEntityHuntRun[];
-  // The security platforms (or connectors, on the internet) left without a run when the creation was interrupted
+  // The security platforms (or connectors, of the internet scanning services) left without a run when the creation was interrupted
   notCreatedOn: string[];
 }
 
@@ -661,7 +663,7 @@ export const startHuntRuns = async (
   await checkHuntEditAccess(context, user, hunt);
   // A logic its translation preview or a run already failed to translate for good on a platform fails again there: the
   // platform is left out before any connector slot or daily run is spent on it, and the start is refused when no other
-  // platform is left (the internet being the only target of the hunts that run on it)
+  // platform is left (the internet scanning services being the only targets of the hunts that run on them)
   const failedOn = (await findHuntTranslations(context, user, hunt, input?.security_platform_ids ?? []))
     .filter((translation) => translation.state === 'failed');
   const translationRefusal = (translation: HuntTranslation) => {
@@ -790,7 +792,7 @@ export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatf
   // Partial (true), complete (false) or unknown (null): only complete results let a run without hits be benign
   results_truncated: run.results_truncated ?? null,
   time_window: { start: run.time_window_start, end: run.time_window_end },
-  security_platform: securityPlatformName ?? HUNT_PLATFORM_INTERNET,
+  security_platform: securityPlatformName ?? run.connector_name ?? '',
   translated_query: run.translated_query ?? '',
   evidence_sample: run.evidence_sample ?? [],
   hits_sample: run.hits_sample ?? [],
@@ -882,7 +884,7 @@ const HUNT_INCIDENT_LOCK = 'hunt_incident';
 // Each run escalates under its own transition lock: the runs of a hunt on a platform find or open their incident, and
 // record it, one at a time, so that runs escalated together continue the incident the first one opens
 const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Promise<T>): Promise<T> => {
-  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? HUNT_PLATFORM_INTERNET}`, action);
+  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? HUNT_INFRASTRUCTURE_KEY}`, action);
 };
 
 /**
@@ -1144,7 +1146,7 @@ export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, conne
 };
 
 /**
- * Cancels the runs of a hunt connector registered again against another security platform (or the internet): created for
+ * Cancels the runs of a hunt connector registered again against another security platform (or none): created for
  * the former one, they would execute on the new one with their hits attributed to the former. Never fails the registration.
  */
 const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId: string, securityPlatformId: string | null) => {
@@ -1656,7 +1658,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     if (!platform) {
       throw ResourceNotFoundError('The security platform of the evidence cannot be found', { securityPlatformId: input.security_platform_id });
     }
-    // Evidence of a security platform never goes to a run of the internet, whose hits are known for the internet only
+    // Evidence of a security platform never goes to a run of the internet scanning services, whose hits are known for them only
     if ((run.security_platform_id ?? null) !== platform.internal_id) {
       throw FunctionalError('The evidence was observed on another security platform than the one of the run', { runId });
     }
@@ -1915,7 +1917,7 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
 });
 
 /**
- * The hunt connectors a user sees: those of the internet, and those bound to a security platform the user can read.
+ * The hunt connectors a user sees: those of the internet scanning services, and those bound to a security platform the user can read.
  * The dispatch reads every connector (listHuntConnectors), whoever the hunt belongs to.
  */
 export const findHuntConnectors = async (context: AuthContext, user: AuthUser, onlyAlive = false) => {
@@ -1957,13 +1959,17 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   if (languages.length === 0) {
     throw FunctionalError('A hunt connector must declare at least one query language', { connectorId: input.connector_id });
   }
+  const infrastructure = isHuntInfrastructurePlatform(platform);
+  if (infrastructure && !languages.includes(HUNT_LANGUAGE_FINGERPRINT)) {
+    throw FunctionalError(`A hunt connector of an internet scanning service runs the ${HUNT_LANGUAGE_FINGERPRINT} language`, { connectorId: input.connector_id });
+  }
   const name = input.security_platform_name?.trim();
-  if (platform !== HUNT_PLATFORM_INTERNET && !name) {
+  if (!infrastructure && !name) {
     throw FunctionalError('A telemetry hunt connector must declare the security platform it executes against', { connectorId: input.connector_id });
   }
   // The security platform is the one of its deterministic identity (name and identity class), found without writing:
   // a registration never changes an existing platform, and creates a missing one only once it is accepted
-  const platformStandardId = platform !== HUNT_PLATFORM_INTERNET && name
+  const platformStandardId = !infrastructure && name
     ? generateStandardId(ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, { name, identity_class: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM.toLowerCase() }) as string
     : null;
   const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
@@ -2000,7 +2006,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
         hunt_security_platform_id: securityPlatformId,
         hunt_supports_preview: input.supports_preview !== false,
         // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
-        hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
+        hunt_supports_indicators: input.supports_indicators === true && !infrastructure,
         hunt_max_concurrent_runs: maxConcurrent,
         hunt_setup: {
           documentation_url: sanitizeDocumentationUrl(input.documentation_url),
@@ -2089,20 +2095,31 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
       { key: ['created_at'], values: [range.endDate], operator: FilterOperator.Lte },
     ],
   };
+  // The runs without security platform ran on an internet scanning service, told by their connector
+  const servicesFilters: FilterGroup = { ...filters, filters: [...filters.filters, { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil }] };
   type Bucket = { label: string; count: number };
-  const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
+  const [verdicts, statuses, platforms, services, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: completedFilters, field: 'verdict', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: servicesFilters, field: 'connector_id', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
     elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }),
     elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }),
     topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters: inRangeFilters }),
-  ]) as [Bucket[], Bucket[], Bucket[], Bucket[], any[], any[], BasicStoreEntityHuntRun[]];
+  ]) as [Bucket[], Bucket[], Bucket[], Bucket[], Bucket[], any[], any[], BasicStoreEntityHuntRun[]];
   const countOf = (buckets: Bucket[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
   const platformIds = platforms.map((bucket) => bucket.label).filter((label) => label !== 'unknown');
   const platformEntities = platformIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM }) : [];
   const platformNames = new Map(platformEntities.map((platform) => [platform.internal_id, platform.name]));
+  const serviceConnectors = services.length > 0 ? new Map((await listHuntConnectors(context, false)).map((connector) => [connector.internal_id, connector])) : new Map();
+  // Per service platform slug, the connectors of a deleted one under the common key
+  const runsPerService = new Map<string, number>();
+  services.forEach((bucket) => {
+    const connector = serviceConnectors.get(bucket.label);
+    const service = connector ? huntConnectorPlatform(connector) ?? HUNT_INFRASTRUCTURE_KEY : HUNT_INFRASTRUCTURE_KEY;
+    runsPerService.set(service, (runsPerService.get(service) ?? 0) + bucket.count);
+  });
   const hitsSeries = fillTimeSeries(startDate, endDate, interval, hitsOverTime);
   const runsSeries = fillTimeSeries(startDate, endDate, interval, runsOverTime);
   return {
@@ -2118,11 +2135,12 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
     last_run_at: lastRuns.length > 0 ? lastRuns[0].created_at : null,
     hits_over_time: hitsSeries,
     runs_over_time: runsSeries,
-    // A platform the reader cannot load (deleted or restricted) has an empty label, never its identifier
-    runs_per_platform: platforms.map((bucket) => ({
-      label: bucket.label === 'unknown' ? HUNT_PLATFORM_INTERNET : String(platformNames.get(bucket.label) ?? ''),
-      value: bucket.count,
-    })),
+    // A platform the reader cannot load (deleted or restricted) has an empty label, never its identifier; an internet
+    // scanning service is named by its platform slug
+    runs_per_platform: [
+      ...platforms.filter((bucket) => bucket.label !== 'unknown').map((bucket) => ({ label: String(platformNames.get(bucket.label) ?? ''), value: bucket.count })),
+      ...Array.from(runsPerService.entries()).map(([label, value]) => ({ label, value })),
+    ],
     verdict_distribution: verdicts.map((bucket) => ({ label: String(bucket.label), value: bucket.count })),
   };
 };

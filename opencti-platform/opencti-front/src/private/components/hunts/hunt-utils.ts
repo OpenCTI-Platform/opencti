@@ -21,12 +21,19 @@ export type HuntRunStatusValue = typeof HUNT_RUN_STATUSES[number];
 export type HuntRunTriggerValue = typeof HUNT_RUN_TRIGGERS[number];
 export type HuntRunVerdictValue = typeof HUNT_RUN_VERDICTS[number];
 
-export const HUNT_PLATFORM_INTERNET = 'internet';
+// The internet scanning services: an infrastructure hunt runs on every connected one, without security platform
+export const HUNT_INFRASTRUCTURE_PLATFORMS = ['censys', 'silentpush', 'urlscan', 'cymru-scout', 'shodan'] as const;
+export const HUNT_LANGUAGE_FINGERPRINT = 'fingerprint';
+// The platform of the statistics of the runs whose internet scanning service is no longer known
+export const HUNT_INFRASTRUCTURE_KEY = 'internet-scanning';
+export const isHuntInfrastructurePlatform = (platform: string | null | undefined) => {
+  return !!platform && (HUNT_INFRASTRUCTURE_PLATFORMS as ReadonlyArray<string>).includes(platform);
+};
 
 /**
- * Whether a hunt connector can run a translation preview of a hunt, as the dispatch picks connectors: the internet
- * platform for an infrastructure hunt, otherwise a security platform of the hunt scope, every one of them for an
- * unscoped hunt.
+ * Whether a hunt connector can run a translation preview of a hunt, as the dispatch picks connectors: an internet
+ * scanning service for an infrastructure hunt, otherwise a security platform of the hunt scope, every one of them for
+ * an unscoped hunt.
  */
 export const isHuntPreviewConnector = (
   connector: { supports_preview?: boolean | null; supports_indicators?: boolean | null; platform?: string | null; securityPlatform?: { id: string } | null },
@@ -34,8 +41,8 @@ export const isHuntPreviewConnector = (
   scopePlatformIds: ReadonlyArray<string>,
 ) => {
   if (!connector.supports_preview) return false;
-  if (huntType === 'infrastructure') return connector.platform === HUNT_PLATFORM_INTERNET;
-  if (connector.platform === HUNT_PLATFORM_INTERNET || !connector.securityPlatform) return false;
+  if (huntType === 'infrastructure') return isHuntInfrastructurePlatform(connector.platform);
+  if (isHuntInfrastructurePlatform(connector.platform) || !connector.securityPlatform) return false;
   if (huntType === 'indicators' && !connector.supports_indicators) return false;
   return scopePlatformIds.length === 0 || scopePlatformIds.includes(connector.securityPlatform.id);
 };
@@ -51,7 +58,7 @@ export const HUNT_PLATFORMS = [
   'clickhouse',
   's3-ocsf',
   'sentinelone',
-  HUNT_PLATFORM_INTERNET,
+  ...HUNT_INFRASTRUCTURE_PLATFORMS,
 ] as const;
 export const HUNT_QUERY_LANGUAGES = [
   'spl',
@@ -66,7 +73,7 @@ export const HUNT_QUERY_LANGUAGES = [
   'opensearch-lucene',
   'sql',
   'powerquery',
-  'internet',
+  HUNT_LANGUAGE_FINGERPRINT,
 ] as const;
 /** Default query language of each platform, offered first when a native query row is added */
 export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
@@ -80,10 +87,10 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   clickhouse: 'sql',
   's3-ocsf': 'sql',
   sentinelone: 'powerquery',
-  internet: 'internet',
+  ...Object.fromEntries(HUNT_INFRASTRUCTURE_PLATFORMS.map((platform) => [platform, HUNT_LANGUAGE_FINGERPRINT])),
 };
 
-// Product and language names are proper nouns, only the internet entries are translated
+// Product and service names are proper nouns, only the fingerprint language is translated
 const HUNT_PLATFORM_NAMES: Record<string, string> = {
   splunk: 'Splunk',
   'microsoft-sentinel': 'Microsoft Sentinel',
@@ -95,6 +102,11 @@ const HUNT_PLATFORM_NAMES: Record<string, string> = {
   clickhouse: 'ClickHouse',
   's3-ocsf': 'Amazon S3 (OCSF)',
   sentinelone: 'SentinelOne Singularity',
+  censys: 'Censys Platform',
+  silentpush: 'Silent Push',
+  urlscan: 'urlscan.io',
+  'cymru-scout': 'Team Cymru Scout',
+  shodan: 'Shodan',
 };
 const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
   spl: 'SPL',
@@ -113,13 +125,13 @@ const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
 
 export const huntPlatformLabel = (platform: string | null | undefined, t_i18n: (key: string) => string) => {
   if (!platform) return '';
-  if (platform === HUNT_PLATFORM_INTERNET) return t_i18n('Internet');
+  if (platform === HUNT_INFRASTRUCTURE_KEY) return t_i18n('Internet scanning service');
   return HUNT_PLATFORM_NAMES[platform] ?? platform;
 };
 
 export const huntQueryLanguageLabel = (language: string | null | undefined, t_i18n: (key: string) => string) => {
   if (!language) return '';
-  if (language === 'internet') return t_i18n('Internet fingerprints');
+  if (language === HUNT_LANGUAGE_FINGERPRINT) return t_i18n('Internet fingerprints');
   return HUNT_QUERY_LANGUAGE_NAMES[language] ?? language;
 };
 
@@ -322,7 +334,11 @@ const HUNT_CONNECTOR_SETUP_SECTIONS: Record<string, string> = {
   'google-secops-hunt': 'google-secops',
   'opensearch-ocsf-hunt': 'opensearch-ocsf',
   'sentinelone-hunt': 'sentinelone',
-  'infrastructure-tracker': 'infrastructure-tracker',
+  'censys-hunt': 'censys',
+  'silentpush-hunt': 'silent-push',
+  'urlscan-hunt': 'urlscan',
+  'cymru-scout-hunt': 'team-cymru-scout',
+  'shodan-hunt': 'shodan',
 };
 
 export const huntConnectorSetupDocumentation = (slug: string | null | undefined) => {
@@ -364,7 +380,7 @@ export const huntTypeLabel = (huntType?: string | null) => {
 export const huntTypeDescription = (huntType?: string | null) => {
   switch (huntType) {
     case 'indicators': return 'Needs indicators or observables (IP addresses, domains, URLs, hashes): looks them up in the telemetry of your security platforms, no query language needed.';
-    case 'infrastructure': return 'Needs an internet fingerprint query (certificate, JARM, HTTP title), not a Sigma rule or indicators: searches internet scan data for the servers of a threat with the infrastructure tracker connector, never your telemetry.';
+    case 'infrastructure': return 'Needs internet fingerprints (certificate, JARM, HTTP title), not a Sigma rule or indicators: searches every internet scanning service you connected, such as Censys or Shodan, for the servers of a threat, never your telemetry.';
     default: return 'Needs a Sigma rule or a native query: runs it on the logs and events of your SIEM, EDR or data lake.';
   }
 };
@@ -408,7 +424,7 @@ export const HUNT_STATUS_MEANINGS_READ_ONLY: Record<HuntStatusValue, string> = {
 export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
   'Manual: it runs when you click Run now': 'Manual: it runs when a user allowed to launch hunts runs it',
   'Add a Sigma rule or a native query': 'No Sigma rule or native query yet; a user who can edit the hunt can add one',
-  'Add a native query for the internet platform': 'No native query for the internet platform yet; a user who can edit the hunt can add one',
+  'Add a fingerprint document for an internet scanning service': 'No fingerprint document for an internet scanning service yet; a user who can edit the hunt can add one',
   'Add the indicators or observables to look for': 'No indicators or observables to look for yet; a user who can edit the hunt can add them',
   'None of the indicators and observables of this hunt has a value a lookup can search: add values or other indicators':
     'None of the indicators and observables of this hunt has a value a lookup can search; a user who can edit the hunt can add values or other indicators',
@@ -419,8 +435,8 @@ export const HUNT_READINESS_READ_ONLY_TEMPLATES: Record<string, string> = {
     'No hunt connector can run it on the platforms of its scope yet; a user who can edit the hunt can widen the scope',
   'No hunt connector of its scope supports indicator lookups: deploy one that does, such as the Splunk hunt connector':
     'No hunt connector of its scope supports indicator lookups yet; it runs once one that does is deployed, such as the Splunk hunt connector',
-  'No internet hunt connector is deployed: deploy the infrastructure tracker connector':
-    'No internet hunt connector is deployed yet; it runs once the infrastructure tracker connector is deployed',
+  'No hunt connector of an internet scanning service is deployed: deploy one, such as the Censys or Shodan hunt connector':
+    'No hunt connector of an internet scanning service is deployed yet; it runs once one is deployed, such as the Censys or Shodan hunt connector',
   'Scheduled and standing hunts need the Enterprise Edition: set the schedule to manual':
     'Scheduled and standing hunts need the Enterprise Edition; a user allowed to launch hunts can set its schedule to manual',
   'The scope matches no security platform: edit the scope': 'The scope matches no security platform yet; a user who can edit the hunt can change it',
@@ -601,20 +617,20 @@ export const hasHuntLogic = (hunt: {
   hunt_type?: string | null;
   sigma_rule?: string | null;
   sigma_rules?: ReadonlyArray<string> | null;
-  native_queries?: ReadonlyArray<{ platform: string }> | null;
+  native_queries?: ReadonlyArray<{ platform: string; language?: string | null }> | null;
   hunt_ioc_values?: ReadonlyArray<unknown> | null;
   hunt_ioc_filters?: string | null;
   huntSources?: ReadonlyArray<unknown> | null;
 }) => {
   const nativeQueries = hunt.native_queries ?? [];
   if (hunt.hunt_type === 'infrastructure') {
-    return nativeQueries.some((nativeQuery) => nativeQuery.platform === HUNT_PLATFORM_INTERNET);
+    return nativeQueries.some((nativeQuery) => isHuntInfrastructurePlatform(nativeQuery.platform) && nativeQuery.language === HUNT_LANGUAGE_FINGERPRINT);
   }
   if (hunt.hunt_type === 'indicators') {
     return (hunt.hunt_ioc_values ?? []).length > 0 || (hunt.huntSources ?? []).length > 0 || !isFilterGroupJsonEmpty(hunt.hunt_ioc_filters);
   }
   return [hunt.sigma_rule, ...(hunt.sigma_rules ?? [])].some((rule) => (rule ?? '').trim().length > 0)
-    || nativeQueries.some((nativeQuery) => nativeQuery.platform !== HUNT_PLATFORM_INTERNET);
+    || nativeQueries.some((nativeQuery) => !isHuntInfrastructurePlatform(nativeQuery.platform));
 };
 
 /** Hunts proposed by an agent or imported from XTM Hub stay drafts until an analyst reviews them. */
@@ -1250,7 +1266,7 @@ interface HuntConnectorPlatform {
 
 /** Security platforms a live hunt connector can run a hunt of the type on (an indicator hunt needs indicator lookups). */
 export const countHuntPlatforms = (connectors: ReadonlyArray<HuntConnectorPlatform>, huntType: string) => new Set(connectors
-  .filter((connector) => connector.platform !== HUNT_PLATFORM_INTERNET && !!connector.securityPlatform)
+  .filter((connector) => !isHuntInfrastructurePlatform(connector.platform) && !!connector.securityPlatform)
   .filter((connector) => huntType !== 'indicators' || !!connector.supports_indicators)
   .map((connector) => connector.securityPlatform?.id)).size;
 
@@ -1280,7 +1296,7 @@ export const buildHuntSummary = (input: HuntSummaryInput, t_i18n: HuntTranslate)
   const name = input.name;
   if (input.huntType === 'infrastructure') {
     return [
-      t_i18n('You are hunting the infrastructure of {name} on the internet: the hunt runs its fingerprint queries on internet scan data through the infrastructure tracker connector, never on your telemetry.', { values: { name } }),
+      t_i18n('You are hunting the infrastructure of {name} on the internet: the hunt searches its fingerprints on every internet scanning service you connected, never on your telemetry.', { values: { name } }),
       t_i18n('From {count, plural, one {# hit} other {# hits}}, a run proposes an incident.', { values: { count: input.escalationThreshold } }),
     ];
   }

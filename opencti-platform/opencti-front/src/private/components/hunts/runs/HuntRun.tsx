@@ -219,7 +219,7 @@ const HuntEditContext = createContext(false);
 /** The controls that change the hunt or its runs, which the platform refuses to a user who can only view the hunt. */
 const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useContext(HuntEditContext) ? <>{children}</> : null);
 
-const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet scanning service');
 
 interface DetailRow {
   key: string;

@@ -248,7 +248,7 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
       </Text>
       {isInfrastructureHunt && (
         <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-derived-infrastructure">
-          {t_i18n('An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint query in the Logic section.')}
+          {t_i18n('An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint document in the Logic section.')}
         </Text>
       )}
       {!hasElements && !hasRules && (

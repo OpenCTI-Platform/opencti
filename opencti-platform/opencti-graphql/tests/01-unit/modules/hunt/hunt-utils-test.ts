@@ -135,11 +135,11 @@ describe('Hunt native queries', () => {
   it('should normalize native queries, JSON strings included', () => {
     const queries = normalizeNativeQueries([
       { platform: ' splunk ', language: ' spl ', query: ' index=main | head 10 ', pipeline: ' ' },
-      JSON.stringify({ platform: 'internet', language: 'internet', query: 'jarm:abc', pipeline: 'censys' }),
+      JSON.stringify({ platform: 'shodan', language: 'fingerprint', query: 'fingerprints: []', pipeline: ' ' }),
     ]);
     expect(queries).toEqual([
       { platform: 'splunk', language: 'spl', query: 'index=main | head 10', pipeline: null },
-      { platform: 'internet', language: 'internet', query: 'jarm:abc', pipeline: 'censys' },
+      { platform: 'shodan', language: 'fingerprint', query: 'fingerprints: []', pipeline: null },
     ]);
     expect(normalizeNativeQueries(null)).toEqual([]);
     expect(normalizeNativeQueries('')).toEqual([]);

@@ -13,7 +13,7 @@ import { HUNT_MANAGER_USER } from '../../../utils/access';
 import { doYield } from '../../../utils/eventloop-utils';
 import { withHuntLock } from '../hunt-lock';
 import { findByIds } from '../hunt-loaders';
-import { HUNT_PLATFORM_INTERNET } from '../hunt-types';
+import { HUNT_INFRASTRUCTURE_KEY } from '../hunt-types';
 import { shareAccessDecision } from '../hunt-utils';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_MODE_EXECUTE } from '../huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
@@ -37,7 +37,7 @@ const MARKING_KEY = buildRefRelationKey(RELATION_OBJECT_MARKING);
 export const huntHitRecordId = (huntId: string, securityPlatformId: string | null | undefined, hitKey: string) => {
   const standardId = generateStandardId(ENTITY_TYPE_HUNT_HIT_RECORD, {
     hunt_id: huntId,
-    security_platform_id: securityPlatformId ?? HUNT_PLATFORM_INTERNET,
+    security_platform_id: securityPlatformId ?? HUNT_INFRASTRUCTURE_KEY,
     hit_key: hitKey,
   });
   return { standardId, internalId: standardId.split('--')[1] };
@@ -231,7 +231,7 @@ export const recordHuntHits = async (
     await beforeRecord?.({ newCount: 0, recurringCount: 0 });
     return { newCount: 0, recurringCount: 0 };
   }
-  const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? HUNT_PLATFORM_INTERNET}`;
+  const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? HUNT_INFRASTRUCTURE_KEY}`;
   const seenAt = new Date(input.seenAt).toISOString();
   const recordedAt = new Date().toISOString();
   const markings = Array.from(new Set(input.objectMarking ?? []));
@@ -314,7 +314,7 @@ const recordFilters = (huntId: string, securityPlatformIds: (string | null)[] | 
 };
 
 /**
- * Distinct hits known for a hunt, on the given security platforms (null for a hunt on the internet; every platform when
+ * Distinct hits known for a hunt, on the given security platforms (null for a hunt on the internet scanning services; every platform when
  * the list is null), restricted to the hits holding one of the given values for an indicator.
  */
 export const countHuntHitRecords = async (context: AuthContext, huntId: string, securityPlatformIds: (string | null)[] | null, iocKeys?: string[]) => {
@@ -425,7 +425,7 @@ const countHuntPlatformsWithEveryRunReadable = async (context: AuthContext, user
 };
 
 /**
- * Security platforms (null for the internet) on which the user reads every execution run of a hunt. The records of the
+ * Security platforms (null for the internet scanning services) on which the user reads every execution run of a hunt. The records of the
  * hits of a hunt on a platform aggregate all its runs there, and a run keeps the markings and organizations its hunt and
  * platform had when it was created: once the hunt is restricted further, or shared with more readers, some of its readers
  * cannot read all of its runs. Only on these platforms do the records tell nothing of a run hidden from the user. The
@@ -459,7 +459,7 @@ export const annotateHuntRunHits = async (context: AuthContext, user: AuthUser, 
 };
 
 /**
- * What a hunt knows of its hits, over the security platforms the user can read (and the internet for an internet hunt)
+ * What a hunt knows of its hits, over the security platforms the user can read (and the internet scanning services for an infrastructure hunt)
  * on which the user reads every run of the hunt: the distinct hits, when the earliest known hit and the latest new hit
  * were found.
  */
