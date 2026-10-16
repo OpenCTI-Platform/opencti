@@ -148,6 +148,12 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('A single task cannot perform several actions on the workflow status');
     });
 
+    it('should throw an error if an add or remove action also targets the workflow status', async () => {
+      const addStatusAction = { type: ACTION_TYPE_ADD, context: { field: 'x_opencti_workflow_id', values: ['other-status-id'] } };
+      await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([bypassAction, addStatusAction]), scope, type))
+        .rejects.toThrowError('A single task cannot perform several actions on the workflow status');
+    });
+
     it('should throw an error if the user has no BYPASS capability', async () => {
       await expect(checkActionValidity(testContext, userUpdate, buildInput([bypassAction]), scope, type))
         .rejects.toThrowError('You are not allowed to do this.');
