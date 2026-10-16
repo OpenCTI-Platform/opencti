@@ -1,6 +1,6 @@
 import { isIPv4, isIPv6 } from 'node:net';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation, StoreMarkingDefinition } from '../../types/store';
 import { ValidationError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { pageEntitiesConnection, pageRegardingEntitiesConnection, topRelationsList } from '../../database/middleware-loader';
@@ -19,8 +19,9 @@ import {
   ENTITY_MAC_ADDR,
   ENTITY_URL,
 } from '../../schema/stixCyberObservable';
-import { SYSTEM_USER } from '../../utils/access';
+import { KNOWLEDGE, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findByIds } from './hunt-loaders';
 import { HUNT_IOC_CONTAINER_TYPES, HUNT_IOC_OBSERVABLE_TYPES, HUNT_IOC_SUBJECT_TYPES } from './hunt-entity-types';
 import { type BasicStoreEntityHunt, type HuntIocValue, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from './hunt-types';
@@ -243,15 +244,24 @@ type AccessRestricted = { [RELATION_OBJECT_MARKING]?: string[]; [RELATION_GRANTE
 /** Whether an element is shared with selected users or groups only, which a hunt and its runs cannot be. */
 export const isRestrictedToMembers = (element: { restricted_members?: unknown[] | null }) => (element.restricted_members ?? []).length > 0;
 
+type MarkingLevel = Pick<BasicStoreEntityMarkingDefinition, 'definition_type' | 'x_opencti_order'>;
+
+const markingsOf = <M extends MarkingLevel>(holder: AccessRestricted, markings: Map<string, M>) => (holder[RELATION_OBJECT_MARKING] ?? [])
+  .map((id) => markings.get(id))
+  .filter((marking): marking is M => !!marking);
+
+// A marking a hunt covers: one of its markings is of the same type and at least the same level
+const isCoveredBy = (huntMarkings: MarkingLevel[], marking: MarkingLevel) => huntMarkings
+  .some((huntMarking) => huntMarking.definition_type === marking.definition_type && huntMarking.x_opencti_order >= marking.x_opencti_order);
+
 export const isDisclosableByHunt = (hunt: AccessRestricted, element: AccessRestricted, markings: Map<string, BasicStoreEntityMarkingDefinition>) => {
   if (isRestrictedToMembers(element)) {
     return false;
   }
-  const huntMarkings = (hunt[RELATION_OBJECT_MARKING] ?? []).map((id) => markings.get(id)).filter((marking) => !!marking);
+  const huntMarkings = markingsOf(hunt, markings);
   const covered = (element[RELATION_OBJECT_MARKING] ?? []).every((id) => {
     const marking = markings.get(id);
-    return !!marking && huntMarkings.some((huntMarking) => huntMarking.definition_type === marking.definition_type
-      && huntMarking.x_opencti_order >= marking.x_opencti_order);
+    return !!marking && isCoveredBy(huntMarkings, marking);
   });
   if (!covered) {
     return false;
@@ -272,6 +282,38 @@ export const isReadableByReadersOf = async (context: AuthContext, holder: Access
   ]);
   const restrictions = settings.platform_organization ? holder : { ...holder, [RELATION_GRANTED_TO]: [] };
   return isDisclosableByHunt(restrictions, element, markings as Map<string, BasicStoreEntityMarkingDefinition>);
+};
+
+// No user, group or organization holds this identity: the reader of a hunt reads what the markings and organizations
+// of the hunt give, never an element its authorized members open to someone
+const HUNT_READER_ID = '5b0c8e2a-7d41-4f6e-9a3b-1c2d4e6f8a0b';
+
+/**
+ * The access every reader of a hunt has: the markings each marking of the hunt covers (isDisclosableByHunt) and, for a
+ * hunt shared with organizations, the elements shared with them. The values of a hunt are read with it, never with the
+ * system identity: a query reads no element a run of the hunt could not disclose and spends its budget on the others,
+ * the rule of disclosure still deciding each element it reads.
+ */
+export const huntReaderAccess = async (context: AuthContext, hunt: AccessRestricted): Promise<{ context: AuthContext; user: AuthUser }> => {
+  const markings = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const huntMarkings = markingsOf(hunt, markings as Map<string, StoreMarkingDefinition>);
+  const allMarkings = Array.from(new Map(Array.from(markings.values()).map((marking) => [marking.internal_id, marking])).values());
+  const organizationIds = hunt[RELATION_GRANTED_TO] ?? [];
+  const user: AuthUser = {
+    ...SYSTEM_USER,
+    id: HUNT_READER_ID,
+    internal_id: HUNT_READER_ID,
+    name: 'HUNT READER',
+    user_email: 'HUNT READER',
+    origin: { user_id: HUNT_READER_ID, socket: 'internal' },
+    roles: [],
+    capabilities: [{ name: KNOWLEDGE }],
+    organizations: organizationIds.map((id) => ({ id, internal_id: id, entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION })) as AuthUser['organizations'],
+    allowed_marking: allMarkings.filter((marking) => isCoveredBy(huntMarkings, marking)),
+  };
+  // With a platform organization, a hunt shared with no organization is read by its members only, who read every
+  // organization
+  return { context: { ...context, user, user_inside_platform_organization: organizationIds.length === 0 }, user };
 };
 
 export const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];
@@ -318,25 +360,25 @@ const subjectRelationOf = (element: IocElement) => (element.entity_type === ENTI
 /** The name an indicator or an observable is shown with. */
 export const iocElementName = (element: IocElement) => String(element.name ?? element.value ?? element.observable_value ?? element.standard_id);
 
+type HuntIocReach = Pick<HuntIocSource, 'via' | 'matched_filter'>;
+
 /**
- * The values an indicator hunt looks up: its indicators and observables, the indicators and observables contained in
- * its reports, groupings and incident responses or linked to its threats and incidents, those matching its filter, and
- * its pasted values. Read again at every run, so that a hunt follows the intelligence it is based on. The sources, the
- * expansions and the filter share one budget of elements read, one more than a run looks up, a query that reads
- * nothing taking one: however many sources a hunt has, resolving its values reads and queries a bounded number of
- * elements, and the sources and values left unread make the set truncated.
+ * The indicators and observables an indicator hunt reaches with an access: its indicators and observables, those
+ * contained in its reports, groupings and incident responses or linked to its threats and incidents, and those matching
+ * its filter. The sources, the expansions and the filter share one budget of elements read, one more than a run looks
+ * up, a query that reads nothing taking one: however many sources a hunt has, resolving its values reads and queries a
+ * bounded number of elements, and the sources and values left unread make the set truncated.
  */
-export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEntityHunt): Promise<HuntIocSet> => {
-  const max = HUNT_CONFIG.maxIocsPerRun;
-  let budget = max + 1;
+const readHuntIocElements = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
+  let budget = HUNT_CONFIG.maxIocsPerRun + 1;
   const sourceIds = hunt[RELATION_HUNT_SOURCES] ?? [];
   const readSourceIds = sourceIds.slice(0, budget);
-  const sources = await findByIds<IocElement>(context, SYSTEM_USER, readSourceIds);
+  const sources = await findByIds<IocElement>(context, user, readSourceIds);
   const elements: IocElement[] = sources.filter((source) => IOC_ELEMENT_TYPES.includes(source.entity_type));
   budget -= elements.length;
   // How each element was reached, the first way kept: chosen, then through a source, then by the filter
-  const reached = new Map<string, Pick<HuntIocSource, 'via' | 'matched_filter'>>();
-  const reach = (element: IocElement, how: Pick<HuntIocSource, 'via' | 'matched_filter'>) => {
+  const reached = new Map<string, HuntIocReach>();
+  const reach = (element: IocElement, how: HuntIocReach) => {
     if (!reached.has(element.internal_id)) {
       reached.set(element.internal_id, how);
     }
@@ -351,8 +393,8 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
     // Expanded elements of revoked indicators are not hunted, an explicitly chosen one is
     const isContainer = HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type);
     const expanded = isContainer
-      ? await listContainedIocElements(context, SYSTEM_USER, source.internal_id, budget)
-      : (await listSubjectIocElements(context, SYSTEM_USER, source.internal_id, budget)).slice(0, budget);
+      ? await listContainedIocElements(context, user, source.internal_id, budget)
+      : (await listSubjectIocElements(context, user, source.internal_id, budget)).slice(0, budget);
     budget -= Math.max(1, expanded.length);
     const kept = expanded.filter((element) => element.revoked !== true);
     kept.forEach((element) => reach(element, {
@@ -363,15 +405,29 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
   }
   const filters = parseHuntFilterGroup(hunt.hunt_ioc_filters, 'hunt_ioc_filters');
   if (filters && budget > 0) {
-    const matching = await pageEntitiesConnection<IocElement>(context, SYSTEM_USER, IOC_ELEMENT_TYPES, { filters, first: budget });
+    const matching = await pageEntitiesConnection<IocElement>(context, user, IOC_ELEMENT_TYPES, { filters, first: budget });
     budget -= Math.max(1, matching.edges.length);
     const matched = matching.edges.map((edge) => edge.node);
     matched.forEach((element) => reach(element, { via: null, matched_filter: true }));
     elements.push(...matched);
   }
   // A spent budget read more elements than a run looks up, or left sources and the filter unread
-  const truncated = budget <= 0 || readSourceIds.length < sourceIds.length;
+  return { elements, reached, truncated: budget <= 0 || readSourceIds.length < sourceIds.length };
+};
+
+/**
+ * The values an indicator hunt looks up, read again at every run so that a hunt follows the intelligence it is based
+ * on: the indicators and observables it reaches with the access of its readers (huntReaderAccess), each disclosed by
+ * the rule of disclosure only, and its pasted values. The elements left out are counted for a viewer as those he reads
+ * himself and the hunt cannot disclose: a user is never told of an element he cannot read. Without a viewer, as for a
+ * run, they are the elements read the rule refuses.
+ */
+export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEntityHunt, viewer?: AuthUser | null): Promise<HuntIocSet> => {
+  const max = HUNT_CONFIG.maxIocsPerRun;
+  const reader = await huntReaderAccess(context, hunt);
+  const { elements, reached, truncated } = await readHuntIocElements(reader.context, reader.user, hunt);
   const markings = await getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const isDisclosable = (element: IocElement) => isDisclosableByHunt(hunt, element, markings as Map<string, BasicStoreEntityMarkingDefinition>);
   const byKey = new Map<string, HuntIoc>();
   const seen = new Set<string>();
   let restricted = 0;
@@ -381,7 +437,7 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
       return;
     }
     seen.add(element.internal_id);
-    if (!isDisclosableByHunt(hunt, element, markings as Map<string, BasicStoreEntityMarkingDefinition>)) {
+    if (!isDisclosable(element)) {
       restricted += 1;
       return;
     }
@@ -413,6 +469,10 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
       byKey.set(iocKey(normalized), { key: iocKey(normalized), ...normalized, sources: [] });
     }
   });
+  if (viewer) {
+    const viewed = await readHuntIocElements(context, viewer, hunt);
+    restricted = new Set(viewed.elements.filter((element) => !isDisclosable(element)).map((element) => element.internal_id)).size;
+  }
   const iocs = Array.from(byKey.values());
   return {
     iocs: iocs.slice(0, max),

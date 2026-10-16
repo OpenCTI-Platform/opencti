@@ -29,6 +29,7 @@ import {
 } from './hunt-utils';
 import { HUNT_MESSAGES, renderHuntMessage } from './hunt-messages';
 import { hasHuntIocLogic, normalizeHuntIocValues } from './hunt-iocs';
+import { checkHuntCapability } from './hunt-access';
 
 export interface HuntValidationState {
   hunt_type?: string | null;
@@ -161,7 +162,9 @@ export const mergeHuntEdits = <T extends object>(hunt: T, editInputs: { key: str
   return { ...hunt, ...changes };
 };
 
+// Every write path of a hunt (its own mutations, the generic edition, imports) checks the hunt capability of its user
 export const validateHuntCreation = async (context: AuthContext, user: AuthUser, instance: Record<string, unknown>) => {
+  checkHuntCapability(user);
   await validateHuntState(context, user, instance as HuntValidationState);
   return true;
 };
@@ -172,6 +175,7 @@ export const validateHuntUpdate = async (
   instance: Record<string, unknown>,
   initial: Record<string, unknown> | undefined,
 ) => {
+  checkHuntCapability(user);
   const changes = Object.fromEntries(Object.entries(instance).map(([key, value]) => [key, singleValue(key, value)]));
   await validateHuntState(context, user, { ...(initial ?? {}), ...changes } as HuntValidationState);
   return true;

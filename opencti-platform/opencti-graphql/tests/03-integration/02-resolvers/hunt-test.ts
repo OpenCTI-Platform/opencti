@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Readable } from 'node:stream';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 import * as huntStats from '../../../src/modules/hunt/hunt-stats';
@@ -159,6 +159,12 @@ const HUNT_KNOWN_HITS = gql`
 `;
 const HUNT_RUN_VERDICT = gql`
   mutation HuntRunSetVerdict($id: ID!, $input: HuntRunVerdictInput!) { huntRunSetVerdict(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_TRIAGE = gql`
+  mutation HuntRunTriage($id: ID!) { huntRunTriage(id: $id) { id } }
+`;
+const SDO_FIELD_PATCH = gql`
+  mutation StixDomainObjectFieldPatch($id: ID!, $input: [EditInput]!) { stixDomainObjectEdit(id: $id) { fieldPatch(input: $input) { id } } }
 `;
 const HUNT_RUN_EVIDENCE = gql`
   mutation HuntRunEvidenceAdd($id: ID!, $input: HuntRunEvidenceAddInput!) { huntRunEvidenceAdd(id: $id, input: $input) { ${RUN_FIELDS} } }
@@ -376,6 +382,23 @@ describe('Hunt resolvers', () => {
     expect(run.connector_id).toEqual(CONNECTOR_ID);
     expect(run.security_platform_id).toEqual(securityPlatformId);
     expect(run.verdict).toEqual('pending');
+  });
+
+  it('should refuse to create, change, run and triage hunts to a role updating the knowledge without the hunt capability', async () => {
+    // The security role creates and updates the knowledge, without the capability to launch hunts on security platforms
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_ADD, variables: { input: { name: 'Hunt test without capability', sigma_rule: SIGMA_RULE } } });
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_FIELD_PATCH, variables: { id: huntId, input: [{ key: 'description', value: ['Changed'] }] } });
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_RUN_START, variables: { id: huntId } });
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_TEST_QUERY, variables: { id: huntId } });
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_RUN_VERDICT, variables: { id: firstRunId, input: { verdict: 'benign' } } });
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: HUNT_RUN_TRIAGE, variables: { id: firstRunId } });
+    // The generic edition of a domain object is a write path of the hunt as well
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, { query: SDO_FIELD_PATCH, variables: { id: huntId, input: [{ key: 'description', value: ['Changed'] }] } });
+    // Reading stays with the knowledge access
+    const read = await queryAsUserWithSuccess(USER_SECURITY, { query: HUNT_READ, variables: { id: huntId } });
+    expect(read.data?.hunt.id).toEqual(huntId);
+    const run = await queryAsUserWithSuccess(USER_SECURITY, { query: HUNT_RUN_READ, variables: { id: firstRunId } });
+    expect(run.data?.huntRun.id).toEqual(firstRunId);
   });
 
   it('should only accept reports from the hunt connector', async () => {

@@ -169,7 +169,7 @@ export const computeHuntReadiness = async (context: AuthContext, user: AuthUser,
   const [enterprise, connectors, iocSet, translations] = await Promise.all([
     isEnterpriseEdition(context),
     listHuntConnectors(context, false),
-    hunt.hunt_type === HUNT_TYPE_INDICATORS && logicValid ? resolveHuntIocSet(context, hunt) : Promise.resolve(null),
+    hunt.hunt_type === HUNT_TYPE_INDICATORS && logicValid ? resolveHuntIocSet(context, hunt, user) : Promise.resolve(null),
     logicValid ? findHuntTranslations(context, user, hunt) : Promise.resolve([]),
   ]);
   const logic = logicItems(hunt, iocSet);
