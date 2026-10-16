@@ -3402,6 +3402,7 @@
   "No template found for this name": "Шаблон для этого имени не найден",
   "No tokens found.": "Токены не найдены.",
   "No tokens found. Click \"Generate Token\" to create one.": "Токены не найдены. Нажмите \"Сгенерировать токен\", чтобы создать один.",
+  "No transition available for all selected entities": "Нет перехода, доступного для всех выбранных сущностей",
   "No value": "Нет значения",
   "No widget in this workspace": "В этом рабочем пространстве нет виджета",
   "No work": "Нет работы",

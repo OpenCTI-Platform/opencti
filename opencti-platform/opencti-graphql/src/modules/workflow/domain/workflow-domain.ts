@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
+import { Promise as BluePromise } from 'bluebird';
 import conf, { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
@@ -7,7 +8,8 @@ import { extractEntityRepresentativeName } from '../../../database/entity-repres
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
-import { READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
+import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
+import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
 import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
@@ -22,6 +24,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
+import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
@@ -479,20 +482,6 @@ export const hasPublishedWorkflowDefinition = async (
 ): Promise<boolean> => {
   const definitionData = await getWorkflowDefinition(context, user, entityType, false);
   return !!definitionData;
-};
-
-/**
- * Distinct event names of the published workflow transitions. Exposed at the same level as
- * `hasPublishedWorkflowDefinition` so knowledge editors can pick a transition to mass-apply.
- */
-export const getWorkflowTransitionEvents = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-): Promise<string[]> => {
-  const definitionData = await getWorkflowDefinition(context, user, entityType, false);
-  const events = (definitionData?.transitions ?? []).map((transition) => transition.event);
-  return [...new Set(events)].sort();
 };
 
 /**
@@ -1270,6 +1259,20 @@ export const getWorkflowInstance = async (
   };
 };
 
+const toAllowedTransition = (
+  transition: ReturnType<ReturnType<typeof WorkflowFactory.createDefinition>['getTransitions']>[number],
+  statuses: BasicWorkflowStatus[],
+  scope: StatusScope,
+) => ({
+  event: transition.event,
+  toState: transition.to,
+  toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
+  comment: transition.comment,
+  actions: transition.actionTypes || [],
+  requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
+  requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
+});
+
 /**
  * Get allowed transitions for an entity.
  */
@@ -1329,19 +1332,63 @@ export const getAllowedTransitions = async (
         const passes = await condition(conditionContext as any);
         if (!passes) return null;
       }
-      return {
-        event: transition.event,
-        toState: transition.to,
-        toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
-        comment: transition.comment,
-        actions: transition.actionTypes || [],
-        requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
-        requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
-      };
+      return toAllowedTransition(transition, statuses, scope);
     }),
   )).filter((t): t is NonNullable<typeof t> => t !== null);
 
   return resolvedTransitions;
+};
+
+type AllowedTransition = Awaited<ReturnType<typeof getAllowedTransitions>>[number];
+
+const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedTransition[] => {
+  if (transitionLists.length === 0) return [];
+  const [first, ...others] = transitionLists;
+  return first.filter((transition) => others.every((list) => list.some((other) => {
+    return other.event === transition.event && other.toState === transition.toState;
+  })));
+};
+
+/**
+ * Transitions that every targeted entity can take, for a mass transition. A selection is checked
+ * entity by entity, conditions included. A filter (select all) is checked from the statuses found
+ * under it: entities without status are in the initial state, and conditions are only checked when
+ * the transition runs.
+ */
+export const getMassWorkflowTransitions = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  target: { entityIds?: string[] | null; filters?: string | null; search?: string | null; excludedIds?: string[] | null },
+): Promise<AllowedTransition[]> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  const definitionData = await getDefinitionData(context, user, entitySetting);
+  if (!definitionData) return [];
+  const statuses = await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entityType);
+  if (target.entityIds) {
+    const transitionLists = await BluePromise.map(target.entityIds, (entityId) => {
+      return getAllowedTransitions(context, user, entityId, { entitySetting, definitionData, statuses });
+    }, { concurrency: ES_MAX_CONCURRENCY });
+    return keepCommonTransitions(transitionLists);
+  }
+  let filters = target.filters ? JSON.parse(target.filters) : undefined;
+  if (target.excludedIds && target.excludedIds.length > 0) {
+    filters = addFilter(filters, 'internal_id', target.excludedIds, 'not_eq', 'and');
+  }
+  const statusCounts = await elAggregationCount(context, user, READ_DATA_INDICES, {
+    field: 'x_opencti_workflow_id',
+    types: [entityType],
+    filters,
+    search: target.search || null,
+    normalizeLabel: false,
+  });
+  const definition = WorkflowFactory.createDefinition(definitionData);
+  const states = new Set(statusCounts.map(({ label }) => {
+    return statuses.find((status) => status.id === label)?.template_id ?? definitionData.initialState;
+  }));
+  return keepCommonTransitions([...states].map((state) => {
+    return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, StatusScope.Global));
+  }));
 };
 
 /**

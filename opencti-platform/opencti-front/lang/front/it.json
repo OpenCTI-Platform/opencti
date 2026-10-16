@@ -3402,6 +3402,7 @@
   "No template found for this name": "Nessun template trovato per questo nome",
   "No tokens found.": "Nessun token trovato.",
   "No tokens found. Click \"Generate Token\" to create one.": "Non sono stati trovati token. Fare clic su \"Genera token\" per crearne uno.",
+  "No transition available for all selected entities": "Nessuna transizione disponibile per tutte le entità selezionate",
   "No value": "Nessun valore",
   "No widget in this workspace": "Nessun widget in questo spazio di lavoro",
   "No work": "Nessun lavoro",

@@ -118,7 +118,7 @@ import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectP
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
-import { buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD, withWorkflowBypassOptions } from '../common/workflow/workflowMassActions';
+import { buildTransitionOptions, buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD, withWorkflowBypassOptions } from '../common/workflow/workflowMassActions';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -330,9 +330,29 @@ const toolBarQueryTaskAddMutation = graphql`
 `;
 
 const toolBarWorkflowQuery = graphql`
-  query DataTableToolBarWorkflowQuery($entityType: String!) {
+  query DataTableToolBarWorkflowQuery(
+    $entityType: String!
+    $entityIds: [String!]
+    $filters: String
+    $search: String
+    $excludedIds: [String!]
+  ) {
     workflowDefinitionPublished(entityType: $entityType)
-    workflowTransitionEvents(entityType: $entityType)
+    workflowMassTransitions(
+      entityType: $entityType
+      entityIds: $entityIds
+      filters: $filters
+      search: $search
+      excludedIds: $excludedIds
+    ) {
+      event
+      toState
+      toStatus {
+        template {
+          name
+        }
+      }
+    }
   }
 `;
 
@@ -453,7 +473,7 @@ class DataTableToolBar extends Component {
       workflowPublished: false,
       workflowBypass: false,
       workflowLoading: false,
-      transitionEvents: [],
+      transitionOptions: [],
       externalReferences: [],
       enrichConnectors: [],
       enrichSelected: [],
@@ -504,7 +524,7 @@ class DataTableToolBar extends Component {
     });
   }
 
-  handleOpenUpdate(workflowEntityType, canBypassWorkflow) {
+  handleOpenUpdate(workflowEntityType, canBypassWorkflow, workflowTarget) {
     this.workflowQueryId = (this.workflowQueryId ?? 0) + 1;
     const queryId = this.workflowQueryId;
     this.setState({
@@ -512,10 +532,10 @@ class DataTableToolBar extends Component {
       workflowPublished: false,
       workflowBypass: false,
       workflowLoading: !!workflowEntityType,
-      transitionEvents: [],
+      transitionOptions: [],
     });
     if (workflowEntityType) {
-      fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType })
+      fetchQuery(toolBarWorkflowQuery, { entityType: workflowEntityType, ...workflowTarget })
         .toPromise()
         .then((data) => {
           if (queryId !== this.workflowQueryId) return;
@@ -523,7 +543,7 @@ class DataTableToolBar extends Component {
             workflowPublished: data?.workflowDefinitionPublished === true,
             workflowBypass: canBypassWorkflow && data?.workflowDefinitionPublished === true,
             workflowLoading: false,
-            transitionEvents: (data?.workflowTransitionEvents ?? []).map((event) => ({ label: event, value: event })),
+            transitionOptions: buildTransitionOptions(data?.workflowMassTransitions ?? []),
           });
         })
         .catch(() => {
@@ -1132,7 +1152,7 @@ class DataTableToolBar extends Component {
             label: t('Status'),
             value: 'x_opencti_workflow_id',
           },
-          this.state.workflowPublished && this.state.transitionEvents.length > 0 && {
+          this.state.workflowPublished && {
             label: t('Workflow transition'),
             value: WORKFLOW_TRANSITION_FIELD,
           },
@@ -1846,7 +1866,7 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
             value={actionsInputs[i]?.values[0] || null}
-            options={this.state.transitionEvents}
+            options={this.state.transitionOptions}
             onValueChange={(next, meta) => (this.handleChangeActionInputValues.bind(this, i))(next, meta.event)}
           >
             <ComboboxLabel>{t('Values')}</ComboboxLabel>
@@ -1857,7 +1877,7 @@ class DataTableToolBar extends Component {
               </ComboboxControls>
             </ComboboxField>
             <ComboboxContent
-              emptyMessage={t('No available options')}
+              emptyMessage={t('No transition available for all selected entities')}
               listAriaLabel={t('Values')}
             />
           </Combobox>
@@ -2503,6 +2523,14 @@ class DataTableToolBar extends Component {
             currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
           });
           const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
+          // Same targets as the task, so the transitions offered can run on every entity
+          const workflowTarget = selectAll
+            ? {
+                filters: serializeFilterGroupForBackend(removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys)),
+                search,
+                excludedIds: Object.keys(this.props.deSelectedElements || {}),
+              }
+            : { entityIds: Object.keys(selectedElements || {}) };
           const isContainer = !!container?.id;
           // endregion
           return (
@@ -2585,7 +2613,7 @@ class DataTableToolBar extends Component {
                                 numberOfSelectedElements === 0
                                 || this.state.processing
                               }
-                              onClick={() => this.handleOpenUpdate(workflowEntityType, isBypassUser(me))}
+                              onClick={() => this.handleOpenUpdate(workflowEntityType, isBypassUser(me), workflowTarget)}
                               size="small"
                             >
                               <BrushOutlined />

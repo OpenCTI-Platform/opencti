@@ -6,6 +6,7 @@ import { createEntity, createRelation, deleteElementById, loadEntity, updateAttr
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
+import { elAggregationCount } from '../../../src/database/engine';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
 import { getEntitiesListFromCache } from '../../../src/database/cache';
@@ -23,7 +24,7 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
-  getWorkflowTransitionEvents,
+  getMassWorkflowTransitions,
   initializeEntityWorkflow,
   isStatusTemplateUsedInWorkflows,
   isStatusUsedInWorkflow,
@@ -127,6 +128,14 @@ vi.mock('../../../src/modules/notification/notification-domain', () => ({
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addWorkflowPublishCount: vi.fn(),
 }));
+
+vi.mock('../../../src/database/engine', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/engine')>();
+  return {
+    ...actual,
+    elAggregationCount: vi.fn(),
+  };
+});
 
 vi.mock('../../../src/domain/status', () => ({
   createStatus: vi.fn(),
@@ -3436,54 +3445,96 @@ describe('getWorkflowPublishedVersionId', () => {
 // cleanupEntityWorkflow
 // ---------------------------------------------------------------------------
 
-describe('getWorkflowTransitionEvents', () => {
+describe('getMassWorkflowTransitions', () => {
+  const statuses = [
+    { id: 'status-new', template_id: 'new', scope: 'GLOBAL' },
+    { id: 'status-analyse', template_id: 'analyse', scope: 'GLOBAL' },
+    { id: 'status-closed', template_id: 'closed', scope: 'GLOBAL' },
+  ];
+  const transitionsByState: Record<string, any[]> = {
+    new: [{ event: 'start', to: 'analyse', actionTypes: [], conditions: [] }],
+    analyse: [{ event: 'close', to: 'closed', actionTypes: [], conditions: [] }],
+  };
+  const statesByEntity: Record<string, string> = { 'report-a': 'new', 'report-b': 'new', 'report-c': 'analyse' };
+
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('should return the sorted distinct event names of the published workflow', async () => {
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
-    (storeLoadById as any).mockResolvedValue({
-      id: 'workflow-def-id',
-      published_version: {
-        id: 'v1',
-        content: JSON.stringify({
-          initialState: 'draft',
-          states: [{ statusId: 'draft' }, { statusId: 'reviewing' }, { statusId: 'approved' }],
-          transitions: [
-            { from: 'draft', to: 'reviewing', event: 'submit' },
-            { from: 'reviewing', to: 'draft', event: 'reject' },
-            { from: 'reviewing', to: 'approved', event: 'approve' },
-            { from: 'draft', to: 'approved', event: 'approve' },
-          ],
-        }),
-      },
+    (findStatusesByType as any).mockResolvedValue(statuses);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id, published_version: { id: 'v1', content: JSON.stringify({ initialState: 'new', states: [], transitions: [] }) } });
+      }
+      if (statesByEntity[id]) return Promise.resolve({ id, internal_id: id, entity_type: 'Report' });
+      return Promise.resolve(null);
     });
-
-    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
-
-    expect(result).toEqual(['approve', 'reject', 'submit']);
+    (loadEntity as any).mockImplementation((_ctx: any, _user: any, _types: string[], opts: any) => {
+      const entityId = opts.filters.filters[0].values[0];
+      return Promise.resolve({ id: `instance-${entityId}`, internal_id: `instance-${entityId}`, currentState: statesByEntity[entityId], history: '[]' });
+    });
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getInitialState: () => 'new',
+      hasState: () => true,
+      getTransitions: (state: string) => transitionsByState[state] ?? [],
+    }));
   });
 
-  it('should return an empty list when the entity type has no workflow', async () => {
-    (findByType as any).mockResolvedValue(undefined);
+  it('should offer the transitions of the status shared by the selected entities', async () => {
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
 
-    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
+    expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse', toStatus: statuses[1] })]);
+  });
+
+  it('should offer nothing when the selected entities have no transition in common', async () => {
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-c'] });
 
     expect(result).toEqual([]);
   });
 
-  it('should ignore an unpublished draft version', async () => {
-    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
-    (storeLoadById as any).mockResolvedValue({
-      id: 'workflow-def-id',
-      draft_version: {
-        id: 'v1',
-        content: JSON.stringify({ initialState: 'draft', states: [{ statusId: 'draft' }], transitions: [{ from: 'draft', to: 'draft', event: 'loop' }] }),
-      },
-    });
+  it('should drop a transition whose condition fails for one selected entity', async () => {
+    (WorkflowFactory.createDefinition as any).mockImplementation(() => ({
+      getInitialState: () => 'new',
+      hasState: () => true,
+      getTransitions: () => [{ event: 'start', to: 'analyse', actionTypes: [], conditions: [(ctx: any) => Promise.resolve(ctx.entity.internal_id !== 'report-b')] }],
+    }));
 
-    const result = await getWorkflowTransitionEvents(mockContext, mockUser, 'Report');
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
+
+    expect(result).toEqual([]);
+  });
+
+  it('should offer the transitions of the statuses found under the filter of a select all', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 2, count: 2 }]);
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'] }], filterGroups: [] });
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters, search: 'apt', excludedIds: ['report-x'] });
+
+    expect(result).toEqual([expect.objectContaining({ event: 'start', toState: 'analyse' })]);
+    const options = (elAggregationCount as any).mock.calls[0][3];
+    expect(options).toMatchObject({ field: 'x_opencti_workflow_id', types: ['Report'], search: 'apt', normalizeLabel: false });
+    expect(options.filters.filters).toContainEqual(expect.objectContaining({ key: ['internal_id'], values: ['report-x'], operator: 'not_eq' }));
+  });
+
+  it('should treat entities without status as being in the initial state', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'unknown', value: 1, count: 1 }]);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', {});
+
+    expect(result).toEqual([expect.objectContaining({ event: 'start' })]);
+  });
+
+  it('should offer nothing when the statuses under the filter have no transition in common', async () => {
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 1, count: 1 }, { label: 'status-analyse', value: 1, count: 1 }]);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', {});
+
+    expect(result).toEqual([]);
+  });
+
+  it('should offer nothing when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a'] });
 
     expect(result).toEqual([]);
   });

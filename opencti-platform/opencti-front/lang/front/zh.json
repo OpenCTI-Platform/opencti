@@ -3402,6 +3402,7 @@
   "No template found for this name": "此名称未找到模板",
   "No tokens found.": "未找到令牌。",
   "No tokens found. Click \"Generate Token\" to create one.": "未找到令牌。点击“生成令牌”以创建一个。",
+  "No transition available for all selected entities": "没有适用于所有所选实体的转换",
   "No value": "没有价值",
   "No widget in this workspace": "此工作区没有控件",
   "No work": "没有工作",
