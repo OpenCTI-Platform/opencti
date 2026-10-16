@@ -71,8 +71,10 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     // region Lanes view and anchors
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     await expect(page.getByTestId('timeline-anchors')).toBeVisible();
-    // An anchor shows a date once computed, a dash otherwise
-    await expect(page.getByTestId('timeline-anchor-first_adversary_activity')).toContainText(/\d/);
+    // An anchor shows a date once computed, a dash otherwise: the sighting on the SIEM dates the first detection, while
+    // the global first seen of the malware never dates the first adversary activity of the incident
+    await expect(page.getByTestId('timeline-anchor-first_detection')).toContainText(/\d/);
+    await expect(page.getByTestId('timeline-anchor-first_adversary_activity')).not.toContainText(/\d/);
     await expect(page.getByTestId('timeline-anchor-containment')).not.toContainText(/\d/);
     await capture('lanes-populated');
     // endregion
