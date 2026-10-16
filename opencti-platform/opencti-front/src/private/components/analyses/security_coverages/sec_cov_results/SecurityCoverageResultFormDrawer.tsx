@@ -297,6 +297,7 @@ const SecurityCoverageResultFormDrawer = ({
                 onCancel={close}
                 coveredEntity={objectCovered}
                 excludedCoveredResultId={resultToEdit?.id}
+                nextRequiresSelection
                 onNext={(entities, elements) => {
                   setSelectedEntities(entities);
                   setRelToEntities(elements);

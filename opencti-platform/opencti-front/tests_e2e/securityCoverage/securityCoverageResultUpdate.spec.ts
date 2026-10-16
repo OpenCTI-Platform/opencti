@@ -20,6 +20,7 @@ import { awaitUntilCondition } from '../utils';
  * and a manual result covering the first attack pattern (through the API).
  * Update the manual result: rename it and cover the second attack pattern.
  * Check the first attack pattern, already covered, cannot be selected again.
+ * Check the relationships step cannot be reached without a selected entity.
  * Check the result is renamed and covers both attack patterns.
  */
 test('Update a manual security coverage result', { tag: ['@securityCoverage', '@mutation'] }, async ({ page, request }) => {
@@ -71,7 +72,10 @@ test('Update a manual security coverage result', { tag: ['@securityCoverage', '@
   // Step 3: entities already covered by the result are hidden
   await expect(resultForm.getEntityFromList(uncoveredName)).toBeVisible();
   await expect(resultForm.getEntityFromList(coveredName)).toBeHidden();
+  // No relationship to create until an entity is selected
+  await expect(resultForm.getNextButton()).toBeDisabled();
   await resultForm.selectEntityFromList(uncoveredName);
+  await expect(resultForm.getNextButton()).toBeEnabled();
   await resultForm.goToNextStep();
   // Step 4: has-covered relationships
   await resultForm.getCreateButton().click();

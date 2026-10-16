@@ -23,6 +23,8 @@ interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
   // Hide the entities already covered by this security coverage result.
   excludedCoveredResultId?: string;
+  // Prevent going to the next step until at least one entity is selected.
+  nextRequiresSelection?: boolean;
   onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCancel?: () => void;
@@ -134,6 +136,7 @@ const DATA_COLUMNS = {
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
   excludedCoveredResultId,
+  nextRequiresSelection = false,
   onNext,
   onCreate,
   onCancel,
@@ -227,6 +230,7 @@ const SelectEntitiesToCoverStep = ({
         )}
         <Button
           variant={onCreate ? 'primary' : 'secondary'}
+          disabled={nextRequiresSelection && !selection}
           onClick={() => onNext(selection, Object.values(selectedElements))}
         >
           {t_i18n('Next')}
