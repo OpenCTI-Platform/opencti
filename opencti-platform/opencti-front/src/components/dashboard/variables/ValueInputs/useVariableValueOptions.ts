@@ -1,6 +1,7 @@
 import { SyntheticEvent, useState } from 'react';
 import type { ComboboxChangeCause } from '@filigran/design-system';
 import type { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
+import useAuth from '../../../../utils/hooks/useAuth';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { getOptionsFromEntities } from '../../../../utils/filters/SearchEntitiesUtil';
 import { ME_FILTER_VALUE } from '../../../../utils/filters/filtersUtils';
@@ -37,9 +38,14 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
   const isKillChainPhase = variable.type === 'killChainPhase';
   const killChainPhases = useKillChainPhaseSearch(variable.killChainName);
   const isRestrictedByFilters = variable.type === 'entity' && variable.restriction.mode === 'filters';
+  // The restricted search runs on Stix-Core-Objects, which drop any other type and fall back to every core object
+  // when none is left: the meta object types (Label, Marking-Definition, External-Reference...) are left out of its
+  // scope, and a variable of meta object types only searches nothing.
+  const { schema } = useAuth();
+  const metaObjectTypes = (schema.smos ?? []).map(({ id }) => id).concat('External-Reference');
+  const restrictedTypes = entityTypes.filter((entityType) => !metaObjectTypes.includes(entityType));
   const restrictedEntities = useRestrictedEntitySearch(
-    // Same scope as the free search: External-Reference is no Stix-Core-Object.
-    entityTypes.filter((entityType) => entityType !== 'External-Reference'),
+    restrictedTypes,
     isRestrictedByFilters && variable.restriction.mode === 'filters' ? variable.restriction.filters : undefined,
   );
 
@@ -49,7 +55,7 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
     return {
       options: restrictedEntities.options,
       search: (_event, text, cause = 'type') => {
-        if (isSearchable) restrictedEntities.search(cause === 'type' ? text : '');
+        if (restrictedTypes.length > 0) restrictedEntities.search(cause === 'type' ? text : '');
       },
     };
   }
