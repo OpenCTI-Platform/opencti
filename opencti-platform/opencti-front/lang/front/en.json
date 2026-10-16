@@ -2213,6 +2213,7 @@
   "Group events by": "Group events by",
   "Headline dates": "Headline dates",
   "Hidden by default": "Hidden by default",
+  "Hidden event, shown because \"Show hidden events\" is on": "Hidden event, shown because \"Show hidden events\" is on",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.",
   "Hour": "Hour",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.",

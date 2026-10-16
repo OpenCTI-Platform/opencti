@@ -2213,6 +2213,7 @@
   "Group events by": "Raggruppa gli eventi per",
   "Headline dates": "Date chiave",
   "Hidden by default": "Nascosta per impostazione predefinita",
+  "Hidden event, shown because \"Show hidden events\" is on": "Evento nascosto, mostrato perché \"Mostra eventi nascosti\" è attivato",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "Gli eventi nascosti sono esclusi dalla vista predefinita di tutti i lettori; sceglierli nel filtro degli eventi li mostra di nuovo.",
   "Hour": "Ora",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "Quanto è certa la data di inizio. Una precisione diversa da Esatta è mostrata nell'elenco e nei dettagli, e un evento Approssimativa è disegnato con un contorno tratteggiato.",

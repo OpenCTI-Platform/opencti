@@ -2213,6 +2213,7 @@
   "Group events by": "Группировать события по",
   "Headline dates": "Ключевые даты",
   "Hidden by default": "Скрыта по умолчанию",
+  "Hidden event, shown because \"Show hidden events\" is on": "Скрытое событие, показано, так как включён параметр «Показать скрытые события»",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "Скрытые события исключаются из представления по умолчанию у всех читателей; если выбрать их в фильтре событий, они снова отображаются.",
   "Hour": "Час",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "Насколько точна дата начала. Точность, отличная от «Точно», показывается в списке и в подробностях, а событие с точностью «Приблизительно» рисуется с пунктирным контуром.",

@@ -95,7 +95,9 @@ const CLUSTER_TOKEN_CHARS = 20;
 const ZOOM_STEP = 0.7;
 const PAN_STEP = 0.15;
 const CONTEXT_OPACITY = 0.45;
+const HIDDEN_OPACITY = 0.35;
 const CONTEXT_LEGEND = 'Global first and last seen of the entity, context only: not dated in this incident';
+const HIDDEN_LEGEND = 'Hidden event, shown because "Show hidden events" is on';
 
 const truncate = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 1)}\u2026` : value);
 
@@ -128,6 +130,7 @@ const ContainerTimelineLanes = ({
   const intl = useIntl();
   const colors = useTimelineColors();
   const clipId = `timeline-plot-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const hatchId = `${clipId}-hidden`;
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(960);
   const [hover, setHover] = useState<HoverState | null>(null);
@@ -336,20 +339,21 @@ const ContainerTimelineLanes = ({
     const approximate = event.precision === 'approximate';
     const selected = event.id === selectedId;
     const context = isTimelineContextWindow(event);
-    const opacity = (event.hidden ? 0.35 : 1) * (context ? CONTEXT_OPACITY : 1);
+    const opacity = (event.hidden ? HIDDEN_OPACITY : 1) * (context ? CONTEXT_OPACITY : 1);
     const dash = approximate ? '3 2' : undefined;
     let shape: React.ReactNode;
+    let barEnd: number | null = null;
     if (end !== null) {
-      const x2 = Math.max(scale(new Date(end)), x + 3);
+      barEnd = Math.max(scale(new Date(end)), x + 3);
       const fillOpacity = (context ? 0.25 : 0.35) * opacity;
       shape = (
-        <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={fillOpacity} stroke={color} strokeOpacity={opacity} strokeDasharray={dash} />
+        <rect x={x} y={centerY - 5} width={barEnd - x} height={10} rx={3} fill={color} fillOpacity={fillOpacity} stroke={color} strokeOpacity={opacity} strokeDasharray={dash} />
       );
     } else if (isStillOpen(event)) {
       // No known end: the window runs to the right edge of the plot, lighter and with a dashed outline
-      const x2 = Math.max(plotRight, x + 3);
+      barEnd = Math.max(plotRight, x + 3);
       shape = (
-        <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={0.2 * opacity} stroke={color} strokeOpacity={opacity} strokeDasharray="4 3" />
+        <rect x={x} y={centerY - 5} width={barEnd - x} height={10} rx={3} fill={color} fillOpacity={0.2 * opacity} stroke={color} strokeOpacity={opacity} strokeDasharray="4 3" />
       );
     } else if (event.source === 'manual') {
       const size = event.pinned ? 7 : 6;
@@ -377,7 +381,7 @@ const ContainerTimelineLanes = ({
         className="timeline-event"
         role={onSelect ? 'button' : undefined}
         tabIndex={onSelect ? 0 : undefined}
-        aria-label={context ? `${eventLabel(event)}, ${t_i18n(CONTEXT_LEGEND)}` : eventLabel(event)}
+        aria-label={[eventLabel(event), context && t_i18n(CONTEXT_LEGEND), event.hidden && t_i18n(HIDDEN_LEGEND)].filter(Boolean).join(', ')}
         aria-pressed={onSelect ? selected : undefined}
         data-testid={`timeline-event-${event.id}`}
         data-context={context ? 'true' : undefined}
@@ -394,6 +398,9 @@ const ContainerTimelineLanes = ({
           <circle className="timeline-event-focus" cx={x} cy={centerY} r={POINT_RADIUS + 6} fill="none" stroke={colors.focus} strokeWidth={2} />
         )}
         {shape}
+        {event.hidden && barEnd !== null && (
+          <rect x={x} y={centerY - 5} width={barEnd - x} height={10} rx={3} fill={`url(#${hatchId})`} pointerEvents="none" data-testid="timeline-event-hidden-hatch" />
+        )}
         {!compact && (event.pinned || event.source === 'manual') && (
           <text x={x + 10} y={centerY + 4} fill={colors.text} fontSize={11} fillOpacity={opacity}>{truncate(event.title, LABEL_CHARS)}</text>
         )}
@@ -477,7 +484,11 @@ const ContainerTimelineLanes = ({
   );
   const anchorRows = anchorLabels.reduce((rows, label) => Math.max(rows, label.row + 1), 1);
   const totalHeight = lanesBottom + (compact ? 4 : ANCHOR_HEIGHT * anchorRows + 6);
-  const showsContextLegend = !compact && events.some((event) => (lanes as readonly string[]).includes(event.lane) && isTimelineContextWindow(event));
+  const laneEvents = compact ? [] : events.filter((event) => (lanes as readonly string[]).includes(event.lane));
+  const showsContextLegend = laneEvents.some(isTimelineContextWindow);
+  // The hatch marks the hidden windows only: a hidden point keeps its lighter colour, as no context point exists
+  const showsHiddenLegend = laneEvents.some((event) => event.hidden && (!!event.event_end_time || isStillOpen(event)));
+  const legendSwatch = { x: 0.5, y: 0.5, width: 23, height: 9, rx: 3 };
 
   return (
     <div
@@ -512,6 +523,9 @@ const ContainerTimelineLanes = ({
           <clipPath id={clipId}>
             <rect x={plotLeft} y={0} width={plotWidth} height={totalHeight} />
           </clipPath>
+          <pattern id={hatchId} width={4} height={4} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1={0} y1={0} x2={0} y2={4} stroke={colors.textSecondary} strokeWidth={1.5} />
+          </pattern>
         </defs>
         <rect x={0} y={0} width={width} height={totalHeight} fill={colors.background} />
         {laneLayouts.map((layout, index) => (
@@ -578,25 +592,34 @@ const ContainerTimelineLanes = ({
           })}
         </g>
       </svg>
-      {showsContextLegend && (
+      {(showsContextLegend || showsHiddenLegend) && (
         <div
           data-testid="timeline-legend"
-          style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), paddingLeft: plotLeft, marginTop: theme.spacing(0.5) }}
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: theme.spacing(3), rowGap: theme.spacing(0.5), paddingLeft: plotLeft, marginTop: theme.spacing(0.5) }}
         >
-          <svg width={24} height={10} aria-hidden="true" style={{ flexShrink: 0 }}>
-            <rect
-              x={0.5}
-              y={0.5}
-              width={23}
-              height={9}
-              rx={3}
-              fill={colors.lanes.adversary}
-              fillOpacity={0.25 * CONTEXT_OPACITY}
-              stroke={colors.lanes.adversary}
-              strokeOpacity={CONTEXT_OPACITY}
-            />
-          </svg>
-          <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(CONTEXT_LEGEND)}</Text>
+          {showsContextLegend && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+              <svg width={24} height={10} aria-hidden="true" style={{ flexShrink: 0 }}>
+                <rect
+                  {...legendSwatch}
+                  fill={colors.lanes.adversary}
+                  fillOpacity={0.25 * CONTEXT_OPACITY}
+                  stroke={colors.lanes.adversary}
+                  strokeOpacity={CONTEXT_OPACITY}
+                />
+              </svg>
+              <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(CONTEXT_LEGEND)}</Text>
+            </span>
+          )}
+          {showsHiddenLegend && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} data-testid="timeline-legend-hidden">
+              <svg width={24} height={10} aria-hidden="true" style={{ flexShrink: 0 }}>
+                <rect {...legendSwatch} fill={colors.textSecondary} fillOpacity={0.35 * HIDDEN_OPACITY} stroke={colors.textSecondary} strokeOpacity={HIDDEN_OPACITY} />
+                <rect {...legendSwatch} fill={`url(#${hatchId})`} />
+              </svg>
+              <Text variant="content-caption" as="span" style={{ color: colors.textSecondary }}>{t_i18n(HIDDEN_LEGEND)}</Text>
+            </span>
+          )}
         </div>
       )}
       {hover && (
@@ -626,6 +649,9 @@ const ContainerTimelineLanes = ({
           )}
           {isTimelineContextWindow(hover.event) && (
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-context">{t_i18n(CONTEXT_LEGEND)}</Text>
+          )}
+          {hover.event.hidden && (
+            <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-hidden">{t_i18n(HIDDEN_LEGEND)}</Text>
           )}
           {hoverState && (
             <Text variant="content-compact-medium" as="div">{t_i18n(hoverState.label)}</Text>

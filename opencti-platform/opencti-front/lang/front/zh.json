@@ -2213,6 +2213,7 @@
   "Group events by": "事件分组方式",
   "Headline dates": "关键日期",
   "Hidden by default": "默认隐藏",
+  "Hidden event, shown because \"Show hidden events\" is on": "隐藏的事件，因开启了“显示隐藏的事件”而显示",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "隐藏的事件不会出现在所有读者的默认视图中；在事件筛选器中选择它们即可再次显示。",
   "Hour": "小时",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "开始日期的确定程度。精确以外的精度会显示在列表和详细信息中，近似事件以虚线轮廓绘制。",

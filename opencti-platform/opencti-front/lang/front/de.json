@@ -2213,6 +2213,7 @@
   "Group events by": "Ereignisse gruppieren nach",
   "Headline dates": "Schlüsseldaten",
   "Hidden by default": "Standardmäßig ausgeblendet",
+  "Hidden event, shown because \"Show hidden events\" is on": "Ausgeblendetes Ereignis, angezeigt, weil \"Ausgeblendete Ereignisse anzeigen\" eingeschaltet ist",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "Ausgeblendete Ereignisse fehlen in der Standardansicht aller Leser; wenn man sie im Ereignisfilter auswählt, werden sie wieder angezeigt.",
   "Hour": "Stunde",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "Wie sicher das Startdatum ist. Eine andere Genauigkeit als Exakt wird in der Liste und in den Details angezeigt, und ein Ereignis mit Genauigkeit Ungefähr wird gestrichelt umrandet.",

@@ -2213,6 +2213,7 @@
   "Group events by": "イベントのグループ化",
   "Headline dates": "主要な日付",
   "Hidden by default": "デフォルトで非表示",
+  "Hidden event, shown because \"Show hidden events\" is on": "非表示のイベント。「非表示のイベントを表示」がオンのため表示されています",
   "Hidden events are left out of the default view of every reader; choosing them in the events filter shows them again.": "非表示のイベントは、すべての閲覧者の既定の表示から除外されます。イベントフィルターで選ぶと再び表示されます。",
   "Hour": "時間",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "開始日時の確かさです。正確以外の精度は一覧と詳細に表示され、おおよそのイベントは破線の枠で描かれます。",

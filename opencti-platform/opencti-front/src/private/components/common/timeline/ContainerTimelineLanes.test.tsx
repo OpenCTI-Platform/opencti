@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineLanes, { type TimelineChartEvent } from './ContainerTimelineLanes';
 
@@ -77,6 +77,33 @@ describe('ContainerTimelineLanes context windows', () => {
     const marker = screen.getByTestId('timeline-event-incident-1');
     expect(marker).not.toHaveAttribute('data-context');
     expect(marker.querySelector('rect')).toHaveAttribute('stroke-opacity', '1');
+    expect(screen.queryByTestId('timeline-legend')).toBeNull();
+  });
+
+  it('hatches a hidden window, unlike a context window, and names it hidden in the legend, the tooltip and its label', () => {
+    const hiddenLegend = 'Hidden event, shown because "Show hidden events" is on';
+    testRender(
+      <ContainerTimelineLanes
+        events={[{ ...seen('incident-1', 'incident_seen'), hidden: true }, seen('malware-1', 'malware_seen')]}
+        lanes={['adversary']}
+        domain={domain}
+        grouping="day"
+        ariaLabel="Timeline"
+      />,
+    );
+    const hidden = screen.getByTestId('timeline-event-incident-1');
+    expect(within(hidden).getByTestId('timeline-event-hidden-hatch')).toBeInTheDocument();
+    expect(hidden.getAttribute('aria-label')).toContain(hiddenLegend);
+    expect(within(screen.getByTestId('timeline-event-malware-1')).queryByTestId('timeline-event-hidden-hatch')).toBeNull();
+    expect(screen.getByTestId('timeline-legend-hidden')).toHaveTextContent(hiddenLegend);
+    expect(screen.getByTestId('timeline-legend')).toHaveTextContent('Global first and last seen of the entity, context only: not dated in this incident');
+    fireEvent.mouseEnter(hidden);
+    expect(screen.getByTestId('timeline-tooltip-hidden')).toHaveTextContent(hiddenLegend);
+  });
+
+  it('keeps a hidden point lighter, with neither a hatch nor a legend entry', () => {
+    renderLanes([{ ...event('point-1', 'derived'), hidden: true }]);
+    expect(within(screen.getByTestId('timeline-event-point-1')).queryByTestId('timeline-event-hidden-hatch')).toBeNull();
     expect(screen.queryByTestId('timeline-legend')).toBeNull();
   });
 });

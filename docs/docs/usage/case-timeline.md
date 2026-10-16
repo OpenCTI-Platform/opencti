@@ -176,7 +176,7 @@ Events that come from an investigation step show its state with the seven step s
 ### Pin, hide and annotate
 
 - **Pin** keeps an event highlighted and available through the **Pinned only** filter.
-- **Hide** removes an event from the default view (use **Show hidden events** to see it again). Hidden events never move an anchor.
+- **Hide** removes an event from the default view (use **Show hidden events** to see it again: hidden events are drawn lighter, hidden windows also hatched, and the legend under the lanes and their tooltip name them). Hidden events never move an anchor.
 - **Annotate** adds the analyst context of an event.
 
 Derived events follow the knowledge of the case: they can be pinned, hidden and annotated, but not edited or deleted. Pins, hidden flags and annotations survive every regeneration.
