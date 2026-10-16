@@ -1,5 +1,6 @@
 import React from 'react';
-import { Chip } from '@filigran/design-system';
+import { Link } from 'react-router';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import {
   huntRunStatusLabel,
@@ -13,6 +14,39 @@ import {
   huntVerdictLabel,
   huntVerdictSeverity,
 } from './hunt-utils';
+
+interface RelativeDateProps {
+  /** One date, or the dates of a sentence that names several */
+  date: string | string[];
+  label?: (...relative: string[]) => string;
+  /** Where the text leads: the link itself carries the tooltip */
+  to?: string;
+  testId?: string;
+}
+
+/**
+ * A date shown relative to now, the absolute date in its tooltip. A sentence naming several dates shows them all
+ * relative, and the same sentence with the absolute dates in its tooltip.
+ */
+export const RelativeDate = ({ date, label, to, testId }: RelativeDateProps) => {
+  const { fldt, rd } = useFormatter();
+  const dates = Array.isArray(date) ? date : [date];
+  const text = label ? label(...dates.map((value) => rd(value))) : rd(dates[0]);
+  const absolute = label && dates.length > 1 ? label(...dates.map((value) => fldt(value))) : fldt(dates[0]);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        {to ? (
+          <Link to={to} data-testid={testId}>{text}</Link>
+        ) : (
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+          <span tabIndex={0} data-testid={testId}>{text}</span>
+        )}
+      </TooltipTrigger>
+      <TooltipContent>{absolute}</TooltipContent>
+    </Tooltip>
+  );
+};
 
 interface ValueChipProps {
   value?: string | null;

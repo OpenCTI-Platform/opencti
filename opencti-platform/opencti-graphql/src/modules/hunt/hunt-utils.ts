@@ -80,11 +80,11 @@ const EVIDENCE_FIELD_MAX_LENGTH = 256;
 const RULE_KEY_PATTERN = /^[0-9a-f]{24}$/;
 
 /**
- * A hunt is autonomous when it runs without a human action: cron schedule, standing hunt or PIR activation.
+ * A hunt is autonomous when it runs without a human action: cron schedule or standing hunt.
  * Autonomous hunts are an Enterprise Edition capability.
  */
-export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null; hunt_pir_activation?: boolean | null }) => {
-  return isCronSchedule(hunt.hunt_schedule) || hunt.hunt_schedule === HUNT_SCHEDULE_STANDING || hunt.hunt_pir_activation === true;
+export const isAutonomousHunt = (hunt: { hunt_schedule?: string | null }) => {
+  return isCronSchedule(hunt.hunt_schedule) || hunt.hunt_schedule === HUNT_SCHEDULE_STANDING;
 };
 
 // The Sigma rules a detection-rule hunt holds, each translated and run on its own

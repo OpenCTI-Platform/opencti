@@ -17,7 +17,6 @@ HUNT_FIELDS = [
     "hunt_scope",
     "hunt_schedule",
     "trigger_filters",
-    "hunt_pir_activation",
     "time_window_hours",
     "expected_observables",
     "benign_patterns",
@@ -77,8 +76,6 @@ class Hunt:
             hunt_scope
             hunt_schedule
             trigger_filters
-            hunt_pir_activation
-            hunt_pir_armed
             time_window_hours
             expected_observables
             benign_patterns
@@ -294,7 +291,6 @@ class Hunt:
         :param hunt_scope: (optional) filter group (JSON) over Security Platforms
         :param hunt_schedule: (optional) manual (default), standing or a 5-field cron
         :param trigger_filters: (optional) filter group (JSON) re-running a standing hunt
-        :param hunt_pir_activation: (optional) arm the hunt while a target is in a PIR
         :param time_window_hours: (optional) time window of a run
         :param expected_observables: (optional) observable types expected in results
         :param benign_patterns: (optional) known benign patterns

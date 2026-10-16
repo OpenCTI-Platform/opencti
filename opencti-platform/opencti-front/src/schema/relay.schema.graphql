@@ -16658,7 +16658,7 @@ type HuntConfiguration {
   default_expected_observables: [String!]!
 
   """
-  Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes
+  Recurring runs (schedule, standing hunt) search from where the previous completed run on the same platform ended, minus this overlap in minutes
   """
   schedule_lookback_minutes: Int!
 
@@ -16817,7 +16817,6 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   techniqueValidations: [HuntTechniqueValidation!]!
   hunt_schedule: String!
   trigger_filters: String
-  hunt_pir_activation: Boolean
   time_window_hours: Int!
   expected_observables: [String!]
   benign_patterns: [String!]
@@ -16842,8 +16841,6 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   """
   knownHits: HuntKnownHits!
   next_run_at: DateTime
-  hunt_pir_armed: Boolean
-  hunt_pir_armed_at: DateTime
   huntTargets: [StixDomainObject!]
   huntTechniques: [AttackPattern!]
   huntSources: [StixCoreObject!]
@@ -17048,7 +17045,6 @@ input HuntAddInput {
   hunt_scope: String
   hunt_schedule: String
   trigger_filters: String
-  hunt_pir_activation: Boolean
   time_window_hours: Int
   expected_observables: [String!]
   benign_patterns: [String!]

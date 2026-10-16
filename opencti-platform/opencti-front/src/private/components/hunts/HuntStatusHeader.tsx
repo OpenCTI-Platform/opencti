@@ -10,7 +10,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { PATH_HUNT } from '../common/routes/paths';
@@ -285,7 +285,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
               </dl>
             )}
           </div>
-          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+          <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {status !== 'retired' && (
                 <Button variant="secondary" onClick={() => openRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">

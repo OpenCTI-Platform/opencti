@@ -13,7 +13,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { getPaddingRight } from '../../../utils/utils';
 import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
@@ -27,7 +27,7 @@ import { HuntPackExportButton } from './HuntPack';
 import HuntRuns from './runs/HuntRuns';
 import HuntStatusHeader from './HuntStatusHeader';
 import { HUNT_ENTITY_TYPE } from './hunt-utils';
-import useHuntEditRight from './useHuntEditRight';
+import useHuntEditRight, { HUNT_CAPABILITIES } from './useHuntEditRight';
 import { RootHuntQuery } from './__generated__/RootHuntQuery.graphql';
 import { RootHuntSubscription } from './__generated__/RootHuntSubscription.graphql';
 
@@ -40,8 +40,6 @@ const subscription = graphql`
       last_run_status
       last_hits_count
       next_run_at
-      hunt_pir_armed
-      hunt_pir_armed_at
       ...Hunt_hunt
       ...HuntLogic_hunt
       ...HuntStatusHeader_hunt
@@ -131,7 +129,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
         entityType={HUNT_ENTITY_TYPE}
         stixDomainObject={hunt}
         EditComponent={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+          <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
             <HuntEdition huntId={hunt.id} />
           </Security>
         )}

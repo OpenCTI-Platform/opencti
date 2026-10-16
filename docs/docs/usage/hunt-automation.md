@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-    Scheduled hunts, standing hunts, PIR activation, playbook hunt components and the validation from OpenAEV are available under the **OpenCTI Enterprise Edition** licence. Please read the [dedicated page](../administration/enterprise.md) for full details.
+    Scheduled hunts, standing hunts, playbook hunt components and the validation from OpenAEV are available under the **OpenCTI Enterprise Edition** licence. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
     Manual hunts, manual runs, query tests, verdicts and hunt packs are part of the Community Edition.
 
@@ -16,7 +16,7 @@ The **schedule** of a hunt is `manual` (the default), `standing` (see below) or 
 
 When a scheduled hunt is due, the hunt manager runs it on the platforms of its scope and computes its next occurrence from the current date: occurrences missed during an outage are not replayed. The next run date is displayed on the hunt.
 
-Scheduled, standing and PIR armed runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence that started no run, because its runs could not be created at all (for instance while the search engine is unavailable) or no hunt connector serves the scope yet, stays due and is tried again at the next tick, like a standing trigger or a PIR arming. Manual runs, query tests, playbook steps and validations from OpenAEV, which expect an answer now, only target the connectors that are online.
+Scheduled and standing runs target every hunt connector registered for the scope of the hunt, including a connector that is temporarily offline: its run waits in the queue until the connector reconnects, and is given up with its reason after the queue expiry (24 hours by default). An occurrence that started no run, because its runs could not be created at all (for instance while the search engine is unavailable) or no hunt connector serves the scope yet, stays due and is tried again at the next tick, like a standing trigger. Manual runs, query tests, playbook steps and validations from OpenAEV, which expect an answer now, only target the connectors that are online.
 
 ## Standing hunts
 
@@ -24,9 +24,14 @@ A **standing** hunt runs when the knowledge around it moves: a report adds one o
 
 Standing hunts are debounced: a hunt runs at most once per debounce period (15 minutes by default), however many events touch it. When the community trend of a target is rising in Threat Pulse, the debounce of its standing hunts is halved. The knowledge created by hunt runs never triggers standing hunts, so that a hunt never triggers itself.
 
-## Activation by Priority Intelligence Requirements
+## Hunting what a PIR flags
 
-With **PIR activation**, a hunt is **armed** while at least one of its targets is flagged by a [Priority Intelligence Requirement](pir.md). Arming runs the hunt once (the run is listed with the trigger **PIR activation**), and the hunt counts as armed once that run has started (when no hunt connector serves its scope yet, arming is tried again at the next tick); while armed, its schedule and standing triggers apply. The arming run stands for the occurrence of a scheduled hunt due at that time: the schedule resumes at its next occurrence, so arming never runs the hunt twice. When no PIR flags its targets anymore, the hunt is disarmed and waits. Arming never changes the status of the hunt, which remains the analyst's decision.
+A hunt does not watch the [Priority Intelligence Requirements](pir.md) by itself: a playbook runs hunts when a PIR flags a threat, with two steps:
+
+1. **Listen PIR events**, on the PIRs to follow, with the case **A new entity becomes part of a selected PIR** (add a filter on the **PIR score** to keep the most relevant threats only).
+2. **Run hunts**, applied to the main element of the bundle, which is the flagged threat: with **Run existing hunts** and an empty list, the active hunts targeting this threat run; with **Derive a hunt from each element**, the threat gets the hunt **Hunt this** proposes for it.
+
+Add **Match hunt results** to act on what the runs found, as in any playbook. To hunt once for everything a PIR flags, start from the PIR itself: **Hunt this** on a PIR proposes a hunt over the indicators of the threats it flags, the most relevant first, with those threats as targets (see [Hunt this](hunts.md#hunt-this-start-a-hunt-from-a-threat-a-report-or-an-indicator)). Runs listed with the trigger **PIR activation** come from an earlier version, where a hunt could be armed by a PIR; hunts no longer run that way.
 
 ## Playbooks
 
@@ -68,7 +73,7 @@ When the runs complete, OpenCTI writes the `hunt_detected` coverage on the secur
 
 ## Hunt manager
 
-The hunt manager runs on one platform node at a time. It dispatches the queued runs within the connector budgets, expires the runs a connector never completed, completes the finalization of runs that were interrupted after their final report (automatic verdict, incident draft, hunt statistics; the draft and the incident an interrupted attempt created are reused, never doubled, and runs of a hunt on the same platform escalated together continue one incident), retries failed runs, resumes the playbooks waiting on hunts, keeps the runs of deleted hunts out of the statistics (and brings back those of a hunt restored from the trash), applies the run retention and, in Enterprise Edition, starts the scheduled, standing and PIR armed hunts. Manual runs rely on it too, the manager is therefore enabled in every edition.
+The hunt manager runs on one platform node at a time. It dispatches the queued runs within the connector budgets, expires the runs a connector never completed, completes the finalization of runs that were interrupted after their final report (automatic verdict, incident draft, hunt statistics; the draft and the incident an interrupted attempt created are reused, never doubled, and runs of a hunt on the same platform escalated together continue one incident), retries failed runs, resumes the playbooks waiting on hunts, keeps the runs of deleted hunts out of the statistics (and brings back those of a hunt restored from the trash), applies the run retention and, in Enterprise Edition, starts the scheduled and standing hunts. Manual runs rely on it too, the manager is therefore enabled in every edition.
 
 Work a tick cannot take is kept for the next tick, never dropped: due scheduled hunts beyond the tick budget, or that started no run, keep their occurrence, triggered standing hunts stay pending until a run serves them, a hunt scoped to more security platforms than the budget left in the tick has its other runs queued and dispatched at the next ticks, and the runs queued for a saturated or offline connector never hold back the runs of the other connectors: such a connector costs the tick one attempt, then its runs are skipped until the next tick.
 
@@ -76,9 +81,9 @@ Work a tick cannot take is kept for the next tick, never dropped: due scheduled 
 |---|---|---|---|
 | `hunt_manager:enabled` | `HUNT_MANAGER__ENABLED` | `true` | Enable the hunt manager |
 | `hunt_manager:interval` | `HUNT_MANAGER__INTERVAL` | `30000` | Interval between two ticks, in milliseconds |
-| `hunt_manager:max_runs_per_tick` | `HUNT_MANAGER__MAX_RUNS_PER_TICK` | `50` | Maximum runs dispatched by one tick, shared by all its phases in this order: automatic retries, PIR activation, scheduled hunts, standing hunts, then the queued runs. A queued run its connector defers or fails to take counts as dispatched. Runs beyond it wait queued, and due retries, schedules and triggers stay due, for the next tick |
-| `hunt_manager:automation_page_size` | `HUNT_MANAGER__AUTOMATION_PAGE_SIZE` | `500` | Hunts read per page to evaluate the due scheduled, PIR activated and standing hunts |
-| `hunt_manager:automation_max_pages_per_tick` | `HUNT_MANAGER__AUTOMATION_MAX_PAGES_PER_TICK` | `4` | Pages of due scheduled hunts and of PIR activated hunts evaluated per tick; the next tick resumes after the last hunt evaluated, so every hunt is evaluated within a bounded number of ticks, and the due hunts no connector can run yet never hold back the others. Standing hunts are all evaluated at each tick, since they share the events of the tick |
+| `hunt_manager:max_runs_per_tick` | `HUNT_MANAGER__MAX_RUNS_PER_TICK` | `50` | Maximum runs dispatched by one tick, shared by all its phases in this order: automatic retries, scheduled hunts, standing hunts, then the queued runs. A queued run its connector defers or fails to take counts as dispatched. Runs beyond it wait queued, and due retries, schedules and triggers stay due, for the next tick |
+| `hunt_manager:automation_page_size` | `HUNT_MANAGER__AUTOMATION_PAGE_SIZE` | `500` | Hunts read per page to evaluate the due scheduled and standing hunts |
+| `hunt_manager:automation_max_pages_per_tick` | `HUNT_MANAGER__AUTOMATION_MAX_PAGES_PER_TICK` | `4` | Pages of due scheduled hunts evaluated per tick; the next tick resumes after the last hunt evaluated, so every hunt is evaluated within a bounded number of ticks, and the due hunts no connector can run yet never hold back the others. Standing hunts are all evaluated at each tick, since they share the events of the tick |
 | `hunt_manager:max_concurrent_runs_per_connector` | `HUNT_MANAGER__MAX_CONCURRENT_RUNS_PER_CONNECTOR` | `2` | Runs a hunt connector executes at the same time (a connector may declare a lower limit) |
 | `hunt_manager:daily_runs_per_connector` | `HUNT_MANAGER__DAILY_RUNS_PER_CONNECTOR` | `200` | Runs dispatched to a hunt connector per day |
 | `hunt_manager:run_timeout_minutes` | `HUNT_MANAGER__RUN_TIMEOUT_MINUTES` | `60` | Time a connector has to complete a run |

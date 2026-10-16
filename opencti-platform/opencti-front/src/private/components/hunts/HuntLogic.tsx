@@ -15,7 +15,8 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted from '../../../utils/hooks/useGranted';
+import { HUNT_CAPABILITIES } from './useHuntEditRight';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
@@ -26,6 +27,7 @@ import HuntSigmaRulesField from './HuntSigmaRulesField';
 import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
+import HuntIocFilterTake, { useHuntedExclusion } from './HuntIocFilterTake';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
 import { iocTypeLabel, iocValuesToText, parseIocText } from './hunt-ioc-utils';
 import {
@@ -33,6 +35,7 @@ import {
   HUNT_DOCS,
   HUNT_FIRST_RULE,
   HUNT_IOC_ELEMENT_TYPES,
+  HUNT_IOC_SORT_DEFAULT,
   huntQueryLanguageLabel,
   huntTimeWindowPresets,
   normalizeNativeQueries,
@@ -82,6 +85,8 @@ const huntLogicFragment = graphql`
       run_id
     }
     hunt_ioc_filters
+    hunt_ioc_sort
+    last_run_at
     hunt_ioc_values {
       observable_type
       value
@@ -190,7 +195,7 @@ const ActivateAfterSave = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: bo
             </span>
           )}
       action={unmet.length === 0 ? (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+        <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
           <Button size="small" onClick={activate} disabled={inFlight} data-testid="hunt-logic-activate">{t_i18n('Activate')}</Button>
         </Security>
       ) : undefined}
@@ -283,6 +288,23 @@ const sigmaRuleTitle = (rule: string) => {
   return title || rule.trim().split(/\r?\n/)[0].substring(0, 80);
 };
 
+/** Why the logic of a hunt is read-only: the capabilities the user lacks, or the access to this hunt. */
+const ReadOnlyLogicCaption = ({ canEdit }: { canEdit: boolean }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const capable = useGranted(HUNT_CAPABILITIES, true);
+  if (canEdit) {
+    return null;
+  }
+  return (
+    <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(2), color: theme.palette.text.secondary }} data-testid="hunt-logic-read-only">
+      {capable
+        ? t_i18n('You can view this hunt but not change it.')
+        : t_i18n('Changing and running hunts needs the Launch hunts on security platforms capability.')}
+    </Text>
+  );
+};
+
 const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -343,7 +365,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
       {({ values, dirty, isSubmitting, submitForm, resetForm }) => {
         const missing = huntLogicMissingSentence(formSigmaRules(values).join('\n'), normalizeNativeQueries(values.native_queries));
         const saveBar = (testId: string) => (
-          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+          <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
               {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
               <Button variant="secondary" onClick={() => resetForm()} disabled={!dirty || isSubmitting}>
@@ -381,6 +403,7 @@ const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: b
               <Grid container spacing={3}>
                 <Grid item xs={12} lg={7}>
                   <Card title={t_i18n('Sigma rules')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
+                    <ReadOnlyLogicCaption canEdit={canEdit} />
                     <HuntSigmaRulesField
                       label={t_i18n('Sigma rule (YAML)')}
                       helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
@@ -480,7 +503,7 @@ const IocValuesTable = ({ hunt }: { hunt: HuntLogicData }) => {
   return (
     <div data-testid="hunt-ioc-values">
       <Text variant="content-compact-bold">
-        {t_i18n('{count} values to look for', { values: { count: n(iocSet.iocs_count) } })}
+        {t_i18n('{count, plural, one {# value to look for} other {# values to look for}}', { values: { count: iocSet.iocs_count } })}
       </Text>
       {notes.map((note) => (
         <Text key={note} variant="content-caption" style={{ display: 'block', color: theme.palette.warn.main }}>{note}</Text>
@@ -557,6 +580,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
   const [saved, setSaved] = useState(false);
   const storedFilters = deserializeFilterGroupForFrontend(hunt.hunt_ioc_filters) ?? emptyFilterGroup;
   const filtersState = useFiltersState(storedFilters);
+  const huntedExclusion = useHuntedExclusion(filtersState);
   const sources = (hunt.huntSources ?? []).map((source) => ({ value: source.id, label: source.representative.main, type: source.entity_type }));
   const initialValues: IocValues = {
     iocElements: sources.filter((source) => HUNT_IOC_ELEMENT_TYPES.includes(source.type)),
@@ -564,6 +588,8 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
     ioc_values_text: iocValuesToText(hunt.hunt_ioc_values),
   };
   const storedFiltersJson = serializeFilterGroupForBackend(storedFilters);
+  const storedSort = hunt.hunt_ioc_sort ?? HUNT_IOC_SORT_DEFAULT;
+  const [sort, setSort] = useState(storedSort);
   const onSubmit = (values: IocValues, { setSubmitting, resetForm }: { setSubmitting: (submitting: boolean) => void; resetForm: (next: { values: IocValues }) => void }) => {
     commit({
       variables: {
@@ -572,6 +598,7 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
           { key: 'huntSources', value: [...values.iocElements, ...values.iocEntities].map((option) => option.value) },
           { key: 'hunt_ioc_values', value: parseIocText(values.ioc_values_text).values },
           { key: 'hunt_ioc_filters', value: [serializeFilterGroupForBackend(filtersState[0])] },
+          { key: 'hunt_ioc_sort', value: [sort] },
         ],
       },
       onCompleted: (_, errors) => {
@@ -601,11 +628,12 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
   return (
     <Formik<IocValues> initialValues={initialValues} onSubmit={onSubmit} enableReinitialize>
       {({ values, dirty: formDirty, isSubmitting, submitForm }) => {
-        const filtersDirty = serializeFilterGroupForBackend(filtersState[0]) !== storedFiltersJson;
+        const filtersJson = serializeFilterGroupForBackend(filtersState[0]);
+        const filtersDirty = filtersJson !== storedFiltersJson || sort !== storedSort;
         const dirty = formDirty || filtersDirty;
+        const noFilter = (filtersState[0].filters ?? []).length === 0 && (filtersState[0].filterGroups ?? []).length === 0;
         const empty = values.iocElements.length === 0 && values.iocEntities.length === 0
-          && parseIocText(values.ioc_values_text).values.length === 0 && (filtersState[0].filters ?? []).length === 0
-          && (filtersState[0].filterGroups ?? []).length === 0;
+          && parseIocText(values.ioc_values_text).values.length === 0 && noFilter;
         return (
           <Form data-testid="hunt-logic-page">
             <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
@@ -617,8 +645,24 @@ const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData;
             <Grid container spacing={3}>
               <Grid item xs={12} lg={7}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
-                  <HuntIocFields filtersState={filtersState} disabled={!canEdit} />
-                  <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
+                  <ReadOnlyLogicCaption canEdit={canEdit} />
+                  <HuntIocFields
+                    filtersState={filtersState}
+                    disabled={!canEdit}
+                    filterFooter={noFilter ? undefined : (
+                      <HuntIocFilterTake
+                        huntId={hunt.id}
+                        filters={filtersJson}
+                        sort={sort}
+                        onSortChange={setSort}
+                        disabled={!canEdit}
+                        lastRunAt={hunt.last_run_at}
+                        huntedExcluded={huntedExclusion.excluded}
+                        onExcludeHunted={huntedExclusion.exclude}
+                      />
+                    )}
+                  />
+                  <Security needs={HUNT_CAPABILITIES} matchAll hasAccess={canEdit}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                       {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
                       <Button variant="secondary" onClick={onDiscard} disabled={!dirty || isSubmitting} data-testid="hunt-logic-discard">

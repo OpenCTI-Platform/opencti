@@ -12,8 +12,6 @@ export interface HuntRunInformationPatch {
   // Hits of the last run never seen before for the hunt on its security platform
   last_new_hits_count?: number | null;
   next_run_at?: string | null;
-  hunt_pir_armed?: boolean | null;
-  hunt_pir_armed_at?: string | null;
 }
 
 const ASSIGN_PATCH = 'for (entry in params.patch.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }';

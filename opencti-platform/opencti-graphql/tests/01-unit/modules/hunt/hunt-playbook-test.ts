@@ -379,7 +379,6 @@ describe('Hunt packs', () => {
       hunt_source_kind: 'analyst',
       hunt_scope: '{"mode":"and"}',
       trigger_filters: '{"mode":"and"}',
-      hunt_pir_activation: true,
       sigma_rule: 'title: t',
     } as unknown as StixHunt;
     expect(toPackHunt(stixHunt)).toMatchObject({
@@ -388,7 +387,6 @@ describe('Hunt packs', () => {
       hunt_source_kind: 'hub',
       hunt_scope: '',
       trigger_filters: '',
-      hunt_pir_activation: false,
       sigma_rule: 'title: t',
     });
   });

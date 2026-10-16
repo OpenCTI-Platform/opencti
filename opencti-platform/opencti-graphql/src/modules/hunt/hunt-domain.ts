@@ -846,7 +846,7 @@ export const huntValidateFromEmulation = async (context: AuthContext, user: Auth
 // endregion
 
 // region hunt packs
-const HUNT_PACK_LOCAL_FIELDS = ['hunt_status', 'hunt_source_kind', 'hunt_schedule', 'hunt_scope', 'trigger_filters', 'hunt_pir_activation'] as const;
+const HUNT_PACK_LOCAL_FIELDS = ['hunt_status', 'hunt_source_kind', 'hunt_schedule', 'hunt_scope', 'trigger_filters'] as const;
 
 // The local hunt the creation of a pack hunt upserts: it resolves the same ids as the creation (the name identity and
 // the STIX ID), so a pack hunt carrying another STIX ID under the name of a local hunt is still that local hunt
