@@ -452,7 +452,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             <div className={classes.bodyItem}>
                               {n(connector.messages)}
                             </div>
-                            <div className={classes.bodyItem} style={{ gap: 4 }}>
+                            <div className={classes.bodyItem} style={{ gap: theme.spacing(1) }}>
                               <ConnectorStatusChip connector={connector} />
                               <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
                             </div>
