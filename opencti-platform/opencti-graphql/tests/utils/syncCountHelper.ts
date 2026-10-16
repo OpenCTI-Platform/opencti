@@ -61,7 +61,8 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 156;
+// 2 created by the hunt test of an incident opened without a draft (related to its hunt and its security platform)
+testCreatedCounter.relationship = 158;
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8;
 testCreatedCounter.software = 2;
