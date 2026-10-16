@@ -147,6 +147,29 @@ export const resolveVariablesInFilterGroup = <T>(
   return { filters: resolveGroup(filterGroup) as T, unresolved };
 };
 
+// Strict ISO-8601 date: `YYYY-MM-DD`, or a date-time `YYYY-MM-DDTHH:mm`, `…:ss` or `…:ss.s` (1 to 3 digits) ending with
+// a time zone designator, `Z` or `±HH:mm`. Outside this format `Date.parse` depends on the JavaScript engine (V8 parses
+// `2024/01/01` or `March 7 2024`, Safari does not), and a date-time without designator is local time in some engines
+// and UTC in others. Written identically in the back (dashboard-variables-resolution.ts).
+const ISO_DATE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d))?$/;
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Whether `value` is a strict ISO-8601 date (see ISO_DATE_REGEXP) of an existing calendar day, which every engine parses
+ * to the same instant. A day that does not exist (`2024-02-30`) is refused: some engines roll it over, others refuse it.
+ */
+export const isStrictIsoDate = (value: string): boolean => {
+  const match = ISO_DATE_REGEXP.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) return false;
+  const isLeapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = month === 2 && isLeapYear ? 29 : DAYS_IN_MONTH[month - 1];
+  return day >= 1 && day <= daysInMonth && !Number.isNaN(Date.parse(value));
+};
+
 // The rules of a value that depend on the type of its variable only, not on its selection restriction.
 const isValidValueForType = (type: DashboardVariable['type'], value: string): boolean => {
   const trimmed = value.trim();
@@ -157,7 +180,7 @@ const isValidValueForType = (type: DashboardVariable['type'], value: string): bo
     case 'numeric':
       return value === trimmed && Number.isFinite(Number(value));
     case 'date':
-      return value === trimmed && !Number.isNaN(Date.parse(value));
+      return isStrictIsoDate(value);
     default:
       return true;
   }
@@ -181,8 +204,8 @@ export const buildDefaultVariableValues = (variables: DashboardVariable[] | unde
 /**
  * Whether a value coming from the user's browser (localStorage, `variables` URL param) may be applied to a variable.
  * Same rules as the default value of a variable (`validateDraft` in variables/dashboardVariableDraft.ts):
- * a boolean is `true` or `false`, a numeric a finite number, a date something `Date.parse` understands, any other type
- * a non-blank string; no value may reference another variable. A selection restriction also bounds the value to its pool.
+ * a boolean is `true` or `false`, a numeric a finite number, a date a strict ISO-8601 date (`isStrictIsoDate`), any other
+ * type a non-blank string; no value may reference another variable. A selection restriction also bounds the value to its pool.
  * A boolean, numeric or date value is taken as is, never trimmed: one with surrounding spaces is refused, since it would
  * otherwise reach the filters of the widgets with its spaces.
  * A value failing it is ignored, so the default of the variable applies.

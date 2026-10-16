@@ -6,6 +6,8 @@ import {
   computeDashboardVariablesUsage,
   containsDashboardVariableToken,
   extractDashboardVariableIds,
+  isStrictIsoDate,
+  isValidDashboardVariableValue,
   parseDashboardVariableToken,
   resolveDashboardVariablesInWidgets,
   resolveVariablesInFilterGroup,
@@ -170,5 +172,23 @@ describe('Dashboard variables resolution - defaults invalid for their type', () 
 
   it('should check the default of an untyped variable as a text', () => {
     expect(buildDashboardVariableDefaultValues([{ id: VAR_A, defaultValue: ' 42' }])).toEqual(new Map([[VAR_A, ' 42']]));
+  });
+});
+
+describe('Dashboard variables resolution - strict ISO-8601 dates', () => {
+  // Parsed by some engines only (V8, not Safari), local time in some engines and UTC in others, or not a calendar day.
+  it.each(['2024/01/01', 'March 7 2024', '2024-01-01 10:00', '2024-01-01T10:00:00', '2024-13-01', '2024-02-30'])(
+    'should refuse the date value "%s"',
+    (value) => {
+      expect(isStrictIsoDate(value)).toBe(false);
+      expect(isValidDashboardVariableValue('date', value)).toBe(false);
+      expect(buildDashboardVariableDefaultValues([{ id: VAR_A, type: 'date', defaultValue: value }]).size).toEqual(0);
+    },
+  );
+
+  it.each(['2024-01-01', '2024-01-01T10:00:00Z', '2024-01-01T10:00:00.5+02:00'])('should accept the date value "%s"', (value) => {
+    expect(isStrictIsoDate(value)).toBe(true);
+    expect(isValidDashboardVariableValue('date', value)).toBe(true);
+    expect(buildDashboardVariableDefaultValues([{ id: VAR_A, type: 'date', defaultValue: value }])).toEqual(new Map([[VAR_A, value]]));
   });
 });

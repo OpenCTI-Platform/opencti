@@ -1,5 +1,6 @@
 import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import type { DashboardVariable, DashboardVariableRestriction, DashboardVariableType } from '../dashboard-types';
+import { isStrictIsoDate } from '../dashboardVariablesResolution';
 
 // Mirror of the server limits (workspace-variables-types.ts).
 export const DASHBOARD_VARIABLES_LIMITS = { variables: 50, nameLength: 200, selectionValues: 200 } as const;
@@ -53,9 +54,14 @@ const draftToRestriction = (draft: DashboardVariableDraft): DashboardVariableRes
 
 // A boolean, numeric or date default is stored trimmed (as validateDraft checks it): the spaces would otherwise reach the
 // filters of the widgets. The default of any other type is stored as typed.
+// A valid date default is also stored normalized (`toISOString`), like the server does, unless a selection restriction
+// holds it: the default must then stay the pool value it matches.
 const draftToDefaultValue = (draft: DashboardVariableDraft) => {
   const isTyped = draft.type === 'boolean' || draft.type === 'numeric' || draft.type === 'date';
   const defaultValue = isTyped ? draft.defaultValue.trim() : draft.defaultValue;
+  if (draft.type === 'date' && draft.restrictionMode !== 'selection' && isStrictIsoDate(defaultValue)) {
+    return new Date(defaultValue).toISOString();
+  }
   return defaultValue === '' ? null : defaultValue;
 };
 
@@ -119,7 +125,7 @@ export const validateDraft = (
     errors.defaultValue = t_i18n('Default value must be a number');
   } else if (draft.type === 'boolean' && defaultValue !== 'true' && defaultValue !== 'false') {
     errors.defaultValue = t_i18n('Default value is not valid');
-  } else if (draft.type === 'date' && Number.isNaN(Date.parse(defaultValue))) {
+  } else if (draft.type === 'date' && !isStrictIsoDate(defaultValue)) {
     errors.defaultValue = t_i18n('Default value is not valid');
   }
   return errors;

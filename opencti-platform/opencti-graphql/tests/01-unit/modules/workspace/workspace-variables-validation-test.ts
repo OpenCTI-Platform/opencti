@@ -131,3 +131,30 @@ describe('buildDashboardVariable - typed default values stored trimmed', () => {
     expect(() => build({ type: 'numeric', defaultValue: '  ' })).toThrow('Dashboard variable default value is required');
   });
 });
+
+describe('buildDashboardVariable - strict ISO-8601 date default', () => {
+  // Parsed by some engines only (V8, not Safari), local time in some engines and UTC in others, or not a calendar day.
+  it.each(['2024/01/01', 'March 7 2024', '2024-01-01 10:00', '2024-01-01T10:00:00', '2024-13-01', '2024-02-30'])(
+    'should reject the date default "%s"',
+    (defaultValue) => {
+      expect(() => build({ type: 'date', defaultValue })).toThrow('A date variable default value must be a valid date');
+    },
+  );
+  it.each([
+    ['2024-01-01', '2024-01-01T00:00:00.000Z'],
+    ['2024-01-01T10:00:00Z', '2024-01-01T10:00:00.000Z'],
+    ['2024-01-01T10:00:00.5+02:00', '2024-01-01T08:00:00.500Z'],
+    [' 2024-01-01T10:00:00Z ', '2024-01-01T10:00:00.000Z'],
+  ])('should accept the date default "%s" and store it normalized as "%s"', (defaultValue, expected) => {
+    expect(build({ type: 'date', defaultValue }).defaultValue).toEqual(expected);
+  });
+  it('should store a blank date default as now, normalized', () => {
+    expect(build({ type: 'date', defaultValue: '  ' }).defaultValue).toEqual(NOW.toISOString());
+  });
+  it('should keep a date default restricted to a selection as the pool value it matches', () => {
+    const restriction = { mode: 'selection', values: ['2024-01-01'] };
+    expect(build({ type: 'date', defaultValue: '2024-01-01', restriction }).defaultValue).toEqual('2024-01-01');
+    expect(() => build({ type: 'date', defaultValue: '2024/01/01', restriction: { mode: 'selection', values: ['2024/01/01'] } }))
+      .toThrow('A date variable default value must be a valid date');
+  });
+});

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import cases from '../../../../opencti-graphql/tests/data/dashboard-variables/resolution-cases.json';
-import { buildDefaultVariableValues, isValidVariableValue, resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
+import { buildDefaultVariableValues, isStrictIsoDate, isValidVariableValue, resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
 import type { DashboardVariable } from './dashboard-types';
 
 describe('Dashboard variables resolution - shared cases', () => {
@@ -120,5 +120,27 @@ describe('buildDefaultVariableValues - defaults invalid for their type', () => {
   it('does not check the selection pool, which is checked when the variable is written', () => {
     const selection = { mode: 'selection', values: ['FR'] };
     expect(buildDefaultVariableValues([variableOf('text', 'DE', selection)])).toEqual(new Map([['v', 'DE']]));
+  });
+});
+
+describe('Dashboard variables resolution - strict ISO-8601 dates', () => {
+  const dateVariable = (defaultValue: string | null = null) => (
+    { id: 'v', name: 'V', type: 'date', restriction: { mode: 'none' }, defaultValue } as DashboardVariable
+  );
+
+  // Parsed by some engines only (V8, not Safari), local time in some engines and UTC in others, or not a calendar day.
+  it.each(['2024/01/01', 'March 7 2024', '2024-01-01 10:00', '2024-01-01T10:00:00', '2024-13-01', '2024-02-30'])(
+    'refuses the date value "%s"',
+    (value) => {
+      expect(isStrictIsoDate(value)).toBe(false);
+      expect(isValidVariableValue(dateVariable(), value)).toBe(false);
+      expect(buildDefaultVariableValues([dateVariable(value)])).toEqual(new Map());
+    },
+  );
+
+  it.each(['2024-01-01', '2024-01-01T10:00:00Z', '2024-01-01T10:00:00.5+02:00'])('accepts the date value "%s"', (value) => {
+    expect(isStrictIsoDate(value)).toBe(true);
+    expect(isValidVariableValue(dateVariable(), value)).toBe(true);
+    expect(buildDefaultVariableValues([dateVariable(value)])).toEqual(new Map([['v', value]]));
   });
 });

@@ -4,7 +4,7 @@ import validator from 'validator';
 import { FunctionalError } from '../../config/errors';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import { checkFiltersFormat } from '../../utils/filtering/filtering-utils';
-import { containsDashboardVariableToken } from '../dashboard/dashboard-variables-resolution';
+import { containsDashboardVariableToken, isStrictIsoDate } from '../dashboard/dashboard-variables-resolution';
 import {
   DASHBOARD_VARIABLE_NAME_MAX_LENGTH,
   DASHBOARD_VARIABLE_SELECTION_MAX_VALUES,
@@ -108,7 +108,10 @@ const buildDefaultValue = (
     if (value !== 'true' && value !== 'false') throw FunctionalError('A boolean variable default value must be true or false');
   } else if (type === 'date') {
     value = isBlank ? now.toISOString() : raw.trim();
-    if (Number.isNaN(Date.parse(value))) throw FunctionalError('A date variable default value must be a valid date');
+    if (!isStrictIsoDate(value)) throw FunctionalError('A date variable default value must be a valid date');
+    // Stored normalized, so that every engine reads the same string. A selection restriction holds the values as given:
+    // the default must then stay the pool value it matches.
+    if (restriction.mode !== 'selection') value = new Date(value).toISOString();
   } else if (isBlank) {
     throw FunctionalError('Dashboard variable default value is required');
   } else if (type === 'numeric') {

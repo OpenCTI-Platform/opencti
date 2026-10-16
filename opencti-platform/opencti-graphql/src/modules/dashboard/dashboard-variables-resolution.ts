@@ -175,11 +175,34 @@ export const computeDashboardVariablesUsage = (widgets: Record<string, ManifestW
   return usage;
 };
 
+// Strict ISO-8601 date: `YYYY-MM-DD`, or a date-time `YYYY-MM-DDTHH:mm`, `…:ss` or `…:ss.s` (1 to 3 digits) ending with
+// a time zone designator, `Z` or `±HH:mm`. Outside this format `Date.parse` depends on the JavaScript engine (V8 parses
+// `2024/01/01` or `March 7 2024`, Safari does not), and a date-time without designator is local time in some engines
+// and UTC in others. Written identically in the front (dashboardVariablesResolution.ts).
+const ISO_DATE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d))?$/;
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Whether `value` is a strict ISO-8601 date (see ISO_DATE_REGEXP) of an existing calendar day, which every engine parses
+ * to the same instant. A day that does not exist (`2024-02-30`) is refused: some engines roll it over, others refuse it.
+ */
+export const isStrictIsoDate = (value: string): boolean => {
+  const match = ISO_DATE_REGEXP.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) return false;
+  const isLeapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = month === 2 && isLeapYear ? 29 : DAYS_IN_MONTH[month - 1];
+  return day >= 1 && day <= daysInMonth && !Number.isNaN(Date.parse(value));
+};
+
 /**
  * Whether a default value is valid for the type of its variable (mirror of the frontend isValidVariableValue, without
  * its selection pool rule: the default of a selection variable is checked when the variable is written).
- * A boolean is `true` or `false`, a numeric a finite number, a date something `Date.parse` understands, any other type
- * a non-blank string. A boolean, numeric or date value is never trimmed: one with surrounding spaces is refused.
+ * A boolean is `true` or `false`, a numeric a finite number, a date a strict ISO-8601 date (`isStrictIsoDate`), any
+ * other type a non-blank string. A boolean, numeric or date value is never trimmed: one with surrounding spaces is refused.
  * No value may reference another variable.
  */
 export const isValidDashboardVariableValue = (type: unknown, value: string) => {
@@ -191,7 +214,7 @@ export const isValidDashboardVariableValue = (type: unknown, value: string) => {
     case 'numeric':
       return value === trimmed && Number.isFinite(Number(value));
     case 'date':
-      return value === trimmed && !Number.isNaN(Date.parse(value));
+      return isStrictIsoDate(value);
     default:
       return true;
   }
