@@ -43,12 +43,11 @@ const useVariableValueOptions = (variable: DashboardVariableShape): VariableValu
   );
 
   if (isRestrictedByFilters) {
-    // Searched with the typed text only: picking writes the label of the pick, which is no search.
+    // Searched with the typed text. Picking or clearing also writes the text (the label of the pick), which is no
+    // search: the list goes back to every entity of the rule.
     return {
       options: restrictedEntities.options,
-      search: (_event, text, cause = 'type') => {
-        if (cause === 'type') restrictedEntities.search(text);
-      },
+      search: (_event, text, cause = 'type') => restrictedEntities.search(cause === 'type' ? text : ''),
     };
   }
   const options = isKillChainPhase

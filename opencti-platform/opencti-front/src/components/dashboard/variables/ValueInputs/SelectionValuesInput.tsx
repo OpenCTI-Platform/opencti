@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useRef } from 'react';
+import { type SyntheticEvent, useEffect, useRef } from 'react';
 import {
   Combobox,
   ComboboxChips,
@@ -24,14 +24,13 @@ export interface SelectionValuesInputProps {
   label: string;
   disabled?: boolean;
   error?: string;
-  onBlur?: () => void;
 }
 
 /**
  * Input of the values of a selection restriction: the values a variable is restricted to, searched as the value of
  * the variable is (useVariableValueOptions), or picked among the vocabularies of its category.
  */
-const SelectionValuesInput = ({ variable, values, onChange, label, disabled, error, onBlur }: SelectionValuesInputProps) => {
+const SelectionValuesInput = ({ variable, values, onChange, label, disabled, error }: SelectionValuesInputProps) => {
   const { t_i18n } = useFormatter();
   const isVocabulary = variable.type === 'vocabulary';
   const { options: searchOptions, search } = useVariableValueOptions(variable);
@@ -40,6 +39,10 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   // Each pick resolves the labels of the whole selection again: the labels already known stay shown meanwhile,
   // instead of every chip going back to `Loading`.
   const knownLabels = useRef(new Map<string, string>());
+  // Recorded once rendered: a render React discards records nothing.
+  useEffect(() => {
+    labels.forEach((name, value) => knownLabels.current.set(value, name));
+  }, [labels]);
   const options: FilterOptionValue[] = isVocabulary
     ? vocabularyNames.map((name) => ({ value: name, label: name, type: 'Vocabulary' }))
     : searchOptions;
@@ -47,10 +50,6 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
   // The library keys its chips by label: a label already taken (values still loading, two restricted values,
   // two entities of the same name) is numbered, or React would leave stale chips behind.
   // FDS-WORKAROUND #71: dropped once the chips are no longer keyed by label (fds-migration/LIBRARY-FEEDBACK.md).
-  options.forEach((option) => {
-    if (option.value) knownLabels.current.set(option.value, option.label);
-  });
-  labels.forEach((name, value) => knownLabels.current.set(value, name));
   const seenLabels = new Map<string, number>();
   const selected = values.map((value) => {
     const option = options.find((candidate) => candidate.value === value)
@@ -78,13 +77,18 @@ const SelectionValuesInput = ({ variable, values, onChange, label, disabled, err
       onInputChange={(text, meta) => meta.event && runSearch(meta.event as SyntheticEvent, text, meta.cause)}
       onValueChange={(next) => {
         const picked = (next as FilterOptionValue[] | null) ?? [];
+        // The label of a pick is known now, before the labels of the new selection resolve. Taken from the search
+        // options: a chip label may carry the number of a duplicate.
+        options.forEach((option) => {
+          if (option.value && picked.some((pick) => pick.value === option.value)) knownLabels.current.set(option.value, option.label);
+        });
         onChange(picked.flatMap((option) => (option.value ? [option.value] : [])));
       }}
     >
       <ComboboxLabel>{label}</ComboboxLabel>
       <ComboboxField>
         <ComboboxChips aria-label={label} />
-        <ComboboxInput onFocus={(event) => runSearch(event, '')} onBlur={onBlur} />
+        <ComboboxInput onFocus={(event) => runSearch(event, '')} />
         <ComboboxControls>
           <ComboboxTrigger />
         </ComboboxControls>

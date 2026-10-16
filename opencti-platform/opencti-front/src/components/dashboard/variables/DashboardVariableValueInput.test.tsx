@@ -259,6 +259,20 @@ describe('DashboardVariableValueInput', () => {
       await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
       expect(onChange).toHaveBeenCalledWith('org-1');
     });
+
+    it('goes back to every entity of the rule once a value is picked', async () => {
+      const variable: DashboardVariableShape = { type: 'entity', entityTypes: ['Organization'], restriction: { mode: 'filters', filters: rule } };
+      const { user, relayEnv } = renderInput(variable);
+      await user.click(screen.getByRole('combobox'));
+      await user.type(screen.getByRole('combobox'), 'ac');
+      act(() => {
+        relayEnv.mock.resolveMostRecentOperation({
+          data: { stixCoreObjects: { edges: [{ node: { id: 'org-1', entity_type: 'Organization', representative: { main: 'Acme Corp' } } }] } },
+        });
+      });
+      await user.click(await screen.findByRole('option', { name: 'Acme Corp' }));
+      expect(relayEnv.mock.getMostRecentOperation().request.variables.search).toBe('');
+    });
   });
 
   describe('entity pool', () => {

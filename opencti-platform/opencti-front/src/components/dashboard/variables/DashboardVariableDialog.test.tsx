@@ -55,10 +55,14 @@ const { rule, otherRule } = vi.hoisted(() => {
   return { rule: labelRule('label-1'), otherRule: labelRule('label-2') };
 });
 vi.mock('./RestrictionFiltersField', () => ({
-  default: ({ onChange, entityTypes }: { onChange: (filters: unknown) => void; entityTypes: string[] }) => (
+  default: ({ onChange, entityTypes, error }: { onChange: (filters: unknown) => void; entityTypes: string[]; error?: string }) => (
     <div data-testid="rule-editor" data-entity-types={entityTypes.join()}>
       <button type="button" onClick={() => onChange(rule)}>Set rule</button>
       <button type="button" onClick={() => onChange(otherRule)}>Set other rule</button>
+      <button type="button" onClick={() => onChange({ ...rule, filters: [...rule.filters, { key: 'objectMarking', values: [], operator: 'eq', mode: 'or' }] })}>
+        Add a filter without value
+      </button>
+      {error && <span>{error}</span>}
     </div>
   ),
 }));
@@ -257,6 +261,26 @@ describe('DashboardVariableDialog', () => {
         restriction: { mode: 'filters', filters: rule },
         defaultValue: 'malware-1',
       }));
+    });
+
+    it('says why Create is disabled as soon as By filter is chosen', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      await user.click(radio('By filter'));
+      expect(screen.getByText('At least one filter is required')).toBeInTheDocument();
+      expect(submit()).toBeDisabled();
+    });
+
+    it('keeps the default value when the rule sent does not change', async () => {
+      const { user } = renderDialog();
+      await chooseType(user, 'Entity');
+      await chooseEntityType(user);
+      await user.click(radio('By filter'));
+      await user.click(screen.getByRole('button', { name: 'Set rule' }));
+      await user.type(screen.getByTestId('value-input'), 'malware-1');
+      await user.click(screen.getByRole('button', { name: 'Add a filter without value' }));
+      expect(screen.getByTestId('value-input')).toHaveValue('malware-1');
     });
 
     it('forgets the default value when the rule changes', async () => {
@@ -713,6 +737,23 @@ describe('DashboardVariableDialog', () => {
       await user.click(screen.getByRole('radio', { name: 'No restriction' }));
       await user.type(screen.getByTestId('value-input'), 'label-1');
       await waitFor(() => expect(submit()).toBeEnabled());
+    });
+
+    it('lets a variable of a type without restriction leave a selection it holds', async () => {
+      const restricted: DashboardVariable = {
+        id: '55555555-5555-4555-8555-555555555555',
+        name: 'Region',
+        type: 'text',
+        restriction: { mode: 'selection', values: ['Europe', 'Asia'] },
+        defaultValue: 'Europe',
+      };
+      const { user } = renderDialog({ variable: restricted, existingVariables: [restricted] });
+      expect(await screen.findByRole('radio', { name: 'Manual selection' })).toBeChecked();
+      await user.click(screen.getByRole('radio', { name: 'No restriction' }));
+      await user.type(screen.getByTestId('value-input'), 'Europe');
+      await user.type(nameInput(), 's');
+      await user.click(submit());
+      await waitFor(() => expect(mocks.upsert).toHaveBeenCalledWith(expect.objectContaining({ restriction: { mode: 'none' } })));
     });
 
     it('resends the filters restriction untouched when the name is edited', async () => {

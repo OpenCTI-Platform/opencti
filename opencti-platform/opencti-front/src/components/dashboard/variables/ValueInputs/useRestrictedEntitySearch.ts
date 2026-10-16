@@ -38,6 +38,11 @@ const useRestrictedEntitySearch = (entityTypes: string[], filters: FilterGroup |
   // Signatures keep the search stable across renders that pass new arrays or groups with the same content.
   const typesSignature = JSON.stringify(entityTypes);
   const filtersSignature = JSON.stringify(filters ?? null);
+  // Options found for other types or another rule are not offered: they may not match the new one.
+  useEffect(() => {
+    subscription.current?.unsubscribe();
+    setOptions([]);
+  }, [typesSignature, filtersSignature]);
 
   const search = useCallback((text: string) => {
     subscription.current?.unsubscribe();
