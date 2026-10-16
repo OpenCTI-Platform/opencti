@@ -23,9 +23,9 @@ import {
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
-  type HealthChecksContext,
   HealthTransition,
 } from '../modules/ingestionHealth/ingestionHealth-checks';
+import type { HealthChecksContext } from '../modules/ingestionHealth/ingestionHealth-registry';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { IngestionHealthFields } from '../modules/ingestionHealth/ingestionHealth-types';
 import { getRuntimeDataMany, type RuntimeData } from '../modules/ingestionHealth/ingestionHealthRuntimeData';

@@ -1,110 +1,33 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
 import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
-import type { RuntimeData } from './ingestionHealthRuntimeData';
-import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from '../connector/connector-types';
-import { durationInMs } from '../../utils/format';
-import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-
-// region registry
-export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
-export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
-
-// The ingestor evaluated: a connector, a feed or a sync
-export interface HealthCheckIngestor {
-  internal_id: string;
-  entity_type: string;
-  built_in?: boolean;
-  // The user of a connector
-  connector_user_id?: string | null;
-  // The user of a feed or a sync
-  user_id?: string | null;
-}
-
-const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
-  return ingestor.entity_type === ENTITY_TYPE_CONNECTOR ? ingestor.connector_user_id : ingestor.user_id;
-};
-
-// Connectors authenticate with their own user; feeds and syncs without one run as the system user, a supported setup
-const isUserRequired = (ingestor: HealthCheckIngestor) => ingestor.entity_type === ENTITY_TYPE_CONNECTOR;
-
-// What decides whether a check applies, computed once at the beginning of each period of the ingestion health manager
-export interface HealthCheckEnablingContext {
-  // Connectors pinging continuously
-  pingingConnectorsIds: Set<string>;
-}
-
-interface HealthCheckDefinition {
-  kind: IngestionHealthCheckKind;
-  severity: IngestionHealthCheckSeverity;
-  message: (metadata: Record<string, unknown>) => string;
-  // Whether the ingestor is evaluated for this check
-  isEnabled: (ingestor: HealthCheckIngestor, context: HealthCheckEnablingContext) => boolean;
-}
-
-// Built-in connectors (feed twins) are not deployed: no process runs them
-const isDeployed = (ingestor: HealthCheckIngestor) => !ingestor.built_in;
-
-// Kind, severity and message describe the type of check, not one occurrence: they are never stored,
-// so changing them never requires rewriting Elasticsearch.
-const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
-  // No user id or name in the message: reading a connector only needs MODULES, its user is reserved to SETTINGS_SETACCESSES
-  [HEALTH_CHECK_USER_MISSING]: {
-    kind: IngestionHealthCheckKind.Configuration,
-    severity: IngestionHealthCheckSeverity.Blocking,
-    message: () => 'User is missing',
-    // A required user, or an optional one that was set: it must exist
-    isEnabled: (ingestor) => isDeployed(ingestor) && isUserRequired(ingestor),
-  },
-  // A running process pings regularly: no heartbeat means it is down
-  [HEALTH_CHECK_HEARTBEAT_MISSING]: {
-    kind: IngestionHealthCheckKind.Runtime,
-    severity: IngestionHealthCheckSeverity.Blocking,
-    message: () => 'No heartbeat received',
-    // Only the connectors pinging continuously: the others would be missing their heartbeat between two runs
-    isEnabled: (ingestor, { pingingConnectorsIds }) => isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
-  },
-};
-
-const isCheckEnabled = (code: string, ingestor: HealthCheckIngestor, context: HealthCheckEnablingContext) => {
-  return HEALTH_CHECK_REGISTRY[code].isEnabled(ingestor, context);
-};
-// endregion
+import {
+  getHealthCheckDefinition,
+  HEALTH_CHECK_REGISTRY,
+  type HealthCheckCode,
+  type HealthCheckDefinition,
+  type HealthCheckMetadata,
+  type HealthChecksContext,
+  type HealthCheckIngestor,
+  type HealthContext,
+  isHeartbeatAlive,
+} from './ingestionHealth-registry';
 
 // region evaluation (pure, no I/O)
-// What the evaluation looks at, besides the configuration of the ingestion.
-// A new check needing a new fact adds a field here, not a parameter to every function.
-export interface HealthContext {
-  // The moment of the evaluation: what is stale is judged against it
-  evaluatedAt: string;
-  // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
-  runtimeData?: RuntimeData;
-}
-
-export interface HealthChecksContext extends HealthContext, HealthCheckEnablingContext {
-  isExistingUser: (userId: string) => boolean;
-}
-
-// Same window as the connector liveness (isConnectorActive).
-// A heartbeat in the future (clock skew between nodes) is alive
-export const isHeartbeatAlive = (heartbeat: string | undefined, evaluatedAt: string): boolean => {
-  if (!heartbeat) {
-    return false;
+const getFailure = (definition: HealthCheckDefinition, ingestor: HealthCheckIngestor, context: HealthChecksContext): HealthCheckMetadata | null => {
+  if (definition.kind === IngestionHealthCheckKind.Runtime) {
+    // The value type depends on the runtime data of each check, which a loop over all the checks cannot express: it is checked where the check is declared
+    const getRuntimeFailure = definition.getFailure as (value: unknown, context: HealthChecksContext) => HealthCheckMetadata | null;
+    return getRuntimeFailure(context.runtimeData?.[definition.runtimeData], context);
   }
-  return durationInMs(heartbeat, evaluatedAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
+  return definition.getFailure(ingestor, context);
 };
 
 export const computeIngestionHealthChecks = (ingestor: HealthCheckIngestor, context: HealthChecksContext): StoredHealthCheck[] => {
-  const { isExistingUser, evaluatedAt, runtimeData } = context;
-  const checks: StoredHealthCheck[] = [];
-  const userId = getIngestorUserId(ingestor);
-  if (isCheckEnabled(HEALTH_CHECK_USER_MISSING, ingestor, context) && (!userId || !isExistingUser(userId))) {
-    checks.push({ health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} });
-  }
-  if (isCheckEnabled(HEALTH_CHECK_HEARTBEAT_MISSING, ingestor, context) && !isHeartbeatAlive(runtimeData?.heartbeat, evaluatedAt)) {
-    checks.push({ health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} });
-  }
-  return checks;
+  return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
+    const metadata = definition.isEnabled(ingestor, context) ? getFailure(definition, ingestor, context) : null;
+    return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
+  });
 };
 
 // Priority: critical > degraded > healthy. A stopped ingestion is not monitored, so it never gets here.
@@ -112,7 +35,7 @@ export const computeIngestionHealthChecks = (ingestor: HealthCheckIngestor, cont
 export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: HealthContext): IngestionHealthStatus | null => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
-    .map((check) => HEALTH_CHECK_REGISTRY[check.health_check_code])
+    .map((check) => getHealthCheckDefinition(check.health_check_code))
     .filter((definition): definition is HealthCheckDefinition => !!definition);
   // blocking AND runtime -> critical
   if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
