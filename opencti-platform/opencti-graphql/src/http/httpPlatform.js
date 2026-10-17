@@ -117,6 +117,13 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
+// The file is indexed but its content is missing from the object storage.
+const sendMissingStorageFile = (res, fileId) => {
+  logApp.warn('[FILE STORAGE] Indexed file is missing from storage', { fileId });
+  res.removeHeader('Content-disposition');
+  res.type('json').status(404).send({ status: 'error', error: 'File not found' });
+};
+
 export const decodeStoragePath = (fileParts = []) => fileParts
   .map((part) => {
     try {
@@ -228,6 +235,10 @@ const createApp = async (app, schema) => {
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
       const stream = await downloadFile(data.id);
+      if (!stream) {
+        sendMissingStorageFile(res, data.id);
+        return;
+      }
       res.attachment(file);
       stream.pipe(res);
     } catch (e) {
@@ -258,6 +269,10 @@ const createApp = async (app, schema) => {
         res.set('Content-type', data.metaData.mimetype);
       }
       const stream = await downloadFile(data.id);
+      if (!stream) {
+        sendMissingStorageFile(res, data.id);
+        return;
+      }
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -305,6 +320,10 @@ const createApp = async (app, schema) => {
       }
 
       const stream = await downloadFile(data.id);
+      if (!stream) {
+        sendMissingStorageFile(res, data.id);
+        return;
+      }
       stream.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);
@@ -354,7 +373,12 @@ const createApp = async (app, schema) => {
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
       const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-      archive.append(await downloadFile(file), { name: filename });
+      const stream = await downloadFile(file);
+      if (!stream) {
+        sendMissingStorageFile(res, file);
+        return;
+      }
+      archive.append(stream, { name: filename });
       await archive.finalize();
       res.attachment(`${filename}.zip`);
       archive.pipe(res);
