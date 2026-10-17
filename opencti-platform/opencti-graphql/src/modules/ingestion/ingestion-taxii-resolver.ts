@@ -14,7 +14,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { decryptIngestionCredential } from './ingestion-common';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionTaxii } from './ingestion-types';
-import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {

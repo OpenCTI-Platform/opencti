@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC,
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
-import { now } from '../../utils/format';
+import { now, sinceNowInMs } from '../../utils/format';
 import { isEmptyField } from '../../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
@@ -41,6 +41,7 @@ import type {
   StoreEntityConnector,
   StoreEntityConnectorManager,
 } from './connector-types';
+import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS } from './connector-types';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -63,11 +64,10 @@ import {
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
 } from '../../modules/catalog/catalog-domain';
-import { getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';
 import { filter, includes, map, pipe } from 'ramda';
 import { BACKGROUND_TASK_QUEUES, connectorConfig, getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector } from './connector-rabbitmq';
-import { sinceNowInMinutes } from '../../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../../schema/general';
 import { isNotEmptyField } from '../../database/utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../notifier/notifier-statics';
@@ -118,22 +118,46 @@ export const issueConnectorJWT = async () => {
   return keyPair.signJwt(jwt);
 };
 
+// A managed connector stopped, or being stopped, on purpose: no process is expected to run
+export const isConnectorStopped = (connector: any) => {
+  if (!(connector.is_managed || isNotEmptyField(connector.catalog_id))) {
+    return false;
+  }
+  return connector.manager_requested_status === 'stopping'
+    || connector.manager_requested_status === 'stopped'
+    || connector.manager_current_status === 'stopped';
+};
+
 // lastSeenAt is the last connector heartbeat (ping or registration), stored in Redis.
 // Never derive it from updated_at: any write on the connector entity bumps it.
 export const isConnectorActive = (connector: any, lastSeenAt?: string | null) => {
   if (connector.built_in) {
     return connector.active ?? true;
   }
-  if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
-    // return false if managed connector is stopped or stopping
-    const connectorStopped = connector.manager_requested_status === 'stopping'
-      || connector.manager_requested_status === 'stopped'
-      || connector.manager_current_status === 'stopped';
-    if (connectorStopped) {
-      return false;
-    }
+  if (isConnectorStopped(connector)) {
+    return false;
   }
-  return isNotEmptyField(lastSeenAt) && sinceNowInMinutes(lastSeenAt) < 5;
+  return isNotEmptyField(lastSeenAt) && sinceNowInMs(lastSeenAt) < CONNECTOR_LIVELINESS_GRACE_PERIOD_MS;
+};
+
+// Connectors pinging continuously: the pycti PingAlive thread pings every 40 s whatever the collection period,
+// so a missing heartbeat means the process is down. Other connectors only ping around their runs.
+// Decided on connector_info, sent by pycti at each ping, as read from the connectors cache. Pings write connector_info
+// without refreshing the cache: it is the value of the last cache reload (registration, edition, health write...).
+// - no connector_info: never pinged with a pycti sending it, not considered as pinging
+// - connector_info.run_and_terminate: declared run and terminate (CONNECTOR_RUN_AND_TERMINATE or a zero duration period),
+//   no ping thread, only a ping at the end of each run
+// Misclassified, accepted:
+// - run and terminate connectors not declaring it (restarted by an external cron, or exiting after one run):
+//   their ping thread sends run_and_terminate false, they are considered as pinging and their heartbeat is missing between runs
+// - connectors switched from continuous to run and terminate: run_and_terminate stays false until the end of their first run
+//   and the next cache reload
+// - connectors pinging continuously without sending connector_info (pycti versions before connector_info, non pycti clients),
+//   or whose connector_info is not yet in the cache (first pings after their registration): not considered as pinging
+export const findRegularlyPingingConnectors = async (context: AuthContext, user: AuthUser) => {
+  const cachedConnectors = await getEntitiesListFromCache<CachedConnector>(context, user, ENTITY_TYPE_CONNECTOR);
+  return cachedConnectors.filter((connector) => !connector.built_in
+    && isNotEmptyField(connector.connector_info) && connector.connector_info.run_and_terminate !== true);
 };
 
 // Liveness is a single derived field: failing to read heartbeats must not fail the loading of connectors
@@ -147,9 +171,10 @@ export const loadConnectorHeartbeat = async (connectorId: string) => {
   }
 };
 
-const loadConnectorsHeartbeats = async () => {
+// Built-in connectors do not send heartbeats: nothing is read for them
+const loadConnectorsHeartbeats = async (connectorsToRead: { internal_id: string; built_in?: boolean }[]) => {
   try {
-    return await redisGetConnectorsHeartbeats();
+    return await redisGetConnectorsHeartbeats(connectorsToRead.filter((conn) => !conn.built_in).map((conn) => conn.internal_id));
   } catch (err) {
     logApp.warn('[OPENCTI-MODULE] Unable to read connectors heartbeats, connectors considered inactive', { cause: err });
     return new Map<string, string>();
@@ -162,7 +187,7 @@ export const refreshConnectorsLiveness = async <T extends { internal_id: string;
   if (cachedConnectors.length === 0) {
     return [];
   }
-  const heartbeats = await loadConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats(cachedConnectors);
   return cachedConnectors.map((conn) => {
     // Built-in connectors do not send heartbeats
     const lastSeenAt = conn.built_in ? null : (heartbeats.get(conn.internal_id) ?? null);
@@ -192,8 +217,9 @@ export const connectors = async (context: AuthContext, user: AuthUser) => {
     findConnectors(context, user),
     builtInConnectorsRuntime(context, user),
   ]);
-  const heartbeats = await loadConnectorsHeartbeats();
-  return [...storedConnectors, ...builtInConnectors].map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
+  const allConnectors = [...storedConnectors, ...builtInConnectors];
+  const heartbeats = await loadConnectorsHeartbeats(allConnectors);
+  return allConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 
 // The connectors cache is only reloaded on connectors events, while liveness changes with the pings or their absence:
@@ -227,7 +253,7 @@ export const connectorManagers = (context: AuthContext, user: AuthUser) => {
 
 export const connectorsForManagers = async (context: AuthContext, user: AuthUser) => {
   const managedConnectors = await findManagedConnectors(context, user);
-  const heartbeats = await loadConnectorsHeartbeats();
+  const heartbeats = await loadConnectorsHeartbeats(managedConnectors);
   return managedConnectors.map((connector) => completeConnector(connector, heartbeats.get(connector.internal_id)));
 };
 

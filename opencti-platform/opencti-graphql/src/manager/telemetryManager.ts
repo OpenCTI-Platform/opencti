@@ -59,6 +59,7 @@ import {
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { FilterMode } from '../generated/graphql';
+import { booleanTrueFilter } from '../utils/filtering/filtering-utils';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -101,12 +102,6 @@ const KNOWLEDGE_OBJECT_TYPES = [
 // minimal so the collectors do not depend on each module's full store type.
 type DataShareLike = BasicStoreEntity & { stream_public?: boolean; enabled?: boolean };
 
-// Filter matching entities whose boolean attribute is true (ES count queries).
-const booleanTrueFilter = (key: string) => ({
-  mode: FilterMode.And,
-  filters: [{ key: [key], values: ['true'] }],
-  filterGroups: [],
-});
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const TELEMETRY_MANAGER_ENABLED = booleanConf('telemetry_manager:enabled', true);

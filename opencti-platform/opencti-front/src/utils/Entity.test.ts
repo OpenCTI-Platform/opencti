@@ -262,6 +262,18 @@ describe('Function: resolveLink', () => {
     expect(resolveLink('Connectors')).toEqual('/dashboard/integrations/connectors');
   });
 
+  it.each([
+    ['Connector', '/dashboard/integrations/connectors'],
+    ['Sync', '/dashboard/integrations/feeds/sync'],
+    ['IngestionRss', '/dashboard/integrations/feeds/rss'],
+    ['IngestionTaxii', '/dashboard/integrations/feeds/taxii'],
+    ['IngestionTaxiiCollection', '/dashboard/integrations/feeds/taxii-push'],
+    ['IngestionCsv', '/dashboard/integrations/feeds/csv'],
+    ['IngestionJson', '/dashboard/integrations/feeds/json'],
+  ])('should return URL to the ingestion overview for %s type', (type, expected) => {
+    expect(resolveLink(type)).toEqual(expected);
+  });
+
   it('should return URL to automation for Playbook type', () => {
     expect(resolveLink('Playbook')).toEqual('/dashboard/data/processing/automation');
   });

@@ -412,7 +412,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         <ListItemIcon>
                           <ItemIcon type="user" color={theme.palette.primary.main} />
                         </ListItemIcon>
-                        <ListItemText primary={connector.connector_user.name} />
+                        <ListItemText primary={connector.connector_user.name} slotProps={{ primary: { noWrap: true } }} />
                       </ListItemButton>
                     ) : (
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
@@ -1074,12 +1074,7 @@ const Connector = createRefetchContainer(
         connector_user_id
         is_managed
         ingestionHealth {
-          status
-          status_since
-          healthChecks {
-            health_check_code
-            health_check_message
-          }
+          ...IngestionHealthChip_ingestionHealth
         }
         manager_contract_configuration {
           key

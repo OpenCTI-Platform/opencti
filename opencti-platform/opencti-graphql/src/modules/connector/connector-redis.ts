@@ -1,4 +1,5 @@
 import { getClientBase } from '../../database/redis';
+import { getRuntimeData, getRuntimeDataMany, removeRuntimeData, setRuntimeData } from '../ingestionHealth/ingestionHealthRuntimeData';
 
 export interface ConnectorHealthMetrics {
   restart_count: number;
@@ -54,28 +55,28 @@ export const redisSetManagedConnectorAutoUpgradeStatus = async (status: ManagedC
 // region connector heartbeats
 // Connector liveness is kept out of Elasticsearch so that no entity write (migration, auto-upgrade, edition...)
 // can make a connector look alive: only a connector ping or registration records a heartbeat.
-// Single sorted set (member: connector id, score: last heartbeat epoch ms) so that listing works in one call, cluster included.
-const CONNECTOR_HEARTBEATS_KEY = 'connector_heartbeats';
-
+// The heartbeat is a runtime data of the ingestion health, its storage (a single sorted set) is declared
+// in RUNTIME_DATA (ingestionHealth-registry). It is the last heartbeat as recorded, the connector is not judged alive or not here.
 export const redisSetConnectorHeartbeat = async (connectorId: string, lastSeenAt: string) => {
-  await getClientBase().zadd(CONNECTOR_HEARTBEATS_KEY, new Date(lastSeenAt).getTime(), connectorId);
+  await setRuntimeData(connectorId, 'heartbeat', lastSeenAt);
 };
 
 export const redisGetConnectorHeartbeat = async (connectorId: string): Promise<string | null> => {
-  const score = await getClientBase().zscore(CONNECTOR_HEARTBEATS_KEY, connectorId);
-  return score ? new Date(Number(score)).toISOString() : null;
+  return (await getRuntimeData(connectorId, ['heartbeat'])).heartbeat ?? null;
 };
 
-export const redisGetConnectorsHeartbeats = async (): Promise<Map<string, string>> => {
-  const membersWithScores = await getClientBase().zrange(CONNECTOR_HEARTBEATS_KEY, 0, -1, 'WITHSCORES');
+// Connectors without heartbeat are omitted
+export const redisGetConnectorsHeartbeats = async (connectorIds: string[]): Promise<Map<string, string>> => {
   const heartbeats = new Map<string, string>();
-  for (let i = 0; i < membersWithScores.length; i += 2) {
-    heartbeats.set(membersWithScores[i], new Date(Number(membersWithScores[i + 1])).toISOString());
-  }
+  (await getRuntimeDataMany(connectorIds, ['heartbeat'])).forEach(({ heartbeat }, connectorId) => {
+    if (heartbeat) {
+      heartbeats.set(connectorId, heartbeat);
+    }
+  });
   return heartbeats;
 };
 
 export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
-  await getClientBase().zrem(CONNECTOR_HEARTBEATS_KEY, connectorId);
+  await removeRuntimeData(connectorId, 'heartbeat');
 };
 // endregion

@@ -1,23 +1,26 @@
 import React from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { Chip, type ChipSeverity, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
+import type { IngestionHealthChip_ingestionHealth$key } from './__generated__/IngestionHealthChip_ingestionHealth.graphql';
 
-interface IngestionHealthCheck {
-  readonly health_check_code: string;
-  readonly health_check_message?: string | null;
-}
-
-export interface IngestionHealthData {
-  readonly status: string;
-  readonly status_since: string;
-  readonly healthChecks: ReadonlyArray<IngestionHealthCheck>;
-}
+// Spread in every query showing the health of a connector, a feed or a sync
+const ingestionHealthFragment = graphql`
+  fragment IngestionHealthChip_ingestionHealth on IngestionHealth {
+    status
+    status_since
+    healthChecks {
+      health_check_code
+      health_check_message
+    }
+  }
+`;
 
 interface IngestionHealthChipProps {
   // Null until the manager first evaluates the ingestion
-  ingestionHealth?: IngestionHealthData | null;
+  ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
 }
 
 // Design system feedback tones
@@ -29,9 +32,10 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   unknown: 'neutral',
 };
 
-const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth }) => {
+const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
   if (!isFeatureEnable('INGESTION_HEALTH')) {
     return null;
   }

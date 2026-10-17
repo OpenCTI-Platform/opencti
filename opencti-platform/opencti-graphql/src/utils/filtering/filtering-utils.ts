@@ -49,6 +49,13 @@ export const emptyFilterGroup: FilterGroup = {
   filterGroups: [],
 };
 
+// Filter matching entities whose boolean attribute is true
+export const booleanTrueFilter = (key: string): FilterGroup => ({
+  mode: FilterMode.And,
+  filters: [{ key: [key], values: ['true'] }],
+  filterGroups: [],
+});
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 

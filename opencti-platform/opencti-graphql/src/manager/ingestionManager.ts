@@ -41,7 +41,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
+import { decryptIngestionCredential, runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
@@ -255,12 +255,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
 };
 
 export const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllRssIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -490,12 +485,7 @@ const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler,
 };
 export const taxiiExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllTaxiiIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -609,12 +599,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
 };
 
 export const csvExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllCsvIngestion(context, SYSTEM_USER, opts);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
@@ -680,12 +665,7 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
 };
 
 export const jsonExecutor = async (context: AuthContext) => {
-  const filters = {
-    mode: 'and',
-    filters: [{ key: 'ingestion_running', values: [true] }],
-    filterGroups: [],
-  };
-  const opts = { filters, noFiltersChecking: true };
+  const opts = { filters: runningIngestionsFilters(), noFiltersChecking: true };
   const ingestions = await findAllJsonIngestion(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];

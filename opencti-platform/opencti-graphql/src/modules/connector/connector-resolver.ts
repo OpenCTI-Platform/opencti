@@ -1,5 +1,5 @@
 import { ConnectorPriorityGroup, type EditInput, type Resolvers } from '../../generated/graphql';
-import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorContract,

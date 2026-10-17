@@ -60,9 +60,13 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
   executeJsonQuery: executeJsonQueryMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-common', () => ({
-  decryptIngestionCredential: decryptIngestionCredentialMock,
-}));
+vi.mock('../../../../src/modules/ingestion/ingestion-common', async () => {
+  const { emptyFilterGroup } = await import('../../../../src/utils/filtering/filtering-utils');
+  return {
+    decryptIngestionCredential: decryptIngestionCredentialMock,
+    runningIngestionsFilters: () => emptyFilterGroup,
+  };
+});
 
 vi.mock('../../../../src/domain/connector', () => ({
   queueDetails: queueDetailsMock,

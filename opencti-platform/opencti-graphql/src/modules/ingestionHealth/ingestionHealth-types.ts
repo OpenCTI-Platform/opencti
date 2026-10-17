@@ -1,8 +1,9 @@
 import type { IngestionHealthStatus } from '../../generated/graphql';
+import type { HealthCheckCode } from './ingestionHealth-registry';
 
 // A check as stored in Elasticsearch: kind, severity and message are derived from the code (see ingestionHealth-checks)
 export interface StoredHealthCheck {
-  health_check_code: string;
+  health_check_code: HealthCheckCode;
   health_check_metadata?: Record<string, unknown>;
 }
 
