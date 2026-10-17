@@ -45,6 +45,11 @@ import {
   postChatbotSession,
   getChatbotSessions,
   deleteChatbotSession,
+  patchChatbotSession,
+  getChatbotWorkspaces,
+  postChatbotWorkspace,
+  patchChatbotWorkspace,
+  deleteChatbotWorkspace,
   postChatbotMessage,
   postChatbotMessageSteer,
   postChatbotUpload,
@@ -585,6 +590,13 @@ const createApp = async (app, schema) => {
   app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
   app.get(`${basePath}/chatbot/sessions`, getChatbotSessions);
   app.delete(`${basePath}/chatbot/sessions/:conversationId`, deleteChatbotSession);
+  // Rename a conversation or file it into (or out of) an XTM One workspace.
+  app.patch(`${basePath}/chatbot/sessions/:conversationId`, patchChatbotSession);
+  // XTM One workspaces, which the chat panel groups conversations into.
+  app.get(`${basePath}/chatbot/workspaces`, getChatbotWorkspaces);
+  app.post(`${basePath}/chatbot/workspaces`, postChatbotWorkspace);
+  app.patch(`${basePath}/chatbot/workspaces/:workspaceId`, patchChatbotWorkspace);
+  app.delete(`${basePath}/chatbot/workspaces/:workspaceId`, deleteChatbotWorkspace);
   app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
   app.post(`${basePath}/chatbot/messages/steer`, postChatbotMessageSteer);
   // Human-in-the-loop tool approval: the decision channel back into a turn
