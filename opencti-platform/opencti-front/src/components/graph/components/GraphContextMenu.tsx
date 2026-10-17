@@ -57,7 +57,7 @@ const GraphContextMenu = ({ anchor, label, sections, onClose, onReturnFocus, foc
         if (!open) onClose();
       }}
     >
-      {/* FDS-WORKAROUND #67: the library Menu opens from a trigger only, so a hidden one sits at the pointer - see fds-migration/LIBRARY-FEEDBACK.md #67 */}
+      {/* FDS-WORKAROUND #70: the library Menu opens from a trigger only, so a hidden one sits at the pointer - see fds-migration/LIBRARY-FEEDBACK.md #70 */}
       <MenuTrigger asChild>
         <span
           aria-hidden

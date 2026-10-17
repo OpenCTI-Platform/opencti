@@ -5,8 +5,9 @@ import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason }
 import { useTheme } from '@mui/material/styles';
 // fds:keep-mui gap #66 — paired with the Autocomplete above
 import TextField from '@mui/material/TextField';
-import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
+import { ClearOutlined, HighlightOffOutlined } from '@mui/icons-material';
+import { Chip, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent, useEffect, useRef } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { isStixObjectTypes } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../i18n';
@@ -14,6 +15,7 @@ import { useFilterEditorContext } from './FilterEditorContext';
 import FilterEntityOption from './FilterEntityOption';
 import useFilterEntityOptions from './useFilterEntityOptions';
 import { applyValueChange, AUTOCOMPLETE_KEY_ACTIONS, computeValueChange, getEditedValues, isChangeBlocked } from './filterEntityValueActions';
+import { onActivationKey } from '../../../utils/domEvent';
 
 export interface FilterEntityAutocompleteProps {
   filter?: Filter;
@@ -63,6 +65,15 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
     setInputValues,
   });
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Same as BasicFilterInput: the operator select is rendered before this field,
+  // so without focus on open the value takes an extra Tab to reach — and focusing
+  // it is also what triggers the first entity search (see `onFocus` below).
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
     const currentValues = getEditedValues(filter, subKey);
     const change = computeValueChange(currentValues, newValue.map((v) => v.value), reason);
@@ -71,6 +82,26 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
     }
     if (change.type === 'none' || isChangeBlocked(change, currentValues, disabled)) return;
     applyValueChange(change, { helpers, filter, subKey });
+  };
+
+  // Set while the clear button hands focus back to the input: that focus must not
+  // search again, it would read the input before React empties it.
+  const isRefocusingAfterClearRef = useRef(false);
+
+  const handleClearInputValue = () => {
+    setInputValue('');
+    triggerSearch({ target: { value: '' } } as unknown as SyntheticEvent);
+    // The clear button unmounts with the text it clears, and the Autocomplete root
+    // refocuses the input on any click inside it, right after this handler. Focus it
+    // first, flagged, so that refocus is a no-op instead of a search for the old text.
+    isRefocusingAfterClearRef.current = true;
+    inputRef.current?.focus();
+    isRefocusingAfterClearRef.current = false;
+  };
+
+  const handleInputFocus = (event: SyntheticEvent) => {
+    if (isRefocusingAfterClearRef.current) return;
+    triggerSearch(event);
   };
 
   return (
@@ -93,6 +124,10 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       noOptionsText={t_i18n('No available options')}
       options={options}
       disableClearable={disabled}
+      // Distinct icon + label from the "Clear search" button rendered in
+      // the input's endAdornment, since this one clears the whole selection.
+      clearText={t_i18n('Clear all')}
+      clearIcon={<ClearOutlined fontSize="small" />}
       groupBy={(option) => t_i18n(option?.group ? option?.group : label)}
       onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
         if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
@@ -134,9 +169,7 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
                 role="button"
                 tabIndex={0}
                 onClick={() => helpers?.handleSwitchLocalMode?.(filter)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') helpers?.handleSwitchLocalMode?.(filter);
-                }}
+                onKeyDown={onActivationKey(() => helpers?.handleSwitchLocalMode?.(filter))}
                 style={{
                   display: 'inline-block',
                   cursor: 'pointer',
@@ -157,31 +190,51 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       })}
       renderInput={(paramsInput) => (
         <TextField
-          role="search"
           {...paramsInput}
           slotProps={{
             input: {
               ...paramsInput.InputProps,
-              type: 'search',
-              endAdornment: isStixObjectTypes.includes(searchKey)
-                ? (
-                    <SearchScopeElement
-                      name={searchKey}
-                      searchScope={searchScope}
-                      setSearchScope={setSearchScope}
-                      availableRelationFilterTypes={availableRelationFilterTypes}
-                      additionalEntityTypes={filterKey === 'regardingOf' && subKey === 'id' ? ['External-Reference'] : undefined}
-                    />
-                  )
-                : paramsInput.InputProps.endAdornment,
+              // A real, focusable button instead of the native type="search"
+              // clear icon, which keyboard users cannot reach.
+              endAdornment: (
+                <>
+                  {inputValue && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton
+                          variant="default"
+                          priority="tertiary"
+                          size="sm"
+                          className="rounded-full text-default-secondary"
+                          onClick={handleClearInputValue}
+                          aria-label={t_i18n('Clear search')}
+                          icon={<HighlightOffOutlined fontSize="small" />}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t_i18n('Clear search')}</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {isStixObjectTypes.includes(searchKey)
+                    ? (
+                        <SearchScopeElement
+                          name={searchKey}
+                          searchScope={searchScope}
+                          setSearchScope={setSearchScope}
+                          availableRelationFilterTypes={availableRelationFilterTypes}
+                          additionalEntityTypes={filterKey === 'regardingOf' && subKey === 'id' ? ['External-Reference'] : undefined}
+                        />
+                      )
+                    : paramsInput.InputProps.endAdornment}
+                </>
+              ),
             },
           }}
           label={t_i18n(label)}
           variant="outlined"
           size="small"
           fullWidth={true}
-          autoFocus={true}
-          onFocus={triggerSearch}
+          inputRef={inputRef}
+          onFocus={handleInputFocus}
         />
       )}
       renderOption={(props, option) => {

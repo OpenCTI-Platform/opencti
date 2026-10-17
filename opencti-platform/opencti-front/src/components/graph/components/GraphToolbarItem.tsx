@@ -68,6 +68,7 @@ const GraphToolbarItem = ({
           // A disabled tool stays in the keyboard path of the toolbar, so that the reason can be read
           // (WAI-ARIA toolbar pattern); the library button has no focusable disabled state. Its own tab stop
           // serves outside the toolbar (the folded creation tools), the roving focus of the toolbar overrides it.
+          // FDS-WORKAROUND #68: a disabled IconButton cannot trigger its own tooltip - see fds-migration/LIBRARY-FEEDBACK.md #68
           <span
             role="button"
             tabIndex={0}
