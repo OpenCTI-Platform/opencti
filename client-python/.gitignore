@@ -1,7 +1,5 @@
 # pycti
-config.yml
 exports
-logs
 test.py
 test.json
 examples/*.json
@@ -9,7 +7,6 @@ examples/*.pdf
 Pipfile*
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
 *.py[cod]
 *$py.class
 
@@ -18,9 +15,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -52,7 +47,6 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-.cache
 nosetests.xml
 coverage.xml
 *.cover
@@ -64,7 +58,6 @@ cover/
 # Translations
 *.mo
 *.pot
-
 
 # Sphinx documentation
 docs/_build/
@@ -96,10 +89,7 @@ ipython_config.py
 __pypackages__/
 
 # Environments
-.env
-.venv
 env/
-venv/
 ENV/
 env.bak/
 venv.bak/
@@ -112,7 +102,6 @@ venv.bak/
 .ropeproject
 
 # mypy
-.mypy_cache/
 .dmypy.json
 dmypy.json
 
