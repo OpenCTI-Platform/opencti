@@ -65,6 +65,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { doYield } from '../utils/eventloop-utils';
+import { computeJsonPatch } from '../utils/json-patch';
 import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
 import { getStreamConsumerInformation } from '../modules/dataSharing/streamCollection-domain';
 
@@ -316,10 +317,14 @@ export const sendEventWithFilteredObjectRefs = async (
   client,
   eventToSend,
 ) => {
-  let objectsRefs = eventToSend.eventData.data.object_refs;
-  if (objectsRefs?.length > 0) {
+  const { data, context: eventContext } = eventToSend.eventData;
+  const isObjectRefsPatched = Array.isArray(eventContext?.patch) && Array.isArray(eventContext?.reverse_patch)
+    && eventContext.reverse_patch.some((operation) => operation.path === '/object_refs' || operation.path.startsWith('/object_refs/'));
+  const previous = isObjectRefsPatched ? jsonpatch.applyPatch(structuredClone(data), eventContext.reverse_patch).newDocument : undefined;
+  const objectsRefs = previous?.object_refs ? [...new Set([...(data.object_refs ?? []), ...previous.object_refs])] : (data.object_refs ?? []);
+  if (objectsRefs.length > 0) {
     const objectsRefsNotFoundInCache = objectsRefs.filter((ref) => !cache.has(ref));
-    const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache?.length > 0
+    const objectRefsAccessibleNotFoundInCache = objectsRefsNotFoundInCache.length > 0
       ? (await elFindByIds(
           context,
           user,
@@ -327,8 +332,16 @@ export const sendEventWithFilteredObjectRefs = async (
           { baseData: true, baseFields: ['internal_id', 'standard_id'], indices: READ_STIX_INDICES, toMap: true, mapWithAllIds: true })
         )
       : {};
-    objectsRefs = objectsRefs.filter((ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined);
-    eventToSend.eventData.data.object_refs = objectsRefs;
+    const isAccessibleRef = (ref) => cache.has(ref) || objectRefsAccessibleNotFoundInCache[ref] !== undefined;
+    if (data.object_refs?.length > 0) {
+      data.object_refs = data.object_refs.filter(isAccessibleRef);
+    }
+    if (previous && !objectsRefs.every(isAccessibleRef)) {
+      if (previous.object_refs?.length > 0) {
+        previous.object_refs = previous.object_refs.filter(isAccessibleRef);
+      }
+      eventToSend.eventData.context = { ...eventContext, patch: computeJsonPatch(previous, data), reverse_patch: computeJsonPatch(data, previous) };
+    }
   }
   return client.sendEvent(eventToSend.eventId, eventToSend.eventType, eventToSend.eventData);
 };
