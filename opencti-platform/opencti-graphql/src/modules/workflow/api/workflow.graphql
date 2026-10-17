@@ -48,6 +48,42 @@ type WorkflowEntityRef {
     entity_type: String!
 }
 
+type WorkflowMigrationDiagnostic {
+    type: String!
+    message: String!
+    statusId: String
+}
+
+# Unlike WorkflowSerializedState, a migrated state carries a fully-computed, sequential `order`
+# (its final rank in the migrated sequence) — real workflow definitions have no ordering concept
+# of their own (order is inferred from the transition graph), so this is specific to the
+# legacy-Status migration preview.
+type WorkflowMigrationState {
+    statusId: String!
+    order: Int!
+}
+
+# One result per StatusScope present in the entity type's current legacy Status set (never a
+# single merged/blended definition across scopes, see convertStatusToDefinition in
+# status-to-definition-converter.ts).
+type WorkflowMigrationScopeResult {
+    scope: StatusScope!
+    initialState: String!
+    # Always false: this is a read-only, unpersisted preview. Kept here so the shape already
+    # matches a real WorkflowSchema for a smoother transition once an actual migration persists it.
+    published: Boolean!
+    hasPublishedVersion: Boolean!
+    states: [WorkflowMigrationState!]!
+    transitions: [WorkflowSerializedTransition!]!
+    diagnostics: [WorkflowMigrationDiagnostic!]!
+}
+
+type WorkflowMigrationPreview {
+    entityType: String!
+    results: [WorkflowMigrationScopeResult!]!
+}
+
+
 extend type EntitySetting {
     workflow_configuration: Boolean
     workflow_id: String
@@ -144,6 +180,7 @@ extend type DraftWorkspace {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]! @auth(for: [BYPASS])
@@ -152,6 +189,8 @@ extend type Query {
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    # One-shot migration of the legacy GLOBAL Status set into a workflow; fails if a workflow already exists unless overwrite is true.
+    workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])

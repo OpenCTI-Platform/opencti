@@ -1,14 +1,17 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
+import { buildWorkflowMigrationPreviewResult } from '../migration/status-to-definition-converter';
 import {
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
   getWorkflowDefinition,
   getWorkflowInstance,
+  getWorkflowMigrationPreview,
   getWorkflowPublishedVersionId,
   hasPublishedWorkflowDefinition,
+  migrateWorkflowFromStatuses,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
@@ -31,6 +34,10 @@ const workflowResolvers = {
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
     },
+    workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      const { byScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
+      return buildWorkflowMigrationPreviewResult(entityType, byScope);
+    },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);
     },
@@ -44,6 +51,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowMigrate: (_: any, { entityType, publish = false, overwrite = false }: { entityType: string; publish?: boolean; overwrite?: boolean }, context: AuthContext) => {
+      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite);
     },
     workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return restorePublishedWorkflowDefinition(context, context.user!, entityType);
