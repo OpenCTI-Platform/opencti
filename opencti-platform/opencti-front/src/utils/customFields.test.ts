@@ -8,6 +8,10 @@ import {
   CustomFieldStoredValue,
   CustomFieldValue,
   customFieldDefinitionsToWidgetColumns,
+  customFieldValueToTaskValues,
+  getCustomFieldDefinitionsOfTypes,
+  getTaskTargetedTypes,
+  taskValuesToCustomFieldValue,
   getCustomFieldLabelFromFilterKeysSchema,
   getCustomFieldCurrentValue,
   getCustomFieldDisplayValue,
@@ -275,5 +279,42 @@ describe('getCustomFieldLabelFromFilterKeysSchema', () => {
 
   it('should return the technical name if the custom field is unknown for these entity types', () => {
     expect(getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, ['Report'], 'x_opencti_cf_note')).toEqual('x_opencti_cf_note');
+  });
+});
+
+describe('custom fields in background tasks', () => {
+  const definitions = [
+    { name: 'x_opencti_cf_note', entity_types: ['Case-Incident', 'Report'] },
+    { name: 'x_opencti_cf_level', entity_types: ['Case-Incident'] },
+    { name: 'x_opencti_cf_rel', entity_types: ['stix-core-relationship'] },
+  ];
+  const isRelationship = (type: string) => type === 'targets';
+
+  it('keeps the custom fields carried by every targeted type', () => {
+    expect(getCustomFieldDefinitionsOfTypes(definitions, ['Case-Incident', 'Report'], isRelationship).map((d) => d.name)).toEqual(['x_opencti_cf_note']);
+    expect(getCustomFieldDefinitionsOfTypes(definitions, ['targets'], isRelationship).map((d) => d.name)).toEqual(['x_opencti_cf_rel']);
+    expect(getCustomFieldDefinitionsOfTypes(definitions, ['Stix-Domain-Object'], isRelationship)).toEqual([]);
+  });
+
+  it('converts a custom field value to task values and back', () => {
+    expect(customFieldValueToTaskValues(['a', 'b'])).toEqual(['a', 'b']);
+    expect(customFieldValueToTaskValues(false)).toEqual(['false']);
+    expect(customFieldValueToTaskValues('')).toEqual([]);
+    expect(taskValuesToCustomFieldValue('multi_select', ['a'])).toEqual(['a']);
+    expect(taskValuesToCustomFieldValue('boolean', ['true'])).toBe(true);
+    expect(taskValuesToCustomFieldValue('integer', undefined)).toBe('');
+  });
+});
+
+describe('getTaskTargetedTypes', () => {
+  it('uses the types of the selected rows for a manual selection', () => {
+    const selected = [{ entity_type: 'Malware' }, { entity_type: 'Malware' }, { entity_type: 'Case-Incident' }];
+    expect(getTaskTargetedTypes(false, selected, ['Stix-Domain-Object'], ['Stix-Domain-Object'])).toEqual(['Malware', 'Case-Incident']);
+  });
+
+  it('uses the filtered types, or else the list types, when everything is selected', () => {
+    expect(getTaskTargetedTypes(true, [], ['Malware'], ['Stix-Domain-Object'])).toEqual(['Malware']);
+    expect(getTaskTargetedTypes(true, [], [], ['Case-Incident'])).toEqual(['Case-Incident']);
+    expect(getTaskTargetedTypes(true, [], [], undefined)).toEqual([]);
   });
 });
