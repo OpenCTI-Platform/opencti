@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getSessionStorageItem, setSessionStorageItem } from '../sessionStorage';
+import { getXtmHubOrigin } from '../xtm-hub-client';
 
 const XTM_HUB_USER_PLATFORM_TOKEN_KEY = 'XTM_HUB_USER_PLATFORM_TOKEN_KEY';
 
@@ -7,8 +8,9 @@ interface Return {
   userPlatformToken: string | null;
 }
 
-const useXtmHubUserPlatformToken = (): Return => {
+const useXtmHubUserPlatformToken = (hubUrl?: string | null): Return => {
   const [token, setToken] = useState<string | null>(null);
+  const hubOrigin = getXtmHubOrigin(hubUrl);
   const onMessage = (event: MessageEvent) => {
     const { action, token: newToken } = event.data;
     if (action === 'set-token') {
@@ -19,7 +21,7 @@ const useXtmHubUserPlatformToken = (): Return => {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === window.opener && onMessage) {
+      if (event.source === window.opener && event.origin === hubOrigin) {
         onMessage(event);
       }
     };
@@ -28,7 +30,7 @@ const useXtmHubUserPlatformToken = (): Return => {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [hubOrigin]);
 
   useEffect(() => {
     if (token) {
@@ -38,10 +40,10 @@ const useXtmHubUserPlatformToken = (): Return => {
     const tokenFromStorage = getSessionStorageItem<string>(XTM_HUB_USER_PLATFORM_TOKEN_KEY);
     if (tokenFromStorage) {
       setToken(tokenFromStorage);
-    } else {
-      window.opener?.postMessage({ action: 'refresh-token' }, '*');
+    } else if (hubOrigin) {
+      window.opener?.postMessage({ action: 'refresh-token' }, hubOrigin);
     }
-  }, [token]);
+  }, [token, hubOrigin]);
 
   return {
     userPlatformToken: token,
