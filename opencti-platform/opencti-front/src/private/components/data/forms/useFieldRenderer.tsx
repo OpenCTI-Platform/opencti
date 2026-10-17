@@ -165,7 +165,13 @@ const useFieldRenderer = ({
     }
 
     return (
-      <Stack key={field.id} className={classes.fieldGroup} gap={1}>
+      <Stack
+        key={field.id}
+        className={classes.fieldGroup}
+        sx={{
+          gap: 1,
+        }}
+      >
         <div className={classes.fieldHeader}>
           <Typography className={classes.fieldTitle}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
@@ -204,7 +210,10 @@ const useFieldRenderer = ({
           </div>
         </div>
 
-        <Stack gap={2}>
+        <Stack sx={{
+          gap: 2,
+        }}
+        >
 
           <Select
             value={field.attributeMapping.attributeName}
@@ -367,7 +376,14 @@ const useFieldRenderer = ({
               <div>
                 <Typography variant="caption" style={{ marginRight: 20 }}>{t_i18n('Options')}</Typography>
                 {field.options?.map((option, optIndex) => (
-                  <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
+                  <Box
+                    key={optIndex}
+                    style={{ marginTop: 10 }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
                     <TextField
                       variant="outlined"
                       label={t_i18n('Label')}

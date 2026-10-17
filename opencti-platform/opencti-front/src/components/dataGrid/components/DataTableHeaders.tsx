@@ -3,7 +3,7 @@ import { DragIndicatorOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello-pangea/dnd';
 import MenuItem from '@mui/material/MenuItem';
-import { PopoverProps } from '@mui/material/Popover/Popover';
+import { PopoverProps } from '@mui/material/Popover';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY } from '@components/SearchBulkUnknownEntities';

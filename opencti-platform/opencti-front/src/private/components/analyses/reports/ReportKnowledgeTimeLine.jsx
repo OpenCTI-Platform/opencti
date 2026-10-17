@@ -77,8 +77,10 @@ const ReportKnowledgeTimeLineComponent = ({
           return (
             <TimelineItem key={node.id}>
               <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
+                sx={{
+                  color: 'text.secondary',
+                  paddingTop: '18px',
+                }}
               >
                 {fldt(node[dateAttribute])}
                 {displayRelationships && (

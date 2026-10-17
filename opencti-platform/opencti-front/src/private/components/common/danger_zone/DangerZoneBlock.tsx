@@ -43,7 +43,15 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
   if (isSensitive) {
     currentTitle = (
       // The chip must never shrink, so the title is the one that clips.
-      <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0, maxWidth: '100%' }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          minWidth: 0,
+          maxWidth: '100%',
+        }}
+      >
         <Box
           component="span"
           title={typeof title === 'string' ? title : undefined}

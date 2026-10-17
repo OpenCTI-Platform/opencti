@@ -280,12 +280,20 @@ const TasksList = ({ data, options }) => {
                       </Grid>
                     )}
                     <Grid item xs={12}>
-                      <Stack gap={1}>
+                      <Stack sx={{
+                        gap: 1,
+                      }}
+                      >
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                         </Typography>
                         {task.task_search && (
-                          <Stack direction="row" gap={1}>
+                          <Stack
+                            direction="row"
+                            sx={{
+                              gap: 1,
+                            }}
+                          >
                             <Tag
                               label={`${t_i18n('Search')}: ${task.task_search}`}
                             />
@@ -320,7 +328,10 @@ const TasksList = ({ data, options }) => {
                       </Stack>
                     </Grid>
                     <Grid item xs={12}>
-                      <Stack gap={1}>
+                      <Stack sx={{
+                        gap: 1,
+                      }}
+                      >
                         <Typography variant="h3" gutterBottom={true}>
                           {t_i18n('Actions')}
                         </Typography>
@@ -335,8 +346,10 @@ const TasksList = ({ data, options }) => {
                               <Stack
                                 key={task.actions.indexOf(action)}
                                 direction="row"
-                                gap={1}
-                                flexWrap="wrap"
+                                sx={{
+                                  gap: 1,
+                                  flexWrap: 'wrap',
+                                }}
                               >
                                 <Tag
                                   label={action.type}

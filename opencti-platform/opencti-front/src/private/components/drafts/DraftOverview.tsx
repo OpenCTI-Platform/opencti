@@ -20,7 +20,12 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
   return (
     <>
       {canEdit && (
-        <Stack direction="row" justifyContent="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'flex-end',
+          }}
+        >
           <DraftEdition draftId={draft.id} overviewData={draft} />
         </Stack>
       )}

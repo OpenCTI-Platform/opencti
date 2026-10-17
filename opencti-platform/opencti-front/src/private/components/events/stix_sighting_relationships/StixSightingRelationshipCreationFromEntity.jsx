@@ -311,7 +311,12 @@ const StixSightingRelationshipCreationFromEntity = ({
   const renderSelectEntity = () => {
     const hasObservableResults = targetStixCyberObservableTypes?.length > 0;
     return (
-      <Stack gap={2} sx={{ height: '100%' }}>
+      <Stack
+        sx={{
+          gap: 2,
+          height: '100%',
+        }}
+      >
         {hasObservableResults && (
           <Alert
             severity="info"

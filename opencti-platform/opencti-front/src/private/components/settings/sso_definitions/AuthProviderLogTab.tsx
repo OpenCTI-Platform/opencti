@@ -278,7 +278,13 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
         size="large"
         header={
           detailsOpen !== null && authLogHistory.length > 0 ? (
-            <Stack direction="row" alignItems="center" gap={0.5}>
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
               <Tooltip title={t_i18n('Previous log')}>
                 <span>
                   <IconButton
@@ -322,17 +328,23 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
         {detailsOpen !== null ? (
           <Stack
             sx={{
+              gap: 2,
               flex: 1,
               minHeight: 0,
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
             }}
-            gap={2}
           >
             <Box sx={{ flexShrink: 0 }}>
               <Label>{t_i18n('Timestamp')}</Label>
-              <Typography variant="body1" gutterBottom fontFamily="monospace">
+              <Typography
+                variant="body1"
+                gutterBottom
+                sx={{
+                  fontFamily: 'monospace',
+                }}
+              >
                 {formatTimestamp(detailsOpen.entry.timestamp) || EMPTY_VALUE}
               </Typography>
             </Box>

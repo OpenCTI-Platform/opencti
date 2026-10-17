@@ -121,7 +121,13 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   };
 
   const Info = (props: { title: string; value: string }) => (
-    <Stack direction="row" gap={1} alignItems="center">
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+        alignItems: 'center',
+      }}
+    >
       <Typography
         variant="h4"
         sx={{
@@ -151,12 +157,14 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
     <Card to={cardLink}>
       <CardContent sx={{ p: 0 }}>
         <Stack
-          flexWrap="nowrap"
-          overflow="hidden"
           direction="row"
-          gap={1}
-          mb={2}
-          width="100%"
+          sx={{
+            flexWrap: 'nowrap',
+            overflow: 'hidden',
+            gap: 1,
+            mb: 2,
+            width: '100%',
+          }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderCardTitle(cardData)}

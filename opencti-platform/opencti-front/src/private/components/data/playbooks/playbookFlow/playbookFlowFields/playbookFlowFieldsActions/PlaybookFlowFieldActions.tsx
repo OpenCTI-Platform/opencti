@@ -177,7 +177,10 @@ const PlaybookFlowFieldActions = ({
             );
           })}
 
-          <Stack alignItems="center">
+          <Stack sx={{
+            alignItems: 'center',
+          }}
+          >
             <Button
               variant="tertiary"
               color="secondary"

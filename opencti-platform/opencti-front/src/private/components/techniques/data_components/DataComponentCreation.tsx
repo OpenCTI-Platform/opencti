@@ -368,7 +368,13 @@ const DataComponentCreation: FunctionComponent<{
         open={open}
         onClose={handleClose}
         title={(
-          <Stack direction="row" justifyContent="space-between" alignContent="center">
+          <Stack
+            direction="row"
+            sx={{
+              justifyContent: 'space-between',
+              alignContent: 'center',
+            }}
+          >
             {t_i18n('Create a data component')}
             <BulkTextModalButton onClick={() => setBulkOpen(true)} />
           </Stack>

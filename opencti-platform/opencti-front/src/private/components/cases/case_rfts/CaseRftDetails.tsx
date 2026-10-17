@@ -85,7 +85,13 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               {t_i18n('Request for takedown types')}
             </Label>
             <FieldOrEmpty source={takedownTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {takedownTypes.map((takedownType) => (
                   <Tag
                     key={takedownType}

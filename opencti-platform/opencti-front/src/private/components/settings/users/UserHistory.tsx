@@ -82,8 +82,20 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     <Card
       title={t_i18n('History')}
       action={(
-        <Stack direction="row" gap={1} alignItems="center">
-          <Stack direction="row" alignItems="center" gap={0.5}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            alignItems: 'center',
+          }}
+        >
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
             <Tooltip title={t_i18n('View all entities created by user')}>
               <IconButton
                 component={Link}

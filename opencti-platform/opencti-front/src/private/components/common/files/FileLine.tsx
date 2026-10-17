@@ -280,8 +280,10 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         secondaryAction={(
           <Stack
             direction="row"
-            alignItems="center"
-            gap={0.5}
+            sx={{
+              alignItems: 'center',
+              gap: 0.5,
+            }}
           >
             {!isProgress && !isFail && !isOutdated && (
               <Box sx={{ width: 100, display: 'flex', justifyContent: 'center' }}>

@@ -73,10 +73,10 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed =
   return (
     <Stack
       direction="row"
-      alignItems="center"
-      gap={1.25}
       onClick={onToggleCollapse}
       sx={{
+        alignItems: 'center',
+        gap: 1.25,
         marginBottom: collapsed ? 0 : 1.5,
         ...(onToggleCollapse && {
           cursor: 'pointer',
@@ -182,9 +182,9 @@ export const MarketplaceEmptyState = ({ hasActiveFilters, onResetFilters, extraA
   const { t_i18n } = useFormatter();
   return (
     <Stack
-      justifyContent="center"
-      alignItems="center"
       sx={{
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight: '40vh',
       }}
     >
@@ -196,14 +196,25 @@ export const MarketplaceEmptyState = ({ hasActiveFilters, onResetFilters, extraA
         gap: 4,
       }}
       >
-        <Stack flexDirection="row" alignItems="flex-start" gap={1}>
+        <Stack
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 1,
+          }}
+        >
           <GradientCard.Icon icon={Search} size="large" />
           <Stack>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
             <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the ecosystem.')}</GradientCard.Text>
           </Stack>
         </Stack>
-        <Stack direction="row" gap={2}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 2,
+          }}
+        >
           {hasActiveFilters && (
             <Button variant="secondary" onClick={onResetFilters}>
               {t_i18n('Reset filters')}

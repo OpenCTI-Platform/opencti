@@ -353,7 +353,10 @@ class StixSightingRelationshipContainer extends Component {
                 </div>
               </Link>
               <Divider sx={{ my: 2 }} />
-              <Stack gap={2}>
+              <Stack sx={{
+                gap: 2,
+              }}
+              >
                 <div>
                   <Label>
                     {t('Description')}

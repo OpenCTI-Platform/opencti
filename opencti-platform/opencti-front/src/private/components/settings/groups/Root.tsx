@@ -90,7 +90,14 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
               { label: group.name, current: true },
             ]}
           />
-          <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              paddingRight: '200px',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {group.name}
             </TitleMainEntity>

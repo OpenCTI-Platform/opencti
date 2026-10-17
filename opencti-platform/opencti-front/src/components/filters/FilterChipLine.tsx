@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
@@ -267,10 +267,10 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
               }
             >
               <Stack
-                alignItems="center"
                 direction="row"
-                gap={0.5}
                 sx={{
+                  alignItems: 'center',
+                  gap: 0.5,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}

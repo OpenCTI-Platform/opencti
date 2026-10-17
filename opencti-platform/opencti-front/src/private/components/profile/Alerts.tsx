@@ -172,7 +172,12 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
   };
 
   return (
-    <Stack direction="row" alignItems="center">
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+      }}
+    >
       <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
         <IconButton
           disabled={updating}

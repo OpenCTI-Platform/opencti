@@ -393,7 +393,12 @@ const StixCoreRelationshipCreationFromRelation = ({
                 );
           }}
         />
-        <Stack direction="row" alignSelf="flex-end">
+        <Stack
+          direction="row"
+          sx={{
+            alignSelf: 'flex-end',
+          }}
+        >
           <StixDomainObjectCreation
             display={open}
             inputValue={search}

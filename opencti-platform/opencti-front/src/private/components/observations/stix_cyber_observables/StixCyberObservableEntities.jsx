@@ -210,7 +210,12 @@ class StixCyberObservableEntities extends Component {
         <Card
           title={t('Relations')}
           action={(
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity
                   paginationOptions={paginationOptions}

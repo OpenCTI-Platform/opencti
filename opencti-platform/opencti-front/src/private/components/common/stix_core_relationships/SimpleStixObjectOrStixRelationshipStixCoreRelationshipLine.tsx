@@ -661,9 +661,20 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <Stack direction="row" gap={0.5} alignItems="center" className={classes.bodyItemText}>
+                <Stack
+                  direction="row"
+                  className={classes.bodyItemText}
+                  sx={{
+                    gap: 0.5,
+                    alignItems: 'center',
+                  }}
+                >
                   <Tooltip title={element.representative?.main}>
-                    <Typography fontSize={13}>{element.representative?.main}</Typography>
+                    <Typography sx={{
+                      fontSize: 13,
+                    }}
+                    >{element.representative?.main}
+                    </Typography>
                   </Tooltip>
                   {element.draftVersion && (<DraftChip />)}
                 </Stack>

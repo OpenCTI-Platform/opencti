@@ -108,7 +108,13 @@ const renderByAttributeType = (
       if (!list?.length) return empty();
       return (
         <FieldOrEmpty source={list}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {list.map((item) => <Tag key={item} label={item} />)}
           </Stack>
         </FieldOrEmpty>
@@ -203,7 +209,13 @@ const renderAttributeValue = (
       if (rawValue.length === 0) return empty();
       return (
         <FieldOrEmpty source={rawValue}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {rawValue.map((item) => <Tag key={item} label={item} />)}
           </Stack>
         </FieldOrEmpty>
@@ -247,7 +259,13 @@ const renderAttributeValue = (
       const labels = getField<{ id: string; value: string; color: string }[]>(data, 'objectLabel');
       return (
         <FieldOrEmpty source={labels}>
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {labels?.map((label) => (
               <RawTag key={label.id} label={label.value} color={label.color} />
             ))}
@@ -302,7 +320,13 @@ const renderAttributeValue = (
       if (objectArr) {
         if (objectArr.length === 0) return empty();
         return (
-          <Stack direction="row" flexWrap="wrap" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
             {objectArr.map((item, i) => (
               <Tag key={i} label={String(item.name ?? item.value ?? item)} />
             ))}
@@ -315,7 +339,13 @@ const renderAttributeValue = (
         if (stringArr.length === 0) return empty();
         return (
           <FieldOrEmpty source={stringArr}>
-            <Stack direction="row" flexWrap="wrap" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                flexWrap: 'wrap',
+                gap: 1,
+              }}
+            >
               {stringArr.map((item) => <Tag key={item} label={item} />)}
             </Stack>
           </FieldOrEmpty>
