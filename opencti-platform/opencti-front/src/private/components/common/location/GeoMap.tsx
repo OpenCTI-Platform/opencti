@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, type ReactNode } from 'react';
+import { lazy, Suspense, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTheme } from '@mui/material/styles';
 import * as maplibre from 'maplibre-gl';
 import type { StyleSpecification } from 'maplibre-gl';
@@ -9,6 +9,17 @@ import { APP_BASE_PATH } from '../../../../relay/environment';
 import { isValidCoordinates } from '../../../../utils/position.utils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { loadCountries, type CountriesCollection } from './countries';
+
+const GeoMapFallback = lazy(() => import('./GeoMapFallback'));
+const MAP_RENDERER_STORAGE_KEY = 'opencti-map-renderer';
+
+const isFallbackForced = () => {
+  try {
+    return localStorage.getItem(MAP_RENDERER_STORAGE_KEY) === 'fallback';
+  } catch {
+    return false;
+  }
+};
 
 // Configure MapLibre worker URL (must be set before creating any Map)
 maplibre.setWorkerUrl(maplibreglWorker);
@@ -211,6 +222,7 @@ const GeoMap = ({
   const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isFallbackRendered, setIsFallbackRendered] = useState(isFallbackForced);
 
   useEffect(() => {
     if (!containerRef.current) return undefined;
@@ -220,15 +232,24 @@ const GeoMap = ({
     const pmtilesUrl = `pmtiles://${window.location.origin}${APP_BASE_PATH}/maps/world.pmtiles`;
     const style = buildMapStyle(pmtilesUrl, dark, mapLang);
 
-    const map = new maplibre.Map({
-      container: containerRef.current,
-      style,
-      center: [resolvedCenter.longitude, resolvedCenter.latitude],
-      zoom: zoom - 1,
-      attributionControl: false,
-      interactive: true,
-      canvasContextAttributes: { preserveDrawingBuffer: true },
-    });
+    let map: maplibre.Map;
+    try {
+      map = new maplibre.Map({
+        container: containerRef.current,
+        style,
+        center: [resolvedCenter.longitude, resolvedCenter.latitude],
+        zoom: zoom - 1,
+        attributionControl: false,
+        interactive: true,
+        canvasContextAttributes: { preserveDrawingBuffer: true },
+      });
+    } catch (error) {
+      if (error instanceof maplibre.GPUInitializationError) {
+        setIsFallbackRendered(true);
+        return undefined;
+      }
+      throw error;
+    }
     map.scrollZoom.setWheelZoomRate(WHEEL_ZOOM_RATE);
 
     let released = false;
@@ -254,7 +275,13 @@ const GeoMap = ({
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <Card padding="none" title={title}>
-        <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: 300, borderRadius: 6 }} />
+        {isFallbackRendered ? (
+          <Suspense fallback={<div style={{ minHeight: 300 }} />}>
+            <GeoMapFallback zoom={zoom} center={center} countries={countries} markers={markers} />
+          </Suspense>
+        ) : (
+          <div ref={containerRef} style={{ width: '100%', height: '100%', minHeight: 300, borderRadius: 6 }} />
+        )}
       </Card>
     </div>
   );
