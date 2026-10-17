@@ -2,7 +2,7 @@
 // These mutations update the Settings entity AND trigger live re-registration
 // of the corresponding authentication provider.
 
-import { patchAttribute } from '../database/middleware';
+import { loadEntity, patchAttribute } from '../database/middleware';
 import { publishUserAction } from '../listener/UserActionListener';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -20,7 +20,8 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
+import { FunctionalError } from '../config/errors';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
@@ -55,6 +56,78 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
+// Values returned for the local authentication lockout policy when the settings hold none
+export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
+  local_auth_lockout_enabled: false,
+  local_auth_lockout_max_attempts: 5,
+  local_auth_lockout_window: 1440, // minutes, 24h
+  local_auth_lockout_duration: 15, // minutes
+  local_auth_lockout_max_duration: 180, // minutes, 3h
+};
+
+// Upper bounds of the lockout policy, mirrored by the local strategy form
+export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
+export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
+export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = 180; // minutes, locks are capped to 3h by the specification
+
+const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
+  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
+    return {};
+  }
+  const patch = {
+    ...(input.local_auth_lockout_enabled !== undefined && { local_auth_lockout_enabled: input.local_auth_lockout_enabled }),
+    ...(input.local_auth_lockout_max_attempts !== undefined && { local_auth_lockout_max_attempts: input.local_auth_lockout_max_attempts }),
+    ...(input.local_auth_lockout_window !== undefined && { local_auth_lockout_window: input.local_auth_lockout_window }),
+    ...(input.local_auth_lockout_duration !== undefined && { local_auth_lockout_duration: input.local_auth_lockout_duration }),
+    ...(input.local_auth_lockout_max_duration !== undefined && { local_auth_lockout_max_duration: input.local_auth_lockout_max_duration }),
+  };
+  // Leaving the values untouched or disabling the lockout never checks them, so stored values cannot block other local auth updates
+  const changesValues = Object.keys(patch).some((key) => key !== 'local_auth_lockout_enabled');
+  if (!changesValues && patch.local_auth_lockout_enabled !== true) {
+    return patch;
+  }
+  // Validate the values the settings will hold once patched (a null input falls back to the default)
+  // Stored values are read from the database, as the settings cache can lag behind a previous update
+  const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration' | 'local_auth_lockout_max_duration') => {
+    const value = key in patch ? input[key] : storedSettings?.[key];
+    return value ?? LOCAL_AUTH_LOCKOUT_DEFAULTS[key];
+  };
+  const maxAttempts = effectiveValue('local_auth_lockout_max_attempts');
+  const lockoutWindow = effectiveValue('local_auth_lockout_window');
+  const duration = effectiveValue('local_auth_lockout_duration');
+  const maxDuration = effectiveValue('local_auth_lockout_max_duration');
+  if (maxAttempts < 1) {
+    throw FunctionalError('Lockout max attempts must be greater than or equal to 1', { local_auth_lockout_max_attempts: maxAttempts });
+  }
+  if (maxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
+    throw FunctionalError(`Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
+  }
+  if (lockoutWindow <= 0) {
+    throw FunctionalError('Lockout window must be greater than 0', { local_auth_lockout_window: lockoutWindow });
+  }
+  if (duration <= 0) {
+    throw FunctionalError('Lockout duration must be greater than 0', { local_auth_lockout_duration: duration });
+  }
+  if (maxDuration <= 0) {
+    throw FunctionalError('Lockout max duration must be greater than 0', { local_auth_lockout_max_duration: maxDuration });
+  }
+  if (lockoutWindow > LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT) {
+    throw FunctionalError(`Lockout window must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`, { local_auth_lockout_window: lockoutWindow });
+  }
+  // The duration is capped too, as it cannot exceed the max duration
+  if (maxDuration > LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT) {
+    throw FunctionalError(`Lockout max duration must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`, { local_auth_lockout_max_duration: maxDuration });
+  }
+  if (duration > maxDuration) {
+    throw FunctionalError('Lockout duration must be lower than or equal to lockout max duration', {
+      local_auth_lockout_duration: duration,
+      local_auth_lockout_max_duration: maxDuration,
+    });
+  }
+  return patch;
+};
+
 export const updateLocalAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: LocalAuthConfigInput) => {
   // Read previous validity days before patching
   const currentSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -70,6 +143,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
     ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
     ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
+    ...(await buildLocalAuthLockoutPatch(context, input)),
   };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
 
