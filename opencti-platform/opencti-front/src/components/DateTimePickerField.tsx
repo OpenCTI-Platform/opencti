@@ -5,7 +5,8 @@ import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { FieldProps, useField } from 'formik';
 import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
-import { parse } from '../utils/Time';
+import { PickerChangeHandlerContext } from '@mui/x-date-pickers/models';
+import { isAcceptedFromView, parse } from '../utils/Time';
 
 const dateTimeFormatsMap: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm',
@@ -54,7 +55,11 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const defaultEmpty = null;
   const internalOnAccept = React.useCallback(
-    (date: Date) => {
+    (date: Date, context: PickerChangeHandlerContext<unknown>) => {
+      // Typed values are applied on blur.
+      if (!isAcceptedFromView(context)) {
+        return;
+      }
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, date.toISOString());
@@ -95,6 +100,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   if (withSeconds) {
     return (
       <DateTimePicker
+        enableAccessibleFieldDOMStructure={false}
         {...fieldToDateTimePicker(props)}
         value={parsedValue}
         variant="inline"
@@ -124,6 +130,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   }
   return (
     <DateTimePicker
+      enableAccessibleFieldDOMStructure={false}
       {...fieldToDateTimePicker(props)}
       value={parsedValue} // Ensuring Date type
       variant="inline"

@@ -1,6 +1,6 @@
 import IconButton from '@common/button/IconButton';
 import { RestartAlt } from '@mui/icons-material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';

@@ -39,7 +39,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
 
   return (
     <Grid container>
-      <Grid item xs={12}>
+      <Grid size={12}>
         { !isTextView ? (
           <ImportFilesDropzone
             fullSize={files.length === 0}
@@ -58,7 +58,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
         )}
       </Grid>
 
-      <Grid item xs={12}>
+      <Grid size={12}>
         <ImportFilesList connectorsForImport={connectorsForImport} />
       </Grid>
     </Grid>

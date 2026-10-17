@@ -46,7 +46,7 @@ const CustomFieldValuesDisplay: FunctionComponent<CustomFieldValuesDisplayProps>
       {values.map((value) => {
         const displayValue = getCustomFieldDisplayValue(value, { t_i18n, fldt });
         return (
-          <Grid item xs={6} key={value.field_id}>
+          <Grid key={value.field_id} size={6}>
             <Label>{getCustomFieldLabel(value, definitions)}</Label>
             <FieldOrEmpty source={displayValue}>
               <Tag label={displayValue} />

@@ -77,7 +77,7 @@ const AuthenticationGlobalSettingsContent = () => {
     >
       <Form>
         <Grid container spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Card title={t_i18n('Two-factor authentication')}>
               <Field
                 component={SwitchField}
@@ -91,7 +91,7 @@ const AuthenticationGlobalSettingsContent = () => {
               />
             </Card>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Card title={t_i18n('Sessions')}>
               <Field
                 component={TextField}

@@ -6,6 +6,7 @@ import { CalendarIcon } from '@mui/x-date-pickers/icons';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
+import { isAcceptedFromView } from '../../utils/Time';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface RelativeDateInputProps {
@@ -137,12 +138,17 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     return (
       <div style={{ display: 'flex', flex: 1, minWidth: 0, alignItems: 'center' }}>
         <DateTimePicker
+          enableAccessibleFieldDOMStructure={false}
           label={label}
           value={new Date(committedValue)}
           onChange={(value) => {
             pendingDate.current = value && !Number.isNaN(value.getTime()) ? value : null;
           }}
-          onAccept={(value) => {
+          onAccept={(value, context) => {
+            // Typed values are applied on blur.
+            if (!isAcceptedFromView(context)) {
+              return;
+            }
             pendingDate.current = null;
             if (value) {
               handleChangeRangeDateFilter(value.toISOString());
@@ -215,6 +221,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       {isDatePickerOpen && (
         <div style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }} aria-hidden>
           <DateTimePicker
+            enableAccessibleFieldDOMStructure={false}
             open={isDatePickerOpen}
             onClose={() => setIsDatePickerOpen(false)}
             onAccept={handleChangeAbsoluteDateFilter}

@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import PirThreatMap from './pir_threat_map/PirThreatMap';
 import { pirHistoryFilterGroup } from '../pir-history-utils';

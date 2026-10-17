@@ -142,7 +142,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     >
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Formik
             onSubmit={() => {
             }}
@@ -153,7 +153,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             {({ values, setFieldValue }) => (
               <Form>
                 <Grid container={true} spacing={3}>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <DangerZoneBlock
                       type="platform_organization"
                       title={<>{t_i18n('Platform main organization')} <EEChip /></>}
@@ -231,7 +231,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   <GroupSetDefaultGroupForIngestionUsers />
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Card title={t_i18n('Users visibility')}>
                       <Alert severity="info" variant="outlined">
                         {t_i18n('This option is automatically disabled when a platform organization is set.')}
@@ -247,7 +247,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Card>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
                         component={SelectFieldFds}
@@ -279,7 +279,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   {/* Full width: Login messages */}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Card title={t_i18n('Login messages')}>
                       <Field
                         component={MarkdownField}
@@ -314,7 +314,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   {/* Full width: Platform error messages */}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Card title={t_i18n('Platform error messages')}>
                       <Field
                         component={MarkdownField}

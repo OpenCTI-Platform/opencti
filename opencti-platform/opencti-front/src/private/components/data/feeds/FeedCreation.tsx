@@ -703,7 +703,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                         </Box>
                                         {isNeighborMode ? (
                                           <Grid container spacing={2}>
-                                            <Grid item xs={4}>
+                                            <Grid size={4}>
                                               <Select
                                                 value={currentMapping?.relationship_type || ''}
                                                 onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', value)}
@@ -721,7 +721,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 </SelectContent>
                                               </Select>
                                             </Grid>
-                                            <Grid item xs={4}>
+                                            <Grid size={4}>
                                               <Select
                                                 value={currentMapping?.target_entity_type || ''}
                                                 onValueChange={(value) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', value)}
@@ -743,7 +743,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 </SelectContent>
                                               </Select>
                                             </Grid>
-                                            <Grid item xs={4}>
+                                            <Grid size={4}>
                                               <FormControl variant="outlined" fullWidth disabled={!currentMapping?.target_entity_type}>
                                                 {currentMapping?.target_entity_type ? (
                                                   <QueryRenderer

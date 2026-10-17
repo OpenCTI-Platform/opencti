@@ -102,13 +102,13 @@ describe('AdditionalEntitiesSection', () => {
       },
     });
 
-    expect(screen.getByRole('checkbox', { name: 'Disable on-the-fly entity creation' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Disable on-the-fly entity creation' })).toBeInTheDocument();
   });
 
   it('does not render the disable-creation toggle outside lookup mode', () => {
     renderSection();
 
-    expect(screen.queryByRole('checkbox', { name: 'Disable on-the-fly entity creation' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Disable on-the-fly entity creation' })).not.toBeInTheDocument();
   });
 
   it('renders the minimum amount field for multiple entities', () => {
@@ -120,13 +120,13 @@ describe('AdditionalEntitiesSection', () => {
     });
 
     expect(screen.getByLabelText('Minimum amount (0 for optional)')).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: 'Required' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Required' })).not.toBeInTheDocument();
   });
 
   it('renders the required toggle for non-multiple entities', () => {
     renderSection();
 
-    expect(screen.getByRole('checkbox', { name: 'Required' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Required' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Minimum amount (0 for optional)')).not.toBeInTheDocument();
   });
 
@@ -164,7 +164,7 @@ describe('AdditionalEntitiesSection', () => {
     const handleFieldChange = vi.fn();
     renderSection({ handleFieldChange });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Entity lookup (select existing entities)' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Entity lookup (select existing entities)' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('additionalEntities.0.lookup', true);
   });
@@ -179,7 +179,7 @@ describe('AdditionalEntitiesSection', () => {
       },
     });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Disable on-the-fly entity creation' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Disable on-the-fly entity creation' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('additionalEntities.0.disableCreation', true);
   });
@@ -188,7 +188,7 @@ describe('AdditionalEntitiesSection', () => {
     const handleFieldChange = vi.fn();
     renderSection({ handleFieldChange });
 
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Allow multiple instances' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Allow multiple instances' }));
 
     expect(handleFieldChange).toHaveBeenCalledWith('additionalEntities.0.multiple', true);
   });
@@ -212,7 +212,7 @@ describe('AdditionalEntitiesSection', () => {
     const handleFieldChange = vi.fn();
     renderSection({ handleFieldChange });
 
-    const requiredSwitch = screen.getByRole('checkbox', { name: 'Required' });
+    const requiredSwitch = screen.getByRole('switch', { name: 'Required' });
     expect(requiredSwitch).not.toBeDisabled();
 
     fireEvent.click(requiredSwitch);
@@ -232,7 +232,7 @@ describe('AdditionalEntitiesSection', () => {
     };
     renderSection({ fieldsByEntity: { [baseEntity.id]: [field] } });
 
-    const requiredSwitch = screen.getByRole('checkbox', { name: 'Required (auto-set due to default values)' });
+    const requiredSwitch = screen.getByRole('switch', { name: 'Required (auto-set due to default values)' });
     expect(requiredSwitch).toBeDisabled();
   });
 
@@ -350,7 +350,7 @@ describe('AdditionalEntitiesSection', () => {
       },
     });
 
-    const toggle = screen.getByRole('checkbox', { name: 'Automatically convert to STIX patterns' });
+    const toggle = screen.getByRole('switch', { name: 'Automatically convert to STIX patterns' });
     fireEvent.click(toggle);
 
     expect(handleFieldChange).toHaveBeenCalledWith('additionalEntities.0.autoConvertToStixPattern', true);
@@ -366,7 +366,7 @@ describe('AdditionalEntitiesSection', () => {
       },
     });
 
-    expect(screen.queryByRole('checkbox', { name: 'Automatically convert to STIX patterns' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch', { name: 'Automatically convert to STIX patterns' })).not.toBeInTheDocument();
   });
 
   it('renders additional fields for entities in parsed mode with a mapping set, excluding the mapped attribute', () => {

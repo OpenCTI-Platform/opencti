@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import MuiThemeProvider from '../../../../../components/MuiThemeProvider';
 import Workflow from './Workflow';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
@@ -22,9 +23,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
-    <ThemeProvider theme={testTheme}>
+    <MuiThemeProvider theme={testTheme}>
       {component}
-    </ThemeProvider>,
+    </MuiThemeProvider>,
   );
 };
 
@@ -484,7 +485,7 @@ describe('Workflow Component', () => {
       expect(mockNotifyError).toHaveBeenCalled();
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
       );
       expect(getByText(/Cannot publish workflow/)).toBeInTheDocument();
     });
@@ -514,7 +515,7 @@ describe('Workflow Component', () => {
 
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
       );
       // 'status-1' should resolve to 'Open' via statusTemplateMap
       expect(getByText(/Open/)).toBeInTheDocument();
@@ -538,7 +539,7 @@ describe('Workflow Component', () => {
 
       const toastElement = mockNotifyError.mock.calls[0][0];
       const { getByText } = render(
-        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+        <MuiThemeProvider theme={testTheme}>{toastElement}</MuiThemeProvider>,
       );
       expect(getByText(/unknown-status-id/)).toBeInTheDocument();
     });

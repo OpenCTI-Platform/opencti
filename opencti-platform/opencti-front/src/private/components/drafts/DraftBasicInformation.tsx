@@ -98,7 +98,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
       <div style={{ height: '100%' }}>
         <Card title={t_i18n('Basic information')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={6}>
 
               <Label>{t_i18n('Author')}</Label>
               <ItemAuthor createdBy={draft.createdBy} />

@@ -2190,6 +2190,7 @@ class DataTableToolBar extends Component {
       case 'account_lock_after_date':
         return (
           <DateTimePicker
+            enableAccessibleFieldDOMStructure={false}
             disabled={disabled}
             variant="inline"
             disableToolbar={false}
@@ -2205,6 +2206,7 @@ class DataTableToolBar extends Component {
       case 'stop_time':
         return (
           <DateTimePicker
+            enableAccessibleFieldDOMStructure={false}
             disabled={disabled || (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(selectedField))}
             variant="inline"
             disableToolbar={false}
@@ -2220,6 +2222,7 @@ class DataTableToolBar extends Component {
         return (
           <>
             <DateTimePicker
+              enableAccessibleFieldDOMStructure={false}
               variant="inline"
               disableToolbar={false}
               autoOk={true}
@@ -2956,7 +2959,7 @@ class DataTableToolBar extends Component {
                           <CancelOutlined fontSize="small" />
                         </IconButton>
                         <Grid container={true} spacing={3}>
-                          <Grid item xs={3}>
+                          <Grid size={3}>
                             <FormControl className={classes.formControl}>
                               <Select
                                 value={actionsInputs[i]?.type ?? ''}
@@ -2980,16 +2983,16 @@ class DataTableToolBar extends Component {
                               </Select>
                             </FormControl>
                           </Grid>
-                          <Grid item xs={3}>
+                          <Grid size={3}>
                             <FormControl className={classes.formControl}>
                               {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
-                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+                          <Grid style={{ display: 'flex', flexDirection: 'column-reverse' }} size={6}>
                             {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
                           </Grid>
                           {['start_time', 'stop_time'].includes(actionsInputs[i]?.field) && actionsInputs[i]?.type !== 'REMOVE' && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                               <Alert
                                 severity="info"
                                 variant="outlined"

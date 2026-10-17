@@ -318,18 +318,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           marginBottom: 50,
         }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
               {!isServiceAccount && (
                 <>
-                  <Grid item xs={8}>
+                  <Grid size={8}>
                     <Label>
                       {t_i18n('Email address')}
                     </Label>
                     <pre style={{ margin: 0 }}>{user.user_email}</pre>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label action={user.otp_activated && (
                       <IconButton
                         color="primary"
@@ -347,7 +347,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Password valid until')}
                     </Label>
@@ -357,7 +357,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               )}
               {isServiceAccount && (
                 <>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account type')}
                     </Label>
@@ -366,7 +366,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       : EMPTY_VALUE
                     }
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
@@ -378,7 +378,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       />
                     </FieldOrEmpty>
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={4}>
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
@@ -386,7 +386,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </Grid>
                 </>
               )}
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Stack sx={{
                   gap: 1,
                 }}
@@ -415,19 +415,19 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               </Grid>
               {!isServiceAccount && (
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Firstname')}
                     </Label>
                     {user.firstname || EMPTY_VALUE}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Lastname')}
                     </Label>
                     {user.lastname || EMPTY_VALUE}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Account status')}
                     </Label>
@@ -439,7 +439,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       />
                     </FieldOrEmpty>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Account expiration date')}
                     </Label>
@@ -449,13 +449,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
               )}
               {isServiceAccount && (
                 <>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Created by')}
                     </Label>
                     {creatorName}
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label>
                       {t_i18n('Creation date')}
                     </Label>
@@ -466,10 +466,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             </Grid>
           </Card>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Roles')}
                 </Label>
@@ -499,7 +499,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Groups')}
                 </Label>
@@ -533,7 +533,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Organizations')}
                 </Label>
@@ -569,7 +569,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label action={(
                   <Security needs={[SETTINGS_SETACCESSES]}>
                     <Tooltip title={t_i18n('Kill all sessions')}>
@@ -629,13 +629,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               {!isServiceAccount && (
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <HiddenTypesChipList
                     hiddenTypes={user.default_hidden_types ?? []}
                   />
                 </Grid>
               )}
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Max Confidence Level')}
                 </Label>
@@ -647,7 +647,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         {!isServiceAccount && (
           <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid style={{ marginTop: 10 }} size={6}>
           <Card
             title={t_i18n('Operations')}
             sx={{ minHeight: 500 }}
@@ -723,7 +723,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             )}
           </Card>
         </Grid>
-        <Grid item xs={6} style={{ marginTop: 10 }}>
+        <Grid style={{ marginTop: 10 }} size={6}>
           {isGrantedToAudit ? (
             <UserHistory userId={user.id} />
           ) : (

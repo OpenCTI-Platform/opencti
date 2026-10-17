@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
 import { useTheme } from '@mui/styles';
 // fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave

@@ -27,20 +27,20 @@ const GroupingComponent = ({ grouping }) => {
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        className={classes.gridContainer}
       >
         {
           overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <GroupingDetails grouping={grouping} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview
                       stixDomainObject={grouping}
                     />
@@ -48,7 +48,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={grouping.id}
                     />
@@ -56,7 +56,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={grouping.id}
                     />
@@ -64,7 +64,7 @@ const GroupingComponent = ({ grouping }) => {
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={grouping.id}
                       defaultMarkings={grouping.objectMarking ?? []}
