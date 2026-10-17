@@ -1,14 +1,13 @@
 import React from 'react';
 import { DateTimePicker as MuiDateTimePicker, DateTimePickerProps } from '@mui/x-date-pickers/DateTimePicker';
 import { useTheme } from '@mui/material/styles';
-import { TextFieldProps } from '@mui/material/TextField';
+import { PickersTextFieldProps } from '@mui/x-date-pickers/PickersTextField';
 import { Theme } from '../../Theme';
 
-// The field renders a MUI TextField (enableAccessibleFieldDOMStructure is false),
-// so its slot props are TextField props rather than the v8 PickersTextField union.
-type FieldDateTimePickerProps = Omit<DateTimePickerProps<false>, 'slotProps'> & {
-  slotProps?: Omit<NonNullable<DateTimePickerProps<false>['slotProps']>, 'textField'> & {
-    textField?: Partial<TextFieldProps>;
+// Narrowed to the object form, so the wrapper can merge its own field props in.
+type FieldDateTimePickerProps = Omit<DateTimePickerProps, 'slotProps'> & {
+  slotProps?: Omit<NonNullable<DateTimePickerProps['slotProps']>, 'textField'> & {
+    textField?: Partial<PickersTextFieldProps>;
   };
 };
 
@@ -21,7 +20,6 @@ const DateTimePicker: React.FC<FieldDateTimePickerProps> = ({
 
   return (
     <MuiDateTimePicker
-      enableAccessibleFieldDOMStructure={false}
       {...dateTimePickerProps}
       slotProps={{
         ...slotProps,
@@ -30,13 +28,15 @@ const DateTimePicker: React.FC<FieldDateTimePickerProps> = ({
           size: 'small',
           ...slotProps?.textField,
           sx: {
-            '& .MuiOutlinedInput-root': {
-              // background comes from the theme's MuiOutlinedInput override,
+            '& .MuiPickersOutlinedInput-root': {
+              // background comes from the theme's MuiPickersOutlinedInput override,
               // which paints every outlined field with the library input token.
               '& fieldset': {
                 borderColor: value ? theme.palette.border.secondary : 'transparent',
               },
-              '&:hover fieldset, &.Mui-focused fieldset': {
+              // The outline class outranks the picker's own focused rule
+              // (`.Mui-focused:not(.Mui-error) .MuiPickersOutlinedInput-notchedOutline`).
+              '&:hover fieldset.MuiPickersOutlinedInput-notchedOutline, &.Mui-focused fieldset.MuiPickersOutlinedInput-notchedOutline': {
                 borderColor: theme.palette.border.secondary,
               },
             },
