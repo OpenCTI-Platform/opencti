@@ -164,6 +164,7 @@ import xtmOneClient from '../../../src/modules/xtm/one/xtm-one-client';
 import {
   deleteChatbotMessageFeedback,
   deleteChatbotSession,
+  getChatbotArtifact,
   getChatbotConfig,
   getChatbotFileDownload,
   getChatbotPendingApprovals,
@@ -171,6 +172,7 @@ import {
   getChatbotQuota,
   getChatbotSessions,
   postAgentMessageStream,
+  postChatbotArtifactDownload,
   postChatbotMessageApprove,
   postChatbotMessageFeedback,
   postChatbotMessageSteer,
@@ -982,6 +984,164 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
     mockGet.mockRejectedValue(new Error('Network failure'));
 
     await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({ error: 'XTM One is unreachable' });
+  });
+});
+
+describe('httpChatbotProxy: getChatbotArtifact', () => {
+  const DECK_ID = '22222222-2222-4222-8222-222222222222';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildArtifactReq = (kind: string, artifactId: string) => ({ params: { kind, artifactId }, headers: {}, on: vi.fn() } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return 403 when user is not authenticated', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+
+    await getChatbotArtifact(buildArtifactReq('presentation', DECK_ID), res);
+
+    expect(res.sendStatus).toHaveBeenCalledWith(403);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should refuse an unknown kind or a non-UUID id without calling XTM One', async () => {
+    await getChatbotArtifact(buildArtifactReq('spreadsheet', DECK_ID), res);
+    await getChatbotArtifact(buildArtifactReq('report', '../../settings'), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid artifact' });
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it('should forward the descriptor XTM One answers', async () => {
+    const descriptor = { kind: 'presentation', id: DECK_ID, title: 'Weekly threats', downloads: ['pdf'] };
+    mockGet.mockResolvedValue({ status: 200, data: descriptor });
+
+    await getChatbotArtifact(buildArtifactReq('presentation', DECK_ID), res);
+
+    expect(mockGet).toHaveBeenCalledWith(`/api/v1/platform/chat/artifacts/presentation/${DECK_ID}`, expect.any(Object));
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(descriptor);
+  });
+
+  it('should propagate a 404 from XTM One with its detail', async () => {
+    const httpError = new Error('Request failed with status code 404') as any;
+    httpError.response = { status: 404, data: { detail: 'Not found' } };
+    mockGet.mockRejectedValue(httpError);
+
+    await getChatbotArtifact(buildArtifactReq('video', DECK_ID), res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
+  });
+});
+
+describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
+  const REPORT_ID = '33333333-3333-4333-8333-333333333333';
+  let res: ReturnType<typeof buildRes>;
+
+  const buildDownloadReq = (kind: string, artifactId: string, body?: Record<string, unknown>) => ({
+    params: { kind, artifactId },
+    body,
+    headers: {},
+    on: vi.fn(),
+  } as any);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setupAuthenticatedContext();
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined);
+    res = buildRes();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should refuse an invalid kind, id or format without calling XTM One', async () => {
+    await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, {}), res);
+    await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: '../pdf' }), res);
+    await postChatbotArtifactDownload(buildDownloadReq('file', REPORT_ID, { format: 'pdf' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Invalid artifact download' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should reject with 400 when the draft context fails validation, without calling XTM One', async () => {
+    setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
+    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+
+    await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: 'pdf' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Could not find draft workspace' });
+    expect(mockPost).not.toHaveBeenCalled();
+  });
+
+  it('should stream the file with its content headers only', async () => {
+    const fakeStream = { pipe: vi.fn(), on: vi.fn(), destroy: vi.fn() };
+    mockPost.mockResolvedValue({
+      data: fakeStream,
+      headers: {
+        'content-type': 'application/pdf',
+        'content-disposition': 'attachment; filename="Q3 readout.pdf"',
+        'content-length': '2048',
+        'x-should-not-forward': 'secret',
+      },
+    });
+
+    const req = buildDownloadReq('report', REPORT_ID, { format: 'pdf' });
+    await postChatbotArtifactDownload(req, res);
+
+    const [url, body, opts] = mockPost.mock.calls[0];
+    expect(url).toBe(`/api/v1/platform/chat/artifacts/report/${REPORT_ID}/download`);
+    expect(body).toEqual({ format: 'pdf' });
+    expect(opts.timeout).toBe(0);
+    expect(opts.decompress).toBe(false);
+    expect(res.setHeader).toHaveBeenCalledWith('content-type', 'application/pdf');
+    expect(res.setHeader).toHaveBeenCalledWith('content-disposition', 'attachment; filename="Q3 readout.pdf"');
+    expect(res.setHeader).toHaveBeenCalledWith('content-length', '2048');
+    expect(res.setHeader).not.toHaveBeenCalledWith('x-should-not-forward', 'secret');
+    expect(fakeStream.pipe).toHaveBeenCalledWith(res);
+
+    const closeHandler = req.on.mock.calls.find((c: any[]) => c[0] === 'close')?.[1];
+    closeHandler();
+    expect(fakeStream.destroy).toHaveBeenCalled();
+  });
+
+  it('should propagate the upstream status and detail, read from a stream body', async () => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = {
+      status: 409,
+      data: Object.assign((async function* body() {
+        yield Buffer.from(JSON.stringify({ detail: 'This video has no finished render yet.' }));
+      })(), { pipe: vi.fn() }),
+    };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({ error: 'This video has no finished render yet.' });
+  });
+
+  it('should return 503 when XTM One cannot be reached', async () => {
+    mockPost.mockRejectedValue(new Error('Network failure'));
+
+    await postChatbotArtifactDownload(buildDownloadReq('presentation', REPORT_ID, { format: 'pptx' }), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
     expect(res.json).toHaveBeenCalledWith({ error: 'XTM One is unreachable' });
