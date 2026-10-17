@@ -839,6 +839,140 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
   }
 };
 
+// ── Decks, reports and videos an answer made ────────────────────────────
+// XTM One describes them in the chat answer (`artifacts`); the chatbot's
+// cards download them and follow a video's render through the two routes
+// below. As for files, the user is authenticated to OpenCTI only and the XTM
+// One JWT is minted here.
+const ARTIFACT_KINDS = new Set(['presentation', 'report', 'video']);
+const ARTIFACT_FORMAT_RE = /^[a-z0-9_]{1,20}$/;
+const ARTIFACT_FORWARD_HEADERS = ['content-type', 'content-disposition', 'content-length', 'content-encoding', 'cache-control'];
+
+/** The validated `kind` / `artifactId` of an artifact route, or null (anything else never reaches XTM One). */
+const artifactTarget = (req: Express.Request): { kind: string; artifactId: string } | null => {
+  const kind = String(req.params.kind ?? '');
+  const artifactId = String(req.params.artifactId ?? '');
+  return ARTIFACT_KINDS.has(kind) && UUID_RE.test(artifactId) ? { kind, artifactId } : null;
+};
+
+/** The upstream `detail` of a failed call, read from a parsed body or from a stream. */
+const upstreamDetail = async (data: unknown, fallback: string): Promise<unknown> => {
+  try {
+    if (typeof data === 'object' && data !== null) {
+      if ('detail' in data) return (data as { detail: unknown }).detail;
+      if (typeof (data as NodeJS.ReadableStream).pipe === 'function') {
+        const chunks: Buffer[] = [];
+        for await (const chunk of data as AsyncIterable<Buffer>) {
+          chunks.push(Buffer.from(chunk));
+        }
+        return JSON.parse(Buffer.concat(chunks).toString('utf-8')).detail ?? fallback;
+      }
+    }
+  } catch {
+    // An unreadable body: the generic message stands.
+  }
+  return fallback;
+};
+
+/** Artifact routes reach XTM One with the validated draft, like file downloads. */
+const artifactHeaders = async (req: Express.Request, res: Express.Response, context: AuthContext) => {
+  try {
+    await checkDraftInContext(context);
+  } catch (draftErr: unknown) {
+    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr });
+    res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+    return null;
+  }
+  const headers = await generateBasicHeaders(req, context);
+  headers['opencti-draft-id'] = context.draft_context ?? '';
+  return headers;
+};
+
+// ── GET /chatbot/artifacts/:kind/:artifactId ────────────────────────────
+// The artifact described again, as of now: a card follows a video whose
+// render was still running when the answer arrived.
+export const getChatbotArtifact = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = artifactTarget(req);
+    if (!target) {
+      res.status(400).json({ error: 'Invalid artifact' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('json', headers);
+    const response = await httpClient.get(`/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}`, {
+      timeout: DEFAULT_XTM_TIMEOUT,
+    });
+    res.status(response.status).json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot artifact read', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    if (httpErr) {
+      res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr.data, message), message) });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
+// ── POST /chatbot/artifacts/:kind/:artifactId/download ──────────────────
+// The file of a deck (pdf, pptx, pptx_native), a report (pdf) or a video
+// (mp4), streamed back with its content headers. XTM One exports a deck or
+// a report on the spot, against the user's export budget.
+export const postChatbotArtifactDownload = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context?.user) return;
+    const target = artifactTarget(req);
+    const format = typeof req.body?.format === 'string' ? req.body.format : '';
+    if (!target || !ARTIFACT_FORMAT_RE.test(format)) {
+      res.status(400).json({ error: 'Invalid artifact download' });
+      return;
+    }
+    const headers = await artifactHeaders(req, res, context);
+    if (!headers) return;
+    const httpClient = getXtmClient('stream', headers);
+    const response = await httpClient.post(
+      `/api/v1/platform/chat/artifacts/${target.kind}/${target.artifactId}/download`,
+      { format },
+      // Streaming pipe, as for files: a deck export or a long video must not
+      // be cut by a response timeout.
+      { decompress: false, timeout: 0 },
+    );
+    Object.entries(response.headers).forEach(([key, value]) => {
+      if (ARTIFACT_FORWARD_HEADERS.includes(key.toLowerCase()) && value) {
+        res.setHeader(key, value as string);
+      }
+    });
+    response.data.pipe(res);
+    req.on('close', () => {
+      response.data.destroy();
+    });
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in chatbot artifact download proxy', { cause: error });
+      if (!res.headersSent) {
+        res.status(500).send({ status: 'error', error: error.message });
+      } else {
+        res.end();
+      }
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot artifact download proxy', { cause: e });
+    const { message } = e as Error;
+    const httpErr = getResponseError(e);
+    setCookieError(res, message);
+    if (httpErr) {
+      res.status(httpErr.status).json({ error: detailToText(await upstreamDetail(httpErr.data, message), message) });
+    } else {
+      res.status(503).json({ error: 'XTM One is unreachable' });
+    }
+  }
+};
+
 // ── POST /chatbot/agent ─────────────────────────────────────────────────
 // Non-streaming agent call.
 // Accepts two Content-Type modes:
