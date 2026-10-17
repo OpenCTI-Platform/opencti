@@ -7098,26 +7098,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:4.1.2":
+"eventsource-parser@npm:4.1.2, eventsource-parser@npm:^4.1.2":
   version: 4.1.2
   resolution: "eventsource-parser@npm:4.1.2"
   checksum: 10c0/1ee29bb5e2c9d6018c1542ed3a4e6570eca9109d995f912f86bdf8e61172e29afc143d5c9fbf948a13295186779ca486936c1e768d4501a28bf52614930d8f2d
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "eventsource-parser@npm:4.1.1"
-  checksum: 10c0/cae2e8960409cd20cb7623b5f1f37ea41ec984e776c1c3fac0a0fe77efe292aa019e0d40427c87b5a13dbaf0b50133866afcb6bf3100dc49c2649758ebd29cbe
-  languageName: node
-  linkType: hard
-
-"eventsource@npm:5.1.2":
-  version: 5.1.2
-  resolution: "eventsource@npm:5.1.2"
+"eventsource@npm:5.1.3":
+  version: 5.1.3
+  resolution: "eventsource@npm:5.1.3"
   dependencies:
-    eventsource-parser: "npm:^4.1.1"
-  checksum: 10c0/fdcde8bc8c85da65dcd145e331eeedd6026718779ee233c3f339ff87f291cd3bbd2a16bf2156aaad76607065b986c71fb053278fe8f28fdf628d509b65fdd72c
+    eventsource-parser: "npm:^4.1.2"
+  checksum: 10c0/f0b8109f4af2c54e5243c47f174b9f6ecd5cd3c3b0ea1ed00c5cdd6670ca2b11297d0818848c40e6301829aa66f2675a29b3224657c162b06aea9cb5b2549b00
   languageName: node
   linkType: hard
 
@@ -10374,7 +10367,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:4.4.5"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
-    eventsource: "npm:5.1.2"
+    eventsource: "npm:5.1.3"
     eventsource-parser: "npm:4.1.2"
     express: "npm:5.3.0"
     express-rate-limit: "npm:8.7.1"
