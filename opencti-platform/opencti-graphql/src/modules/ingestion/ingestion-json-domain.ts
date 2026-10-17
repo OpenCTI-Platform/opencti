@@ -152,14 +152,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     timeout,
     responseType: 'json',
     certificates,
-    beforeRedirect: (options) => {
-      // axios delegates redirect handling to the `follow-redirects` package, which enriches
-      // the options object with a `href` field (in addition to protocol/hostname/port/path)
-      // before invoking beforeRedirect. See follow-redirects `preservedUrlFields` / `spreadUrlObject`.
-      if (typeof options.href === 'string') {
-        verifyIngestionUri(options.href);
-      }
-    },
+    beforeRedirect: (redirectUrl) => verifyIngestionUri(redirectUrl),
   };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
