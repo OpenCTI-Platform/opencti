@@ -171,7 +171,7 @@
     "source-map": "0.8.0",
     "tough-cookie": "6.0.2",
     "turndown": "7.2.4",
-    "undici": "8.11.2",
+    "undici": "8.12.1",
     "unzipper": "0.12.5",
     "uuid": "14.0.3",
     "uuid-time": "1.0.0",
