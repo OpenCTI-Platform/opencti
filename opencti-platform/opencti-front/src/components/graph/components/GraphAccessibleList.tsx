@@ -135,6 +135,8 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
       }}
     >
       {entries.slice(windowStart, windowEnd).map((entry, offset) => (
+        // The focus stays on the listbox (aria-activedescendant), whose onKeyDown operates the options.
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
         <div
           key={graphElementKey(entry)}
           id={`${listId}-${windowStart + offset}`}
