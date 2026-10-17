@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
+import { GraphQLError } from 'graphql';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -4479,8 +4480,8 @@ export const deleteInferredRuleElement = async (
       const ruleOpts = { fromRule, fromRuleDeletion: true };
       await upsertRelationRule(context, RULE_MANAGER_USER, instance, input, ruleOpts);
     }
-  } catch (err: any) {
-    if (err.name === ALREADY_DELETED_ERROR) {
+  } catch (err: unknown) {
+    if (err instanceof GraphQLError && err.extensions.code === ALREADY_DELETED_ERROR) {
       logApp.info(err);
     } else {
       logApp.error('Error handling inference', { cause: err });
