@@ -8,15 +8,21 @@ import { type FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
-import { checkFiltersFormat } from '../filtering-utils';
+import { checkFiltersFormat, extractFilterKeys } from '../filtering-utils';
 import { getFullFilterKeyTestersMap } from './stix-testers';
+import { isCustomFieldFilterKey } from '../filtering-constants';
+import { deletedCustomFieldStixFilterTester } from '../../../modules/customField/custom-field-stix-utils';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * check a FilterGroup's keys validity in stix filtering
  */
-const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup, filtersKeyTestersMap: Record<string, TesterFunction>) => {
+const checkFiltersKeysForStixMatch = (
+  filterGroup: FilterGroup,
+  filtersKeyTestersMap: Record<string, TesterFunction>,
+  isUnknownCustomFieldAccepted: boolean,
+) => {
   filterGroup.filters.forEach((filter) => {
     if (!Array.isArray(filter.key)) {
       throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
@@ -24,27 +30,45 @@ const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup, filtersKeyTester
     if (filter.key.length !== 1) {
       throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
     }
-    if (filtersKeyTestersMap[filter.key[0]] === undefined) {
+    // When matching, a stored filter on a since deleted custom field stays valid, see getFilterKeyTestersMapForFilterGroup
+    const isAcceptedCustomFieldKey = isUnknownCustomFieldAccepted && isCustomFieldFilterKey(filter.key[0]);
+    if (filtersKeyTestersMap[filter.key[0]] === undefined && !isAcceptedCustomFieldKey) {
       const availableFilters = JSON.stringify(Object.keys(filtersKeyTestersMap));
       throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
     }
   });
-  filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg, filtersKeyTestersMap));
+  filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg, filtersKeyTestersMap, isUnknownCustomFieldAccepted));
 };
 
-/**
- * validate a FilterGroup in stix filtering: check the filters format and the filter keys validity
- */
-export const validateFilterGroupForStixMatch = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
+const checkFilterGroupForStixMatch = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup, isUnknownCustomFieldAccepted: boolean) => {
   // check filters format
   checkFiltersFormat(filterGroup);
   // check filters keys validity
   const fullFiltersKeyTestersMap = await getFullFilterKeyTestersMap(context, user);
-  checkFiltersKeysForStixMatch(filterGroup, fullFiltersKeyTestersMap);
+  checkFiltersKeysForStixMatch(filterGroup, fullFiltersKeyTestersMap, isUnknownCustomFieldAccepted);
+};
+
+/**
+ * validate a FilterGroup in stix filtering before saving it: check the filters format and the filter keys validity
+ * (a custom field key must match an existing custom field definition, as any other key)
+ */
+export const validateFilterGroupForStixMatch = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
+  await checkFilterGroupForStixMatch(context, user, filterGroup, false);
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
 // STIX MATCH
+
+// The testers of the filter group keys, with a filter on a deleted custom field tested as a custom field no stix has
+const getFilterKeyTestersMapForFilterGroup = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
+  const testersMap = await getFullFilterKeyTestersMap(context, user);
+  extractFilterKeys(filterGroup)
+    .filter((key) => isCustomFieldFilterKey(key) && testersMap[key] === undefined)
+    .forEach((key) => {
+      testersMap[key] = deletedCustomFieldStixFilterTester;
+    });
+  return testersMap;
+};
 
 /**
  * Middleware function that allow us to make unit tests by mocking the resolution map.
@@ -62,7 +86,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
   // This check should thus not fail here, theoretically.
   if (filterGroup) {
-    await validateFilterGroupForStixMatch(context, user, filterGroup);
+    await checkFilterGroupForStixMatch(context, user, filterGroup, true);
   }
 
   // first check: user access right to the element (according to markings, organization, etc.)
@@ -78,7 +102,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   const resolvedFilterGroup = await resolveFilterGroup(context, user, filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
-  const fullFiltersKeyTestersMap = await getFullFilterKeyTestersMap(context, user);
+  const fullFiltersKeyTestersMap = await getFilterKeyTestersMapForFilterGroup(context, user, resolvedFilterGroup);
   return testFilterGroup(stix, resolvedFilterGroup, fullFiltersKeyTestersMap, eventContext);
 };
 

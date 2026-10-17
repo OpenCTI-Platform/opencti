@@ -34,8 +34,8 @@ export interface UseCustomFieldWidgetColumnsResult {
  *
  * Returns an empty, non-loading result if the CUSTOM_FIELDS feature flag is disabled (the
  * underlying query field throws server-side in that case, so it must never be called then).
- * When `entityType` is provided, only the definitions applicable to that entity type (or with no
- * entity type restriction at all) are kept.
+ * Definitions attached to no entity type are never kept. When `entityType` is provided, only the
+ * definitions attached to that entity type are kept.
  */
 const useCustomFieldWidgetColumns = (entityType?: string): UseCustomFieldWidgetColumnsResult => {
   const { isFeatureEnable } = useHelper();

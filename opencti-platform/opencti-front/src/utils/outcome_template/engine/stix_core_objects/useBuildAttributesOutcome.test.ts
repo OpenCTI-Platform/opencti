@@ -267,4 +267,68 @@ describe('Hook: useBuildAttributesOutcome', () => {
     ]);
     propertySpy.mockRestore();
   });
+
+  it('should return the value of a custom field', async () => {
+    const { hook, relayEnv } = testRenderHook(() => useBuildAttributesOutcome());
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
+    const { buildAttributesOutcome } = hook.result.current;
+
+    relayEnv.mock.queueOperationResolver((op) => {
+      return MockPayloadGenerator.generate(op, {
+        CustomFieldValue() {
+          return {
+            field_id: 'cf-1',
+            field_name: 'x_opencti_cf_note',
+            string_value: 'cloture',
+            int_value: null,
+            boolean_value: null,
+            date_value: null,
+            select_value: null,
+            select_values: null,
+          };
+        },
+      });
+    });
+
+    const attributesOutcome = await buildAttributesOutcome(
+      'id_XX',
+      {
+        instance_id: SELF_ID,
+        columns: [
+          { variableName: 'analystNote', attribute: 'x_opencti_cf_note', label: 'Analyst note' },
+        ],
+      },
+    );
+
+    expect(attributesOutcome).toEqual([{ variableName: 'analystNote', attributeData: 'cloture', isEmpty: false }]);
+  });
+
+  it('should treat a missing custom field as an empty value in metadata mode, but not a false one', async () => {
+    const { hook } = testRenderHook(() => useBuildAttributesOutcome());
+    vi.spyOn(env, 'fetchQuery').mockReturnValue({
+      toPromise: async () => ({
+        stixCoreObject: {
+          customFieldValues: [{ field_id: 'cf-1', field_name: 'x_opencti_cf_flag', boolean_value: false }],
+        },
+      }),
+    } as never);
+    const { buildAttributesOutcome } = hook.result.current;
+
+    const outcomes = await buildAttributesOutcome(
+      'id_XX',
+      {
+        instance_id: SELF_ID,
+        columns: [
+          { variableName: 'flag', attribute: 'x_opencti_cf_flag', label: 'Flag' },
+          { variableName: 'note', attribute: 'x_opencti_cf_note', label: 'Note' },
+        ],
+      },
+      { includeMetadata: true },
+    );
+
+    expect(outcomes).toMatchObject([
+      { variableName: 'flag', isEmpty: false },
+      { variableName: 'note', attributeData: '', isEmpty: true },
+    ]);
+  });
 });
