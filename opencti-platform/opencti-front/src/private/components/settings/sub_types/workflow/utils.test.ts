@@ -35,6 +35,27 @@ describe('Workflow utils', () => {
     expect(result.initialState).toBe('state-1');
   });
 
+  describe('initial state after an edit', () => {
+    const status = (id: string): Node => ({ id, type: WorkflowNodeType.status, data: { statusTemplate: { id, name: id, color: '#ffffff' } }, position: { x: 0, y: 0 } });
+    const transition = (id: string): Node => ({ id, type: WorkflowNodeType.transition, data: { event: id }, position: { x: 0, y: 0 } });
+    const link = (source: string, target: string): Edge => ({ id: `e-${source}->${target}`, source, target, type: WorkflowNodeType.transition });
+    const definition = { ...mockWorkflowDefinition, initialState: 'NEW' } as SubTypeWorkflowQuery$data['workflowDefinition'];
+    // NEW -submit-> IN_REVIEW, IN_REVIEW -reject-> NEW, and approve -> ANALYZED deleted: ANALYZED has no incoming edge.
+    const nodes = [status('NEW'), status('IN_REVIEW'), status('ANALYZED'), transition('submit'), transition('reject'), transition('approve')];
+    const edges = [link('NEW', 'submit'), link('submit', 'IN_REVIEW'), link('IN_REVIEW', 'reject'), link('reject', 'NEW'), link('IN_REVIEW', 'approve')];
+
+    it('keeps the saved initial state while that status is still on the canvas', () => {
+      expect(transformToWorkflowDefinition(nodes, edges, definition).initialState).toBe('NEW');
+    });
+
+    it('falls back to the first status without an incoming edge once the saved one is gone', () => {
+      const withoutNew = nodes.filter((n) => n.id !== 'NEW');
+      const result = transformToWorkflowDefinition(withoutNew, edges.filter((e) => e.source !== 'NEW' && e.target !== 'NEW'), definition);
+      // IN_REVIEW still has an incoming edge (from submit); ANALYZED is the first status without one.
+      expect(result.initialState).toBe('ANALYZED');
+    });
+  });
+
   it('should transform a simple graph with states and transitions', () => {
     const nodes: Node[] = [
       { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },

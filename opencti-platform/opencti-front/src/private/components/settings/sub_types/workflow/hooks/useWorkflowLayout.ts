@@ -1,182 +1,27 @@
 import { useEffect } from 'react';
-import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore, getIncomers, Position } from 'reactflow';
-import { type HierarchyPointNode, stratify, tree } from 'd3-hierarchy';
-import { NODE_SIZE } from '../utils';
+import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore } from 'reactflow';
+import { layoutWorkflow } from '../layout/layoutWorkflow';
+import type { LayoutSpacing } from '../layout/types';
 
-type NodeWithPosition = Node & { x: number; y: number };
-export type Direction = 'TB' | 'LR' | 'RL' | 'BT';
+// The layout always runs top to bottom; only the gaps are configurable.
+export type LayoutOptions = LayoutSpacing;
 
-export type LayoutOptions = {
-  direction: Direction;
-  spacing: [number, number];
-};
-
-const getSourceHandlePosition = (direction: Direction) => {
-  switch (direction) {
-    case 'TB':
-      return Position.Bottom;
-    case 'BT':
-      return Position.Top;
-    case 'LR':
-      return Position.Right;
-    case 'RL':
-      return Position.Left;
-  }
-};
-
-const getTargetHandlePosition = (direction: Direction) => {
-  switch (direction) {
-    case 'TB':
-      return Position.Top;
-    case 'BT':
-      return Position.Bottom;
-    case 'LR':
-      return Position.Left;
-    case 'RL':
-      return Position.Right;
-  }
-};
-
-// Initialize the tree layout (see https://observablehq.com/@d3/tree for examples)
-const layout = tree<NodeWithPosition>()
-  // By default, d3 hierarchy spaces nodes that do not share a common parent quite
-  // far apart. We think it looks a bit nicer (and more similar to the other layouting
-  // algorithms) if we fix that distance to a uniform `1`.
-  .separation(() => 1);
-
-// D3 Hierarchy expects a single root node in a flow. Because we can't always
-// guarantee that, we create a fake root node here and will make sure any real
-// nodes without an incoming edge will get connected to this fake root node.
-const rootNode = {
-  id: 'd3-hierarchy-root',
-  x: 0,
-  y: 0,
-  position: { x: 0, y: 0 },
-  data: {},
-};
-
-const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { direction: 'TB', spacing: [50, 50] }) => {
-  const initialNodes = [] as NodeWithPosition[];
-  let maxNodeWidth = 0;
-  let maxNodeHeight = 0;
-
-  for (const node of nodes) {
-    const nodeWithPosition = { ...node, ...node.position };
-    initialNodes.push(nodeWithPosition);
-    maxNodeWidth = Math.max(maxNodeWidth, node.width ?? 0);
-    maxNodeHeight = Math.max(maxNodeHeight, node.height ?? 0);
-  }
-
-  const nodeSize = [maxNodeWidth + options.spacing[0], maxNodeHeight + options.spacing[1]];
-  layout.nodeSize(nodeSize as [number, number]);
-
-  // --- Step 1: Build candidate parent map (first incoming edge wins) ---
-  const candidateParent = new Map<string, string>();
-  const allIds = new Set(initialNodes.map((n) => n.id));
-  for (const node of initialNodes) {
-    const incomers = getIncomers(node, nodes, edges);
-    const parentId = incomers[0]?.id;
-    candidateParent.set(node.id, parentId && allIds.has(parentId) ? parentId : rootNode.id);
-  }
-
-  // --- Step 2: DFS cycle detection — redirect back-edges to rootNode ---
-  // Tri-color marking: 0 = unvisited, 1 = in-stack, 2 = done
-  const color = new Map<string, number>();
-  const safeParent = new Map<string, string | undefined>(candidateParent);
-
-  const dfs = (nodeId: string) => {
-    color.set(nodeId, 1);
-    for (const [childId, parentId] of Array.from(safeParent.entries())) {
-      if (parentId === nodeId) {
-        const childColor = color.get(childId) ?? 0;
-        if (childColor === 1) {
-          // Back-edge: redirect child to rootNode to break the cycle
-          safeParent.set(childId, rootNode.id);
-        } else if (childColor === 0) {
-          dfs(childId);
-        }
-      }
-    }
-    color.set(nodeId, 2);
+// Positions every node and writes render-only hints: `data.layout` on nodes (backward flag,
+// lane side, rank) and `data.route` on edges (orthogonal waypoints). transformToWorkflowDefinition
+// reads named data fields only, so neither hint reaches the saved definition.
+export const applyLayout = (nodes: Node[], edges: Edge[], options: LayoutOptions): { nodes: Node[]; edges: Edge[] } => {
+  const { positions, nodeHints, routes } = layoutWorkflow(nodes, edges, options);
+  return {
+    nodes: nodes.map((node) => ({
+      ...node,
+      position: positions.get(node.id) ?? node.position,
+      data: { ...node.data, layout: nodeHints.get(node.id) },
+    })),
+    edges: edges.map((edge) => ({
+      ...edge,
+      data: { ...edge.data, route: routes.get(edge.id) },
+    })),
   };
-
-  // Start DFS from rootNode and any nodes that are children of rootNode
-  dfs(rootNode.id);
-  for (const node of initialNodes) {
-    if ((color.get(node.id) ?? 0) === 0) {
-      dfs(node.id);
-    }
-  }
-
-  // --- Step 3: Identify back-edge transition nodes (backward transitions) ---
-  // A transition node is "backward" if its safe parent was remapped away from its original candidate
-  const backwardTransitions = new Set<string>();
-  for (const node of initialNodes) {
-    if (node.type === 'transition') {
-      if (safeParent.get(node.id) !== candidateParent.get(node.id)) {
-        backwardTransitions.add(node.id);
-      }
-    }
-  }
-
-  // --- Step 4: Build cycle-free hierarchy for D3 (exclude backward transition nodes) ---
-  const forwardNodes = initialNodes.filter((n) => !backwardTransitions.has(n.id));
-
-  const getSafeParentId = (node: Node) => {
-    if (node.id === rootNode.id) return undefined;
-    return safeParent.get(node.id) ?? rootNode.id;
-  };
-
-  const hierarchy = stratify<NodeWithPosition>()
-    .id((d) => d.id)
-    .parentId(getSafeParentId)([rootNode, ...forwardNodes]);
-
-  const root = layout(hierarchy);
-  const layoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
-  root.each((node) => layoutNodes.set(node.id!, node));
-
-  // --- Step 5: Position all nodes ---
-  const nextNodes = nodes.map((node) => {
-    if (backwardTransitions.has(node.id)) {
-      // Position backward transition at midpoint between its source and target status nodes
-      const outgoingEdge = edges.find((edge) => edge.source === node.id);
-      const incomingEdge = edges.find((edge) => edge.target === node.id);
-
-      if (outgoingEdge && incomingEdge) {
-        const sourcePos = layoutNodes.get(incomingEdge.source);
-        const targetPos = layoutNodes.get(outgoingEdge.target);
-
-        if (sourcePos && targetPos) {
-          const rootX = root.x;
-          const isLeftBranch = sourcePos.x < rootX;
-          const horizontalOffset = isLeftBranch ? -NODE_SIZE.width * 2 : NODE_SIZE.width * 2;
-
-          return {
-            ...node,
-            position: {
-              x: ((sourcePos.x + targetPos.x) / 2) + horizontalOffset - (node.width ?? 0) / 2,
-              y: (sourcePos.y + targetPos.y) / 2 - (node.height ?? 0) / 2,
-            },
-          };
-        }
-      }
-    }
-
-    const layoutNode = layoutNodes.get(node.id);
-    if (layoutNode) {
-      return {
-        ...node,
-        position: {
-          x: layoutNode.x - (node.width ?? 0) / 2,
-          y: layoutNode.y - (node.height ?? 0) / 2,
-        },
-      };
-    }
-
-    return node;
-  });
-
-  return { nodes: nextNodes, edges };
 };
 
 const useAutoLayout = (options: LayoutOptions) => {
@@ -206,36 +51,13 @@ const useAutoLayout = (options: LayoutOptions) => {
     if (!nodesInitialized || elements.nodeMap.size === 0) {
       return;
     }
-
-    // The callback passed to `useEffect` cannot be `async` itself, so instead we
-    // create an async function here and call it immediately afterwards.
-    const runLayout = async () => {
-      const nodes = Array.from(elements.nodeMap.values());
-      const edges = Array.from(elements.edgeMap.values());
-
-      const { nodes: nextNodes, edges: nextEdges } = await layoutAlgorithm(
-        nodes,
-        edges,
-        options,
-      );
-
-      // Mutating the nodes and edges directly here is fine because we expect our
-      // layouting algorithms to return a new array of nodes/edges.
-      for (const node of nextNodes) {
-        node.style = { ...node.style, opacity: 1 };
-        node.sourcePosition = getSourceHandlePosition(options.direction);
-        node.targetPosition = getTargetHandlePosition(options.direction);
-      }
-
-      for (const edge of edges) {
-        edge.style = { ...edge.style, opacity: 1 };
-      }
-
-      setNodes(nextNodes);
-      setEdges(nextEdges);
-    };
-
-    runLayout();
+    const { nodes, edges } = applyLayout(
+      Array.from(elements.nodeMap.values()),
+      Array.from(elements.edgeMap.values()),
+      options,
+    );
+    setNodes(nodes);
+    setEdges(edges);
   }, [nodesInitialized, elements, setNodes, setEdges]);
 };
 

@@ -5,6 +5,7 @@ import TransitionNode from './TransitionNode';
 import testRender from '../../../../../../utils/tests/test-render';
 import type { Edge, NodeProps, Position } from 'reactflow';
 import { CommentMode } from '../utils';
+import { HoverHighlightContext } from '../hoverHighlight';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -78,5 +79,58 @@ describe('TransitionNode – comment label', () => {
   it('shows "comment required" when comment is "required"', () => {
     testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.required })} />);
     expect(screen.getByText(/comment required/i)).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Direction hint from the layout
+// ---------------------------------------------------------------------------
+describe('TransitionNode – direction', () => {
+  it('puts the target handle at the bottom when the layout marks it backward', () => {
+    testRender(<TransitionNode {...makeProps({ layout: { backward: true, lane: 'right', rank: 3 } })} />);
+    expect(screen.getByTestId('handle-target').style.bottom).toBe('-2px');
+  });
+
+  it('keeps the target handle on top without a layout hint, whatever the edges say', () => {
+    // An ancestor walk would call this backward (B -> t -> A, A -> B); the hint is the only source now.
+    mockGetEdges.mockReturnValue([
+      { id: 'a', source: 'A', target: 'B' },
+      { id: 'b', source: 'B', target: 'transition-1' },
+      { id: 'c', source: 'transition-1', target: 'A' },
+    ] as Edge[]);
+    testRender(<TransitionNode {...makeProps()} />);
+    expect(screen.getByTestId('handle-target').style.top).toBe('-2px');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Hover highlight
+// ---------------------------------------------------------------------------
+describe('TransitionNode – highlight', () => {
+  const hovering = (litId: string) => ({ nodeIds: new Set([litId]), edgeIds: new Set<string>() });
+
+  it('draws a 1.5px border in the accent colour and thickens its label while highlighted', () => {
+    const { container } = testRender(
+      <HoverHighlightContext.Provider value={hovering('transition-1')}><TransitionNode {...makeProps()} /></HoverHighlightContext.Provider>,
+    );
+    const hexagon = container.querySelector('path')!;
+    expect(hexagon.getAttribute('stroke')).toBe('#1976d2');
+    expect(hexagon.getAttribute('stroke-width')).toBe('1.5');
+    expect(screen.getByText('Approve').parentElement!.style.textShadow).not.toBe('');
+  });
+
+  it('keeps a 1px neutral border and a plain label otherwise', () => {
+    const { container } = testRender(<TransitionNode {...makeProps()} />);
+    const hexagon = container.querySelector('path')!;
+    expect(hexagon.getAttribute('stroke-width')).toBe('1');
+    expect(hexagon.getAttribute('stroke')).not.toBe('#1976d2');
+    expect(screen.getByText('Approve').parentElement!.style.textShadow).toBe('');
+  });
+
+  it('fades while another node is hovered', () => {
+    const { container } = testRender(
+      <HoverHighlightContext.Provider value={hovering('other')}><TransitionNode {...makeProps()} /></HoverHighlightContext.Provider>,
+    );
+    expect(container.querySelector('svg')!.parentElement!.style.opacity).toBe('0.3');
   });
 });
