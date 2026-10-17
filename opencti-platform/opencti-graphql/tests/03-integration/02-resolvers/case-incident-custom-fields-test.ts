@@ -270,6 +270,20 @@ describe('Custom fields multi_select upsert on Case-Incident', () => {
     expect(values[0].select_values).toHaveLength(2);
   });
 
+  it('should find the Case-Incident with the full-text search on a custom field value', async () => {
+    const SEARCH_QUERY = gql`
+      query CaseIncidentsSearchByCustomFieldTest($search: String, $filters: FilterGroup) {
+        caseIncidents(first: 10, search: $search, filters: $filters) { edges { node { id } } }
+      }
+    `;
+    const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['ids'], values: [caseIncidentId] }] };
+    const found = await queryAsAdmin({ query: SEARCH_QUERY, variables: { search: 'bravo', filters } });
+    expect(found.errors).toBeUndefined();
+    expect(found.data?.caseIncidents.edges.map((edge: any) => edge.node.id)).toEqual([caseIncidentId]);
+    const notFound = await queryAsAdmin({ query: SEARCH_QUERY, variables: { search: 'charlie', filters } });
+    expect(notFound.data?.caseIncidents.edges).toEqual([]);
+  });
+
   it('should cleanup the Case-Incident and the multi_select custom field definition', async () => {
     const deleteCaseResult = await queryAsAdmin({ query: CASE_INCIDENT_DELETE_QUERY, variables: { id: caseIncidentId } });
     expect(deleteCaseResult.errors).toBeUndefined();

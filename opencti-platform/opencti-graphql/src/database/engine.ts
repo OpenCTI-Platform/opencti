@@ -48,7 +48,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
+import conf, { booleanConf, CUSTOM_FIELDS_FEATURE_FLAG, extendedErrors, isFeatureEnabled, loadCert, logApp, logMigration } from '../config/conf';
 import {
   ClientAbortError,
   ComplexSearchError,
@@ -1846,6 +1846,16 @@ const BASE_SEARCH_HISTORY = [
   'context_data.history_changes.changes_added.raw',
   'context_data.history_changes.changes_removed.raw',
 ];
+// Text and select values of the custom fields, nested in custom_field_values
+const BASE_SEARCH_CUSTOM_FIELDS = [
+  'custom_field_values.string_value',
+  'custom_field_values.select_value',
+  'custom_field_values.select_values',
+];
+// Custom field values are nested, searched as the connections. Without the feature, they are not mapped.
+const buildCustomFieldValuesSearch = (query: Record<string, unknown>) => (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)
+  ? [{ nested: { path: 'custom_field_values', ignore_unmapped: true, query: { bool: { must: [query] } } } }]
+  : []);
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
@@ -2075,6 +2085,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
           },
         },
       },
+      ...buildCustomFieldValuesSearch({ multi_match: { type: 'phrase', query: ex, lenient: true, fields: BASE_SEARCH_CUSTOM_FIELDS } }),
     ]).flat());
     if (searchPhrase) {
       pushAll(shouldSearch, [
@@ -2111,6 +2122,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
             },
           },
         },
+        ...buildCustomFieldValuesSearch({ query_string: { query: searchPhrase, analyze_wildcard: true, fields: BASE_SEARCH_CUSTOM_FIELDS } }),
       ]);
     }
   }
