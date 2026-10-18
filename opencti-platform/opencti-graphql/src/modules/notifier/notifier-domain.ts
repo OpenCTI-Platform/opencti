@@ -8,7 +8,7 @@ import { notify } from '../../database/redis';
 import { isEmptyField } from '../../database/utils';
 import type { EditInput, NotifierAddInput, NotifierConnector, NotifierTestInput, QueryNotifiersArgs } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { internalProcessNotification } from '../../manager/publisherManager';
+import { internalProcessNotification, normalizeWebhookHeaders } from '../../manager/publisherManager';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -54,9 +54,27 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   }
 };
 
+// Store the webhook headers as they will be sent, the schema also accepts the forms they are normalized from
+const normalizeNotifierConfiguration = (notifier: { notifier_connector_id: string; notifier_configuration: string }) => {
+  if (notifier.notifier_connector_id !== NOTIFIER_CONNECTOR_WEBHOOK) {
+    return notifier.notifier_configuration;
+  }
+  const webhookConfiguration = JSON.parse(notifier.notifier_configuration) as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
+  if (!webhookConfiguration.headers) {
+    return notifier.notifier_configuration;
+  }
+  return JSON.stringify({ ...webhookConfiguration, headers: normalizeWebhookHeaders(webhookConfiguration.headers) });
+};
+
 export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput): Promise<BasicStoreEntityNotifier> => {
   validateNotifier(notifier);
-  const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
+  const notifierToCreate = {
+    ...notifier,
+    notifier_configuration: normalizeNotifierConfiguration(notifier),
+    created: now(),
+    updated: now(),
+    authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'],
+  };
   const created = await createEntity(context, user, notifierToCreate, ENTITY_TYPE_NOTIFIER);
   await publishUserAction({
     user,
@@ -84,6 +102,9 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
     const item: { key: string; value: any } = { key, value };
     if (key === authorizedMembers.name) {
       item.value = (value ?? []).map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
+    }
+    if (key === 'notifier_configuration') {
+      item.value = [normalizeNotifierConfiguration(fieldsToValidate)];
     }
     return item;
   });
