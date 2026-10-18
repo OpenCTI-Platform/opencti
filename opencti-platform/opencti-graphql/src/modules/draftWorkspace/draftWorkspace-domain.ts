@@ -116,7 +116,7 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
   }
 
   // 3. Load all DraftWorkspaces with filters applied (no sort, no pagination limit)
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...resolvedArgs,
     first: 5000,
@@ -173,7 +173,7 @@ const resolveSortByRefUsers = async (
   }
 
   // 2. Load all DraftWorkspaces with filters applied
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...resolvedArgs,
     first: 5000,
@@ -233,12 +233,12 @@ export const findDraftWorkspacePaginated = async (context: AuthContext, user: Au
   if (orderBy === 'objectParticipant') {
     return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
   }
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
 export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   const [count, total] = await Promise.all([
     elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
     elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
@@ -251,7 +251,7 @@ export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser
 };
 
 export const draftWorkspacesTimeSeries = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
@@ -283,7 +283,7 @@ const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: A
   }
 
   // 3. Load all DraftWorkspaces matching the filters (only pass list-relevant args)
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     filters: resolvedArgs.filters,
     search: resolvedArgs.search,
@@ -310,7 +310,7 @@ export const draftWorkspacesDistribution = async (context: AuthContext, user: Au
   if (args.field === 'workflowInstance') {
     return resolveWorkflowInstanceDistribution(context, user, args);
   }
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args);
+  const resolvedArgs = await resolveWorkflowStatusFilter(context, user, args);
   return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
