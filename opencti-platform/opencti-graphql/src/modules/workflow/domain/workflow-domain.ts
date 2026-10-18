@@ -562,7 +562,7 @@ export const getWorkflowMigrationPreview = async (
     type: 'EXISTING_WORKFLOW',
     message: publishedVersionId
       ? 'Entity type already has a published workflow; its statuses are managed by that workflow, and migrating replaces it only with overwrite: true.'
-      : 'Entity type already has a draft workflow; migrating replaces it only with overwrite: true.',
+      : 'Entity type already has a workflow with no published version; migrating replaces it only with overwrite: true.',
   });
   return { byScope, hasPublishedVersion: !!publishedVersionId };
 };
