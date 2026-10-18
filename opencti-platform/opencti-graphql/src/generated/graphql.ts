@@ -40204,10 +40204,20 @@ export type WorkflowLastHistoryEntry = {
 
 export type WorkflowMigrationDiagnostic = {
   __typename?: 'WorkflowMigrationDiagnostic';
+  legacyStatusId?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
-  statusId?: Maybe<Scalars['String']['output']>;
-  type: Scalars['String']['output'];
+  templateId?: Maybe<Scalars['String']['output']>;
+  type: WorkflowMigrationDiagnosticType;
 };
+
+export enum WorkflowMigrationDiagnosticType {
+  DuplicateOrder = 'DUPLICATE_ORDER',
+  DuplicateTemplate = 'DUPLICATE_TEMPLATE',
+  ExistingWorkflow = 'EXISTING_WORKFLOW',
+  MissingOrder = 'MISSING_ORDER',
+  MissingTemplate = 'MISSING_TEMPLATE',
+  NameConflict = 'NAME_CONFLICT'
+}
 
 export type WorkflowMigrationPreview = {
   __typename?: 'WorkflowMigrationPreview';
@@ -42805,6 +42815,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowLastHistoryEntry: ResolverTypeWrapper<WorkflowLastHistoryEntry>;
   WorkflowMigrationDiagnostic: ResolverTypeWrapper<WorkflowMigrationDiagnostic>;
+  WorkflowMigrationDiagnosticType: WorkflowMigrationDiagnosticType;
   WorkflowMigrationPreview: ResolverTypeWrapper<WorkflowMigrationPreview>;
   WorkflowMigrationScopeResult: ResolverTypeWrapper<WorkflowMigrationScopeResult>;
   WorkflowMigrationState: ResolverTypeWrapper<WorkflowMigrationState>;
@@ -56236,9 +56247,10 @@ export type WorkflowLastHistoryEntryResolvers<ContextType = any, ParentType exte
 }>;
 
 export type WorkflowMigrationDiagnosticResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationDiagnostic'] = ResolversParentTypes['WorkflowMigrationDiagnostic']> = ResolversObject<{
+  legacyStatusId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  statusId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  templateId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['WorkflowMigrationDiagnosticType'], ParentType, ContextType>;
 }>;
 
 export type WorkflowMigrationPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationPreview'] = ResolversParentTypes['WorkflowMigrationPreview']> = ResolversObject<{

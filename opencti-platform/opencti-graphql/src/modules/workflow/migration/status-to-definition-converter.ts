@@ -3,12 +3,15 @@ import { StatusScope } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { WorkflowSerializedTransition } from '../types/workflow-types';
 
-export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER' | 'DUPLICATE_ORDER' | 'NAME_CONFLICT' | 'MISSING_TEMPLATE';
+export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER' | 'DUPLICATE_ORDER' | 'DUPLICATE_TEMPLATE' | 'NAME_CONFLICT' | 'MISSING_TEMPLATE' | 'EXISTING_WORKFLOW';
 
 export interface WorkflowMigrationDiagnostic {
   type: WorkflowMigrationDiagnosticType;
   message: string;
-  statusId?: string;
+  // Id of the legacy `Status` entity the diagnostic is about.
+  legacyStatusId?: string;
+  // `StatusTemplate` id of that status, i.e. the `statusId` of the matching migrated state.
+  templateId?: string;
 }
 
 // A migrated state carries a fully-computed, sequential `order` (its final rank in the migrated
@@ -101,56 +104,10 @@ const convertScopeGroup = (
 ): WorkflowMigrationConversionResult => {
   const diagnostics: WorkflowMigrationDiagnostic[] = [];
 
-  // One state per distinct StatusTemplate, keeping the first occurrence's ordering info.
-  const seenTemplateIds = new Set<string>();
-  const uniqueStatuses: BasicWorkflowStatus[] = [];
-  statuses.forEach((status) => {
-    if (!seenTemplateIds.has(status.template_id)) {
-      seenTemplateIds.add(status.template_id);
-      uniqueStatuses.push(status);
-    }
-  });
-
-  uniqueStatuses.forEach((status) => {
-    if (!hasOrder(status)) {
-      diagnostics.push({
-        type: 'MISSING_ORDER',
-        message: `Status ${status.id} (template ${status.template_id}) has no order value; falling back to source order.`,
-        statusId: status.id,
-      });
-    }
-    if (!templatesById.has(status.template_id)) {
-      diagnostics.push({
-        type: 'MISSING_TEMPLATE',
-        message: `Status ${status.id} references template ${status.template_id}, which no longer exists; falling back to the template id as its display name.`,
-        statusId: status.id,
-      });
-    }
-  });
-
-  // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group make
-  // the resulting sort look non-deterministic to a reviewer, even though it isn't (source-array
-  // order breaks the tie).
-  const orderCounts = new Map<number, number>();
-  uniqueStatuses.forEach((status) => {
-    if (hasOrder(status)) {
-      orderCounts.set(status.order, (orderCounts.get(status.order) ?? 0) + 1);
-    }
-  });
-  uniqueStatuses.forEach((status) => {
-    if (hasOrder(status) && (orderCounts.get(status.order) ?? 0) > 1) {
-      diagnostics.push({
-        type: 'DUPLICATE_ORDER',
-        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); tie is broken by source order.`,
-        statusId: status.id,
-      });
-    }
-  });
-
   // Statuses with a defined order sort by that value; statuses missing order keep their original
   // (source array) relative order, appended after the ordered ones — a deterministic best-effort
   // fallback rather than a hard failure.
-  const ordered = uniqueStatuses
+  const sorted = statuses
     .map((status, index) => ({ status, index }))
     .sort((a, b) => {
       if (hasOrder(a.status) && hasOrder(b.status)) return a.status.order - b.status.order;
@@ -159,6 +116,64 @@ const convertScopeGroup = (
       return a.index - b.index;
     })
     .map((entry) => entry.status);
+
+  // One state per distinct StatusTemplate. Deduplicating after the sort keeps the occurrence with
+  // the lowest order; every dropped duplicate is reported.
+  const keptByTemplateId = new Map<string, BasicWorkflowStatus>();
+  const ordered: BasicWorkflowStatus[] = [];
+  sorted.forEach((status) => {
+    const kept = keptByTemplateId.get(status.template_id);
+    if (kept) {
+      diagnostics.push({
+        type: 'DUPLICATE_TEMPLATE',
+        message: `Status ${status.id} uses template ${status.template_id} already used by status ${kept.id}; only the one with the lowest order (${kept.id}) is migrated.`,
+        legacyStatusId: status.id,
+        templateId: status.template_id,
+      });
+      return;
+    }
+    keptByTemplateId.set(status.template_id, status);
+    ordered.push(status);
+  });
+
+  ordered.forEach((status) => {
+    if (!hasOrder(status)) {
+      diagnostics.push({
+        type: 'MISSING_ORDER',
+        message: `Status ${status.id} (template ${status.template_id}) has no order value; falling back to source order.`,
+        legacyStatusId: status.id,
+        templateId: status.template_id,
+      });
+    }
+    if (!templatesById.has(status.template_id)) {
+      diagnostics.push({
+        type: 'MISSING_TEMPLATE',
+        message: `Status ${status.id} references template ${status.template_id}, which no longer exists; falling back to the template id as its display name.`,
+        legacyStatusId: status.id,
+        templateId: status.template_id,
+      });
+    }
+  });
+
+  // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group make
+  // the resulting sort look non-deterministic to a reviewer, even though it isn't (source-array
+  // order breaks the tie).
+  const orderCounts = new Map<number, number>();
+  ordered.forEach((status) => {
+    if (hasOrder(status)) {
+      orderCounts.set(status.order, (orderCounts.get(status.order) ?? 0) + 1);
+    }
+  });
+  ordered.forEach((status) => {
+    if (hasOrder(status) && (orderCounts.get(status.order) ?? 0) > 1) {
+      diagnostics.push({
+        type: 'DUPLICATE_ORDER',
+        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); tie is broken by source order.`,
+        legacyStatusId: status.id,
+        templateId: status.template_id,
+      });
+    }
+  });
 
   // Name-conflict diagnostic: two distinct states (different template_id) resolving to the same
   // display name would be indistinguishable to a human reviewing the migrated definition.
@@ -173,7 +188,8 @@ const convertScopeGroup = (
       diagnostics.push({
         type: 'NAME_CONFLICT',
         message: `Multiple statuses resolve to the same display name "${name}" (status ${status.id}, template ${status.template_id}).`,
-        statusId: status.id,
+        legacyStatusId: status.id,
+        templateId: status.template_id,
       });
     }
   });
@@ -232,7 +248,7 @@ export const convertStatusToDefinition = (
 };
 
 // GraphQL-ready shape for a single scope's preview result, distinct from `WorkflowMigrationConversionResult`
-// because it also carries the always-false `published`/`hasPublishedVersion` fields expected by the
+// because it also carries the `published`/`hasPublishedVersion` fields expected by the
 // `WorkflowMigrationScopeResult` schema type.
 export interface WorkflowMigrationScopeResult {
   scope: StatusScope;
@@ -249,26 +265,37 @@ export interface WorkflowMigrationPreviewResult {
   results: WorkflowMigrationScopeResult[];
 }
 
+// GLOBAL first, then any other scope by name, so the output does not depend on store ordering.
+const compareScopes = (a: string, b: string): number => {
+  if (a === b) return 0;
+  if (a === StatusScope.Global) return -1;
+  if (b === StatusScope.Global) return 1;
+  return a.localeCompare(b);
+};
+
 /**
  * Pure reshaping of `byScope` (keyed by `StatusScope`) into the flat `results` array expected by
  * the `WorkflowMigrationPreview` GraphQL type. Kept here, next to `convertStatusToDefinition`,
  * rather than in the resolver, so it stays unit-testable without a resolver/context and the
- * resolver stays a thin bridge to domain logic.
+ * resolver stays a thin bridge to domain logic. `hasPublishedVersion` tells whether the entity
+ * type's existing workflow has a published version; it only applies to the GLOBAL scope, the only
+ * one a workflow covers.
  */
 export const buildWorkflowMigrationPreviewResult = (
   entityType: string,
   byScope: WorkflowMigrationByScope,
+  hasPublishedVersion = false,
 ): WorkflowMigrationPreviewResult => ({
   entityType,
   results: Object.entries(byScope)
     .filter((entry): entry is [string, WorkflowMigrationConversionResult] => entry[1] !== undefined)
+    .sort(([a], [b]) => compareScopes(a, b))
     .map(([scope, result]) => ({
       scope: scope as StatusScope,
       initialState: result.definition.initialState,
-      // Always false: this preview never persists anything, so there is no published/draft
-      // distinction to report yet (see WorkflowMigrationScopeResult doc in the schema).
+      // Always false: the preview is never persisted, so it can never be the published version.
       published: false,
-      hasPublishedVersion: false,
+      hasPublishedVersion: hasPublishedVersion && scope === StatusScope.Global,
       states: result.definition.states,
       transitions: result.definition.transitions,
       diagnostics: result.diagnostics,
@@ -276,8 +303,9 @@ export const buildWorkflowMigrationPreviewResult = (
 });
 
 // Diagnostics that make a migrated definition unsafe to publish straight away: a state whose
-// template no longer exists, or two states a human cannot tell apart. Ordering diagnostics
-// (MISSING_ORDER / DUPLICATE_ORDER) are only warnings, the converter resolves them deterministically.
+// template no longer exists, or two states a human cannot tell apart. Ordering and duplicate
+// diagnostics (MISSING_ORDER / DUPLICATE_ORDER / DUPLICATE_TEMPLATE) are only warnings, the
+// converter resolves them deterministically. EXISTING_WORKFLOW is gated by `overwrite` instead.
 const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = ['NAME_CONFLICT', 'MISSING_TEMPLATE'];
 
 export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiagnostic[]): WorkflowMigrationDiagnostic[] => {
