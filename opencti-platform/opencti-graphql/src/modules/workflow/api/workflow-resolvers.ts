@@ -35,8 +35,8 @@ const workflowResolvers = {
       return getWorkflowInstance(context, context.user!, entityId);
     },
     workflowMigrationPreview: async (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
-      const { byScope } = await getWorkflowMigrationPreview(context, context.user!, entityType);
-      return buildWorkflowMigrationPreviewResult(entityType, byScope);
+      const { byScope, hasPublishedVersion } = await getWorkflowMigrationPreview(context, context.user!, entityType);
+      return buildWorkflowMigrationPreviewResult(entityType, byScope, hasPublishedVersion);
     },
     allowedTransitions: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getAllowedTransitions(context, context.user!, entityId);

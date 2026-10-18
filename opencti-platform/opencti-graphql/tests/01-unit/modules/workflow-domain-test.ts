@@ -4067,6 +4067,7 @@ describe('getWorkflowInstance — read-repair', () => {
 describe('getWorkflowMigrationPreview', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findByType).mockResolvedValue({ id: 'entity-setting-id' } as any);
   });
   it('groups legacy Status data by scope and delegates to the pure converter', async () => {
     (fullEntitiesList as any).mockImplementation((_ctx: any, _user: any, types: string[]) => {
@@ -4123,6 +4124,49 @@ describe('getWorkflowMigrationPreview', () => {
 
     expect(byScope[StatusScope.Global]?.definition.states.map((s) => s.statusId)).toEqual(['t1']);
     expect(storeLoadByIds).toHaveBeenCalledWith(mockContext, mockUser, ['t1'], ENTITY_TYPE_STATUS_TEMPLATE);
+  });
+
+  describe('existing workflow', () => {
+    const statuses = [
+      { id: 's1', template_id: 't1', type: 'Incident', scope: StatusScope.Global, order: 1 },
+      { id: 's2', template_id: 't2', type: 'Incident', scope: StatusScope.RequestAccess, order: 1 },
+    ];
+    beforeEach(() => {
+      (fullEntitiesList as any).mockResolvedValue(statuses);
+      (storeLoadByIds as any).mockResolvedValue([{ id: 't1', name: 'New' }, { id: 't2', name: 'Pending' }]);
+    });
+
+    it('reports no published version and no EXISTING_WORKFLOW diagnostic without a workflow', async () => {
+      const { byScope, hasPublishedVersion } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+      expect(hasPublishedVersion).toBe(false);
+      expect(byScope[StatusScope.Global]?.diagnostics).toEqual([]);
+    });
+
+    it('flags the GLOBAL scope with EXISTING_WORKFLOW and reports the published version', async () => {
+      vi.mocked(findByType).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' } as any);
+      (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', published_version: { id: 'v1' } });
+
+      const { byScope, hasPublishedVersion } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+      expect(hasPublishedVersion).toBe(true);
+      expect(byScope[StatusScope.Global]?.diagnostics).toEqual([
+        expect.objectContaining({ type: 'EXISTING_WORKFLOW', message: expect.stringContaining('published workflow') }),
+      ]);
+      expect(byScope[StatusScope.RequestAccess]?.diagnostics).toEqual([]);
+    });
+
+    it('flags a draft-only workflow without reporting a published version', async () => {
+      vi.mocked(findByType).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' } as any);
+      (storeLoadById as any).mockResolvedValue({ id: 'workflow-id' });
+
+      const { byScope, hasPublishedVersion } = await getWorkflowMigrationPreview(mockContext, mockUser, 'Incident');
+
+      expect(hasPublishedVersion).toBe(false);
+      expect(byScope[StatusScope.Global]?.diagnostics).toEqual([
+        expect.objectContaining({ type: 'EXISTING_WORKFLOW', message: expect.stringContaining('draft workflow') }),
+      ]);
+    });
   });
 });
 

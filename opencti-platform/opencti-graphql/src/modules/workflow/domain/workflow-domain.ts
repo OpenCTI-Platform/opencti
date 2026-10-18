@@ -507,12 +507,10 @@ export const getWorkflowPublishedVersionId = async (
 };
 
 /**
- * Read-only preview of what migrating an entity type's legacy `Status` set to a
- * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted
- * changes. Pure conversion logic lives in `convertStatusToDefinition`; this just gathers the
- * `Status`/`StatusTemplate` input data for `entityType` (all scopes, matching `byScope`'s shape).
+ * Gathers the `Status`/`StatusTemplate` input data for `entityType` (all scopes, matching
+ * `byScope`'s shape) and hands it to the pure `convertStatusToDefinition`.
  */
-export const getWorkflowMigrationPreview = async (
+const convertLegacyStatuses = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
@@ -536,6 +534,37 @@ export const getWorkflowMigrationPreview = async (
   // storeLoadByIds returns an undefined entry for each id it couldn't find — filter those out
   // before handing templates to the converter (a missing one becomes a MISSING_TEMPLATE diagnostic).
   return convertStatusToDefinition(statuses, templates.filter((template): template is BasicWorkflowTemplateEntity => template != null));
+};
+
+export interface WorkflowMigrationPreviewData extends ConvertStatusToDefinitionResult {
+  hasPublishedVersion: boolean;
+}
+
+/**
+ * Read-only preview of what migrating an entity type's legacy `Status` set to a
+ * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted
+ * changes. When the entity type already has a workflow, its GLOBAL statuses are managed by that
+ * workflow rather than legacy data: the GLOBAL result then carries an EXISTING_WORKFLOW diagnostic,
+ * and `hasPublishedVersion` reports whether that workflow has a published version.
+ */
+export const getWorkflowMigrationPreview = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<WorkflowMigrationPreviewData> => {
+  const { byScope } = await convertLegacyStatuses(context, user, entityType);
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting?.workflow_id) {
+    return { byScope, hasPublishedVersion: false };
+  }
+  const publishedVersionId = await getWorkflowPublishedVersionId(context, user, entitySetting);
+  byScope[StatusScope.Global]?.diagnostics.push({
+    type: 'EXISTING_WORKFLOW',
+    message: publishedVersionId
+      ? 'Entity type already has a published workflow; its statuses are managed by that workflow, and migrating replaces it only with overwrite: true.'
+      : 'Entity type already has a draft workflow; migrating replaces it only with overwrite: true.',
+  });
+  return { byScope, hasPublishedVersion: !!publishedVersionId };
 };
 
 /**
@@ -564,7 +593,7 @@ export const migrateWorkflowFromStatuses = async (
     throw FunctionalError('Entity type already has a workflow, migration would overwrite it (pass overwrite: true to replace it)', { entityType });
   }
 
-  const { byScope } = await getWorkflowMigrationPreview(context, user, entityType);
+  const { byScope } = await convertLegacyStatuses(context, user, entityType);
   const { definition, diagnostics } = buildMigrationDefinition(entityType, byScope);
   if (publish) {
     const blocking = getPublishBlockingDiagnostics(diagnostics);

@@ -10228,10 +10228,20 @@ type WorkflowEntityRef {
   entity_type: String!
 }
 
+enum WorkflowMigrationDiagnosticType {
+  MISSING_ORDER
+  DUPLICATE_ORDER
+  DUPLICATE_TEMPLATE
+  NAME_CONFLICT
+  MISSING_TEMPLATE
+  EXISTING_WORKFLOW
+}
+
 type WorkflowMigrationDiagnostic {
-  type: String!
+  type: WorkflowMigrationDiagnosticType!
   message: String!
-  statusId: String
+  legacyStatusId: String
+  templateId: String
 }
 
 type WorkflowMigrationState {
