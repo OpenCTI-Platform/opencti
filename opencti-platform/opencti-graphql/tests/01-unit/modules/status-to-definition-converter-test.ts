@@ -70,7 +70,7 @@ describe('convertStatusToDefinition', () => {
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
     const { definition, diagnostics } = byScope[StatusScope.Global]!;
-    expect(diagnostics).toContainEqual(expect.objectContaining({ type: 'MISSING_ORDER', statusId: 's2' }));
+    expect(diagnostics).toContainEqual(expect.objectContaining({ type: 'MISSING_ORDER', legacyStatusId: 's2', templateId: 't2' }));
     expect(definition.states).toHaveLength(2);
     expect(definition.states.map((s) => s.statusId)).toEqual(['t1', 't2']);
   });
@@ -123,13 +123,31 @@ describe('convertStatusToDefinition', () => {
     expect(diagnostics.filter((d) => d.type === 'DUPLICATE_ORDER')).toHaveLength(2);
   });
 
+  it('keeps the lowest-order status of a duplicated template and adds a DUPLICATE_TEMPLATE diagnostic for the dropped one', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 3 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+      buildStatus({ id: 's3', template_id: 't1', order: 1 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: 'New' }),
+      buildTemplate({ id: 't2', name: 'Closed' }),
+    ];
+
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition, diagnostics } = byScope[StatusScope.Global]!;
+    expect(definition.states).toEqual([{ statusId: 't1', order: 0 }, { statusId: 't2', order: 1 }]);
+    expect(diagnostics).toEqual([expect.objectContaining({ type: 'DUPLICATE_TEMPLATE', legacyStatusId: 's1', templateId: 't1' })]);
+  });
+
   it('adds a MISSING_TEMPLATE diagnostic when a status references a template that no longer exists', () => {
     const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
 
     const { byScope } = convertStatusToDefinition(statuses, []);
 
     const { diagnostics } = byScope[StatusScope.Global]!;
-    expect(diagnostics).toContainEqual(expect.objectContaining({ type: 'MISSING_TEMPLATE', statusId: 's1' }));
+    expect(diagnostics).toContainEqual(expect.objectContaining({ type: 'MISSING_TEMPLATE', legacyStatusId: 's1', templateId: 't1' }));
   });
 
   it('returns two separate byScope entries, never merged, for a mixed-scope entity type', () => {
@@ -296,6 +314,35 @@ describe('buildWorkflowMigrationPreviewResult', () => {
     });
   });
 
+  it('lists the GLOBAL scope first whatever the byScope insertion order', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1, scope: StatusScope.RequestAccess }),
+      buildStatus({ id: 's2', template_id: 't2', order: 1, scope: StatusScope.Global }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: 'Pending' }), buildTemplate({ id: 't2', name: 'New' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const result = buildWorkflowMigrationPreviewResult('Incident', byScope);
+
+    expect(result.results.map((r) => r.scope)).toEqual([StatusScope.Global, StatusScope.RequestAccess]);
+  });
+
+  it('reports hasPublishedVersion on the GLOBAL scope only', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1, scope: StatusScope.Global }),
+      buildStatus({ id: 's2', template_id: 't2', order: 1, scope: StatusScope.RequestAccess }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Pending' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const result = buildWorkflowMigrationPreviewResult('Incident', byScope, true);
+
+    expect(result.results.map((r) => [r.scope, r.published, r.hasPublishedVersion])).toEqual([
+      [StatusScope.Global, false, true],
+      [StatusScope.RequestAccess, false, false],
+    ]);
+  });
+
   it('returns an empty results array when byScope has no entries', () => {
     expect(buildWorkflowMigrationPreviewResult('Incident', {})).toEqual({ entityType: 'Incident', results: [] });
   });
@@ -352,6 +399,8 @@ describe('getPublishBlockingDiagnostics', () => {
       { type: 'DUPLICATE_ORDER' as const, message: 'b' },
       { type: 'NAME_CONFLICT' as const, message: 'c' },
       { type: 'MISSING_TEMPLATE' as const, message: 'd' },
+      { type: 'DUPLICATE_TEMPLATE' as const, message: 'e' },
+      { type: 'EXISTING_WORKFLOW' as const, message: 'f' },
     ];
     expect(getPublishBlockingDiagnostics(diagnostics).map((d) => d.type)).toEqual(['NAME_CONFLICT', 'MISSING_TEMPLATE']);
   });

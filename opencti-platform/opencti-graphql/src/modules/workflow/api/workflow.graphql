@@ -48,10 +48,22 @@ type WorkflowEntityRef {
     entity_type: String!
 }
 
+enum WorkflowMigrationDiagnosticType {
+    MISSING_ORDER
+    DUPLICATE_ORDER
+    DUPLICATE_TEMPLATE
+    NAME_CONFLICT
+    MISSING_TEMPLATE
+    EXISTING_WORKFLOW
+}
+
 type WorkflowMigrationDiagnostic {
-    type: String!
+    type: WorkflowMigrationDiagnosticType!
     message: String!
-    statusId: String
+    # Id of the legacy Status entity the diagnostic is about.
+    legacyStatusId: String
+    # StatusTemplate id of that status, i.e. the statusId of the matching WorkflowMigrationState.
+    templateId: String
 }
 
 # Unlike WorkflowSerializedState, a migrated state carries a fully-computed, sequential `order`
@@ -69,8 +81,9 @@ type WorkflowMigrationState {
 type WorkflowMigrationScopeResult {
     scope: StatusScope!
     initialState: String!
-    # Always false: this is a read-only, unpersisted preview. Kept here so the shape already
-    # matches a real WorkflowSchema for a smoother transition once an actual migration persists it.
+    # Same meaning as on WorkflowSchema, the preview playing the role of a new draft: published is
+    # always false (the preview is never persisted), hasPublishedVersion tells whether the entity
+    # type's existing workflow has a published version (GLOBAL scope only).
     published: Boolean!
     hasPublishedVersion: Boolean!
     states: [WorkflowMigrationState!]!
