@@ -4522,7 +4522,7 @@ describe('getWorkflowMigrationPreview', () => {
 
       expect(hasPublishedVersion).toBe(false);
       expect(byScope[StatusScope.Global]?.diagnostics).toEqual([
-        expect.objectContaining({ type: 'EXISTING_WORKFLOW', message: expect.stringContaining('draft workflow') }),
+        expect.objectContaining({ type: 'EXISTING_WORKFLOW', message: expect.stringContaining('no published version') }),
       ]);
     });
   });
