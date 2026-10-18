@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as middleware from '../../../../src/database/middleware';
+import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as redis from '../../../../src/database/redis';
 import * as userActionListener from '../../../../src/listener/UserActionListener';
 import * as uriDenyListConfig from '../../../../src/config/uriDenyList';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import type { EditInput } from '../../../../src/generated/graphql';
 import { notifierEdit } from '../../../../src/modules/notifier/notifier-domain';
-import { NOTIFIER_CONNECTOR_WEBHOOK } from '../../../../src/modules/notifier/notifier-statics';
+import { NOTIFIER_CONNECTOR_EMAIL, NOTIFIER_CONNECTOR_WEBHOOK } from '../../../../src/modules/notifier/notifier-statics';
 
 const mockContext = { id: 'context' } as unknown as AuthContext;
 const mockUser = { id: 'user-1' } as unknown as AuthUser;
@@ -35,6 +36,12 @@ describe('notifierEdit', () => {
       event: undefined,
     } as any);
 
+    vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({
+      id: notifierId,
+      notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
+      notifier_configuration: validConfiguration,
+    } as any);
+
     vi.spyOn(redis, 'notify').mockResolvedValue(undefined as any);
     vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue([] as any);
   });
@@ -45,18 +52,62 @@ describe('notifierEdit', () => {
     expect(middleware.updateAttribute).toHaveBeenCalledOnce();
   });
 
-  it('should NOT crash when notifier_configuration key is missing from input (find vs filter bug)', async () => {
-    const inputWithoutConfig: EditInput[] = baseInput.filter((i) => i.key !== 'notifier_configuration');
+  it('should not validate an edit without connector nor configuration', async () => {
+    await notifierEdit(mockContext, mockUser, notifierId, [{ key: 'name', value: ['New name'] }]);
 
-    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithoutConfig))
+    expect(middlewareLoader.storeLoadById).not.toHaveBeenCalled();
+    expect(middleware.updateAttribute).toHaveBeenCalledOnce();
+  });
+
+  it('should validate an edited configuration with the stored connector', async () => {
+    const inputWithoutConnectorId: EditInput[] = baseInput.filter((i) => i.key !== 'notifier_connector_id');
+    await notifierEdit(mockContext, mockUser, notifierId, inputWithoutConnectorId);
+    expect(middleware.updateAttribute).toHaveBeenCalledOnce();
+
+    vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ id: notifierId, notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL } as any);
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithoutConnectorId))
       .rejects.toThrow('This configuration is invalid');
   });
 
-  it('should NOT crash when notifier_connector_id key is missing from input (find vs filter bug)', async () => {
-    const inputWithoutConnectorId: EditInput[] = baseInput.filter((i) => i.key !== 'notifier_connector_id');
+  it('should validate an edited connector with the stored configuration', async () => {
+    const inputWithoutConfig: EditInput[] = baseInput.filter((i) => i.key !== 'notifier_configuration');
+    await notifierEdit(mockContext, mockUser, notifierId, inputWithoutConfig);
+    expect(middleware.updateAttribute).toHaveBeenCalledOnce();
 
-    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithoutConnectorId))
-      .rejects.toThrow('Invalid notifier connector');
+    const inputWithEmailConnector: EditInput[] = [
+      ...inputWithoutConfig.filter((i) => i.key !== 'notifier_connector_id'),
+      { key: 'notifier_connector_id', value: [NOTIFIER_CONNECTOR_EMAIL] },
+    ];
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithEmailConnector))
+      .rejects.toThrow('This configuration is invalid');
+  });
+
+  it('should reject the edit of a notifier that cannot be found', async () => {
+    vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(undefined as any);
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, baseInput))
+      .rejects.toThrow('Cant find element to update');
+    expect(middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should reject a configuration that is not valid JSON', async () => {
+    const inputWithMalformedConfig: EditInput[] = [
+      ...baseInput.filter((i) => i.key !== 'notifier_configuration'),
+      { key: 'notifier_configuration', value: ['{not json'] },
+    ];
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithMalformedConfig))
+      .rejects.toThrow('This configuration is invalid');
+  });
+
+  it.each(['not a url', 'example.com/webhook', 'ftp://example.com/webhook'])('should reject the webhook url %s', async (url) => {
+    const inputWithInvalidUrl: EditInput[] = [
+      ...baseInput.filter((i) => i.key !== 'notifier_configuration'),
+      { key: 'notifier_configuration', value: [JSON.stringify({ url, verb: 'POST', template: '{}' })] },
+    ];
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithInvalidUrl))
+      .rejects.toThrow('The webhook URL must be an http or https URL');
   });
 
   it('should NOT crash when restricted_members value is null (value.map bug)', async () => {
