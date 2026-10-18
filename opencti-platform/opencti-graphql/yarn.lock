@@ -10153,34 +10153,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.34.0":
-  version: 7.34.0
-  resolution: "openai@npm:7.34.0"
-  peerDependencies:
-    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
-    "@smithy/hash-node": ">=4.3.0 <5"
-    "@smithy/signature-v4": ">=5.4.0 <6"
-    undici: ">=5 <9"
-    ws: ^8.21.0
-    zod: ^3.25 || ^4.0
-  peerDependenciesMeta:
-    "@aws-sdk/credential-provider-node":
-      optional: true
-    "@smithy/hash-node":
-      optional: true
-    "@smithy/signature-v4":
-      optional: true
-    undici:
-      optional: true
-    ws:
-      optional: true
-    zod:
-      optional: true
-  checksum: 10c0/3ed2dd9fdd94bf1ffe8495b18c14354a21b18461a9fc5ef4558c0c3d5121d98062dd2b8721c5f894fa1411a5e4c1322ee2ae16a89003afb22011ad6697c07bc4
-  languageName: node
-  linkType: hard
-
-"openai@npm:^7.10.0":
+"openai@npm:7.34.0, openai@npm:^7.10.0":
   version: 7.34.0
   resolution: "openai@npm:7.34.0"
   peerDependencies:
