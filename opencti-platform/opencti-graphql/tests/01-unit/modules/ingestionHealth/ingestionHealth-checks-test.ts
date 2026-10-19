@@ -133,52 +133,6 @@ describe('computeIngestionHealthPatch with runtime data', () => {
   });
 });
 
-describe('stopped ingestion', () => {
-  const STOPPED = { ...CONTEXT, isStopped: true };
-  const isExistingUser = () => false;
-
-  it('should be stopped with no check and set since on the first evaluation', () => {
-    expect(computeIngestionHealthPatch({}, [], STOPPED)).toEqual({
-      ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: EVALUATED_AT, health_checks: [] },
-    });
-  });
-
-  it('should stay stopped with a configuration check, and keep the check', () => {
-    expect(computeIngestionHealthPatch({}, [USER_MISSING], STOPPED)).toEqual({
-      ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: EVALUATED_AT, health_checks: [USER_MISSING] },
-    });
-  });
-
-  it('should be stopped whatever the heartbeat', () => {
-    const patch = computeIngestionHealthPatch({}, [], { ...STOPPED, runtimeData: { heartbeat: EVALUATED_AT } });
-    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Stopped);
-  });
-
-  it('should move since when a monitored ingestion is stopped', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Critical, status_since: PREVIOUS_SINCE, health_checks: [HEARTBEAT_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [], STOPPED)).toEqual({
-      ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: EVALUATED_AT, health_checks: [] },
-    });
-  });
-
-  it('should keep since when only the configuration checks change while stopped', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: PREVIOUS_SINCE, health_checks: [] } };
-    expect(computeIngestionHealthPatch(current, [USER_MISSING], STOPPED)).toEqual({
-      ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] },
-    });
-  });
-
-  it('should write nothing while it stays stopped with the same checks', () => {
-    const current = { ingestion_health: { status: IngestionHealthStatus.Stopped, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING] } };
-    expect(computeIngestionHealthPatch(current, [USER_MISSING], STOPPED)).toBeNull();
-  });
-
-  it('should skip the runtime checks but keep the configuration checks', () => {
-    const checks = computeIngestionHealthChecks({ ...CONNECTOR, connector_user_id: 'deleted-user-id' }, { ...STOPPED, ...PINGING, isExistingUser });
-    expect(checks).toEqual([USER_MISSING]);
-  });
-});
-
 describe('heartbeat check', () => {
   const isExistingUser = () => true;
   const input = { ...CONNECTOR, connector_user_id: 'user' };
@@ -340,11 +294,6 @@ describe('computeHealthTransition', () => {
     [IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
     [IngestionHealthStatus.Degraded, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
     [IngestionHealthStatus.Critical, IngestionHealthStatus.Healthy, HealthTransition.Recovered],
-    [IngestionHealthStatus.Healthy, IngestionHealthStatus.Stopped, HealthTransition.Stopped],
-    [IngestionHealthStatus.Degraded, IngestionHealthStatus.Stopped, HealthTransition.Stopped],
-    [IngestionHealthStatus.Critical, IngestionHealthStatus.Stopped, HealthTransition.Stopped],
-    [IngestionHealthStatus.Stopped, IngestionHealthStatus.Critical, HealthTransition.Critical],
-    [IngestionHealthStatus.Stopped, IngestionHealthStatus.Degraded, HealthTransition.Degraded],
   ])('should return the transition from %s to %s', (previous, next, expected) => {
     expect(computeHealthTransition(previous, next)).toBe(expected);
   });
@@ -362,20 +311,12 @@ describe('computeHealthTransition', () => {
     expect(computeHealthTransition(undefined, IngestionHealthStatus.Healthy)).toBeNull();
   });
 
-  it('should return null on the first evaluation of a stopped ingestion: nothing was monitored before', () => {
-    expect(computeHealthTransition(undefined, IngestionHealthStatus.Stopped)).toBeNull();
-  });
-
-  it('should return null when a stopped ingestion restarts healthy: nothing was failing', () => {
-    expect(computeHealthTransition(IngestionHealthStatus.Stopped, IngestionHealthStatus.Healthy)).toBeNull();
-  });
-
   it.each([IngestionHealthStatus.Critical, IngestionHealthStatus.Degraded])('should return recovered when the health is removed after %s', (previous) => {
     expect(computeHealthTransition(previous, undefined)).toBe(HealthTransition.Recovered);
   });
 
-  it.each([IngestionHealthStatus.Healthy, IngestionHealthStatus.Stopped])('should return null when the health is removed after %s: nothing failing to recover from', (previous) => {
-    expect(computeHealthTransition(previous, undefined)).toBeNull();
+  it('should return null when the health is removed after healthy: nothing failing to recover from', () => {
+    expect(computeHealthTransition(IngestionHealthStatus.Healthy, undefined)).toBeNull();
   });
 
   it('should return null when there is no health before and after', () => {

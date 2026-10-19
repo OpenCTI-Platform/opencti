@@ -33,8 +33,6 @@ export interface GlobalIngestionHealthContext {
 export interface SourceIngestionHealthContext extends GlobalIngestionHealthContext {
   // Data reported by the sources, as stored: whether it is still fresh is judged here, not by the storage
   runtimeData?: RuntimeData;
-  // Stopped on purpose (by the composer, or a feed or sync switched off): wins over every check
-  isStopped?: boolean;
 }
 
 // What describes one occurrence of a failing check, stored with it in Elasticsearch (health_check_metadata) and given back to message().
@@ -136,7 +134,7 @@ export const HEALTH_CHECK_REGISTRY: Record<string, HealthCheckDefinition> = {
     severity: IngestionHealthCheckSeverity.Blocking,
     message: () => 'No heartbeat received',
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
-    isEnabled: (ingestor, { isStopped, pingingConnectorsIds }) => !isStopped && isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
+    isEnabled: (ingestor, { pingingConnectorsIds }) => isDeployed(ingestor) && pingingConnectorsIds.has(ingestor.internal_id),
     runtimeData: 'heartbeat',
     getFailure: (heartbeat, { evaluatedAt }) => (isHeartbeatAlive(heartbeat, evaluatedAt) ? null : {}),
   },

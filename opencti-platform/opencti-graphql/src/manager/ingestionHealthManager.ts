@@ -79,6 +79,23 @@ const isIngestionStopped = (element: IngestionElement & { ingestion_running?: bo
   }
 };
 
+const writeIngestionHealth = async <T extends IngestionElement>(context: AuthContext, source: IngestionSource<T>, element: T, patch: IngestionHealthFields) => {
+  // Standard update: moves updated_at and emits an update event
+  const { element: updatedElement } = await patchAttribute(context, INGESTION_HEALTH_MANAGER_USER, element.internal_id, source.entityType, patch);
+  if (source.entityType === ENTITY_TYPE_CONNECTOR) {
+    // patchAttribute does not refresh the caches: notify every node, as registerConnector does
+    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
+  }
+};
+
+// Stopped on purpose: nothing is evaluated (no checks, no runtime data read) and nothing is reported,
+// the stored health, if any, is removed
+const clearIngestionHealth = async <T extends IngestionElement>(context: AuthContext, source: IngestionSource<T>, element: T) => {
+  if (element.ingestion_health) {
+    await writeIngestionHealth(context, source, element, { ingestion_health: null });
+  }
+};
+
 const evaluateIngestionHealth = async <T extends IngestionElement>(
   context: AuthContext,
   source: IngestionSource<T>,
@@ -86,25 +103,13 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   periodContext: GlobalIngestionHealthContext,
   runtimeData: RuntimeData,
 ) => {
-  // Stopped on purpose: the status is stopped, the runtime is not monitored (no runtime data read, no runtime check),
-  // the configuration checks still are
-  const isStopped = isIngestionStopped(element);
-  const healthContext = {
-    ...periodContext,
-    runtimeData: isStopped ? {} : runtimeData,
-    isStopped,
-  };
+  const healthContext = { ...periodContext, runtimeData };
   const checks = computeIngestionHealthChecks(element, healthContext);
   const patch = computeIngestionHealthPatch(element, checks, healthContext);
   if (!patch) {
     return;
   }
-  // Standard update: moves updated_at and emits an update event
-  const { element: updatedElement } = await patchAttribute(context, INGESTION_HEALTH_MANAGER_USER, element.internal_id, source.entityType, patch);
-  if (source.entityType === ENTITY_TYPE_CONNECTOR) {
-    // patchAttribute does not refresh the caches: notify every node, as registerConnector does
-    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElement, INGESTION_HEALTH_MANAGER_USER);
-  }
+  await writeIngestionHealth(context, source, element, patch);
   // Published a health activity event after the write
   // a failed write is retried at the next period and reports the transition then
   const nextHealth = patch.ingestion_health;
@@ -115,7 +120,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
       event_type: 'health',
       event_scope: transition,
       event_access: 'administration',
-      status: transition === HealthTransition.Recovered || transition === HealthTransition.Stopped ? 'success' : 'error',
+      status: transition === HealthTransition.Recovered ? 'success' : 'error',
       message: buildHealthTransitionMessage(element, transition, nextHealth?.health_checks ?? []),
       context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
     });
@@ -136,19 +141,32 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     lock.signal.throwIfAborted();
     const source = INGESTION_SOURCES[sourceIndex];
     const elements = await source.load(context);
+    const stoppedElements = elements.filter(isIngestionStopped);
+    const activeElements = elements.filter((element) => !isIngestionStopped(element));
+
+    // Stopped: the only place handling them, nothing read, nothing evaluated, nothing reported
+    for (let i = 0; i < stoppedElements.length; i += 1) {
+      // Outside the try: losing the lock must stop the scan, not be logged as an element failure
+      lock.signal.throwIfAborted();
+      try {
+        await clearIngestionHealth(context, source, stoppedElements[i]);
+      } catch (e) {
+        logApp.warn('[OPENCTI-MODULE] Ingestion health clear error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', id: stoppedElements[i].internal_id, type: source.entityType });
+      }
+    }
+
+    // Active
     let runtimeDataByIngestion: Map<string, RuntimeData>;
-    const periodContext = { evaluatedAt: now(), isExistingUser, pingingConnectorsIds };
     try {
-      const monitoredIds = elements.filter((element) => !isIngestionStopped(element)).map((element) => element.internal_id);
-      runtimeDataByIngestion = await getRuntimeDataMany(monitoredIds);
+      runtimeDataByIngestion = await getRuntimeDataMany(activeElements.map((element) => element.internal_id));
     } catch (e) {
       logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER', type: source.entityType });
       continue;
     }
-    for (let i = 0; i < elements.length; i += 1) {
-      // Outside the try: losing the lock must stop the scan, not be logged as an element failure
+    const periodContext = { evaluatedAt: now(), isExistingUser, pingingConnectorsIds };
+    for (let i = 0; i < activeElements.length; i += 1) {
       lock.signal.throwIfAborted();
-      const element = elements[i];
+      const element = activeElements[i];
       try {
         await evaluateIngestionHealth(context, source, element, periodContext, runtimeDataByIngestion.get(element.internal_id) ?? {});
       } catch (e) {

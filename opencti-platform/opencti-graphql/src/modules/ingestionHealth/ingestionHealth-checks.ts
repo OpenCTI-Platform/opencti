@@ -32,12 +32,9 @@ export const computeIngestionHealthChecks = (
   });
 };
 
-// Priority: stopped > critical > degraded > healthy. A stopped ingestion keeps its configuration checks, they do not change its status.
+// Priority: critical > degraded > healthy. A stopped ingestion is never evaluated (see the ingestion health manager).
 // Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {}, isStopped }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
-  if (isStopped) {
-    return IngestionHealthStatus.Stopped;
-  }
+export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
   // A code unknown to this platform version has no definition: it cannot change the status
   const healthChecks = checks
     .map((check) => getHealthCheckDefinition(check.health_check_code))
@@ -99,21 +96,17 @@ export const HealthTransition = {
   Critical: 'critical',
   Degraded: 'degraded',
   Recovered: 'recovered',
-  Stopped: 'stopped',
 } as const;
 export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
 
 // previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from.
 // next is undefined when the health object is removed because no status can be computed anymore (no more failing check):
 // it is a recovery only for an ingestion that was failing.
-// A stop is reported only when it ends a monitored status: an ingestion already stopped at its first evaluation is not.
-// A restart is reported only when it fails: a stopped ingestion was not failing, it has nothing to recover from.
+// A stopped ingestion is not evaluated: its health is removed and nothing is reported.
+// A restart is reported only when it fails: a stopped ingestion has no health, it has nothing to recover from.
 export const computeHealthTransition = (previous: IngestionHealthStatus | undefined, next: IngestionHealthStatus | undefined): HealthTransition | null => {
   if (previous === next) {
     return null;
-  }
-  if (next === IngestionHealthStatus.Stopped) {
-    return previous ? HealthTransition.Stopped : null;
   }
   if (next === IngestionHealthStatus.Critical) {
     return HealthTransition.Critical;

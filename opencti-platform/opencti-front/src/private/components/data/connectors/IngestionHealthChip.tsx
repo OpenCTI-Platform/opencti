@@ -28,7 +28,6 @@ const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
   critical: 'critical',
   degraded: 'high',
   healthy: 'low',
-  stopped: 'neutral',
   unknown: 'neutral',
 };
 

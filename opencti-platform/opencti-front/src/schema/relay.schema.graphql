@@ -10840,7 +10840,6 @@ type ConnectorManager implements BasicObject & InternalObject {
 
 enum IngestionHealthStatus {
   critical
-  stopped
   healthy
   degraded
 }
