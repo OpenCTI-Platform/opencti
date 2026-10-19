@@ -296,13 +296,26 @@ export const fetchCsvFromUrl = async (
   return { csvLines, addedLast: resultHeaders['x-csv-date-added-last'] };
 };
 
+/**
+ * Returns the CSV mapper of a feed, parsed for the bundler: the inline JSON mapper,
+ * or the stored mapper referenced by `csv_mapper_id`.
+ */
+export const resolveCsvMapperParsed = async (
+  context: AuthContext,
+  user: AuthUser,
+  feed: { csv_mapper_type?: IngestionCsvMapperType | null; csv_mapper?: string | null; csv_mapper_id?: string | null },
+): Promise<CsvMapperParsed> => {
+  const csvMapper = feed.csv_mapper_type === IngestionCsvMapperType.Inline
+    ? JSON.parse(feed.csv_mapper ?? '') : await findCsvMapperById(context, user, feed.csv_mapper_id!);
+  return parseCsvMapper(csvMapper);
+};
+
 export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput): Promise<CsvMapperTestResult> => {
   verifyIngestionUri(input.uri);
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const csvMapper = input.csv_mapper_type === IngestionCsvMapperType.Inline ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
-  const parsedMapper = parseCsvMapper(csvMapper);
+  const parsedMapper = await resolveCsvMapperParsed(context, user, input);
   const ingestion = {
     uri: input.uri,
     authentication_type: input.authentication_type,

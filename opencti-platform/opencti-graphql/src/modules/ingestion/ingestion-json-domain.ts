@@ -80,6 +80,29 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
 };
 
 /**
+ * Computes the state to save after a JSON feed execution, used as variables by the next execution.
+ * Only the attributes declared in the feed's query attributes are kept, each according to its `state_operation`:
+ * - `sum`: previous and new values are added up (as integers, a missing side counts as 0), e.g. a pagination offset.
+ * - `replace`: the new value is kept, unless it is empty, then the previous one is kept, e.g. a cursor.
+ * @param queryParamsAttributes the feed's query attributes
+ * @param previousState the variables used for this execution
+ * @param newState the values extracted from this execution's response
+ */
+export const mergeIngestionJsonState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+  const state: Record<string, any> = {};
+  const queryParams = queryParamsAttributes ?? [];
+  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
+    const queryParamsAttribute = queryParams[attrIndex];
+    if (queryParamsAttribute.state_operation === 'sum') {
+      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
+    } else {
+      state[queryParamsAttribute.to] = isNotEmptyField(newState[queryParamsAttribute.to]) ? newState[queryParamsAttribute.to] : previousState[queryParamsAttribute.to];
+    }
+  }
+  return state;
+};
+
+/**
  * Normalises the result of getValueFromPath (typed as unknown) to a string or null.
  * JSONPath can return an array — in that case the first element is used.
  * Non-string, non-array values (objects, numbers, …) are rejected (return null).

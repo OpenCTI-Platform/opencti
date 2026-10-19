@@ -12,21 +12,19 @@ import { isNotEmptyField } from '../database/utils';
 import { isDateInRange, now, schedulingPeriodToMs, sinceNowInMinutes, utcDate } from '../utils/format';
 import { findAllRssIngestion, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, DataParam } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestion, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
-import { IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
-import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
-import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
+import { TaxiiVersion } from '../generated/graphql';
+import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion, resolveCsvMapperParsed } from '../modules/ingestion/ingestion-csv-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { reportExpectation, updateExpectationsNumber } from '../domain/work';
-import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../modules/user/user-domain';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { queueDetails } from '../modules/connector/connector-domain';
 import { connectorIdFromIngestId } from '../domain/connector';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
-import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
+import { executeJsonQuery, findAllJsonIngestion, mergeIngestionJsonState, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 import { FEED_REQUEST_TIMEOUT, runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
 import { buildRssReportsBundle, rssDataParser, type RssGetter, rssHttpGetter } from '../modules/ingestion/ingestion-rss-utils';
 import { computeTaxiiNextState, handleConfidenceToScoreTransformation, taxiiHttpGet, type TaxiiResponseData } from '../modules/ingestion/ingestion-taxii-utils';
@@ -312,9 +310,7 @@ export const processCsvLines = async (
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper = ingestion.csv_mapper_type === IngestionCsvMapperType.Inline
-    ? JSON.parse(ingestion.csv_mapper!) : await findCsvMapperById(context, user, ingestion.csv_mapper_id!);
-  const csvMapperParsed = parseCsvMapper(csvMapper);
+  const csvMapperParsed = await resolveCsvMapperParsed(context, user, ingestion);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
     logApp.info(`[OPENCTI-MODULE] Executing CSV ingestion for ${ingestion.name}`);
@@ -382,20 +378,6 @@ export const csvExecutor = async (context: AuthContext) => {
 // endregion
 
 // region json ingestion
-const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
-  const state: Record<string, any> = {};
-  const queryParams = queryParamsAttributes ?? [];
-  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
-    const queryParamsAttribute = queryParams[attrIndex];
-    if (queryParamsAttribute.state_operation === 'sum') {
-      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
-    } else {
-      state[queryParamsAttribute.to] = isNotEmptyField(newState[queryParamsAttribute.to]) ? newState[queryParamsAttribute.to] : previousState[queryParamsAttribute.to];
-    }
-  }
-  return state;
-};
-
 export const jsonExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
@@ -428,7 +410,7 @@ export const jsonExecutor = async (context: AuthContext) => {
             await pushBundleToConnectorQueue(context, ingestion, bundle);
           }
           // Save new state for next execution
-          const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+          const ingestionState = mergeIngestionJsonState(ingestion.query_attributes, variables, nextExecutionState);
           const state = { ingestion_json_state: ingestionState, last_execution_date: now(), last_execution_status: 'success' };
           await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
           await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });

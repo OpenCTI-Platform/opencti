@@ -48,21 +48,30 @@ vi.mock('../../../../src/modules/ingestion/ingestion-taxii-domain', () => ({
   patchTaxiiIngestion: patchTaxiiIngestionMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', () => ({
+vi.mock('../../../../src/modules/ingestion/ingestion-csv-domain', async (importOriginal) => ({
+  resolveCsvMapperParsed: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-csv-domain')>()).resolveCsvMapperParsed,
   findAllCsvIngestion: findAllCsvIngestionMock,
   patchCsvIngestion: patchCsvIngestionMock,
   fetchCsvFromUrl: fetchCsvFromUrlMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
+vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (importOriginal) => ({
+  mergeQueryState: (await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-json-domain')>()).mergeIngestionJsonState,
   findAllJsonIngestion: findAllJsonIngestionMock,
   patchJsonIngestion: patchJsonIngestionMock,
   executeJsonQuery: executeJsonQueryMock,
 }));
 
-vi.mock('../../../../src/modules/ingestion/ingestion-common', () => ({
-  decryptIngestionCredential: decryptIngestionCredentialMock,
-}));
+vi.mock('../../../../src/modules/ingestion/ingestion-common', async (importOriginal) => {
+  const { emptyFilterGroup } = await import('../../../../src/utils/filtering/filtering-utils');
+  const actual = await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-common')>();
+  return {
+    // read from the mocked conf above
+    FEED_REQUEST_TIMEOUT: actual.FEED_REQUEST_TIMEOUT,
+    decryptIngestionCredential: decryptIngestionCredentialMock,
+    runningIngestionsFilters: () => emptyFilterGroup,
+  };
+});
 
 vi.mock('../../../../src/domain/connector', () => ({
   queueDetails: queueDetailsMock,
