@@ -1,4 +1,3 @@
-import { AxiosError, AxiosHeaders, type AxiosResponse } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
@@ -33,13 +32,13 @@ const CONTRACT_UPDATE_ERROR = 'Unable to update the "platformContract" of the pl
 
 const statusResponse = (status: string) => ({ data: { data: { refreshPlatformRegistrationConnectivityStatus: { status } } } });
 const graphqlErrorResponse = (message: string) => ({ data: { data: null, errors: [{ message }] } });
-const badRequestError = (message: string) => new AxiosError('Request failed with status code 400', 'ERR_BAD_REQUEST', undefined, undefined, {
+const { HttpClientError } = await import('../../../../../src/utils/http-client');
+const badRequestError = (message: string) => new HttpClientError('Request failed with status code 400', 'ERR_BAD_REQUEST', {
   status: 400,
   statusText: 'Bad Request',
   headers: {},
-  config: { headers: new AxiosHeaders() },
   data: { errors: [{ message, extensions: { code: 'BAD_USER_INPUT' } }] },
-} as AxiosResponse);
+});
 
 const loadClient = async () => {
   const { xtmHubClient } = await import('../../../../../src/modules/xtm/hub/xtm-hub-client');
@@ -133,7 +132,7 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
   it('should return inactive when the hub is unreachable', async () => {
     // Given
     const { xtmHubClient } = await loadClient();
-    mockPost.mockRejectedValueOnce(new AxiosError('connect ECONNREFUSED', 'ECONNREFUSED'));
+    mockPost.mockRejectedValueOnce(new HttpClientError('connect ECONNREFUSED', 'ECONNREFUSED'));
 
     // When
     const status = await xtmHubClient.refreshRegistrationStatus({ platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' });

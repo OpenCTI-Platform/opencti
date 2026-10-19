@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "7.261016.0",
+  "version": "7.261019.0",
   "type": "module",
   "private": true,
   "workspaces": [
@@ -39,7 +39,7 @@
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
-    "@filigran/chatbot": "3.12.2",
+    "@filigran/chatbot": "3.14.0",
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
     "@filigran/design-system": "1.2.0",
     "@filigran/rich-text-editor": "1.2.2",

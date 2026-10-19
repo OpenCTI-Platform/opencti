@@ -12,6 +12,7 @@ import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute'
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
 import useAuth from '../../../hooks/useAuth';
+import { type CustomFieldStoredValue, getCustomFieldRawValueByFieldName, isCustomFieldAttribute } from '../../../customFields';
 
 export type ListOutcome = {
   html: string;
@@ -145,7 +146,13 @@ const useBuildListOutcome = () => {
                 let property: DisplayInputValue;
                 const attributePath = resolveWorkflowPath(col.attribute);
                 try {
-                  property = getObjectPropertyWithoutEmptyValues(n, attributePath) as DisplayInputValue;
+                  // Custom field values are not properties of the entity, they are read from its customFieldValues
+                  property = isCustomFieldAttribute(col.attribute)
+                    ? getCustomFieldRawValueByFieldName(
+                      (n as { customFieldValues?: readonly CustomFieldStoredValue[] | null }).customFieldValues,
+                      col.attribute ?? '',
+                    ) as DisplayInputValue
+                    : getObjectPropertyWithoutEmptyValues(n, attributePath) as DisplayInputValue;
                 } catch (_e) {
                   property = '';
                 }

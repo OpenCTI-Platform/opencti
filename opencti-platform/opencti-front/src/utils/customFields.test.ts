@@ -7,6 +7,8 @@ import {
   CustomFieldDef,
   CustomFieldStoredValue,
   CustomFieldValue,
+  customFieldDefinitionsToWidgetColumns,
+  getCustomFieldLabelFromFilterKeysSchema,
   getCustomFieldCurrentValue,
   getCustomFieldDisplayValue,
   getCustomFieldLabel,
@@ -238,5 +240,53 @@ describe('customFields', () => {
       t_i18n: (key) => `translated:${key}`,
       fldt: (date) => `date:${date}`,
     })).toBe(expected);
+  });
+});
+
+describe('customFieldDefinitionsToWidgetColumns', () => {
+  const definitions = [
+    { name: 'x_opencti_cf_note', label: 'Note', field_type: 'string', entity_types: ['Case-Incident'] },
+    { name: 'x_opencti_cf_level', label: 'Level', field_type: 'select', entity_types: ['Case-Incident', 'Report'] },
+    { name: 'x_opencti_cf_report', label: 'Report only', field_type: 'string', entity_types: ['Report'] },
+    { name: 'x_opencti_cf_unattached', label: 'Unattached', field_type: 'string', entity_types: [] },
+    { name: 'x_opencti_cf_no_types', label: 'No types', field_type: 'string', entity_types: null },
+  ];
+
+  it('should keep only the definitions attached to the entity type', () => {
+    const columns = customFieldDefinitionsToWidgetColumns(definitions, 'Case-Incident');
+    expect(columns.map((column) => column.attribute)).toEqual(['x_opencti_cf_note', 'x_opencti_cf_level']);
+  });
+
+  it('should never keep a definition attached to no entity type', () => {
+    const columns = customFieldDefinitionsToWidgetColumns(definitions);
+    expect(columns.map((column) => column.attribute)).toEqual(['x_opencti_cf_note', 'x_opencti_cf_level', 'x_opencti_cf_report']);
+  });
+
+  it('should offer the definitions of stix-core-relationship for a relationship type', () => {
+    const relationshipDefinitions = [
+      ...definitions,
+      { name: 'x_opencti_cf_relationship', label: 'Relationship', field_type: 'string', entity_types: ['stix-core-relationship'] },
+      { name: 'x_opencti_cf_targets', label: 'Targets', field_type: 'string', entity_types: ['targets'] },
+    ];
+    const attributes = (entityType: string, isRelationshipType: boolean) => customFieldDefinitionsToWidgetColumns(relationshipDefinitions, entityType, isRelationshipType)
+      .map((column) => column.attribute);
+    expect(attributes('targets', true)).toEqual(['x_opencti_cf_relationship', 'x_opencti_cf_targets']);
+    expect(attributes('stix-core-relationship', true)).toEqual(['x_opencti_cf_relationship']);
+    expect(attributes('Report', false)).toEqual(['x_opencti_cf_level', 'x_opencti_cf_report']);
+  });
+});
+
+describe('getCustomFieldLabelFromFilterKeysSchema', () => {
+  const filterKeysSchema = new Map([
+    ['Report', new Map([['x_opencti_cf_level', { label: 'Level' }]])],
+    ['Case-Incident', new Map([['x_opencti_cf_note', { label: 'Analyst note' }]])],
+  ]);
+
+  it('should return the label of the custom field for one of the entity types', () => {
+    expect(getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, ['Report', 'Case-Incident'], 'x_opencti_cf_note')).toEqual('Analyst note');
+  });
+
+  it('should return the technical name if the custom field is unknown for these entity types', () => {
+    expect(getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, ['Report'], 'x_opencti_cf_note')).toEqual('x_opencti_cf_note');
   });
 });
