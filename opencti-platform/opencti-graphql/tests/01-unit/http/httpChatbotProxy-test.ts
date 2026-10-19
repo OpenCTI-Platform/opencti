@@ -1,3 +1,5 @@
+import { PassThrough, Readable } from 'node:stream';
+import { brotliCompressSync, gzipSync } from 'node:zlib';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -147,7 +149,7 @@ vi.mock('../../../src/utils/http-client', () => ({
     if (error && typeof error === 'object' && 'response' in error) {
       const e = error as any;
       if (e.response) {
-        return { status: e.response.status, data: e.response.data, headers: {}, message: e.message };
+        return { status: e.response.status, data: e.response.data, headers: e.response.headers ?? {}, message: e.message };
       }
     }
     return null;
@@ -157,6 +159,7 @@ vi.mock('../../../src/utils/http-client', () => ({
 // ── Imports (after mocks) ──────────────────────────────────────────────────
 
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
+import { logApp } from '../../../src/config/conf';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
 import { getXtmOneIdentity } from '../../../src/domain/xtm-auth';
@@ -994,7 +997,7 @@ describe('httpChatbotProxy: getChatbotArtifact', () => {
   const DECK_ID = '22222222-2222-4222-8222-222222222222';
   let res: ReturnType<typeof buildRes>;
 
-  const buildArtifactReq = (kind: string, artifactId: string) => ({ params: { kind, artifactId }, headers: {}, on: vi.fn() } as any);
+  const buildArtifactReq = (kind: string, artifactId: string) => ({ params: { kind, artifactId }, headers: {} } as any);
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -1046,6 +1049,23 @@ describe('httpChatbotProxy: getChatbotArtifact', () => {
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({ error: 'Not found' });
   });
+
+  it('should cancel the upstream read and answer nothing when the browser leaves', async () => {
+    const browser = new AbortController();
+    setupAuthenticatedContext({ requestAbortSignal: browser.signal });
+    mockGet.mockImplementation((_url: string, opts: { signal: AbortSignal }) => new Promise((_resolve, reject) => {
+      opts.signal.addEventListener('abort', () => reject(new Error('canceled')));
+    }));
+
+    const pending = getChatbotArtifact(buildArtifactReq('video', DECK_ID), res);
+    await vi.waitFor(() => expect(mockGet).toHaveBeenCalled());
+    browser.abort();
+    await pending;
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(logApp.error).not.toHaveBeenCalled();
+  });
 });
 
 describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
@@ -1056,7 +1076,6 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     params: { kind, artifactId },
     body,
     headers: {},
-    on: vi.fn(),
   } as any);
 
   beforeEach(() => {
@@ -1116,10 +1135,47 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     expect(res.setHeader).toHaveBeenCalledWith('content-length', '2048');
     expect(res.setHeader).not.toHaveBeenCalledWith('x-should-not-forward', 'secret');
     expect(fakeStream.pipe).toHaveBeenCalledWith(res);
+  });
 
-    const closeHandler = req.on.mock.calls.find((c: any[]) => c[0] === 'close')?.[1];
-    closeHandler();
-    expect(fakeStream.destroy).toHaveBeenCalled();
+  it('should cancel the export and answer nothing when the browser leaves while XTM One works', async () => {
+    const browser = new AbortController();
+    setupAuthenticatedContext({ requestAbortSignal: browser.signal });
+    mockPost.mockImplementation((_url: string, _body: unknown, opts: { signal: AbortSignal }) => new Promise((_resolve, reject) => {
+      opts.signal.addEventListener('abort', () => reject(new Error('canceled')));
+    }));
+
+    const pending = postChatbotArtifactDownload(buildDownloadReq('presentation', REPORT_ID, { format: 'pptx' }), res);
+    await vi.waitFor(() => expect(mockPost).toHaveBeenCalled());
+    browser.abort();
+    await pending;
+
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+    expect(logApp.error).not.toHaveBeenCalled();
+  });
+
+  it('should tear the upstream stream down quietly when the browser leaves mid-download', async () => {
+    const browser = new AbortController();
+    setupAuthenticatedContext({ requestAbortSignal: browser.signal });
+    const upstream = new PassThrough();
+    vi.spyOn(upstream, 'pipe').mockReturnValue(res);
+    // What axios does to an open response stream when its signal aborts.
+    mockPost.mockImplementation(async (_url: string, _body: unknown, opts: { signal: AbortSignal }) => {
+      opts.signal.addEventListener('abort', () => {
+        upstream.emit('error', new Error('canceled'));
+        upstream.destroy();
+      });
+      return { data: upstream, headers: { 'content-type': 'video/mp4' } };
+    });
+
+    await postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
+    expect(upstream.pipe).toHaveBeenCalledWith(res);
+    browser.abort();
+
+    expect(upstream.destroyed).toBe(true);
+    expect(logApp.error).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.end).not.toHaveBeenCalled();
   });
 
   it('should propagate the upstream status and detail, read from a stream body', async () => {
@@ -1136,6 +1192,35 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
 
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({ error: 'This video has no finished render yet.' });
+  });
+
+  it.each([
+    ['gzip', gzipSync],
+    ['br', brotliCompressSync],
+  ])('should read the detail of a %s-encoded error body', async (encoding, compress) => {
+    const httpError = new Error('Request failed with status code 409') as any;
+    httpError.response = {
+      status: 409,
+      headers: { 'content-encoding': encoding },
+      data: Readable.from([compress(Buffer.from(JSON.stringify({ detail: 'This video has no finished render yet.' })))]),
+    };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotArtifactDownload(buildDownloadReq('video', REPORT_ID, { format: 'mp4' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({ error: 'This video has no finished render yet.' });
+  });
+
+  it('should keep the generic message when an error body is too large to be a detail', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, headers: {}, data: Readable.from([Buffer.alloc(65 * 1024, 'x')]) };
+    mockPost.mockRejectedValue(httpError);
+
+    await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: 'pdf' }), res);
+
+    expect(res.status).toHaveBeenCalledWith(502);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Request failed with status code 502' });
   });
 
   it('should return 503 when XTM One cannot be reached', async () => {
