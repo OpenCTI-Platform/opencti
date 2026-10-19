@@ -371,7 +371,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "ATG", "ISO2": "AG", "NAME": "Antigua and Barb.", "LON": -61.7882, "LAT": 17.0792},
+      "properties": {"ISO3": "ATG", "ISO2": "AG", "NAME": "Antigua and Barbuda", "LON": -61.7882, "LAT": 17.0792},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -640,7 +640,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "BHS", "ISO2": "BS", "NAME": "Bahamas", "LON": -78.3355, "LAT": 26.6528},
+      "properties": {"ISO3": "BHS", "ISO2": "BS", "NAME": "The Bahamas", "LON": -78.3355, "LAT": 26.6528},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -693,7 +693,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "BIH", "ISO2": "BA", "NAME": "Bosnia and Herz.", "LON": 17.9357, "LAT": 43.919},
+      "properties": {"ISO3": "BIH", "ISO2": "BA", "NAME": "Bosnia and Herzegovina", "LON": 17.9357, "LAT": 43.919},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -886,7 +886,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "CAF", "ISO2": "CF", "NAME": "Central African Rep.", "LON": 20.6331, "LAT": 6.6148},
+      "properties": {"ISO3": "CAF", "ISO2": "CF", "NAME": "Central African Republic", "LON": 20.6331, "LAT": 6.6148},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -1578,7 +1578,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "CIV", "ISO2": "CI", "NAME": "C\u00f4te d'Ivoire", "LON": -5.6927, "LAT": 7.5195},
+      "properties": {"ISO3": "CIV", "ISO2": "CI", "NAME": "Ivory Coast", "LON": -5.6927, "LAT": 7.5195},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -1611,7 +1611,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "COD", "ISO2": "CD", "NAME": "Dem. Rep. Congo", "LON": 22.4336, "LAT": -4.0421},
+      "properties": {"ISO3": "COD", "ISO2": "CD", "NAME": "Democratic Republic of the Congo", "LON": 22.4336, "LAT": -4.0421},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -1622,7 +1622,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "COG", "ISO2": "CG", "NAME": "Congo", "LON": 16.0679, "LAT": -0.6542},
+      "properties": {"ISO3": "COG", "ISO2": "CG", "NAME": "Republic of the Congo", "LON": 16.0679, "LAT": -0.6542},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -1632,7 +1632,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "COK", "ISO2": "CK", "NAME": "Cook Is.", "LON": -159.7868, "LAT": -21.2215},
+      "properties": {"ISO3": "COK", "ISO2": "CK", "NAME": "Cook Islands", "LON": -159.7868, "LAT": -21.2215},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -1686,7 +1686,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "CPV", "ISO2": "CV", "NAME": "Cabo Verde", "LON": -25.1802, "LAT": 17.0624},
+      "properties": {"ISO3": "CPV", "ISO2": "CV", "NAME": "Cape Verde", "LON": -25.1802, "LAT": 17.0624},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -1769,7 +1769,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "CUW", "ISO2": "CW", "NAME": "Cura\u00e7ao", "LON": -69.0345, "LAT": 12.2121},
+      "properties": {"ISO3": "CUW", "ISO2": "CW", "NAME": "Curacao", "LON": -69.0345, "LAT": 12.2121},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -1779,7 +1779,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "CYM", "ISO2": "KY", "NAME": "Cayman Is.", "LON": -81.1811, "LAT": 19.3295},
+      "properties": {"ISO3": "CYM", "ISO2": "KY", "NAME": "Cayman Islands", "LON": -81.1811, "LAT": 19.3295},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -1900,7 +1900,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "DOM", "ISO2": "DO", "NAME": "Dominican Rep.", "LON": -70.1253, "LAT": 18.7765},
+      "properties": {"ISO3": "DOM", "ISO2": "DO", "NAME": "Dominican Republic", "LON": -70.1253, "LAT": 18.7765},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -2160,7 +2160,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "FLK", "ISO2": "FK", "NAME": "Falkland Is.", "LON": -58.6139, "LAT": -51.7942},
+      "properties": {"ISO3": "FLK", "ISO2": "FK", "NAME": "Falkland Islands", "LON": -58.6139, "LAT": -51.7942},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -2224,7 +2224,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "FRO", "ISO2": "FO", "NAME": "Faeroe Is.", "LON": -6.7883, "LAT": 62.1992},
+      "properties": {"ISO3": "FRO", "ISO2": "FO", "NAME": "Faroe Islands", "LON": -6.7883, "LAT": 62.1992},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -2244,7 +2244,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "FSM", "ISO2": "FM", "NAME": "Micronesia", "LON": 158.2475, "LAT": 6.885},
+      "properties": {"ISO3": "FSM", "ISO2": "FM", "NAME": "Federated States of Micronesia", "LON": 158.2475, "LAT": 6.885},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -2404,7 +2404,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "GMB", "ISO2": "GM", "NAME": "Gambia", "LON": -14.3405, "LAT": 13.4428},
+      "properties": {"ISO3": "GMB", "ISO2": "GM", "NAME": "The Gambia", "LON": -14.3405, "LAT": 13.4428},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -2436,7 +2436,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "GNQ", "ISO2": "GQ", "NAME": "Eq. Guinea", "LON": 10.4737, "LAT": 1.6306},
+      "properties": {"ISO3": "GNQ", "ISO2": "GQ", "NAME": "Equatorial Guinea", "LON": 10.4737, "LAT": 1.6306},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -3134,7 +3134,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "IOT", "ISO2": "IO", "NAME": "Br. Indian Ocean Ter.", "LON": 71.3476, "LAT": -6.1923},
+      "properties": {"ISO3": "IOT", "ISO2": "IO", "NAME": "British Indian Ocean Territory", "LON": 71.3476, "LAT": -6.1923},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -4047,7 +4047,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "MHL", "ISO2": "MH", "NAME": "Marshall Is.", "LON": 166.8669, "LAT": 11.1572},
+      "properties": {"ISO3": "MHL", "ISO2": "MH", "NAME": "Marshall Islands", "LON": 166.8669, "LAT": 11.1572},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -4626,7 +4626,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "PCN", "ISO2": "PN", "NAME": "Pitcairn Is.", "LON": -128.3169, "LAT": -24.3687},
+      "properties": {"ISO3": "PCN", "ISO2": "PN", "NAME": "Pitcairn", "LON": -128.3169, "LAT": -24.3687},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5375,7 +5375,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "SGS", "ISO2": "GS", "NAME": "S. Geo. and the Is.", "LON": -36.4922, "LAT": -54.4298},
+      "properties": {"ISO3": "SGS", "ISO2": "GS", "NAME": "South Georgia and South Sandwich Islands", "LON": -36.4922, "LAT": -54.4298},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5409,7 +5409,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "SLB", "ISO2": "SB", "NAME": "Solomon Is.", "LON": 160.1482, "LAT": -9.5887},
+      "properties": {"ISO3": "SLB", "ISO2": "SB", "NAME": "Solomon Islands", "LON": 160.1482, "LAT": -9.5887},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5550,7 +5550,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "SSD", "ISO2": "SS", "NAME": "S. Sudan", "LON": 29.1178, "LAT": 7.8578},
+      "properties": {"ISO3": "SSD", "ISO2": "SS", "NAME": "South Sudan", "LON": 29.1178, "LAT": 7.8578},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -5560,7 +5560,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "STP", "ISO2": "ST", "NAME": "S\u00e3o Tom\u00e9 and Principe", "LON": 6.6012, "LAT": 0.2155},
+      "properties": {"ISO3": "STP", "ISO2": "ST", "NAME": "S\u00e3o Tom\u00e9 and Pr\u00edncipe", "LON": 6.6012, "LAT": 0.2155},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5651,7 +5651,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "SWZ", "ISO2": "SZ", "NAME": "eSwatini", "LON": 31.4479, "LAT": -26.5396},
+      "properties": {"ISO3": "SWZ", "ISO2": "SZ", "NAME": "Eswatini", "LON": 31.4479, "LAT": -26.5396},
       "geometry": {
         "type": "Polygon",
         "coordinates": [
@@ -5716,7 +5716,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "TCA", "ISO2": "TC", "NAME": "Turks and Caicos Is.", "LON": -71.7574, "LAT": 21.8038},
+      "properties": {"ISO3": "TCA", "ISO2": "TC", "NAME": "Turks and Caicos Islands", "LON": -71.7574, "LAT": 21.8038},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5810,7 +5810,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "TLS", "ISO2": "TL", "NAME": "Timor-Leste", "LON": 125.764, "LAT": -8.8811},
+      "properties": {"ISO3": "TLS", "ISO2": "TL", "NAME": "East Timor", "LON": 125.764, "LAT": -8.8811},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -5986,7 +5986,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "USA", "ISO2": "US", "NAME": "United States of America", "LON": -99.6984, "LAT": 37.2464},
+      "properties": {"ISO3": "USA", "ISO2": "US", "NAME": "United States", "LON": -99.6984, "LAT": 37.2464},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -6372,7 +6372,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "VCT", "ISO2": "VC", "NAME": "St. Vin. and Gren.", "LON": -61.197, "LAT": 13.2632},
+      "properties": {"ISO3": "VCT", "ISO2": "VC", "NAME": "Saint Vincent and the Grenadines", "LON": -61.197, "LAT": 13.2632},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -6424,7 +6424,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "VGB", "ISO2": "VG", "NAME": "British Virgin Is.", "LON": -64.6419, "LAT": 18.4185},
+      "properties": {"ISO3": "VGB", "ISO2": "VG", "NAME": "British Virgin Islands", "LON": -64.6419, "LAT": 18.4185},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -6542,7 +6542,7 @@
     },
     {
       "type": "Feature",
-      "properties": {"ISO3": "WSM", "ISO2": "WS", "NAME": "Samoa", "LON": -172.4306, "LAT": -13.6354},
+      "properties": {"ISO3": "WSM", "ISO2": "WS", "NAME": "S\u0101moa", "LON": -172.4306, "LAT": -13.6354},
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
